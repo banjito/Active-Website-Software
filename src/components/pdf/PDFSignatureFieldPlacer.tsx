@@ -216,7 +216,7 @@ export function PDFSignatureFieldPlacer({
                 key={field.id}
                 className={`absolute border-2 ${
                   selectedField === field.id
-                    ? "border-[#f26722] bg-orange-100/30"
+                    ? "border-brand bg-orange-100/30"
                     : "border-blue-500 bg-blue-100/20"
                 } ${isPlacing ? "pointer-events-none" : "pointer-events-auto cursor-pointer"}`}
                 style={{
@@ -279,7 +279,7 @@ export function PDFSignatureFieldPlacer({
                   key={field.id}
                   className={`p-3 border rounded cursor-pointer transition-colors ${
                     selectedField === field.id
-                      ? "border-[#f26722] bg-orange-50"
+                      ? "border-brand bg-orange-50"
                       : "border-neutral-200 hover:border-neutral-300"
                   }`}
                   onClick={() => setSelectedField(field.id)}

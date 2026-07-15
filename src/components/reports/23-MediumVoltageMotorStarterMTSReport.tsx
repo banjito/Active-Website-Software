@@ -19,6 +19,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { useSaveIndicator } from "./common/useSaveIndicator";
 import { ReportHeader } from "./common/ReportHeader";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 // Temperature conversion and correction factor lookup tables (reuse from other reports)
 const tcfTable: { [key: string]: number } = {
@@ -1103,7 +1104,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
 
         {/* Job Information Section */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-job-info">
             Job Information
           </h2>
@@ -1331,7 +1332,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
 
         {/* Nameplate Data Section */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-nameplate-data">
             Nameplate Data
           </h2>
@@ -1584,7 +1585,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
 
         {/* Visual and Mechanical Inspection Section */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-visual-mechanical">
             Visual and Mechanical Inspection
           </h2>
@@ -1758,7 +1759,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
 
         {/* Fuse Data Section */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-fuse-data">
             Fuse Data
           </h2>
@@ -1889,7 +1890,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
 
         {/* Electrical Tests Section (General) */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-electrical-tests">
             Electrical Tests
           </h2>
@@ -2193,7 +2194,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
 
         {/* Contactor Data Section */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-contactor-data">
             Contactor Data
           </h2>
@@ -2445,7 +2446,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
 
         {/* Electrical Test - Contactor Section */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-electrical-test-contactor">
             Electrical Test - Contactor
           </h2>
@@ -2729,7 +2730,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
 
         {/* Starting Reactor Data Section */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-starting-reactor-data">
             Starting Reactor Data
           </h2>
@@ -2889,7 +2890,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
 
         {/* Electrical Test - Reactor Section */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-electrical-test-reactor">
             Electrical Test - Reactor
           </h2>
@@ -3325,7 +3326,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
 
         {/* Test Equipment Used Section */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-test-equipment">
             Test Equipment Used
           </h2>
@@ -3489,7 +3490,7 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
         <div
           className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
         >
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-comments">
             Comments
           </h2>
@@ -4421,7 +4422,7 @@ if (typeof document !== "undefined") {
       /* FINAL OVERRIDE: Force orange dividers for specific sections */
       /* Job Information divider */
       .max-w-7xl h2.section-job-info {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -4430,7 +4431,7 @@ if (typeof document !== "undefined") {
 
       /* Nameplate Data divider */
       .max-w-7xl h2.section-nameplate-data {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -4439,7 +4440,7 @@ if (typeof document !== "undefined") {
 
       /* Visual and Mechanical Inspection divider */
       .max-w-7xl h2.section-visual-mechanical {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -4448,7 +4449,7 @@ if (typeof document !== "undefined") {
 
       /* Fuse Data divider */
       .max-w-7xl h2.section-fuse-data {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -4457,7 +4458,7 @@ if (typeof document !== "undefined") {
 
       /* Electrical Tests divider */
       .max-w-7xl h2.section-electrical-tests {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -4466,7 +4467,7 @@ if (typeof document !== "undefined") {
 
       /* Contactor Data divider */
       .max-w-7xl h2.section-contactor-data {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -4475,7 +4476,7 @@ if (typeof document !== "undefined") {
 
       /* Electrical Test - Contactor divider */
       .max-w-7xl h2.section-electrical-test-contactor {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -4484,7 +4485,7 @@ if (typeof document !== "undefined") {
 
       /* Starting Reactor Data divider */
       .max-w-7xl h2.section-starting-reactor-data {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -4493,7 +4494,7 @@ if (typeof document !== "undefined") {
 
       /* Electrical Test - Reactor divider */
       .max-w-7xl h2.section-electrical-test-reactor {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -4502,7 +4503,7 @@ if (typeof document !== "undefined") {
 
       /* Test Equipment Used divider */
       .max-w-7xl h2.section-test-equipment {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -4511,7 +4512,7 @@ if (typeof document !== "undefined") {
 
       /* Comments divider */
       .max-w-7xl h2.section-comments {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;

@@ -280,8 +280,8 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
             </div>
           ) : (
             <>
-              <div className="mb-2 flex items-center bg-neutral-50 dark:bg-dark-150 p-3 rounded text-sm border border-orange-100 dark:border-[#f26722]/30">
-                <MoveVertical className="h-4 w-4 mr-2 text-[#f26722]" />
+              <div className="mb-2 flex items-center bg-neutral-50 dark:bg-dark-150 p-3 rounded text-sm border border-orange-100 dark:border-brand/30">
+                <MoveVertical className="h-4 w-4 mr-2 text-brand" />
                 <span>
                   <strong>To reorder:</strong> Click and drag any shortcut up or
                   down to change its position
@@ -312,12 +312,12 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
                                 style={provided.draggableProps.style}
                                 className={`flex items-center p-3 bg-white dark:bg-dark-150 border cursor-grab ${
                                   snapshot.isDragging
-                                    ? "border-[#f26722] ring-2 ring-[#f26722]/50 shadow-lg bg-orange-50 dark:bg-[#f26722]/10"
-                                    : "border-neutral-200 dark:border-neutral-700 shadow-sm hover:border-orange-200 dark:hover:border-[#f26722]/30"
+                                    ? "border-brand ring-2 ring-brand/50 shadow-lg bg-orange-50 dark:bg-brand/10"
+                                    : "border-neutral-200 dark:border-neutral-700 shadow-sm hover:border-orange-200 dark:hover:border-brand/30"
                                 } rounded-none transition-all ${snapshot.isDragging ? "cursor-grabbing" : ""}`}
                               >
                                 <div className="flex items-center w-full">
-                                  <MoveVertical className="h-5 w-5 text-[#f26722] mr-3 flex-shrink-0" />
+                                  <MoveVertical className="h-5 w-5 text-brand mr-3 flex-shrink-0" />
                                   <div className="flex-grow">
                                     <div className="font-medium">
                                       {shortcut.title}
@@ -434,7 +434,7 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[#f26722] text-white rounded-none hover:bg-[#f26722]/90"
+                    className="px-4 py-2 bg-brand text-white rounded-none hover:bg-brand/90"
                     disabled={loading}
                   >
                     {loading ? (

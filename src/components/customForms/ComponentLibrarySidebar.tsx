@@ -88,7 +88,7 @@ const DraggableComponent: React.FC<DraggableComponentProps> = ({
       style={style}
       {...listeners}
       {...attributes}
-      className="bg-white dark:bg-dark-100 border border-neutral-200 dark:border-neutral-700 rounded-none p-3 cursor-grab active:cursor-grabbing hover:border-[#f26722] hover:shadow-md transition-all"
+      className="bg-white dark:bg-dark-100 border border-neutral-200 dark:border-neutral-700 rounded-none p-3 cursor-grab active:cursor-grabbing hover:border-brand hover:shadow-md transition-all"
     >
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 w-8 h-8 bg-neutral-100 dark:bg-dark-200 rounded flex items-center justify-center">
@@ -136,7 +136,7 @@ const DraggableSavedComponent: React.FC<DraggableSavedComponentProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-white dark:bg-dark-100 border border-[#f26722]/40 dark:border-[#f26722]/50 rounded-none p-3 cursor-grab active:cursor-grabbing hover:border-[#f26722] hover:shadow-md transition-all"
+      className="bg-white dark:bg-dark-100 border border-brand/40 dark:border-brand/50 rounded-none p-3 cursor-grab active:cursor-grabbing hover:border-brand hover:shadow-md transition-all"
     >
       <div className="flex items-start gap-3">
         <div
@@ -144,7 +144,7 @@ const DraggableSavedComponent: React.FC<DraggableSavedComponentProps> = ({
           {...listeners}
           className="flex-shrink-0 w-8 h-8 bg-orange-50 dark:bg-orange-900/20 rounded flex items-center justify-center touch-none"
         >
-          <Table2 className="w-4 h-4 text-[#f26722]" />
+          <Table2 className="w-4 h-4 text-brand" />
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-medium text-neutral-900 dark:text-white truncate">
@@ -163,7 +163,7 @@ const DraggableSavedComponent: React.FC<DraggableSavedComponentProps> = ({
                 e.preventDefault();
                 onView(saved);
               }}
-              className="mt-2 text-xs font-medium text-[#f26722] hover:underline"
+              className="mt-2 text-xs font-medium text-brand hover:underline"
             >
               View
             </button>
@@ -225,7 +225,7 @@ export const ComponentLibrarySidebar: React.FC<{
               onClick={onHide}
               title="Hide component library"
               aria-label="Hide component library"
-              className="h-9 w-9 shrink-0 rounded-none p-0 border-0 bg-transparent hover:bg-transparent hover:text-[#f26722] [&>span:first-child]:mr-0"
+              className="h-9 w-9 shrink-0 rounded-none p-0 border-0 bg-transparent hover:bg-transparent hover:text-brand [&>span:first-child]:mr-0"
               leftIcon={<PanelLeftClose className="w-4 h-4" />}
             />
           )}
@@ -249,7 +249,7 @@ export const ComponentLibrarySidebar: React.FC<{
             onClick={() => setSelectedCategory(null)}
             className={`px-3 py-1 text-xs font-medium rounded-none transition-colors ${
               selectedCategory === null
-                ? "bg-[#f26722] text-white"
+                ? "bg-brand text-white"
                 : "bg-neutral-100 dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-200"
             }`}
           >
@@ -261,7 +261,7 @@ export const ComponentLibrarySidebar: React.FC<{
               onClick={() => setSelectedCategory(category)}
               className={`px-3 py-1 text-xs font-medium rounded-none capitalize transition-colors ${
                 selectedCategory === category
-                  ? "bg-[#f26722] text-white"
+                  ? "bg-brand text-white"
                   : "bg-neutral-100 dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-200"
               }`}
             >

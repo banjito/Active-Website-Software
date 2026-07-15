@@ -133,7 +133,7 @@ export const OneOnOneList: React.FC<OneOnOneListProps> = ({
       <div>
         <div className="flex items-center justify-between gap-2 mb-3">
           <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-            <ClipboardList className="h-4 w-4 text-[#f26722]" />
+            <ClipboardList className="h-4 w-4 text-brand" />
             One-on-One Check-Ins
           </h3>
           {canStartNew && (
@@ -208,7 +208,7 @@ export const OneOnOneList: React.FC<OneOnOneListProps> = ({
                             setEditingCheckin(c);
                             setShowForm(true);
                           }}
-                          className="p-1.5 rounded text-neutral-400 hover:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-200"
+                          className="p-1.5 rounded text-neutral-400 hover:text-brand hover:bg-neutral-100 dark:hover:bg-dark-200"
                           title="Edit"
                         >
                           <Edit2 className="h-3.5 w-3.5" />

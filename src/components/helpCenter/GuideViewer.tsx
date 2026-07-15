@@ -261,7 +261,7 @@ export const GuideViewer: React.FC = () => {
               {isAdmin && (
                 <Button
                   onClick={() => navigate(`/help-center/builder/${guide.id}`)}
-                  className="bg-[#f26722] hover:bg-[#e55611] text-white"
+                  className="bg-brand hover:bg-brand-dark text-white"
                 >
                   <Edit3 className="w-4 h-4 mr-2" />
                   <span className="hidden sm:inline">Edit</span>
@@ -341,7 +341,7 @@ export const GuideViewer: React.FC = () => {
                       onClick={() =>
                         navigate(`/help-center/builder/${guide.id}`)
                       }
-                      className="bg-[#f26722] hover:bg-[#e55611] text-white"
+                      className="bg-brand hover:bg-brand-dark text-white"
                     >
                       <Edit3 className="w-4 h-4 mr-2" />
                       Add Content
@@ -371,7 +371,7 @@ export const GuideViewer: React.FC = () => {
                           <a
                             key={heading.id}
                             href={`#${heading.id}`}
-                            className={`block text-sm hover:text-[#f26722] transition-colors ${
+                            className={`block text-sm hover:text-brand transition-colors ${
                               heading.level === 1
                                 ? "font-medium text-neutral-900 dark:text-white"
                                 : heading.level === 2
@@ -406,7 +406,7 @@ export const GuideViewer: React.FC = () => {
                           }
                           className="w-full text-left p-2 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors group"
                         >
-                          <span className="text-sm font-medium text-neutral-900 dark:text-white group-hover:text-[#f26722] transition-colors line-clamp-2">
+                          <span className="text-sm font-medium text-neutral-900 dark:text-white group-hover:text-brand transition-colors line-clamp-2">
                             {related.title}
                           </span>
                         </button>
@@ -558,7 +558,7 @@ const ContentBlockRenderer: React.FC<{ block: ContentBlock }> = ({ block }) => {
       const sConfig = config as StepBlockConfig;
       return (
         <div className="flex gap-4 mb-6">
-          <div className="flex-shrink-0 w-12 h-12 bg-[#f26722] text-white rounded-none flex items-center justify-center font-bold text-xl shadow-md">
+          <div className="flex-shrink-0 w-12 h-12 bg-brand text-white rounded-none flex items-center justify-center font-bold text-xl shadow-md">
             {sConfig.stepNumber}
           </div>
           <div className="flex-1 pt-1">

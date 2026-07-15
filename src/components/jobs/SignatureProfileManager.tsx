@@ -14,6 +14,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "@/components/ui/toast";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useAuth } from "@/lib/AuthContext";
+import { emailPlaceholder } from "@/lib/companyConfig";
 
 interface SignatureProfile {
   id: string;
@@ -282,7 +283,7 @@ export const SignatureProfileManager: React.FC<
                                 email: e.target.value,
                               })
                             }
-                            placeholder="email@ampqes.com"
+                            placeholder={emailPlaceholder}
                             className="w-full"
                           />
                         </div>
@@ -323,7 +324,7 @@ export const SignatureProfileManager: React.FC<
                         <Button
                           onClick={handleSaveEdit}
                           size="sm"
-                          className="bg-[#f26722] hover:bg-[#e55611] text-white"
+                          className="bg-brand hover:bg-brand-dark text-white"
                         >
                           <Save className="h-4 w-4 mr-2" />
                           Save
@@ -430,7 +431,7 @@ export const SignatureProfileManager: React.FC<
                               email: e.target.value,
                             })
                           }
-                          placeholder="email@ampqes.com"
+                          placeholder={emailPlaceholder}
                           className="w-full"
                         />
                       </div>
@@ -471,7 +472,7 @@ export const SignatureProfileManager: React.FC<
                       <Button
                         onClick={handleSaveNew}
                         size="sm"
-                        className="bg-[#f26722] hover:bg-[#e55611] text-white"
+                        className="bg-brand hover:bg-brand-dark text-white"
                       >
                         <Save className="h-4 w-4 mr-2" />
                         Save

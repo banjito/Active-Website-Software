@@ -23,8 +23,8 @@ import {
   CardTitle,
   Badge,
 } from "../../components/ui";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
-const BRAND = "#f26722";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -296,7 +296,7 @@ function ProgressBar({ percent }: { percent: number }) {
     <div className="h-2 w-full overflow-hidden rounded-none bg-neutral-200 dark:bg-neutral-800">
       <div
         className="h-full rounded-none transition-all"
-        style={{ width: `${Math.round(percent)}%`, backgroundColor: BRAND }}
+        style={{ width: `${Math.round(percent)}%`, backgroundColor: BRAND_COLOR }}
       />
     </div>
   );
@@ -324,7 +324,7 @@ function ProgressRing({ percent }: { percent: number }) {
         r={r}
         fill="none"
         strokeWidth={stroke}
-        stroke={BRAND}
+        stroke={BRAND_COLOR}
         strokeDasharray={c}
         strokeDashoffset={offset}
         strokeLinecap="round"
@@ -548,13 +548,13 @@ function AmpuHeader({
         <button onClick={onHome} className="flex items-center gap-2 text-left">
           <span
             className="flex h-9 w-9 items-center justify-center rounded-none text-lg font-bold text-white"
-            style={{ backgroundColor: BRAND }}
+            style={{ backgroundColor: BRAND_COLOR }}
           >
             u
           </span>
           <div>
             <div className="text-lg font-bold leading-none text-neutral-900 dark:text-white">
-              AMP<span style={{ color: BRAND }}>u</span>
+              AMP<span style={{ color: BRAND_COLOR }}>u</span>
             </div>
             <div className="text-xs text-neutral-500 dark:text-neutral-400">
               Technician Training
@@ -634,7 +634,7 @@ function Catalog({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search courses…"
-          className="w-full rounded-none border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-[#f26722] dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:max-w-xs"
+          className="w-full rounded-none border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-brand dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:max-w-xs"
         />
         <div className="flex flex-wrap gap-1">
           {categories.map((c) => (
@@ -646,7 +646,7 @@ function Catalog({
                   ? "text-white"
                   : "bg-neutral-200 text-neutral-700 hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-300"
               }`}
-              style={category === c ? { backgroundColor: BRAND } : undefined}
+              style={category === c ? { backgroundColor: BRAND_COLOR } : undefined}
             >
               {c === "ALL" ? "All" : CATEGORY_LABEL[c]}
             </button>
@@ -675,7 +675,7 @@ function Catalog({
             >
               <div
                 className="flex h-28 items-center justify-center text-5xl"
-                style={{ backgroundColor: `${BRAND}1a` }}
+                style={{ backgroundColor: `${BRAND_COLOR}1a` }}
               >
                 {course.thumbnail}
               </div>
@@ -683,7 +683,7 @@ function Catalog({
                 <div className="flex items-center justify-between gap-2">
                   <CategoryTag category={course.category} />
                   {course.isRequired && (
-                    <Badge style={{ backgroundColor: BRAND }} className="text-white">
+                    <Badge style={{ backgroundColor: BRAND_COLOR }} className="text-white">
                       Required
                     </Badge>
                   )}
@@ -746,7 +746,7 @@ function CourseDetail({
           <div className="mb-2 flex items-center gap-2">
             <CategoryTag category={course.category} />
             {course.isRequired && (
-              <Badge style={{ backgroundColor: BRAND }} className="text-white">
+              <Badge style={{ backgroundColor: BRAND_COLOR }} className="text-white">
                 Required
               </Badge>
             )}
@@ -774,7 +774,7 @@ function CourseDetail({
       </div>
 
       {isComplete && (
-        <Card className="mb-6 border-2" style={{ borderColor: BRAND }}>
+        <Card className="mb-6 border-2" style={{ borderColor: BRAND_COLOR }}>
           <CardContent className="flex items-center gap-4 pt-6">
             <div className="text-4xl">🏅</div>
             <div className="flex-1">
@@ -1274,7 +1274,7 @@ function QuizLesson({
             </h2>
             <p
               className="mt-1 text-3xl font-bold"
-              style={{ color: result.passed ? BRAND : "#dc2626" }}
+              style={{ color: result.passed ? BRAND_COLOR : "#dc2626" }}
             >
               {result.score}%
             </p>
@@ -1365,10 +1365,10 @@ function QuizLesson({
                         onClick={() => toggle(q.id, choice.id, multi)}
                         className={`flex w-full items-center gap-3 rounded-none border px-3 py-2 text-left text-sm transition-colors ${
                           selected
-                            ? "bg-[#f26722]/10"
+                            ? "bg-brand/10"
                             : "border-neutral-200 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-800/50"
                         }`}
-                        style={selected ? { borderColor: BRAND } : undefined}
+                        style={selected ? { borderColor: BRAND_COLOR } : undefined}
                       >
                         <span
                           className={`flex h-5 w-5 shrink-0 items-center justify-center border ${
@@ -1376,7 +1376,7 @@ function QuizLesson({
                           }`}
                           style={
                             selected
-                              ? { backgroundColor: BRAND, borderColor: BRAND }
+                              ? { backgroundColor: BRAND_COLOR, borderColor: BRAND_COLOR }
                               : { borderColor: "#a3a3a3" }
                           }
                         >
@@ -1450,7 +1450,7 @@ function MyProgress({
                     <CategoryTag category={course.category} />
                     {course.isRequired && (
                       <Badge
-                        style={{ backgroundColor: BRAND }}
+                        style={{ backgroundColor: BRAND_COLOR }}
                         className="text-white"
                       >
                         Required
@@ -1464,7 +1464,7 @@ function MyProgress({
                     <ProgressBar percent={pct} />
                   </div>
                   {certifiedAt && (
-                    <p className="mt-1 text-xs" style={{ color: BRAND }}>
+                    <p className="mt-1 text-xs" style={{ color: BRAND_COLOR }}>
                       Certified {new Date(certifiedAt).toLocaleDateString()} ·
                       renews in 12 months
                     </p>

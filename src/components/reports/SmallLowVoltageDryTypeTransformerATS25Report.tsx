@@ -1128,7 +1128,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
 
           {/* Job Information */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
@@ -1365,7 +1365,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
 
           {/* Nameplate Data */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Nameplate Data
             </h2>
@@ -1836,7 +1836,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
 
           {/* Visual and Mechanical Inspection */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
@@ -1902,7 +1902,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
 
           {/* Electrical - Insulation Resistance Tests */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical - Insulation Resistance Tests
             </h2>
@@ -2196,7 +2196,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
 
           {/* Electrical - Turns Ratio Tests */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical - Turns Ratio Tests
             </h2>
@@ -2362,7 +2362,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
 
           {/* Test Equipment Used */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
@@ -2663,7 +2663,7 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
           <div
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments:
             </h2>

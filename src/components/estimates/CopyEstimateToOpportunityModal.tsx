@@ -208,7 +208,7 @@ export const CopyEstimateToOpportunityModal: React.FC<
         <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700">
           <div>
             <h2 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-              <Copy className="h-5 w-5 text-[#f26722]" />
+              <Copy className="h-5 w-5 text-brand" />
               {title}
             </h2>
           </div>
@@ -245,7 +245,7 @@ export const CopyEstimateToOpportunityModal: React.FC<
               placeholder="Search by quote #, title, description, or customer..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+              className="w-full pl-9 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
               autoFocus
             />
           </div>
@@ -317,7 +317,7 @@ export const CopyEstimateToOpportunityModal: React.FC<
                             }}
                             size="sm"
                             disabled={isSaving}
-                            className="bg-[#f26722] text-white hover:bg-[#d4551a]"
+                            className="bg-brand text-white hover:bg-brand-dark"
                           >
                             {selectLabel}
                           </Button>

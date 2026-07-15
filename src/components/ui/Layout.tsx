@@ -811,7 +811,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 size="sm"
                 onClick={() => navigate(`/jobs/${jobId}?tab=assets`)}
                 leftIcon={<ArrowLeft className="h-3 w-3 lg:h-4 lg:w-4" />}
-                className="print:hidden text-[#f26722] hover:text-[#e55611] hover:bg-[#f26722]/10 dark:text-[#f26722] dark:hover:text-[#e55611] dark:hover:bg-[#f26722]/10 text-xs lg:text-sm px-2 lg:px-3"
+                className="print:hidden text-brand hover:text-brand-dark hover:bg-brand/10 dark:text-brand dark:hover:text-brand-dark dark:hover:bg-brand/10 text-xs lg:text-sm px-2 lg:px-3"
               >
                 <span className="hidden sm:inline">Back to Job</span>
                 <span className="sm:hidden">Back</span>
@@ -879,44 +879,44 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                         </div>
                         <button
                           onClick={() => navigate("/portal")}
-                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50"
                         >
-                          <MapPin className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+                          <MapPin className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                           Back to Portal
                         </button>
                         <button
                           onClick={handleViewProfile}
-                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50"
                         >
-                          <Eye className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+                          <Eye className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                           View Profile
                         </button>
                         <button
                           type="button"
                           onClick={handleSettingsToggle}
-                          className={`flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50 ${
+                          className={`flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50 ${
                             isSettingsSubmenuOpen
                               ? "bg-neutral-100 dark:bg-dark-50"
                               : ""
                           }`}
                         >
-                          <Settings className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+                          <Settings className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                           Settings
                           <ChevronLeft className="ml-auto h-4 w-4 text-neutral-400 shrink-0" />
                         </button>
                         <button
                           onClick={handleAbout}
-                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50"
                         >
-                          <FileText className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+                          <FileText className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                           About
                         </button>
                         <button
                           onClick={handleSignOut}
                           disabled={isSigningOut}
-                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50"
                         >
-                          <LogOut className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+                          <LogOut className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                           {isSigningOut ? "Signing out..." : "Sign Out"}
                         </button>
                       </div>
@@ -971,7 +971,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   size="sm"
                   onClick={() => navigate(`/jobs/${jobId}?tab=assets`)}
                   leftIcon={<ArrowLeft className="h-3 w-3 lg:h-4 lg:w-4" />}
-                  className="print:hidden text-[#f26722] hover:text-[#e55611] hover:bg-[#f26722]/10 dark:text-[#f26722] dark:hover:text-[#e55611] dark:hover:bg-[#f26722]/10 text-xs lg:text-sm px-2 lg:px-3"
+                  className="print:hidden text-brand hover:text-brand-dark hover:bg-brand/10 dark:text-brand dark:hover:text-brand-dark dark:hover:bg-brand/10 text-xs lg:text-sm px-2 lg:px-3"
                 >
                   <span className="hidden sm:inline">Back to Job</span>
                   <span className="sm:hidden">Back</span>

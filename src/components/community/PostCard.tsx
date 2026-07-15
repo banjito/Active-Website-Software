@@ -143,7 +143,7 @@ export const PostCard: React.FC<Props> = ({
                     href={url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-sm text-[#f26722] hover:underline break-all"
+                    className="text-sm text-brand hover:underline break-all"
                   >
                     {url}
                   </a>

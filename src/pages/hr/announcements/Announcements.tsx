@@ -594,13 +594,13 @@ export function Announcements() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-            <Megaphone className="h-6 w-6 text-[#f26722]" />
+            <Megaphone className="h-6 w-6 text-brand" />
             Announcements
           </h1>
         </div>
         <button
           onClick={openCreateForm}
-          className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+          className="inline-flex items-center justify-center rounded-none border border-transparent bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
         >
           <Plus className="h-4 w-4 mr-2" />
           New Announcement
@@ -639,7 +639,7 @@ export function Announcements() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search…"
-            className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 pl-2 pr-3 py-1.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+            className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 pl-2 pr-3 py-1.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
           />
         </div>
       </div>
@@ -684,14 +684,14 @@ export function Announcements() {
                   }
                 }}
                 className={`bg-white dark:bg-dark-150 rounded-none shadow p-5 border-l-4 cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:shadow-lg ${
-                  a.is_pinned ? "border-[#f26722]" : "border-transparent"
+                  a.is_pinned ? "border-brand" : "border-transparent"
                 }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       {a.is_pinned && (
-                        <Pin className="h-3.5 w-3.5 text-[#f26722] flex-shrink-0" />
+                        <Pin className="h-3.5 w-3.5 text-brand flex-shrink-0" />
                       )}
                       <h3 className="text-base font-semibold text-neutral-900 dark:text-white truncate">
                         {a.title}
@@ -712,19 +712,19 @@ export function Announcements() {
                       {a.excerpt || stripSystemLinks(a.content)}
                     </p>
                     {a.content.includes("📘 [View Help Guide]") && (
-                      <span className="inline-flex items-center gap-1 mt-1 text-xs text-[#f26722] font-medium">
+                      <span className="inline-flex items-center gap-1 mt-1 text-xs text-brand font-medium">
                         <BookOpen className="h-3 w-3" />
                         Linked help guide
                       </span>
                     )}
                     {a.content.includes("📄 [View & Acknowledge Document]") && (
-                      <span className="inline-flex items-center gap-1 mt-1 text-xs text-[#f26722] font-medium">
+                      <span className="inline-flex items-center gap-1 mt-1 text-xs text-brand font-medium">
                         <FileText className="h-3 w-3" />
                         Linked document acknowledgment
                       </span>
                     )}
                     {extractAttachmentUrls(a.content).length > 0 && (
-                      <span className="inline-flex items-center gap-1 mt-1 text-xs text-[#f26722] font-medium ml-2">
+                      <span className="inline-flex items-center gap-1 mt-1 text-xs text-brand font-medium ml-2">
                         <ImagePlus className="h-3 w-3" />
                         {extractAttachmentUrls(a.content).length} image
                         attachment
@@ -766,7 +766,7 @@ export function Announcements() {
                     >
                       <button
                         onClick={() => togglePin(a)}
-                        className={`p-1.5 rounded-none hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors ${a.is_pinned ? "text-[#f26722]" : "text-neutral-400"}`}
+                        className={`p-1.5 rounded-none hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors ${a.is_pinned ? "text-brand" : "text-neutral-400"}`}
                       >
                         {a.is_pinned ? (
                           <PinOff className="h-4 w-4" />
@@ -817,7 +817,7 @@ export function Announcements() {
                             setDocumentViewerOpen(true);
                           }
                         }}
-                        className="p-1.5 rounded-none text-neutral-400 hover:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                        className="p-1.5 rounded-none text-neutral-400 hover:text-brand hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
@@ -904,7 +904,7 @@ export function Announcements() {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, title: e.target.value }))
                   }
-                  className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                   placeholder="Announcement title"
                 />
               </div>
@@ -922,7 +922,7 @@ export function Announcements() {
                       excerpt: e.target.value,
                     }))
                   }
-                  className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                   placeholder="Short summary shown on the portal (optional)"
                 />
               </div>
@@ -941,7 +941,7 @@ export function Announcements() {
                       content: e.target.value,
                     }))
                   }
-                  className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                   placeholder="Full announcement content..."
                 />
               </div>
@@ -951,7 +951,7 @@ export function Announcements() {
                   <label className="text-sm font-medium text-neutral-700 dark:text-white">
                     Image attachments
                   </label>
-                  <label className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-[#f26722] rounded-none cursor-pointer hover:bg-[#f26722]/90">
+                  <label className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-brand rounded-none cursor-pointer hover:bg-brand/90">
                     {uploadingAttachment ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
@@ -1014,7 +1014,7 @@ export function Announcements() {
                         category: e.target.value,
                       }))
                     }
-                    className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                   >
                     {CATEGORIES.map((c) => (
                       <option key={c.value} value={c.value}>
@@ -1037,7 +1037,7 @@ export function Announcements() {
                         published_at: e.target.value,
                       }))
                     }
-                    className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                   />
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                     Leave empty to publish immediately when toggled on
@@ -1059,7 +1059,7 @@ export function Announcements() {
                         expires_at: e.target.value,
                       }))
                     }
-                    className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                   />
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                     Leave empty for no expiration
@@ -1078,7 +1078,7 @@ export function Announcements() {
                           is_published: e.target.checked,
                         }))
                       }
-                      className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                      className="h-4 w-4 text-brand focus:ring-brand border-neutral-300 rounded"
                     />
                     <label
                       htmlFor="is_published"
@@ -1098,7 +1098,7 @@ export function Announcements() {
                           is_pinned: e.target.checked,
                         }))
                       }
-                      className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                      className="h-4 w-4 text-brand focus:ring-brand border-neutral-300 rounded"
                     />
                     <label
                       htmlFor="is_pinned"
@@ -1123,9 +1123,9 @@ export function Announcements() {
                           linked_document_url: "",
                         }));
                     }}
-                    className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
+                    className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 ${
                       showDocPicker
-                        ? "bg-[#f26722]"
+                        ? "bg-brand"
                         : "bg-neutral-300 dark:bg-neutral-600"
                     }`}
                   >
@@ -1144,7 +1144,7 @@ export function Announcements() {
                         }));
                     }}
                   >
-                    <Link2 className="h-4 w-4 text-[#f26722]" />
+                    <Link2 className="h-4 w-4 text-brand" />
                     Link a document or help guide
                   </label>
                 </div>
@@ -1163,7 +1163,7 @@ export function Announcements() {
                         }}
                         className={`px-3 py-1.5 text-sm font-medium rounded-none transition-colors ${
                           linkType === "document"
-                            ? "bg-[#f26722] text-white"
+                            ? "bg-brand text-white"
                             : "bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600"
                         }`}
                       >
@@ -1181,7 +1181,7 @@ export function Announcements() {
                         }}
                         className={`px-3 py-1.5 text-sm font-medium rounded-none transition-colors ${
                           linkType === "guide"
-                            ? "bg-[#f26722] text-white"
+                            ? "bg-brand text-white"
                             : "bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600"
                         }`}
                       >
@@ -1211,7 +1211,7 @@ export function Announcements() {
                                 }
                                 className={`w-full text-left px-3 py-2 rounded-none text-sm flex items-center gap-2 transition-colors ${
                                   formData.linked_document_url === doc.file_url
-                                    ? "bg-[#f26722]/10 text-[#f26722] border border-[#f26722]/30"
+                                    ? "bg-brand/10 text-brand border border-brand/30"
                                     : "hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
                                 }`}
                               >
@@ -1226,7 +1226,7 @@ export function Announcements() {
                                 </div>
                                 {formData.linked_document_url ===
                                   doc.file_url && (
-                                  <span className="text-xs bg-[#f26722] text-white px-2 py-0.5 rounded-none">
+                                  <span className="text-xs bg-brand text-white px-2 py-0.5 rounded-none">
                                     Selected
                                   </span>
                                 )}
@@ -1269,7 +1269,7 @@ export function Announcements() {
                                   }
                                   className={`w-full text-left px-3 py-2 rounded-none text-sm flex items-center gap-2 transition-colors ${
                                     isSelected
-                                      ? "bg-[#f26722]/10 text-[#f26722] border border-[#f26722]/30"
+                                      ? "bg-brand/10 text-brand border border-brand/30"
                                       : "hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
                                   }`}
                                 >
@@ -1285,7 +1285,7 @@ export function Announcements() {
                                     )}
                                   </div>
                                   {isSelected && (
-                                    <span className="text-xs bg-[#f26722] text-white px-2 py-0.5 rounded-none">
+                                    <span className="text-xs bg-brand text-white px-2 py-0.5 rounded-none">
                                       Selected
                                     </span>
                                   )}
@@ -1319,7 +1319,7 @@ export function Announcements() {
                 <button
                   type="submit"
                   disabled={formLoading}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#f26722] rounded-none hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 disabled:opacity-50"
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-brand rounded-none hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 disabled:opacity-50"
                 >
                   {formLoading ? (
                     <>
@@ -1387,7 +1387,7 @@ export function Announcements() {
           <Dialog.Panel className="w-full max-w-5xl rounded-none bg-white dark:bg-neutral-900 shadow-xl max-h-[90vh] flex flex-col">
             <div className="flex justify-between items-center p-4 border-b border-neutral-200 dark:border-neutral-700">
               <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white flex items-center gap-2">
-                <FileText className="h-5 w-5 text-[#f26722]" />
+                <FileText className="h-5 w-5 text-brand" />
                 {documentViewerTitle || "Document"}
               </Dialog.Title>
               <button

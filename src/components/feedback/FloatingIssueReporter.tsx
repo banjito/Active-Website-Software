@@ -208,7 +208,7 @@ export const FloatingIssueReporter: React.FC = () => {
         <button
           onClick={() => setOpen(true)}
           aria-label="Issue / Feature Report"
-          className="group relative inline-flex h-14 w-14 items-center justify-center bg-[#f26722] hover:w-[240px] hover:bg-[#e55611] focus-visible:w-[240px] text-white shadow-lg rounded-none font-semibold text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f26722] focus-visible:ring-offset-2 transition-[width,background-color] duration-300 ease-out overflow-hidden whitespace-nowrap"
+          className="group relative inline-flex h-14 w-14 items-center justify-center bg-brand hover:w-[240px] hover:bg-brand-dark focus-visible:w-[240px] text-white shadow-lg rounded-none font-semibold text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 transition-[width,background-color] duration-300 ease-out overflow-hidden whitespace-nowrap"
         >
           <span className="absolute inset-0 flex items-center justify-center transition-opacity duration-150 group-hover:opacity-0 group-focus-visible:opacity-0">
             <OctagonAlert className="h-6 w-6" aria-hidden />
@@ -430,7 +430,7 @@ export const FloatingIssueReporter: React.FC = () => {
               <Button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="bg-[#f26722] hover:bg-[#e55611] text-white"
+                className="bg-brand hover:bg-brand-dark text-white"
               >
                 {submitting ? "Submitting..." : "Submit"}
               </Button>

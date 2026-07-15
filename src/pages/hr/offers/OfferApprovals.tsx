@@ -1095,7 +1095,7 @@ export const OfferApprovals: React.FC = () => {
                       key={offer.id}
                       className={`p-4 border rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 ${
                         canApprove
-                          ? "border-l-4 border-l-[#f26722] border-neutral-200 dark:border-neutral-700"
+                          ? "border-l-4 border-l-brand border-neutral-200 dark:border-neutral-700"
                           : "border-neutral-200 dark:border-neutral-700"
                       }`}
                     >
@@ -1108,7 +1108,7 @@ export const OfferApprovals: React.FC = () => {
                                 : "Unknown Candidate"}
                             </div>
                             {canApprove && (
-                              <span className="px-2 py-1 rounded-none text-xs font-medium bg-[#f26722]/10 text-[#f26722] ring-1 ring-[#f26722]/30">
+                              <span className="px-2 py-1 rounded-none text-xs font-medium bg-brand/10 text-brand ring-1 ring-brand/30">
                                 Your Turn
                               </span>
                             )}
@@ -1369,7 +1369,7 @@ export const OfferApprovals: React.FC = () => {
                       onClick={() => handleSendToOnboarding(offer.id)}
                       disabled={sendingToOnboardingOfferId === offer.id}
                       title="Send to Onboarding"
-                      className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                      className="bg-brand hover:bg-brand/90 text-white"
                     >
                       <UserPlus className="h-4 w-4 mr-1" />
                       {sendingToOnboardingOfferId === offer.id
@@ -1591,7 +1591,7 @@ export const OfferApprovals: React.FC = () => {
                                 <p className="text-sm font-medium text-neutral-900 dark:text-white">
                                   {getApproverName(approver.approver_id)}
                                   {approver.approver_id === user?.id && (
-                                    <span className="ml-2 text-xs text-[#f26722]">
+                                    <span className="ml-2 text-xs text-brand">
                                       (You)
                                     </span>
                                   )}
@@ -1853,7 +1853,7 @@ export const OfferApprovals: React.FC = () => {
                 placeholder="Search users by name or email..."
                 value={approverSearchTerm}
                 onChange={(e) => setApproverSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
             <div className="border border-neutral-200 dark:border-neutral-700 rounded-none max-h-96 overflow-y-auto">
@@ -1885,7 +1885,7 @@ export const OfferApprovals: React.FC = () => {
                           onClick={() => setNewApproverId(u.id)}
                           className={`w-full px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors ${
                             isSelected
-                              ? "bg-[#f26722]/10 border-l-4 border-[#f26722]"
+                              ? "bg-brand/10 border-l-4 border-brand"
                               : ""
                           }`}
                         >
@@ -1906,7 +1906,7 @@ export const OfferApprovals: React.FC = () => {
                               </div>
                             </div>
                             {isSelected && (
-                              <CheckCircle className="h-5 w-5 text-[#f26722]" />
+                              <CheckCircle className="h-5 w-5 text-brand" />
                             )}
                           </div>
                         </button>
@@ -1943,7 +1943,7 @@ export const OfferApprovals: React.FC = () => {
             </Button>
             <Button
               onClick={handleAddGlobalApprover}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
               disabled={!newApproverId}
             >
               Add Approver
@@ -2010,7 +2010,7 @@ export const OfferApprovals: React.FC = () => {
                 <Button
                   onClick={handleMarkAsSent}
                   disabled={markingSent}
-                  className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                  className="bg-brand hover:bg-brand/90 text-white"
                 >
                   {markingSent ? "Updating..." : "Mark as sent"}
                 </Button>
@@ -2107,7 +2107,7 @@ export const OfferApprovals: React.FC = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <RefreshCw className="h-5 w-5 text-[#f26722]" />
+              <RefreshCw className="h-5 w-5 text-brand" />
               Extend Offer Expiration
             </DialogTitle>
             <DialogDescription>
@@ -2126,7 +2126,7 @@ export const OfferApprovals: React.FC = () => {
                 value={extendNewDate}
                 min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => setExtendNewDate(e.target.value)}
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
             <label className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
@@ -2150,7 +2150,7 @@ export const OfferApprovals: React.FC = () => {
             <Button
               onClick={handleExtendExpiration}
               disabled={!extendNewDate || extending}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               <RefreshCw
                 className={`mr-2 h-4 w-4 ${extending ? "animate-spin" : ""}`}

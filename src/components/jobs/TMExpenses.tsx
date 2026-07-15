@@ -456,7 +456,7 @@ export default function TMExpenses({ jobId, jobNumber }: TMExpensesProps) {
                   type="checkbox"
                   checked={form.billable}
                   onChange={(e) => setForm({ ...form, billable: e.target.checked })}
-                  className="w-4 h-4 accent-[#f26722]"
+                  className="w-4 h-4 accent-brand"
                 />
                 <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Billable to customer

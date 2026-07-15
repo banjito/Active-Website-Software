@@ -13,7 +13,7 @@ export const HrDashboard: React.FC = () => {
         <Link to="/hr/handbook">
           <Button
             leftIcon={<BookOpen className="h-4 w-4" />}
-            className="bg-[#f26722] text-white hover:!bg-[#f5834a] hover:!text-white"
+            className="bg-brand text-white hover:!bg-[#f5834a] hover:!text-white"
           >
             Employee Handbook
           </Button>
@@ -76,7 +76,7 @@ export const HrDashboard: React.FC = () => {
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
           <CardHeader>
             <div className="flex flex-row items-center gap-2">
-              <Briefcase className="h-5 w-5 shrink-0 text-[#f26722]" aria-hidden />
+              <Briefcase className="h-5 w-5 shrink-0 text-brand" aria-hidden />
               <CardTitle className="leading-none">Recruiting</CardTitle>
             </div>
             <CardDescription>
@@ -88,7 +88,7 @@ export const HrDashboard: React.FC = () => {
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
           <CardHeader>
             <div className="flex flex-row items-center gap-2">
-              <ClipboardList className="h-5 w-5 shrink-0 text-[#f26722]" aria-hidden />
+              <ClipboardList className="h-5 w-5 shrink-0 text-brand" aria-hidden />
               <CardTitle className="leading-none">Onboarding</CardTitle>
             </div>
             <CardDescription>
@@ -100,7 +100,7 @@ export const HrDashboard: React.FC = () => {
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
           <CardHeader>
             <div className="flex flex-row items-center gap-2">
-              <Users className="h-5 w-5 shrink-0 text-[#f26722]" aria-hidden />
+              <Users className="h-5 w-5 shrink-0 text-brand" aria-hidden />
               <CardTitle className="leading-none">Employee Data</CardTitle>
             </div>
             <CardDescription>
@@ -112,7 +112,7 @@ export const HrDashboard: React.FC = () => {
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
           <CardHeader>
             <div className="flex flex-row items-center gap-2">
-              <Clock className="h-5 w-5 shrink-0 text-[#f26722]" aria-hidden />
+              <Clock className="h-5 w-5 shrink-0 text-brand" aria-hidden />
               <CardTitle className="leading-none">Time & Attendance</CardTitle>
             </div>
             <CardDescription>
@@ -124,7 +124,7 @@ export const HrDashboard: React.FC = () => {
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
           <CardHeader>
             <div className="flex flex-row items-center gap-2">
-              <Award className="h-5 w-5 shrink-0 text-[#f26722]" aria-hidden />
+              <Award className="h-5 w-5 shrink-0 text-brand" aria-hidden />
               <CardTitle className="leading-none">Performance Reviews</CardTitle>
             </div>
             <CardDescription>
@@ -136,7 +136,7 @@ export const HrDashboard: React.FC = () => {
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
           <CardHeader>
             <div className="flex flex-row items-center gap-2">
-              <BarChart3 className="h-5 w-5 shrink-0 text-[#f26722]" aria-hidden />
+              <BarChart3 className="h-5 w-5 shrink-0 text-brand" aria-hidden />
               <CardTitle className="leading-none">Analytics</CardTitle>
             </div>
             <CardDescription>

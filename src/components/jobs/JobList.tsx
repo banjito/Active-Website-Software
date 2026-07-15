@@ -546,9 +546,9 @@ export default function JobList() {
               key={option.value}
               type="button"
               onClick={() => setValue(option.value)}
-              className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+              className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-brand ${
                 checked
-                  ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
+                  ? "bg-orange-50 text-brand dark:bg-orange-900/20"
                   : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
               }`}
               aria-pressed={checked}
@@ -581,9 +581,9 @@ export default function JobList() {
               key={option.value}
               type="button"
               onClick={() => setValue(checked ? null : option.value)}
-              className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+              className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-brand ${
                 checked
-                  ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
+                  ? "bg-orange-50 text-brand dark:bg-orange-900/20"
                   : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
               }`}
               aria-pressed={checked}
@@ -1558,7 +1558,7 @@ export default function JobList() {
             setLoading(true);
             fetchJobs();
           }}
-          className="px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-none"
+          className="px-4 py-2 bg-brand hover:bg-brand-dark text-white font-medium rounded-none"
         >
           Try Again
         </button>
@@ -1636,7 +1636,7 @@ export default function JobList() {
             <button
               type="button"
               onClick={() => setIsOpen(true)}
-              className="inline-flex items-center p-2 border border-transparent rounded-none shadow-sm text-white bg-[#f26722] hover:bg-[#d94e00] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722]"
+              className="inline-flex items-center p-2 border border-transparent rounded-none shadow-sm text-white bg-brand hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand"
             >
               <Plus className="h-5 w-5" />
             </button>
@@ -1670,7 +1670,7 @@ export default function JobList() {
                   onClick={() => setAllTime(!allTime)}
                   className={`px-4 py-1.5 text-sm font-medium rounded-none transition-colors ${
                     allTime
-                      ? "bg-[#f26722] text-white"
+                      ? "bg-brand text-white"
                       : "bg-neutral-100 dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-200"
                   }`}
                 >
@@ -1682,7 +1682,7 @@ export default function JobList() {
                       type="date"
                       value={dateRangeStart}
                       onChange={(e) => setDateRangeStart(e.target.value)}
-                      className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                      className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
                     />
                     <span className="text-neutral-500 dark:text-neutral-400">
                       to
@@ -1691,7 +1691,7 @@ export default function JobList() {
                       type="date"
                       value={dateRangeEnd}
                       onChange={(e) => setDateRangeEnd(e.target.value)}
-                      className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                      className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
                     />
                   </div>
                 )}
@@ -1831,7 +1831,7 @@ export default function JobList() {
                 className={
                   `px-4 py-2 text-sm font-medium focus:outline-none transition-colors ${
                     active
-                      ? "bg-[#f26722] text-white"
+                      ? "bg-brand text-white"
                       : "bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-dark-100"
                   }` +
                   (t.key !== "billed"
@@ -1854,7 +1854,7 @@ export default function JobList() {
             <button
               type="button"
               onClick={() => setIsSortMenuOpen((prev) => !prev)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-none text-neutral-700 hover:text-[#f26722] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-none text-neutral-700 hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:text-white dark:hover:text-brand"
               aria-expanded={isSortMenuOpen}
               aria-label="Sort jobs"
               title="Sort"
@@ -1890,10 +1890,10 @@ export default function JobList() {
             <button
               type="button"
               onClick={() => setIsFilterMenuOpen((prev) => !prev)}
-              className={`inline-flex h-10 w-10 items-center justify-center rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f26722] ${
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                 dateFilterActive
-                  ? "text-[#f26722]"
-                  : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                  ? "text-brand"
+                  : "text-neutral-700 hover:text-brand dark:text-white dark:hover:text-brand"
               }`}
               aria-expanded={isFilterMenuOpen}
               aria-label="Filter jobs"
@@ -1924,7 +1924,7 @@ export default function JobList() {
                         type="date"
                         value={dateFilterStart}
                         onChange={(e) => setDateFilterStart(e.target.value)}
-                        className="flex-1 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 px-2 py-1 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                        className="flex-1 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 px-2 py-1 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                       />
                     </label>
                     <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-white">
@@ -1933,7 +1933,7 @@ export default function JobList() {
                         type="date"
                         value={dateFilterEnd}
                         onChange={(e) => setDateFilterEnd(e.target.value)}
-                        className="flex-1 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 px-2 py-1 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                        className="flex-1 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 px-2 py-1 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                       />
                     </label>
                   </div>
@@ -1949,7 +1949,7 @@ export default function JobList() {
                   <button
                     type="button"
                     onClick={clearDateFilter}
-                    className="mt-3 w-full rounded-none border border-neutral-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="mt-3 w-full rounded-none border border-neutral-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-brand"
                   >
                     Clear filters
                   </button>
@@ -1963,7 +1963,7 @@ export default function JobList() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search jobs by title, customer, job number, quote number, PO number, status, or description..."
-              className="w-full px-4 py-2 pl-10 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+              className="w-full px-4 py-2 pl-10 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg
@@ -2564,7 +2564,7 @@ export default function JobList() {
                       type="button"
                       onClick={handleCreateCustomer}
                       disabled={creatingCustomer}
-                      className="px-3 py-1 text-sm rounded bg-[#f26722] text-white hover:bg-[#f26722]/90"
+                      className="px-3 py-1 text-sm rounded bg-brand text-white hover:bg-brand/90"
                     >
                       {creatingCustomer ? "Creating..." : "Create customer"}
                     </button>
@@ -2637,7 +2637,7 @@ export default function JobList() {
                       type="button"
                       onClick={handleCreateContact}
                       disabled={creatingContact}
-                      className="px-3 py-1 text-sm rounded bg-[#f26722] text-white hover:bg-[#f26722]/90"
+                      className="px-3 py-1 text-sm rounded bg-brand text-white hover:bg-brand/90"
                     >
                       {creatingContact ? "Creating..." : "Create contact"}
                     </button>
@@ -2654,7 +2654,7 @@ export default function JobList() {
                   value={customerSearch}
                   onChange={(e) => setCustomerSearch(e.target.value)}
                   placeholder="Search customers (name or company)"
-                  className="mt-1 mb-2 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 mb-2 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
                 {TMFormData.customer_id && (
                   <div className="text-xs text-neutral-600 dark:text-white mb-1">
@@ -2666,7 +2666,7 @@ export default function JobList() {
                       "Unknown"}
                     <button
                       type="button"
-                      className="ml-2 underline text-[#f26722] hover:text-[#f26722]/90"
+                      className="ml-2 underline text-brand hover:text-brand/90"
                       onClick={() =>
                         setTMFormData((prev) => ({ ...prev, customer_id: "" }))
                       }
@@ -2717,7 +2717,7 @@ export default function JobList() {
                       }));
                       setShowNewCustomer(true);
                     }}
-                    className="text-sm text-[#f26722] hover:text-[#f26722]/90"
+                    className="text-sm text-brand hover:text-brand/90"
                   >
                     + Add new customer
                   </button>
@@ -2732,7 +2732,7 @@ export default function JobList() {
                   name="contact_id"
                   value={TMFormData.contact_id}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                   disabled={!TMFormData.customer_id}
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -2752,7 +2752,7 @@ export default function JobList() {
                   <button
                     type="button"
                     onClick={() => setShowNewContact(true)}
-                    className="text-sm text-[#f26722] hover:text-[#f26722]/90"
+                    className="text-sm text-brand hover:text-brand/90"
                     disabled={!TMFormData.customer_id}
                   >
                     + Add new contact
@@ -2769,7 +2769,7 @@ export default function JobList() {
                   name="title"
                   value={TMFormData.title}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                   required
                 />
               </div>
@@ -2782,7 +2782,7 @@ export default function JobList() {
                   name="division"
                   value={TMFormData.division}
                   onChange={handleTMChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                   required
                 >
                   <option value="" className="dark:bg-dark-150 dark:text-white">
@@ -2830,7 +2830,7 @@ export default function JobList() {
                   value={TMFormData.description}
                   onChange={handleTMChange}
                   rows={3}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                   placeholder="Optional description"
                 />
               </div>

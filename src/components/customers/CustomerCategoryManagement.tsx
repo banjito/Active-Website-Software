@@ -216,7 +216,7 @@ export default function CustomerCategoryManagement() {
             setFormData(initialFormData);
             setIsOpen(true);
           }}
-          className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:w-auto"
+          className="inline-flex items-center justify-center rounded-none border border-transparent bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 sm:w-auto"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Category
@@ -318,7 +318,7 @@ export default function CustomerCategoryManagement() {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 block w-full rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
+                    className="mt-1 block w-full rounded-none border-neutral-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                   />
                 </div>
 
@@ -335,7 +335,7 @@ export default function CustomerCategoryManagement() {
                     value={formData.description}
                     onChange={handleInputChange}
                     rows={3}
-                    className="mt-1 block w-full rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
+                    className="mt-1 block w-full rounded-none border-neutral-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                   />
                 </div>
 
@@ -398,7 +398,7 @@ export default function CustomerCategoryManagement() {
                                 onChange={(e) =>
                                   updateRule(index, "field", e.target.value)
                                 }
-                                className="block w-1/3 rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
+                                className="block w-1/3 rounded-none border-neutral-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                               >
                                 {availableFields.map((field) => (
                                   <option key={field.id} value={field.id}>
@@ -412,7 +412,7 @@ export default function CustomerCategoryManagement() {
                                 onChange={(e) =>
                                   updateRule(index, "operator", e.target.value)
                                 }
-                                className="block w-1/3 rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
+                                className="block w-1/3 rounded-none border-neutral-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                               >
                                 {operators.map((op) => (
                                   <option key={op.id} value={op.id}>
@@ -428,7 +428,7 @@ export default function CustomerCategoryManagement() {
                                   updateRule(index, "value", e.target.value)
                                 }
                                 placeholder="Value"
-                                className="block w-1/3 rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
+                                className="block w-1/3 rounded-none border-neutral-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm dark:bg-dark-150 dark:border-neutral-600 dark:text-white"
                               />
 
                               <button
@@ -464,13 +464,13 @@ export default function CustomerCategoryManagement() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="inline-flex items-center px-4 py-2 border border-neutral-300 shadow-sm text-sm font-medium rounded-none text-neutral-700 bg-white hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] dark:bg-dark-150 dark:text-neutral-200 dark:border-neutral-600 dark:hover:bg-neutral-600"
+                  className="inline-flex items-center px-4 py-2 border border-neutral-300 shadow-sm text-sm font-medium rounded-none text-neutral-700 bg-white hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand dark:bg-dark-150 dark:text-neutral-200 dark:border-neutral-600 dark:hover:bg-neutral-600"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-none shadow-sm text-white bg-[#f26722] hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722]"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-none shadow-sm text-white bg-brand hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand"
                 >
                   {isEditing ? "Update" : "Create"}
                 </button>
@@ -501,7 +501,7 @@ export default function CustomerCategoryManagement() {
               <button
                 type="button"
                 onClick={() => setDeleteConfirmOpen(false)}
-                className="inline-flex items-center px-4 py-2 border border-neutral-300 shadow-sm text-sm font-medium rounded-none text-neutral-700 bg-white hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] dark:bg-dark-150 dark:text-neutral-200 dark:border-neutral-600 dark:hover:bg-neutral-600"
+                className="inline-flex items-center px-4 py-2 border border-neutral-300 shadow-sm text-sm font-medium rounded-none text-neutral-700 bg-white hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand dark:bg-dark-150 dark:text-neutral-200 dark:border-neutral-600 dark:hover:bg-neutral-600"
               >
                 Cancel
               </button>

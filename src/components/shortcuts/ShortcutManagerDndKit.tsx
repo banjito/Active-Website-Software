@@ -67,14 +67,14 @@ const SortableShortcutItem = ({ shortcut, onEdit, onDelete }) => {
       style={style}
       className={`group flex items-center px-2 py-1 bg-white dark:bg-dark-150 border ${
         isDragging
-          ? "border-[#f26722] ring-1 ring-[#f26722]/50 shadow-lg bg-orange-50 dark:bg-[#f26722]/10 scale-[1.02]"
-          : "border-neutral-200 dark:border-neutral-700 hover:border-orange-200 dark:hover:border-[#f26722]/30 hover:bg-neutral-50 dark:hover:bg-dark-100"
+          ? "border-brand ring-1 ring-brand/50 shadow-lg bg-orange-50 dark:bg-brand/10 scale-[1.02]"
+          : "border-neutral-200 dark:border-neutral-700 hover:border-orange-200 dark:hover:border-brand/30 hover:bg-neutral-50 dark:hover:bg-dark-100"
       } rounded cursor-grab transition-all duration-150 ${isDragging ? "cursor-grabbing z-50" : ""}`}
       {...attributes}
       {...listeners}
     >
       <div className="flex items-center w-full min-w-0 gap-2">
-        <MoveVertical className="h-3 w-3 text-[#f26722] flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+        <MoveVertical className="h-3 w-3 text-brand flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
         <div className="flex-grow min-w-0 py-0.5">
           <div className="text-xs font-medium truncate leading-tight">
             {shortcut.title}
@@ -493,8 +493,8 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
             </div>
           ) : (
             <>
-              <div className="mb-2 flex items-center bg-neutral-50 dark:bg-dark-150 px-2 py-1.5 rounded text-xs border border-orange-100 dark:border-[#f26722]/30 sticky top-0 z-10">
-                <MoveVertical className="h-3 w-3 mr-1.5 text-[#f26722] flex-shrink-0" />
+              <div className="mb-2 flex items-center bg-neutral-50 dark:bg-dark-150 px-2 py-1.5 rounded text-xs border border-orange-100 dark:border-brand/30 sticky top-0 z-10">
+                <MoveVertical className="h-3 w-3 mr-1.5 text-brand flex-shrink-0" />
                 <span className="text-neutral-700 dark:text-neutral-300">
                   <strong>Drag to reorder</strong>
                 </span>
@@ -556,7 +556,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                         placeholder="Search portals and links..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="flex-1 px-3 py-2 text-sm border border-neutral-300 rounded-none dark:border-neutral-700 dark:bg-dark-150 focus:outline-none focus:ring-1 focus:ring-[#f26722]"
+                        className="flex-1 px-3 py-2 text-sm border border-neutral-300 rounded-none dark:border-neutral-700 dark:bg-dark-150 focus:outline-none focus:ring-1 focus:ring-brand"
                       />
                     </div>
                     {Object.keys(selectedQuick).filter((k) => selectedQuick[k])
@@ -593,7 +593,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                                 type="checkbox"
                                 checked={!!selectedQuick[it.key]}
                                 onChange={() => toggleQuickSelect(it.key)}
-                                className="h-4 w-4 text-[#f26722] border-neutral-300 rounded focus:ring-[#f26722]"
+                                className="h-4 w-4 text-brand border-neutral-300 rounded focus:ring-brand"
                               />
                               <span className="text-sm flex-1">{it.label}</span>
                             </label>
@@ -626,7 +626,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                           ).length === 0
                         }
                         size="sm"
-                        className="bg-[#f26722] hover:bg-[#f26722]/90"
+                        className="bg-brand hover:bg-brand/90"
                       >
                         {loading ? "Adding..." : "Add Selected"}
                       </Button>
@@ -747,7 +747,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                       </button>
                       <button
                         type="submit"
-                        className="px-4 py-2 bg-[#f26722] text-white rounded-none hover:bg-[#f26722]/90"
+                        className="px-4 py-2 bg-brand text-white rounded-none hover:bg-brand/90"
                         disabled={loading}
                       >
                         {loading ? (

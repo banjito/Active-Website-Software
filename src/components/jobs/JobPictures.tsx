@@ -599,7 +599,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
           <button
             type="button"
             onClick={openUploadModal}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#e55611] rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f26722] whitespace-nowrap"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand hover:bg-brand-dark rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand whitespace-nowrap"
           >
             <ImagePlus className="w-4 h-4" />
             Upload Picture
@@ -620,7 +620,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
               <button
                 type="button"
                 onClick={openUploadModal}
-                className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#e55611] rounded-none"
+                className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand hover:bg-brand-dark rounded-none"
               >
                 <ImagePlus className="w-4 h-4" />
                 Upload Picture
@@ -640,7 +640,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                     <button
                       type="button"
                       onClick={() => openLightbox(index)}
-                      className="relative aspect-square w-full overflow-hidden bg-neutral-200 dark:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="relative aspect-square w-full overflow-hidden bg-neutral-200 dark:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-brand"
                       title="View picture"
                     >
                       <img
@@ -657,7 +657,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                         <button
                           type="button"
                           onClick={() => setProfileViewUserId(pic.user_id)}
-                          className="flex-shrink-0 h-7 w-7 rounded-none overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-medium text-neutral-600 dark:text-neutral-300 hover:ring-2 hover:ring-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                          className="flex-shrink-0 h-7 w-7 rounded-none overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-medium text-neutral-600 dark:text-neutral-300 hover:ring-2 hover:ring-brand focus:outline-none focus:ring-2 focus:ring-brand"
                           title="View profile"
                         >
                           {pic.user?.profileImage ? (
@@ -694,7 +694,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                             onChange={(e) => setEditDescription(e.target.value)}
                             rows={3}
                             placeholder="Describe what this picture shows..."
-                            className="w-full px-2 py-1.5 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                            className="w-full px-2 py-1.5 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                             autoFocus
                           />
                           <div className="flex justify-end gap-2">
@@ -709,7 +709,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                             <button
                               type="button"
                               onClick={() => saveEditDescription(pic.id)}
-                              className="p-1.5 text-white bg-[#f26722] hover:bg-[#e55611] rounded"
+                              className="p-1.5 text-white bg-brand hover:bg-brand-dark rounded"
                               title="Save"
                             >
                               <Check className="w-4 h-4" />
@@ -806,7 +806,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full flex flex-col items-center justify-center gap-2 py-10 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-500 dark:text-neutral-400 hover:border-[#f26722] hover:text-[#f26722] transition-colors"
+                  className="w-full flex flex-col items-center justify-center gap-2 py-10 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-500 dark:text-neutral-400 hover:border-brand hover:text-brand transition-colors"
                 >
                   <Upload className="w-8 h-8" />
                   <span className="text-sm font-medium">Choose image</span>
@@ -835,7 +835,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                   onChange={(e) => setUploadDescription(e.target.value)}
                   rows={3}
                   placeholder="What does this picture show? (e.g., 'Main panel after removing cover during walkthrough')"
-                  className="w-full px-3 py-2 text-sm rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 resize-none focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                  className="w-full px-3 py-2 text-sm rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 resize-none focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 />
               </div>
             </div>
@@ -853,7 +853,7 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
                 type="button"
                 onClick={handleUploadSubmit}
                 disabled={!selectedFile || uploading}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#e55611] rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand hover:bg-brand-dark rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {uploading ? (
                   <>

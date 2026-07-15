@@ -346,7 +346,7 @@ export default function MobileLogInteraction() {
       </div>
 
       {/* Header */}
-      <header className="bg-[#f26722] text-white px-4 py-4 shadow-md flex items-center gap-2.5">
+      <header className="bg-brand text-white px-4 py-4 shadow-md flex items-center gap-2.5">
         <Feather className="h-7 w-7" />
         <h1 className="text-2xl font-semibold">Log Interaction</h1>
       </header>
@@ -367,7 +367,7 @@ export default function MobileLogInteraction() {
                   setSelectedCustomer(null);
                   setCustomerTerm("");
                 }}
-                className="text-base text-[#f26722] font-medium shrink-0 ml-3 px-2 py-1"
+                className="text-base text-brand font-medium shrink-0 ml-3 px-2 py-1"
               >
                 Change
               </button>
@@ -380,7 +380,7 @@ export default function MobileLogInteraction() {
                 value={customerTerm}
                 onChange={(e) => setCustomerTerm(e.target.value)}
                 placeholder="Search customers..."
-                className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand"
               />
               {customerTerm.trim() && (
                 <div className="mt-2 rounded-none border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-150 overflow-hidden divide-y divide-neutral-100 dark:divide-dark-200 max-h-80 overflow-y-auto">
@@ -408,7 +408,7 @@ export default function MobileLogInteraction() {
                       <button
                         onClick={() => handleCreateCustomer(customerTerm)}
                         disabled={creatingCustomer}
-                        className="w-full flex items-center gap-2 px-5 py-4 text-lg font-medium text-[#f26722] active:bg-neutral-100 dark:active:bg-dark-200 disabled:opacity-50"
+                        className="w-full flex items-center gap-2 px-5 py-4 text-lg font-medium text-brand active:bg-neutral-100 dark:active:bg-dark-200 disabled:opacity-50"
                       >
                         <Plus className="h-5 w-5 shrink-0" />
                         <span className="truncate">
@@ -434,7 +434,7 @@ export default function MobileLogInteraction() {
             value={contactId}
             onChange={(e) => setContactId(e.target.value)}
             disabled={!selectedCustomer || contactsLoading}
-            className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] disabled:opacity-50"
+            className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand disabled:opacity-50"
           >
             {!selectedCustomer ? (
               <option value="">Select a customer first</option>
@@ -462,14 +462,14 @@ export default function MobileLogInteraction() {
                       value={newContactFirst}
                       onChange={(e) => setNewContactFirst(e.target.value)}
                       placeholder="First name"
-                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-3 text-base text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-3 text-base text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand"
                     />
                     <input
                       type="text"
                       value={newContactLast}
                       onChange={(e) => setNewContactLast(e.target.value)}
                       placeholder="Last name"
-                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-3 text-base text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-3 text-base text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand"
                     />
                   </div>
                   <input
@@ -478,7 +478,7 @@ export default function MobileLogInteraction() {
                     value={newContactPhone}
                     onChange={(e) => setNewContactPhone(e.target.value)}
                     placeholder="Phone (optional)"
-                    className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-3 text-base text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                    className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-3 text-base text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand"
                   />
                   <div className="flex items-center gap-2">
                     <button
@@ -498,7 +498,7 @@ export default function MobileLogInteraction() {
                         creatingContact ||
                         (!newContactFirst.trim() && !newContactLast.trim())
                       }
-                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-none bg-[#f26722] px-4 py-3 text-base font-semibold text-white disabled:opacity-50"
+                      className="flex-1 inline-flex items-center justify-center gap-2 rounded-none bg-brand px-4 py-3 text-base font-semibold text-white disabled:opacity-50"
                     >
                       <Plus className="h-5 w-5" />
                       {creatingContact ? "Adding…" : "Add contact"}
@@ -508,7 +508,7 @@ export default function MobileLogInteraction() {
               ) : (
                 <button
                   onClick={() => setShowNewContact(true)}
-                  className="inline-flex items-center gap-1.5 text-base font-medium text-[#f26722] px-1 py-1"
+                  className="inline-flex items-center gap-1.5 text-base font-medium text-brand px-1 py-1"
                 >
                   <Plus className="h-5 w-5" />
                   Add new contact
@@ -530,7 +530,7 @@ export default function MobileLogInteraction() {
                 onClick={() => setNoteType(t.value)}
                 className={`flex flex-col items-center justify-center gap-2 rounded-none border py-5 text-base font-medium transition-colors ${
                   noteType === t.value
-                    ? "border-[#f26722] bg-[#f26722]/10 text-[#f26722]"
+                    ? "border-brand bg-brand/10 text-brand"
                     : "border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-600 dark:text-neutral-300"
                 }`}
               >
@@ -552,7 +552,7 @@ export default function MobileLogInteraction() {
             value={context}
             onChange={(e) => setContext(e.target.value)}
             placeholder="What happened during this interaction..."
-            className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+            className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-5 py-4 text-lg text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand"
           />
         </div>
 
@@ -569,7 +569,7 @@ export default function MobileLogInteraction() {
           <button
             onClick={handleSave}
             disabled={!canSave}
-            className="flex-1 inline-flex items-center justify-center gap-2 rounded-none bg-[#f26722] px-5 py-4 text-lg font-semibold text-white shadow-sm active:bg-[#f26722]/90 disabled:opacity-50"
+            className="flex-1 inline-flex items-center justify-center gap-2 rounded-none bg-brand px-5 py-4 text-lg font-semibold text-white shadow-sm active:bg-brand/90 disabled:opacity-50"
           >
             <Feather className="h-6 w-6" />
             {saving ? "Saving…" : "Log Interaction"}

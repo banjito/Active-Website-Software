@@ -21,9 +21,9 @@ import {
 } from "@/services/interactionsService";
 
 const iconButtonClass =
-  "rounded-none w-10 h-10 p-0 flex items-center justify-center text-neutral-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:text-[#f26722] focus:bg-[#f26722]/10 focus:ring-2 focus:ring-[#f26722]/30";
+  "rounded-none w-10 h-10 p-0 flex items-center justify-center text-neutral-600 dark:text-white hover:text-brand dark:hover:text-brand bg-transparent hover:bg-transparent focus:outline-none focus:text-brand focus:bg-brand/10 focus:ring-2 focus:ring-brand/30";
 const iconButtonActiveClass =
-  "text-[#f26722] bg-[#f26722]/10 ring-2 ring-[#f26722]/30";
+  "text-brand bg-brand/10 ring-2 ring-brand/30";
 
 const TYPES: {
   value: InteractionType;
@@ -339,7 +339,7 @@ export const QuickLogInteraction: React.FC = () => {
                       setSelectedCustomer(null);
                       setCustomerTerm("");
                     }}
-                    className="text-xs text-[#f26722] hover:underline shrink-0 ml-2"
+                    className="text-xs text-brand hover:underline shrink-0 ml-2"
                   >
                     Change
                   </button>
@@ -363,7 +363,7 @@ export const QuickLogInteraction: React.FC = () => {
                     value={customerTerm}
                     onChange={(e) => setCustomerTerm(e.target.value)}
                     placeholder="Search customers..."
-                    className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 pl-3 pr-9 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                    className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 pl-3 pr-9 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand"
                   />
                   {customerTerm.trim() && (
                     <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-none border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-150 shadow-lg">
@@ -391,7 +391,7 @@ export const QuickLogInteraction: React.FC = () => {
                           <button
                             onClick={() => handleCreateCustomer(customerTerm)}
                             disabled={creatingCustomer}
-                            className="w-full flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[#f26722] hover:bg-neutral-50 dark:hover:bg-dark-200 disabled:opacity-50 border-t border-neutral-100 dark:border-dark-200"
+                            className="w-full flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-brand hover:bg-neutral-50 dark:hover:bg-dark-200 disabled:opacity-50 border-t border-neutral-100 dark:border-dark-200"
                           >
                             <Plus className="h-4 w-4 shrink-0" />
                             <span className="truncate">
@@ -417,7 +417,7 @@ export const QuickLogInteraction: React.FC = () => {
                 value={contactId}
                 onChange={(e) => setContactId(e.target.value)}
                 disabled={!selectedCustomer || contactsLoading}
-                className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] disabled:opacity-50"
+                className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand disabled:opacity-50"
               >
                 {!selectedCustomer ? (
                   <option value="">Select a customer first</option>
@@ -445,14 +445,14 @@ export const QuickLogInteraction: React.FC = () => {
                           value={newContactFirst}
                           onChange={(e) => setNewContactFirst(e.target.value)}
                           placeholder="First name"
-                          className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                          className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand"
                         />
                         <input
                           type="text"
                           value={newContactLast}
                           onChange={(e) => setNewContactLast(e.target.value)}
                           placeholder="Last name"
-                          className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                          className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand"
                         />
                       </div>
                       <input
@@ -461,7 +461,7 @@ export const QuickLogInteraction: React.FC = () => {
                         value={newContactPhone}
                         onChange={(e) => setNewContactPhone(e.target.value)}
                         placeholder="Phone (optional)"
-                        className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                        className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand"
                       />
                       <div className="flex items-center justify-end gap-2">
                         <button
@@ -481,7 +481,7 @@ export const QuickLogInteraction: React.FC = () => {
                             creatingContact ||
                             (!newContactFirst.trim() && !newContactLast.trim())
                           }
-                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs bg-[#f26722] text-white rounded hover:bg-[#f26722]/90 disabled:opacity-50"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs bg-brand text-white rounded hover:bg-brand/90 disabled:opacity-50"
                         >
                           <Plus className="h-3.5 w-3.5" />
                           {creatingContact ? "Adding…" : "Add"}
@@ -491,7 +491,7 @@ export const QuickLogInteraction: React.FC = () => {
                   ) : (
                     <button
                       onClick={() => setShowNewContact(true)}
-                      className="inline-flex items-center gap-1 text-xs font-medium text-[#f26722] hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
                     >
                       <Plus className="h-3.5 w-3.5" />
                       Add new contact
@@ -513,7 +513,7 @@ export const QuickLogInteraction: React.FC = () => {
                     onClick={() => setNoteType(t.value)}
                     className={`flex flex-col items-center justify-center gap-1 rounded-none border py-2 text-xs font-medium transition-colors ${
                       noteType === t.value
-                        ? "border-[#f26722] bg-[#f26722]/10 text-[#f26722]"
+                        ? "border-brand bg-brand/10 text-brand"
                         : "border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-600 dark:text-neutral-300"
                     }`}
                   >
@@ -533,7 +533,7 @@ export const QuickLogInteraction: React.FC = () => {
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
                 placeholder="What happened during this interaction..."
-                className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand"
               />
             </div>
 
@@ -547,7 +547,7 @@ export const QuickLogInteraction: React.FC = () => {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="inline-flex items-center gap-1 px-4 py-1.5 text-sm bg-[#f26722] text-white rounded hover:bg-[#f26722]/90 disabled:opacity-50"
+                className="inline-flex items-center gap-1 px-4 py-1.5 text-sm bg-brand text-white rounded hover:bg-brand/90 disabled:opacity-50"
               >
                 <Feather className="h-4 w-4" />
                 {saving ? "Saving…" : "Log"}

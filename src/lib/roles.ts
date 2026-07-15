@@ -1,4 +1,6 @@
-export type Role = 
+import { companyConfig } from './companyConfig';
+
+export type Role =
   | 'NETA Technician'
   | 'Lab Technician'
   | 'Scav'
@@ -83,10 +85,9 @@ export interface RolePermissions {
 }
 
 // Superuser emails that always have full admin access regardless of assigned role.
-const SUPERUSER_EMAILS: string[] = [
-  'john.chambers@ampqes.com',
-  'jack.lyons@ampqes.com'
-];
+const SUPERUSER_EMAILS: string[] = companyConfig.superuserEmails.map((e) =>
+  e.toLowerCase()
+);
 
 export const isSuperUser = (email: string | undefined | null): boolean => {
   if (!email) return false;

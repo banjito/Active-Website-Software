@@ -52,6 +52,7 @@ import { ReviewShortcuts } from "@/components/shortcuts/ReviewShortcuts";
 import { IssueShortcuts } from "@/components/shortcuts/IssueShortcuts";
 import { ApprovedShortcuts } from "@/components/shortcuts/ApprovedShortcuts";
 import { supabase } from "@/lib/supabase";
+import { companyConfig } from "@/lib/companyConfig";
 import {
   Dialog,
   DialogContent,
@@ -64,10 +65,12 @@ import { onboardingService } from "@/services/hr/onboardingService";
 import { toast } from "@/components/ui/toast";
 import { HeaderBar } from "@/components/ui/HeaderBar";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useSiteLogos } from "@/services/siteThemeService";
 
 export default function PortalLanding() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { logoUrl, hideLogo } = useSiteLogos();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [showBrian, setShowBrian] = useState(false);
   const [showBrianBubble, setShowBrianBubble] = useState(false);
@@ -1245,7 +1248,7 @@ export default function PortalLanding() {
 
       {/* Edit Mode Banner */}
       {isEditMode && (
-        <div className="bg-[#f26722] text-white py-3 px-4 sm:px-6 lg:px-8 sticky top-0 z-50 shadow-md">
+        <div className="bg-brand text-white py-3 px-4 sm:px-6 lg:px-8 sticky top-0 z-50 shadow-md">
           <div className="max-w-[1400px] mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Edit3 className="h-5 w-5" />
@@ -1259,7 +1262,7 @@ export default function PortalLanding() {
             <Button
               onClick={handleExitEditMode}
               variant="outline"
-              className="border-white text-white hover:bg-white hover:text-[#f26722]"
+              className="border-white text-white hover:bg-white hover:text-brand"
             >
               Exit Edit Mode
             </Button>
@@ -1282,7 +1285,7 @@ export default function PortalLanding() {
                   onClick={() => togglePortalPreference("showWelcome")}
                   className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none ${
                     portalPreferences.showWelcome
-                      ? "bg-[#f26722]"
+                      ? "bg-brand"
                       : "bg-neutral-300 dark:bg-neutral-600"
                   }`}
                 >
@@ -1296,18 +1299,20 @@ export default function PortalLanding() {
                 </button>
               </div>
             )}
-            <button
-              type="button"
-              onClick={triggerBrian}
-              aria-label="ampOS"
-              className="mb-4 inline-block select-none bg-transparent border-none p-0 cursor-pointer focus:outline-none"
-            >
-              <img
-                src="/ampOS_full_logo.svg"
-                alt="ampOS"
-                className="h-[6rem] w-auto dark:invert transition-transform duration-300 ease-out hover:scale-105"
-              />
-            </button>
+            {!hideLogo && (
+              <button
+                type="button"
+                onClick={triggerBrian}
+                aria-label="ampOS"
+                className="mb-4 inline-block select-none bg-transparent border-none p-0 cursor-pointer focus:outline-none"
+              >
+                <img
+                  src={logoUrl}
+                  alt="ampOS"
+                  className="h-[6rem] w-auto dark:invert transition-transform duration-300 ease-out hover:scale-105"
+                />
+              </button>
+            )}
             <div className="flex gap-3">
               <Button
                 variant="outline"
@@ -1323,7 +1328,7 @@ export default function PortalLanding() {
                   aria-haspopup="true"
                   aria-expanded={offlineOpen}
                   onClick={toggleOffline}
-                  className="inline-flex items-center justify-center gap-2 h-11 px-5 text-base rounded-none bg-[#f26722] font-medium text-white transition-colors hover:bg-[#d9551a] focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                  className="inline-flex items-center justify-center gap-2 h-11 px-5 text-base rounded-none bg-brand font-medium text-white transition-colors hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
                 >
                   <Download className="h-5 w-5" />
                   Offline Software
@@ -1348,10 +1353,10 @@ export default function PortalLanding() {
                       className="fixed z-[61] w-60 overflow-hidden rounded-none border border-neutral-200 bg-white shadow-lg dark:border-neutral-700 dark:bg-dark-150"
                     >
                       <a
-                        href="https://github.com/banjito/Active-Website-Software/releases/download/offline-v1.0.0/ampOS-Offline-Windows-x64-Setup.exe"
+                        href={`${companyConfig.offlineReleaseBase}/ampOS-Offline-Windows-x64-Setup.exe`}
                         rel="noopener"
                         onClick={() => setOfflineOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-neutral-800 transition-colors hover:bg-[#f26722]/10 dark:text-white"
+                        className="flex items-center gap-3 px-4 py-3 text-neutral-800 transition-colors hover:bg-brand/10 dark:text-white"
                       >
                         <img src="/img/Microsoft_logo.svg" alt="" className="h-5 w-auto" />
                         <span>
@@ -1359,10 +1364,10 @@ export default function PortalLanding() {
                         </span>
                       </a>
                       <a
-                        href="https://github.com/banjito/Active-Website-Software/releases/download/offline-v1.0.0/ampOS-Offline-macOS-AppleSilicon.zip"
+                        href={`${companyConfig.offlineReleaseBase}/ampOS-Offline-macOS-AppleSilicon.zip`}
                         rel="noopener"
                         onClick={() => setOfflineOpen(false)}
-                        className="flex items-center gap-3 border-t border-neutral-200 px-4 py-3 text-neutral-800 transition-colors hover:bg-[#f26722]/10 dark:border-neutral-700 dark:text-white"
+                        className="flex items-center gap-3 border-t border-neutral-200 px-4 py-3 text-neutral-800 transition-colors hover:bg-brand/10 dark:border-neutral-700 dark:text-white"
                       >
                         <img src="/img/apple_logo.svg" alt="" className="h-5 w-auto dark:invert" />
                         <span>
@@ -1392,9 +1397,9 @@ export default function PortalLanding() {
               role="switch"
               aria-checked={portalPreferences.showAnnouncements}
               onClick={() => togglePortalPreference("showAnnouncements")}
-              className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
+              className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 ${
                 portalPreferences.showAnnouncements
-                  ? "bg-[#f26722]"
+                  ? "bg-brand"
                   : "bg-neutral-300 dark:bg-neutral-600"
               }`}
             >
@@ -1411,8 +1416,8 @@ export default function PortalLanding() {
         {portalAnnouncements.length > 0 ? (
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center justify-center h-10 w-10 rounded-none bg-[#f26722]/10">
-                <Megaphone className="h-6 w-6 text-[#f26722]" />
+              <div className="flex items-center justify-center h-10 w-10 rounded-none bg-brand/10">
+                <Megaphone className="h-6 w-6 text-brand" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
@@ -1428,7 +1433,7 @@ export default function PortalLanding() {
                   No more new announcements. View all under{" "}
                   <Link
                     to="/hr/announcements"
-                    className="text-[#f26722] hover:underline"
+                    className="text-brand hover:underline"
                   >
                     HR → Announcements
                   </Link>
@@ -1455,7 +1460,7 @@ export default function PortalLanding() {
                       key={a.id}
                       className={`bg-white dark:bg-dark-150 rounded-none shadow-md border ${
                         a.is_pinned
-                          ? "border-l-4 border-l-[#f26722] border-t border-r border-b border-t-neutral-200 border-r-neutral-200 border-b-neutral-200 dark:border-t-neutral-700 dark:border-r-neutral-700 dark:border-b-neutral-700 ring-1 ring-[#f26722]/10"
+                          ? "border-l-4 border-l-brand border-t border-r border-b border-t-neutral-200 border-r-neutral-200 border-b-neutral-200 dark:border-t-neutral-700 dark:border-r-neutral-700 dark:border-b-neutral-700 ring-1 ring-brand/10"
                           : "border-neutral-200 dark:border-neutral-700"
                       } p-5 cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:shadow-xl`}
                       onClick={() =>
@@ -1468,7 +1473,7 @@ export default function PortalLanding() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2.5 flex-wrap">
                             {a.is_pinned && (
-                              <Pin className="h-4 w-4 text-[#f26722] flex-shrink-0" />
+                              <Pin className="h-4 w-4 text-brand flex-shrink-0" />
                             )}
                             <h3 className="text-base font-bold text-neutral-900 dark:text-white">
                               {a.title}
@@ -1582,7 +1587,7 @@ export default function PortalLanding() {
                                         ? guidePath
                                         : `/${guidePath}`
                                     }
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#f26722]/90 rounded-none transition-colors shadow-sm"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-brand hover:bg-brand/90 rounded-none transition-colors shadow-sm"
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     <BookOpen className="h-4 w-4" />
@@ -1592,7 +1597,7 @@ export default function PortalLanding() {
                                 {docUrl && (
                                   <button
                                     type="button"
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#f26722]/90 rounded-none transition-colors shadow-sm"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-brand hover:bg-brand/90 rounded-none transition-colors shadow-sm"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       openAckModal(docUrl, a.title, a.id);
@@ -1639,7 +1644,7 @@ export default function PortalLanding() {
                           })()}
                           {extractAnnouncementAttachments(a.content).length >
                             0 && (
-                            <span className="inline-flex items-center gap-1 mt-2 text-xs text-[#f26722] font-medium">
+                            <span className="inline-flex items-center gap-1 mt-2 text-xs text-brand font-medium">
                               <ImageIcon className="h-3 w-3" />
                               {
                                 extractAnnouncementAttachments(a.content).length
@@ -1662,7 +1667,7 @@ export default function PortalLanding() {
                               !canDismiss || dismissingAnnouncementId === a.id
                             }
                             onClick={() => dismissAnnouncement(a.id)}
-                            className={`p-1.5 rounded-none focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                            className={`p-1.5 rounded-none focus:outline-none focus:ring-2 focus:ring-brand ${
                               canDismiss
                                 ? "text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-500 dark:hover:bg-red-950/30"
                                 : "opacity-40 cursor-not-allowed text-neutral-500 dark:text-neutral-400"
@@ -1704,7 +1709,7 @@ export default function PortalLanding() {
                     onClick={() =>
                       setVisibleAnnouncementCount((prev) => prev + 3)
                     }
-                    className="text-sm font-medium text-[#f26722] hover:text-[#d95d1d] hover:underline transition-colors"
+                    className="text-sm font-medium text-brand hover:text-brand-dark hover:underline transition-colors"
                   >
                     See more
                   </button>
@@ -1714,7 +1719,7 @@ export default function PortalLanding() {
           </div>
         ) : isEditMode ? (
           <div className="px-4 sm:px-6 lg:px-8 py-6 text-sm text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
-            <Megaphone className="h-5 w-5 text-[#f26722]" />
+            <Megaphone className="h-5 w-5 text-brand" />
             Announcements will appear here when published from HR &rarr;
             Announcements.
           </div>
@@ -1829,7 +1834,7 @@ export default function PortalLanding() {
               onClick={() => togglePortalPreference("showReviewShortcuts")}
               className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none ${
                 portalPreferences.showReviewShortcuts
-                  ? "bg-[#f26722]"
+                  ? "bg-brand"
                   : "bg-neutral-300 dark:bg-neutral-600"
               }`}
             >
@@ -1855,7 +1860,7 @@ export default function PortalLanding() {
               <Switch
                 checked={defaultToShowReview}
                 onCheckedChange={toggleDefaultReviewBehavior}
-                checkedClassName="bg-[#f26722]"
+                checkedClassName="bg-brand"
               />
             </div>
             <Button
@@ -1895,7 +1900,7 @@ export default function PortalLanding() {
               onClick={() => togglePortalPreference("showIssueShortcuts")}
               className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none ${
                 portalPreferences.showIssueShortcuts
-                  ? "bg-[#f26722]"
+                  ? "bg-brand"
                   : "bg-neutral-300 dark:bg-neutral-600"
               }`}
             >
@@ -1919,7 +1924,7 @@ export default function PortalLanding() {
               <Switch
                 checked={defaultToShowIssue}
                 onCheckedChange={toggleDefaultIssueBehavior}
-                checkedClassName="bg-[#f26722]"
+                checkedClassName="bg-brand"
               />
             </div>
             <Button
@@ -1959,7 +1964,7 @@ export default function PortalLanding() {
               onClick={() => togglePortalPreference("showApprovedShortcuts")}
               className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none ${
                 portalPreferences.showApprovedShortcuts
-                  ? "bg-[#f26722]"
+                  ? "bg-brand"
                   : "bg-neutral-300 dark:bg-neutral-600"
               }`}
             >
@@ -1983,7 +1988,7 @@ export default function PortalLanding() {
               <Switch
                 checked={defaultToShowApproved}
                 onCheckedChange={toggleDefaultApprovedBehavior}
-                checkedClassName="bg-[#f26722]"
+                checkedClassName="bg-brand"
               />
             </div>
             <Button
@@ -2027,7 +2032,7 @@ export default function PortalLanding() {
               <div className="flex gap-2">
                 <button
                   onClick={handleSelectAllPortals}
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#f26722] hover:bg-[#f26722]/90 rounded-none transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-white bg-brand hover:bg-brand/90 rounded-none transition-colors"
                 >
                   Select All
                 </button>
@@ -2065,7 +2070,7 @@ export default function PortalLanding() {
                     onClick={() => togglePortalVisibility(portalName)}
                     className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none ${
                       !isPortalHidden(portalName)
-                        ? "bg-[#f26722]"
+                        ? "bg-brand"
                         : "bg-neutral-300 dark:bg-neutral-600"
                     }`}
                   >
@@ -2097,7 +2102,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card portal-field-tech border border-neutral-200 dark:border-dark-300 overflow-hidden h-full cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card portal-field-tech border border-neutral-200 dark:border-dark-300 overflow-hidden h-full cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <div className="flex flex-col sm:flex-row sm:items-stretch">
                 {/* Identity — clicking the card opens the aggregated Field Tech portal */}
@@ -2151,7 +2156,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2183,7 +2188,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card portal-armadillo border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card portal-armadillo border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2221,7 +2226,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card portal-scavenger border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card portal-scavenger border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2260,7 +2265,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2293,7 +2298,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2325,7 +2330,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2358,7 +2363,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2390,7 +2395,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2454,7 +2459,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
@@ -2513,7 +2518,7 @@ export default function PortalLanding() {
             </div>
             <div className="flex justify-center">
               <Button
-                className="bg-[#f26722] hover:bg-[#f26722]/90 text-white px-8 py-2 rounded-none dark:bg-amp-gold-600 dark:hover:bg-amp-gold-700"
+                className="bg-brand hover:bg-brand/90 text-white px-8 py-2 rounded-none dark:bg-amp-gold-600 dark:hover:bg-amp-gold-700"
                 onClick={() => setShowPopup(false)}
               >
                 Okay

@@ -68,6 +68,7 @@ import { useAuth } from "../../../lib/AuthContext";
 import { toast } from "../../../components/ui/toast";
 import { supabase } from "../../../lib/supabase";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { companyConfig, employeeEmailRegex } from "@/lib/companyConfig";
 
 export const CandidateTracking: React.FC = () => {
   const navigate = useNavigate();
@@ -589,7 +590,7 @@ export const CandidateTracking: React.FC = () => {
           const search = term.toLowerCase();
           return (
             (email.includes(search) || name.includes(search)) &&
-            email.endsWith("@ampqes.com")
+            employeeEmailRegex.test(email)
           );
         })
         .slice(0, 10)
@@ -857,7 +858,7 @@ export const CandidateTracking: React.FC = () => {
           </p>
         </div>
         <Button
-          className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+          className="bg-brand hover:bg-brand/90 text-white"
           onClick={() => {
             resetForm();
             setIsCreateModalOpen(true);
@@ -897,7 +898,7 @@ export const CandidateTracking: React.FC = () => {
                 placeholder="Search candidates..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -905,7 +906,7 @@ export const CandidateTracking: React.FC = () => {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
               >
                 <option value="all">All Status</option>
                 {statusOptions.map((opt) => (
@@ -918,7 +919,7 @@ export const CandidateTracking: React.FC = () => {
             <select
               value={filterPosition}
               onChange={(e) => setFilterPosition(e.target.value)}
-              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
             >
               <option value="all">All Positions</option>
               {positions.map((pos) => (
@@ -1031,7 +1032,7 @@ export const CandidateTracking: React.FC = () => {
                             `/hr/recruiting/interview-scheduling?candidateId=${candidate.id}`,
                           );
                         }}
-                        className="bg-[#f26722] hover:bg-[#f26722]/90 text-white border-[#f26722]"
+                        className="bg-brand hover:bg-brand/90 text-white border-brand"
                       >
                         <Calendar className="mr-2 h-4 w-4" />
                         Schedule Interview
@@ -1096,7 +1097,7 @@ export const CandidateTracking: React.FC = () => {
                             e.target.value as Candidate["status"],
                           )
                         }
-                        className="px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                        className="px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                       >
                         {statusOptions.map((opt) => (
                           <option key={opt.value} value={opt.value}>
@@ -1460,7 +1461,7 @@ export const CandidateTracking: React.FC = () => {
             <Button
               onClick={handleCreate}
               disabled={saving}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               {saving ? "Adding..." : "Add Candidate"}
             </Button>
@@ -1716,7 +1717,7 @@ export const CandidateTracking: React.FC = () => {
             <Button
               onClick={handleEdit}
               disabled={saving}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               {saving ? "Saving..." : "Save Changes"}
             </Button>
@@ -1830,7 +1831,7 @@ export const CandidateTracking: React.FC = () => {
                     className="w-full flex items-center justify-between p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-[#f26722]" />
+                      <FileText className="h-5 w-5 text-brand" />
                       <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                         Resume
                       </h2>
@@ -1848,7 +1849,7 @@ export const CandidateTracking: React.FC = () => {
                           href={selectedCandidate.resume_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-[#f26722] hover:text-[#f26722]/80 underline"
+                          className="inline-flex items-center gap-2 text-brand hover:text-brand/80 underline"
                         >
                           <FileText className="h-4 w-4" />
                           Open Resume in New Tab
@@ -1876,7 +1877,7 @@ export const CandidateTracking: React.FC = () => {
                   className="w-full flex items-center justify-between p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <Calendar className="h-5 w-5 text-[#f26722]" />
+                    <Calendar className="h-5 w-5 text-brand" />
                     <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                       Interviews ({candidateInterviews.length})
                     </h2>
@@ -1974,7 +1975,7 @@ export const CandidateTracking: React.FC = () => {
                                         min
                                       </span>
                                       {feedbackData?.interviewDuration && (
-                                        <span className="ml-2 text-[#f26722]">
+                                        <span className="ml-2 text-brand">
                                           (Actual:{" "}
                                           {feedbackData.interviewDuration})
                                         </span>
@@ -2000,7 +2001,7 @@ export const CandidateTracking: React.FC = () => {
                                         href={interview.video_link}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-[#f26722] hover:underline flex items-center gap-2"
+                                        className="text-brand hover:underline flex items-center gap-2"
                                       >
                                         <Video className="h-4 w-4" />
                                         Video Link
@@ -2155,7 +2156,7 @@ export const CandidateTracking: React.FC = () => {
                     className="w-full flex items-center justify-between p-4 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-[#f26722]" />
+                      <FileText className="h-5 w-5 text-brand" />
                       <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                         Cover Letter
                       </h2>
@@ -2174,7 +2175,7 @@ export const CandidateTracking: React.FC = () => {
                             href={selectedCandidate.cover_letter_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-[#f26722] hover:text-[#f26722]/80 underline"
+                            className="inline-flex items-center gap-2 text-brand hover:text-brand/80 underline"
                           >
                             <FileText className="h-4 w-4" />
                             Open Cover Letter (PDF/DOC)
@@ -2271,14 +2272,14 @@ export const CandidateTracking: React.FC = () => {
               {["offer_accepted", "hired"].includes(
                 getDisplayStatus(selectedCandidate),
               ) && (
-                <div className="border-2 border-[#f26722]/30 rounded-none p-5 bg-orange-50 dark:bg-orange-900/10">
+                <div className="border-2 border-brand/30 rounded-none p-5 bg-orange-50 dark:bg-orange-900/10">
                   <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-1 flex items-center gap-2">
-                    <Link2 className="h-5 w-5 text-[#f26722]" />
+                    <Link2 className="h-5 w-5 text-brand" />
                     Assign Work Account
                   </h2>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
                     Link this candidate to their ampOS employee account
-                    (@ampqes.com) to transfer documents.
+                    ({companyConfig.allowedEmailDomains[0]}) to transfer documents.
                   </p>
 
                   {selectedCandidate.linked_user_id ? (
@@ -2306,7 +2307,7 @@ export const CandidateTracking: React.FC = () => {
                       <Button
                         onClick={handleTransferDocuments}
                         disabled={transferringDocs}
-                        className="w-full bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                        className="w-full bg-brand hover:bg-brand/90 text-white"
                       >
                         {transferringDocs ? (
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -2324,10 +2325,10 @@ export const CandidateTracking: React.FC = () => {
                     <div className="space-y-3">
                       <div className="relative">
                         <Input
-                          label="Search by name or @ampqes.com email"
+                          label={`Search by name or ${companyConfig.allowedEmailDomains[0]} email`}
                           value={assignUserSearch}
                           onChange={(e) => searchAmpOSUsers(e.target.value)}
-                          placeholder="e.g. john.doe@ampqes.com"
+                          placeholder={`e.g. john.doe${companyConfig.allowedEmailDomains[0]}`}
                         />
                         {assignUserLoading && (
                           <Loader2 className="absolute right-3 top-9 h-4 w-4 animate-spin text-neutral-400" />
@@ -2352,7 +2353,7 @@ export const CandidateTracking: React.FC = () => {
                                   {u.email}
                                 </p>
                               </div>
-                              <Link2 className="h-4 w-4 text-[#f26722] flex-shrink-0" />
+                              <Link2 className="h-4 w-4 text-brand flex-shrink-0" />
                             </button>
                           ))}
                         </div>
@@ -2361,7 +2362,7 @@ export const CandidateTracking: React.FC = () => {
                         assignUserResults.length === 0 &&
                         !assignUserLoading && (
                           <p className="text-sm text-neutral-500 dark:text-neutral-400 italic">
-                            No matching @ampqes.com accounts found. Make sure
+                            No matching {companyConfig.allowedEmailDomains[0]} accounts found. Make sure
                             the employee has created their account.
                           </p>
                         )}
@@ -2381,7 +2382,7 @@ export const CandidateTracking: React.FC = () => {
                   setIsViewModalOpen(false);
                   openEditModal(selectedCandidate);
                 }}
-                className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                className="bg-brand hover:bg-brand/90 text-white"
               >
                 <Edit className="mr-2 h-4 w-4" />
                 Edit

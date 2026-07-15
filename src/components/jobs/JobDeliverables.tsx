@@ -351,7 +351,7 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
         </div>
         <Button
           onClick={() => setIsCreateDialogOpen(true)}
-          className="bg-[#f26722] hover:bg-[#e55611] text-white"
+          className="bg-brand hover:bg-brand-dark text-white"
         >
           Create Deliverable
         </Button>
@@ -369,7 +369,7 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
           </p>
           <Button
             onClick={() => setIsCreateDialogOpen(true)}
-            className="mt-4 bg-[#f26722] hover:bg-[#e55611] text-white"
+            className="mt-4 bg-brand hover:bg-brand-dark text-white"
             disabled={coverLetters.length === 0}
           >
             {coverLetters.length === 0
@@ -495,7 +495,7 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
                         key={coverLetter.id}
                         className={`flex items-start gap-3 p-3 border rounded-none cursor-pointer transition-colors ${
                           selectedCoverLetterId === coverLetter.id
-                            ? "border-[#f26722] bg-orange-50 dark:bg-orange-900/20"
+                            ? "border-brand bg-orange-50 dark:bg-orange-900/20"
                             : "border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-dark-100"
                         }`}
                       >
@@ -536,7 +536,7 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
             <Button
               onClick={handleCreateDeliverable}
               disabled={saving || !name.trim() || !selectedCoverLetterId}
-              className="bg-[#f26722] hover:bg-[#e55611] text-white"
+              className="bg-brand hover:bg-brand-dark text-white"
             >
               {saving ? "Creating..." : "Create Deliverable"}
             </Button>

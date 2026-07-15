@@ -33,7 +33,7 @@ const regionPalette: Record<
 > = {
   AL: { bg: "#2563eb", light: "#dbeafe", border: "#93c5fd" },
   TN: { bg: "#16a34a", light: "#dcfce7", border: "#86efac" },
-  GA: { bg: "#f26722", light: "#ffedd5", border: "#fdba74" },
+  GA: { bg: "var(--brand)", light: "#ffedd5", border: "#fdba74" },
   International: { bg: "#7c3aed", light: "#ede9fe", border: "#c4b5fd" },
 };
 
@@ -1005,7 +1005,7 @@ export default function PipelineCalendarPage() {
                         )
                       }
                       onChange={toggleAllVisibleProjectionSelection}
-                      className="h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722] dark:border-neutral-700 dark:bg-neutral-900"
+                      className="h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand dark:border-neutral-700 dark:bg-neutral-900"
                     />
                   </th>
                   {[
@@ -1071,7 +1071,7 @@ export default function PipelineCalendarPage() {
                         aria-label={`Select ${job.customer}`}
                         checked={selectedProjectionIds.has(job.id)}
                         onChange={() => toggleProjectionSelection(job.id)}
-                        className="h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722] dark:border-neutral-700 dark:bg-neutral-900"
+                        className="h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand dark:border-neutral-700 dark:bg-neutral-900"
                       />
                     </td>
                     <td className="whitespace-nowrap px-3 py-3">
@@ -1140,7 +1140,7 @@ export default function PipelineCalendarPage() {
                 <a
                   href={`/sales-dashboard/opportunities/${selectedJob.id}`}
                   className={cn(
-                    "block truncate font-semibold text-neutral-950 hover:text-[#f26722] hover:underline dark:text-neutral-50 dark:hover:text-[#f26722]",
+                    "block truncate font-semibold text-neutral-950 hover:text-brand hover:underline dark:text-neutral-50 dark:hover:text-brand",
                     selectedJob.status === "dropped" &&
                       "text-neutral-500 line-through dark:text-neutral-500",
                   )}

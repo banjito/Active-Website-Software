@@ -84,7 +84,7 @@ export const SavedComponentsDialog: React.FC<SavedComponentsDialogProps> = ({
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Table2 className="w-5 h-5 text-[#f26722]" />
+            <Table2 className="w-5 h-5 text-brand" />
             Saved components
           </DialogTitle>
         </DialogHeader>

@@ -1566,7 +1566,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
 
         {/* Job Information */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-job-info">
             Job Information
           </h2>
@@ -1764,7 +1764,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
 
         {/* Nameplate Data */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-nameplate-data">
             Nameplate Data
           </h2>
@@ -1942,7 +1942,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
 
         {/* Visual and Mechanical Inspection */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-visual-mechanical">
             Visual and Mechanical Inspection
           </h2>
@@ -2004,7 +2004,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
 
         {/* Electrical Tests - Insulation Resistance */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-insulation-resistance">
             Electrical Tests - Insulation Resistance
           </h2>
@@ -2149,7 +2149,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
 
         {/* Electrical Tests - Contact/Pole Resistance */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-contact-resistance">
             Electrical Tests - Contact/Pole Resistance
           </h2>
@@ -2238,7 +2238,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
 
         {/* Test Equipment Used */}
         <div className="mb-6 print:hidden">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-test-equipment">
             Test Equipment Used
           </h2>
@@ -2435,7 +2435,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
 
         {/* Comments */}
         <div className="mb-6 print:hidden">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-comments">
             Comments
           </h2>

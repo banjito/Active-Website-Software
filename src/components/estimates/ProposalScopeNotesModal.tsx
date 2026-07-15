@@ -22,6 +22,7 @@ import {
   ProposalScopeNoteInput,
 } from "../../services/proposalScopeNotesService";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 interface ProposalScopeNotesModalProps {
   isOpen: boolean;
@@ -131,8 +132,8 @@ export const ProposalScopeNotesModal: React.FC<
       .join("\n            ");
 
     const scopeNotesHtml = `
-        <div class="amp-section scope-notes-section scope-notes-draggable" style="margin: 12px 0; border-left: 3px solid #f26722; background: #fff7f2; border-radius: 4px; position: relative;">
-          <div class="scope-notes-drag-handle" contenteditable="false" draggable="true" style="position: absolute; left: 2px; top: 50%; transform: translateY(-50%); width: 14px; cursor: grab; color: #f26722; font-size: 14px; line-height: 1; user-select: none; padding: 4px 2px;" title="Drag to move">⋮⋮</div>
+        <div class="amp-section scope-notes-section scope-notes-draggable" style="margin: 12px 0; border-left: 3px solid ${BRAND_COLOR}; background: #fff7f2; border-radius: 4px; position: relative;">
+          <div class="scope-notes-drag-handle" contenteditable="false" draggable="true" style="position: absolute; left: 2px; top: 50%; transform: translateY(-50%); width: 14px; cursor: grab; color: ${BRAND_COLOR}; font-size: 14px; line-height: 1; user-select: none; padding: 4px 2px;" title="Drag to move">⋮⋮</div>
           <div style="padding: 10px 10px 10px 22px;">
             <div style="font-weight: bold; margin-bottom: 6px; color: #333;">Scope Notes:</div>
             <ul style="margin: 4px 0 4px 20px; color: #444;">
@@ -264,12 +265,12 @@ export const ProposalScopeNotesModal: React.FC<
                   placeholder="Search scope notes..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm"
+                  className="flex-1 px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm"
                 />
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white"
+                  className="px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white"
                 >
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -279,7 +280,7 @@ export const ProposalScopeNotesModal: React.FC<
                 </select>
               </div>
               {selectedNoteIds.size > 0 && (
-                <div className="text-sm text-[#f26722] font-medium">
+                <div className="text-sm text-brand font-medium">
                   {selectedNoteIds.size} note
                   {selectedNoteIds.size !== 1 ? "s" : ""} selected
                 </div>
@@ -312,7 +313,7 @@ export const ProposalScopeNotesModal: React.FC<
                             key={note.id}
                             className={`border rounded-none p-3 cursor-pointer transition-all ${
                               selectedNoteIds.has(note.id)
-                                ? "border-[#f26722] bg-orange-50 ring-1 ring-[#f26722]"
+                                ? "border-brand bg-orange-50 ring-1 ring-brand"
                                 : "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50"
                             }`}
                             onClick={() => toggleNoteSelection(note.id)}
@@ -322,7 +323,7 @@ export const ProposalScopeNotesModal: React.FC<
                                 type="checkbox"
                                 checked={selectedNoteIds.has(note.id)}
                                 onChange={() => toggleNoteSelection(note.id)}
-                                className="mt-1 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                                className="mt-1 h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
                                 onClick={(e) => e.stopPropagation()}
                               />
                               <div className="flex-1 min-w-0">
@@ -339,7 +340,7 @@ export const ProposalScopeNotesModal: React.FC<
                                     e.stopPropagation();
                                     handleStartEdit(note);
                                   }}
-                                  className="text-neutral-400 hover:text-[#f26722] p-1 rounded transition-colors"
+                                  className="text-neutral-400 hover:text-brand p-1 rounded transition-colors"
                                   title="Edit note"
                                 >
                                   <svg
@@ -404,7 +405,7 @@ export const ProposalScopeNotesModal: React.FC<
                   onClick={handleInsert}
                   disabled={selectedNoteIds.size === 0}
                   size="sm"
-                  className="bg-[#f26722] text-white hover:bg-[#d4551a] disabled:opacity-50"
+                  className="bg-brand text-white hover:bg-brand-dark disabled:opacity-50"
                 >
                   Insert{" "}
                   {selectedNoteIds.size > 0 ? `(${selectedNoteIds.size})` : ""}{" "}
@@ -428,7 +429,7 @@ export const ProposalScopeNotesModal: React.FC<
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
                   placeholder="e.g., Breaker Testing Size Threshold"
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm"
                   autoFocus
                 />
               </div>
@@ -441,7 +442,7 @@ export const ProposalScopeNotesModal: React.FC<
                   onChange={(e) => setFormContent(e.target.value)}
                   placeholder="e.g., Circuit breaker testing is required only for breakers rated 100A and above per project specifications."
                   rows={4}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm resize-vertical"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm resize-vertical"
                 />
                 <p className="mt-1 text-xs text-neutral-500">
                   This text will be inserted into the letter proposal. You can
@@ -458,7 +459,7 @@ export const ProposalScopeNotesModal: React.FC<
                   onChange={(e) => setFormCategory(e.target.value)}
                   placeholder="e.g., Circuit Breakers, Transformers, General"
                   list="scope-note-categories"
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm"
                 />
                 <datalist id="scope-note-categories">
                   {categories
@@ -486,7 +487,7 @@ export const ProposalScopeNotesModal: React.FC<
                 }
                 isLoading={formSaving}
                 size="sm"
-                className="bg-[#f26722] text-white hover:bg-[#d4551a] disabled:opacity-50"
+                className="bg-brand text-white hover:bg-brand-dark disabled:opacity-50"
               >
                 {view === "edit" ? "Save Changes" : "Create Note"}
               </Button>

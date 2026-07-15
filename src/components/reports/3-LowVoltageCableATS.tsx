@@ -10,6 +10,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useDemoMode } from "@/lib/DemoModeContext";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 // Types
 interface CableTestData {
@@ -377,7 +378,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
 
       /* Section headers with orange dividers for fillable report */
       h2 {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 8px !important;
         margin-top: 16px !important;
       }
@@ -392,7 +393,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
         button { display: none !important; }
         h2 { font-size: 9px !important; font-weight: bold !important; margin: 0 !important; margin-top: 0 !important; padding: 1px 0 !important; background-color: transparent !important; color: black !important; text-transform: none !important; border: none !important; border-bottom: 1px solid black !important; line-height: 1.2 !important; padding-bottom: 2px !important; padding-top: 0 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; position: relative !important; }
         h2::before { display: none !important; }
-        .mb-6 { margin-top: 12px !important; border-top: 2px solid #f26722 !important; padding-top: 8px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .mb-6 { margin-top: 12px !important; border-top: 2px solid ${BRAND_COLOR} !important; padding-top: 8px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         .mb-6:first-of-type { border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; }
         table { margin-bottom: 8px !important; }
         .status-pass { background-color: #22c55e !important; border: 2px solid #16a34a !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -471,7 +472,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
         .page-break-inside-avoid { page-break-inside: avoid !important; }
 
         /* Orange dividers - must come after universal border removal */
-        div.mb-6 { border-top: 2px solid #f26722 !important; margin-top: 12px !important; padding-top: 8px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        div.mb-6 { border-top: 2px solid ${BRAND_COLOR} !important; margin-top: 12px !important; padding-top: 8px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         div.mb-6:first-of-type { border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; }
       }
     `;
@@ -1349,7 +1350,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   placeholder="Enter Identifier"
                 />
               </div>
@@ -1369,7 +1370,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1386,7 +1387,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1403,7 +1404,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1417,7 +1418,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     setFormData((prev) => ({ ...prev, date: e.target.value }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1431,7 +1432,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                     setFormData((prev) => ({ ...prev, user: e.target.value }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   placeholder="Enter User Name"
                 />
               </div>
@@ -1450,7 +1451,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
                       }))
                     }
                     readOnly={!isEditMode}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1693,7 +1694,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
             }
             readOnly={!isEditMode}
             rows={6}
-            className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white print:hidden ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+            className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white print:hidden ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
             placeholder="Enter comments here..."
           />
           {formData.testEquipment.comments?.trim() && (

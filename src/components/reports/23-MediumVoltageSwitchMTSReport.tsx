@@ -810,7 +810,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
 
   const jobInfo = (
     <section className="mb-6 job-info-section">
-      <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+      <div className="w-full h-1 bg-brand mb-4"></div>
       <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
         Job Details
       </h2>
@@ -1060,7 +1060,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
 
   const nameplate = (
     <section className="mb-6">
-      <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+      <div className="w-full h-1 bg-brand mb-4"></div>
       <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
         Nameplate Data
       </h2>
@@ -1272,7 +1272,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
 
   const visual = (
     <section className="mb-6">
-      <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+      <div className="w-full h-1 bg-brand mb-4"></div>
       <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
         Visual and Mechanical Inspection
       </h2>
@@ -1385,7 +1385,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
 
   const fuseData = (
     <section className="mb-6">
-      <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+      <div className="w-full h-1 bg-brand mb-4"></div>
       <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
         Fuse Data
       </h2>
@@ -1413,7 +1413,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
               <td className="p-2 align-top border border-neutral-300 dark:border-neutral-700 print:text-center">
@@ -1433,7 +1433,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
               <td className="p-2 align-top border border-neutral-300 dark:border-neutral-700 print:text-center">
@@ -1448,7 +1448,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
             </tr>
@@ -1470,7 +1470,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
               <td className="p-2 align-top border border-neutral-300 dark:border-neutral-700 print:text-center">
@@ -1487,7 +1487,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
               <td className="p-2 align-top border border-neutral-300 dark:border-neutral-700 print:text-center">
@@ -1504,7 +1504,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                     }))
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </td>
             </tr>
@@ -1582,7 +1582,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
 
   const electrical = (
     <section className="mb-6">
-      <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+      <div className="w-full h-1 bg-brand mb-4"></div>
       <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
         Electrical Tests
       </h2>
@@ -1998,7 +1998,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
 
   const equipment = (
     <section className="mb-6">
-      <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+      <div className="w-full h-1 bg-brand mb-4"></div>
       <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
         Test Equipment Used
       </h2>
@@ -2141,7 +2141,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
     <section
       className={`mb-6 print:break-inside-avoid ${!form.comments?.trim() ? "print:hidden" : ""}`}
     >
-      <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+      <div className="w-full h-1 bg-brand mb-4"></div>
       <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
         Comments
       </h2>

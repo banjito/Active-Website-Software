@@ -549,7 +549,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
               <Button
                 variant="ghost"
                 leftIcon={<BookOpen className="h-3.5 w-3.5 text-white" />}
-                className="w-full justify-start pl-2 text-left text-xs font-medium text-white bg-[#f26722] hover:!bg-[#f5834a] hover:!text-white !justify-start h-8"
+                className="w-full justify-start pl-2 text-left text-xs font-medium text-white bg-brand hover:!bg-[#f5834a] hover:!text-white !justify-start h-8"
               >
                 Employee Handbook
               </Button>
@@ -560,7 +560,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                 <Button
                   variant="ghost"
                   leftIcon={
-                    <Megaphone className="h-3.5 w-3.5 text-[#f26722]" />
+                    <Megaphone className="h-3.5 w-3.5 text-brand" />
                   }
                   className={`w-full justify-start pl-2 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
                     location.pathname.startsWith("/hr/announcements")
@@ -576,7 +576,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
             <Link to="/hr/employee-files">
               <Button
                 variant="ghost"
-                leftIcon={<Folder className="h-3.5 w-3.5 text-[#f26722]" />}
+                leftIcon={<Folder className="h-3.5 w-3.5 text-brand" />}
                 className={`w-full justify-start pl-2 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
                   location.pathname.startsWith("/hr/employee-files")
                     ? "bg-black/5 dark:bg-dark-50"
@@ -597,7 +597,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                 <Link to="/hr/self-service/manager-portal">
                   <Button
                     variant="ghost"
-                    leftIcon={<Users className="h-3.5 w-3.5 text-[#f26722]" />}
+                    leftIcon={<Users className="h-3.5 w-3.5 text-brand" />}
                     className={`w-full justify-start pl-2 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
                       location.pathname.startsWith(
                         "/hr/self-service/manager-portal",
@@ -623,7 +623,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                         : ""
                     }`}
                   >
-                    <UserCheck className="mr-2 h-3.5 w-3.5 text-[#f26722]" />
+                    <UserCheck className="mr-2 h-3.5 w-3.5 text-brand" />
                     Your Onboarding
                   </Button>
                 </Link>
@@ -636,7 +636,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                         : ""
                     }`}
                   >
-                    <UserCircle className="mr-2 h-3.5 w-3.5 text-[#f26722]" />
+                    <UserCircle className="mr-2 h-3.5 w-3.5 text-brand" />
                     Employee Profiles
                   </Button>
                 </Link>
@@ -649,7 +649,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                         : ""
                     }`}
                   >
-                    <Network className="mr-2 h-3.5 w-3.5 text-[#f26722]" />
+                    <Network className="mr-2 h-3.5 w-3.5 text-brand" />
                     Org Chart
                   </Button>
                 </Link>
@@ -664,14 +664,14 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                         : ""
                     }`}
                   >
-                    <Shield className="mr-2 h-3.5 w-3.5 text-[#f26722]" />
+                    <Shield className="mr-2 h-3.5 w-3.5 text-brand" />
                     Document Acknowledgment
                   </Button>
                 </Link>
                 <Link to="/hr/self-service/manager-portal">
                   <Button
                     variant="ghost"
-                    leftIcon={<Users className="h-3.5 w-3.5 text-[#f26722]" />}
+                    leftIcon={<Users className="h-3.5 w-3.5 text-brand" />}
                     className={`w-full justify-start pl-2 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
                       location.pathname.startsWith(
                         "/hr/self-service/manager-portal",

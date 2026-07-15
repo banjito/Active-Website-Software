@@ -986,7 +986,7 @@ export const OnboardingTracking: React.FC = () => {
             </select>
             <Button
               onClick={handleOpenAddPerson}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               <UserPlus className="h-4 w-4 mr-2" />
               Add person
@@ -1128,7 +1128,7 @@ export const OnboardingTracking: React.FC = () => {
                                     className={`h-full transition-all ${
                                       prog.percent === 100
                                         ? "bg-green-500"
-                                        : "bg-[#f26722]"
+                                        : "bg-brand"
                                     }`}
                                     style={{ width: `${prog.percent}%` }}
                                   />
@@ -1264,9 +1264,9 @@ export const OnboardingTracking: React.FC = () => {
               )}
 
               {/* Link Work Account – search users */}
-              <div className="border-2 border-[#f26722]/30 rounded-none p-4 bg-orange-50 dark:bg-orange-900/10">
+              <div className="border-2 border-brand/30 rounded-none p-4 bg-orange-50 dark:bg-orange-900/10">
                 <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-1 flex items-center gap-2">
-                  <Link2 className="h-4 w-4 text-[#f26722]" />
+                  <Link2 className="h-4 w-4 text-brand" />
                   Work Account
                 </h3>
                 <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-3">
@@ -1313,7 +1313,7 @@ export const OnboardingTracking: React.FC = () => {
                         placeholder="Search by name or email..."
                         value={linkAccountSearch}
                         onChange={(e) => searchWorkAccounts(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                        className="w-full pl-9 pr-4 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                       />
                       {linkAccountLoading && (
                         <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-neutral-400" />
@@ -1344,7 +1344,7 @@ export const OnboardingTracking: React.FC = () => {
                                 {u.email}
                               </p>
                             </div>
-                            <Link2 className="h-4 w-4 text-[#f26722] flex-shrink-0" />
+                            <Link2 className="h-4 w-4 text-brand flex-shrink-0" />
                           </button>
                         ))}
                       </div>
@@ -1404,7 +1404,7 @@ export const OnboardingTracking: React.FC = () => {
                     </div>
                     <div className="h-2 rounded-none bg-neutral-200 dark:bg-neutral-700 overflow-hidden mb-3">
                       <div
-                        className={`h-full transition-all ${prog.percent === 100 ? "bg-green-500" : "bg-[#f26722]"}`}
+                        className={`h-full transition-all ${prog.percent === 100 ? "bg-green-500" : "bg-brand"}`}
                         style={{ width: `${prog.percent}%` }}
                       />
                     </div>
@@ -1497,7 +1497,7 @@ export const OnboardingTracking: React.FC = () => {
                             <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                               Assign packets
                               {packetIdsToAssign.length > 0 && (
-                                <span className="ml-2 text-xs text-[#f26722]">
+                                <span className="ml-2 text-xs text-brand">
                                   ({packetIdsToAssign.length} selected)
                                 </span>
                               )}
@@ -1506,7 +1506,7 @@ export const OnboardingTracking: React.FC = () => {
                               <div className="flex items-center gap-2 text-xs">
                                 <button
                                   type="button"
-                                  className="text-[#f26722] hover:underline"
+                                  className="text-brand hover:underline"
                                   onClick={() =>
                                     setPacketIdsToAssign(
                                       packetIdsToAssign.length ===
@@ -1540,7 +1540,7 @@ export const OnboardingTracking: React.FC = () => {
                                       key={t.id}
                                       className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 text-sm ${
                                         isChecked
-                                          ? "bg-[#f26722]/5 dark:bg-[#f26722]/10"
+                                          ? "bg-brand/5 dark:bg-brand/10"
                                           : ""
                                       }`}
                                     >
@@ -1550,7 +1550,7 @@ export const OnboardingTracking: React.FC = () => {
                                         onChange={() =>
                                           togglePacketToAssign(t.id)
                                         }
-                                        className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                                        className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
                                         disabled={assigningInModal}
                                       />
                                       <div className="flex-1 min-w-0">
@@ -1592,7 +1592,7 @@ export const OnboardingTracking: React.FC = () => {
                                     assigningInModal ||
                                     packetIdsToAssign.length === 0
                                   }
-                                  className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                                  className="bg-brand hover:bg-brand/90 text-white"
                                 >
                                   {assigningInModal ? (
                                     <>
@@ -1660,7 +1660,7 @@ export const OnboardingTracking: React.FC = () => {
                             <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                               Assign E-Sign forms
                               {formIdsToAssign.length > 0 && (
-                                <span className="ml-2 text-xs text-[#f26722]">
+                                <span className="ml-2 text-xs text-brand">
                                   ({formIdsToAssign.length} selected)
                                 </span>
                               )}
@@ -1669,7 +1669,7 @@ export const OnboardingTracking: React.FC = () => {
                               <div className="flex items-center gap-2 text-xs">
                                 <button
                                   type="button"
-                                  className="text-[#f26722] hover:underline"
+                                  className="text-brand hover:underline"
                                   onClick={() =>
                                     setFormIdsToAssign(
                                       formIdsToAssign.length ===
@@ -1707,7 +1707,7 @@ export const OnboardingTracking: React.FC = () => {
                                       key={form.id}
                                       className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 text-sm ${
                                         isChecked
-                                          ? "bg-[#f26722]/5 dark:bg-[#f26722]/10"
+                                          ? "bg-brand/5 dark:bg-brand/10"
                                           : ""
                                       }`}
                                     >
@@ -1717,7 +1717,7 @@ export const OnboardingTracking: React.FC = () => {
                                         onChange={() =>
                                           toggleFormToAssign(form.id)
                                         }
-                                        className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                                        className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
                                         disabled={assigningForm}
                                       />
                                       <div className="flex-1 min-w-0">
@@ -1759,7 +1759,7 @@ export const OnboardingTracking: React.FC = () => {
                                     assigningForm ||
                                     formIdsToAssign.length === 0
                                   }
-                                  className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                                  className="bg-brand hover:bg-brand/90 text-white"
                                 >
                                   {assigningForm ? (
                                     <>
@@ -1847,7 +1847,7 @@ export const OnboardingTracking: React.FC = () => {
                             <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                               Assign checklists
                               {checklistIdsToAssign.length > 0 && (
-                                <span className="ml-2 text-xs text-[#f26722]">
+                                <span className="ml-2 text-xs text-brand">
                                   ({checklistIdsToAssign.length} selected)
                                 </span>
                               )}
@@ -1856,7 +1856,7 @@ export const OnboardingTracking: React.FC = () => {
                               <div className="flex items-center gap-2 text-xs">
                                 <button
                                   type="button"
-                                  className="text-[#f26722] hover:underline"
+                                  className="text-brand hover:underline"
                                   onClick={() =>
                                     setChecklistIdsToAssign(
                                       checklistIdsToAssign.length ===
@@ -1893,7 +1893,7 @@ export const OnboardingTracking: React.FC = () => {
                                       key={cl.id}
                                       className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 text-sm ${
                                         isChecked
-                                          ? "bg-[#f26722]/5 dark:bg-[#f26722]/10"
+                                          ? "bg-brand/5 dark:bg-brand/10"
                                           : ""
                                       }`}
                                     >
@@ -1903,7 +1903,7 @@ export const OnboardingTracking: React.FC = () => {
                                         onChange={() =>
                                           toggleChecklistToAssign(cl.id)
                                         }
-                                        className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                                        className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
                                         disabled={assigningChecklist}
                                       />
                                       <div className="flex-1 min-w-0">
@@ -1945,7 +1945,7 @@ export const OnboardingTracking: React.FC = () => {
                                     assigningChecklist ||
                                     checklistIdsToAssign.length === 0
                                   }
-                                  className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                                  className="bg-brand hover:bg-brand/90 text-white"
                                 >
                                   {assigningChecklist ? (
                                     <>
@@ -1968,7 +1968,7 @@ export const OnboardingTracking: React.FC = () => {
                 <TabsContent value="tasks" className="space-y-6 pt-3">
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 pb-1 border-b border-neutral-200 dark:border-neutral-700">
-                      <Laptop className="h-4 w-4 text-[#f26722]" />
+                      <Laptop className="h-4 w-4 text-brand" />
                       <h4 className="text-sm font-semibold text-neutral-900 dark:text-white">
                         IT / Equipment
                       </h4>
@@ -2035,7 +2035,7 @@ export const OnboardingTracking: React.FC = () => {
                               <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                                 Assign IT/Equipment tasks
                                 {itTaskIdsToAssign.length > 0 && (
-                                  <span className="ml-2 text-xs text-[#f26722]">
+                                  <span className="ml-2 text-xs text-brand">
                                     ({itTaskIdsToAssign.length} selected)
                                   </span>
                                 )}
@@ -2044,7 +2044,7 @@ export const OnboardingTracking: React.FC = () => {
                                 <div className="flex items-center gap-2 text-xs">
                                   <button
                                     type="button"
-                                    className="text-[#f26722] hover:underline"
+                                    className="text-brand hover:underline"
                                     onClick={() =>
                                       setItTaskIdsToAssign(
                                         itTaskIdsToAssign.length ===
@@ -2081,7 +2081,7 @@ export const OnboardingTracking: React.FC = () => {
                                         key={task.id}
                                         className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 text-sm ${
                                           isChecked
-                                            ? "bg-[#f26722]/5 dark:bg-[#f26722]/10"
+                                            ? "bg-brand/5 dark:bg-brand/10"
                                             : ""
                                         }`}
                                       >
@@ -2091,7 +2091,7 @@ export const OnboardingTracking: React.FC = () => {
                                           onChange={() =>
                                             toggleITTaskToAssign(task.id)
                                           }
-                                          className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                                          className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
                                           disabled={assigningITTask}
                                         />
                                         <div className="flex-1 min-w-0">
@@ -2133,7 +2133,7 @@ export const OnboardingTracking: React.FC = () => {
                                       assigningITTask ||
                                       itTaskIdsToAssign.length === 0
                                     }
-                                    className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                                    className="bg-brand hover:bg-brand/90 text-white"
                                   >
                                     {assigningITTask ? (
                                       <>
@@ -2155,7 +2155,7 @@ export const OnboardingTracking: React.FC = () => {
 
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 pb-1 border-b border-neutral-200 dark:border-neutral-700">
-                      <Briefcase className="h-4 w-4 text-[#f26722]" />
+                      <Briefcase className="h-4 w-4 text-brand" />
                       <h4 className="text-sm font-semibold text-neutral-900 dark:text-white">
                         Office Admin
                       </h4>
@@ -2224,7 +2224,7 @@ export const OnboardingTracking: React.FC = () => {
                               <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                                 Assign Office Admin tasks
                                 {officeAdminTaskIdsToAssign.length > 0 && (
-                                  <span className="ml-2 text-xs text-[#f26722]">
+                                  <span className="ml-2 text-xs text-brand">
                                     ({officeAdminTaskIdsToAssign.length}{" "}
                                     selected)
                                   </span>
@@ -2234,7 +2234,7 @@ export const OnboardingTracking: React.FC = () => {
                                 <div className="flex items-center gap-2 text-xs">
                                   <button
                                     type="button"
-                                    className="text-[#f26722] hover:underline"
+                                    className="text-brand hover:underline"
                                     onClick={() =>
                                       setOfficeAdminTaskIdsToAssign(
                                         officeAdminTaskIdsToAssign.length ===
@@ -2274,7 +2274,7 @@ export const OnboardingTracking: React.FC = () => {
                                         key={task.id}
                                         className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 text-sm ${
                                           isChecked
-                                            ? "bg-[#f26722]/5 dark:bg-[#f26722]/10"
+                                            ? "bg-brand/5 dark:bg-brand/10"
                                             : ""
                                         }`}
                                       >
@@ -2286,7 +2286,7 @@ export const OnboardingTracking: React.FC = () => {
                                               task.id,
                                             )
                                           }
-                                          className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                                          className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
                                           disabled={assigningOfficeAdminTask}
                                         />
                                         <div className="flex-1 min-w-0">
@@ -2330,7 +2330,7 @@ export const OnboardingTracking: React.FC = () => {
                                       assigningOfficeAdminTask ||
                                       officeAdminTaskIdsToAssign.length === 0
                                     }
-                                    className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                                    className="bg-brand hover:bg-brand/90 text-white"
                                   >
                                     {assigningOfficeAdminTask ? (
                                       <>
@@ -2352,7 +2352,7 @@ export const OnboardingTracking: React.FC = () => {
 
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 pb-1 border-b border-neutral-200 dark:border-neutral-700">
-                      <Users className="h-4 w-4 text-[#f26722]" />
+                      <Users className="h-4 w-4 text-brand" />
                       <h4 className="text-sm font-semibold text-neutral-900 dark:text-white">
                         HR
                       </h4>
@@ -2419,7 +2419,7 @@ export const OnboardingTracking: React.FC = () => {
                               <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                                 Assign HR tasks
                                 {hrTaskIdsToAssign.length > 0 && (
-                                  <span className="ml-2 text-xs text-[#f26722]">
+                                  <span className="ml-2 text-xs text-brand">
                                     ({hrTaskIdsToAssign.length} selected)
                                   </span>
                                 )}
@@ -2428,7 +2428,7 @@ export const OnboardingTracking: React.FC = () => {
                                 <div className="flex items-center gap-2 text-xs">
                                   <button
                                     type="button"
-                                    className="text-[#f26722] hover:underline"
+                                    className="text-brand hover:underline"
                                     onClick={() =>
                                       setHrTaskIdsToAssign(
                                         hrTaskIdsToAssign.length ===
@@ -2465,7 +2465,7 @@ export const OnboardingTracking: React.FC = () => {
                                         key={task.id}
                                         className={`flex items-start gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 text-sm ${
                                           isChecked
-                                            ? "bg-[#f26722]/5 dark:bg-[#f26722]/10"
+                                            ? "bg-brand/5 dark:bg-brand/10"
                                             : ""
                                         }`}
                                       >
@@ -2475,7 +2475,7 @@ export const OnboardingTracking: React.FC = () => {
                                           onChange={() =>
                                             toggleHRTaskToAssign(task.id)
                                           }
-                                          className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                                          className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
                                           disabled={assigningHRTask}
                                         />
                                         <div className="flex-1 min-w-0">
@@ -2517,7 +2517,7 @@ export const OnboardingTracking: React.FC = () => {
                                       assigningHRTask ||
                                       hrTaskIdsToAssign.length === 0
                                     }
-                                    className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                                    className="bg-brand hover:bg-brand/90 text-white"
                                   >
                                     {assigningHRTask ? (
                                       <>
@@ -2581,7 +2581,7 @@ export const OnboardingTracking: React.FC = () => {
           <div className="space-y-4 py-2">
             {usersLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-[#f26722]" />
+                <Loader2 className="h-8 w-8 animate-spin text-brand" />
               </div>
             ) : (
               <>
@@ -2612,7 +2612,7 @@ export const OnboardingTracking: React.FC = () => {
                         }
                         className={`w-full text-left px-3 py-2.5 flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 last:border-b-0 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors ${
                           selectedUserId === u.id
-                            ? "bg-[#f26722]/10 dark:bg-[#f26722]/20"
+                            ? "bg-brand/10 dark:bg-brand/20"
                             : ""
                         }`}
                       >
@@ -2626,7 +2626,7 @@ export const OnboardingTracking: React.FC = () => {
                           </div>
                         </div>
                         {selectedUserId === u.id && (
-                          <span className="text-[#f26722] text-sm font-medium">
+                          <span className="text-brand text-sm font-medium">
                             Selected
                           </span>
                         )}
@@ -2644,7 +2644,7 @@ export const OnboardingTracking: React.FC = () => {
             <Button
               onClick={handleAddPerson}
               disabled={!selectedUserId || addingPerson}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               {addingPerson ? (
                 <>

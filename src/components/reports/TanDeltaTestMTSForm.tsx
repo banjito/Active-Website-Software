@@ -478,7 +478,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
 
           {/* System Voltage */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Parameters
             </h2>
@@ -493,7 +493,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                 value={systemVoltage}
                 onChange={(e) => setSystemVoltage(e.target.value)}
                 disabled={!isEditing}
-                className="mt-1 block w-32 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                className="mt-1 block w-32 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white"
               />
             </div>
 
@@ -516,7 +516,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
 
           {/* Tan Delta Test Data */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Tan Delta Test
             </h2>
@@ -596,7 +596,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               )
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -614,7 +614,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               handleDataChange(index, "kV", e.target.value)
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -632,7 +632,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               handleDataChange(index, "phaseA", e.target.value)
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -656,7 +656,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               )
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -676,7 +676,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               handleDataChange(index, "phaseB", e.target.value)
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -700,7 +700,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               )
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -720,7 +720,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               handleDataChange(index, "phaseC", e.target.value)
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -744,7 +744,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
                               )
                             }
                             disabled={!isEditing || !editingData}
-                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white"
                           />
                         ) : (
                           <span className="text-neutral-900 dark:text-white">
@@ -763,7 +763,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
 
           {/* Chart Section */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Tan Delta Chart
             </h2>
@@ -839,7 +839,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
 
           {/* Test Equipment Used Section */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
@@ -1062,7 +1062,7 @@ const TanDeltaTestMTSForm: React.FC = () => {
           <div
             className={`mb-6 comments-section print:break-inside-avoid ${!comments?.trim() ? "print:hidden" : ""}`}
           >
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>

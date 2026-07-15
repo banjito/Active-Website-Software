@@ -16,6 +16,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -388,9 +389,9 @@ const tableStyles = {
     "px-2 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider whitespace-normal",
   cell: "px-2 py-2 text-sm text-neutral-900 dark:text-white whitespace-normal",
   input:
-    "w-full text-sm rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
+    "w-full text-sm rounded-none border-neutral-300 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white",
   select:
-    "w-full text-sm rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
+    "w-full text-sm rounded-none border-neutral-300 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white",
 };
 
 // Rename component
@@ -2783,7 +2784,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
         <div className="space-y-6">
           {/* --- Job Information Section --- */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
@@ -3047,7 +3048,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
           <div className="mb-6">
             {/* Screen-only editable block */}
             <div className="print:hidden">
-              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <div className="w-full h-1 bg-brand mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Nameplate Data
               </h2>
@@ -3334,7 +3335,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
 
           {/* --- Visual and Mechanical Inspection Section */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
@@ -3381,7 +3382,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             <option value=""></option>
                             {visualInspectionResultsOptions.map((option) => (
@@ -3404,7 +3405,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
 
           {/* --- Device Settings Section */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Device Settings
             </h2>
@@ -3457,7 +3458,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                           <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -3474,7 +3475,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                           <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -3493,7 +3494,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                                   )
                                 }
                                 disabled={!isEditing}
-                                className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               >
                                 {tripUnitTypeOptions.map((option) => (
                                   <option key={option} value={option}>
@@ -3564,7 +3565,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                           <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -3581,7 +3582,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                           <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -3599,7 +3600,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                                   )
                                 }
                                 disabled={!isEditing}
-                                className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               >
                                 {tripUnitTypeOptions.map((option) => (
                                   <option key={option} value={option}>
@@ -3627,7 +3628,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
 
           {/* --- Electrical Tests - Contact/Pole Resistance Section --- */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Contact/Pole Resistance
             </h2>
@@ -3674,7 +3675,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                           handleChange("contactResistance.p1", e.target.value)
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -3685,7 +3686,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                           handleChange("contactResistance.p2", e.target.value)
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -3696,7 +3697,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                           handleChange("contactResistance.p3", e.target.value)
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -3706,7 +3707,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                           handleChange("contactResistance.unit", e.target.value)
                         }
                         disabled={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {contactResistanceUnitsOptions.map((option) => (
                           <option key={option} value={option}>
@@ -4147,7 +4148,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
 
           {/* --- Electrical Tests - Primary Injection Section --- */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Primary Injection
             </h2>
@@ -4201,7 +4202,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -4219,7 +4220,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                         <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -4238,7 +4239,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                                 )
                               }
                               disabled={!isEditing}
-                              className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             >
                               {tripUnitTypeOptions.map((option) => (
                                 <option key={option} value={option}>
@@ -5615,7 +5616,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
 
           {/* --- Test Equipment Used Section --- */}
           <div className="mb-6 print:hidden">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
@@ -5966,7 +5967,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
 
           {/* --- Comments Section --- */}
           <div className="mb-6 print:hidden">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>
@@ -6206,8 +6207,8 @@ if (typeof document !== "undefined") {
       }
 
       /* Orange divider lines */
-      .w-full.h-1.bg-\\[\\#f26722\\] {
-        background-color: #f26722 !important;
+      .w-full.h-1.bg-\\[\\${BRAND_COLOR}\\] {
+        background-color: ${BRAND_COLOR} !important;
         height: 4px !important;
         margin-bottom: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -6732,7 +6733,7 @@ if (typeof document !== "undefined") {
       /* FINAL OVERRIDE: Force orange dividers for specific sections */
       /* Job Information divider */
       .max-w-7xl h2.section-job-information {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -6741,7 +6742,7 @@ if (typeof document !== "undefined") {
 
       /* Nameplate Data divider */
       .max-w-7xl h2.section-nameplate-data {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -6750,7 +6751,7 @@ if (typeof document !== "undefined") {
 
       /* Visual and Mechanical Inspection divider */
       .max-w-7xl h2.section-visual-mechanical {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -6759,7 +6760,7 @@ if (typeof document !== "undefined") {
 
       /* Device Settings divider */
       .max-w-7xl h2.section-device-settings {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -6768,7 +6769,7 @@ if (typeof document !== "undefined") {
 
       /* Contact Resistance divider */
       .max-w-7xl h2.section-contact-resistance {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -6777,7 +6778,7 @@ if (typeof document !== "undefined") {
 
       /* Insulation Resistance divider */
       .max-w-7xl h2.section-insulation-resistance {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -6786,7 +6787,7 @@ if (typeof document !== "undefined") {
 
       /* Primary Injection divider */
       .max-w-7xl h2.section-primary-injection {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -6795,7 +6796,7 @@ if (typeof document !== "undefined") {
 
       /* Test Equipment divider */
       .max-w-7xl h2.section-test-equipment {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -6804,7 +6805,7 @@ if (typeof document !== "undefined") {
 
       /* Comments divider */
       .max-w-7xl h2.section-comments {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -7100,8 +7101,8 @@ if (typeof document !== "undefined") {
       }
 
       /* Orange dividers for section headers in print */
-      .bg-\[\#f26722\] {
-        background-color: #f26722 !important;
+      .bg-\[\${BRAND_COLOR}\] {
+        background-color: ${BRAND_COLOR} !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
         display: block !important;

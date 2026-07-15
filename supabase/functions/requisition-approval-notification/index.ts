@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { BRAND_COLOR, COMPANY_FULL_NAME, COMPANY_NAME, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
 
 console.log("requisition-approval-notification: function loaded")
 
@@ -68,8 +69,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ emailSent: false, message: 'no POSTMARK_API_KEY' }), { headers })
     }
 
-    const from = (Deno.env.get('POSTMARK_FROM') ?? 'john.chambers@ampqes.com').trim()
-    const fromHeader = from.includes('<') ? from : `AMP System <${from}>`
+    const from = DEFAULT_FROM_EMAIL
+    const fromHeader = from.includes('<') ? from : `${COMPANY_NAME} System <${from}>`
     const appUrl = (Deno.env.get('APP_URL') || Deno.env.get('SITE_URL') || '').replace(/\/$/, '')
     const approvalLink = appUrl ? `${appUrl}/hr/recruiting/requisition-approvals` : ''
     const safeTitle = (requisition.title || '').replace(/</g, '&lt;')
@@ -104,7 +105,7 @@ serve(async (req) => {
 
     const htmlBody = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
-        <div style="background:#f26722;color:#fff;padding:20px;text-align:center">
+        <div style="background:${BRAND_COLOR};color:#fff;padding:20px;text-align:center">
           <h1 style="margin:0;font-size:24px">${heading}</h1>
         </div>
         <div style="padding:20px;background:#f9f9f9">
@@ -112,14 +113,14 @@ serve(async (req) => {
           <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,.1);margin:16px 0">
             ${detailRows}
           </table>
-          <div style="margin:8px 0 0;padding:12px 16px;background:#fff8f0;border-left:4px solid #f26722;border-radius:4px">
+          <div style="margin:8px 0 0;padding:12px 16px;background:#fff8f0;border-left:4px solid ${BRAND_COLOR};border-radius:4px">
             <p style="margin:0;font-size:13px;color:#92400e">
               <strong>Step ${stepNumber} of ${totalSteps}</strong> — ${totalSteps - (stepNumber as number) > 0 ? `${totalSteps - (stepNumber as number)} more approver${totalSteps - (stepNumber as number) > 1 ? 's' : ''} after you` : 'You are the final approver'}
             </p>
           </div>
           ${approvalLink ? `
             <div style="margin-top:20px;text-align:center">
-              <a href="${approvalLink}" style="background:#f26722;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;font-size:15px">
+              <a href="${approvalLink}" style="background:${BRAND_COLOR};color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold;font-size:15px">
                 Review Requisition
               </a>
             </div>
@@ -129,12 +130,12 @@ serve(async (req) => {
           ` : ''}
         </div>
         <div style="padding:20px;text-align:center;color:#666;font-size:14px;border-top:1px solid #eee">
-          <p style="margin:0">Automated notification from AMP Quality Energy Services</p>
+          <p style="margin:0">Automated notification from ${COMPANY_FULL_NAME}</p>
         </div>
       </div>
     `
 
-    const textBody = `${heading}\n\n${bodyText.replace(/<br>/g, '\n').replace(/<[^>]+>/g, '')}\n\nTitle: ${requisition.title}\nDepartment: ${requisition.department}\nLocation: ${requisition.location}\nPriority: ${requisition.priority}\n\nStep ${stepNumber} of ${totalSteps}\n${approvalLink ? '\nReview: ' + approvalLink : ''}\n\nAutomated notification from AMP Quality Energy Services`
+    const textBody = `${heading}\n\n${bodyText.replace(/<br>/g, '\n').replace(/<[^>]+>/g, '')}\n\nTitle: ${requisition.title}\nDepartment: ${requisition.department}\nLocation: ${requisition.location}\nPriority: ${requisition.priority}\n\nStep ${stepNumber} of ${totalSteps}\n${approvalLink ? '\nReview: ' + approvalLink : ''}\n\nAutomated notification from ${COMPANY_FULL_NAME}`
 
     // 4. Send the email
     console.log("Sending approval notification to:", approverEmail)

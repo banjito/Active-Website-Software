@@ -257,14 +257,14 @@ export const CustomFormTemplates: React.FC = () => {
                   setShowAiModal(true);
                 }}
                 variant="outline"
-                className="border-[#f26722] text-[#f26722] hover:bg-[#f26722]/10"
+                className="border-brand text-brand hover:bg-brand/10"
                 leftIcon={<Sparkles className="w-4 h-4" />}
               >
                 Generate with AI
               </Button>
               <Button
                 onClick={() => navigate("/custom-forms/builder")}
-                className="bg-[#f26722] hover:bg-[#e55611]"
+                className="bg-brand hover:bg-brand-dark"
                 leftIcon={<Plus className="w-4 h-4" />}
               >
                 Create Template
@@ -302,7 +302,7 @@ export const CustomFormTemplates: React.FC = () => {
                 {!searchQuery && (
                   <Button
                     onClick={() => navigate("/custom-forms/builder")}
-                    className="bg-[#f26722] hover:bg-[#e55611]"
+                    className="bg-brand hover:bg-brand-dark"
                     leftIcon={<Plus className="w-4 h-4" />}
                   >
                     Create Your First Template
@@ -338,7 +338,7 @@ export const CustomFormTemplates: React.FC = () => {
                         )}
                       </div>
                       {template.neta_section && (
-                        <span className="inline-block px-2 py-1 text-xs font-medium bg-[#f26722] text-white rounded">
+                        <span className="inline-block px-2 py-1 text-xs font-medium bg-brand text-white rounded">
                           {template.neta_section}
                         </span>
                       )}
@@ -363,7 +363,7 @@ export const CustomFormTemplates: React.FC = () => {
                         onClick={() =>
                           navigate(`/custom-forms/preview/${template.id}`)
                         }
-                        className="flex-1 bg-[#f26722] hover:bg-[#e55611]"
+                        className="flex-1 bg-brand hover:bg-brand-dark"
                         leftIcon={<Eye className="w-4 h-4" />}
                       >
                         Preview
@@ -444,7 +444,7 @@ export const CustomFormTemplates: React.FC = () => {
             <div className="flex items-start justify-between p-6 border-b border-neutral-200 dark:border-neutral-700">
               <div>
                 <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-[#f26722]" />
+                  <Sparkles className="w-5 h-5 text-brand" />
                   Generate template from a report
                 </h2>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
@@ -498,7 +498,7 @@ export const CustomFormTemplates: React.FC = () => {
                           size="sm"
                           onClick={() => handleGenerateFromReport(report)}
                           disabled={!!generatingReport}
-                          className="bg-[#f26722] hover:bg-[#e55611] shrink-0"
+                          className="bg-brand hover:bg-brand-dark shrink-0"
                         >
                           {busy ? "Generating…" : "Generate"}
                         </Button>

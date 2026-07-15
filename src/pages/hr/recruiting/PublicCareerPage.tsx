@@ -389,13 +389,13 @@ export const PublicCareerPage: React.FC = () => {
                 placeholder="Search jobs by title, department, or location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
               />
             </div>
             <select
               value={filterDepartment}
               onChange={(e) => setFilterDepartment(e.target.value)}
-              className="px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+              className="px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             >
               <option value="all">All Departments</option>
               {departments.map((dept) => (
@@ -477,7 +477,7 @@ export const PublicCareerPage: React.FC = () => {
                               prev === req.id ? null : req.id,
                             )
                           }
-                          className="mt-2 flex items-center gap-1 text-sm font-medium text-[#f26722] hover:text-[#e55611] focus:outline-none"
+                          className="mt-2 flex items-center gap-1 text-sm font-medium text-brand hover:text-brand-dark focus:outline-none"
                         >
                           {expandedRequisitionId === req.id ? (
                             <>
@@ -497,7 +497,7 @@ export const PublicCareerPage: React.FC = () => {
                   <div className="flex-shrink-0">
                     <Button
                       onClick={() => openApplicationModal(req)}
-                      className="bg-[#f26722] hover:bg-[#f26722]/90 text-white w-full lg:w-auto"
+                      className="bg-brand hover:bg-brand/90 text-white w-full lg:w-auto"
                     >
                       Apply Now
                     </Button>
@@ -520,13 +520,13 @@ export const PublicCareerPage: React.FC = () => {
             <div className="mt-4 flex justify-center gap-6">
               <Link
                 to="/privacy"
-                className="hover:text-[#f26722] transition-colors"
+                className="hover:text-brand transition-colors"
               >
                 Privacy Policy
               </Link>
               <Link
                 to="/eula"
-                className="hover:text-[#f26722] transition-colors"
+                className="hover:text-brand transition-colors"
               >
                 Terms of Service
               </Link>
@@ -701,7 +701,7 @@ export const PublicCareerPage: React.FC = () => {
                 }
                 placeholder="Tell us why you're interested in this position..."
                 rows={5}
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent resize-none"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent resize-none"
               />
             </div>
 
@@ -728,7 +728,7 @@ export const PublicCareerPage: React.FC = () => {
                         eeo_gender: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                   >
                     <option value="">Select...</option>
                     <option value="Male">Male</option>
@@ -749,7 +749,7 @@ export const PublicCareerPage: React.FC = () => {
                         eeo_race: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                   >
                     <option value="">Select...</option>
                     <option value="American Indian or Alaska Native">
@@ -781,7 +781,7 @@ export const PublicCareerPage: React.FC = () => {
                         eeo_veteran: e.target.checked,
                       })
                     }
-                    className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                    className="rounded border-neutral-300 text-brand focus:ring-brand"
                   />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     I identify as a protected veteran
@@ -797,7 +797,7 @@ export const PublicCareerPage: React.FC = () => {
                         eeo_disability: e.target.checked,
                       })
                     }
-                    className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                    className="rounded border-neutral-300 text-brand focus:ring-brand"
                   />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     I have a disability
@@ -808,7 +808,7 @@ export const PublicCareerPage: React.FC = () => {
               {/* FR (Flame-Resistant) clothing sizes - optional; used for field roles */}
               <div className="space-y-3 pt-4 border-t border-neutral-200 dark:border-neutral-700 mt-4">
                 <h4 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                  <Shirt className="h-4 w-4 text-[#f26722]" />
+                  <Shirt className="h-4 w-4 text-brand" />
                   FR clothing sizes (Required)
                 </h4>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -882,7 +882,7 @@ export const PublicCareerPage: React.FC = () => {
                 </div>
                 <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-none h-2">
                   <div
-                    className="bg-[#f26722] h-2 rounded-none transition-all duration-300"
+                    className="bg-brand h-2 rounded-none transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
@@ -901,7 +901,7 @@ export const PublicCareerPage: React.FC = () => {
             <Button
               onClick={handleSubmitApplication}
               disabled={isSubmitting}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               {isSubmitting ? "Submitting..." : "Submit Application"}
             </Button>

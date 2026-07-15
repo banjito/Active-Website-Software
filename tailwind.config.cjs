@@ -51,6 +51,12 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Instance brand color; values come from the --brand CSS variables
+        // set in index.css and overridden at boot by applyBrandColors().
+        brand: {
+          DEFAULT: "rgb(var(--brand-rgb) / <alpha-value>)",
+          dark: "rgb(var(--brand-dark-rgb) / <alpha-value>)",
+        },
         amp: {
           orange: {
             50: '#FFF4ED',

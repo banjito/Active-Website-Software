@@ -254,7 +254,7 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
             <Button
               onClick={() => setShowUploadDialog(true)}
               size="sm"
-              className="bg-[#f26722] hover:bg-[#e55611] text-white"
+              className="bg-brand hover:bg-brand-dark text-white"
             >
               <Plus className="h-4 w-4 mr-2" />
               Upload Drawing
@@ -459,7 +459,7 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
             <Button
               onClick={handleUpload}
               disabled={!selectedFile || !drawingName.trim() || uploading}
-              className="bg-[#f26722] hover:bg-[#e55611] text-white"
+              className="bg-brand hover:bg-brand-dark text-white"
             >
               {uploading ? "Uploading..." : "Upload Drawing"}
             </Button>
@@ -515,7 +515,7 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
               </Button>
               <Button
                 onClick={() => handleDownload(previewDrawing)}
-                className="bg-[#f26722] hover:bg-[#e55611] text-white"
+                className="bg-brand hover:bg-brand-dark text-white"
               >
                 <Download className="h-4 w-4 mr-2" />
                 Download

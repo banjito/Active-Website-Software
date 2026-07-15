@@ -1208,7 +1208,7 @@ const CustomerDocumentManagement: React.FC<CustomerDocumentManagementProps> = ({
 
       {/* Upload Button */}
       <div className="mt-8 flex justify-end">
-        <button className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2">
+        <button className="inline-flex items-center justify-center rounded-none border border-transparent bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2">
           <svg
             className="w-4 h-4 mr-2"
             fill="none"

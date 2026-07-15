@@ -104,7 +104,7 @@ export const ShortcutDisplay: React.FC = () => {
             )}
             <button
               onClick={openShortcutManager}
-              className="flex items-center text-sm px-3 py-1.5 rounded-none text-white bg-[#f26722] hover:bg-[#f26722]/90 border border-[#f26722] shadow-sm"
+              className="flex items-center text-sm px-3 py-1.5 rounded-none text-white bg-brand hover:bg-brand/90 border border-brand shadow-sm"
               title="Click to add, edit, delete or rearrange shortcuts"
             >
               <Settings className="h-4 w-4 mr-2" />
@@ -118,7 +118,7 @@ export const ShortcutDisplay: React.FC = () => {
           </p>
           <button
             onClick={openShortcutManager}
-            className="px-4 py-2 bg-[#f26722] text-white rounded-none hover:bg-[#f26722]/90"
+            className="px-4 py-2 bg-brand text-white rounded-none hover:bg-brand/90"
           >
             Add Shortcuts
           </button>
@@ -158,7 +158,7 @@ export const ShortcutDisplay: React.FC = () => {
           )}
           <button
             onClick={openShortcutManager}
-            className="flex items-center text-sm px-3 py-1.5 rounded-none text-white bg-[#f26722] hover:bg-[#f26722]/90 border border-[#f26722] shadow-sm"
+            className="flex items-center text-sm px-3 py-1.5 rounded-none text-white bg-brand hover:bg-brand/90 border border-brand shadow-sm"
             title="Click to add, edit, delete or rearrange shortcuts"
           >
             <Settings className="h-4 w-4 mr-2" />

@@ -138,7 +138,7 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
             onClick={() => handleSelectSuggestion(query)}
             className="flex items-center px-3 py-2 mt-1 hover:bg-neutral-100 dark:hover:bg-dark-200 cursor-pointer rounded-none border-t border-neutral-200 dark:border-dark-300"
           >
-            <SearchIcon size={16} className="text-[#f26722] mr-2" />
+            <SearchIcon size={16} className="text-brand mr-2" />
             <span className="text-sm text-neutral-800 dark:text-dark-200">
               Search for "{query}"
             </span>

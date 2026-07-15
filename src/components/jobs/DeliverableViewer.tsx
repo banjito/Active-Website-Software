@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 // Declare PDF.js types
 declare global {
@@ -786,7 +787,7 @@ export default function DeliverableViewer() {
         const execTitleRules = tempDiv.querySelectorAll(".exec-title-rule");
         execTitleRules.forEach((el) => {
           (el as HTMLElement).style.cssText =
-            "height:3px !important;background:#f26722 !important;margin:4px 0 14px !important;-webkit-print-color-adjust:exact !important;";
+            "height:3px !important;background:var(--brand) !important;margin:4px 0 14px !important;-webkit-print-color-adjust:exact !important;";
         });
 
         const tocTwoColumns = tempDiv.querySelectorAll(".toc-two-columns");
@@ -1210,7 +1211,7 @@ export default function DeliverableViewer() {
       }
 
       .amp-stripe rect {
-        fill: #f26722 !important;
+        fill: ${BRAND_COLOR} !important;
       }
 
       /* Constrain header & footer logo images so they don't blow up in print */
@@ -1325,8 +1326,8 @@ export default function DeliverableViewer() {
       }
 
       .exec-title-rule {
-        background: #f26722 !important;
-        background-color: #f26722 !important;
+        background: ${BRAND_COLOR} !important;
+        background-color: ${BRAND_COLOR} !important;
       }
 
       /* ============================================ */
@@ -1528,7 +1529,7 @@ export default function DeliverableViewer() {
           bottom: 0;
           left: 0;
           width: 36px;
-          background: #f26722;
+          background: ${BRAND_COLOR};
         }
 
         .document-content .amp-header {
@@ -1614,7 +1615,7 @@ export default function DeliverableViewer() {
             ) : (
               <button
                 onClick={generatePDF}
-                className="px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white rounded-none font-medium flex items-center gap-2"
+                className="px-4 py-2 bg-brand hover:bg-brand-dark text-white rounded-none font-medium flex items-center gap-2"
               >
                 <svg
                   className="w-5 h-5"
@@ -1667,7 +1668,7 @@ export default function DeliverableViewer() {
                 key={report.id}
                 className="flex items-center gap-2 text-neutral-700 dark:text-neutral-300"
               >
-                <span className="text-[#f26722] font-bold">{idx + 1}.</span>
+                <span className="text-brand font-bold">{idx + 1}.</span>
                 {report.name}
               </li>
             ))}

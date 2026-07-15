@@ -526,7 +526,7 @@ export const DiscrepancyTracker: React.FC<DiscrepancyTrackerProps> = ({
                       type="checkbox"
                       checked={selectedResults.has(result)}
                       onChange={() => toggleResult(result)}
-                      className="h-4 w-4 rounded border-neutral-300 dark:border-neutral-600 text-[#f26722] focus:ring-[#f26722]"
+                      className="h-4 w-4 rounded border-neutral-300 dark:border-neutral-600 text-brand focus:ring-brand"
                     />
                     <span className="flex items-center gap-2 text-sm">
                       {getResultBadge(result)}

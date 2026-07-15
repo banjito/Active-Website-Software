@@ -19,6 +19,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -359,7 +360,7 @@ const PanelboardReport: React.FC = () => {
 
       /* Section headers with orange dividers for fillable report */
       h2 {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 8px !important;
         margin-top: 16px !important;
       }
@@ -481,7 +482,7 @@ const PanelboardReport: React.FC = () => {
         /* Create actual section dividers */
         .mb-6 {
           margin-top: 12px !important;
-          border-top: 1px solid #f26722 !important;
+          border-top: 1px solid ${BRAND_COLOR} !important;
           padding-top: 8px !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
@@ -1951,7 +1952,7 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "identifier", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   placeholder="Enter Identifier"
                 />
               </div>
@@ -1968,7 +1969,7 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "technicians", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1982,7 +1983,7 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "substation", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1996,7 +1997,7 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "eqptLocation", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2008,7 +2009,7 @@ const PanelboardReport: React.FC = () => {
                   value={formData.date}
                   onChange={(e) => handleChange(null, "date", e.target.value)}
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2022,7 +2023,7 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "userName", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   placeholder="Enter User Name"
                 />
               </div>
@@ -2039,7 +2040,7 @@ const PanelboardReport: React.FC = () => {
                       handleFahrenheitChange(Number(e.target.value))
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2053,7 +2054,7 @@ const PanelboardReport: React.FC = () => {
                       handleCelsiusChange(Number(e.target.value))
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2103,7 +2104,7 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "manufacturer", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2117,7 +2118,7 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "catalogNumber", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2131,7 +2132,7 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "serialNumber", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2143,7 +2144,7 @@ const PanelboardReport: React.FC = () => {
                   value={formData.type}
                   onChange={(e) => handleChange(null, "type", e.target.value)}
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -2159,7 +2160,7 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "systemVoltage", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2173,7 +2174,7 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "ratedVoltage", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2187,7 +2188,7 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "ratedCurrent", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2201,7 +2202,7 @@ const PanelboardReport: React.FC = () => {
                     handleChange(null, "phaseConfiguration", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -2268,7 +2269,7 @@ const PanelboardReport: React.FC = () => {
                             });
                           }}
                           disabled={!isEditing}
-                          className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {visualInspectionOptions.map((option) => (
                             <option key={option} value={option}>
@@ -2312,7 +2313,7 @@ const PanelboardReport: React.FC = () => {
                   });
                 }}
                 disabled={!isEditing}
-                className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               >
                 <option value="">Select...</option>
                 <option value="250V">250V</option>
@@ -2436,7 +2437,7 @@ const PanelboardReport: React.FC = () => {
                               });
                             }}
                             readOnly={!isEditing}
-                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </div>
                         <div className="hidden print:block text-center">
@@ -2464,7 +2465,7 @@ const PanelboardReport: React.FC = () => {
                           });
                         }}
                         disabled={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {insulationResistanceUnits.map((unit) => (
                           <option key={unit.symbol} value={unit.symbol}>
@@ -2616,7 +2617,7 @@ const PanelboardReport: React.FC = () => {
                   }));
                 }}
                 disabled={!isEditing}
-                className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               >
                 <option value="">Select...</option>
                 <option value="1 mA">1 mA</option>
@@ -2733,7 +2734,7 @@ const PanelboardReport: React.FC = () => {
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2757,7 +2758,7 @@ const PanelboardReport: React.FC = () => {
                             }));
                           }}
                           disabled={!isEditing}
-                          className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {contactResistanceUnits.map((unit) => (
                             <option
@@ -2861,7 +2862,7 @@ const PanelboardReport: React.FC = () => {
                   }
                   readOnly={!isEditing}
                   placeholder="Enter Serial Number"
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2881,7 +2882,7 @@ const PanelboardReport: React.FC = () => {
                   }
                   readOnly={!isEditing}
                   placeholder="Enter AMP ID"
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2901,7 +2902,7 @@ const PanelboardReport: React.FC = () => {
                   }
                   readOnly={!isEditing}
                   placeholder="Enter Cal Date"
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -2994,7 +2995,7 @@ const PanelboardReport: React.FC = () => {
                   }
                   readOnly={!isEditing}
                   placeholder="Enter Serial Number"
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -3026,7 +3027,7 @@ const PanelboardReport: React.FC = () => {
                   }
                   readOnly={!isEditing}
                   placeholder="Enter AMP ID"
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -3058,7 +3059,7 @@ const PanelboardReport: React.FC = () => {
                   }
                   readOnly={!isEditing}
                   placeholder="Enter Cal Date"
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -3156,7 +3157,7 @@ const PanelboardReport: React.FC = () => {
               readOnly={!isEditing}
               rows={10}
               placeholder="Enter any additional comments, observations, or notes about the inspection..."
-              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical min-h-[250px] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} print:hidden`}
+              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white resize-vertical min-h-[250px] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} print:hidden`}
             />
             {formData.comments?.trim() && (
               <div className="hidden print:block">

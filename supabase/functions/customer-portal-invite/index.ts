@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { isEmployeeEmailDomain } from '../_shared/companyConfig.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -35,7 +36,7 @@ function isEmployee(user: any) {
   const accountType = String(app.account_type || meta.account_type || '').toLowerCase()
   const userType = String(app.user_type || meta.user_type || '').toLowerCase()
 
-  return email.endsWith('@ampqes.com') || accountType === 'employee' || userType === 'employee' || EMPLOYEE_ROLES.has(role)
+  return isEmployeeEmailDomain(email) || accountType === 'employee' || userType === 'employee' || EMPLOYEE_ROLES.has(role)
 }
 
 function randomToken() {

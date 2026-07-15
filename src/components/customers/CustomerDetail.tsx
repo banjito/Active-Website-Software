@@ -900,7 +900,7 @@ export default function CustomerDetail() {
                 disabled={!prevId}
                 title="Previous customer (A-Z)"
                 aria-label="Previous customer"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-none border border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:text-[#f26722] hover:border-[#f26722] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-neutral-500 disabled:hover:border-neutral-300"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-none border border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-neutral-500 disabled:hover:border-neutral-300"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -909,13 +909,13 @@ export default function CustomerDetail() {
                 disabled={!nextId}
                 title="Next customer (A-Z)"
                 aria-label="Next customer"
-                className="ml-1 inline-flex h-8 w-8 items-center justify-center rounded-none border border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:text-[#f26722] hover:border-[#f26722] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-neutral-500 disabled:hover:border-neutral-300"
+                className="ml-1 inline-flex h-8 w-8 items-center justify-center rounded-none border border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-neutral-500 disabled:hover:border-neutral-300"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
             </div>
             <div className="flex items-center">
-              <Building2 className="h-8 w-8 text-[#f26722]" />
+              <Building2 className="h-8 w-8 text-brand" />
               <h1 className="ml-3 text-2xl font-semibold text-neutral-900 dark:text-white">
                 {maskCustomerName(customer.company_name) || "No Company Name"}
               </h1>
@@ -932,7 +932,7 @@ export default function CustomerDetail() {
           <div className="flex items-center gap-3">
             <button
               onClick={openPortalInvite}
-              className="inline-flex items-center gap-1.5 rounded-none border border-[#f26722] px-3 py-1.5 text-sm font-medium text-[#f26722] hover:bg-[#f26722]/10 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+              className="inline-flex items-center gap-1.5 rounded-none border border-brand px-3 py-1.5 text-sm font-medium text-brand hover:bg-brand/10 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
             >
               <Mail className="h-4 w-4" />
               Invite to Customer Portal
@@ -959,7 +959,7 @@ export default function CustomerDetail() {
               </h2>
               <button
                 onClick={() => setIsCustomerEditOpen(true)}
-                className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="inline-flex items-center justify-center rounded-none border border-transparent bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
               >
                 Edit
               </button>
@@ -973,7 +973,7 @@ export default function CustomerDetail() {
                   </h3>
                   <button
                     onClick={() => setIsCategorySelectOpen(true)}
-                    className="text-sm text-[#f26722] hover:text-[#f26722]/80"
+                    className="text-sm text-brand hover:text-brand/80"
                   >
                     Change
                   </button>
@@ -1014,7 +1014,7 @@ export default function CustomerDetail() {
                         disabled={isSavingDivisions}
                         className={`px-3 py-1 rounded-none text-xs font-medium transition-colors disabled:opacity-50 ${
                           isActive
-                            ? "bg-[#f26722] text-white"
+                            ? "bg-brand text-white"
                             : "bg-neutral-100 dark:bg-dark-200 text-neutral-500 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
                         }`}
                       >
@@ -1026,7 +1026,7 @@ export default function CustomerDetail() {
                 {!customer.divisions || customer.divisions.length === 0}
               </div>
               <div className="flex items-start">
-                <Mail className="h-5 w-5 text-[#f26722] mt-0.5" />
+                <Mail className="h-5 w-5 text-brand mt-0.5" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-neutral-500 dark:text-white">
                     Email
@@ -1037,7 +1037,7 @@ export default function CustomerDetail() {
                 </div>
               </div>
               <div className="flex items-start">
-                <Phone className="h-5 w-5 text-[#f26722] mt-0.5" />
+                <Phone className="h-5 w-5 text-brand mt-0.5" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-neutral-500 dark:text-white">
                     Phone
@@ -1045,7 +1045,7 @@ export default function CustomerDetail() {
                   {customer.phone ? (
                     <a
                       href={`tel:${customer.phone}`}
-                      className="text-sm text-[#f26722] hover:text-[#f26722]/90"
+                      className="text-sm text-brand hover:text-brand/90"
                     >
                       {customer.phone}
                     </a>
@@ -1057,7 +1057,7 @@ export default function CustomerDetail() {
                 </div>
               </div>
               <div className="flex items-start">
-                <MapPin className="h-5 w-5 text-[#f26722] mt-0.5" />
+                <MapPin className="h-5 w-5 text-brand mt-0.5" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-neutral-500 dark:text-white">
                     Address
@@ -1068,7 +1068,7 @@ export default function CustomerDetail() {
                 </div>
               </div>
               <div className="flex items-start">
-                <Calendar className="h-5 w-5 text-[#f26722] mt-0.5" />
+                <Calendar className="h-5 w-5 text-brand mt-0.5" />
                 <div className="ml-3">
                   <p className="text-sm font-medium text-neutral-500 dark:text-white">
                     Created
@@ -1089,7 +1089,7 @@ export default function CustomerDetail() {
               </h2>
               <button
                 onClick={handleAddContact}
-                className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="inline-flex items-center justify-center rounded-none border border-transparent bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
               >
                 <Plus className="h-4 w-4 mr-1" />
                 Add
@@ -1144,7 +1144,7 @@ export default function CustomerDetail() {
               <div className="mt-2 text-right">
                 <Link
                   to="#"
-                  className="text-sm font-medium text-[#f26722] hover:text-[#f26722]/90"
+                  className="text-sm font-medium text-brand hover:text-brand/90"
                 >
                   View All Contacts
                 </Link>
@@ -1160,7 +1160,7 @@ export default function CustomerDetail() {
               href="#overview"
               className={`${
                 activeTab === "overview"
-                  ? "border-[#f26722] text-[#f26722]"
+                  ? "border-brand text-brand"
                   : "border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300"
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               onClick={(e) => {
@@ -1174,7 +1174,7 @@ export default function CustomerDetail() {
               href="#jobs"
               className={`${
                 activeTab === "jobs"
-                  ? "border-[#f26722] text-[#f26722]"
+                  ? "border-brand text-brand"
                   : "border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300"
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               onClick={(e) => {
@@ -1188,7 +1188,7 @@ export default function CustomerDetail() {
               href="#documents"
               className={`${
                 activeTab === "documents"
-                  ? "border-[#f26722] text-[#f26722]"
+                  ? "border-brand text-brand"
                   : "border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300"
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               onClick={(e) => {
@@ -1202,7 +1202,7 @@ export default function CustomerDetail() {
               href="#interactions"
               className={`${
                 activeTab === "interactions"
-                  ? "border-[#f26722] text-[#f26722]"
+                  ? "border-brand text-brand"
                   : "border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300"
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               onClick={(e) => {
@@ -1216,7 +1216,7 @@ export default function CustomerDetail() {
               href="#health"
               className={`${
                 activeTab === "health"
-                  ? "border-[#f26722] text-[#f26722]"
+                  ? "border-brand text-brand"
                   : "border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300"
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               onClick={(e) => {
@@ -1246,7 +1246,7 @@ export default function CustomerDetail() {
                         e.preventDefault();
                         setActiveTab("jobs");
                       }}
-                      className="text-sm font-medium text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                      className="text-sm font-medium text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90"
                     >
                       View all jobs
                     </Link>
@@ -1261,7 +1261,7 @@ export default function CustomerDetail() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <Briefcase className="h-5 w-5 text-[#f26722]" />
+                          <Briefcase className="h-5 w-5 text-brand" />
                           <div className="ml-3">
                             <p className="text-sm font-medium text-neutral-900 dark:text-white">
                               {job.title}
@@ -1323,7 +1323,7 @@ export default function CustomerDetail() {
                       </h2>
                       <button
                         onClick={handleAddContact}
-                        className="inline-flex items-center text-sm font-medium text-[#f26722] hover:text-[#f26722]/90"
+                        className="inline-flex items-center text-sm font-medium text-brand hover:text-brand/90"
                       >
                         <Plus className="h-4 w-4 mr-1" />
                         Add contact
@@ -1382,7 +1382,7 @@ export default function CustomerDetail() {
                           onClick={() =>
                             setContactsExpanded((prevState) => !prevState)
                           }
-                          className="inline-flex items-center text-sm font-medium text-[#f26722] hover:text-[#f26722]/90"
+                          className="inline-flex items-center text-sm font-medium text-brand hover:text-brand/90"
                         >
                           {contactsExpanded
                             ? "View fewer contacts"
@@ -1450,7 +1450,7 @@ export default function CustomerDetail() {
                           e.preventDefault();
                           setActiveTab("documents");
                         }}
-                        className="text-sm font-medium text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                        className="text-sm font-medium text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90"
                       >
                         View all documents
                       </Link>
@@ -1518,7 +1518,7 @@ export default function CustomerDetail() {
                             e.preventDefault();
                             setActiveTab("documents");
                           }}
-                          className="inline-flex items-center text-sm font-medium text-[#f26722] hover:text-[#f26722]/90"
+                          className="inline-flex items-center text-sm font-medium text-brand hover:text-brand/90"
                         >
                           <Plus className="h-4 w-4 mr-1" />
                           Upload document
@@ -1544,7 +1544,7 @@ export default function CustomerDetail() {
                           e.preventDefault();
                           setActiveTab("interactions");
                         }}
-                        className="text-sm font-medium text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                        className="text-sm font-medium text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90"
                       >
                         View all interactions
                       </Link>
@@ -1567,7 +1567,7 @@ export default function CustomerDetail() {
                             e.preventDefault();
                             setActiveTab("interactions");
                           }}
-                          className="inline-flex items-center mt-2 text-sm font-medium text-[#f26722] hover:text-[#f26722]/90"
+                          className="inline-flex items-center mt-2 text-sm font-medium text-brand hover:text-brand/90"
                         >
                           <Plus className="h-4 w-4 mr-1" />
                           Log your first interaction
@@ -1581,14 +1581,14 @@ export default function CustomerDetail() {
                               <div
                                 className={`h-8 w-8 rounded-none flex items-center justify-center ${
                                   note.note_type === "call"
-                                    ? "bg-[#f26722]/10"
+                                    ? "bg-brand/10"
                                     : note.note_type === "email"
                                       ? "bg-blue-100 dark:bg-blue-900"
                                       : "bg-purple-100 dark:bg-purple-900"
                                 }`}
                               >
                                 {note.note_type === "call" ? (
-                                  <Phone className="h-4 w-4 text-[#f26722]" />
+                                  <Phone className="h-4 w-4 text-brand" />
                                 ) : note.note_type === "email" ? (
                                   <Mail className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                 ) : (
@@ -1608,7 +1608,7 @@ export default function CustomerDetail() {
                                 <span
                                   className={`inline-flex items-center px-2 py-0.5 rounded-none text-xs font-medium ${
                                     note.note_type === "call"
-                                      ? "bg-[#f26722]/10 text-[#f26722]"
+                                      ? "bg-brand/10 text-brand"
                                       : note.note_type === "email"
                                         ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
                                         : "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
@@ -1638,7 +1638,7 @@ export default function CustomerDetail() {
                               e.preventDefault();
                               setActiveTab("interactions");
                             }}
-                            className="inline-flex items-center text-sm font-medium text-[#f26722] hover:text-[#f26722]/90"
+                            className="inline-flex items-center text-sm font-medium text-brand hover:text-brand/90"
                           >
                             <Plus className="h-4 w-4 mr-1" />
                             {notes.length > 5
@@ -1734,7 +1734,7 @@ export default function CustomerDetail() {
                   </div>
 
                   <div className="mt-8 flex justify-end">
-                    <button className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2">
+                    <button className="inline-flex items-center justify-center rounded-none border border-transparent bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2">
                       Generate Health Report
                     </button>
                   </div>
@@ -1752,7 +1752,7 @@ export default function CustomerDetail() {
                   </h2>
                   <Link
                     to="/jobs/new"
-                    className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                    className="inline-flex items-center justify-center rounded-none border border-transparent bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
                   >
                     <Plus className="h-4 w-4 mr-1" />
                     Add
@@ -1768,7 +1768,7 @@ export default function CustomerDetail() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <Briefcase className="h-5 w-5 text-[#f26722]" />
+                        <Briefcase className="h-5 w-5 text-brand" />
                         <div className="ml-3">
                           <p className="text-sm font-medium text-neutral-900 dark:text-white">
                             {job.title}
@@ -1850,7 +1850,7 @@ export default function CustomerDetail() {
               ).length;
               const noteTypeIcon = (type: string) => {
                 if (type === "call")
-                  return <Phone className="h-4 w-4 text-[#f26722]" />;
+                  return <Phone className="h-4 w-4 text-brand" />;
                 if (type === "email")
                   return (
                     <Mail className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -1860,7 +1860,7 @@ export default function CustomerDetail() {
                 );
               };
               const noteTypeBg = (type: string) => {
-                if (type === "call") return "bg-[#f26722]/10";
+                if (type === "call") return "bg-brand/10";
                 if (type === "email") return "bg-blue-100 dark:bg-blue-900";
                 return "bg-purple-100 dark:bg-purple-900";
               };
@@ -1870,7 +1870,7 @@ export default function CustomerDetail() {
                 return "In Person";
               };
               const noteTypeBadge = (type: string) => {
-                if (type === "call") return "bg-[#f26722]/10 text-[#f26722]";
+                if (type === "call") return "bg-brand/10 text-brand";
                 if (type === "email")
                   return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
                 return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
@@ -1892,7 +1892,7 @@ export default function CustomerDetail() {
                           occurred_at: "",
                         });
                       }}
-                      className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                      className="inline-flex items-center justify-center rounded-none border border-transparent bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
                     >
                       <Feather className="h-4 w-4 mr-1" />
                       Log Interaction
@@ -1903,8 +1903,8 @@ export default function CustomerDetail() {
                   <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-white dark:bg-dark-150 p-4 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-none bg-[#f26722]/10 flex items-center justify-center">
-                          <Phone className="h-5 w-5 text-[#f26722]" />
+                        <div className="h-10 w-10 rounded-none bg-brand/10 flex items-center justify-center">
+                          <Phone className="h-5 w-5 text-brand" />
                         </div>
                         <div className="ml-3">
                           <p className="text-lg font-semibold text-neutral-900 dark:text-white">
@@ -1949,7 +1949,7 @@ export default function CustomerDetail() {
                         <button
                           key={f}
                           onClick={() => setNoteFilter(f)}
-                          className={`px-4 py-2 text-sm font-medium ${noteFilter === f ? "text-[#f26722] border-b-2 border-[#f26722]" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
+                          className={`px-4 py-2 text-sm font-medium ${noteFilter === f ? "text-brand border-b-2 border-brand" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
                         >
                           {f === "all"
                             ? "All"
@@ -1982,7 +1982,7 @@ export default function CustomerDetail() {
                                 contact_id: e.target.value,
                               }))
                             }
-                            className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                            className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand"
                           >
                             <option value="">Select contact...</option>
                             {contacts.map((c) => (
@@ -2004,7 +2004,7 @@ export default function CustomerDetail() {
                                 note_type: e.target.value,
                               }))
                             }
-                            className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                            className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand"
                           >
                             <option value="call">Call</option>
                             <option value="email">Email</option>
@@ -2024,7 +2024,7 @@ export default function CustomerDetail() {
                                 occurred_at: e.target.value,
                               }))
                             }
-                            className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                            className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand"
                           />
                         </div>
                       </div>
@@ -2042,7 +2042,7 @@ export default function CustomerDetail() {
                             }))
                           }
                           placeholder="What happened during this interaction..."
-                          className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                          className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand"
                         />
                       </div>
                       <div className="flex justify-end gap-2">
@@ -2058,7 +2058,7 @@ export default function CustomerDetail() {
                         <button
                           onClick={handleSaveNote}
                           disabled={noteFormSaving}
-                          className="px-4 py-1.5 text-sm bg-[#f26722] text-white rounded hover:bg-[#f26722]/90 disabled:opacity-50"
+                          className="px-4 py-1.5 text-sm bg-brand text-white rounded hover:bg-brand/90 disabled:opacity-50"
                         >
                           {noteFormSaving
                             ? "Saving..."
@@ -2149,7 +2149,7 @@ export default function CustomerDetail() {
                                       });
                                       setShowNoteForm(true);
                                     }}
-                                    className="text-sm text-[#f26722] hover:text-[#f26722]/80 flex items-center gap-0.5"
+                                    className="text-sm text-brand hover:text-brand/80 flex items-center gap-0.5"
                                   >
                                     <Edit className="h-3 w-3" /> Edit
                                   </button>
@@ -2257,7 +2257,7 @@ export default function CustomerDetail() {
               </div>
 
               <div className="mt-8 flex justify-end">
-                <button className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2">
+                <button className="inline-flex items-center justify-center rounded-none border border-transparent bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2">
                   Generate Health Report
                 </button>
               </div>
@@ -2306,7 +2306,7 @@ export default function CustomerDetail() {
                       first_name: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2328,7 +2328,7 @@ export default function CustomerDetail() {
                       last_name: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2350,7 +2350,7 @@ export default function CustomerDetail() {
                       email: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2371,7 +2371,7 @@ export default function CustomerDetail() {
                       phone: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2392,7 +2392,7 @@ export default function CustomerDetail() {
                       position: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div className="flex items-center">
@@ -2407,7 +2407,7 @@ export default function CustomerDetail() {
                       is_primary: e.target.checked,
                     }))
                   }
-                  className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-neutral-300 dark:border-neutral-600 rounded"
+                  className="h-4 w-4 text-brand focus:ring-brand border-neutral-300 dark:border-neutral-600 rounded"
                 />
                 <label
                   htmlFor="is_primary"
@@ -2439,7 +2439,7 @@ export default function CustomerDetail() {
                         }}
                         className={`px-3 py-1 rounded-none text-sm font-medium transition-colors ${
                           isActive
-                            ? "bg-[#f26722] text-white"
+                            ? "bg-brand text-white"
                             : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
                         }`}
                       >
@@ -2453,14 +2453,14 @@ export default function CustomerDetail() {
                 <button
                   type="submit"
                   disabled={isSubmittingContact}
-                  className="inline-flex w-full justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="inline-flex w-full justify-center rounded-none border border-transparent bg-brand px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isSubmittingContact ? "Adding..." : "Add Contact"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsContactFormOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-neutral-700 dark:text-white shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
+                  className="mt-3 inline-flex w-full justify-center rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-neutral-700 dark:text-white shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
                 >
                   Cancel
                 </button>
@@ -2515,7 +2515,7 @@ export default function CustomerDetail() {
                   placeholder="customer@company.com"
                   autoFocus
                   disabled={portalInviteAll}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white disabled:opacity-50 disabled:bg-neutral-100 dark:disabled:bg-dark-100"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white disabled:opacity-50 disabled:bg-neutral-100 dark:disabled:bg-dark-100"
                 />
               </div>
               {(() => {
@@ -2528,7 +2528,7 @@ export default function CustomerDetail() {
                       checked={portalInviteAll}
                       onChange={(e) => setPortalInviteAll(e.target.checked)}
                       disabled={portalInviteSending}
-                      className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                      className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
                     />
                     <span className="text-sm text-neutral-700 dark:text-white">
                       Invite all {allEmails.length} contacts at this company
@@ -2551,7 +2551,7 @@ export default function CustomerDetail() {
                 <button
                   type="submit"
                   disabled={portalInviteSending}
-                  className="inline-flex items-center gap-1.5 rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-none border border-transparent bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 disabled:opacity-50"
                 >
                   <Mail className="h-4 w-4" />
                   {portalInviteSending
@@ -2603,7 +2603,7 @@ export default function CustomerDetail() {
                       company_name: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2623,7 +2623,7 @@ export default function CustomerDetail() {
                       email: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2642,7 +2642,7 @@ export default function CustomerDetail() {
                       phone: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2661,7 +2661,7 @@ export default function CustomerDetail() {
                       address: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -2680,7 +2680,7 @@ export default function CustomerDetail() {
                       status: e.target.value,
                     }))
                   }
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 >
                   <option value="active">active</option>
                   <option value="inactive">inactive</option>
@@ -2705,7 +2705,7 @@ export default function CustomerDetail() {
                       }}
                       className={`px-3 py-1 rounded-none text-sm font-medium transition-colors ${
                         customerEditForm.divisions.includes(div.value)
-                          ? "bg-[#f26722] text-white"
+                          ? "bg-brand text-white"
                           : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
                       }`}
                     >
@@ -2740,8 +2740,8 @@ export default function CustomerDetail() {
                     title="Click or drop a PNG/SVG here"
                     className={`flex h-14 w-32 shrink-0 cursor-pointer items-center justify-center rounded border bg-white dark:bg-dark-200 bg-contain bg-center bg-no-repeat p-2 transition-colors ${
                       logoDragOver
-                        ? "border-[#f26722] ring-2 ring-[#f26722]/40"
-                        : "border-neutral-300 dark:border-neutral-600 hover:border-[#f26722]/50"
+                        ? "border-brand ring-2 ring-brand/40"
+                        : "border-neutral-300 dark:border-neutral-600 hover:border-brand/50"
                     }`}
                     style={
                       logoPreviewUrl || customerEditForm.logo_url
@@ -2759,7 +2759,7 @@ export default function CustomerDetail() {
                   <div className="min-w-0 flex-1">
                     <label
                       htmlFor="customer_logo"
-                      className="inline-flex cursor-pointer items-center gap-2 rounded-none border border-dashed border-[#f26722]/50 bg-[#f26722]/5 px-3 py-2 text-sm font-medium text-[#f26722] hover:bg-[#f26722]/10"
+                      className="inline-flex cursor-pointer items-center gap-2 rounded-none border border-dashed border-brand/50 bg-brand/5 px-3 py-2 text-sm font-medium text-brand hover:bg-brand/10"
                     >
                       <Upload className="h-4 w-4" />
                       {logoFile ? logoFile.name : "Upload logo"}
@@ -2812,8 +2812,8 @@ export default function CustomerDetail() {
                             title={color}
                             className={`flex items-center gap-1.5 rounded-none border px-2 py-1 text-xs font-medium transition-colors ${
                               selected
-                                ? "border-[#f26722] ring-2 ring-[#f26722]/40 text-neutral-900 dark:text-white"
-                                : "border-neutral-300 dark:border-neutral-600 text-neutral-600 dark:text-neutral-300 hover:border-[#f26722]/50"
+                                ? "border-brand ring-2 ring-brand/40 text-neutral-900 dark:text-white"
+                                : "border-neutral-300 dark:border-neutral-600 text-neutral-600 dark:text-neutral-300 hover:border-brand/50"
                             }`}
                           >
                             <span
@@ -2832,7 +2832,7 @@ export default function CustomerDetail() {
                       value={
                         /^#[0-9a-fA-F]{6}$/.test(customerEditForm.brand_primary)
                           ? customerEditForm.brand_primary
-                          : "#f26722"
+                          : "var(--brand)"
                       }
                       onChange={(e) =>
                         setCustomerEditForm((prev) => ({
@@ -2851,8 +2851,8 @@ export default function CustomerDetail() {
                           brand_primary: e.target.value,
                         }))
                       }
-                      placeholder="#F26722"
-                      className="flex-1 p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      placeholder="var(--brand)"
+                      className="flex-1 p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                     />
                   </div>
                 </div>
@@ -2862,14 +2862,14 @@ export default function CustomerDetail() {
                 <button
                   type="submit"
                   disabled={isSavingCustomer || extractingColors}
-                  className="inline-flex w-full justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-50"
+                  className="inline-flex w-full justify-center rounded-none border border-transparent bg-brand px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-50"
                 >
                   {isSavingCustomer ? "Saving..." : "Save Changes"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsCustomerEditOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-neutral-700 dark:text-white shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
+                  className="mt-3 inline-flex w-full justify-center rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-neutral-700 dark:text-white shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
                 >
                   Cancel
                 </button>
@@ -2913,7 +2913,7 @@ export default function CustomerDetail() {
                 type="button"
                 onClick={() => setContactToDelete(null)}
                 disabled={isDeletingContact}
-                className="inline-flex justify-center rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 disabled:opacity-60"
+                className="inline-flex justify-center rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -2971,14 +2971,14 @@ export default function CustomerDetail() {
                 <div className="space-y-4 border-t border-neutral-200 dark:border-neutral-700 pt-4">
                   {selectedContact.phone && (
                     <div className="flex items-center">
-                      <Phone className="h-5 w-5 text-[#f26722] mr-3" />
+                      <Phone className="h-5 w-5 text-brand mr-3" />
                       <div>
                         <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                           Phone
                         </p>
                         <a
                           href={`tel:${selectedContact.phone}`}
-                          className="text-sm text-[#f26722] hover:text-[#f26722]/80 font-medium transition-colors"
+                          className="text-sm text-brand hover:text-brand/80 font-medium transition-colors"
                         >
                           {selectedContact.phone}
                         </a>
@@ -2987,14 +2987,14 @@ export default function CustomerDetail() {
                   )}
                   {selectedContact.email && (
                     <div className="flex items-center">
-                      <Mail className="h-5 w-5 text-[#f26722] mr-3" />
+                      <Mail className="h-5 w-5 text-brand mr-3" />
                       <div>
                         <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                           Email
                         </p>
                         <a
                           href={`mailto:${selectedContact.email}`}
-                          className="text-sm text-[#f26722] hover:text-[#f26722]/80 font-medium transition-colors"
+                          className="text-sm text-brand hover:text-brand/80 font-medium transition-colors"
                         >
                           {selectedContact.email}
                         </a>
@@ -3012,7 +3012,7 @@ export default function CustomerDetail() {
                   <button
                     type="button"
                     onClick={() => setContactPopupOpen(false)}
-                    className="inline-flex justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                    className="inline-flex justify-center rounded-none border border-transparent bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
                   >
                     Close
                   </button>
@@ -3088,14 +3088,14 @@ export default function CustomerDetail() {
             <div className="mt-6 flex justify-between">
               <Link
                 to="/sales-dashboard/customer-categories"
-                className="text-sm text-[#f26722] hover:text-[#f26722]/80"
+                className="text-sm text-brand hover:text-brand/80"
               >
                 Manage Categories
               </Link>
               <button
                 type="button"
                 onClick={() => setIsCategorySelectOpen(false)}
-                className="inline-flex justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                className="inline-flex justify-center rounded-none border border-transparent bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
               >
                 Close
               </button>

@@ -570,7 +570,7 @@ export const MyOnboarding: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
-        <Loader2 className="h-8 w-8 animate-spin text-[#f26722]" />
+        <Loader2 className="h-8 w-8 animate-spin text-brand" />
       </div>
     );
   }
@@ -666,7 +666,7 @@ export const MyOnboarding: React.FC = () => {
                       <Button
                         size="sm"
                         onClick={() => openPacketDetail(p.id)}
-                        className="bg-[#f26722] hover:bg-[#f26722]/90 text-white flex-shrink-0"
+                        className="bg-brand hover:bg-brand/90 text-white flex-shrink-0"
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         {packetFullySigned[p.id] ? "View" : "View & sign"}
@@ -703,7 +703,7 @@ export const MyOnboarding: React.FC = () => {
                     <Button
                       size="sm"
                       onClick={() => navigate(`${signFormBase}/${f.id}`)}
-                      className="bg-[#f26722] hover:bg-[#f26722]/90 text-white flex-shrink-0"
+                      className="bg-brand hover:bg-brand/90 text-white flex-shrink-0"
                     >
                       {formSignedByMe[f.id] ? (
                         <>
@@ -742,7 +742,7 @@ export const MyOnboarding: React.FC = () => {
                     <Button
                       size="sm"
                       onClick={() => openChecklistModal(c.id)}
-                      className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                      className="bg-brand hover:bg-brand/90 text-white"
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       View
@@ -891,7 +891,7 @@ export const MyOnboarding: React.FC = () => {
           </DialogHeader>
           {checklistModalLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-[#f26722]" />
+              <Loader2 className="h-8 w-8 animate-spin text-brand" />
             </div>
           ) : checklistDetail && checklistAssignment ? (
             <div className="space-y-4 flex flex-col min-h-0 flex-1">
@@ -1030,7 +1030,7 @@ export const MyOnboarding: React.FC = () => {
           </DialogHeader>
           {packetLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-[#f26722]" />
+              <Loader2 className="h-8 w-8 animate-spin text-brand" />
             </div>
           ) : selectedPacket ? (
             <div className="space-y-3 overflow-y-auto">
@@ -1049,7 +1049,7 @@ export const MyOnboarding: React.FC = () => {
                       {docs.length} document(s). Open each to view and sign if
                       required.
                       {signableTotal > 0 && (
-                        <span className="ml-1 font-medium text-[#f26722]">
+                        <span className="ml-1 font-medium text-brand">
                           {signedCount}/{signableTotal} documents signed
                         </span>
                       )}
@@ -1143,7 +1143,7 @@ export const MyOnboarding: React.FC = () => {
               <div className="flex-1 relative bg-neutral-100 dark:bg-neutral-900 overflow-hidden">
                 {documentLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-900 z-10">
-                    <Loader2 className="w-8 h-8 text-[#f26722] animate-spin" />
+                    <Loader2 className="w-8 h-8 text-brand animate-spin" />
                   </div>
                 )}
                 {documentError ? (
@@ -1305,7 +1305,7 @@ export const MyOnboarding: React.FC = () => {
                     onClick={handleSignAndSend}
                     disabled={sendingSignature}
                     size="sm"
-                    className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                    className="bg-brand hover:bg-brand/90 text-white"
                   >
                     {sendingSignature ? "Sending..." : "Sign and Send"}
                   </Button>

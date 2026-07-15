@@ -505,7 +505,7 @@ export const PublicOfferSigning: React.FC = () => {
                     href={a.file_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-[#f26722] hover:underline font-medium"
+                    className="inline-flex items-center gap-2 text-brand hover:underline font-medium"
                   >
                     <Download className="h-4 w-4" />
                     {a.name}
@@ -600,7 +600,7 @@ export const PublicOfferSigning: React.FC = () => {
                 disabled={
                   !signatureData || !signerName || !signerEmail || signing
                 }
-                className="bg-[#f26722] hover:bg-[#f26722]/90 text-white flex-1"
+                className="bg-brand hover:bg-brand/90 text-white flex-1"
               >
                 {signing ? (
                   "Signing..."

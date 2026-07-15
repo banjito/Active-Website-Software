@@ -662,7 +662,7 @@ export const NewHirePackets: React.FC = () => {
             resetForm();
             setIsCreateModalOpen(true);
           }}
-          className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+          className="bg-brand hover:bg-brand/90 text-white"
         >
           <Plus className="h-4 w-4 mr-2" />
           Create Packet
@@ -1055,7 +1055,7 @@ export const NewHirePackets: React.FC = () => {
             </Button>
             <Button
               onClick={handleCreate}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               Create Packet
             </Button>
@@ -1279,7 +1279,7 @@ export const NewHirePackets: React.FC = () => {
             </Button>
             <Button
               onClick={handleUpdate}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               Update Packet
             </Button>
@@ -1450,7 +1450,7 @@ export const NewHirePackets: React.FC = () => {
                 {documentLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-900 z-10">
                     <div className="flex flex-col items-center gap-3">
-                      <Loader2 className="w-8 h-8 text-[#f26722] animate-spin" />
+                      <Loader2 className="w-8 h-8 text-brand animate-spin" />
                       <div className="flex justify-center py-6">
                         <LoadingSpinner size="md" />
                       </div>
@@ -1630,7 +1630,7 @@ export const NewHirePackets: React.FC = () => {
                   onClick={handleSignAndSend}
                   disabled={sendingSignature}
                   size="sm"
-                  className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                  className="bg-brand hover:bg-brand/90 text-white"
                 >
                   {sendingSignature ? "Sending..." : "Sign and Send"}
                 </Button>

@@ -108,6 +108,7 @@ import {
 } from "../../services/quickbooksService";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { loadAuthorsForUserIds } from "@/lib/communityProfiles";
+import { companyConfig, employeeEmailRegex, BRAND_COLOR } from "@/lib/companyConfig";
 // TrackingSection is defined locally below
 
 // Inline component to show accepted letter proposal for the job's originating opportunity
@@ -153,7 +154,7 @@ const AcceptedLetter: React.FC<{ jobId: string }> = ({ jobId }) => {
         e.preventDefault();
         alert("Open the opportunity to view the saved letter.");
       }}
-      className="text-[#f26722] hover:underline text-sm"
+      className="text-brand hover:underline text-sm"
     >
       {link.title}
     </a>
@@ -831,7 +832,7 @@ export default function JobDetail() {
           bottom: 0;
           left: 0;
           width: 36px;
-          background: #f26722;
+          background: ${BRAND_COLOR};
         }
         .amp-header {
           position: absolute;
@@ -868,7 +869,7 @@ export default function JobDetail() {
         .amp-footer .contact { font-weight: 800; color: #5a3a2b; font-size: 16px; }
         .neta-logo { height: 34px; object-fit: contain; }
         .exec-title { font-size: 28px; font-weight: 900; text-decoration: underline; margin-bottom: 6px; }
-        .exec-title-rule { height: 3px; background: #f26722; margin: 4px 0 14px; }
+        .exec-title-rule { height: 3px; background: ${BRAND_COLOR}; margin: 4px 0 14px; }
         .exec-meta { margin: 6px 0 12px; font-size: 14px; }
         .exec-section { margin: 12px 0; font-size: 14px; }
         .exec-section b { display:block; margin-bottom: 6px; }
@@ -900,7 +901,7 @@ export default function JobDetail() {
       <div class="amp-footer">
         <img src="${netaLogoUrl}" alt="NETA" class="neta-logo" height="34" style="height:34px;max-height:34px;width:auto;object-fit:contain;" />
         <div class="rule"></div>
-        <div class="contact">(256) 513-8255&nbsp;&nbsp;|&nbsp;&nbsp;ampqes.com</div>
+        <div class="contact">${companyConfig.phone}&nbsp;&nbsp;|&nbsp;&nbsp;${companyConfig.websiteDomain}</div>
       </div>
     `;
 
@@ -1147,7 +1148,7 @@ export default function JobDetail() {
               if (sigHtml) return sigHtml;
             }
             // Fallback to default if no profiles selected
-            return `<div class="sig-grid" style="display:flex;gap:28px;margin-top:18px;font-family:Arial,sans-serif;"><div class="sig-col" style="flex:1;font-size:14px;line-height:1.5;font-family:Arial,sans-serif;" contenteditable><b style="display:block;margin-bottom:6px;">Project Manager:</b>${fireteam || "Name"}<br/>[Title]<br/>${fireteamEmail || "email@ampqes.com"}</div><div class="sig-col" style="flex:1;font-size:14px;line-height:1.5;font-family:Arial,sans-serif;" contenteditable><b style="display:block;margin-bottom:6px;">Reviewed by:</b>${reviewedByName || "Name"}<br/>[Title]<br/>${reviewedByEmail || "email@ampqes.com"}<br/>(xxx) xxx-xxxx</div></div>`;
+            return `<div class="sig-grid" style="display:flex;gap:28px;margin-top:18px;font-family:Arial,sans-serif;"><div class="sig-col" style="flex:1;font-size:14px;line-height:1.5;font-family:Arial,sans-serif;" contenteditable><b style="display:block;margin-bottom:6px;">Project Manager:</b>${fireteam || "Name"}<br/>[Title]<br/>${fireteamEmail || `email${companyConfig.allowedEmailDomains[0]}`}</div><div class="sig-col" style="flex:1;font-size:14px;line-height:1.5;font-family:Arial,sans-serif;" contenteditable><b style="display:block;margin-bottom:6px;">Reviewed by:</b>${reviewedByName || "Name"}<br/>[Title]<br/>${reviewedByEmail || `email${companyConfig.allowedEmailDomains[0]}`}<br/>(xxx) xxx-xxxx</div></div>`;
           })()}
         </div>
         ${footerHtml}
@@ -2787,9 +2788,9 @@ export default function JobDetail() {
               onClick={() =>
                 setValue(checked && allowDeselect ? null : option.value)
               }
-              className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+              className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-brand ${
                 checked
-                  ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
+                  ? "bg-orange-50 text-brand dark:bg-orange-900/20"
                   : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
               }`}
               aria-pressed={checked}
@@ -6461,7 +6462,7 @@ export default function JobDetail() {
               value={docSaveName}
               onChange={(e) => setDocSaveName(e.target.value)}
               placeholder="e.g., Main Substation Cover Letter"
-              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-100 dark:text-white"
+              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-100 dark:text-white"
             />
           </div>
 
@@ -6683,7 +6684,7 @@ export default function JobDetail() {
                 });
               }
             }}
-            className="bg-[#f26722] hover:bg-[#e55611] text-white"
+            className="bg-brand hover:bg-brand-dark text-white"
           >
             Save
           </Button>
@@ -6970,7 +6971,8 @@ ${newBodyHtml}
   const deriveNameFromEmail = (email?: string | null): string | null => {
     if (!email) return null;
     const lower = String(email).toLowerCase();
-    const m = lower.match(/^([a-z]+)\.([a-z]+)@ampqes\.com$/i);
+    if (!employeeEmailRegex.test(lower)) return null;
+    const m = lower.match(/^([a-z]+)\.([a-z]+)@/i);
     if (!m) return null;
     const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
     return `${cap(m[1])} ${cap(m[2])}`;
@@ -8060,7 +8062,7 @@ ${newBodyHtml}
                   );
                 }
               }}
-              className="bg-[#f26722] hover:bg-[#e55611] text-white"
+              className="bg-brand hover:bg-brand-dark text-white"
             >
               Print
             </Button>
@@ -8198,7 +8200,7 @@ ${newBodyHtml}
                 setIsSubstationSelectorOpen(false);
               }}
               disabled={selectedSubstations.size === 0}
-              className="bg-[#f26722] hover:bg-[#e55611] text-white"
+              className="bg-brand hover:bg-brand-dark text-white"
             >
               Generate
             </Button>
@@ -8296,8 +8298,8 @@ ${newBodyHtml}
             {/* Edit Form Header */}
             <CardHeader className="border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#f26722]/10 rounded-none">
-                  <Edit3 className="h-5 w-5 text-[#f26722]" />
+                <div className="p-2 bg-brand/10 rounded-none">
+                  <Edit3 className="h-5 w-5 text-brand" />
                 </div>
                 <div>
                   <CardTitle className="text-xl text-neutral-900 dark:text-white">
@@ -8336,7 +8338,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white font-mono text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white font-mono text-sm"
                         placeholder="JOB-0000"
                       />
                     </div>
@@ -8355,7 +8357,7 @@ ${newBodyHtml}
                             prev ? { ...prev, division: e.target.value } : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm"
                       >
                         <option value="">Select Division</option>
                         <option value="north_alabama">Decatur</option>
@@ -8384,7 +8386,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm"
                         placeholder="Enter fireteam lead name"
                       />
                     </div>
@@ -8404,7 +8406,7 @@ ${newBodyHtml}
                             prev ? { ...prev, title: e.target.value } : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm"
                         placeholder="Enter job title"
                       />
                     </div>
@@ -8427,7 +8429,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full !h-24 px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-none text-sm"
+                        className="w-full !h-24 px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white resize-none text-sm"
                         placeholder="Enter job description"
                       />
                     </div>
@@ -8453,7 +8455,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full !h-24 px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-none text-sm"
+                        className="w-full !h-24 px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white resize-none text-sm"
                         placeholder="Enter physical site address"
                       />
                     </div>
@@ -8485,7 +8487,7 @@ ${newBodyHtml}
                             prev ? { ...prev, status: e.target.value } : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm"
                       >
                         <option value="pending">Pending</option>
                         <option value="in_progress">In Progress</option>
@@ -8515,7 +8517,7 @@ ${newBodyHtml}
                             prev ? { ...prev, priority: e.target.value } : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm"
                       >
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
@@ -8541,7 +8543,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm"
                       />
                     </div>
 
@@ -8561,7 +8563,7 @@ ${newBodyHtml}
                             prev ? { ...prev, due_date: e.target.value } : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm"
                       />
                     </div>
 
@@ -8590,7 +8592,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm"
                         placeholder="0.00"
                       />
                     </div>
@@ -8619,7 +8621,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm"
                         placeholder="From estimate or enter manually"
                       />
                       <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
@@ -8674,7 +8676,7 @@ ${newBodyHtml}
                               : null,
                           );
                         }}
-                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm"
                       >
                         <option value="standard">Standard (7 days)</option>
                         <option value="data_center">
@@ -8708,7 +8710,7 @@ ${newBodyHtml}
                               : null,
                           )
                         }
-                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-[#f26722] focus:ring-1 focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm"
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm"
                       >
                         {editFormData?.submittal_job_type === "data_center" ? (
                           <>
@@ -8764,7 +8766,7 @@ ${newBodyHtml}
                   <Button
                     type="submit"
                     onClick={handleEditSubmit}
-                    className="px-4 py-2 text-sm bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                    className="px-4 py-2 text-sm bg-brand hover:bg-brand/90 text-white"
                     leftIcon={<Save className="h-4 w-4 mr-1.5" />}
                   >
                     Save Changes
@@ -8836,7 +8838,7 @@ ${newBodyHtml}
                     onClick={() => handleTabChange("assets")}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "assets"
-                        ? "border-b-2 border-[#f26722] text-[#f26722]"
+                        ? "border-b-2 border-brand text-brand"
                         : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
@@ -8846,7 +8848,7 @@ ${newBodyHtml}
                     onClick={() => handleTabChange("reports")}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "reports"
-                        ? "border-b-2 border-[#f26722] text-[#f26722]"
+                        ? "border-b-2 border-brand text-brand"
                         : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     } ${!isAdmin ? "opacity-50 cursor-not-allowed" : ""}`}
                     disabled={!isAdmin}
@@ -8870,7 +8872,7 @@ ${newBodyHtml}
                     onClick={() => handleTabChange("report-audit")}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "report-audit"
-                        ? "border-b-2 border-[#f26722] text-[#f26722]"
+                        ? "border-b-2 border-brand text-brand"
                         : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
@@ -8880,7 +8882,7 @@ ${newBodyHtml}
                     onClick={() => handleTabChange("tracking")}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "tracking"
-                        ? "border-b-2 border-[#f26722] text-[#f26722]"
+                        ? "border-b-2 border-brand text-brand"
                         : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
@@ -8890,7 +8892,7 @@ ${newBodyHtml}
                     onClick={() => handleTabChange("overview")}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "overview"
-                        ? "border-b-2 border-[#f26722] text-[#f26722]"
+                        ? "border-b-2 border-brand text-brand"
                         : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
@@ -8900,7 +8902,7 @@ ${newBodyHtml}
                     onClick={() => handleTabChange("deliverables")}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "deliverables"
-                        ? "border-b-2 border-[#f26722] text-[#f26722]"
+                        ? "border-b-2 border-brand text-brand"
                         : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
@@ -8910,7 +8912,7 @@ ${newBodyHtml}
                     onClick={() => handleTabChange("notes")}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "notes"
-                        ? "border-b-2 border-[#f26722] text-[#f26722]"
+                        ? "border-b-2 border-brand text-brand"
                         : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
@@ -8920,7 +8922,7 @@ ${newBodyHtml}
                     onClick={() => handleTabChange("pictures")}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "pictures"
-                        ? "border-b-2 border-[#f26722] text-[#f26722]"
+                        ? "border-b-2 border-brand text-brand"
                         : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
@@ -8930,7 +8932,7 @@ ${newBodyHtml}
                     onClick={() => handleTabChange("after-action")}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "after-action"
-                        ? "border-b-2 border-[#f26722] text-[#f26722]"
+                        ? "border-b-2 border-brand text-brand"
                         : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                     }`}
                   >
@@ -8941,7 +8943,7 @@ ${newBodyHtml}
                       onClick={() => handleTabChange("tm-expenses")}
                       className={`py-4 px-6 text-sm font-medium ${
                         activeTab === "tm-expenses"
-                          ? "border-b-2 border-[#f26722] text-[#f26722]"
+                          ? "border-b-2 border-brand text-brand"
                           : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                       }`}
                     >
@@ -8953,7 +8955,7 @@ ${newBodyHtml}
                       onClick={() => handleTabChange("profitability")}
                       className={`py-4 px-6 text-sm font-medium ${
                         activeTab === "profitability"
-                          ? "border-b-2 border-[#f26722] text-[#f26722]"
+                          ? "border-b-2 border-brand text-brand"
                           : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
                       }`}
                     >
@@ -8971,7 +8973,7 @@ ${newBodyHtml}
                   <div className="space-y-6">
                     {/* QuickBooks project & hours - hidden per request */}
                     {false && (
-                      <Card className="border-[#f26722]/30 bg-neutral-50/50 dark:bg-dark-200/50">
+                      <Card className="border-brand/30 bg-neutral-50/50 dark:bg-dark-200/50">
                         <CardHeader>
                           <CardTitle className="text-base font-semibold text-neutral-900 dark:text-white">
                             QuickBooks project & hours
@@ -9082,7 +9084,7 @@ ${newBodyHtml}
                                   setQbProjectSearchOpen(true);
                                 }}
                                 onFocus={() => setQbProjectSearchOpen(true)}
-                                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand"
                               />
                               {qbProjectSearchOpen && (
                                 <div className="absolute z-50 mt-1 w-full max-h-60 overflow-auto bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-lg">
@@ -9208,7 +9210,7 @@ ${newBodyHtml}
                                     <option value="billed">Billed</option>
                                   </select>
                                   <button
-                                    className="px-3 py-1 text-sm text-white bg-[#f26722] rounded-none hover:bg-[#e55611]"
+                                    className="px-3 py-1 text-sm text-white bg-brand rounded-none hover:bg-brand-dark"
                                     onClick={() =>
                                       handleQuickStatusSave(
                                         (job.status as any) || "pending",
@@ -9261,7 +9263,7 @@ ${newBodyHtml}
                         <CardContent>
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center space-x-2">
-                              <User className="h-4 w-4 text-[#f26722]" />
+                              <User className="h-4 w-4 text-brand" />
                               <span className="text-lg font-semibold text-neutral-900 dark:text-white">
                                 {job.fireteam_lead || "Not assigned"}
                               </span>
@@ -9289,7 +9291,7 @@ ${newBodyHtml}
                                       onChange={(e) =>
                                         setUserSearchQuery(e.target.value)
                                       }
-                                      className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                                      className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                                     />
                                   </div>
                                   <div className="max-h-60 overflow-y-auto">
@@ -9302,7 +9304,7 @@ ${newBodyHtml}
                                           userSearchQuery.toLowerCase();
                                         const email =
                                           u.email?.toLowerCase() || "";
-                                        if (!/@ampqes\.com$/i.test(email))
+                                        if (!employeeEmailRegex.test(email))
                                           return false;
                                         const name =
                                           displayUserName(u).toLowerCase();
@@ -9340,7 +9342,7 @@ ${newBodyHtml}
                                         userSearchQuery.toLowerCase();
                                       const email =
                                         u.email?.toLowerCase() || "";
-                                      if (!/@ampqes\.com$/i.test(email))
+                                      if (!employeeEmailRegex.test(email))
                                         return false;
                                       const name =
                                         displayUserName(u).toLowerCase();
@@ -9379,7 +9381,7 @@ ${newBodyHtml}
                       <Card>
                         <CardHeader>
                           <CardTitle className="flex items-center space-x-2">
-                            <Building className="h-5 w-5 text-[#f26722]" />
+                            <Building className="h-5 w-5 text-brand" />
                             <span>Job Information</span>
                           </CardTitle>
                         </CardHeader>
@@ -9430,7 +9432,7 @@ ${newBodyHtml}
                               <div className="flex items-center gap-2">
                                 <a
                                   href={`/opportunities/${opportunity.id}`}
-                                  className="text-[#f26722] hover:underline"
+                                  className="text-brand hover:underline"
                                   onClick={(e) => {
                                     e.preventDefault();
                                     navigate(
@@ -9598,7 +9600,7 @@ ${newBodyHtml}
                                     <option value="cancelled">Cancelled</option>
                                   </select>
                                   <button
-                                    className="px-3 py-1 text-sm text-white bg-[#f26722] rounded-none hover:bg-[#e55611]"
+                                    className="px-3 py-1 text-sm text-white bg-brand rounded-none hover:bg-brand-dark"
                                     onClick={async () => {
                                       if (!id || !job) return;
                                       try {
@@ -9697,7 +9699,7 @@ ${newBodyHtml}
                       <Card>
                         <CardHeader>
                           <CardTitle className="flex items-center space-x-2">
-                            <User className="h-5 w-5 text-[#f26722]" />
+                            <User className="h-5 w-5 text-brand" />
                             <span>Customer Information</span>
                           </CardTitle>
                         </CardHeader>
@@ -9708,7 +9710,7 @@ ${newBodyHtml}
                             </label>
                             <Link
                               to={getCustomerPath(job.customers.id)}
-                              className="text-neutral-900 dark:text-white font-semibold hover:text-[#f26722] hover:underline"
+                              className="text-neutral-900 dark:text-white font-semibold hover:text-brand hover:underline"
                             >
                               {maskCustomerName(
                                 job.customers.company_name ||
@@ -9768,7 +9770,7 @@ ${newBodyHtml}
                       <CardHeader>
                         <div className="flex items-center justify-between">
                           <CardTitle className="flex items-center space-x-2">
-                            <FileText className="h-5 w-5 text-[#f26722]" />
+                            <FileText className="h-5 w-5 text-brand" />
                             <span>Contracts / Agreements / Invoices / etc</span>
                           </CardTitle>
                           <div className="flex items-center gap-4 flex-wrap">
@@ -9847,7 +9849,7 @@ ${newBodyHtml}
                                   <div className="flex items-center justify-between">
                                     <div className="flex-1">
                                       <div className="flex items-center space-x-3">
-                                        <FileText className="h-5 w-5 text-[#f26722]" />
+                                        <FileText className="h-5 w-5 text-brand" />
                                         <div>
                                           <h4 className="font-medium text-neutral-900 dark:text-white">
                                             {contract.name}
@@ -9970,7 +9972,7 @@ ${newBodyHtml}
                       <CardHeader>
                         <div className="flex items-center justify-between">
                           <CardTitle className="flex items-center space-x-2">
-                            <Image className="h-5 w-5 text-[#f26722]" />
+                            <Image className="h-5 w-5 text-brand" />
                             <span>One-Line Drawings</span>
                           </CardTitle>
                           <Button
@@ -10059,7 +10061,7 @@ ${newBodyHtml}
                       <CardHeader>
                         <div className="flex items-center justify-between">
                           <CardTitle className="flex items-center space-x-2">
-                            <FileText className="h-5 w-5 text-[#f26722]" />
+                            <FileText className="h-5 w-5 text-brand" />
                             <span>Miscellaneous</span>
                           </CardTitle>
                           <Button
@@ -10089,7 +10091,7 @@ ${newBodyHtml}
                                 <div className="flex items-center justify-between">
                                   <div className="flex-1">
                                     <div className="flex items-center space-x-3">
-                                      <FileText className="h-5 w-5 text-[#f26722]" />
+                                      <FileText className="h-5 w-5 text-brand" />
                                       <div>
                                         <h4 className="font-medium text-neutral-900 dark:text-white">
                                           {document.name}
@@ -10432,10 +10434,10 @@ ${newBodyHtml}
                               onClick={() =>
                                 setIsAssetSortMenuOpen((prev) => !prev)
                               }
-                              className={`inline-flex h-10 w-10 items-center justify-center rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f26722] ${
+                              className={`inline-flex h-10 w-10 items-center justify-center rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                                 assetSortField
-                                  ? "text-[#f26722]"
-                                  : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                                  ? "text-brand"
+                                  : "text-neutral-700 hover:text-brand dark:text-white dark:hover:text-brand"
                               }`}
                               aria-expanded={isAssetSortMenuOpen}
                               aria-label="Sort reports"
@@ -10493,10 +10495,10 @@ ${newBodyHtml}
                               onClick={() =>
                                 setIsAssetFilterMenuOpen((prev) => !prev)
                               }
-                              className={`inline-flex h-10 w-10 items-center justify-center rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f26722] ${
+                              className={`inline-flex h-10 w-10 items-center justify-center rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                                 assetDateFilterActive
-                                  ? "text-[#f26722]"
-                                  : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                                  ? "text-brand"
+                                  : "text-neutral-700 hover:text-brand dark:text-white dark:hover:text-brand"
                               }`}
                               aria-expanded={isAssetFilterMenuOpen}
                               aria-label="Filter reports"
@@ -10539,7 +10541,7 @@ ${newBodyHtml}
                                         onChange={(e) =>
                                           setAssetDateStart(e.target.value)
                                         }
-                                        className="flex-1 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 px-2 py-1 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                                        className="flex-1 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 px-2 py-1 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                                       />
                                     </label>
                                     <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-white">
@@ -10550,7 +10552,7 @@ ${newBodyHtml}
                                         onChange={(e) =>
                                           setAssetDateEnd(e.target.value)
                                         }
-                                        className="flex-1 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 px-2 py-1 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                                        className="flex-1 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 px-2 py-1 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                                       />
                                     </label>
                                   </div>
@@ -10567,7 +10569,7 @@ ${newBodyHtml}
                                   <button
                                     type="button"
                                     onClick={clearAssetDateFilter}
-                                    className="mt-3 w-full rounded-none border border-neutral-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                                    className="mt-3 w-full rounded-none border border-neutral-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 focus:outline-none focus:ring-2 focus:ring-brand"
                                   >
                                     Clear filters
                                   </button>
@@ -10794,7 +10796,7 @@ ${newBodyHtml}
                                   <Button
                                     onClick={handlePrintSelectedApprovedReports}
                                     disabled={isPrinting}
-                                    className="bg-[#f26722] hover:bg-[#e55611] text-white"
+                                    className="bg-brand hover:bg-brand-dark text-white"
                                   >
                                     {selectedApprovedIds.size > 0
                                       ? `Print Selected (${selectedApprovedIds.size})`
@@ -10865,7 +10867,7 @@ ${newBodyHtml}
                               <div className="text-sm text-neutral-600 dark:text-white">
                                 <div className="w-full bg-neutral-200 dark:bg-dark-150 rounded-none h-2 mb-1">
                                   <div
-                                    className="bg-[#f26722] h-2 rounded-none"
+                                    className="bg-brand h-2 rounded-none"
                                     style={{ width: `${printProgress}%` }}
                                   ></div>
                                 </div>
@@ -11146,7 +11148,7 @@ ${newBodyHtml}
                                                       | "critical",
                                                   )
                                                 }
-                                                className={`px-2 py-1 rounded text-xs font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                                                className={`px-2 py-1 rounded text-xs font-medium border-0 focus:outline-none focus:ring-2 focus:ring-brand ${
                                                   asset.urgency === "critical"
                                                     ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                                                     : "bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300"
@@ -11172,7 +11174,7 @@ ${newBodyHtml}
                                                         .value as Asset["status"],
                                                     )
                                                   }
-                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200"
+                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-brand bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200"
                                                 >
                                                   <option value="not started">
                                                     Not Started
@@ -11195,7 +11197,7 @@ ${newBodyHtml}
                                                         .value as Asset["status"],
                                                     )
                                                   }
-                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-brand bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                                                 >
                                                   <option value="approved">
                                                     Approved
@@ -11220,7 +11222,7 @@ ${newBodyHtml}
                                                         .value as Asset["status"],
                                                     )
                                                   }
-                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-brand bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
                                                 >
                                                   <option value="sent">
                                                     Sent
@@ -11242,7 +11244,7 @@ ${newBodyHtml}
                                                         .value as Asset["status"],
                                                     )
                                                   }
-                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-brand bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                                                 >
                                                   <option value="issue">
                                                     Issue
@@ -11271,7 +11273,7 @@ ${newBodyHtml}
                                                         .value as Asset["status"],
                                                     )
                                                   }
-                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-brand bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
                                                 >
                                                   <option value="archived">
                                                     Archived
@@ -11302,7 +11304,7 @@ ${newBodyHtml}
                                                         .value as Asset["status"],
                                                     )
                                                   }
-                                                  className={`px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                                                  className={`px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-brand ${
                                                     (asset.status ||
                                                       "not started") ===
                                                     "ready_for_review"
@@ -11493,7 +11495,7 @@ ${newBodyHtml}
                                         size="sm"
                                         className={
                                           p === safePage
-                                            ? "bg-[#f26722] hover:bg-[#e55611] text-white border-[#f26722]"
+                                            ? "bg-brand hover:bg-brand-dark text-white border-brand"
                                             : ""
                                         }
                                         onClick={() => setFolderPage(p)}
@@ -11714,7 +11716,7 @@ ${newBodyHtml}
                                 setQbProjectSearchOpen(true);
                               }}
                               onFocus={() => setQbProjectSearchOpen(true)}
-                              className="w-full rounded-none border border-neutral-300 bg-white p-2 text-neutral-900 focus:border-[#f26722] focus:ring-2 focus:ring-[#f26722] dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                              className="w-full rounded-none border border-neutral-300 bg-white p-2 text-neutral-900 focus:border-brand focus:ring-2 focus:ring-brand dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
                             />
                             {parseQuickBooksProjectId(qbProjectSearchQuery) && (
                               <button
@@ -11723,7 +11725,7 @@ ${newBodyHtml}
                                 onClick={() =>
                                   handleLinkQuickBooksById(qbProjectSearchQuery)
                                 }
-                                className="mt-2 w-full rounded-none border border-[#f26722] bg-[#f26722] px-3 py-2 text-sm font-medium text-white hover:bg-[#d9561a] disabled:opacity-50"
+                                className="mt-2 w-full rounded-none border border-brand bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-50"
                               >
                                 {qbAssigning
                                   ? "Linking…"
@@ -12277,7 +12279,7 @@ ${newBodyHtml}
                             .value as ContractValueOperation,
                         }))
                       }
-                      className="w-4 h-4 text-[#f26722] focus:ring-[#f26722]"
+                      className="w-4 h-4 text-brand focus:ring-brand"
                     />
                     <span className="text-sm">Add to total contract value</span>
                   </label>
@@ -12296,7 +12298,7 @@ ${newBodyHtml}
                             .value as ContractValueOperation,
                         }))
                       }
-                      className="w-4 h-4 text-[#f26722] focus:ring-[#f26722]"
+                      className="w-4 h-4 text-brand focus:ring-brand"
                     />
                     <span className="text-sm">
                       Subtract from contract value
@@ -12318,7 +12320,7 @@ ${newBodyHtml}
                             .value as ContractValueOperation,
                         }))
                       }
-                      className="w-4 h-4 text-[#f26722] focus:ring-[#f26722]"
+                      className="w-4 h-4 text-brand focus:ring-brand"
                     />
                     <span className="text-sm">
                       Subtract from remaining balance (e.g. invoices)
@@ -12339,7 +12341,7 @@ ${newBodyHtml}
                             .value as ContractValueOperation,
                         }))
                       }
-                      className="w-4 h-4 text-[#f26722] focus:ring-[#f26722]"
+                      className="w-4 h-4 text-brand focus:ring-brand"
                     />
                     <span className="text-sm">
                       Add to remaining balance (book corrections only)

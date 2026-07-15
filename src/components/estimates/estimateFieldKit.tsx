@@ -14,7 +14,7 @@
 import type { ReactNode } from "react";
 
 export const INPUT_CLS =
-  "w-full text-sm rounded border px-2 py-1 bg-white dark:bg-dark-100 border-neutral-300 dark:border-dark-200 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-[#f26722]";
+  "w-full text-sm rounded border px-2 py-1 bg-white dark:bg-dark-100 border-neutral-300 dark:border-dark-200 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-brand";
 export const CALC_CLS =
   "text-sm rounded border px-2 py-1 bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900 text-blue-800 dark:text-blue-200 font-medium";
 export const TOTAL_CLS =
@@ -122,7 +122,7 @@ export function SectionNav<K extends string>({
               onClick={() => onChange(n.key)}
               className={`w-full text-left px-3 py-2 text-xs flex flex-col gap-0.5 ${
                 isActive
-                  ? "bg-white dark:bg-dark-200 text-neutral-900 dark:text-white font-medium border-r-2 border-[#f26722]"
+                  ? "bg-white dark:bg-dark-200 text-neutral-900 dark:text-white font-medium border-r-2 border-brand"
                   : "text-neutral-600 dark:text-neutral-300 hover:bg-white/60 dark:hover:bg-dark-200/60"
               }`}
             >

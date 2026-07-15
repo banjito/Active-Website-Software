@@ -10,6 +10,7 @@ import { ReportHeader } from "./common/ReportHeader";
 import { EquipmentAutocomplete } from "@/components/equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 // Temperature Correction Factor (TCF) lookup table – maps Celsius to correction factor
 const TCF_TABLE: Record<string, number> = {
@@ -590,7 +591,7 @@ const GroundingSystemMaster: React.FC = () => {
                 NETA - MTS 7.13
               </div>
             </div>
-            <div className="w-full h-1 bg-[#f26722] my-4" aria-hidden />
+            <div className="w-full h-1 bg-brand my-4" aria-hidden />
           </div>
           <ReportHeader
             title={reportName}
@@ -637,7 +638,7 @@ const GroundingSystemMaster: React.FC = () => {
           <section
             className={`mb-6 ${isPrintMode ? "hidden" : ""} print:hidden`}
           >
-            <div className="mt-6 w-full h-1 bg-[#f26722] my-4" aria-hidden />
+            <div className="mt-6 w-full h-1 bg-brand my-4" aria-hidden />
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
               Job Details
             </h2>
@@ -878,7 +879,7 @@ const GroundingSystemMaster: React.FC = () => {
           <section
             className={`mb-6 ${isPrintMode ? "hidden" : ""} print:hidden`}
           >
-            <div className="mt-6 w-full h-1 bg-[#f26722] my-4" aria-hidden />
+            <div className="mt-6 w-full h-1 bg-brand my-4" aria-hidden />
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
               Visual and Mechanical Inspection
             </h2>
@@ -1030,7 +1031,7 @@ const GroundingSystemMaster: React.FC = () => {
           <section
             className={`p-0 ${isPrintMode ? "hidden" : ""} print:hidden`}
           >
-            <div className="mt-6 w-full h-1 bg-[#f26722] my-4" aria-hidden />
+            <div className="mt-6 w-full h-1 bg-brand my-4" aria-hidden />
             {/* Row controls (screen only) */}
             <div
               className={`${isPrintMode ? "hidden" : ""} print:hidden flex items-center justify-between mb-3`}
@@ -1389,7 +1390,7 @@ const GroundingSystemMaster: React.FC = () => {
           <section
             className={`mb-20 ${isPrintMode ? "hidden" : ""} print:hidden`}
           >
-            <div className="mt-6 w-full h-1 bg-[#f26722] mb-4" />
+            <div className="mt-6 w-full h-1 bg-brand mb-4" />
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
               Test Equipment Used (Low Resistance Ohmmeter)
             </h2>
@@ -1551,8 +1552,8 @@ const GroundingSystemMaster: React.FC = () => {
               .gsm-content .job-info-print { min-height: 1.8in !important; }
               .gsm-divider {
                 height: 4px !important;
-                background: #f26722 !important;
-                background-color: #f26722 !important;
+                background: ${BRAND_COLOR} !important;
+                background-color: ${BRAND_COLOR} !important;
                 margin: 0.1in 0 !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
@@ -1620,8 +1621,8 @@ const GroundingSystemMaster: React.FC = () => {
               .gsm-alternate-pages .gsm-divider {
                 height: 2px !important;
                 margin: 4px 0 !important;
-                background: #f26722 !important;
-                background-color: #f26722 !important;
+                background: ${BRAND_COLOR} !important;
+                background-color: ${BRAND_COLOR} !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
               }

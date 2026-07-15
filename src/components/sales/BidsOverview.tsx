@@ -763,7 +763,7 @@ const BidsOverview: React.FC = () => {
                           type="checkbox"
                           checked={b.excludeFromTotal}
                           onChange={(e) => toggleExclude(b.id, e.target.checked)}
-                          className="h-3.5 w-3.5 rounded border-neutral-300 dark:border-neutral-600 text-[#f26722] focus:ring-[#f26722]"
+                          className="h-3.5 w-3.5 rounded border-neutral-300 dark:border-neutral-600 text-brand focus:ring-brand"
                         />
                         Exclude
                       </label>
@@ -894,7 +894,7 @@ const BidsOverview: React.FC = () => {
                           type="checkbox"
                           checked={b.excludeFromTotal}
                           onChange={(e) => toggleExclude(b.id, e.target.checked)}
-                          className="h-3.5 w-3.5 rounded border-neutral-300 dark:border-neutral-600 text-[#f26722] focus:ring-[#f26722]"
+                          className="h-3.5 w-3.5 rounded border-neutral-300 dark:border-neutral-600 text-brand focus:ring-brand"
                         />
                         Exclude
                       </label>
@@ -1046,7 +1046,7 @@ const BidsOverview: React.FC = () => {
                                 onChange={(e) =>
                                   toggleExclude(b.id, e.target.checked)
                                 }
-                                className="h-3.5 w-3.5 rounded border-neutral-300 dark:border-neutral-600 text-[#f26722] focus:ring-[#f26722]"
+                                className="h-3.5 w-3.5 rounded border-neutral-300 dark:border-neutral-600 text-brand focus:ring-brand"
                               />
                               Exclude
                             </label>

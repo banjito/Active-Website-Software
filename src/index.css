@@ -9,6 +9,11 @@
     }
 
     :root {
+        /* Brand color; overridden at boot by applyBrandColors() (companyConfig). */
+        --brand: #f26722;
+        --brand-rgb: 242 103 34;
+        --brand-dark: #e55611;
+        --brand-dark-rgb: 229 86 17;
         --background: 0 0% 100%;
         --foreground: 222.2 84% 4.9%;
         --card: 0 0% 100%;
@@ -90,7 +95,7 @@
     }
 
     .portal-click-card:has(.text-rose-500) {
-        --portal-card-color: #f26722;
+        --portal-card-color: var(--brand);
     }
 
     .portal-click-card:has(.text-emerald-500) {
@@ -133,7 +138,7 @@
         --portal-card-color: #312e81;
     }
 
-    .portal-click-card:has([class*="text-[#f26722]"]) {
+    .portal-click-card:has([class*="text-brand"]) {
         --portal-card-color: #9a3412;
     }
 
@@ -146,7 +151,7 @@
     }
 
     .portal-click-card.portal-neta {
-        --portal-card-color: #f26722;
+        --portal-card-color: var(--brand);
     }
 
     .portal-click-card.portal-field-tech {
@@ -184,7 +189,7 @@
     }
 
     .portal-click-card:has(.text-rose-500):hover {
-        background-color: #f26722;
+        background-color: var(--brand);
     }
 
     .portal-click-card:has(.text-emerald-500):hover {
@@ -231,7 +236,7 @@
         background-color: #312e81;
     }
 
-    .portal-click-card:has([class*="text-[#f26722]"]):hover {
+    .portal-click-card:has([class*="text-brand"]):hover {
         background-color: #9a3412;
     }
 
@@ -244,7 +249,7 @@
     }
 
     .portal-click-card.portal-neta:hover {
-        background-color: #f26722;
+        background-color: var(--brand);
     }
 
     .portal-click-card.portal-field-tech:hover {
@@ -311,7 +316,7 @@
         left: -2px;
         right: -2px;
         bottom: -2px;
-        border: 2px solid #f26722;
+        border: 2px solid var(--brand);
         border-radius: 6px;
         pointer-events: none;
         z-index: 1;
@@ -389,7 +394,7 @@
       bg-neutral-100 dark:bg-dark-100
       border border-neutral-300 dark:border-neutral-600
       rounded-none shadow-sm
-      focus:outline-none focus:ring-[#f26722] focus:border-[#f26722]
+      focus:outline-none focus:ring-brand focus:border-brand
       text-neutral-900 dark:text-white;
     }
 

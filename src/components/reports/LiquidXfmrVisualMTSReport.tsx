@@ -1649,7 +1649,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
 
       {/* Print-only: job info table directly under header */}
       <div className="hidden print:block mt-2">
-        <div className="w-full h-1 bg-[#f26722] mb-4" />
+        <div className="w-full h-1 bg-brand mb-4" />
         <JobInfoPrintTable
           data={{
             customer: maskCustomerName(formData.customer),
@@ -1671,7 +1671,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
             },
           }}
         />
-        <div className="w-full h-1 bg-[#f26722] my-4" />
+        <div className="w-full h-1 bg-brand my-4" />
       </div>
 
       {/* Screen-only header with title and buttons */}
@@ -1682,7 +1682,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
       <div className="space-y-8">
         {/* Job Information - screen layout; print uses block above */}
         <section className="mb-6 job-info-section print:hidden">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
             Job Information
           </h2>
@@ -1832,7 +1832,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
 
         {/* Nameplate Data - standardized */}
         <section className="mb-6 nameplate-section">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
             Nameplate Data
           </h2>
@@ -1849,7 +1849,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                   handleChange("nameplate.manufacturer", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
               />
             </div>
             <div>
@@ -1863,7 +1863,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                   handleChange("nameplate.catalogNumber", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
               />
             </div>
             <div>
@@ -1877,7 +1877,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                   handleChange("nameplate.serialNumber", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
               />
             </div>
             <div>
@@ -1889,7 +1889,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                 value={formData.nameplate.kVA}
                 onChange={(e) => handleChange("nameplate.kVA", e.target.value)}
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
               />
             </div>
             {/* Row 2: Temp Rise, Impedance, Fluid Type, Fluid Volume */}
@@ -1904,7 +1904,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                   handleChange("nameplate.tempRise", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
               />
             </div>
             <div>
@@ -1918,7 +1918,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                   handleChange("nameplate.impedance", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
               />
             </div>
             <div>
@@ -1932,7 +1932,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                   handleChange("nameplate.fluidType", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
               />
             </div>
             <div>
@@ -1946,7 +1946,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                   handleChange("nameplate.fluidVolume", e.target.value)
                 }
                 readOnly={!isEditing}
-                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
               />
             </div>
           </div>
@@ -1976,7 +1976,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     handleChange("nameplate.primaryVolts1", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
                 <span className="text-neutral-500 dark:text-white">/</span>
                 <input
@@ -1986,7 +1986,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     handleChange("nameplate.primaryVolts2", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
               </div>
               <div className="flex justify-center space-x-4">
@@ -1997,7 +1997,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     checked={formData.nameplate.primaryConnectionDelta}
                     onChange={() => setConnectionSelection("primary", "Delta")}
                     disabled={!isEditing}
-                    className="h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-600 focus:ring-[#f26722]"
+                    className="h-4 w-4 text-brand border-neutral-300 dark:border-neutral-600 focus:ring-brand"
                   />{" "}
                   <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                     Delta
@@ -2010,7 +2010,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     checked={formData.nameplate.primaryConnectionWye}
                     onChange={() => setConnectionSelection("primary", "Wye")}
                     disabled={!isEditing}
-                    className="h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-600 focus:ring-[#f26722]"
+                    className="h-4 w-4 text-brand border-neutral-300 dark:border-neutral-600 focus:ring-brand"
                   />{" "}
                   <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                     Wye
@@ -2025,7 +2025,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                       setConnectionSelection("primary", "SinglePhase")
                     }
                     disabled={!isEditing}
-                    className="h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-600 focus:ring-[#f26722]"
+                    className="h-4 w-4 text-brand border-neutral-300 dark:border-neutral-600 focus:ring-brand"
                   />{" "}
                   <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                     Single Phase
@@ -2040,7 +2040,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     checked={formData.nameplate.primaryWindingMaterialAluminum}
                     onChange={() => setMaterialSelection("primary", "Aluminum")}
                     disabled={!isEditing}
-                    className="h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-600 focus:ring-[#f26722]"
+                    className="h-4 w-4 text-brand border-neutral-300 dark:border-neutral-600 focus:ring-brand"
                   />{" "}
                   <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                     Aluminum
@@ -2053,7 +2053,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     checked={formData.nameplate.primaryWindingMaterialCopper}
                     onChange={() => setMaterialSelection("primary", "Copper")}
                     disabled={!isEditing}
-                    className="h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-600 focus:ring-[#f26722]"
+                    className="h-4 w-4 text-brand border-neutral-300 dark:border-neutral-600 focus:ring-brand"
                   />{" "}
                   <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                     Copper
@@ -2072,7 +2072,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     handleChange("nameplate.secondaryVolts1", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
                 <span className="text-neutral-500 dark:text-white">/</span>
                 <input
@@ -2082,7 +2082,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     handleChange("nameplate.secondaryVolts2", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
               </div>
               <div className="flex justify-center space-x-4">
@@ -2095,7 +2095,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                       setConnectionSelection("secondary", "Delta")
                     }
                     disabled={!isEditing}
-                    className="h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-600 focus:ring-[#f26722]"
+                    className="h-4 w-4 text-brand border-neutral-300 dark:border-neutral-600 focus:ring-brand"
                   />{" "}
                   <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                     Delta
@@ -2108,7 +2108,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     checked={formData.nameplate.secondaryConnectionWye}
                     onChange={() => setConnectionSelection("secondary", "Wye")}
                     disabled={!isEditing}
-                    className="h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-600 focus:ring-[#f26722]"
+                    className="h-4 w-4 text-brand border-neutral-300 dark:border-neutral-600 focus:ring-brand"
                   />{" "}
                   <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                     Wye
@@ -2123,7 +2123,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                       setConnectionSelection("secondary", "SinglePhase")
                     }
                     disabled={!isEditing}
-                    className="h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-600 focus:ring-[#f26722]"
+                    className="h-4 w-4 text-brand border-neutral-300 dark:border-neutral-600 focus:ring-brand"
                   />{" "}
                   <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                     Single Phase
@@ -2142,7 +2142,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                       setMaterialSelection("secondary", "Aluminum")
                     }
                     disabled={!isEditing}
-                    className="h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-600 focus:ring-[#f26722]"
+                    className="h-4 w-4 text-brand border-neutral-300 dark:border-neutral-600 focus:ring-brand"
                   />{" "}
                   <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                     Aluminum
@@ -2155,7 +2155,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     checked={formData.nameplate.secondaryWindingMaterialCopper}
                     onChange={() => setMaterialSelection("secondary", "Copper")}
                     disabled={!isEditing}
-                    className="h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-600 focus:ring-[#f26722]"
+                    className="h-4 w-4 text-brand border-neutral-300 dark:border-neutral-600 focus:ring-brand"
                   />{" "}
                   <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                     Copper
@@ -2187,7 +2187,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                         handleChange("nameplate.tapVoltages", newTaps);
                       }}
                       readOnly={!isEditing}
-                      className={`w-full text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                      className={`w-full text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                       placeholder={index > 4 ? "-" : ""}
                     />
                   ))}
@@ -2221,7 +2221,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                       handleChange("nameplate.tapPositionLeft1", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                    className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                   />
                   <span className="text-neutral-500 dark:text-white">/</span>
                   <input
@@ -2231,7 +2231,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                       handleChange("nameplate.tapPositionLeft2", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                    className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                   />
                 </div>
                 <div className="flex items-center space-x-2 ml-8">
@@ -2245,7 +2245,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                       handleChange("nameplate.tapVoltsSpecific", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                   />
                 </div>
                 <div className="flex items-center space-x-2 ml-8">
@@ -2262,7 +2262,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                   />
                 </div>
               </div>
@@ -2494,7 +2494,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
 
         {/* Indicator Gauge Values */}
         <section className="mb-6 indicator-gauges-section">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
             Indicator Gauge Values
           </h2>
@@ -2514,7 +2514,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
               </div>
               <div>
@@ -2531,7 +2531,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
               </div>
               <div>
@@ -2548,7 +2548,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
               </div>
               <div>
@@ -2565,7 +2565,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
               </div>
               <div>
@@ -2582,7 +2582,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
               </div>
               <div>
@@ -2599,7 +2599,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
               </div>
             </div>
@@ -2662,7 +2662,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
 
         {/* Visual and Mechanical Inspection */}
         <section className="mb-6 visual-mechanical-section">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
             Visual and Mechanical Inspection
           </h2>
@@ -2703,7 +2703,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                             handleVisualInspectionChange(index, e.target.value)
                           }
                           disabled={!isEditing}
-                          className={`w-full text-sm rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${
+                          className={`w-full text-sm rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${
                             !isEditing
                               ? "bg-neutral-200 dark:bg-dark-150 text-neutral-900 dark:text-white cursor-not-allowed"
                               : "bg-white dark:bg-dark-150"
@@ -2733,7 +2733,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
 
         {/* Visual and Mechanical Inspection Comments */}
         <section className="mb-6 visual-mechanical-comments">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
             Visual & Mechanical Inspection Comments
           </h2>
@@ -2748,7 +2748,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
               }
               readOnly={!isEditing}
               rows={4}
-              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} print:hidden`}
+              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} print:hidden`}
             />
             {/* Print-only comments box */}
             <div className="hidden print:block">
@@ -2772,7 +2772,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
 
         {/* Electrical Tests - Insulation Resistance */}
         <section className="mb-6 insulation-resistance-section">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
             Electrical Tests - Insulation Resistance
           </h2>
@@ -2836,7 +2836,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                                 )
                               }
                               disabled={!isEditing}
-                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                             >
                               {testVoltageOptions.map((opt) => (
                                 <option key={opt} value={opt}>
@@ -2856,7 +2856,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-200 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-200 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                             />
                           </td>
                           <td className="td-cell-small">
@@ -2870,7 +2870,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-200 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-200 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                             />
                           </td>
                           <td className="td-cell-small">
@@ -2884,7 +2884,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-200 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-200 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                             />
                           </td>
                           <td className="td-cell-small border-r-0">
@@ -2897,7 +2897,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                                 )
                               }
                               disabled={!isEditing}
-                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                             >
                               {insulationResistanceUnits.map((opt) => (
                                 <option key={opt} value={opt}>
@@ -3119,7 +3119,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
 
         {/* Test Equipment Used */}
         <section className="mb-6 test-equipment-section">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
             Test Equipment Used
           </h2>
@@ -3183,7 +3183,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
               </div>
               <div>
@@ -3197,7 +3197,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     handleChange("testEquipmentUsed.ampId", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
               </div>
               <div>
@@ -3211,7 +3211,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                     handleChange("testEquipmentUsed.calDate", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                 />
               </div>
             </div>
@@ -3259,7 +3259,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
 
         {/* Electrical Test Comments */}
         <section className="mb-6 electrical-comments-section">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
             Comments
           </h2>
@@ -3271,7 +3271,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
               }
               readOnly={!isEditing}
               rows={4}
-              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} print:hidden`}
+              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} print:hidden`}
             />
             {/* Print-only comments box */}
             <div className="hidden print:block">

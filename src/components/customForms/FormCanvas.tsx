@@ -101,7 +101,7 @@ const SortableSection: React.FC<SortableSectionProps> = ({
       style={style}
       className={`bg-white dark:bg-dark-150 border-2 rounded-none transition-all ${
         isSelected
-          ? "border-[#f26722] shadow-lg"
+          ? "border-brand shadow-lg"
           : "border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600"
       }`}
     >
@@ -109,7 +109,7 @@ const SortableSection: React.FC<SortableSectionProps> = ({
       <div
         className={`flex items-center gap-2 md:gap-3 px-2 md:px-4 py-2 md:py-3 border-b ${
           isSelected
-            ? "border-[#f26722] bg-orange-50 dark:bg-orange-900/20"
+            ? "border-brand bg-orange-50 dark:bg-orange-900/20"
             : "border-neutral-200 dark:border-neutral-700"
         }`}
       >
@@ -224,7 +224,7 @@ const ConditionalTableCanvasPreview: React.FC<{ section: SectionConfig }> = ({
               onChange={(e) =>
                 setSettings((prev) => ({ ...prev, [sf.id]: e.target.value }))
               }
-              className="px-2 py-1 text-xs border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-[#f26722]"
+              className="px-2 py-1 text-xs border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-brand"
             >
               {sf.options.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -282,7 +282,7 @@ const ConditionalTableCanvasPreview: React.FC<{ section: SectionConfig }> = ({
           &middot; {(section.conditionalRows ?? []).length} total defined
         </span>
         {section.allowAddRows && (
-          <span className="text-[#f26722]">+ Add Row</span>
+          <span className="text-brand">+ Add Row</span>
         )}
         {section.allowRemoveRows && (
           <span className="text-red-500">- Remove Row</span>
@@ -492,7 +492,7 @@ const SectionPreview: React.FC<{
               {totalRows} row{totalRows !== 1 ? "s" : ""}
             </span>
             {section.allowAddRows && (
-              <span className="text-[#f26722]">+ Add Row</span>
+              <span className="text-brand">+ Add Row</span>
             )}
             {section.allowRemoveRows && (
               <span className="text-red-500">- Remove Row</span>

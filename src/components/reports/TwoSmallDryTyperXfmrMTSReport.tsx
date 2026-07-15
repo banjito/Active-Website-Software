@@ -17,6 +17,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { BRAND_COLOR, BRAND_COLOR_DARK } from "@/lib/companyConfig";
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -1346,7 +1347,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
         </div>
 
         <section className="mb-6 print:mb-3">
-          <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
+          <div className="report-section-divider w-full h-1 bg-brand mb-3"></div>
           <h2 className="report-section-heading text-xl font-semibold mb-3 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
             Job Information
           </h2>
@@ -1562,7 +1563,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
         </section>
 
         <section className="mb-6 print:mb-3">
-          <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
+          <div className="report-section-divider w-full h-1 bg-brand mb-3"></div>
           <h2 className="report-section-heading text-xl font-semibold mb-3 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
             Nameplate Data
           </h2>
@@ -1733,7 +1734,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         handleChange("nameplate.connectionsPrimary", conn)
                       }
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-brand border-neutral-300 dark:border-neutral-700 focus:ring-brand"
                     />
                     <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                       {conn}
@@ -1759,7 +1760,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         handleChange("nameplate.windingMaterialPrimary", mat)
                       }
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-brand border-neutral-300 dark:border-neutral-700 focus:ring-brand"
                     />
                     <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                       {mat}
@@ -1815,7 +1816,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         handleChange("nameplate.connectionsSecondary", conn)
                       }
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-brand border-neutral-300 dark:border-neutral-700 focus:ring-brand"
                     />
                     <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                       {conn}
@@ -1841,7 +1842,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
                         handleChange("nameplate.windingMaterialSecondary", mat)
                       }
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-brand border-neutral-300 dark:border-neutral-700 focus:ring-brand"
                     />
                     <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                       {mat}
@@ -2195,7 +2196,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
         </section>
 
         <section className="mb-6 print:mb-3">
-          <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
+          <div className="report-section-divider w-full h-1 bg-brand mb-3"></div>
           <h2 className="report-section-heading text-xl font-semibold mb-3 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
             Visual and Mechanical Inspection
           </h2>
@@ -2293,7 +2294,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
         </section>
 
         <section className="mb-6 print:mb-3">
-          <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
+          <div className="report-section-divider w-full h-1 bg-brand mb-3"></div>
           <h2 className="report-section-heading text-xl font-semibold mb-3 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
             Electrical Tests - Measured Insulation Resistance
           </h2>
@@ -2616,7 +2617,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
         </section>
 
         <section className="mb-6 print:mb-3">
-          <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
+          <div className="report-section-divider w-full h-1 bg-brand mb-3"></div>
           <h2 className="report-section-heading text-xl font-semibold mb-3 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
             Electrical Tests - Turns Ratio
           </h2>
@@ -2920,7 +2921,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
         </section>
 
         <section className="mb-6 print:mb-3">
-          <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
+          <div className="report-section-divider w-full h-1 bg-brand mb-3"></div>
           <h2 className="report-section-heading text-xl font-semibold mb-3 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
             Test Equipment Used
           </h2>
@@ -3124,7 +3125,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
         <section
           className={`mb-6 comments-section print:mb-3 ${!formData.comments?.trim() ? "print:hidden" : ""}`}
         >
-          <div className="report-section-divider w-full h-1 bg-[#f26722] mb-3"></div>
+          <div className="report-section-divider w-full h-1 bg-brand mb-3"></div>
           <h2 className="report-section-heading text-xl font-semibold mb-3 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold print:text-xs">
             Comments
           </h2>
@@ -3257,7 +3258,7 @@ if (typeof document !== "undefined") {
       }
 
       .turns-ratio-scroll::-webkit-scrollbar-thumb {
-        background-color: #f26722;
+        background-color: ${BRAND_COLOR};
         border-radius: 8px;
         border: 2px solid #f3f4f6;
         min-width: 50px; /* Ensure thumb is always grabbable */
@@ -3265,7 +3266,7 @@ if (typeof document !== "undefined") {
       }
 
       .turns-ratio-scroll::-webkit-scrollbar-thumb:hover {
-        background-color: #e55611;
+        background-color: ${BRAND_COLOR_DARK};
       }
 
       .turns-ratio-scroll::-webkit-scrollbar-thumb:active {
@@ -3283,20 +3284,20 @@ if (typeof document !== "undefined") {
       }
 
       html.dark .turns-ratio-scroll::-webkit-scrollbar-thumb {
-        background-color: #f26722;
+        background-color: ${BRAND_COLOR};
         border: 2px solid #374151;
       }
 
       /* Firefox - force scrollbar always visible */
       @supports (scrollbar-color: auto) {
         .turns-ratio-scroll {
-          scrollbar-color: #f26722 #f3f4f6;
+          scrollbar-color: ${BRAND_COLOR} #f3f4f6;
           scrollbar-width: thin;
           overflow-x: scroll !important;
         }
 
         html.dark .turns-ratio-scroll {
-          scrollbar-color: #f26722 #374151;
+          scrollbar-color: ${BRAND_COLOR} #374151;
         }
       }
     }
@@ -3330,7 +3331,7 @@ if (typeof document !== "undefined") {
       }
       .two-small-xfmr-mts-print-root .report-section-divider {
         display: block !important;
-        background-color: #f26722 !important;
+        background-color: ${BRAND_COLOR} !important;
         height: 3px !important;
         min-height: 3px !important;
         margin-bottom: 6px !important;
@@ -3424,7 +3425,7 @@ if (typeof document !== "undefined") {
         font-weight: bold !important;
       }
       .report-section-divider {
-        background-color: #f26722 !important;
+        background-color: ${BRAND_COLOR} !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }

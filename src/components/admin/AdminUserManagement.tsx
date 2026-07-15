@@ -524,7 +524,7 @@ export default function AdminUserManagement() {
             <Switch
               checked={showDeactivated}
               onCheckedChange={setShowDeactivated}
-              checkedClassName="bg-[#f26722]"
+              checkedClassName="bg-brand"
             />
             <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200 whitespace-nowrap">
               Show Deactivated Users
@@ -768,7 +768,7 @@ export default function AdminUserManagement() {
                                   size="sm"
                                   onClick={() => handleChangePassword(user.id)}
                                   disabled={passwordLoadingUserId === user.id}
-                                  className="bg-[#f26722] hover:bg-[#d95d1f] text-white"
+                                  className="bg-brand hover:bg-brand-dark text-white"
                                   leftIcon={<KeyRound className="h-4 w-4" />}
                                 >
                                   {passwordLoadingUserId === user.id

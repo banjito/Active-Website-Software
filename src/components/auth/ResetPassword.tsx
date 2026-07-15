@@ -4,8 +4,10 @@ import { Lock } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { Button, CardContent, Input } from "../ui";
 import Card from "../ui/Card";
+import { useSiteLogos } from "@/services/siteThemeService";
 
 export default function ResetPassword() {
+  const { logoUrl, hideLogo } = useSiteLogos();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -67,13 +69,15 @@ export default function ResetPassword() {
 
   return (
     <div className="min-h-screen bg-white text-black flex flex-col justify-center items-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-center mb-8 sm:mb-10">
-        <img
-          src="/ampOS_full_logo.svg"
-          alt="ampOS"
-          className="h-20 sm:h-[5rem] w-auto"
-        />
-      </div>
+      {!hideLogo && (
+        <div className="flex justify-center mb-8 sm:mb-10">
+          <img
+            src={logoUrl}
+            alt="ampOS"
+            className="h-20 sm:h-[5rem] w-auto"
+          />
+        </div>
+      )}
 
       <div className="w-full flex flex-col justify-center">
         <div className="mx-auto w-full max-w-md">
@@ -83,7 +87,7 @@ export default function ResetPassword() {
             </h2>
           </div>
 
-          <Card className="bg-[#f26722] border border-neutral-800 shadow-sm">
+          <Card className="bg-brand border border-neutral-800 shadow-sm">
             <CardContent className="p-6 sm:p-10 md:p-12">
               {checkingSession ? (
                 <p className="text-sm text-black">Checking reset link...</p>
@@ -99,7 +103,7 @@ export default function ResetPassword() {
                     size="lg"
                     fullWidth
                     onClick={() => navigate("/login", { replace: true })}
-                    className="h-14 sm:h-12 text-base font-medium hover:bg-[#f26722]/75"
+                    className="h-14 sm:h-12 text-base font-medium hover:bg-brand/75"
                   >
                     Back to sign in
                   </Button>
@@ -120,7 +124,7 @@ export default function ResetPassword() {
                       minLength={6}
                       placeholder="Enter new password"
                       hint="Password must be at least 6 characters"
-                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 text-base h-14 sm:h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
+                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 text-base h-14 sm:h-12 focus:!border-brand focus:!ring-2 focus:!ring-brand focus:!ring-offset-2 focus:!ring-offset-neutral-200"
                     />
 
                     <Input
@@ -135,7 +139,7 @@ export default function ResetPassword() {
                       leftIcon={<Lock className="h-5 w-5 text-neutral-400" />}
                       minLength={6}
                       placeholder="Re-enter new password"
-                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 text-base h-14 sm:h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
+                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 text-base h-14 sm:h-12 focus:!border-brand focus:!ring-2 focus:!ring-brand focus:!ring-offset-2 focus:!ring-offset-neutral-200"
                     />
                   </div>
 
@@ -159,7 +163,7 @@ export default function ResetPassword() {
                       fullWidth
                       isLoading={loading}
                       leftIcon={<Lock className="h-5 w-5" />}
-                      className="h-14 sm:h-12 text-base font-medium hover:bg-[#f26722]/75"
+                      className="h-14 sm:h-12 text-base font-medium hover:bg-brand/75"
                     >
                       Update password
                     </Button>

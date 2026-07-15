@@ -749,7 +749,7 @@ const InProgressDashboard: React.FC = () => {
                       onClick={() => setSelectedQuarter(1)}
                       className={
                         selectedQuarter === 1
-                          ? "bg-[#f26722] hover:bg-[#e55611] h-7 px-3"
+                          ? "bg-brand hover:bg-brand-dark h-7 px-3"
                           : "h-7 px-3"
                       }
                     >
@@ -761,7 +761,7 @@ const InProgressDashboard: React.FC = () => {
                       onClick={() => setSelectedQuarter(2)}
                       className={
                         selectedQuarter === 2
-                          ? "bg-[#f26722] hover:bg-[#e55611] h-7 px-3"
+                          ? "bg-brand hover:bg-brand-dark h-7 px-3"
                           : "h-7 px-3"
                       }
                     >
@@ -773,7 +773,7 @@ const InProgressDashboard: React.FC = () => {
                       onClick={() => setSelectedQuarter(3)}
                       className={
                         selectedQuarter === 3
-                          ? "bg-[#f26722] hover:bg-[#e55611] h-7 px-3"
+                          ? "bg-brand hover:bg-brand-dark h-7 px-3"
                           : "h-7 px-3"
                       }
                     >
@@ -785,7 +785,7 @@ const InProgressDashboard: React.FC = () => {
                       onClick={() => setSelectedQuarter(4)}
                       className={
                         selectedQuarter === 4
-                          ? "bg-[#f26722] hover:bg-[#e55611] h-7 px-3"
+                          ? "bg-brand hover:bg-brand-dark h-7 px-3"
                           : "h-7 px-3"
                       }
                     >
@@ -804,7 +804,7 @@ const InProgressDashboard: React.FC = () => {
                 {/* Timeframe Filter */}
                 <div className="flex flex-wrap gap-4 items-center">
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-[#f26722]" />
+                    <Calendar className="h-5 w-5 text-brand" />
                     <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
                       Timeframe:
                     </label>
@@ -829,7 +829,7 @@ const InProgressDashboard: React.FC = () => {
                       }}
                       className={
                         timeframe === "quarterly"
-                          ? "bg-[#f26722] hover:bg-[#e55611]"
+                          ? "bg-brand hover:bg-brand-dark"
                           : ""
                       }
                     >
@@ -844,7 +844,7 @@ const InProgressDashboard: React.FC = () => {
                       }}
                       className={
                         timeframe === "6months"
-                          ? "bg-[#f26722] hover:bg-[#e55611]"
+                          ? "bg-brand hover:bg-brand-dark"
                           : ""
                       }
                     >
@@ -859,7 +859,7 @@ const InProgressDashboard: React.FC = () => {
                       }}
                       className={
                         timeframe === "yearly"
-                          ? "bg-[#f26722] hover:bg-[#e55611]"
+                          ? "bg-brand hover:bg-brand-dark"
                           : ""
                       }
                     >
@@ -874,7 +874,7 @@ const InProgressDashboard: React.FC = () => {
                       }}
                       className={
                         timeframe === "custom"
-                          ? "bg-[#f26722] hover:bg-[#e55611]"
+                          ? "bg-brand hover:bg-brand-dark"
                           : ""
                       }
                     >
@@ -907,7 +907,7 @@ const InProgressDashboard: React.FC = () => {
                 {/* Status, Division, and Search Filters */}
                 <div className="flex flex-wrap gap-4 items-center border-t dark:border-neutral-700 pt-4">
                   <div className="flex items-center gap-2">
-                    <Filter className="h-5 w-5 text-[#f26722]" />
+                    <Filter className="h-5 w-5 text-brand" />
                     <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
                       Status:
                     </label>
@@ -933,7 +933,7 @@ const InProgressDashboard: React.FC = () => {
                   </select>
 
                   <div className="flex items-center gap-2 ml-4">
-                    <MapPin className="h-5 w-5 text-[#f26722]" />
+                    <MapPin className="h-5 w-5 text-brand" />
                     <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
                       Division:
                     </label>
@@ -1279,7 +1279,7 @@ const InProgressDashboard: React.FC = () => {
                   return (
                     <div
                       key={job.id}
-                      className="group p-4 rounded-none border border-neutral-200 dark:border-neutral-700 hover:border-[#f26722]/50 transition-all cursor-pointer bg-neutral-50/30 dark:bg-neutral-800/30 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60"
+                      className="group p-4 rounded-none border border-neutral-200 dark:border-neutral-700 hover:border-brand/50 transition-all cursor-pointer bg-neutral-50/30 dark:bg-neutral-800/30 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
@@ -1383,7 +1383,7 @@ const InProgressDashboard: React.FC = () => {
                   {region.jobs.map((job) => (
                     <div
                       key={job.id}
-                      className="group p-4 rounded-none border border-neutral-200 dark:border-neutral-700 hover:border-[#f26722]/50 dark:hover:border-[#f26722]/50 transition-all cursor-pointer bg-neutral-50/30 dark:bg-neutral-800/30 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60 hover:shadow-md"
+                      className="group p-4 rounded-none border border-neutral-200 dark:border-neutral-700 hover:border-brand/50 dark:hover:border-brand/50 transition-all cursor-pointer bg-neutral-50/30 dark:bg-neutral-800/30 hover:bg-neutral-50/60 dark:hover:bg-neutral-800/60 hover:shadow-md"
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
@@ -1483,7 +1483,7 @@ const InProgressDashboard: React.FC = () => {
                                   setModalLoading(false);
                                 }
                               }}
-                              className="hover:bg-[#f26722] hover:text-white hover:border-[#f26722] transition-colors"
+                              className="hover:bg-brand hover:text-white hover:border-brand transition-colors"
                             >
                               <Eye className="h-3 w-3 mr-1" />
                               Opportunity
@@ -1517,7 +1517,7 @@ const InProgressDashboard: React.FC = () => {
                                 setModalLoading(false);
                               }
                             }}
-                            className="hover:bg-[#f26722] hover:text-white hover:border-[#f26722] transition-colors"
+                            className="hover:bg-brand hover:text-white hover:border-brand transition-colors"
                           >
                             <Eye className="h-3 w-3 mr-1" />
                             View Job

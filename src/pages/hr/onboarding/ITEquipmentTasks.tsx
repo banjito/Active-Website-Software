@@ -363,7 +363,7 @@ export const ITEquipmentTasks: React.FC = () => {
             resetForm();
             setIsCreateModalOpen(true);
           }}
-          className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+          className="bg-brand hover:bg-brand/90 text-white"
         >
           <Plus className="h-4 w-4 mr-2" />
           Create Task
@@ -792,7 +792,7 @@ export const ITEquipmentTasks: React.FC = () => {
             </Button>
             <Button
               onClick={handleCreate}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               Create Task
             </Button>
@@ -1050,7 +1050,7 @@ export const ITEquipmentTasks: React.FC = () => {
             </Button>
             <Button
               onClick={handleUpdate}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               Update Task
             </Button>

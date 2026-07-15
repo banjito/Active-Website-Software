@@ -385,14 +385,14 @@ export const RequisitionApprovals: React.FC = () => {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <Card className="border-l-4 border-l-[#f26722]">
+        <Card className="border-l-4 border-l-brand">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
               Assigned to Me
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#f26722]">
+            <div className="text-2xl font-bold text-brand">
               {myPendingItems.length}
             </div>
           </CardContent>
@@ -458,7 +458,7 @@ export const RequisitionApprovals: React.FC = () => {
                 placeholder="Search by title, department, or location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -466,7 +466,7 @@ export const RequisitionApprovals: React.FC = () => {
               <select
                 value={filterDepartment}
                 onChange={(e) => setFilterDepartment(e.target.value)}
-                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
               >
                 <option value="all">All Departments</option>
                 {departments.map((dept) => (
@@ -479,7 +479,7 @@ export const RequisitionApprovals: React.FC = () => {
             <select
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
-              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
             >
               <option value="all">All Priorities</option>
               <option value="high">High</option>
@@ -532,7 +532,7 @@ export const RequisitionApprovals: React.FC = () => {
             return (
               <Card
                 key={req.id}
-                className={`hover:shadow-lg transition-all border-l-4 ${canApprove ? "border-l-[#f26722]" : "border-l-yellow-400"}`}
+                className={`hover:shadow-lg transition-all border-l-4 ${canApprove ? "border-l-brand" : "border-l-yellow-400"}`}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -547,7 +547,7 @@ export const RequisitionApprovals: React.FC = () => {
                           Priority
                         </span>
                         {canApprove && (
-                          <span className="px-2 py-1 rounded-none text-xs font-medium bg-[#f26722]/10 text-[#f26722] ring-1 ring-[#f26722]/30">
+                          <span className="px-2 py-1 rounded-none text-xs font-medium bg-brand/10 text-brand ring-1 ring-brand/30">
                             Your Turn
                           </span>
                         )}
@@ -776,7 +776,7 @@ export const RequisitionApprovals: React.FC = () => {
                                 <p className="text-sm font-medium text-neutral-900 dark:text-white">
                                   {getUserName(approver.approver_user_id)}
                                   {approver.approver_user_id === user?.id && (
-                                    <span className="ml-2 text-xs text-[#f26722]">
+                                    <span className="ml-2 text-xs text-brand">
                                       (You)
                                     </span>
                                   )}

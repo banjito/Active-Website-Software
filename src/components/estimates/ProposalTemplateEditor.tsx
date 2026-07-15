@@ -63,6 +63,7 @@ import {
   renderTemplateSection,
   sanitizeTemplateHtml,
 } from "./proposalTemplateDefaults";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 /** contentEditable page-break marker — identical to the per-letter editor's. */
 const PAGE_BREAK_HTML =
@@ -206,7 +207,7 @@ function RichSectionEditor({
         suppressContentEditableWarning
         dangerouslySetInnerHTML={{ __html: seedHtml }}
         onInput={emit}
-        className={`${minHeightClass} max-h-[480px] overflow-y-auto p-4 bg-white text-neutral-900 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#f26722]`}
+        className={`${minHeightClass} max-h-[480px] overflow-y-auto p-4 bg-white text-neutral-900 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-brand`}
         style={{ fontFamily: "Arial, sans-serif" }}
       />
     </div>
@@ -644,10 +645,10 @@ export default function ProposalTemplateEditor({
       ${renderCustomAt("after_header")}
       ${renderPreviewSection("intro")}
       ${renderCustomAt("after_intro")}
-      <div style="margin:12px 0;padding:10px;border:1px dashed #f26722;border-radius:8px;background:#fff7f2;color:#9a3412;text-align:center;">[ Generated scope table appears here ]</div>
+      <div style="margin:12px 0;padding:10px;border:1px dashed ${BRAND_COLOR};border-radius:8px;background:#fff7f2;color:#9a3412;text-align:center;">[ Generated scope table appears here ]</div>
       ${renderCustomAt("after_scope")}
       <div style="margin-top: 12px;"><b style="font-size: 1.15em;">Pricing &amp; Terms</b></div>
-      <div style="margin:4px 0;padding:10px;border:1px dashed #f26722;border-radius:8px;background:#fff7f2;color:#9a3412;text-align:center;">[ Generated pricing options &amp; mobilization line appear here ]</div>
+      <div style="margin:4px 0;padding:10px;border:1px dashed ${BRAND_COLOR};border-radius:8px;background:#fff7f2;color:#9a3412;text-align:center;">[ Generated pricing options &amp; mobilization line appear here ]</div>
       ${renderCustomAt("after_pricing")}
       ${renderPreviewSection("terms")}
       ${renderCustomAt("after_terms")}
@@ -659,7 +660,7 @@ export default function ProposalTemplateEditor({
       ${renderPreviewSection("footer")}
       ${renderCustomAt("before_safety")}
       <div style="margin-top: 24px;">
-        <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 4px; margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; border-bottom: 2px solid ${BRAND_COLOR}; padding-bottom: 4px; margin-bottom: 8px;">
           <span style="font-size: 1.0em; font-weight: bold; color: #333;">Safety Policy on Jobsites</span>
         </div>
         ${renderPreviewSection("safety")}
@@ -731,7 +732,7 @@ export default function ProposalTemplateEditor({
             onClick={handleSave}
             disabled={saving || !hasChanges}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white
-                       bg-[#f26722] hover:bg-[#e55611] rounded-none shadow-sm
+                       bg-brand hover:bg-brand-dark rounded-none shadow-sm
                        disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Save className="h-4 w-4" />
@@ -747,7 +748,7 @@ export default function ProposalTemplateEditor({
           onClick={() => setShowTokens((v) => !v)}
           className="w-full flex items-center gap-2 px-6 py-4 text-left"
         >
-          <Info className="h-5 w-5 text-[#f26722]" />
+          <Info className="h-5 w-5 text-brand" />
           <span className="text-lg font-semibold text-neutral-900 dark:text-white">
             Available Placeholders
           </span>
@@ -765,7 +766,7 @@ export default function ProposalTemplateEditor({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
               {TEMPLATE_TOKENS.map(({ token, description }) => (
                 <div key={token} className="flex gap-2 text-sm">
-                  <code className="shrink-0 px-1.5 py-0.5 bg-neutral-100 dark:bg-dark-200 border border-neutral-200 dark:border-neutral-700 text-[#f26722] font-mono">
+                  <code className="shrink-0 px-1.5 py-0.5 bg-neutral-100 dark:bg-dark-200 border border-neutral-200 dark:border-neutral-700 text-brand font-mono">
                     {token}
                   </code>
                   <span className="text-neutral-600 dark:text-neutral-400">
@@ -800,7 +801,7 @@ export default function ProposalTemplateEditor({
                 markChanged();
               }}
               className="block w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm
-                         focus:ring-[#f26722] focus:border-[#f26722]
+                         focus:ring-brand focus:border-brand
                          bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
             />
           </div>
@@ -816,7 +817,7 @@ export default function ProposalTemplateEditor({
                 markChanged();
               }}
               className="block w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm
-                         focus:ring-[#f26722] focus:border-[#f26722]
+                         focus:ring-brand focus:border-brand
                          bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
             />
           </div>
@@ -924,7 +925,7 @@ export default function ProposalTemplateEditor({
                   }
                   placeholder="Short label (e.g. MTS 2023)"
                   className="block w-full px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none
-                             focus:ring-[#f26722] focus:border-[#f26722] bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                             focus:ring-brand focus:border-brand bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                 />
                 <textarea
                   value={opt.text}
@@ -934,7 +935,7 @@ export default function ProposalTemplateEditor({
                   rows={2}
                   placeholder="The full sentence inserted into the letter"
                   className="block w-full px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none
-                             focus:ring-[#f26722] focus:border-[#f26722] bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                             focus:ring-brand focus:border-brand bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                 />
               </div>
               <button
@@ -951,8 +952,8 @@ export default function ProposalTemplateEditor({
         <button
           type="button"
           onClick={addNetaOption}
-          className="mt-3 flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#f26722]
-                     border border-[#f26722] rounded-none hover:bg-[#f26722] hover:text-white transition-colors"
+          className="mt-3 flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand
+                     border border-brand rounded-none hover:bg-brand hover:text-white transition-colors"
         >
           <Plus className="h-4 w-4" />
           Add Option
@@ -968,8 +969,8 @@ export default function ProposalTemplateEditor({
           <button
             type="button"
             onClick={addCustomSection}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#f26722]
-                       border border-[#f26722] rounded-none hover:bg-[#f26722] hover:text-white transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand
+                       border border-brand rounded-none hover:bg-brand hover:text-white transition-colors"
           >
             <Plus className="h-4 w-4" />
             Add Section
@@ -1000,7 +1001,7 @@ export default function ProposalTemplateEditor({
                     }
                     placeholder="Section name (for your reference)"
                     className="flex-1 min-w-[180px] px-3 py-1.5 text-sm font-medium border border-neutral-300 dark:border-neutral-600 rounded-none
-                               focus:ring-[#f26722] focus:border-[#f26722] bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                               focus:ring-brand focus:border-brand bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                   />
                   <label className="text-sm text-neutral-600 dark:text-neutral-400">
                     Location:
@@ -1093,7 +1094,7 @@ export default function ProposalTemplateEditor({
               })
             }
             className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white
-                       bg-[#f26722] hover:bg-[#e55611] rounded-none shadow-lg transition-colors"
+                       bg-brand hover:bg-brand-dark rounded-none shadow-lg transition-colors"
           >
             <ArrowDown className="h-4 w-4" />
             Jump to Preview

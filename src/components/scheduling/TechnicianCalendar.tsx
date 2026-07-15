@@ -39,6 +39,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import dayjs from "dayjs";
+import { employeeEmailRegex, employeeNameEmailRegex } from "@/lib/companyConfig";
 
 interface TechnicianCalendarProps {
   portalType: PortalType;
@@ -756,11 +757,11 @@ export function TechnicianCalendar({
   // Prepare options for the Select component
   // Build technician options from availability + users (admin list) + any technicians present in current events
   const isAmpEmail = (email?: string | null) =>
-    !!email && /@ampqes\.com$/i.test(String(email));
+    !!email && employeeEmailRegex.test(String(email));
   const deriveNameFromEmail = (email?: string | null): string | null => {
     if (!email) return null;
     const lower = String(email).toLowerCase();
-    const m = lower.match(/^([a-z]+)\.([a-z]+)@ampqes\.com$/i);
+    const m = lower.match(employeeNameEmailRegex);
     if (!m) return null;
     const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
     return `${cap(m[1])} ${cap(m[2])}`;

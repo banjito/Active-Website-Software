@@ -3,6 +3,7 @@ import { User } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Navigate, useLocation } from "react-router-dom";
+import { employeeNameEmailRegex } from "./companyConfig";
 
 interface AuthContextType {
   user: User | null;
@@ -30,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const deriveNameFromEmail = (email?: string | null): string | null => {
     if (!email) return null;
     const lower = email.toLowerCase();
-    const match = lower.match(/^([a-z]+)\.([a-z]+)@ampqes\.com$/i);
+    const match = lower.match(employeeNameEmailRegex);
     if (!match) return null;
     const first = match[1];
     const last = match[2];

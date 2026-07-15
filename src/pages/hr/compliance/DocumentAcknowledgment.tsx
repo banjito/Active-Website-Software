@@ -253,7 +253,7 @@ export const DocumentAcknowledgment: React.FC = () => {
   ) => {
     if (!user?.id) return;
     const docName = pending.name.trim();
-    const docLinkHtml = `<p><a href="${pending.file_url}" target="_blank" rel="noopener noreferrer" class="text-[#f26722] underline">View attached document: ${pending.file_name}</a></p>`;
+    const docLinkHtml = `<p><a href="${pending.file_url}" target="_blank" rel="noopener noreferrer" class="text-brand underline">View attached document: ${pending.file_name}</a></p>`;
     const formContent = `<p>I acknowledge that I have read and received the document: <strong>${docName}</strong>.</p>${docLinkHtml}`;
     const attachedDoc: {
       name: string;
@@ -618,7 +618,7 @@ export const DocumentAcknowledgment: React.FC = () => {
         {isManager && (
           <div className="flex gap-2">
             <Button
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
               onClick={() => setShowAddModal(true)}
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -674,7 +674,7 @@ export const DocumentAcknowledgment: React.FC = () => {
             onClick={() => setActiveTab("active")}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               activeTab === "active"
-                ? "border-[#f26722] text-[#f26722]"
+                ? "border-brand text-brand"
                 : "border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
             }`}
           >
@@ -689,7 +689,7 @@ export const DocumentAcknowledgment: React.FC = () => {
             onClick={() => setActiveTab("archived")}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               activeTab === "archived"
-                ? "border-[#f26722] text-[#f26722]"
+                ? "border-brand text-brand"
                 : "border-transparent text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
             }`}
           >
@@ -764,7 +764,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                           href={getAttachmentUrl(form)!}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-sm text-[#f26722] hover:underline mt-1"
+                          className="inline-flex items-center gap-1 text-sm text-brand hover:underline mt-1"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
@@ -783,7 +783,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => openSignModal(form)}
-                              className="text-[#f26722] border-[#f26722] hover:bg-[#f26722]/10"
+                              className="text-brand border-brand hover:bg-brand/10"
                             >
                               <PenTool className="h-4 w-4 mr-1" />
                               Acknowledge
@@ -979,7 +979,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                     requiresSignature: e.target.checked,
                   }))
                 }
-                className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                className="h-4 w-4 text-brand focus:ring-brand border-neutral-300 rounded"
               />
               <label
                 htmlFor="requires-sig"
@@ -1000,9 +1000,9 @@ export const DocumentAcknowledgment: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setCreateAnnouncement(!createAnnouncement)}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
+                  className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 ${
                     createAnnouncement
-                      ? "bg-[#f26722]"
+                      ? "bg-brand"
                       : "bg-neutral-300 dark:bg-neutral-600"
                   }`}
                 >
@@ -1016,13 +1016,13 @@ export const DocumentAcknowledgment: React.FC = () => {
                   className="text-sm font-medium flex items-center gap-1.5 cursor-pointer"
                   onClick={() => setCreateAnnouncement(!createAnnouncement)}
                 >
-                  <Megaphone className="h-4 w-4 text-[#f26722]" />
+                  <Megaphone className="h-4 w-4 text-brand" />
                   Also create an announcement
                 </label>
               </div>
 
               {createAnnouncement && (
-                <div className="space-y-3 pl-1 border-l-2 border-[#f26722]/30 ml-4 pl-4">
+                <div className="space-y-3 pl-1 border-l-2 border-brand/30 ml-4 pl-4">
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
                       Announcement message (optional)
@@ -1090,7 +1090,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                           is_published: e.target.checked,
                         }))
                       }
-                      className="h-3.5 w-3.5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                      className="h-3.5 w-3.5 text-brand focus:ring-brand border-neutral-300 rounded"
                     />
                     <label
                       htmlFor="ann-publish"

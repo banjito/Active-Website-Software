@@ -282,7 +282,7 @@ export function DivisionAnalyticsDialog({
                     config={{
                       value: {
                         label: "Awarded Value",
-                        color: "#f26722",
+                        color: "var(--brand)",
                       },
                     }}
                     className="h-[400px]"
@@ -314,7 +314,7 @@ export function DivisionAnalyticsDialog({
                       />
                       <Bar
                         dataKey="value"
-                        fill="#f26722"
+                        fill="var(--brand)"
                         radius={[4, 4, 0, 0]}
                       />
                     </BarChart>

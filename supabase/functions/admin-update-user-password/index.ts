@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { COMPANY_SUPERUSER_EMAILS } from '../_shared/companyConfig.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,10 +8,7 @@ const corsHeaders = {
 }
 
 // Keep this list in sync with src/lib/roles.ts and common.is_superuser_email.
-const SUPERUSER_EMAILS = [
-  'john.chambers@ampqes.com',
-  'jack.lyons@ampqes.com',
-]
+const SUPERUSER_EMAILS = COMPANY_SUPERUSER_EMAILS
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {

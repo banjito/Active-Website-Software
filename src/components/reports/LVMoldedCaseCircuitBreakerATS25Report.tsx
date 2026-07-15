@@ -2633,7 +2633,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
         <div className="space-y-6">
           {/* --- Job Information Section --- */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
@@ -2949,7 +2949,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           {/* --- Nameplate Data Section --- */}
           <div className="mb-6">
             <div className="print:hidden">
-              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <div className="w-full h-1 bg-brand mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Nameplate Data
               </h2>
@@ -3235,7 +3235,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
           {/* --- Visual and Mechanical Inspection Section --- */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
@@ -3279,7 +3279,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             <option value=""></option>
                             {visualInspectionResultsOptions.map((option) => (
@@ -3302,7 +3302,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
           {/* --- Device Settings Section --- */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Device Settings
             </h2>
@@ -4048,7 +4048,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
           {/* --- Electrical Tests - Contact/Pole Resistance Section --- */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Contact/Pole Resistance
             </h2>
@@ -4180,7 +4180,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
           {/* --- Electrical Tests - Insulation Resistance Section --- */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Insulation Resistance
             </h2>
@@ -4715,7 +4715,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           {/* --- Electrical Tests - Current Sensing Section --- */}
           {!formData.irDlroOnly && (
             <div className="mb-6">
-              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <div className="w-full h-1 bg-brand mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
                 Electrical Tests - Current Sensing
               </h2>
@@ -6238,7 +6238,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
           {/* --- Test Equipment Used Section --- */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
@@ -6474,7 +6474,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           <div
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>

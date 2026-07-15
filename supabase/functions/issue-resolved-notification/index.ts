@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { BRAND_COLOR, COMPANY_ADMIN_EMAIL, COMPANY_FULL_NAME, COMPANY_NAME, COMPANY_OPS_EMAIL } from '../_shared/companyConfig.ts'
 
 console.log("issue-resolved-notification: function loaded");
 
@@ -112,12 +113,12 @@ serve(async (req) => {
     }
 
     // Always notify admin on new issue/feature submissions
-    const ADMIN_NOTIFY_EMAIL = "jack.lyons@ampqes.com";
+    const ADMIN_NOTIFY_EMAIL = COMPANY_ADMIN_EMAIL;
     if (action === "created" && !emailsToSend.includes(ADMIN_NOTIFY_EMAIL)) {
       emailsToSend.push(ADMIN_NOTIFY_EMAIL);
     }
 
-    const LEGACY_NOTIFY_EMAIL = "john.chambers@ampqes.com";
+    const LEGACY_NOTIFY_EMAIL = COMPANY_OPS_EMAIL;
     const filteredEmailsToSend = emailsToSend.filter(
       (email) => email.trim().toLowerCase() !== LEGACY_NOTIFY_EMAIL,
     );
@@ -141,10 +142,8 @@ serve(async (req) => {
 
     const label =
       issue.type === "feature_request" ? "Feature request" : "Issue";
-    const from = (
-      Deno.env.get("POSTMARK_FROM") ?? "jack.lyons@ampqes.com"
-    ).trim();
-    const fromHeader = from.includes("<") ? from : `AMP System <${from}>`;
+    const from = (Deno.env.get("POSTMARK_FROM") ?? COMPANY_ADMIN_EMAIL).trim();
+    const fromHeader = from.includes("<") ? from : `${COMPANY_NAME} System <${from}>`;
     const appUrl = (
       Deno.env.get("APP_URL") ||
       Deno.env.get("SITE_URL") ||
@@ -206,12 +205,12 @@ serve(async (req) => {
       detailRows = `<tr><td style="padding:12px;border-bottom:1px solid #eee;font-weight:bold;background:#f8f9fa">Title</td><td style="padding:12px;border-bottom:1px solid #eee">${safeTitle}</td></tr>${resolutionCommentRow}<tr><td style="padding:12px;font-weight:bold;background:#f8f9fa">Resolved</td><td style="padding:12px">${resolvedAt}</td></tr>`;
     }
 
-    const htmlBody = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto"><div style="background:#f26722;color:#fff;padding:20px;text-align:center"><h1 style="margin:0;font-size:24px">${heading}</h1></div><div style="padding:20px;background:#f9f9f9"><p>${bodyText}</p><table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,.1)">${detailRows}</table>${link ? `<div style="margin-top:20px;text-align:center"><a href="${link}" style="background:#f26722;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold">View Features &amp; Fixes</a></div>` : ""}</div><div style="padding:20px;text-align:center;color:#666;font-size:14px;border-top:1px solid #eee"><p style="margin:0">Automated notification from AMP Quality Energy Services</p></div></div>`;
+    const htmlBody = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto"><div style="background:${BRAND_COLOR};color:#fff;padding:20px;text-align:center"><h1 style="margin:0;font-size:24px">${heading}</h1></div><div style="padding:20px;background:#f9f9f9"><p>${bodyText}</p><table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,.1)">${detailRows}</table>${link ? `<div style="margin-top:20px;text-align:center"><a href="${link}" style="background:${BRAND_COLOR};color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold">View Features &amp; Fixes</a></div>` : ""}</div><div style="padding:20px;text-align:center;color:#666;font-size:14px;border-top:1px solid #eee"><p style="margin:0">Automated notification from ${COMPANY_FULL_NAME}</p></div></div>`;
     const textResolutionComment =
       action === "resolved" && resolutionComment
         ? `\n\nResolution note:\n${resolutionComment}`
         : "";
-    const textBodyStr = `${heading}\n\n${bodyText}\n\nTitle: ${issue.title}${textResolutionComment}${link ? "\nView: " + link : ""}\n\nAutomated notification from AMP Quality Energy Services`;
+    const textBodyStr = `${heading}\n\n${bodyText}\n\nTitle: ${issue.title}${textResolutionComment}${link ? "\nView: " + link : ""}\n\nAutomated notification from ${COMPANY_FULL_NAME}`;
 
     // 5. Send email to each recipient
     const sentTo: string[] = [];

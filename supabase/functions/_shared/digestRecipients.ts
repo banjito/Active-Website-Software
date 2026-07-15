@@ -3,6 +3,8 @@
  * Users must have a common.user_preferences row; automatedEmails.<key> !== false opts in.
  */
 
+import { COMPANY_ACCOUNTING_EMAIL } from './companyConfig.ts';
+
 export type DigestKey = 'dailyReview' | 'dailyReadyToBill' | 'weeklyReports';
 
 interface UserPreferenceRow {
@@ -115,8 +117,5 @@ export async function getDigestRecipientEmails(
 }
 
 export function getAccountingDigestEmail(): string {
-  return (
-    Deno.env.get('ACCOUNTING_NOTIFICATION_EMAIL')?.trim() ||
-    'accounting@ampqes.com'
-  );
+  return COMPANY_ACCOUNTING_EMAIL;
 }

@@ -51,15 +51,28 @@ export default defineConfig(({ mode }) => {
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          pdfjs: ['pdfjs-dist'],
-          'vendor-mui': ['@mui/material', '@mui/icons-material', '@mui/x-date-pickers'],
-          'vendor-charts': ['recharts', 'chart.js', 'react-chartjs-2'],
-          'vendor-bootstrap': ['react-bootstrap', 'bootstrap'],
-          'vendor-calendar': ['@fullcalendar/core', '@fullcalendar/daygrid', '@fullcalendar/react', '@fullcalendar/timegrid', '@fullcalendar/interaction'],
-          'vendor-supabase': ['@supabase/supabase-js', '@supabase/auth-helpers-react'],
-          'vendor-pdf': ['@react-pdf/renderer', 'jspdf', 'jspdf-autotable', 'pdf-lib'],
-          'vendor-react-core': ['react', 'react-dom', 'react-router-dom']
+        // Vite 8 (rolldown) only accepts the function form of manualChunks.
+        // Same groupings as the previous object form.
+        manualChunks(id: string) {
+          if (!id.includes('node_modules')) return undefined;
+          const pkg = (id.split('node_modules/').pop() || '')
+            .split('/')
+            .slice(0, id.includes('node_modules/@') ? 2 : 1)
+            .join('/');
+          const groups: Record<string, string[]> = {
+            pdfjs: ['pdfjs-dist'],
+            'vendor-mui': ['@mui/material', '@mui/icons-material', '@mui/x-date-pickers'],
+            'vendor-charts': ['recharts', 'chart.js', 'react-chartjs-2'],
+            'vendor-bootstrap': ['react-bootstrap', 'bootstrap'],
+            'vendor-calendar': ['@fullcalendar/core', '@fullcalendar/daygrid', '@fullcalendar/react', '@fullcalendar/timegrid', '@fullcalendar/interaction'],
+            'vendor-supabase': ['@supabase/supabase-js', '@supabase/auth-helpers-react'],
+            'vendor-pdf': ['@react-pdf/renderer', 'jspdf', 'jspdf-autotable', 'pdf-lib'],
+            'vendor-react-core': ['react', 'react-dom', 'react-router-dom'],
+          };
+          for (const [chunk, pkgs] of Object.entries(groups)) {
+            if (pkgs.includes(pkg)) return chunk;
+          }
+          return undefined;
         }
       }
     }

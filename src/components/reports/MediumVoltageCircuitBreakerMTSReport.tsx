@@ -909,7 +909,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
         onChange={handleInputChange}
         placeholder={placeholder}
         readOnly={!isEditing || readOnlyOverride}
-        className={`mt-1 block ${widthClass} rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing || readOnlyOverride ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+        className={`mt-1 block ${widthClass} rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing || readOnlyOverride ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
       />
     );
   };
@@ -955,7 +955,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
         value={displayValue}
         onChange={handleInputChange}
         disabled={!isEditing || readOnlyOverride}
-        className={`mt-1 block ${widthClass} rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing || readOnlyOverride ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+        className={`mt-1 block ${widthClass} rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing || readOnlyOverride ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
       >
         {options.map((opt) => (
           <option key={opt} value={opt}>
@@ -1029,7 +1029,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
 
           {/* Job Information */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
@@ -1283,7 +1283,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
 
           {/* Nameplate Data */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Nameplate Data
             </h2>
@@ -1436,7 +1436,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
 
           {/* Visual and Mechanical Inspection */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
@@ -1607,7 +1607,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
 
           {/* Contact/Pole Resistance */}
           <section className="mb-6 section-contact-resistance">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Contact/Pole Resistance
             </h2>
@@ -1756,7 +1756,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
 
           {/* Insulation Resistance */}
           <section className="mb-6 section-insulation-resistance">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Insulation Resistance
             </h2>
@@ -2077,7 +2077,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
 
           {/* Dielectric Withstand */}
           <section className="mb-6 section-dielectric-withstand">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Dielectric Withstand
             </h2>
@@ -2298,7 +2298,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
 
           {/* Test Equipment Used */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
@@ -2610,7 +2610,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
           <section
             className={`mb-6 print:break-before-page comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>
@@ -2622,7 +2622,7 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
                 placeholder="Enter any comments or notes here..."
                 readOnly={!isEditing}
                 rows={4}
-                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               />
             </div>
 

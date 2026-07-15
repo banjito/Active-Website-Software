@@ -135,7 +135,7 @@ export function EmailDigestPreferences({
     >
       <div className={`flex items-center gap-2 mb-1 ${compact ? "" : ""}`}>
         <Mail
-          className={`${iconClass} text-neutral-400 dark:text-[#f26722] shrink-0`}
+          className={`${iconClass} text-neutral-400 dark:text-brand shrink-0`}
         />
         <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
           Email digests
@@ -182,7 +182,7 @@ export function EmailDigestPreferences({
                 checked={automated[key] !== false}
                 onCheckedChange={(checked) => handleToggle(key, checked)}
                 disabled={saving}
-                checkedClassName="bg-[#f26722]"
+                checkedClassName="bg-brand"
                 aria-label={label}
               />
             </div>

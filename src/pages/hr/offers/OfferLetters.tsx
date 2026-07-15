@@ -1033,7 +1033,7 @@ export const OfferLetters: React.FC = () => {
             New Template
           </Button>
           <Button
-            className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+            className="bg-brand hover:bg-brand/90 text-white"
             onClick={() => {
               setOfferFormData({
                 candidate_id: "",
@@ -1098,7 +1098,7 @@ export const OfferLetters: React.FC = () => {
                           {template.name}
                         </CardTitle>
                         {template.is_default && (
-                          <span className="inline-block mt-1 px-2 py-1 text-xs font-medium bg-[#f26722] text-white rounded">
+                          <span className="inline-block mt-1 px-2 py-1 text-xs font-medium bg-brand text-white rounded">
                             Default
                           </span>
                         )}
@@ -1295,7 +1295,7 @@ export const OfferLetters: React.FC = () => {
                         onClick={() => handleSendToOnboarding(offer.id)}
                         disabled={sendingToOnboardingOfferId === offer.id}
                         title="Send to Onboarding"
-                        className="bg-[#f26722]/10 hover:bg-[#f26722]/20 text-[#f26722] border-[#f26722]/30"
+                        className="bg-brand/10 hover:bg-brand/20 text-brand border-brand/30"
                       >
                         <UserPlus className="h-4 w-4 mr-1" />
                         {sendingToOnboardingOfferId === offer.id
@@ -1389,7 +1389,7 @@ export const OfferLetters: React.FC = () => {
             </Button>
             <Button
               onClick={handleCreateTemplate}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               Create Template
             </Button>
@@ -1464,7 +1464,7 @@ export const OfferLetters: React.FC = () => {
             </Button>
             <Button
               onClick={handleUpdateTemplate}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               Update Template
             </Button>
@@ -1695,7 +1695,7 @@ export const OfferLetters: React.FC = () => {
               onClick={
                 isEditOfferModalOpen ? handleUpdateOffer : handleCreateOffer
               }
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               {isEditOfferModalOpen ? "Update Offer" : "Create Offer"}
             </Button>
@@ -1862,7 +1862,7 @@ export const OfferLetters: React.FC = () => {
                 <Button
                   onClick={handleMarkAsSent}
                   disabled={markingSent}
-                  className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                  className="bg-brand hover:bg-brand/90 text-white"
                 >
                   {markingSent ? "Updating..." : "Mark as sent"}
                 </Button>
@@ -1882,7 +1882,7 @@ export const OfferLetters: React.FC = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <RefreshCw className="h-5 w-5 text-[#f26722]" />
+              <RefreshCw className="h-5 w-5 text-brand" />
               Extend Offer Expiration
             </DialogTitle>
             <DialogDescription>
@@ -1900,7 +1900,7 @@ export const OfferLetters: React.FC = () => {
                 value={extendNewDate}
                 min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => setExtendNewDate(e.target.value)}
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
             <label className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
@@ -1923,7 +1923,7 @@ export const OfferLetters: React.FC = () => {
             <Button
               onClick={handleExtendExpiration}
               disabled={!extendNewDate || extending}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               <RefreshCw
                 className={`mr-2 h-4 w-4 ${extending ? "animate-spin" : ""}`}

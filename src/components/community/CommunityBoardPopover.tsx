@@ -31,7 +31,7 @@ export function CommunityBoardPopover({
           aria-label="Open community board"
           aria-expanded={open}
           className={cn(
-            "rounded-none w-10 h-10 p-0 flex items-center justify-center text-neutral-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 data-[state=open]:text-[#f26722] data-[state=open]:bg-[#f26722]/10 data-[state=open]:ring-2 data-[state=open]:ring-[#f26722]/30",
+            "rounded-none w-10 h-10 p-0 flex items-center justify-center text-neutral-600 dark:text-white hover:text-brand dark:hover:text-brand focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 data-[state=open]:text-brand data-[state=open]:bg-brand/10 data-[state=open]:ring-2 data-[state=open]:ring-brand/30",
             triggerClassName,
           )}
         >

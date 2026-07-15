@@ -275,7 +275,7 @@ const DrawingRepository: React.FC = () => {
             Export Drawings
           </Button>
           <Button
-            className="bg-[#f26722] hover:bg-[#f26722]/90"
+            className="bg-brand hover:bg-brand/90"
             onClick={() =>
               activeTab === "drawings"
                 ? setShowDrawingModal(true)
@@ -605,7 +605,7 @@ const DrawingRepository: React.FC = () => {
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-[#f26722] hover:bg-[#f26722]/90"
+                    className="bg-brand hover:bg-brand/90"
                   >
                     Add Drawing
                   </Button>
@@ -729,7 +729,7 @@ const DrawingRepository: React.FC = () => {
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-[#f26722] hover:bg-[#f26722]/90"
+                    className="bg-brand hover:bg-brand/90"
                   >
                     Add Project
                   </Button>

@@ -1024,7 +1024,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
 
           {/* Job Information */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
@@ -1261,7 +1261,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
 
           {/* Device Data */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Device Data
             </h2>
@@ -1471,7 +1471,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
 
           {/* Fuse Data */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Fuse Data
             </h2>
@@ -1631,7 +1631,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
 
           {/* Visual and Mechanical Inspection */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
@@ -1702,7 +1702,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
 
           {/* Test Results */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Results
             </h2>
@@ -2644,7 +2644,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
           <section
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments:
             </h2>

@@ -61,6 +61,7 @@ import CopyEstimateToOpportunityModal, {
   CopyTargetOpportunity,
 } from "./CopyEstimateToOpportunityModal";
 import type { EstimatingScopeLibraryItem } from "../../services/estimatingScopeLibraryService";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 // Styles from the original code
 const styles = {
@@ -694,7 +695,7 @@ function SymbolCopyButtons({ className = "" }: { className?: string }) {
           }}
           title={label}
           aria-label={label}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-none border border-[#f26722] bg-white text-base font-semibold leading-none text-[#f26722] transition-colors hover:bg-[#f26722] hover:text-white dark:bg-[#f26722] dark:text-white dark:hover:bg-[#d95d1d]"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-none border border-brand bg-white text-base font-semibold leading-none text-brand transition-colors hover:bg-brand hover:text-white dark:bg-brand dark:text-white dark:hover:bg-brand-dark"
         >
           {copied === symbol ? "✓" : symbol}
         </button>
@@ -3866,7 +3867,7 @@ export default function EstimateSheet({
       root.style.setProperty("--total-bg", "#1C1E21");
       root.style.setProperty("--input-text", "#E4E6EB");
       root.style.setProperty("--input-placeholder", "#6B7280");
-      root.style.setProperty("--input-border-focus", "#f26722");
+      root.style.setProperty("--input-border-focus", "var(--brand)");
       // Calculated (blue) / total (orange) cells — mirror the field kit palette (dark).
       root.style.setProperty("--calc-cell-bg", "rgba(23,37,84,0.40)");
       root.style.setProperty("--calc-cell-text", "#bfdbfe");
@@ -3886,7 +3887,7 @@ export default function EstimateSheet({
       root.style.setProperty("--total-bg", "#F3F4F6");
       root.style.setProperty("--input-text", "#111827");
       root.style.setProperty("--input-placeholder", "#9CA3AF");
-      root.style.setProperty("--input-border-focus", "#f26722");
+      root.style.setProperty("--input-border-focus", "var(--brand)");
       // Calculated (blue) / total (orange) cells — mirror the field kit palette (light).
       root.style.setProperty("--calc-cell-bg", "#eff6ff");
       root.style.setProperty("--calc-cell-text", "#1e40af");
@@ -5393,7 +5394,7 @@ export default function EstimateSheet({
         ${renderCustomSectionsAt("after_header", templateTokens)}
         ${introHtml}
         ${renderCustomSectionsAt("after_intro", templateTokens)}
-        <div class="amp-scope-block" style="margin-bottom:12px;border:1px solid #f0c8b3;border-left:4px solid #f26722;border-radius:8px;padding:10px;background:#fff7f2;">
+        <div class="amp-scope-block" style="margin-bottom:12px;border:1px solid #f0c8b3;border-left:4px solid ${BRAND_COLOR};border-radius:8px;padding:10px;background:#fff7f2;">
           <div class="amp-section amp-keep-with-next" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff0e6;padding:6px 8px;border-radius:6px;margin-bottom:6px;">
             <b style="font-size: 1.15em;">Scope</b>
           </div>
@@ -5424,7 +5425,7 @@ export default function EstimateSheet({
         ${footerHtml}
         ${renderCustomSectionsAt("before_safety", templateTokens)}
         <div style="margin-top: 80px;">
-          <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 4px; margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; border-bottom: 2px solid ${BRAND_COLOR}; padding-bottom: 4px; margin-bottom: 8px;">
             <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 32px; margin-right: 8px;" />
             <span style="font-size: 1.0em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
             <span style="font-size: 1.0em; font-weight: bold; color: #333; margin-left: 12px;">&mdash; Safety Policy on Jobsites</span>
@@ -5851,7 +5852,7 @@ export default function EstimateSheet({
       `;
 
         return `
-        <div class="amp-scope-block" style="margin-bottom:12px;border:1px solid #f0c8b3;border-left:4px solid #f26722;border-radius:8px;padding:10px;background:#fff7f2;">
+        <div class="amp-scope-block" style="margin-bottom:12px;border:1px solid #f0c8b3;border-left:4px solid ${BRAND_COLOR};border-radius:8px;padding:10px;background:#fff7f2;">
           <div class="amp-scope-controls print-hidden" contenteditable="false" style="display:flex;gap:6px;justify-content:flex-end;margin:-4px -4px 4px -4px;">
             <button class="move-up" aria-label="Move scope up" title="Move up" style="border:1px solid #e5e7eb;background:#fff;border-radius:9999px;padding:2px 8px;cursor:pointer;">▲</button>
             <button class="move-down" aria-label="Move scope down" title="Move down" style="border:1px solid #e5e7eb;background:#fff;border-radius:9999px;padding:2px 8px;cursor:pointer;">▼</button>
@@ -5932,7 +5933,7 @@ export default function EstimateSheet({
 
     const newCombinedLetterHtml = `
       <div id="letter-proposal" class="print-content" style="max-width: 800px; margin: 0 auto; font-family: Arial, sans-serif; position:relative; font-size: 11pt; line-height: 1.5;">
-        <div style="display: flex; align-items: center; border-bottom: 2px solid #f26722; padding-bottom: 6px; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; border-bottom: 2px solid ${BRAND_COLOR}; padding-bottom: 6px; margin-bottom: 12px;">
           <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png" alt="AMP Logo" style="height: 36px; margin-right: 10px;" />
           <span style="font-size: 1.1em; font-weight: bold; color: #333;">| <i>Quality Energy Services</i></span>
         </div>
@@ -5947,7 +5948,7 @@ export default function EstimateSheet({
           showGrandTotalPricing
             ? `
         <p class="amp-scope-spacer" style="margin:0; padding:0; line-height:0.5;"><br></p>
-        <div class="amp-scope-block" style="margin-bottom:12px;border:1px solid #f0c8b3;border-left:4px solid #f26722;border-radius:8px;padding:10px;background:#fff7f2;">
+        <div class="amp-scope-block" style="margin-bottom:12px;border:1px solid #f0c8b3;border-left:4px solid ${BRAND_COLOR};border-radius:8px;padding:10px;background:#fff7f2;">
           <div class="amp-section amp-keep-with-next" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff0e6;padding:6px 8px;border-radius:6px;margin-bottom:6px;">
             <b>Grand Total Pricing</b>
           </div>
@@ -6763,7 +6764,7 @@ export default function EstimateSheet({
         <>
           <Button
             onClick={handleGenerateNewQuote}
-            className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors flex items-center"
+            className="bg-brand text-white hover:bg-brand/90 transition-colors flex items-center"
           >
             Generate Estimate
           </Button>
@@ -6772,19 +6773,19 @@ export default function EstimateSheet({
               setIsNewQuote(false);
               setIsOpen(true);
             }}
-            className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors flex items-center"
+            className="bg-brand text-white hover:bg-brand/90 transition-colors flex items-center"
           >
             Show Estimates
           </Button>
           <Button
             onClick={handleGenerateLetterProposal}
-            className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors flex items-center"
+            className="bg-brand text-white hover:bg-brand/90 transition-colors flex items-center"
           >
             Generate Letter Proposal
           </Button>
           <Button
             onClick={handleGenerateCombinedLetterProposal}
-            className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors flex items-center"
+            className="bg-brand text-white hover:bg-brand/90 transition-colors flex items-center"
           >
             Generate Combined Letter Proposal
           </Button>
@@ -6808,7 +6809,7 @@ export default function EstimateSheet({
                   onClick={saveQuote}
                   disabled={isSaving}
                   isLoading={isSaving}
-                  className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
+                  className="bg-brand text-white hover:bg-brand/90 transition-colors"
                 >
                   Save Quote
                 </Button>
@@ -6819,7 +6820,7 @@ export default function EstimateSheet({
                       setJustSaved(false);
                       setIsViewMode(false);
                     }}
-                    className="h-10 w-10 p-0 bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
+                    className="h-10 w-10 p-0 bg-brand text-white hover:bg-brand/90 transition-colors"
                   >
                     <Edit className="h-6 w-6" />
                   </Button>
@@ -6871,7 +6872,7 @@ export default function EstimateSheet({
                     className={`flex h-10 w-10 items-center justify-center rounded-none text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                       justSaved
                         ? "bg-green-600 hover:bg-green-700 focus:ring-green-500"
-                        : "bg-[#f26722] hover:bg-[#f26722]/90 focus:ring-[#f26722]"
+                        : "bg-brand hover:bg-brand/90 focus:ring-brand"
                     }`}
                     aria-label={justSaved ? "Saved" : "Save"}
                     title={justSaved ? "Saved" : "Save"}
@@ -6976,7 +6977,7 @@ export default function EstimateSheet({
                         setIsViewMode(false);
                         handleGenerateNewQuote();
                       }}
-                      className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors px-6 py-2"
+                      className="bg-brand text-white hover:bg-brand/90 transition-colors px-6 py-2"
                     >
                       Generate Estimate
                     </Button>
@@ -7016,7 +7017,7 @@ export default function EstimateSheet({
                             key={quote.id}
                             className={`flex flex-col items-center ${
                               dragOverTabIndex === index
-                                ? "ring-2 ring-[#f26722] ring-offset-2 rounded-none"
+                                ? "ring-2 ring-brand ring-offset-2 rounded-none"
                                 : ""
                             }`}
                             onDragOver={(e) => {
@@ -7045,7 +7046,7 @@ export default function EstimateSheet({
                               className={({ selected }) =>
                                 `px-4 py-2 text-sm font-medium rounded-none focus:outline-none transition-all ${
                                   selected
-                                    ? "bg-[#f26722] text-white"
+                                    ? "bg-brand text-white"
                                     : "bg-neutral-100 dark:bg-dark-150 text-neutral-500 dark:text-dark-400 hover:bg-neutral-200 dark:hover:bg-dark-300"
                                 } ${
                                   draggedTabIndex === index ? "opacity-50" : ""
@@ -7362,7 +7363,7 @@ export default function EstimateSheet({
                           <Switch
                             checked={data.useSovItems !== false}
                             disabled={isViewMode}
-                            checkedClassName="bg-[#f26722]"
+                            checkedClassName="bg-brand"
                             onCheckedChange={(checked) => {
                               setData((prev) => ({
                                 ...prev,
@@ -7386,7 +7387,7 @@ export default function EstimateSheet({
                           <Switch
                             checked={!!data.useScopeNarrative}
                             disabled={isViewMode}
-                            checkedClassName="bg-[#f26722]"
+                            checkedClassName="bg-brand"
                             onCheckedChange={(checked) => {
                               setData((prev) => ({
                                 ...prev,
@@ -7535,7 +7536,7 @@ export default function EstimateSheet({
                                       borderTop:
                                         dragOverIndex === index &&
                                         draggedItemType === "sov"
-                                          ? "2px solid #f26722"
+                                          ? "2px solid var(--brand)"
                                           : "none",
                                     }}
                                   >
@@ -7776,7 +7777,7 @@ export default function EstimateSheet({
                                     borderTop:
                                       dragOverIndex === index &&
                                       draggedItemType === "sov"
-                                        ? "2px solid #f26722"
+                                        ? "2px solid var(--brand)"
                                         : "none",
                                   }}
                                 >
@@ -7900,7 +7901,7 @@ export default function EstimateSheet({
                                           style={{
                                             background: "none",
                                             border: "none",
-                                            color: "#f26722",
+                                            color: "var(--brand)",
                                             cursor: "pointer",
                                             padding: "3px",
                                             display: "flex",
@@ -8408,7 +8409,7 @@ export default function EstimateSheet({
                           </Button>
                           <Button
                             onClick={() => handleAddLine("sov")}
-                            className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
+                            className="bg-brand text-white hover:bg-brand/90 transition-colors"
                           >
                             Add SOV Line
                           </Button>
@@ -8504,7 +8505,7 @@ export default function EstimateSheet({
                                   borderTop:
                                     dragOverIndex === index &&
                                     draggedItemType === "nonSov"
-                                      ? "2px solid #f26722"
+                                      ? "2px solid var(--brand)"
                                       : "none",
                                 }}
                               >
@@ -8607,7 +8608,7 @@ export default function EstimateSheet({
                                         style={{
                                           background: "none",
                                           border: "none",
-                                          color: "#f26722",
+                                          color: "var(--brand)",
                                           cursor: "pointer",
                                           padding: "3px",
                                           display: "flex",
@@ -8837,13 +8838,13 @@ export default function EstimateSheet({
                       <div className="mt-4 flex justify-end space-x-4">
                         <Button
                           onClick={() => handleAddLine("nonSov")}
-                          className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
+                          className="bg-brand text-white hover:bg-brand/90 transition-colors"
                         >
                           Add Non-SOV Line
                         </Button>
                         <Button
                           onClick={toggleTravel}
-                          className="bg-[#f26722] text-white hover:bg-[#f26722]/90 transition-colors"
+                          className="bg-brand text-white hover:bg-brand/90 transition-colors"
                         >
                           {showTravel ? "Hide Travel" : "Add Travel"}
                         </Button>
@@ -9781,10 +9782,10 @@ export default function EstimateSheet({
                                 borderRadius: "4px",
                                 cursor: "pointer",
                                 backgroundColor: showSaturdayHours
-                                  ? "#f26722"
+                                  ? "var(--brand)"
                                   : "transparent",
-                                color: showSaturdayHours ? "white" : "#f26722",
-                                border: "0.5px solid #f26722",
+                                color: showSaturdayHours ? "white" : "var(--brand)",
+                                border: "0.5px solid var(--brand)",
                               }}
                             >
                               {showSaturdayHours
@@ -9802,10 +9803,10 @@ export default function EstimateSheet({
                                 borderRadius: "4px",
                                 cursor: "pointer",
                                 backgroundColor: showSundayHours
-                                  ? "#f26722"
+                                  ? "var(--brand)"
                                   : "transparent",
-                                color: showSundayHours ? "white" : "#f26722",
-                                border: "0.5px solid #f26722",
+                                color: showSundayHours ? "white" : "var(--brand)",
+                                border: "0.5px solid var(--brand)",
                               }}
                             >
                               {showSundayHours
@@ -9896,8 +9897,8 @@ export default function EstimateSheet({
                                 padding: "4px 8px",
                                 fontSize: "12px",
                                 backgroundColor: "transparent",
-                                color: "#f26722",
-                                border: "0.5px solid #f26722",
+                                color: "var(--brand)",
+                                border: "0.5px solid var(--brand)",
                                 borderRadius: "4px",
                                 cursor: "pointer",
                               }}
@@ -10356,8 +10357,8 @@ export default function EstimateSheet({
                                               padding: "2px 6px",
                                               fontSize: "11px",
                                               backgroundColor: "transparent",
-                                              color: "#f26722",
-                                              border: "0.5px solid #f26722",
+                                              color: "var(--brand)",
+                                              border: "0.5px solid var(--brand)",
                                               borderRadius: "4px",
                                               cursor: "pointer",
                                             }}
@@ -10603,7 +10604,7 @@ export default function EstimateSheet({
                               style={{
                                 ...styles.panelTitle,
                                 marginBottom: 0,
-                                color: "#f26722",
+                                color: "var(--brand)",
                               }}
                             >
                               Labor Hours Tracking — Saturday
@@ -10640,8 +10641,8 @@ export default function EstimateSheet({
                                 padding: "4px 8px",
                                 fontSize: "12px",
                                 backgroundColor: "transparent",
-                                color: "#f26722",
-                                border: "0.5px solid #f26722",
+                                color: "var(--brand)",
+                                border: "0.5px solid var(--brand)",
                                 borderRadius: "4px",
                                 cursor: "pointer",
                               }}
@@ -11382,8 +11383,8 @@ export default function EstimateSheet({
                                 padding: "4px 8px",
                                 fontSize: "12px",
                                 backgroundColor: "transparent",
-                                color: "#f26722",
-                                border: "0.5px solid #f26722",
+                                color: "var(--brand)",
+                                border: "0.5px solid var(--brand)",
                                 borderRadius: "4px",
                                 cursor: "pointer",
                               }}
@@ -12754,7 +12755,7 @@ export default function EstimateSheet({
                                         style={{
                                           ...styles.tableHeader,
                                           padding: "6px 8px",
-                                          color: "#f26722",
+                                          color: "var(--brand)",
                                         }}
                                       >
                                         SAT
@@ -13065,9 +13066,9 @@ export default function EstimateSheet({
                               fontWeight: 500,
                               backgroundColor: quoteTextCopied
                                 ? "transparent"
-                                : "#f26722",
-                              color: quoteTextCopied ? "#f26722" : "white",
-                              border: "0.5px solid #f26722",
+                                : "var(--brand)",
+                              color: quoteTextCopied ? "var(--brand)" : "white",
+                              border: "0.5px solid var(--brand)",
                               borderRadius: "6px",
                               cursor: "pointer",
                             }}
@@ -13133,7 +13134,7 @@ export default function EstimateSheet({
                   onChange={(e) =>
                     setIncludeMobilizationWhenZero(e.target.checked)
                   }
-                  className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                  className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
                 />
                 <span className="text-sm text-neutral-700 dark:text-neutral-200">
                   Include mobilization in letter even when $0
@@ -13144,7 +13145,7 @@ export default function EstimateSheet({
                   type="checkbox"
                   checked={letterIncludeSovNotes}
                   onChange={(e) => setLetterIncludeSovNotes(e.target.checked)}
-                  className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                  className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
                 />
                 <span className="text-sm text-neutral-700 dark:text-neutral-200">
                   Include SOV item notes
@@ -13160,7 +13161,7 @@ export default function EstimateSheet({
                       type="checkbox"
                       checked={letterIncludeMF}
                       onChange={(e) => setLetterIncludeMF(e.target.checked)}
-                      className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                      className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
                     />
                     <span className="text-sm text-neutral-700 dark:text-neutral-200">
                       Monday - Friday
@@ -13176,7 +13177,7 @@ export default function EstimateSheet({
                         setLetterIncludeSaturday(e.target.checked)
                       }
                       disabled={!showSaturdayHours}
-                      className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                      className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
                     />
                     <span className="text-sm text-neutral-700 dark:text-neutral-200">
                       Saturday
@@ -13193,7 +13194,7 @@ export default function EstimateSheet({
                       checked={letterIncludeSunday}
                       onChange={(e) => setLetterIncludeSunday(e.target.checked)}
                       disabled={!showSundayHours}
-                      className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                      className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
                     />
                     <span className="text-sm text-neutral-700 dark:text-neutral-200">
                       Sunday / Holiday
@@ -13211,7 +13212,7 @@ export default function EstimateSheet({
                     type="checkbox"
                     checked={letterShowAllTerms}
                     onChange={(e) => setLetterShowAllTerms(e.target.checked)}
-                    className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                    className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
                   />
                   <span className="text-sm text-neutral-700 dark:text-neutral-200">
                     Show all payment terms (NET 30, 60, 90)
@@ -13256,7 +13257,7 @@ export default function EstimateSheet({
                   </span>
                   <Button
                     onClick={() => handleSelectQuoteForLetter(idx)}
-                    className="bg-[#f26722] text-white ml-2"
+                    className="bg-brand text-white ml-2"
                   >
                     Select
                   </Button>
@@ -13325,7 +13326,7 @@ export default function EstimateSheet({
                     type="checkbox"
                     checked={showIndividualPricing}
                     onChange={(e) => setShowIndividualPricing(e.target.checked)}
-                    className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                    className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
                   />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     Show individual pricing for each scope
@@ -13336,7 +13337,7 @@ export default function EstimateSheet({
                     type="checkbox"
                     checked={showGrandTotalPricing}
                     onChange={(e) => setShowGrandTotalPricing(e.target.checked)}
-                    className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                    className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
                   />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     Show grand total pricing for all scope
@@ -13349,7 +13350,7 @@ export default function EstimateSheet({
                     onChange={(e) =>
                       setIncludeMobilizationWhenZero(e.target.checked)
                     }
-                    className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                    className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
                   />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     Include mobilization in letter even when $0
@@ -13360,7 +13361,7 @@ export default function EstimateSheet({
                     type="checkbox"
                     checked={letterIncludeSovNotes}
                     onChange={(e) => setLetterIncludeSovNotes(e.target.checked)}
-                    className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                    className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
                   />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     Include SOV item notes
@@ -13376,7 +13377,7 @@ export default function EstimateSheet({
                         type="checkbox"
                         checked={letterIncludeMF}
                         onChange={(e) => setLetterIncludeMF(e.target.checked)}
-                        className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                        className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
                       />
                       <span className="text-sm text-neutral-700 dark:text-neutral-300">
                         Monday - Friday
@@ -13392,7 +13393,7 @@ export default function EstimateSheet({
                           setLetterIncludeSaturday(e.target.checked)
                         }
                         disabled={!showSaturdayHours}
-                        className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                        className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
                       />
                       <span className="text-sm text-neutral-700 dark:text-neutral-300">
                         Saturday
@@ -13409,7 +13410,7 @@ export default function EstimateSheet({
                           setLetterIncludeSunday(e.target.checked)
                         }
                         disabled={!showSundayHours}
-                        className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                        className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
                       />
                       <span className="text-sm text-neutral-700 dark:text-neutral-300">
                         Sunday / Holiday
@@ -13427,7 +13428,7 @@ export default function EstimateSheet({
                       type="checkbox"
                       checked={letterShowAllTerms}
                       onChange={(e) => setLetterShowAllTerms(e.target.checked)}
-                      className="mr-2 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                      className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
                     />
                     <span className="text-sm text-neutral-700 dark:text-neutral-300">
                       Show all payment terms (NET 30, 60, 90)
@@ -13503,7 +13504,7 @@ export default function EstimateSheet({
                           });
                         }
                       }}
-                      className="mr-3 h-5 w-5 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                      className="mr-3 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
                     />
                     <label
                       htmlFor={`quote-${idx}`}
@@ -13575,7 +13576,7 @@ export default function EstimateSheet({
               <Button
                 onClick={() => handleSelectQuotesForCombinedLetter()}
                 disabled={selectedQuotesForCombined.length === 0}
-                className="bg-[#f26722] text-white disabled:bg-neutral-300 disabled:cursor-not-allowed"
+                className="bg-brand text-white disabled:bg-neutral-300 disabled:cursor-not-allowed"
               >
                 Generate Combined Letter ({selectedQuotesForCombined.length}{" "}
                 selected)
@@ -13674,7 +13675,7 @@ export default function EstimateSheet({
                           setNetaStandard(l.neta_standard || "");
                           setLetterProposalName((l as any).title || ""); // Populate the name field
                         }}
-                        className="bg-[#f26722] text-white"
+                        className="bg-brand text-white"
                       >
                         Open
                       </Button>
@@ -14234,13 +14235,13 @@ export default function EstimateSheet({
                   }}
                   disabled={isSavingLetter}
                   isLoading={isSavingLetter}
-                  className="bg-[#f26722] text-white"
+                  className="bg-brand text-white"
                 >
                   Save Letter
                 </Button>
                 <Button
                   onClick={handlePrintLetter}
-                  className="bg-[#f26722] text-white"
+                  className="bg-brand text-white"
                 >
                   Print
                 </Button>
@@ -14260,7 +14261,7 @@ export default function EstimateSheet({
                 value={letterProposalName}
                 onChange={(e) => setLetterProposalName(e.target.value)}
                 placeholder={`Letter Proposal - ${opportunityData?.title || "Untitled"}`}
-                className="flex-1 px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white"
+                className="flex-1 px-3 py-2 border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white"
               />
             </div>
           </div>
@@ -14295,7 +14296,7 @@ export default function EstimateSheet({
                   variant="outline"
                   size="sm"
                   leftIcon={<FileText className="w-4 h-4" />}
-                  className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white dark:border-[#f26722] dark:bg-[#f26722] dark:text-white dark:hover:bg-[#d95d1d] dark:hover:text-white"
+                  className="whitespace-nowrap border-brand text-brand hover:bg-brand hover:text-white dark:border-brand dark:bg-brand dark:text-white dark:hover:bg-brand-dark dark:hover:text-white"
                 >
                   Scope Notes
                 </Button>
@@ -14311,7 +14312,7 @@ export default function EstimateSheet({
                   size="sm"
                   title="Bullet List"
                   leftIcon={<List className="w-4 h-4" />}
-                  className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white dark:border-[#f26722] dark:bg-[#f26722] dark:text-white dark:hover:bg-[#d95d1d] dark:hover:text-white"
+                  className="whitespace-nowrap border-brand text-brand hover:bg-brand hover:text-white dark:border-brand dark:bg-brand dark:text-white dark:hover:bg-brand-dark dark:hover:text-white"
                 >
                   Bullets
                 </Button>
@@ -14327,7 +14328,7 @@ export default function EstimateSheet({
                   size="sm"
                   title="Numbered List"
                   leftIcon={<ListOrdered className="w-4 h-4" />}
-                  className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white dark:border-[#f26722] dark:bg-[#f26722] dark:text-white dark:hover:bg-[#d95d1d] dark:hover:text-white"
+                  className="whitespace-nowrap border-brand text-brand hover:bg-brand hover:text-white dark:border-brand dark:bg-brand dark:text-white dark:hover:bg-brand-dark dark:hover:text-white"
                 >
                   Numbered
                 </Button>
@@ -14341,7 +14342,7 @@ export default function EstimateSheet({
                   variant="outline"
                   size="sm"
                   leftIcon={<ImagePlus className="w-4 h-4" />}
-                  className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white dark:border-[#f26722] dark:bg-[#f26722] dark:text-white dark:hover:bg-[#d95d1d] dark:hover:text-white"
+                  className="whitespace-nowrap border-brand text-brand hover:bg-brand hover:text-white dark:border-brand dark:bg-brand dark:text-white dark:hover:bg-brand-dark dark:hover:text-white"
                 >
                   Insert Image
                 </Button>
@@ -14366,7 +14367,7 @@ export default function EstimateSheet({
                   variant="outline"
                   size="sm"
                   leftIcon={<SeparatorHorizontal className="w-4 h-4" />}
-                  className="whitespace-nowrap border-[#f26722] text-[#f26722] hover:bg-[#f26722] hover:text-white dark:border-[#f26722] dark:bg-[#f26722] dark:text-white dark:hover:bg-[#d95d1d] dark:hover:text-white"
+                  className="whitespace-nowrap border-brand text-brand hover:bg-brand hover:text-white dark:border-brand dark:bg-brand dark:text-white dark:hover:bg-brand-dark dark:hover:text-white"
                 >
                   Page Break
                 </Button>

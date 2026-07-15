@@ -372,7 +372,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             try {
               methods.push("profiles table (direct fetch)");
               const response = await fetch(
-                `https://vdxprdihmbqomwqfldpo.supabase.co/rest/v1/profiles?select=*&eq.id=${userId}`,
+                `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles?select=*&eq.id=${userId}`,
                 {
                   method: "GET",
                   headers: {
@@ -561,7 +561,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               try {
                 methods.push("RPC method (direct fetch)");
                 const response = await fetch(
-                  "https://vdxprdihmbqomwqfldpo.supabase.co/rest/v1/rpc/get_user_details",
+                  `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/rpc/get_user_details`,
                   {
                     method: "POST",
                     headers: {
@@ -680,7 +680,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 methods.push("RPC method (direct fetch to metadata endpoint)");
                 console.log("Trying direct fetch to metadata endpoint...");
                 const response = await fetch(
-                  "https://vdxprdihmbqomwqfldpo.supabase.co/rest/v1/rpc/get_user_metadata",
+                  `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/rpc/get_user_metadata`,
                   {
                     method: "POST",
                     headers: {
@@ -1571,7 +1571,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       {displayName}
                     </h1>
                     {role && (
-                      <div className="mt-1 inline-flex items-center rounded-none bg-[#f26722]/10 px-2.5 py-0.5 text-xs font-medium text-[#f26722]">
+                      <div className="mt-1 inline-flex items-center rounded-none bg-brand/10 px-2.5 py-0.5 text-xs font-medium text-brand">
                         {role}
                       </div>
                     )}
@@ -1690,7 +1690,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                           </p>
                           <a
                             href={`mailto:${profileUser.email}`}
-                            className="text-[#f26722] hover:underline"
+                            className="text-brand hover:underline"
                           >
                             {profileUser.email}
                           </a>
@@ -1706,7 +1706,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                           </p>
                           <a
                             href={`tel:${workPhone}`}
-                            className="text-[#f26722] hover:underline"
+                            className="text-brand hover:underline"
                           >
                             {workPhone}
                           </a>
@@ -1722,7 +1722,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                           </p>
                           <a
                             href={`tel:${personalPhone}`}
-                            className="text-[#f26722] hover:underline"
+                            className="text-brand hover:underline"
                           >
                             {personalPhone}
                           </a>
@@ -1736,7 +1736,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                     (emergencyContactName || emergencyContactPhone) && (
                       <div className="pt-4 border-t border-neutral-200 dark:border-dark-200">
                         <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-[#f26722]" />
+                          <Phone className="h-4 w-4 text-brand" />
                           Emergency Contact
                         </h2>
                         <div className="text-sm text-neutral-700 dark:text-neutral-200 space-y-1">
@@ -1749,7 +1749,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                           {emergencyContactPhone && (
                             <a
                               href={`tel:${emergencyContactPhone}`}
-                              className="text-[#f26722] hover:underline"
+                              className="text-brand hover:underline"
                             >
                               {emergencyContactPhone}
                             </a>
@@ -1762,7 +1762,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   {goalsText && (
                     <div className="pt-4 border-t border-neutral-200 dark:border-dark-200">
                       <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
-                        <Target className="h-4 w-4 text-[#f26722]" />
+                        <Target className="h-4 w-4 text-brand" />
                         Goals
                       </h2>
                       <p className="text-sm text-neutral-700 dark:text-neutral-200 whitespace-pre-wrap">
@@ -1784,7 +1784,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         <>
                           <div>
                             <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
-                              <FileText className="h-4 w-4 text-[#f26722]" />
+                              <FileText className="h-4 w-4 text-brand" />
                               {viewingOwnProfile ? "My documents" : "Documents"}
                             </h3>
                             {myDocuments.length === 0 ? (
@@ -1820,7 +1820,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                                   : "",
                                             })
                                           }
-                                          className="p-1 rounded text-neutral-500 hover:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-200"
+                                          className="p-1 rounded text-neutral-500 hover:text-brand hover:bg-neutral-100 dark:hover:bg-dark-200"
                                           title="Edit document"
                                         >
                                           <Edit2 className="h-3.5 w-3.5" />
@@ -1830,7 +1830,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                         href={doc.file_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-[#f26722] hover:underline inline-flex items-center gap-1"
+                                        className="text-brand hover:underline inline-flex items-center gap-1"
                                       >
                                         Open{" "}
                                         <ExternalLink className="h-3 w-3" />
@@ -1843,7 +1843,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                           </div>
                           <div>
                             <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
-                              <Award className="h-4 w-4 text-[#f26722]" />
+                              <Award className="h-4 w-4 text-brand" />
                               {viewingOwnProfile
                                 ? "My certifications"
                                 : "Certifications"}
@@ -1892,7 +1892,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                               notes: cert.notes ?? "",
                                             })
                                           }
-                                          className="p-1 rounded text-neutral-500 hover:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-200"
+                                          className="p-1 rounded text-neutral-500 hover:text-brand hover:bg-neutral-100 dark:hover:bg-dark-200"
                                           title="Edit certification"
                                         >
                                           <Edit2 className="h-3.5 w-3.5" />
@@ -1906,7 +1906,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                           </div>
                           <div>
                             <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
-                              <History className="h-4 w-4 text-[#f26722]" />
+                              <History className="h-4 w-4 text-brand" />
                               Title history
                             </h3>
                             {myTitleHistory.length === 0 ? (
@@ -1931,7 +1931,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                           </div>
                           <div>
                             <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
-                              <DollarSign className="h-4 w-4 text-[#f26722]" />
+                              <DollarSign className="h-4 w-4 text-brand" />
                               Compensation
                             </h3>
                             {compensationAmount != null ? (
@@ -1976,14 +1976,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                           <div>
                             <div className="flex items-center justify-between gap-2 mb-2">
                               <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                                <Shirt className="h-4 w-4 text-[#f26722]" />
+                                <Shirt className="h-4 w-4 text-brand" />
                                 FR clothing sizes
                               </h3>
                               {canEditEeData && !editingFrSizes && (
                                 <button
                                   type="button"
                                   onClick={handleStartEditFrSizes}
-                                  className="text-xs text-[#f26722] hover:text-[#e55611] hover:underline flex items-center gap-1 shrink-0"
+                                  className="text-xs text-brand hover:text-brand-dark hover:underline flex items-center gap-1 shrink-0"
                                 >
                                   <Edit2 className="h-3 w-3" />
                                   {frSizes.shirt ||
@@ -2156,7 +2156,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                           {/* Career Development - placeholder */}
                           <div>
                             <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
-                              <TrendingUp className="h-4 w-4 text-[#f26722]" />
+                              <TrendingUp className="h-4 w-4 text-brand" />
                               Career Development
                             </h3>
                             <p className="text-sm text-muted-foreground">

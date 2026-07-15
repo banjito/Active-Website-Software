@@ -260,7 +260,7 @@ export default function GeneratedDocumentViewer() {
                 </h1>
                 <button
                   onClick={() => setIsEditingName(true)}
-                  className="px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white rounded-none font-medium flex items-center gap-2"
+                  className="px-4 py-2 bg-brand hover:bg-brand-dark text-white rounded-none font-medium flex items-center gap-2"
                 >
                   <svg
                     className="w-4 h-4"

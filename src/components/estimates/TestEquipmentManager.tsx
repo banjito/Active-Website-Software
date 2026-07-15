@@ -184,7 +184,7 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-              <Wrench className="h-5 w-5 text-[#f26722]" />
+              <Wrench className="h-5 w-5 text-brand" />
               Test Equipment
             </h2>
             <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 max-w-3xl">
@@ -196,7 +196,7 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
           <Button
             onClick={startCreate}
             size="sm"
-            className="bg-[#f26722] text-white hover:bg-[#d4551a] shrink-0"
+            className="bg-brand text-white hover:bg-brand-dark shrink-0"
             leftIcon={<Plus className="h-4 w-4 mr-1" />}
           >
             New Equipment
@@ -209,14 +209,14 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search equipment..."
-            className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+            className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
           />
           <label className="inline-flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
             <input
               type="checkbox"
               checked={includeInactive}
               onChange={(e) => setIncludeInactive(e.target.checked)}
-              className="h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+              className="h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
             />
             Show archived
           </label>
@@ -263,7 +263,7 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="e.g., Doble F6150"
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                 autoFocus
               />
             </div>
@@ -278,7 +278,7 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
                   setForm({ ...form, description: e.target.value })
                 }
                 placeholder="Optional internal note"
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
               />
             </div>
           </div>
@@ -292,7 +292,7 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
               disabled={!form.name.trim() || saving}
               isLoading={saving}
               size="sm"
-              className="bg-[#f26722] text-white hover:bg-[#d4551a]"
+              className="bg-brand text-white hover:bg-brand-dark"
             >
               <Save className="h-4 w-4 mr-1" />
               {editingEquipment ? "Save Changes" : "Add Equipment"}
@@ -358,7 +358,7 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
                       <div className="inline-flex items-center gap-2">
                         <button
                           onClick={() => startEdit(item)}
-                          className="text-neutral-500 hover:text-[#f26722] transition-colors"
+                          className="text-neutral-500 hover:text-brand transition-colors"
                           title="Edit equipment"
                         >
                           <Edit className="h-4 w-4" />

@@ -15,6 +15,7 @@ import {
   SignatureSection,
   SignaturePerson,
 } from "./JobDetail";
+import { emailPlaceholder } from "@/lib/companyConfig";
 
 interface SignatureSectionsManagerProps {
   open: boolean;
@@ -237,7 +238,7 @@ export const SignatureSectionsManager: React.FC<
                             e.target.value,
                           )
                         }
-                        placeholder="email@ampqes.com"
+                        placeholder={emailPlaceholder}
                         className="w-full"
                       />
                     </div>
@@ -299,7 +300,7 @@ export const SignatureSectionsManager: React.FC<
           </Button>
           <Button
             onClick={handleSave}
-            className="bg-[#f26722] hover:bg-[#e55611] text-white"
+            className="bg-brand hover:bg-brand-dark text-white"
           >
             Save Configuration
           </Button>

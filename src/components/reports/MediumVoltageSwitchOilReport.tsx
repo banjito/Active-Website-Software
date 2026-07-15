@@ -456,9 +456,9 @@ const tableStyles = {
     "px-2 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider whitespace-normal",
   cell: "px-2 py-2 text-sm text-neutral-900 dark:text-white whitespace-normal",
   input:
-    "w-full text-sm rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
+    "w-full text-sm rounded-none border-neutral-300 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white",
   select:
-    "w-full text-sm rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
+    "w-full text-sm rounded-none border-neutral-300 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white",
 };
 
 export default function MediumVoltageSwitchOilReport() {
@@ -1569,7 +1569,7 @@ export default function MediumVoltageSwitchOilReport() {
 
           {/* Job Information */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
@@ -1583,7 +1583,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.customer}
                   onChange={(e) => handleChange("customer", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1595,7 +1595,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.jobNumber}
                   onChange={(e) => handleChange("jobNumber", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1607,7 +1607,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={maskCustomerAddress(formData.address)}
                   onChange={(e) => handleChange("address", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1619,7 +1619,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.identifier}
                   onChange={(e) => handleChange("identifier", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1631,7 +1631,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.technicians}
                   onChange={(e) => handleChange("technicians", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1643,7 +1643,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.substation}
                   onChange={(e) => handleChange("substation", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1655,7 +1655,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.date}
                   onChange={(e) => handleChange("date", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -1667,7 +1667,7 @@ export default function MediumVoltageSwitchOilReport() {
                   value={formData.eqptLocation}
                   onChange={(e) => handleChange("eqptLocation", e.target.value)}
                   readOnly={!isEditMode}
-                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div className="flex gap-4 items-start">
@@ -1683,7 +1683,7 @@ export default function MediumVoltageSwitchOilReport() {
                         handleChange("temperature", Number(e.target.value))
                       }
                       readOnly={!isEditMode}
-                      className={`block w-20 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`block w-20 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                     <span className="text-neutral-600 dark:text-white">°F</span>
                     <input
@@ -1716,7 +1716,7 @@ export default function MediumVoltageSwitchOilReport() {
                         handleChange("humidity", Number(e.target.value))
                       }
                       readOnly={!isEditMode}
-                      className={`block w-20 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`block w-20 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                     <span className="text-neutral-600 dark:text-white">%</span>
                   </div>
@@ -1746,7 +1746,7 @@ export default function MediumVoltageSwitchOilReport() {
 
           {/* Nameplate Data Section */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Nameplate Data
             </h2>
@@ -1968,7 +1968,7 @@ export default function MediumVoltageSwitchOilReport() {
 
           {/* VFI Data Section */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               VFI Data
             </h2>
@@ -2125,7 +2125,7 @@ export default function MediumVoltageSwitchOilReport() {
 
           {/* Insulation Resistance Section */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             {/* Measured Values Table */}
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Measured Insulation Resistance Values
@@ -2453,7 +2453,7 @@ export default function MediumVoltageSwitchOilReport() {
 
           {/* Contact Resistance Section */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Contact Resistance μΩ
             </h2>
@@ -2612,7 +2612,7 @@ export default function MediumVoltageSwitchOilReport() {
 
           {/* Dielectric Withstand Tests Section */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Dielectric Withstand
             </h2>
@@ -2741,7 +2741,7 @@ export default function MediumVoltageSwitchOilReport() {
 
           {/* Dielectric Withstand - VFI specific tests (bottom table in image) */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Dielectric Withstand - VFI specific tests
             </h2>
@@ -2962,7 +2962,7 @@ export default function MediumVoltageSwitchOilReport() {
 
           {/* Test Equipment Section */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
@@ -3334,7 +3334,7 @@ export default function MediumVoltageSwitchOilReport() {
           <section
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>

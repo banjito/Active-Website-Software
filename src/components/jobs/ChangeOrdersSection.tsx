@@ -321,7 +321,7 @@ export default function ChangeOrdersSection({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center space-x-2">
-            <FilePlus2 className="h-5 w-5 text-[#f26722]" />
+            <FilePlus2 className="h-5 w-5 text-brand" />
             <span>Change Orders</span>
           </CardTitle>
           <div className="flex items-center gap-4 flex-wrap">
@@ -368,7 +368,7 @@ export default function ChangeOrdersSection({
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3">
-                        <span className="font-mono text-sm font-semibold text-[#f26722] whitespace-nowrap">
+                        <span className="font-mono text-sm font-semibold text-brand whitespace-nowrap">
                           CO #{co.co_number}
                         </span>
                         <div>

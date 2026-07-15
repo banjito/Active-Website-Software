@@ -535,11 +535,11 @@ const GFITripTestReport: React.FC = () => {
           {/* Job Information */}
           <section className="mb-6">
             <div
-              className="w-full h-1 bg-[#f26722] mb-4"
+              className="w-full h-1 bg-brand mb-4"
               style={{
                 width: "100%",
                 height: "4px",
-                backgroundColor: "#f26722",
+                backgroundColor: "var(--brand)",
                 marginBottom: "1rem",
                 WebkitPrintColorAdjust: "exact",
                 printColorAdjust: "exact",
@@ -723,11 +723,11 @@ const GFITripTestReport: React.FC = () => {
           {/* Test Equipment */}
           <section className="mb-6">
             <div
-              className="w-full h-1 bg-[#f26722] mb-4"
+              className="w-full h-1 bg-brand mb-4"
               style={{
                 width: "100%",
                 height: "4px",
-                backgroundColor: "#f26722",
+                backgroundColor: "var(--brand)",
                 marginBottom: "1rem",
                 WebkitPrintColorAdjust: "exact",
                 printColorAdjust: "exact",
@@ -868,11 +868,11 @@ const GFITripTestReport: React.FC = () => {
           {/* GFI Trip Test Data - Overview Table */}
           <section className="mb-6">
             <div
-              className="w-full h-1 bg-[#f26722] mb-4"
+              className="w-full h-1 bg-brand mb-4"
               style={{
                 width: "100%",
                 height: "4px",
-                backgroundColor: "#f26722",
+                backgroundColor: "var(--brand)",
                 marginBottom: "1rem",
                 WebkitPrintColorAdjust: "exact",
                 printColorAdjust: "exact",

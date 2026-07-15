@@ -88,7 +88,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2 sm:pl-4">
               <ThemeToggle />
               <a
-                href="mailto:jack@ampos.io"
+                href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL || "jack@ampos.io"}`}
                 aria-label="Support"
                 title="Support"
                 className="inline-flex h-9 w-9 items-center justify-center border border-border bg-card/60 text-muted-foreground transition-all duration-300 ease-spring hover:scale-105 hover:border-primary/40 hover:text-foreground active:scale-95"

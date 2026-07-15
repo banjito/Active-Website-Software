@@ -83,7 +83,7 @@ export const ReactionBar: React.FC<Props> = ({
         onClick={() => void toggle("like")}
         className={`inline-flex items-center gap-1 rounded-none px-2 py-1 text-xs transition-colors ${
           likeActive
-            ? "bg-[#f26722]/15 text-[#f26722] ring-1 ring-[#f26722]/40"
+            ? "bg-brand/15 text-brand ring-1 ring-brand/40"
             : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-dark-200"
         } ${!currentUserId ? "opacity-50 cursor-not-allowed" : ""}`}
       >
@@ -129,7 +129,7 @@ export const ReactionBar: React.FC<Props> = ({
                       setPickerOpen(false);
                     }}
                     className={`rounded-none px-1.5 py-0.5 text-lg leading-none hover:bg-neutral-100 dark:hover:bg-dark-200 ${
-                      active ? "ring-2 ring-[#f26722]/50" : ""
+                      active ? "ring-2 ring-brand/50" : ""
                     }`}
                   >
                     <span className="sr-only">{type}</span>

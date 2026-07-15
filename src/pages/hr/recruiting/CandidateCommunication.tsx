@@ -248,7 +248,7 @@ Your Team`,
             New template
           </Button>
           <Button
-            className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+            className="bg-brand hover:bg-brand/90 text-white"
             onClick={openCompose}
           >
             <Mail className="mr-2 h-4 w-4" />
@@ -528,7 +528,7 @@ Your Team`,
                     </Button>
                     <Button
                       size="sm"
-                      className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                      className="bg-brand hover:bg-brand/90 text-white"
                       onClick={() =>
                         openInEmail(
                           previewCandidate!,
@@ -565,7 +565,7 @@ Your Team`,
                             </Button>
                             <Button
                               size="sm"
-                              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                              className="bg-brand hover:bg-brand/90 text-white"
                               onClick={() => openInEmail(c, s, b)}
                             >
                               Email {c.first_name}

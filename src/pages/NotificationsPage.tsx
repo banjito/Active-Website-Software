@@ -743,7 +743,7 @@ export default function NotificationsPage() {
               onClick={() => setTypeFilter("all")}
               className={`px-4 py-1.5 rounded-none text-sm font-medium transition-colors ${
                 typeFilter === "all"
-                  ? "bg-[#f26722] text-white"
+                  ? "bg-brand text-white"
                   : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
               }`}
             >
@@ -756,7 +756,7 @@ export default function NotificationsPage() {
                 onClick={() => setTypeFilter(status)}
                 className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-none text-sm font-medium transition-colors ${
                   typeFilter === status
-                    ? "bg-[#f26722] text-white"
+                    ? "bg-brand text-white"
                     : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
                 }`}
               >
@@ -766,7 +766,7 @@ export default function NotificationsPage() {
                     className={`inline-flex h-5 w-5 items-center justify-center rounded-none text-xs font-semibold ${
                       typeFilter === status
                         ? "bg-white/25 text-white"
-                        : "bg-[#f26722]/10 text-[#f26722]"
+                        : "bg-brand/10 text-brand"
                     }`}
                   >
                     {summary[status].unreadCount > 99 ? "99+" : summary[status].unreadCount}
@@ -780,7 +780,7 @@ export default function NotificationsPage() {
                 onClick={() => setTypeFilter("calibration")}
                 className={`px-4 py-1.5 rounded-none text-sm font-medium transition-colors ${
                   typeFilter === "calibration"
-                    ? "bg-[#f26722] text-white"
+                    ? "bg-brand text-white"
                     : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
                 }`}
               >
@@ -791,7 +791,7 @@ export default function NotificationsPage() {
               <button
                 type="button"
                 onClick={() => markReportStatusRead(typeFilter as StatusKey)}
-                className="ml-1 text-sm text-[#f26722] hover:text-[#f26722]/80"
+                className="ml-1 text-sm text-brand hover:text-brand/80"
               >
                 Mark section read
               </button>
@@ -830,10 +830,10 @@ export default function NotificationsPage() {
                 <button
                   type="button"
                   onClick={() => { setIsNotifSortOpen((p) => !p); setIsNotifFilterOpen(false); }}
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-none focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-none focus:outline-none focus:ring-2 focus:ring-brand ${
                     sortDirection !== "desc"
-                      ? "text-[#f26722]"
-                      : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                      ? "text-brand"
+                      : "text-neutral-700 hover:text-brand dark:text-white dark:hover:text-brand"
                   }`}
                   title="Sort"
                 >
@@ -854,7 +854,7 @@ export default function NotificationsPage() {
                         onClick={() => { setSortDirection(opt.value); setIsNotifSortOpen(false); }}
                         className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none ${
                           sortDirection === opt.value
-                            ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
+                            ? "bg-orange-50 text-brand dark:bg-orange-900/20"
                             : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
                         }`}
                       >
@@ -871,10 +871,10 @@ export default function NotificationsPage() {
                 <button
                   type="button"
                   onClick={() => { setIsNotifFilterOpen((p) => !p); setIsNotifSortOpen(false); }}
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-none focus:outline-none focus:ring-2 focus:ring-[#f26722] ${
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-none focus:outline-none focus:ring-2 focus:ring-brand ${
                     filter !== "all"
-                      ? "text-[#f26722]"
-                      : "text-neutral-700 hover:text-[#f26722] dark:text-white dark:hover:text-[#f26722]"
+                      ? "text-brand"
+                      : "text-neutral-700 hover:text-brand dark:text-white dark:hover:text-brand"
                   }`}
                   title="Filter"
                 >
@@ -896,7 +896,7 @@ export default function NotificationsPage() {
                         onClick={() => { setFilter(opt.value); setIsNotifFilterOpen(false); }}
                         className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none ${
                           filter === opt.value
-                            ? "bg-orange-50 text-[#f26722] dark:bg-orange-900/20"
+                            ? "bg-orange-50 text-brand dark:bg-orange-900/20"
                             : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
                         }`}
                       >
@@ -971,7 +971,7 @@ export default function NotificationsPage() {
                   >
                     <div className="mt-1 flex-shrink-0">
                       {item.kind === "report" ? (
-                        <Briefcase className="h-5 w-5 text-[#f26722]" />
+                        <Briefcase className="h-5 w-5 text-brand" />
                       ) : item.status === "needs_calibration" ? (
                         <Gauge className="h-5 w-5 text-amber-500" />
                       ) : (

@@ -348,7 +348,7 @@ export const OfficeAdminTasks: React.FC = () => {
           name="is_template"
           checked={formData.is_template}
           onChange={handleInputChange}
-          className="h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+          className="h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
         />
         <label
           htmlFor="office-admin-is-template"
@@ -365,7 +365,7 @@ export const OfficeAdminTasks: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-            <Briefcase className="h-8 w-8 text-[#f26722]" />
+            <Briefcase className="h-8 w-8 text-brand" />
             Office Admin Tasks
           </h1>
           <p className="text-neutral-600 dark:text-neutral-400 mt-2">
@@ -378,7 +378,7 @@ export const OfficeAdminTasks: React.FC = () => {
             resetForm();
             setIsCreateModalOpen(true);
           }}
-          className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+          className="bg-brand hover:bg-brand/90 text-white"
         >
           <Plus className="h-4 w-4 mr-2" /> Create Task
         </Button>
@@ -439,7 +439,7 @@ export const OfficeAdminTasks: React.FC = () => {
                       {task.task_type.replace("_", " ")}
                     </div>
                     {task.is_template && (
-                      <div className="text-xs inline-block px-2 py-0.5 rounded bg-[#f26722]/10 text-[#f26722] font-medium">
+                      <div className="text-xs inline-block px-2 py-0.5 rounded bg-brand/10 text-brand font-medium">
                         Template
                       </div>
                     )}
@@ -522,7 +522,7 @@ export const OfficeAdminTasks: React.FC = () => {
             </Button>
             <Button
               onClick={handleCreate}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               Create
             </Button>
@@ -560,7 +560,7 @@ export const OfficeAdminTasks: React.FC = () => {
             </Button>
             <Button
               onClick={handleUpdate}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               Save Changes
             </Button>
@@ -581,7 +581,7 @@ export const OfficeAdminTasks: React.FC = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5 text-[#f26722]" />
+              <Briefcase className="h-5 w-5 text-brand" />
               {selectedTask?.name}
             </DialogTitle>
             {selectedTask?.description && (
@@ -594,7 +594,7 @@ export const OfficeAdminTasks: React.FC = () => {
                 {getStatusBadge(selectedTask.status)}
                 {getPriorityBadge(selectedTask.priority)}
                 {selectedTask.is_template && (
-                  <span className="px-2 py-0.5 rounded bg-[#f26722]/10 text-[#f26722] text-xs font-medium">
+                  <span className="px-2 py-0.5 rounded bg-brand/10 text-brand text-xs font-medium">
                     Template
                   </span>
                 )}

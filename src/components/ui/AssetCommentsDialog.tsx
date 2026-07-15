@@ -256,7 +256,7 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center">
-            <MessageCircle className="h-5 w-5 text-[#f26722] mr-2" />
+            <MessageCircle className="h-5 w-5 text-brand mr-2" />
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
               Review Comments
             </h2>

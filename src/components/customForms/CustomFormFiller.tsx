@@ -692,7 +692,7 @@ export const CustomFormFiller: React.FC = () => {
           field.cellBehavior === "calculate"));
 
     const commonClasses =
-      "w-full px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]";
+      "w-full px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand";
     const readOnlyClasses =
       "w-full px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-600 rounded bg-neutral-50 dark:bg-dark-200 text-neutral-700 dark:text-neutral-300";
 
@@ -744,7 +744,7 @@ export const CustomFormFiller: React.FC = () => {
               handleFieldChange(sectionId, field.id, e.target.checked)
             }
             disabled={readOnly}
-            className="w-4 h-4 text-[#f26722] border-neutral-300 rounded focus:ring-[#f26722]"
+            className="w-4 h-4 text-brand border-neutral-300 rounded focus:ring-brand"
           />
         );
       case "date":
@@ -792,7 +792,7 @@ export const CustomFormFiller: React.FC = () => {
               }
               placeholder="68"
               title="Temperature (°F) — type here"
-              className="temp-humidity-f temp-humidity-input w-10 min-w-[2.5rem] max-w-full px-2 py-1 border border-neutral-300 dark:border-neutral-500 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] text-xs"
+              className="temp-humidity-f temp-humidity-input w-10 min-w-[2.5rem] max-w-full px-2 py-1 border border-neutral-300 dark:border-neutral-500 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-brand focus:border-brand text-xs"
             />
             <span className="text-neutral-400 dark:text-neutral-500 shrink-0">
               °C
@@ -824,7 +824,7 @@ export const CustomFormFiller: React.FC = () => {
               }
               placeholder="50"
               title="Humidity (%) — type here"
-              className="temp-humidity-hum temp-humidity-input w-10 min-w-[2.5rem] max-w-full px-2 py-1 border border-neutral-300 dark:border-neutral-500 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] text-xs"
+              className="temp-humidity-hum temp-humidity-input w-10 min-w-[2.5rem] max-w-full px-2 py-1 border border-neutral-300 dark:border-neutral-500 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-brand focus:border-brand text-xs"
             />
           </div>
         );
@@ -1274,7 +1274,7 @@ export const CustomFormFiller: React.FC = () => {
                   onChange={(e) =>
                     handleFieldChange(section.id, sf.id, e.target.value)
                   }
-                  className="px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]"
+                  className="px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-brand focus:border-brand"
                 >
                   {sf.options.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -1346,7 +1346,7 @@ export const CustomFormFiller: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => addConditionalRow(section.id)}
-                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#f26722] border border-[#f26722] rounded hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand border border-brand rounded hover:bg-orange-50 dark:hover:bg-orange-900/20"
                 >
                   <Plus className="w-3 h-3" /> Add Row
                 </button>
@@ -1459,7 +1459,7 @@ export const CustomFormFiller: React.FC = () => {
                                 }));
                               }}
                               placeholder="Search equipment..."
-                              className="w-full px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]"
+                              className="w-full px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand"
                             />
                           ) : (
                             renderField(cellRowKey, col.field, {
@@ -1483,7 +1483,7 @@ export const CustomFormFiller: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => updateSectionRowCount(section.id, 1)}
-                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#f26722] border border-[#f26722] rounded hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                  className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand border border-brand rounded hover:bg-orange-50 dark:hover:bg-orange-900/20"
                 >
                   <Plus className="w-3 h-3" /> Add Row
                 </button>
@@ -1691,7 +1691,7 @@ export const CustomFormFiller: React.FC = () => {
                     {template.name}
                   </h1>
                   {template.netaSection && (
-                    <span className="inline-block mt-1 px-2 py-1 text-xs font-medium bg-[#f26722] text-white rounded">
+                    <span className="inline-block mt-1 px-2 py-1 text-xs font-medium bg-brand text-white rounded">
                       {template.netaSection}
                     </span>
                   )}
@@ -1736,7 +1736,7 @@ export const CustomFormFiller: React.FC = () => {
                 key={section.id}
                 className={idx > 0 ? "mt-6 print:mt-4" : ""}
               >
-                <div className="w-full h-1 bg-[#f26722] mb-3 print:mb-1"></div>
+                <div className="w-full h-1 bg-brand mb-3 print:mb-1"></div>
                 <h2 className="text-lg font-semibold mb-3 print:mb-1 print:text-sm text-neutral-900 dark:text-white print:text-black">
                   {section.title}
                 </h2>

@@ -812,7 +812,7 @@ function Section({
   return (
     <div>
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 rounded-none bg-neutral-100 dark:bg-dark-200 flex items-center justify-center text-[#f26722]">
+        <div className="w-8 h-8 rounded-none bg-neutral-100 dark:bg-dark-200 flex items-center justify-center text-brand">
           {icon}
         </div>
         <div className="flex-1 min-w-0">

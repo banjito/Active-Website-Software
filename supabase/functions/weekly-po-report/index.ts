@@ -5,6 +5,7 @@
 // @ts-ignore deno: remote module types resolved at runtime
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { getDigestRecipientEmails } from '../_shared/digestRecipients.ts'
+import { BRAND_COLOR, COMPANY_FULL_NAME, COMPANY_NAME, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -141,14 +142,14 @@ serve(async (req) => {
         <style>
           body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
           .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #f26722 0%, #e55611 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }
+          .header { background: linear-gradient(135deg, ${BRAND_COLOR} 0%, #e55611 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }
           .content { background: white; padding: 30px; border: 1px solid #ddd; border-top: none; }
           .summary { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
           .summary-stat { display: inline-block; margin: 10px 20px 10px 0; }
           .summary-label { font-size: 14px; color: #666; }
-          .summary-value { font-size: 28px; font-weight: bold; color: #f26722; }
+          .summary-value { font-size: 28px; font-weight: bold; color: ${BRAND_COLOR}; }
           .po-item { background: white; border: 1px solid #e0e0e0; padding: 15px; margin: 10px 0; border-radius: 6px; }
-          .po-header { font-weight: bold; color: #f26722; margin-bottom: 8px; }
+          .po-header { font-weight: bold; color: ${BRAND_COLOR}; margin-bottom: 8px; }
           .po-detail { font-size: 14px; color: #555; margin: 4px 0; }
           .footer { text-align: center; color: #777; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; }
         </style>
@@ -184,7 +185,7 @@ serve(async (req) => {
             `).join('')}
           </div>
           <div class="footer">
-            <p>This is an automated weekly report from AMP Quality Energy Services</p>
+            <p>This is an automated weekly report from ${COMPANY_FULL_NAME}</p>
             <p>Generated on ${new Date().toLocaleString()}</p>
           </div>
         </div>
@@ -212,7 +213,7 @@ Uploaded: ${new Date(po.uploaded_date).toLocaleDateString('en-US', { month: 'sho
 ---
 `).join('\n')}
 
-This is an automated weekly report from AMP Quality Energy Services
+This is an automated weekly report from ${COMPANY_FULL_NAME}
 Generated on ${new Date().toLocaleString()}
     `
 
@@ -249,8 +250,8 @@ Generated on ${new Date().toLocaleString()}
 
     console.log('Sending email to:', notificationEmail)
     
-    const fromEmail = (Deno.env.get('POSTMARK_FROM') ?? 'john.chambers@ampqes.com').trim()
-    const fromHeader = fromEmail.includes('<') ? fromEmail : `AMP System <${fromEmail}>`
+    const fromEmail = DEFAULT_FROM_EMAIL
+    const fromHeader = fromEmail.includes('<') ? fromEmail : `${COMPANY_NAME} System <${fromEmail}>`
 
     const pmRes = await fetch('https://api.postmarkapp.com/email', {
       method: 'POST',

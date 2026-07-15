@@ -698,7 +698,7 @@ export default function JobProfitabilityDashboard({ job }: Props) {
                 max="100"
                 value={draftRate}
                 onChange={(e) => setDraftRate(e.target.value)}
-                className="w-full rounded-none border border-neutral-300 px-3 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+                className="w-full rounded-none border border-neutral-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
               />
             </div>
             <div className="flex justify-end gap-2">
@@ -710,7 +710,7 @@ export default function JobProfitabilityDashboard({ job }: Props) {
               </button>
               <button
                 onClick={handleSaveSettings}
-                className="rounded-none bg-[#f26722] px-4 py-2 text-sm font-medium text-white hover:bg-[#d95e1e]"
+                className="rounded-none bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
               >
                 Save
               </button>

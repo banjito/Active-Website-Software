@@ -433,7 +433,7 @@ export default function UnifiedJobsPage() {
                     onClick={() => setAllTime(!allTime)}
                     className={`px-4 py-1.5 text-sm font-medium rounded-none transition-colors ${
                       allTime
-                        ? "bg-[#f26722] text-white"
+                        ? "bg-brand text-white"
                         : "bg-neutral-100 dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-200"
                     }`}
                   >
@@ -445,7 +445,7 @@ export default function UnifiedJobsPage() {
                         type="date"
                         value={dateRangeStart}
                         onChange={(e) => setDateRangeStart(e.target.value)}
-                        className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                        className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
                       />
                       <span className="text-neutral-500 dark:text-neutral-400">
                         to
@@ -454,7 +454,7 @@ export default function UnifiedJobsPage() {
                         type="date"
                         value={dateRangeEnd}
                         onChange={(e) => setDateRangeEnd(e.target.value)}
-                        className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+                        className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
                       />
                     </div>
                   )}
@@ -579,7 +579,7 @@ export default function UnifiedJobsPage() {
                 onClick={() => setStatusFilter(key)}
                 className={`px-4 py-2 text-sm font-medium focus:outline-none transition-colors ${
                   statusFilter === key
-                    ? "bg-[#f26722] text-white"
+                    ? "bg-brand text-white"
                     : "bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-dark-100"
                 }${key !== "billed" ? " border-r border-neutral-200 dark:border-neutral-700" : ""}`}
               >
@@ -596,7 +596,7 @@ export default function UnifiedJobsPage() {
             onClick={() => setFilterByContractValue(!filterByContractValue)}
             className={`inline-flex items-center px-4 py-2 rounded-none text-sm font-medium transition-colors ${
               filterByContractValue
-                ? "bg-[#f26722] text-white"
+                ? "bg-brand text-white"
                 : "bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-dark-100"
             }`}
           >
@@ -612,7 +612,7 @@ export default function UnifiedJobsPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search jobs by title, customer, job number, quote number, PO number, status, or description..."
-              className="w-full px-4 py-2 pl-10 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+              className="w-full px-4 py-2 pl-10 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand"
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400">
               <svg

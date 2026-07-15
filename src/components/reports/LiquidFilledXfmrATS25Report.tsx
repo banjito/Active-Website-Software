@@ -1125,7 +1125,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
 
           {/* Job Information */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
@@ -1359,7 +1359,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
 
           {/* Nameplate Data */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Nameplate Data
             </h2>
@@ -1879,7 +1879,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
 
           {/* Indicator Gauge Values */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Indicator Gauge Values
             </h2>
@@ -2050,7 +2050,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
 
           {/* Visual and Mechanical Inspection */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
@@ -2123,7 +2123,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
 
           {/* Visual & Mechanical Inspection Comments */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual & Mechanical Inspection Comments:
             </h2>
@@ -2156,7 +2156,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
 
           {/* Electrical - Insulation Resistance Tests */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical - Insulation Resistance Tests
             </h2>
@@ -2270,7 +2270,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                               }));
                             }}
                             disabled={!isEditing}
-                            className={`form-select w-20 max-w-full text-sm font-medium text-neutral-900 dark:text-white py-1 px-1.5 rounded border-neutral-300 dark:border-neutral-600 focus:ring-[#f26722] focus:border-[#f26722] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                            className={`form-select w-20 max-w-full text-sm font-medium text-neutral-900 dark:text-white py-1 px-1.5 rounded border-neutral-300 dark:border-neutral-600 focus:ring-brand focus:border-brand ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                           >
                             {INSULATION_RESISTANCE_TEST_VOLTAGES.map((v) => (
                               <option key={v} value={v}>
@@ -2338,7 +2338,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                             }))
                           }
                           disabled={!isEditing}
-                          className={`form-select w-full text-sm font-medium text-neutral-900 dark:text-white py-1.5 px-2 rounded border-neutral-300 dark:border-neutral-600 focus:ring-[#f26722] focus:border-[#f26722] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
+                          className={`form-select w-full text-sm font-medium text-neutral-900 dark:text-white py-1.5 px-2 rounded border-neutral-300 dark:border-neutral-600 focus:ring-brand focus:border-brand ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"}`}
                         >
                           {INSULATION_RESISTANCE_UNITS.map((u) => (
                             <option key={u} value={u}>
@@ -2447,7 +2447,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
 
           {/* Test Equipment Used */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
@@ -2614,7 +2614,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
           <div
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments:
             </h2>

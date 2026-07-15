@@ -201,7 +201,7 @@ export const PostComposer: React.FC<Props> = ({ user, onPosted }) => {
             placeholder="Share an update…"
             rows={1}
             aria-label="Post body"
-            className="mt-0 box-border w-full min-h-0 resize-none rounded-none border border-neutral-300 bg-neutral-100 px-2 py-2 text-sm leading-snug text-neutral-900 shadow-sm focus:outline-none  focus:ring-[#f26722] dark:border-neutral-600 dark:bg-dark-100 dark:text-white dark:focus:border-[#f26722]"
+            className="mt-0 box-border w-full min-h-0 resize-none rounded-none border border-neutral-300 bg-neutral-100 px-2 py-2 text-sm leading-snug text-neutral-900 shadow-sm focus:outline-none  focus:ring-brand dark:border-neutral-600 dark:bg-dark-100 dark:text-white dark:focus:border-brand"
             style={{
               height: taHeightPx,
               maxHeight: TEXTAREA_MAX_PX,
@@ -256,7 +256,7 @@ export const PostComposer: React.FC<Props> = ({ user, onPosted }) => {
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => inputRef.current?.click()}
-                className="inline-flex items-center bg-[#f26722] gap-1.5 rounded-none border-none px-2 py-2 text-white hover:bg-[#f26722]/80"
+                className="inline-flex items-center bg-brand gap-1.5 rounded-none border-none px-2 py-2 text-white hover:bg-brand/80"
               >
                 <ImagePlus className="stroke-[1.5] h-5 w-5" />
               </button>
@@ -269,7 +269,7 @@ export const PostComposer: React.FC<Props> = ({ user, onPosted }) => {
                 e.preventDefault();
               }}
               onClick={() => void submit()}
-              className="inline-flex items-center gap-1.5 rounded-none px-2 py-2 font-medium text-white bg-[#f26722] hover:bg-[#e55611] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 rounded-none px-2 py-2 font-medium text-white bg-brand hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

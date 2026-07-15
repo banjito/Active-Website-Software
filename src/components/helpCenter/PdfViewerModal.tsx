@@ -131,7 +131,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
               {isLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-dark-200 z-10">
                   <div className="flex flex-col items-center gap-3">
-                    <Loader2 className="w-8 h-8 text-[#f26722] animate-spin" />
+                    <Loader2 className="w-8 h-8 text-brand animate-spin" />
                     <div className="flex justify-center py-6">
                       <LoadingSpinner size="md" />
                     </div>
@@ -154,7 +154,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
               {isLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-dark-200 z-10">
                   <div className="flex flex-col items-center gap-3">
-                    <Loader2 className="w-8 h-8 text-[#f26722] animate-spin" />
+                    <Loader2 className="w-8 h-8 text-brand animate-spin" />
                     <div className="flex justify-center py-6">
                       <LoadingSpinner size="md" />
                     </div>

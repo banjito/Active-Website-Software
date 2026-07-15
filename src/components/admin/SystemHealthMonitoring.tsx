@@ -679,7 +679,7 @@ export const SystemHealthMonitoring: React.FC = () => {
                           <Bar
                             dataKey="ms"
                             name="Milliseconds"
-                            fill="#f26722"
+                            fill="var(--brand)"
                             radius={[4, 4, 0, 0]}
                           />
                         </BarChart>

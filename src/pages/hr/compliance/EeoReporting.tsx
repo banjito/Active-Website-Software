@@ -181,7 +181,7 @@ export const EeoReporting: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#f26722]" />
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-brand" />
           <div className="flex justify-center py-6">
             <LoadingSpinner size="md" />
           </div>
@@ -195,7 +195,7 @@ export const EeoReporting: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-neutral-900 dark:text-white flex items-center gap-3">
-            <Shield className="h-8 w-8 text-[#f26722]" />
+            <Shield className="h-8 w-8 text-brand" />
             EEO Compliance Reporting
           </h1>
           <p className="text-neutral-600 dark:text-neutral-400 mt-2">

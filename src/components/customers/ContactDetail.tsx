@@ -416,7 +416,7 @@ export default function ContactDetail() {
             Back
           </button>
           <div className="flex items-center">
-            <Users className="h-8 w-8 text-[#f26722]" />
+            <Users className="h-8 w-8 text-brand" />
             <h1 className="ml-3 text-2xl font-semibold text-neutral-900 dark:text-white">
               {contact.first_name} {contact.last_name}
             </h1>
@@ -443,7 +443,7 @@ export default function ContactDetail() {
                     divisions: contact.divisions || [],
                   });
                 }}
-                className="px-4 py-2 bg-[#f26722] text-white rounded hover:bg-[#f26722]/90 transition-colors flex items-center"
+                className="px-4 py-2 bg-brand text-white rounded hover:bg-brand/90 transition-colors flex items-center"
               >
                 <Edit className="h-4 w-4 mr-1" />
                 Edit
@@ -493,7 +493,7 @@ export default function ContactDetail() {
       <div className="flex space-x-1 mb-6 border-b border-neutral-200 dark:border-neutral-700">
         <button
           onClick={() => setActiveTab("info")}
-          className={`px-4 py-2.5 text-sm font-medium rounded-none transition-colors ${activeTab === "info" ? "text-[#f26722] border-b-2 border-[#f26722] bg-white dark:bg-dark-150" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
+          className={`px-4 py-2.5 text-sm font-medium rounded-none transition-colors ${activeTab === "info" ? "text-brand border-b-2 border-brand bg-white dark:bg-dark-150" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
         >
           <span className="flex items-center gap-1.5">
             <Users className="h-4 w-4" /> Info
@@ -501,7 +501,7 @@ export default function ContactDetail() {
         </button>
         <button
           onClick={() => setActiveTab("interactions")}
-          className={`px-4 py-2.5 text-sm font-medium rounded-none transition-colors ${activeTab === "interactions" ? "text-[#f26722] border-b-2 border-[#f26722] bg-white dark:bg-dark-150" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
+          className={`px-4 py-2.5 text-sm font-medium rounded-none transition-colors ${activeTab === "interactions" ? "text-brand border-b-2 border-brand bg-white dark:bg-dark-150" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
         >
           <span className="flex items-center gap-1.5">
             <MessageSquare className="h-4 w-4" /> Interactions{" "}
@@ -542,7 +542,7 @@ export default function ContactDetail() {
                           first_name: e.target.value,
                         })
                       }
-                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                       required
                     />
                   </div>
@@ -559,7 +559,7 @@ export default function ContactDetail() {
                           last_name: e.target.value,
                         })
                       }
-                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                       required
                     />
                   </div>
@@ -576,7 +576,7 @@ export default function ContactDetail() {
                           email: e.target.value,
                         })
                       }
-                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                       required
                     />
                   </div>
@@ -593,7 +593,7 @@ export default function ContactDetail() {
                           phone: e.target.value,
                         })
                       }
-                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                     />
                   </div>
                   <div>
@@ -609,7 +609,7 @@ export default function ContactDetail() {
                           position: e.target.value,
                         })
                       }
-                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-200 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                     />
                   </div>
                   <div className="flex items-center">
@@ -623,7 +623,7 @@ export default function ContactDetail() {
                           is_primary: e.target.checked,
                         })
                       }
-                      className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                      className="h-4 w-4 text-brand focus:ring-brand border-neutral-300 rounded"
                     />
                     <label
                       htmlFor="is_primary"
@@ -657,7 +657,7 @@ export default function ContactDetail() {
                             }}
                             className={`px-3 py-1 rounded-none text-sm font-medium transition-colors ${
                               isActive
-                                ? "bg-[#f26722] text-white"
+                                ? "bg-brand text-white"
                                 : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
                             }`}
                           >
@@ -695,7 +695,7 @@ export default function ContactDetail() {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[#f26722] text-white rounded hover:bg-[#f26722]/90 transition-colors flex items-center"
+                    className="px-4 py-2 bg-brand text-white rounded hover:bg-brand/90 transition-colors flex items-center"
                     disabled={isSaving}
                   >
                     <Save className="h-4 w-4 mr-1" />
@@ -712,21 +712,21 @@ export default function ContactDetail() {
                 </h2>
                 <div className="space-y-4">
                   <div className="flex items-start">
-                    <Mail className="h-5 w-5 text-[#f26722] mt-0.5" />
+                    <Mail className="h-5 w-5 text-brand mt-0.5" />
                     <div className="ml-3">
                       <p className="text-sm font-medium text-neutral-500 dark:text-white">
                         Email
                       </p>
                       <a
                         href={`mailto:${contact.email}`}
-                        className="text-sm text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                        className="text-sm text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90"
                       >
                         {contact.email}
                       </a>
                     </div>
                   </div>
                   <div className="flex items-start">
-                    <Phone className="h-5 w-5 text-[#f26722] mt-0.5" />
+                    <Phone className="h-5 w-5 text-brand mt-0.5" />
                     <div className="ml-3">
                       <p className="text-sm font-medium text-neutral-500 dark:text-white">
                         Phone
@@ -734,7 +734,7 @@ export default function ContactDetail() {
                       {contact.phone ? (
                         <a
                           href={`tel:${contact.phone}`}
-                          className="text-sm text-[#f26722] hover:text-[#f26722]/90"
+                          className="text-sm text-brand hover:text-brand/90"
                         >
                           {contact.phone}
                         </a>
@@ -746,7 +746,7 @@ export default function ContactDetail() {
                     </div>
                   </div>
                   <div className="flex items-start">
-                    <Briefcase className="h-5 w-5 text-[#f26722] mt-0.5" />
+                    <Briefcase className="h-5 w-5 text-brand mt-0.5" />
                     <div className="ml-3">
                       <p className="text-sm font-medium text-neutral-500 dark:text-white">
                         Position
@@ -757,7 +757,7 @@ export default function ContactDetail() {
                     </div>
                   </div>
                   <div className="flex items-start">
-                    <Calendar className="h-5 w-5 text-[#f26722] mt-0.5" />
+                    <Calendar className="h-5 w-5 text-brand mt-0.5" />
                     <div className="ml-3">
                       <p className="text-sm font-medium text-neutral-500 dark:text-white">
                         Created
@@ -769,7 +769,7 @@ export default function ContactDetail() {
                   </div>
                   {contact.divisions && contact.divisions.length > 0 && (
                     <div className="flex items-start">
-                      <Briefcase className="h-5 w-5 text-[#f26722] mt-0.5" />
+                      <Briefcase className="h-5 w-5 text-brand mt-0.5" />
                       <div className="ml-3">
                         <p className="text-sm font-medium text-neutral-500 dark:text-white">
                           Divisions
@@ -782,7 +782,7 @@ export default function ContactDetail() {
                             return (
                               <span
                                 key={divValue}
-                                className="inline-flex items-center px-2 py-0.5 rounded-none text-xs font-medium bg-[#f26722]/10 text-[#f26722] border border-[#f26722]/30"
+                                className="inline-flex items-center px-2 py-0.5 rounded-none text-xs font-medium bg-brand/10 text-brand border border-brand/30"
                               >
                                 {label}
                               </span>
@@ -820,12 +820,12 @@ export default function ContactDetail() {
                       >
                         <div className="space-y-4">
                           <div className="flex items-start">
-                            <Building2 className="h-5 w-5 text-[#f26722] mt-0.5" />
+                            <Building2 className="h-5 w-5 text-brand mt-0.5" />
                             <div className="ml-3">
                               <p className="text-sm font-medium text-neutral-500 dark:text-white">
                                 Company
                               </p>
-                              <p className="text-sm text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90">
+                              <p className="text-sm text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90">
                                 {customer.company_name || customer.name}
                               </p>
                             </div>
@@ -854,7 +854,7 @@ export default function ContactDetail() {
               : notes.filter((n) => n.note_type === noteFilter);
           const noteTypeIcon = (type: string) => {
             if (type === "call")
-              return <Phone className="h-4 w-4 text-[#f26722]" />;
+              return <Phone className="h-4 w-4 text-brand" />;
             if (type === "email")
               return (
                 <Mail className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -864,7 +864,7 @@ export default function ContactDetail() {
             );
           };
           const noteTypeBg = (type: string) => {
-            if (type === "call") return "bg-[#f26722]/10";
+            if (type === "call") return "bg-brand/10";
             if (type === "email") return "bg-blue-100 dark:bg-blue-900";
             return "bg-purple-100 dark:bg-purple-900";
           };
@@ -874,7 +874,7 @@ export default function ContactDetail() {
             return "In Person";
           };
           const noteTypeBadge = (type: string) => {
-            if (type === "call") return "bg-[#f26722]/10 text-[#f26722]";
+            if (type === "call") return "bg-brand/10 text-brand";
             if (type === "email")
               return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
             return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
@@ -895,7 +895,7 @@ export default function ContactDetail() {
                       occurred_at: "",
                     });
                   }}
-                  className="inline-flex items-center justify-center rounded-none bg-[#f26722] px-4 py-2 text-sm font-medium text-white hover:bg-[#f26722]/90"
+                  className="inline-flex items-center justify-center rounded-none bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand/90"
                 >
                   <Feather className="h-4 w-4 mr-1" />
                   Log Interaction
@@ -908,7 +908,7 @@ export default function ContactDetail() {
                   <button
                     key={f}
                     onClick={() => setNoteFilter(f)}
-                    className={`px-4 py-2 text-sm font-medium ${noteFilter === f ? "text-[#f26722] border-b-2 border-[#f26722]" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
+                    className={`px-4 py-2 text-sm font-medium ${noteFilter === f ? "text-brand border-b-2 border-brand" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
                   >
                     {f === "all"
                       ? "All"
@@ -940,7 +940,7 @@ export default function ContactDetail() {
                             note_type: e.target.value,
                           }))
                         }
-                        className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                        className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand"
                       >
                         <option value="call">Call</option>
                         <option value="email">Email</option>
@@ -960,7 +960,7 @@ export default function ContactDetail() {
                             occurred_at: e.target.value,
                           }))
                         }
-                        className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                        className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand"
                       />
                     </div>
                   </div>
@@ -978,7 +978,7 @@ export default function ContactDetail() {
                         }))
                       }
                       placeholder="What happened during this interaction..."
-                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand"
                     />
                   </div>
                   <div className="flex justify-end gap-2">
@@ -994,7 +994,7 @@ export default function ContactDetail() {
                     <button
                       onClick={handleSaveNote}
                       disabled={noteFormSaving}
-                      className="px-4 py-1.5 text-sm bg-[#f26722] text-white rounded hover:bg-[#f26722]/90 disabled:opacity-50"
+                      className="px-4 py-1.5 text-sm bg-brand text-white rounded hover:bg-brand/90 disabled:opacity-50"
                     >
                       {noteFormSaving
                         ? "Saving..."
@@ -1083,7 +1083,7 @@ export default function ContactDetail() {
                                   });
                                   setShowNoteForm(true);
                                 }}
-                                className="text-sm text-[#f26722] hover:text-[#f26722]/80 flex items-center gap-0.5"
+                                className="text-sm text-brand hover:text-brand/80 flex items-center gap-0.5"
                               >
                                 <Edit className="h-3 w-3" /> Edit
                               </button>

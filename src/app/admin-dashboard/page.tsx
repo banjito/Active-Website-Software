@@ -16,6 +16,7 @@ import {
   DollarSign,
   ClipboardList,
   Activity,
+  Palette,
 } from "lucide-react";
 import Card, { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -38,6 +39,7 @@ const subPathTitles: Record<string, string> = {
   encryption: "Encryption Settings",
   integrations: "Integrations",
   quickbooks: "QuickBooks Dashboard",
+  "site-theme": "Website Theme",
 };
 
 type AdminCard = {
@@ -138,6 +140,14 @@ const adminCards: AdminCard[] = [
     path: "/admin-dashboard/quickbooks",
   },
   {
+    title: "Website Theme",
+    icon: Palette,
+    iconClassName: "text-brand",
+    cardClassName:
+      "border-orange-200 bg-orange-50/80 dark:border-orange-900 dark:bg-orange-950/30",
+    path: "/admin-dashboard/site-theme",
+  },
+  {
     title: "Custom Report Builder",
     icon: ClipboardList,
     iconClassName: "text-amber-800 dark:text-amber-200",
@@ -210,6 +220,7 @@ const CATEGORIES: CategorySection[] = [
       [
         "/admin-dashboard/notification-controls",
         "/admin-dashboard/integrations",
+        "/admin-dashboard/site-theme",
       ].includes(c.path),
     ),
   },
@@ -286,7 +297,7 @@ function NavCard({
       role="button"
       tabIndex={0}
       aria-label={title}
-      className={`group cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-black ${cardClassName}`}
+      className={`group cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black ${cardClassName}`}
       onClick={() => navigate(path)}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {

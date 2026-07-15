@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 interface ReportWrapperProps {
   children: React.ReactNode;
@@ -755,10 +756,10 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
           }
 
           /* Orange dividers */
-          #report-container .custom-form-container div[class*="bg-[#f26722]"] {
+          #report-container .custom-form-container div[class*="bg-brand"] {
             height: 3px !important;
             margin-bottom: 4px !important;
-            background-color: #f26722 !important;
+            background-color: ${BRAND_COLOR} !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }

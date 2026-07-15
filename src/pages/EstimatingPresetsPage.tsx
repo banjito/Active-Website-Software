@@ -67,7 +67,7 @@ const CurrencyInput: React.FC<{
           value={value || ""}
           onChange={handleChange}
           className="block w-full pl-8 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm
-                     focus:ring-[#f26722] focus:border-[#f26722]
+                     focus:ring-brand focus:border-brand
                      bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
         />
       </div>
@@ -115,7 +115,7 @@ const NumberInput: React.FC<{
             value={value || ""}
             onChange={handleChange}
             className="block w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm
-                     focus:ring-[#f26722] focus:border-[#f26722]
+                     focus:ring-brand focus:border-brand
                      bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
           />
           {suffix && (
@@ -167,7 +167,7 @@ const FactorInput: React.FC<{
             value={value || ""}
             onChange={handleChange}
             className="block w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm
-                     focus:ring-[#f26722] focus:border-[#f26722]
+                     focus:ring-brand focus:border-brand
                      bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
           />
           {showPercentage && (
@@ -330,7 +330,7 @@ export default function EstimatingPresetsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-3">
-              <Calculator className="h-7 w-7 text-[#f26722]" />
+              <Calculator className="h-7 w-7 text-brand" />
               Estimating Presets
             </h1>
           </div>
@@ -350,7 +350,7 @@ export default function EstimatingPresetsPage() {
                 onClick={handleSave}
                 disabled={saving || !hasChanges}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white
-                           bg-[#f26722] hover:bg-[#e55611] rounded-none shadow-sm
+                           bg-brand hover:bg-brand-dark rounded-none shadow-sm
                            disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Save className="h-4 w-4" />
@@ -430,7 +430,7 @@ export default function EstimatingPresetsPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                     isActive
-                      ? "border-[#f26722] text-[#f26722]"
+                      ? "border-brand text-brand"
                       : "border-transparent text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
                   }`}
                 >
@@ -449,7 +449,7 @@ export default function EstimatingPresetsPage() {
             {/* General Estimating Variables */}
             <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
-                <DollarSign className="h-5 w-5 text-[#f26722]" />
+                <DollarSign className="h-5 w-5 text-brand" />
                 <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                   General Estimating Variables
                 </h2>
@@ -524,7 +524,7 @@ export default function EstimatingPresetsPage() {
             {/* Vehicle Travel Variables */}
             <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
-                <Truck className="h-5 w-5 text-[#f26722]" />
+                <Truck className="h-5 w-5 text-brand" />
                 <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                   Vehicle Travel Variables
                 </h2>
@@ -573,7 +573,7 @@ export default function EstimatingPresetsPage() {
             {/* Per Diem & Lodging Variables */}
             <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
-                <Users className="h-5 w-5 text-[#f26722]" />
+                <Users className="h-5 w-5 text-brand" />
                 <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                   Per Diem & Lodging
                 </h2>
@@ -601,7 +601,7 @@ export default function EstimatingPresetsPage() {
             {/* Flight Travel Variables */}
             <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
-                <Plane className="h-5 w-5 text-[#f26722]" />
+                <Plane className="h-5 w-5 text-brand" />
                 <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                   Flight Travel Variables
                 </h2>
@@ -638,7 +638,7 @@ export default function EstimatingPresetsPage() {
             {/* Rental Car Variables */}
             <div className="bg-white dark:bg-dark-150 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 lg:col-span-2">
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
-                <Clock className="h-5 w-5 text-[#f26722]" />
+                <Clock className="h-5 w-5 text-brand" />
                 <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
                   Rental Car Variables
                 </h2>

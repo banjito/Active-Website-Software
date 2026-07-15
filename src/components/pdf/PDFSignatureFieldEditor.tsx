@@ -108,7 +108,7 @@ export function PDFSignatureFieldEditor({
       const isSelected = selectedField === field.id;
 
       // Draw signature field rectangle
-      ctx.strokeStyle = isSelected ? "#f26722" : "#3b82f6";
+      ctx.strokeStyle = isSelected ? "var(--brand)" : "#3b82f6";
       ctx.lineWidth = isSelected ? 3 : 2;
       ctx.setLineDash(isSelected ? [] : [5, 5]);
       ctx.strokeRect(
@@ -119,7 +119,7 @@ export function PDFSignatureFieldEditor({
       );
 
       // Draw field label
-      ctx.fillStyle = isSelected ? "#f26722" : "#3b82f6";
+      ctx.fillStyle = isSelected ? "var(--brand)" : "#3b82f6";
       ctx.font = "12px Arial";
       ctx.fillText(
         field.name || "Signature",
@@ -369,7 +369,7 @@ export function PDFSignatureFieldEditor({
                     key={field.id}
                     className={`p-3 border rounded cursor-pointer ${
                       selectedField === field.id
-                        ? "border-[#f26722] bg-orange-50"
+                        ? "border-brand bg-orange-50"
                         : "border-neutral-200"
                     }`}
                     onClick={() => setSelectedField(field.id)}

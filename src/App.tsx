@@ -77,6 +77,7 @@ import NotificationDevControls from "./components/admin/NotificationDevControls"
 import InProgressDashboard from "./components/admin/InProgressDashboard";
 import IntegrationsSettings from "./components/admin/IntegrationsSettings";
 import QuickBooksDashboard from "./components/admin/QuickBooksDashboard";
+import WebsiteThemeSettings from "./components/admin/WebsiteThemeSettings";
 import FloatingIssueReporter from "./components/feedback/FloatingIssueReporter";
 import SchedulingPage from "./app/scheduling/page";
 import FieldEquipmentPage from "./app/[division]/field-equipment/page";
@@ -397,7 +398,7 @@ function NinetyRedirect() {
         href="https://www.app.ninety.io/"
         target="_blank"
         rel="noopener noreferrer"
-        className="text-[#f26722] underline"
+        className="text-brand underline"
       >
         Open Ninety
       </a>
@@ -664,6 +665,10 @@ function App() {
                     <Route
                       path="quickbooks"
                       element={<QuickBooksDashboard />}
+                    />
+                    <Route
+                      path="site-theme"
+                      element={<WebsiteThemeSettings />}
                     />
                   </Route>
                   <Route

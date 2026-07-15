@@ -13,6 +13,7 @@ import { useAuth } from "../../../lib/AuthContext";
 import { toast } from "../../../components/ui/toast";
 import { supabase } from "../../../lib/supabase";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { employeeEmailRegex } from "@/lib/companyConfig";
 
 interface EmployeeOption {
   id: string;
@@ -80,7 +81,7 @@ export const JobTitleHistory: React.FC = () => {
 
       const list = allUsers
         .filter((u: any) =>
-          (u.email || "").toLowerCase().endsWith("@ampqes.com"),
+          employeeEmailRegex.test((u.email || "").toLowerCase()),
         )
         .map((u: any) => {
           const profile = profilesMap[u.id];

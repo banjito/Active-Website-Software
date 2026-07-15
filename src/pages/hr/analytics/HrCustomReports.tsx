@@ -1160,7 +1160,7 @@ export function HrCustomReports() {
                       variant="default"
                       disabled={isRunning}
                       onClick={() => runReport(def.id, "excel")}
-                      className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                      className="bg-brand hover:bg-brand/90 text-white"
                     >
                       {isRunning ? (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />

@@ -47,9 +47,9 @@ export const SettingsSubmenu: React.FC<SettingsSubmenuProps> = ({
           <button
             type="button"
             onClick={() => setShowEditProfile(true)}
-            className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50"
+            className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50"
           >
-            <UserIcon className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+            <UserIcon className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
             Edit Profile
           </button>
 
@@ -60,9 +60,9 @@ export const SettingsSubmenu: React.FC<SettingsSubmenuProps> = ({
                 onEnterEditMode();
                 onClose();
               }}
-              className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50"
+              className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50"
             >
-              <Edit3 className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+              <Edit3 className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
               Enter Edit Mode
             </button>
           )}
@@ -73,9 +73,9 @@ export const SettingsSubmenu: React.FC<SettingsSubmenuProps> = ({
               onAbout?.();
               onClose();
             }}
-            className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50"
+            className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50"
           >
-            <FileText className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+            <FileText className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
             About
           </button>
         </div>

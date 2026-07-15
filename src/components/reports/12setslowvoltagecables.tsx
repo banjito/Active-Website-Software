@@ -17,6 +17,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 // Types
 interface CableTestData {
@@ -535,7 +536,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
 
       /* Section headers with orange dividers for fillable report */
       h2 {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 8px !important;
         margin-top: 16px !important;
       }
@@ -620,7 +621,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
         /* Create actual section dividers */
         .mb-6 {
           margin-top: 12px !important;
-          border-top: 1px solid #f26722 !important;
+          border-top: 1px solid ${BRAND_COLOR} !important;
           padding-top: 8px !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
@@ -636,7 +637,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
         /* Add orange dividers for all section containers */
         div:has(> h2) {
           margin-top: 12px !important;
-          border-top: 1px solid #f26722 !important;
+          border-top: 1px solid ${BRAND_COLOR} !important;
           padding-top: 8px !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
@@ -1716,7 +1717,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
       }
       /* Section headers with orange dividers for fillable report */
       h2 {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 8px !important;
         margin-top: 16px !important;
       }
@@ -2090,7 +2091,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
         /* Create actual section dividers */
         .mb-6 {
           margin-top: 12px !important;
-          border-top: 1px solid #f26722 !important;
+          border-top: 1px solid ${BRAND_COLOR} !important;
           padding-top: 8px !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
@@ -3396,7 +3397,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                               handleInspectionChange(section, e.target.value)
                             }
                             disabled={!isEditMode}
-                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {INSPECTION_RESULTS_OPTIONS.map((option) => (
                               <option key={option} value={option}>

@@ -252,7 +252,7 @@ export const CompPositionDetails: React.FC = () => {
           </p>
         </div>
         <Button
-          className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+          className="bg-brand hover:bg-brand/90 text-white"
           onClick={() => {
             resetForm();
             setIsCreateModalOpen(true);
@@ -518,7 +518,7 @@ export const CompPositionDetails: React.FC = () => {
             </Button>
             <Button
               onClick={isEditModalOpen ? handleUpdate : handleCreate}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               {isEditModalOpen ? "Update" : "Create"}
             </Button>
@@ -686,7 +686,7 @@ export const CompPositionDetails: React.FC = () => {
                   setIsViewModalOpen(false);
                   openEditModal(selectedOffer);
                 }}
-                className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                className="bg-brand hover:bg-brand/90 text-white"
               >
                 <Edit className="mr-2 h-4 w-4" />
                 Edit

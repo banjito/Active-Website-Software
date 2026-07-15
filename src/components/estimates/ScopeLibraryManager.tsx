@@ -276,7 +276,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-[#f26722]" />
+              <BookOpen className="h-5 w-5 text-brand" />
               Scope Item Library
             </h2>
             <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400 max-w-3xl">
@@ -289,7 +289,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
           <Button
             onClick={startCreate}
             size="sm"
-            className="bg-[#f26722] text-white hover:bg-[#d4551a] shrink-0"
+            className="bg-brand text-white hover:bg-brand-dark shrink-0"
             leftIcon={<Plus className="h-4 w-4 mr-1" />}
           >
             New Library Item
@@ -304,13 +304,13 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search items, notes, or equipment..."
-              className="w-full pl-9 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+              className="w-full pl-9 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
             />
           </div>
           <select
             value={activityFilter}
             onChange={(e) => setActivityFilter(e.target.value)}
-            className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+            className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
           >
             <option value="All">All activities</option>
             {activityOptions.map((activity) => (
@@ -324,7 +324,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
               type="checkbox"
               checked={includeInactive}
               onChange={(e) => setIncludeInactive(e.target.checked)}
-              className="h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+              className="h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
             />
             Show archived
           </label>
@@ -373,7 +373,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                 value={form.item_name}
                 onChange={(e) => updateForm("item_name", e.target.value)}
                 placeholder="e.g., Transformer Turns Ratio Test"
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                 autoFocus
               />
             </div>
@@ -388,7 +388,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                 onChange={(e) => updateForm("activity", e.target.value)}
                 placeholder="e.g., Maintenance"
                 list="scope-library-activity-options"
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
               />
               <datalist id="scope-library-activity-options">
                 {activityOptions.map((activity) => (
@@ -411,7 +411,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                   step="0.01"
                   value={form.material_cost}
                   onChange={(e) => updateForm("material_cost", e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                 />
               </div>
               <div>
@@ -424,7 +424,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                   step="0.25"
                   value={form.tech_count}
                   onChange={(e) => updateForm("tech_count", e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                 />
               </div>
               <div>
@@ -437,7 +437,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                   step="0.25"
                   value={form.hours}
                   onChange={(e) => updateForm("hours", e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
                 />
               </div>
             </div>
@@ -451,7 +451,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                 onChange={(e) => updateForm("estimate_notes", e.target.value)}
                 rows={4}
                 placeholder="Imported into the estimate row notes field."
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white resize-vertical"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white resize-vertical"
               />
             </div>
 
@@ -464,7 +464,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                 onChange={(e) => updateForm("library_notes", e.target.value)}
                 rows={4}
                 placeholder="Internal estimating guidance; not imported into the estimate."
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white resize-vertical"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white resize-vertical"
               />
             </div>
 
@@ -488,7 +488,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                         type="checkbox"
                         checked={form.equipment_ids.includes(equipmentItem.id)}
                         onChange={() => toggleEquipment(equipmentItem.id)}
-                        className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                        className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-brand focus:ring-brand"
                       />
                       <span>
                         {equipmentItem.name}
@@ -514,7 +514,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
               disabled={!form.item_name.trim() || saving}
               isLoading={saving}
               size="sm"
-              className="bg-[#f26722] text-white hover:bg-[#d4551a]"
+              className="bg-brand text-white hover:bg-brand-dark"
               leftIcon={<Save className="h-4 w-4 mr-1" />}
             >
               {editingItem ? "Save Changes" : "Add Library Item"}
@@ -623,7 +623,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                       <div className="inline-flex items-center gap-2">
                         <button
                           onClick={() => startEdit(item)}
-                          className="text-neutral-500 hover:text-[#f26722] transition-colors"
+                          className="text-neutral-500 hover:text-brand transition-colors"
                           title="Edit library item"
                         >
                           <Edit className="h-4 w-4" />

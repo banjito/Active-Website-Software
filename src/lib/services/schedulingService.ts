@@ -16,6 +16,7 @@ import {
 } from '../types/scheduling';
 import { PostgrestError } from '@supabase/supabase-js';
 import dayjs from 'dayjs';
+import { employeeNameEmailRegex } from "../companyConfig";
 
 /**
  * Helper functions to always derive name from email (firstname.lastname format)
@@ -23,7 +24,7 @@ import dayjs from 'dayjs';
 const deriveNameFromEmail = (email?: string | null): string | null => {
   if (!email) return null;
   const lower = String(email).toLowerCase();
-  const m = lower.match(/^([a-z]+)\.([a-z]+)@ampqes\.com$/i);
+  const m = lower.match(employeeNameEmailRegex);
   if (!m) return null;
   const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   return `${cap(m[1])} ${cap(m[2])}`;

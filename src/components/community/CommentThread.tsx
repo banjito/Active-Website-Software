@@ -135,7 +135,7 @@ export const CommentThread: React.FC<Props> = ({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-[#f26722] dark:hover:text-[#f26722]"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-brand dark:hover:text-brand"
       >
         <MessageCircle className="h-4 w-4" />
         {commentCount === 0
@@ -183,7 +183,7 @@ export const CommentThread: React.FC<Props> = ({
               {!showAll && hidden > 0 && (
                 <button
                   type="button"
-                  className="text-sm text-[#f26722] hover:underline"
+                  className="text-sm text-brand hover:underline"
                   onClick={() => setShowAll(true)}
                 >
                   View all {comments.length} comments
@@ -205,7 +205,7 @@ export const CommentThread: React.FC<Props> = ({
                 type="button"
                 disabled={!text.trim() || submitting}
                 onClick={() => void submit()}
-                className="self-end px-3 py-1.5 rounded-none text-sm font-medium text-white bg-[#f26722] hover:bg-[#e55611] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="self-end px-3 py-1.5 rounded-none text-sm font-medium text-white bg-brand hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? "Posting…" : "Reply"}
               </button>

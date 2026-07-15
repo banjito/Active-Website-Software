@@ -15,7 +15,7 @@ const SIZE_SCALE: Record<LoadingSpinnerSize, number> = {
 
 export interface LoadingSpinnerProps {
   size?: LoadingSpinnerSize;
-  /** brand = orange (#f26722); light = white (e.g. on orange buttons) */
+  /** brand = the site brand color; light = white (e.g. on brand-colored buttons) */
   variant?: LoadingSpinnerVariant;
   className?: string;
   /** Wraps spinner in a centered flex container with vertical padding */

@@ -1,4 +1,5 @@
 import React from "react";
+import { companyConfig } from "@/lib/companyConfig";
 
 const EULA: React.FC = () => {
   return (
@@ -217,11 +218,11 @@ const EULA: React.FC = () => {
               at:
             </p>
             <p className="mt-2">
-              <strong>AMP OS</strong>
+              <strong>{companyConfig.name} OS</strong>
               <br />
-              Email: support@ampos.io
+              Email: {companyConfig.supportEmail}
               <br />
-              Website: https://ampos.io
+              Website: {companyConfig.productUrl}
             </p>
           </section>
         </div>

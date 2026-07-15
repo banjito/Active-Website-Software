@@ -33,6 +33,7 @@ import {
   Image,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 interface RichTextEditorProps {
   value: string;
@@ -176,7 +177,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         const text = selection.toString() || linkUrl;
         execCommand(
           "insertHTML",
-          `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer" class="text-[#f26722] hover:underline">${text}</a>`,
+          `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer" class="text-brand hover:underline">${text}</a>`,
         );
       }
     }
@@ -466,7 +467,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 <button
                   type="button"
                   onClick={insertLink}
-                  className="px-2 py-1 text-sm bg-[#f26722] text-white rounded hover:bg-[#e55611]"
+                  className="px-2 py-1 text-sm bg-brand text-white rounded hover:bg-brand-dark"
                 >
                   Add
                 </button>
@@ -505,7 +506,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           padding-left: 1.5rem;
         }
         .prose a {
-          color: #f26722;
+          color: ${BRAND_COLOR};
           text-decoration: underline;
         }
       `}</style>

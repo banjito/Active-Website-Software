@@ -561,10 +561,10 @@ export default function JobNotes({ jobId }: JobNotesProps) {
                   <button
                     type="button"
                     onClick={() => setProfileViewUserId(note.user_id)}
-                    className={`flex-shrink-0 h-10 w-10 rounded-none overflow-hidden flex items-center justify-center text-sm font-medium cursor-pointer hover:ring-2 hover:ring-[#f26722] hover:ring-offset-2 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
+                    className={`flex-shrink-0 h-10 w-10 rounded-none overflow-hidden flex items-center justify-center text-sm font-medium cursor-pointer hover:ring-2 hover:ring-brand hover:ring-offset-2 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 ${
                       !profileImageUrl &&
                       (isCurrentUser
-                        ? "bg-[#f26722] text-white"
+                        ? "bg-brand text-white"
                         : "bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300")
                     }`}
                     title="View profile"
@@ -605,7 +605,7 @@ export default function JobNotes({ jobId }: JobNotesProps) {
                     <div
                       className={`rounded-none px-4 py-3 ${
                         isCurrentUser
-                          ? "bg-[#f26722] text-white"
+                          ? "bg-brand text-white"
                           : "bg-neutral-100 dark:bg-dark-100 text-neutral-900 dark:text-white"
                       }`}
                     >
@@ -732,7 +732,7 @@ export default function JobNotes({ jobId }: JobNotesProps) {
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
                 placeholder="Add a note..."
-                className="w-full px-4 py-3 text-sm rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-500 dark:placeholder-neutral-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                className="w-full px-4 py-3 text-sm rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-500 dark:placeholder-neutral-400 resize-none focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 rows={2}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
@@ -764,7 +764,7 @@ export default function JobNotes({ jobId }: JobNotesProps) {
             <button
               type="submit"
               disabled={submitting || (!newNote.trim() && !selectedFile)}
-              className="p-3 bg-[#f26722] text-white rounded-none hover:bg-[#e55611] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-3 bg-brand text-white rounded-none hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               title="Send"
             >
               {submitting ? (

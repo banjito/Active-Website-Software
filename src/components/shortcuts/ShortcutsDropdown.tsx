@@ -78,14 +78,14 @@ const SortableRow: React.FC<{
       style={style}
       className={`group flex items-center gap-1 rounded-none pl-1 pr-1.5 ${
         isDragging
-          ? "bg-orange-50 dark:bg-[#f26722]/10 ring-1 ring-[#f26722]/40 shadow-md z-50"
+          ? "bg-orange-50 dark:bg-brand/10 ring-1 ring-brand/40 shadow-md z-50"
           : "hover:bg-neutral-50 dark:hover:bg-dark-200"
       } transition-colors`}
     >
       <button
         type="button"
         aria-label="Drag to reorder"
-        className="flex h-8 w-5 shrink-0 cursor-grab touch-none items-center justify-center text-neutral-300 hover:text-[#f26722] dark:text-neutral-600 dark:hover:text-[#f26722] active:cursor-grabbing"
+        className="flex h-8 w-5 shrink-0 cursor-grab touch-none items-center justify-center text-neutral-300 hover:text-brand dark:text-neutral-600 dark:hover:text-brand active:cursor-grabbing"
         {...attributes}
         {...listeners}
       >
@@ -377,7 +377,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
           </span>
         )}
         {view === "quick" && selectedQuickCount > 0 && (
-          <span className="rounded-none bg-[#f26722]/10 px-2 py-0.5 text-[11px] font-medium text-[#f26722]">
+          <span className="rounded-none bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brand">
             {selectedQuickCount} selected
           </span>
         )}
@@ -469,7 +469,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
                     Portal
                   </label>
                   <select
-                    className="w-full rounded-none border border-neutral-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
+                    className="w-full rounded-none border border-neutral-300 bg-white px-2.5 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-dark-200 dark:bg-dark-100 dark:text-white"
                     value={selectedPortal}
                     onChange={(e) => {
                       setSelectedPortal(e.target.value);
@@ -492,7 +492,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
                     Destination
                   </label>
                   <select
-                    className="w-full rounded-none border border-neutral-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
+                    className="w-full rounded-none border border-neutral-300 bg-white px-2.5 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-dark-200 dark:bg-dark-100 dark:text-white"
                     value={selectedOption}
                     onChange={(e) => setSelectedOption(e.target.value)}
                   >
@@ -524,7 +524,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
                     }
                     placeholder="My Shortcut"
                     required
-                    className="w-full rounded-none border border-neutral-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
+                    className="w-full rounded-none border border-neutral-300 bg-white px-2.5 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-dark-200 dark:bg-dark-100 dark:text-white"
                   />
                 </div>
                 <div className="space-y-1">
@@ -542,7 +542,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
                     }
                     placeholder="/north_alabama/dashboard or https://…"
                     required
-                    className="w-full rounded-none border border-neutral-300 bg-white px-2.5 py-2 text-sm focus:border-[#f26722] focus:outline-none focus:ring-1 focus:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100 dark:text-white"
+                    className="w-full rounded-none border border-neutral-300 bg-white px-2.5 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-dark-200 dark:bg-dark-100 dark:text-white"
                   />
                 </div>
               </>
@@ -562,7 +562,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex items-center gap-1.5 rounded-none bg-[#f26722] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#f26722]/90 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-none bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90 disabled:opacity-50"
               >
                 {loading ? (
                   <span className="h-3.5 w-3.5 animate-spin rounded-none border-2 border-white border-b-transparent" />
@@ -578,7 +578,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
         {view === "quick" && (
           <div>
             <div className="sticky top-0 z-10 bg-white p-2.5 dark:bg-dark-150">
-              <div className="flex items-center gap-2 rounded-none border border-neutral-300 px-2.5 py-1.5 focus-within:border-[#f26722] focus-within:ring-1 focus-within:ring-[#f26722] dark:border-dark-200 dark:bg-dark-100">
+              <div className="flex items-center gap-2 rounded-none border border-neutral-300 px-2.5 py-1.5 focus-within:border-brand focus-within:ring-1 focus-within:ring-brand dark:border-dark-200 dark:bg-dark-100">
                 <Search className="h-4 w-4 shrink-0 text-neutral-400" />
                 <input
                   autoFocus
@@ -612,7 +612,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
                         <span
                           className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
                             checked
-                              ? "border-[#f26722] bg-[#f26722] text-white"
+                              ? "border-brand bg-brand text-white"
                               : "border-neutral-300 dark:border-dark-200"
                           }`}
                         >
@@ -663,7 +663,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
             type="button"
             onClick={openAdd}
             disabled={atMax}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-none bg-[#f26722] px-2 py-1.5 text-xs font-medium text-white hover:bg-[#f26722]/90 disabled:opacity-50"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-none bg-brand px-2 py-1.5 text-xs font-medium text-white hover:bg-brand/90 disabled:opacity-50"
           >
             <PlusCircle className="h-3.5 w-3.5" />
             Add custom
@@ -688,7 +688,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
             type="button"
             onClick={handleQuickAdd}
             disabled={loading || selectedQuickCount === 0}
-            className="rounded-none bg-[#f26722] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#f26722]/90 disabled:opacity-50"
+            className="rounded-none bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90 disabled:opacity-50"
           >
             {loading
               ? "Adding…"

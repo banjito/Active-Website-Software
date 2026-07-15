@@ -4,7 +4,7 @@ interface SwitchProps extends React.HTMLAttributes<HTMLDivElement> {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   disabled?: boolean;
-  /** When provided, used as the background class when checked (e.g. "bg-[#f26722]" for AMP orange). */
+  /** When provided, used as the background class when checked (e.g. "bg-brand" for AMP orange). */
   checkedClassName?: string;
 }
 

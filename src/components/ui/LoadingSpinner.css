@@ -1,7 +1,7 @@
 .amp-loader {
   width: 55px;
   aspect-ratio: 1;
-  --amp-loader-color: #f26722;
+  --amp-loader-color: var(--brand, #f26722);
   --square: linear-gradient(var(--amp-loader-color) 0 0);
   background: var(--square), var(--square), var(--square);
   background-size: 25px 25px;

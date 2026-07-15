@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/Dialog";
 import { ProfileView } from "../../../components/profile/ProfileView";
 import { useAuth } from "../../../lib/AuthContext";
+import { employeeEmailRegex } from "@/lib/companyConfig";
 
 // Types
 interface OrgPerson {
@@ -664,8 +665,8 @@ const FlowchartNode: React.FC<{
 
         {/* Drop indicator */}
         {isDragOver && isValidDropTarget && (
-          <div className="absolute inset-0 bg-[#f26722]/20 rounded-none flex items-center justify-center pointer-events-none z-20">
-            <span className="text-xs font-medium text-[#f26722] bg-white px-2 py-1 rounded shadow">
+          <div className="absolute inset-0 bg-brand/20 rounded-none flex items-center justify-center pointer-events-none z-20">
+            <span className="text-xs font-medium text-brand bg-white px-2 py-1 rounded shadow">
               Drop here
             </span>
           </div>
@@ -778,7 +779,7 @@ const FlowchartNode: React.FC<{
             e.stopPropagation();
             onAddUnder(node.id);
           }}
-          className="mt-4 text-xs text-neutral-400 hover:text-[#f26722] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="mt-4 text-xs text-neutral-400 hover:text-brand flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
         >
           <Plus className="h-3 w-3" />
           Add
@@ -1109,7 +1110,7 @@ const ManagerPicker: React.FC<{
           {selected.map((p) => (
             <span
               key={p.id}
-              className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-[#f26722]/10 text-[#f26722] border border-[#f26722]/40 rounded-none"
+              className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-brand/10 text-brand border border-brand/40 rounded-none"
             >
               {p.full_name}
               <button
@@ -1117,7 +1118,7 @@ const ManagerPicker: React.FC<{
                 onClick={() =>
                   onChange(selectedIds.filter((id) => id !== p.id))
                 }
-                className="ml-0.5 hover:text-[#f26722]/70"
+                className="ml-0.5 hover:text-brand/70"
                 aria-label={`Remove ${p.full_name}`}
               >
                 ×
@@ -1542,7 +1543,7 @@ export const OrgChart: React.FC = () => {
         employees = allUsers
           .filter((u: any) => {
             const email = (u.email || "").toLowerCase();
-            return email.endsWith("@ampqes.com") || profilesMap[u.id];
+            return employeeEmailRegex.test(email) || profilesMap[u.id];
           })
           .map((u: any) => {
             const profile = profilesMap[u.id];
@@ -2472,7 +2473,7 @@ export const OrgChart: React.FC = () => {
               mx-4 mt-4 p-4 border-2 border-dashed rounded-none text-center transition-all
               ${
                 isTopLevelDropOver
-                  ? "border-[#f26722] bg-[#f26722]/10 text-[#f26722]"
+                  ? "border-brand bg-brand/10 text-brand"
                   : "border-neutral-300 dark:border-neutral-600 text-neutral-400"
               }
             `}
@@ -2499,7 +2500,7 @@ export const OrgChart: React.FC = () => {
         >
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-[#f26722]" />
+              <Loader2 className="h-8 w-8 animate-spin text-brand" />
             </div>
           ) : people.length === 0 ? (
             <div className="text-center py-20">
@@ -2614,7 +2615,7 @@ export const OrgChart: React.FC = () => {
                         }}
                         className={`w-full flex items-center gap-3 p-3 text-left cursor-pointer transition-colors ${
                           isSelected
-                            ? "bg-[#f26722]/10 ring-2 ring-inset ring-[#f26722]"
+                            ? "bg-brand/10 ring-2 ring-inset ring-brand"
                             : "hover:bg-neutral-50 dark:hover:bg-neutral-800"
                         }`}
                       >
@@ -2643,7 +2644,7 @@ export const OrgChart: React.FC = () => {
                           )}
                         </div>
                         {isSelected && (
-                          <div className="flex-shrink-0 text-[#f26722]">
+                          <div className="flex-shrink-0 text-brand">
                             <svg
                               className="h-5 w-5"
                               fill="currentColor"
@@ -2777,7 +2778,7 @@ export const OrgChart: React.FC = () => {
                     id="level"
                     value={editLevelId || ""}
                     onChange={(e) => setEditLevelId(e.target.value || null)}
-                    className="mt-1.5 w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="mt-1.5 w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                   >
                     <option value="">No level</option>
                     {orgLevels.map((level) => (
@@ -2794,7 +2795,7 @@ export const OrgChart: React.FC = () => {
                   id="role"
                   value={editRole}
                   onChange={(e) => setEditRole(e.target.value)}
-                  className="mt-1.5 w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="mt-1.5 w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                 >
                   <option value="">No Role</option>
                   {(orgRoles.length > 0 ? orgRoles : DEFAULT_ROLE_OPTIONS).map(
@@ -3005,7 +3006,7 @@ export const OrgChart: React.FC = () => {
                   size="sm"
                   onClick={handleAddRole}
                   disabled={saving || !newRoleLabel.trim()}
-                  className="bg-[#f26722] hover:bg-[#e55611] text-white"
+                  className="bg-brand hover:bg-brand-dark text-white"
                 >
                   +
                 </Button>
@@ -3075,7 +3076,7 @@ export const OrgChart: React.FC = () => {
                       setDropDialogOpen(false);
                       setPendingDrop(null);
                     }}
-                    className="w-full text-left p-3 rounded-none border border-neutral-300 dark:border-neutral-600 hover:border-[#f26722] hover:bg-[#f26722]/5"
+                    className="w-full text-left p-3 rounded-none border border-neutral-300 dark:border-neutral-600 hover:border-brand hover:bg-brand/5"
                   >
                     <p className="font-medium text-neutral-900 dark:text-white">
                       Move Under
@@ -3102,7 +3103,7 @@ export const OrgChart: React.FC = () => {
                     }}
                     className={`w-full text-left p-3 rounded-none border border-neutral-300 dark:border-neutral-600 ${
                       managerGroupsSupported
-                        ? "hover:border-[#f26722] hover:bg-[#f26722]/5"
+                        ? "hover:border-brand hover:bg-brand/5"
                         : "opacity-50 cursor-not-allowed"
                     }`}
                   >

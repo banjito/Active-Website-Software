@@ -19,6 +19,7 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useSaveIndicator } from "./common/useSaveIndicator";
 import { ReportHeader } from "./common/ReportHeader";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -585,7 +586,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
       body { overflow-x: hidden; min-height: 100vh; padding-bottom: 100px; }
       textarea { min-height: 200px !important; }
       h2 {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 8px !important;
         margin-top: 16px !important;
       }
@@ -608,7 +609,7 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
         button { display: none !important; }
         h2 { font-size: 9px !important; font-weight: bold !important; margin: 0 !important; margin-top: 0 !important; padding: 1px 0 !important; background-color: transparent !important; color: black !important; text-transform: none !important; border: none !important; border-bottom: 1px solid black !important; line-height: 1.2 !important; padding-bottom: 2px !important; padding-top: 0 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; position: relative !important; }
         h2::before { display: none !important; }
-        .mb-6 { margin-top: 12px !important; border-top: 1px solid #f26722 !important; padding-top: 8px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .mb-6 { margin-top: 12px !important; border-top: 1px solid ${BRAND_COLOR} !important; padding-top: 8px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         .mb-6:first-of-type { border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; }
         table { margin-bottom: 8px !important; }
         .status-pass { background-color: #22c55e !important; border: 2px solid #16a34a !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }

@@ -341,9 +341,9 @@ const tableStyles = {
     "px-2 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider whitespace-normal",
   cell: "px-2 py-2 text-sm text-neutral-900 dark:text-white whitespace-normal",
   input:
-    "w-full text-sm rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
+    "w-full text-sm rounded-none border-neutral-300 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white",
   select:
-    "w-full text-sm rounded-none border-neutral-300 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white",
+    "w-full text-sm rounded-none border-neutral-300 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white",
 };
 
 const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
@@ -983,7 +983,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
       </div>
       {/* End Print Header */}
       {/* Print-only Job Information header and table at top */}
-      <div className="hidden print:block w-full h-1 bg-[#f26722] mb-1"></div>
+      <div className="hidden print:block w-full h-1 bg-brand mb-1"></div>
       <h2 className="hidden print:block text-xl font-semibold mb-1 text-black border-b border-black pb-1">
         Job Information
       </h2>
@@ -1064,7 +1064,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
 
           {/* --- Job Information Section --- */}
           <div className="mb-6 print:hidden">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
               Job Information
             </h2>
@@ -1269,7 +1269,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
 
           {/* --- Nameplate Data Section --- */}
           <div className="mb-6 print:mb-2">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 print:mb-2 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
               Nameplate Data
             </h2>
@@ -1534,7 +1534,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
 
           {/* --- Visual and Mechanical Inspection Section --- */}
           <div className="mb-6 print:mb-2">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 print:mb-2 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
@@ -1577,7 +1577,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center print:hidden ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center print:hidden ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {visualInspectionResultsOptions.map((option) => (
                             <option key={option} value={option}>
@@ -1600,7 +1600,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
           {/* --- Counter Reading Section --- */}
           {!formData.irDlroOnly && (
             <div className="mb-6 print:mb-2">
-              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <div className="w-full h-1 bg-brand mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 print:mb-2 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
                 Counter Reading
               </h2>
@@ -1639,7 +1639,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
 
           {/* --- Device Settings Section --- */}
           <div className="mb-6 print:mb-2">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 print:mb-2 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
               Device Settings
             </h2>
@@ -1675,7 +1675,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
@@ -1694,7 +1694,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
@@ -1733,7 +1733,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
@@ -1752,7 +1752,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
@@ -1765,7 +1765,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
 
           {/* --- Electrical Tests - Contact/Pole Resistance Section --- */}
           <div className="mb-6 print:mb-2">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 print:mb-2 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
               Electrical Tests - Contact/Pole Resistance
             </h2>
@@ -1812,7 +1812,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           handleChange("contactResistance.p1", e.target.value)
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -1823,7 +1823,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           handleChange("contactResistance.p2", e.target.value)
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -1834,7 +1834,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           handleChange("contactResistance.p3", e.target.value)
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -1844,7 +1844,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           handleChange("contactResistance.unit", e.target.value)
                         }
                         disabled={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {contactResistanceUnitsOptions.map((option) => (
                           <option key={option} value={option}>
@@ -1861,7 +1861,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
 
           {/* --- Electrical Tests - Insulation Resistance Section --- */}
           <div className="mb-6 print:mb-2 ir-section">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 print:mb-2 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
               Electrical Tests - Insulation Resistance
             </h2>
@@ -1970,7 +1970,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -1987,7 +1987,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -2004,7 +2004,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     {/* Corrected Values */}
@@ -2052,7 +2052,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {insulationResistanceUnitsOptions.map((option) => (
                           <option key={option} value={option}>
@@ -2082,7 +2082,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -2099,7 +2099,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -2116,7 +2116,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     {/* Corrected Values */}
@@ -2164,7 +2164,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {insulationResistanceUnitsOptions.map((option) => (
                           <option key={option} value={option}>
@@ -2194,7 +2194,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -2211,7 +2211,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
@@ -2228,7 +2228,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     {/* Corrected Values */}
@@ -2276,7 +2276,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {insulationResistanceUnitsOptions.map((option) => (
                           <option key={option} value={option}>
@@ -2294,7 +2294,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
           {/* --- Electrical Tests - Primary Injection Section --- */}
           {!formData.irDlroOnly && (
             <div className="mb-6 print:mb-2 print:break-before-page">
-              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <div className="w-full h-1 bg-brand mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 print:mb-2 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
                 Electrical Tests - Primary Injection
               </h2>
@@ -2332,7 +2332,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
@@ -2353,7 +2353,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </td>
                       </tr>
@@ -2438,7 +2438,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2">
@@ -2455,7 +2455,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2">
@@ -2484,7 +2484,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2">
@@ -2501,7 +2501,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                     </tr>
@@ -2523,7 +2523,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                             )
                           }
                           readOnly={!isEditing}
-                          className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                       <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2">
@@ -2552,7 +2552,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                                 );
                               }}
                               readOnly={!isEditing}
-                              className={`tol-pct-input w-full p-2 text-center border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`tol-pct-input w-full p-2 text-center border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                             <span className="ml-1 text-sm text-neutral-900 dark:text-white">
                               %
@@ -2582,7 +2582,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                                 );
                               }}
                               readOnly={!isEditing}
-                              className={`tol-pct-input w-full p-2 text-center border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`tol-pct-input w-full p-2 text-center border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                             <span className="ml-1 text-sm text-neutral-900 dark:text-white">
                               %
@@ -2695,7 +2695,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-16 h-7 text-sm text-center border border-neutral-300 dark:border-neutral-600 rounded ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
+                            className={`w-16 h-7 text-sm text-center border border-neutral-300 dark:border-neutral-600 rounded ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-brand focus:ring-brand"}`}
                           />
                           <span className="text-xs">sec.</span>
                         </div>
@@ -2715,7 +2715,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-16 h-7 text-sm text-center border border-neutral-300 dark:border-neutral-600 rounded ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
+                            className={`w-16 h-7 text-sm text-center border border-neutral-300 dark:border-neutral-600 rounded ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-brand focus:ring-brand"}`}
                           />
                           <span className="text-xs">sec.</span>
                         </div>
@@ -2735,7 +2735,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-16 h-7 text-sm text-center border border-neutral-300 dark:border-neutral-600 rounded ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
+                            className={`w-16 h-7 text-sm text-center border border-neutral-300 dark:border-neutral-600 rounded ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-brand focus:ring-brand"}`}
                           />
                           <span className="text-xs">sec.</span>
                         </div>
@@ -2760,7 +2760,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-16 h-7 text-sm text-center border border-neutral-300 dark:border-neutral-600 rounded ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
+                            className={`w-16 h-7 text-sm text-center border border-neutral-300 dark:border-neutral-600 rounded ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-brand focus:ring-brand"}`}
                           />
                           <span className="text-xs">A</span>
                         </div>
@@ -2779,7 +2779,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-16 h-7 text-sm text-center border border-neutral-300 dark:border-neutral-600 rounded ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
+                            className={`w-16 h-7 text-sm text-center border border-neutral-300 dark:border-neutral-600 rounded ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-brand focus:ring-brand"}`}
                           />
                           <span className="text-xs">A</span>
                         </div>
@@ -2798,7 +2798,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-16 h-7 text-sm text-center border border-neutral-300 dark:border-neutral-600 rounded ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-[#f26722] focus:ring-[#f26722]"}`}
+                            className={`w-16 h-7 text-sm text-center border border-neutral-300 dark:border-neutral-600 rounded ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : "bg-white dark:bg-dark-150"} ${!isEditing ? "" : "focus:border-brand focus:ring-brand"}`}
                           />
                           <span className="text-xs">A</span>
                         </div>
@@ -2812,7 +2812,7 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
 
           {/* --- Test Equipment Used Section --- */}
           <div className="mb-6 print:mb-2">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 print:mb-2 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:pb-1 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>

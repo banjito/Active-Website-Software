@@ -911,7 +911,7 @@ const AppliedVoltageTestATSReport: React.FC = () => {
 
         {/* Job Information */}
         <section className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
             Job Information
           </h2>
@@ -1097,7 +1097,7 @@ const AppliedVoltageTestATSReport: React.FC = () => {
 
         {/* Nameplate Data */}
         <section className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
             Nameplate Data
           </h2>
@@ -1395,7 +1395,7 @@ const AppliedVoltageTestATSReport: React.FC = () => {
 
         {/* Electrical - Applied Voltage Test */}
         <section className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
             Electrical - Applied Voltage Test
           </h2>
@@ -1511,7 +1511,7 @@ const AppliedVoltageTestATSReport: React.FC = () => {
 
         {/* Test Equipment Used */}
         <section className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
             Test Equipment Used
           </h2>
@@ -1647,7 +1647,7 @@ const AppliedVoltageTestATSReport: React.FC = () => {
         <section
           className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
         >
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
             Comments
           </h2>

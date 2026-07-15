@@ -201,7 +201,7 @@ export const SignatureProfileSelector: React.FC<
           <DialogFooter>
             <Button
               onClick={() => onOpenChange(false)}
-              className="bg-[#f26722] hover:bg-[#e55611] text-white"
+              className="bg-brand hover:bg-brand-dark text-white"
             >
               Done
             </Button>

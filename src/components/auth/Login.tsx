@@ -25,8 +25,10 @@ import {
 } from "../ui";
 import Card from "../ui/Card";
 import { EditProfilePopup } from "../profile/EditProfilePopup";
+import { companyConfig, emailPlaceholder } from "@/lib/companyConfig";
+import { useSiteLogos } from "@/services/siteThemeService";
 
-const ALLOWED_EMAIL_DOMAINS = ["@ampqes.com", "@cedsi.com"];
+const ALLOWED_EMAIL_DOMAINS = companyConfig.allowedEmailDomains;
 const ALLOWED_EMAIL_DOMAINS_LABEL = ALLOWED_EMAIL_DOMAINS.join(" or ");
 
 const isAllowedEmailDomain = (value: string) =>
@@ -40,7 +42,7 @@ const getFriendlyAuthMessage = (error: unknown, fallback: string) => {
   const message = error.message.toLowerCase();
 
   if (message.includes("rate limit") || message.includes("rate_limit")) {
-    return "Server rate limit exceeded. Email jack@ampos.io to reset in the meantime.";
+    return `Server rate limit exceeded. Email ${companyConfig.supportEmail} to reset in the meantime.`;
   }
 
   if (message.includes("email not confirmed")) {
@@ -101,6 +103,7 @@ const clearAllStorage = () => {
 };
 
 export default function Login() {
+  const { logoUrl, hideLogo } = useSiteLogos();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -157,11 +160,11 @@ export default function Login() {
 
     // Set login favicon
     console.log("Setting ampOS favicon for login page...");
-    setFavicon("/ampOS-favicon.svg");
+    setFavicon(companyConfig.faviconPath);
 
     // Cleanup: restore default favicon when leaving login page
     return () => {
-      setFavicon("/ampOS-favicon.svg");
+      setFavicon(companyConfig.faviconPath);
     };
   }, []);
 
@@ -353,13 +356,15 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-white text-black flex flex-col justify-center items-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
       {/* Logo - stacked on top */}
-      <div className="flex justify-center mb-8 sm:mb-10">
-        <img
-          src="/ampOS_full_logo.svg"
-          alt="ampOS"
-          className="h-20 sm:h-[5rem] w-auto"
-        />
-      </div>
+      {!hideLogo && (
+        <div className="flex justify-center mb-8 sm:mb-10">
+          <img
+            src={logoUrl}
+            alt="ampOS"
+            className="h-20 sm:h-[5rem] w-auto"
+          />
+        </div>
+      )}
 
       {/* Login Form */}
       <div className="w-full flex flex-col justify-center">
@@ -374,7 +379,7 @@ export default function Login() {
             </h2>
           </div>
 
-          <Card className="bg-[#f26722] border border-neutral-800 shadow-sm">
+          <Card className="bg-brand border border-neutral-800 shadow-sm">
             <CardContent className="p-6 sm:p-10 md:p-12">
               <form
                 className="space-y-6 sm:space-y-8"
@@ -398,7 +403,7 @@ export default function Login() {
                     onChange={(e) => setEmail(e.target.value)}
                     leftIcon={<Mail className="h-5 w-5 text-neutral-800" />}
                     placeholder="you@email.com"
-                    className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 text-base h-14 sm:h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
+                    className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 text-base h-14 sm:h-12 focus:!border-brand focus:!ring-2 focus:!ring-brand focus:!ring-offset-2 focus:!ring-offset-neutral-200"
                   />
 
                   {!isForgotPasswordMode && (
@@ -421,7 +426,7 @@ export default function Login() {
                           ? "Password must be at least 6 characters"
                           : undefined
                       }
-                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 text-base h-14 sm:h-12 focus:!border-[#f26722] focus:!ring-2 focus:!ring-[#f26722] focus:!ring-offset-2 focus:!ring-offset-neutral-200"
+                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 text-base h-14 sm:h-12 focus:!border-brand focus:!ring-2 focus:!ring-brand focus:!ring-offset-2 focus:!ring-offset-neutral-200"
                     />
                   )}
 
@@ -472,7 +477,7 @@ export default function Login() {
                         type="email"
                         value={resendEmail}
                         onChange={(e) => setResendEmail(e.target.value)}
-                        placeholder="your@ampqes.com"
+                        placeholder={emailPlaceholder}
                         className="flex-1 bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 h-10"
                       />
                       <Button
@@ -510,7 +515,7 @@ export default function Login() {
                         <LogIn className="h-5 w-5" />
                       )
                     }
-                    className="h-14 sm:h-12 text-base font-medium hover:bg-[#f26722]/75"
+                    className="h-14 sm:h-12 text-base font-medium hover:bg-brand/75"
                   >
                     {isForgotPasswordMode
                       ? "Send reset link"

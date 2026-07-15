@@ -25,6 +25,7 @@ import type { AmpContact } from '@/services/ampContactsService';
 import { usePermissions } from '@/hooks/usePermissions';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { toast } from 'react-hot-toast';
+import { companyConfig } from "@/lib/companyConfig";
 
 export default function AmpContactsManager() {
   const [contacts, setContacts] = useState<AmpContact[]>([]);
@@ -185,7 +186,7 @@ export default function AmpContactsManager() {
                   <TableRow key={c.id}>
                     <TableCell className="font-medium">{c.name}</TableCell>
                     <TableCell>
-                      <a href={`tel:${c.work_phone.replace(/\D/g, '')}`} className="text-[#f26722] hover:underline">
+                      <a href={`tel:${c.work_phone.replace(/\D/g, '')}`} className="text-brand hover:underline">
                         {c.work_phone}
                       </a>
                     </TableCell>
@@ -251,7 +252,7 @@ export default function AmpContactsManager() {
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                placeholder="e.g. jane.smith@ampqes.com"
+                placeholder={`e.g. jane.smith${companyConfig.allowedEmailDomains[0]}`}
               />
             </div>
             <div>

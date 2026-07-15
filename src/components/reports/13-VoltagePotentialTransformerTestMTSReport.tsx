@@ -18,6 +18,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 // Temperature conversion and correction factor lookup tables
 const tcfData: Array<{ celsius: number; multiplier: number }> = [
@@ -977,7 +978,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
 
         {/* Job Information */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-job-info">
             Job Information
           </h2>
@@ -1165,7 +1166,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
 
         {/* Device Data */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-device-data">
             Device Data
           </h2>
@@ -1344,7 +1345,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
 
         {/* Visual and Mechanical Inspection */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-visual-mechanical">
             Visual and Mechanical Inspection
           </h2>
@@ -1409,7 +1410,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
 
         {/* Fuse Data */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-fuse-data">
             Fuse Data
           </h2>
@@ -1532,7 +1533,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
 
         {/* Electrical Tests - Fuse Resistance */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-fuse-resistance">
             Electrical Tests - Fuse Resistance
           </h2>
@@ -1611,7 +1612,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
 
         {/* Electrical Tests - Insulation Resistance & Ratio */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-insulation-ratio">
             Electrical Tests - Insulation Resistance & Ratio
           </h2>
@@ -1807,7 +1808,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                     handleChange("revenueMetering", e.target.checked)
                   }
                   disabled={!isEditing}
-                  className={`form-checkbox h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`form-checkbox h-4 w-4 text-brand focus:ring-brand border-neutral-300 rounded ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
                 <span className="text-sm text-neutral-700 dark:text-neutral-300">
                   Used for Revenue Metering (0.5% tolerance)
@@ -1919,7 +1920,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
 
         {/* Test Equipment Used */}
         <div className="mb-6">
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-test-equipment">
             Test Equipment Used
           </h2>
@@ -2113,7 +2114,7 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
         <div
           className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
         >
-          <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="w-full h-1 bg-brand mb-4"></div>
           <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-comments">
             Comments
           </h2>
@@ -2835,7 +2836,7 @@ if (typeof document !== "undefined") {
       /* FINAL OVERRIDE: Force orange dividers for specific sections */
       /* Device Data divider */
       .max-w-7xl h2.section-device-data {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -2844,7 +2845,7 @@ if (typeof document !== "undefined") {
 
       /* Visual and Mechanical Inspection divider */
       .max-w-7xl h2.section-visual-mechanical {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -2853,7 +2854,7 @@ if (typeof document !== "undefined") {
 
       /* Fuse Data divider */
       .max-w-7xl h2.section-fuse-data {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -2862,7 +2863,7 @@ if (typeof document !== "undefined") {
 
       /* Electrical Tests - Fuse Resistance divider */
       .max-w-7xl h2.section-fuse-resistance {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -2871,7 +2872,7 @@ if (typeof document !== "undefined") {
 
       /* Electrical Tests - Insulation Resistance & Ratio divider */
       .max-w-7xl h2.section-insulation-ratio {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -2880,7 +2881,7 @@ if (typeof document !== "undefined") {
 
       /* Test Equipment Used divider */
       .max-w-7xl h2.section-test-equipment {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;
@@ -2889,7 +2890,7 @@ if (typeof document !== "undefined") {
 
       /* Comments divider */
       .max-w-7xl h2.section-comments {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 4px !important;
         margin-top: 8px !important;
         -webkit-print-color-adjust: exact !important;

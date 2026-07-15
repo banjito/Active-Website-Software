@@ -119,7 +119,7 @@ export const ReviewShortcuts: React.FC = () => {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          <FileText className="h-5 w-5 text-[#f26722] mr-2" />
+          <FileText className="h-5 w-5 text-brand mr-2" />
           <h3 className="text-lg font-medium text-neutral-900 dark:text-white">
             Jobs with Reports Ready for Review
           </h3>
@@ -131,7 +131,7 @@ export const ReviewShortcuts: React.FC = () => {
           variant="ghost"
           size="sm"
           onClick={() => navigate("/neta_ops/reports?tab=approval")}
-          className="text-[#f26722] hover:text-[#e55611]"
+          className="text-brand hover:text-brand-dark"
           leftIcon={<SquareArrowOutUpRight className="ml-1 h-4 w-4" />}
         >
           View All Reports

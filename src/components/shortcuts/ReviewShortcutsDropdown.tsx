@@ -203,7 +203,7 @@ export const ReviewShortcutsDropdown: React.FC<
     <div className="w-[min(24rem,calc(100vw-1.5rem))] rounded-none bg-white dark:bg-dark-150 shadow-xl ring-1 ring-black/5 dark:ring-white/10 overflow-hidden">
       <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
         <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-[#f26722]" />
+          <FileText className="h-4 w-4 text-brand" />
           <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
             Jobs with Reports Ready for Review
           </h3>

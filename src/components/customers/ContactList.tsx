@@ -656,7 +656,7 @@ export default function ContactList() {
             setLoading(true);
             fetchContacts(sortOrder);
           }}
-          className="px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-none"
+          className="px-4 py-2 bg-brand hover:bg-brand-dark text-white font-medium rounded-none"
         >
           Try Again
         </button>
@@ -686,7 +686,7 @@ export default function ContactList() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search contacts by name, email, phone"
-            className="w-72 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+            className="w-72 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
           />
           <div className="relative">
             <input
@@ -697,7 +697,7 @@ export default function ContactList() {
                 setPage(1);
               }}
               placeholder="Starts with..."
-              className="w-32 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              className="w-32 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
             />
             {startsWithFilter && (
               <button
@@ -722,7 +722,7 @@ export default function ContactList() {
             onClick={toggleSortOrder}
             className={`inline-flex items-center justify-center rounded-none border px-4 py-2 text-sm font-medium shadow-sm ${
               sortOrder
-                ? "border-[#f26722] bg-[#f26722]/10 text-[#f26722] hover:bg-[#f26722]/20"
+                ? "border-brand bg-brand/10 text-brand hover:bg-brand/20"
                 : "border-neutral-300 bg-white dark:bg-dark-150 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-dark-200"
             }`}
             title={
@@ -752,7 +752,7 @@ export default function ContactList() {
               setFormData(initialFormData);
               setIsOpen(true);
             }}
-            className="inline-flex items-center justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:w-auto"
+            className="inline-flex items-center justify-center rounded-none border border-transparent bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 sm:w-auto"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add contact
@@ -767,7 +767,7 @@ export default function ContactList() {
           onClick={clearDivisionTabs}
           className={`px-4 py-1.5 rounded-none text-sm font-medium transition-colors ${
             activeDivisionTabs.length === 0
-              ? "bg-[#f26722] text-white"
+              ? "bg-brand text-white"
               : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
           }`}
         >
@@ -780,7 +780,7 @@ export default function ContactList() {
             onClick={() => toggleDivisionTab(div.value)}
             className={`px-4 py-1.5 rounded-none text-sm font-medium transition-colors ${
               activeDivisionTabs.includes(div.value)
-                ? "bg-[#f26722] text-white"
+                ? "bg-brand text-white"
                 : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100"
             }`}
           >
@@ -851,7 +851,7 @@ export default function ContactList() {
                     {contact.email ? (
                       <a
                         href={`mailto:${contact.email}`}
-                        className="text-[#f26722] hover:text-[#f26722]/80 transition-colors"
+                        className="text-brand hover:text-brand/80 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
                         {contact.email}
@@ -864,7 +864,7 @@ export default function ContactList() {
                     {contact.phone ? (
                       <a
                         href={`tel:${contact.phone}`}
-                        className="text-[#f26722] hover:text-[#f26722]/80 transition-colors"
+                        className="text-brand hover:text-brand/80 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
                         {contact.phone}
@@ -978,7 +978,7 @@ export default function ContactList() {
                     }
                   }}
                   placeholder="Search for a customer..."
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                   required
                 />
                 {showCustomerResults && filteredCustomers.length > 0 && (
@@ -1017,7 +1017,7 @@ export default function ContactList() {
                   required
                   value={formData.first_name}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -1034,7 +1034,7 @@ export default function ContactList() {
                   required
                   value={formData.last_name}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -1050,7 +1050,7 @@ export default function ContactList() {
                   id="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -1066,7 +1066,7 @@ export default function ContactList() {
                   id="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>
@@ -1082,7 +1082,7 @@ export default function ContactList() {
                   id="position"
                   value={formData.position}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div className="flex items-center">
@@ -1097,7 +1097,7 @@ export default function ContactList() {
                       is_primary: e.target.checked,
                     }))
                   }
-                  className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-neutral-300 dark:border-neutral-600 rounded"
+                  className="h-4 w-4 text-brand focus:ring-brand border-neutral-300 dark:border-neutral-600 rounded"
                 />
                 <label
                   htmlFor="is_primary"
@@ -1127,7 +1127,7 @@ export default function ContactList() {
                         }}
                         className={`px-3 py-1 rounded-none text-sm font-medium transition-colors ${
                           isActive
-                            ? "bg-[#f26722] text-white"
+                            ? "bg-brand text-white"
                             : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
                         }`}
                       >
@@ -1145,7 +1145,7 @@ export default function ContactList() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex w-full justify-center rounded-none border border-transparent bg-[#f26722] px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="inline-flex w-full justify-center rounded-none border border-transparent bg-brand px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 sm:col-start-2 sm:text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isSubmitting
                     ? "Saving..."
@@ -1156,7 +1156,7 @@ export default function ContactList() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="mt-3 inline-flex w-full justify-center rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-neutral-700 dark:text-white shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
+                  className="mt-3 inline-flex w-full justify-center rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-4 py-2 text-base font-medium text-neutral-700 dark:text-white shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
                 >
                   Cancel
                 </button>

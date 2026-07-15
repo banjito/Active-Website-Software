@@ -81,7 +81,7 @@ const PORTAL_COLORS: Record<PortalCategory, string> = {
   [PortalCategory.SALES]: "bg-gradient-to-br from-emerald-500 to-emerald-600",
   [PortalCategory.OFFICE_ADMIN]:
     "bg-gradient-to-br from-violet-500 to-violet-600",
-  [PortalCategory.ENGINEERING]: "bg-gradient-to-br from-[#f26722] to-[#e55611]",
+  [PortalCategory.ENGINEERING]: "bg-gradient-to-br from-brand to-brand-dark",
   [PortalCategory.HR]: "bg-gradient-to-br from-pink-500 to-pink-600",
   [PortalCategory.LAB]: "bg-gradient-to-br from-cyan-500 to-cyan-600",
   [PortalCategory.FIELD_TECH]: "bg-gradient-to-br from-amber-500 to-amber-600",
@@ -364,7 +364,7 @@ export const HelpCenterDashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-[#f26722] to-[#ff8c4a] rounded-none flex items-center justify-center shadow-lg">
+              <div className="w-14 h-14 bg-gradient-to-br from-brand to-[#ff8c4a] rounded-none flex items-center justify-center shadow-lg">
                 <HelpCircle className="w-7 h-7 text-white" />
               </div>
               <div>
@@ -387,7 +387,7 @@ export const HelpCenterDashboard: React.FC = () => {
                 </button>
                 <button
                   onClick={() => navigate("/help-center/builder")}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#f26722] hover:bg-[#e55611] text-white font-semibold rounded-none shadow-md hover:shadow-lg transition-all"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand hover:bg-brand-dark text-white font-semibold rounded-none shadow-md hover:shadow-lg transition-all"
                 >
                   <Plus className="w-5 h-5" />
                   Create Guide
@@ -404,7 +404,7 @@ export const HelpCenterDashboard: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search guides, topics, or keywords..."
-              className="w-full pl-12 pr-4 py-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+              className="w-full pl-12 pr-4 py-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             />
           </div>
         </div>
@@ -424,7 +424,7 @@ export const HelpCenterDashboard: React.FC = () => {
               onChange={(e) =>
                 setSelectedCategory(e.target.value as PortalCategory | "all")
               }
-              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-neutral-50 dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-neutral-50 dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:ring-2 focus:ring-brand focus:border-transparent"
             >
               <option value="all">All Categories</option>
               {Object.entries(PORTAL_CATEGORY_LABELS).map(([value, label]) => (
@@ -439,7 +439,7 @@ export const HelpCenterDashboard: React.FC = () => {
               onClick={() => setViewMode("grid")}
               className={`p-2 rounded-none transition-colors ${
                 viewMode === "grid"
-                  ? "bg-white dark:bg-dark-200 text-[#f26722] shadow-sm"
+                  ? "bg-white dark:bg-dark-200 text-brand shadow-sm"
                   : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
               }`}
               title="Grid view"
@@ -450,7 +450,7 @@ export const HelpCenterDashboard: React.FC = () => {
               onClick={() => setViewMode("list")}
               className={`p-2 rounded-none transition-colors ${
                 viewMode === "list"
-                  ? "bg-white dark:bg-dark-200 text-[#f26722] shadow-sm"
+                  ? "bg-white dark:bg-dark-200 text-brand shadow-sm"
                   : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
               }`}
               title="List view"
@@ -502,7 +502,7 @@ export const HelpCenterDashboard: React.FC = () => {
                 <>
                   <button
                     onClick={() => navigate("/help-center/builder")}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#f26722] hover:bg-[#e55611] text-white font-semibold rounded-none shadow-md hover:shadow-lg transition-all text-lg"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-brand hover:bg-brand-dark text-white font-semibold rounded-none shadow-md hover:shadow-lg transition-all text-lg"
                   >
                     <Plus className="w-5 h-5" />
                     Create Your First Guide
@@ -561,10 +561,10 @@ export const HelpCenterDashboard: React.FC = () => {
                         </div>
                       </div>
                       <div
-                        className={`w-8 h-8 rounded-none flex items-center justify-center transition-colors ${isExpanded ? "bg-[#f26722]/10" : "bg-neutral-100 dark:bg-dark-100"}`}
+                        className={`w-8 h-8 rounded-none flex items-center justify-center transition-colors ${isExpanded ? "bg-brand/10" : "bg-neutral-100 dark:bg-dark-100"}`}
                       >
                         {isExpanded ? (
-                          <ChevronDown className="w-5 h-5 text-[#f26722]" />
+                          <ChevronDown className="w-5 h-5 text-brand" />
                         ) : (
                           <ChevronRight className="w-5 h-5 text-neutral-400" />
                         )}
@@ -687,7 +687,7 @@ export const HelpCenterDashboard: React.FC = () => {
                   </p>
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="mt-4 px-4 py-2 text-[#f26722] hover:bg-[#f26722]/10 rounded-none font-medium transition-colors"
+                    className="mt-4 px-4 py-2 text-brand hover:bg-brand/10 rounded-none font-medium transition-colors"
                   >
                     Clear search
                   </button>
@@ -737,7 +737,7 @@ const GuideCard: React.FC<GuideCardProps> = ({
 }) => (
   <div
     onClick={onView}
-    className="group bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-none p-5 hover:shadow-lg hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer relative"
+    className="group bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-none p-5 hover:shadow-lg hover:border-brand hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer relative"
   >
     {/* Admin actions */}
     {isAdmin && (
@@ -773,7 +773,7 @@ const GuideCard: React.FC<GuideCardProps> = ({
     </div>
 
     {/* Title */}
-    <h3 className="font-bold text-neutral-900 dark:text-white group-hover:text-[#f26722] transition-colors line-clamp-2 text-lg">
+    <h3 className="font-bold text-neutral-900 dark:text-white group-hover:text-brand transition-colors line-clamp-2 text-lg">
       {guide.title}
     </h3>
 
@@ -790,7 +790,7 @@ const GuideCard: React.FC<GuideCardProps> = ({
         {guide.tags.slice(0, 3).map((tag) => (
           <span
             key={tag}
-            className="px-2.5 py-1 bg-[#f26722]/10 text-[#f26722] rounded-none text-xs font-medium"
+            className="px-2.5 py-1 bg-brand/10 text-brand rounded-none text-xs font-medium"
           >
             {tag}
           </span>
@@ -841,7 +841,7 @@ const GuideListItem: React.FC<GuideListItemProps> = ({
 }) => (
   <div
     onClick={onView}
-    className="group flex items-center gap-4 p-4 bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-none hover:shadow-md hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer"
+    className="group flex items-center gap-4 p-4 bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-none hover:shadow-md hover:border-brand hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer"
   >
     <div
       className={`w-11 h-11 ${PORTAL_COLORS[guide.category]} text-white rounded-none flex items-center justify-center flex-shrink-0 shadow-sm`}
@@ -849,7 +849,7 @@ const GuideListItem: React.FC<GuideListItemProps> = ({
       <BookOpen className="w-5 h-5" />
     </div>
     <div className="flex-1 min-w-0">
-      <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-[#f26722] transition-colors truncate">
+      <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-brand transition-colors truncate">
         {guide.title}
       </h3>
       {guide.description && (
@@ -893,10 +893,10 @@ const GuideListItem: React.FC<GuideListItemProps> = ({
             e.stopPropagation();
             onView();
           }}
-          className="p-2 bg-white dark:bg-dark-200 hover:bg-[#f26722]/10 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600"
+          className="p-2 bg-white dark:bg-dark-200 hover:bg-brand/10 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600"
           title="View"
         >
-          <ExternalLink className="w-4 h-4 text-[#f26722]" />
+          <ExternalLink className="w-4 h-4 text-brand" />
         </button>
       </div>
     </div>
@@ -921,7 +921,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
   return (
     <div
       onClick={onView}
-      className="group bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-none p-5 hover:shadow-lg hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer relative"
+      className="group bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-none p-5 hover:shadow-lg hover:border-brand hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer relative"
     >
       {/* Admin actions */}
       {isAdmin && (
@@ -951,7 +951,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
       </div>
 
       {/* Title */}
-      <h3 className="font-bold text-neutral-900 dark:text-white group-hover:text-[#f26722] transition-colors line-clamp-2 text-lg">
+      <h3 className="font-bold text-neutral-900 dark:text-white group-hover:text-brand transition-colors line-clamp-2 text-lg">
         {document.name}
       </h3>
 
@@ -1001,7 +1001,7 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
   return (
     <div
       onClick={onView}
-      className="group flex items-center gap-4 p-4 bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-none hover:shadow-md hover:border-[#f26722] hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer"
+      className="group flex items-center gap-4 p-4 bg-neutral-50 dark:bg-dark-100 border border-neutral-200 dark:border-neutral-600 rounded-none hover:shadow-md hover:border-brand hover:bg-white dark:hover:bg-dark-150 transition-all cursor-pointer"
     >
       <div
         className={`w-11 h-11 ${PORTAL_COLORS[document.category]} text-white rounded-none flex items-center justify-center flex-shrink-0 shadow-sm`}
@@ -1013,7 +1013,7 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-[#f26722] transition-colors truncate">
+        <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-brand transition-colors truncate">
           {document.name}
         </h3>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
@@ -1044,10 +1044,10 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
               e.stopPropagation();
               onView();
             }}
-            className="p-2 bg-white dark:bg-dark-200 hover:bg-[#f26722]/10 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600"
+            className="p-2 bg-white dark:bg-dark-200 hover:bg-brand/10 rounded-none shadow-sm border border-neutral-200 dark:border-neutral-600"
             title="View"
           >
-            <ExternalLink className="w-4 h-4 text-[#f26722]" />
+            <ExternalLink className="w-4 h-4 text-brand" />
           </button>
         </div>
       </div>

@@ -1112,7 +1112,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
         </div>
       </div>
       {/* Orange divider below print header */}
-      <div className="w-full h-1 bg-[#f26722] mb-4 hidden print:block" />
+      <div className="w-full h-1 bg-brand mb-4 hidden print:block" />
 
       <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
         {error && (
@@ -1153,7 +1153,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
         <div className="space-y-6">
           {/* Job Information */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+            <div className="w-full h-1 bg-brand mb-4 print:hidden" />
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
@@ -1328,7 +1328,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
           {/* Nameplate Data */}
           <div className="mb-6">
             <div className="print:hidden">
-              <div className="w-full h-1 bg-[#f26722] mb-4" />
+              <div className="w-full h-1 bg-brand mb-4" />
               <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Nameplate Data
               </h2>
@@ -1561,7 +1561,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
 
           {/* Visual and Mechanical Inspection */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4" />
+            <div className="w-full h-1 bg-brand mb-4" />
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
@@ -1616,7 +1616,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
 
           {/* Electrical - Insulation Resistance Tests */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4" />
+            <div className="w-full h-1 bg-brand mb-4" />
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical - Insulation Resistance Tests
             </h2>
@@ -2168,7 +2168,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
 
           {/* Test Equipment Used */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4" />
+            <div className="w-full h-1 bg-brand mb-4" />
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
@@ -2310,7 +2310,7 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
           <div
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
-            <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+            <div className="w-full h-1 bg-brand mb-4 print:hidden" />
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>

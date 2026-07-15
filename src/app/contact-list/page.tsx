@@ -83,7 +83,7 @@ export default function ContactListPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search name, role, email…"
-            className="w-full rounded-none border border-neutral-300 bg-white py-2.5 pl-9 pr-3 text-sm text-neutral-900 outline-none focus:border-[#f26722] dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+            className="w-full rounded-none border border-neutral-300 bg-white py-2.5 pl-9 pr-3 text-sm text-neutral-900 outline-none focus:border-brand dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
           />
         </div>
 
@@ -101,7 +101,7 @@ export default function ContactListPage() {
                 className="flex items-center gap-3 rounded-none border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900"
               >
                 {selectMode && (
-                  <button onClick={() => toggle(c.id)} className="shrink-0 text-[#f26722]" aria-label="Select">
+                  <button onClick={() => toggle(c.id)} className="shrink-0 text-brand" aria-label="Select">
                     {selected.has(c.id) ? <CheckSquare className="h-6 w-6" /> : <Square className="h-6 w-6 text-neutral-400" />}
                   </button>
                 )}
@@ -114,7 +114,7 @@ export default function ContactListPage() {
                     {c.work_phone && (
                       <a
                         href={`tel:${c.work_phone}`}
-                        className="flex h-10 w-10 items-center justify-center rounded-none bg-[#f26722]/10 text-[#f26722]"
+                        className="flex h-10 w-10 items-center justify-center rounded-none bg-brand/10 text-brand"
                         aria-label={`Call ${c.name}`}
                       >
                         <Phone className="h-5 w-5" />
@@ -150,7 +150,7 @@ export default function ContactListPage() {
               </button>
               <button
                 onClick={importSelected}
-                className="flex flex-[2] items-center justify-center gap-2 rounded-none bg-[#f26722] py-3 text-sm font-semibold text-white"
+                className="flex flex-[2] items-center justify-center gap-2 rounded-none bg-brand py-3 text-sm font-semibold text-white"
               >
                 <Download className="h-4 w-4" />
                 Add {selected.size > 0 ? selected.size : ''} to contacts
@@ -167,7 +167,7 @@ export default function ContactListPage() {
               </button>
               <button
                 onClick={importAll}
-                className="flex flex-[2] items-center justify-center gap-2 rounded-none bg-[#f26722] py-3 text-sm font-semibold text-white"
+                className="flex flex-[2] items-center justify-center gap-2 rounded-none bg-brand py-3 text-sm font-semibold text-white"
               >
                 <UserPlus className="h-4 w-4" />
                 Add all to contacts

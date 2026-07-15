@@ -403,7 +403,7 @@ export default function OpportunityNotes({
       <div className="flex flex-col min-h-[400px] max-h-[calc(100vh-320px)] bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
         <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-            <MessageCircle className="h-5 w-5 text-[#f26722]" />
+            <MessageCircle className="h-5 w-5 text-brand" />
             Opportunity notes
           </h2>
         </div>
@@ -428,10 +428,10 @@ export default function OpportunityNotes({
                   <button
                     type="button"
                     onClick={() => setProfileViewUserId(note.user_id)}
-                    className={`flex-shrink-0 h-10 w-10 rounded-none overflow-hidden flex items-center justify-center text-sm font-medium cursor-pointer hover:ring-2 hover:ring-[#f26722] hover:ring-offset-2 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 ${
+                    className={`flex-shrink-0 h-10 w-10 rounded-none overflow-hidden flex items-center justify-center text-sm font-medium cursor-pointer hover:ring-2 hover:ring-brand hover:ring-offset-2 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 ${
                       !profileImageUrl &&
                       (isCurrentUser
-                        ? "bg-[#f26722] text-white"
+                        ? "bg-brand text-white"
                         : "bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300")
                     }`}
                     title="View profile"
@@ -463,7 +463,7 @@ export default function OpportunityNotes({
                     <div
                       className={`rounded-none px-4 py-3 ${
                         isCurrentUser
-                          ? "bg-[#f26722] text-white"
+                          ? "bg-brand text-white"
                           : "bg-neutral-100 dark:bg-dark-100 text-neutral-900 dark:text-white"
                       }`}
                     >
@@ -592,7 +592,7 @@ export default function OpportunityNotes({
               }}
               placeholder="Add a note..."
               rows={1}
-              className="flex-1 min-w-0 px-2 py-1.5 text-sm leading-normal rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent resize-none overflow-y-auto"
+              className="flex-1 min-w-0 px-2 py-1.5 text-sm leading-normal rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent resize-none overflow-y-auto"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                   e.preventDefault();
@@ -618,7 +618,7 @@ export default function OpportunityNotes({
             <button
               type="submit"
               disabled={submitting || (!newNote.trim() && !selectedFile)}
-              className="p-1.5 bg-[#f26722] text-white rounded hover:bg-[#e55611] disabled:opacity-50 shrink-0"
+              className="p-1.5 bg-brand text-white rounded hover:bg-brand-dark disabled:opacity-50 shrink-0"
               title="Send"
             >
               {submitting ? (

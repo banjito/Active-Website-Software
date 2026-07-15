@@ -21,6 +21,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "../../../components/ui/toast";
 import { supabase } from "../../../lib/supabase";
 import { ProfileView } from "../../../components/profile/ProfileView";
+import { employeeEmailRegex } from "@/lib/companyConfig";
 
 interface EmployeeProfile {
   id: string;
@@ -145,11 +146,11 @@ export const EmployeeProfiles: React.FC = () => {
       }
 
       // Combine users with their profile data
-      // Filter to only show users with @ampqes.com emails
+      // Filter to only show users with company-domain emails
       let combinedProfiles = allUsers
         .filter((u: any) => {
           const email = u.email || "";
-          return email.toLowerCase().endsWith("@ampqes.com");
+          return employeeEmailRegex.test(email.toLowerCase());
         })
         .map((u: any) => {
           const profile = profilesMap[u.id];

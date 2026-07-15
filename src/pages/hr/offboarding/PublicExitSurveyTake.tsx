@@ -138,7 +138,7 @@ export const PublicExitSurveyTake: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-900 p-4">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-10 w-10 animate-spin text-[#f26722]" />
+          <Loader2 className="h-10 w-10 animate-spin text-brand" />
           <div className="flex justify-center py-6">
             <LoadingSpinner size="md" />
           </div>
@@ -216,7 +216,7 @@ export const PublicExitSurveyTake: React.FC = () => {
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
-            <div className="flex items-center gap-2 text-[#f26722]">
+            <div className="flex items-center gap-2 text-brand">
               <MessageSquare className="h-6 w-6" />
               <CardTitle className="text-xl">
                 {assignment.survey_name}
@@ -238,7 +238,7 @@ export const PublicExitSurveyTake: React.FC = () => {
             {(assignment.attached_documents?.length ?? 0) > 0 && (
               <div className="rounded-none border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 p-4">
                 <h3 className="text-sm font-medium text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-[#f26722]" />
+                  <FileText className="h-4 w-4 text-brand" />
                   Documents to review
                 </h3>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
@@ -252,7 +252,7 @@ export const PublicExitSurveyTake: React.FC = () => {
                         href={doc.file_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-[#f26722] hover:underline"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-brand hover:underline"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
                         {doc.name}
@@ -342,7 +342,7 @@ function QuestionField({
               onClick={() => onChange(num)}
               className={`w-10 h-10 rounded-none border text-sm font-medium transition-colors ${
                 n === num
-                  ? "bg-[#f26722] text-white border-[#f26722]"
+                  ? "bg-brand text-white border-brand"
                   : "border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800"
               }`}
             >
@@ -370,7 +370,7 @@ function QuestionField({
               onClick={() => onChange(num)}
               className={`w-9 h-9 rounded border text-xs font-medium transition-colors ${
                 n === num
-                  ? "bg-[#f26722] text-white border-[#f26722]"
+                  ? "bg-brand text-white border-brand"
                   : "border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800"
               }`}
             >
@@ -397,7 +397,7 @@ function QuestionField({
               name={id}
               checked={v === "yes"}
               onChange={() => onChange("yes")}
-              className="text-[#f26722] focus:ring-[#f26722]"
+              className="text-brand focus:ring-brand"
             />
             <span className="text-sm">Yes</span>
           </label>
@@ -407,7 +407,7 @@ function QuestionField({
               name={id}
               checked={v === "no"}
               onChange={() => onChange("no")}
-              className="text-[#f26722] focus:ring-[#f26722]"
+              className="text-brand focus:ring-brand"
             />
             <span className="text-sm">No</span>
           </label>
@@ -432,7 +432,7 @@ function QuestionField({
                 name={id}
                 checked={v === opt}
                 onChange={() => onChange(opt)}
-                className="text-[#f26722] focus:ring-[#f26722]"
+                className="text-brand focus:ring-brand"
               />
               <span className="text-sm">{opt}</span>
             </label>

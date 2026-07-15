@@ -60,7 +60,7 @@ const ConditionalTablePreview: React.FC<{ section: SectionConfig }> = ({
               onChange={(e) =>
                 setSettings((prev) => ({ ...prev, [sf.id]: e.target.value }))
               }
-              className="px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722]"
+              className="px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-brand focus:border-brand"
             >
               {sf.options.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -118,7 +118,7 @@ const ConditionalTablePreview: React.FC<{ section: SectionConfig }> = ({
       {(section.allowAddRows || section.allowRemoveRows) && (
         <div className="flex items-center gap-2 mt-2">
           {section.allowAddRows && (
-            <span className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#f26722] border border-[#f26722] rounded opacity-60 cursor-default">
+            <span className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand border border-brand rounded opacity-60 cursor-default">
               <Plus className="w-3 h-3" /> Add Row
             </span>
           )}
@@ -217,7 +217,7 @@ export const SectionContent: React.FC<{ section: SectionConfig }> = ({
         {(section.allowAddRows || section.allowRemoveRows) && (
           <div className="flex items-center gap-2 mt-2">
             {section.allowAddRows && (
-              <span className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#f26722] border border-[#f26722] rounded opacity-60 cursor-default">
+              <span className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand border border-brand rounded opacity-60 cursor-default">
                 <Plus className="w-3 h-3" /> Add Row
               </span>
             )}
@@ -368,7 +368,7 @@ export const SectionContent: React.FC<{ section: SectionConfig }> = ({
         {(section.allowAddRows || section.allowRemoveRows) && (
           <div className="flex items-center gap-2 mt-2">
             {section.allowAddRows && (
-              <span className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#f26722] border border-[#f26722] rounded opacity-60 cursor-default">
+              <span className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand border border-brand rounded opacity-60 cursor-default">
                 <Plus className="w-3 h-3" /> Add Row
               </span>
             )}
@@ -543,7 +543,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ template }) => {
               <div className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">
                 NETA Standard
               </div>
-              <div className="text-xl font-bold text-[#f26722]">
+              <div className="text-xl font-bold text-brand">
                 {template.netaSection}
               </div>
             </div>
@@ -557,7 +557,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ template }) => {
           (section) =>
             section.showInPrint && (
               <div key={section.id}>
-                <div className="w-full h-1 bg-[#f26722] mb-4" />
+                <div className="w-full h-1 bg-brand mb-4" />
                 <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                   {section.title}
                 </h2>

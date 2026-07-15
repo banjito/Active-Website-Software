@@ -1322,7 +1322,7 @@ export default function LowVoltageSwitchReport() {
 
           {/* Job Information */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
@@ -1521,7 +1521,7 @@ export default function LowVoltageSwitchReport() {
 
           {/* Enclosure Data */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Enclosure Data
             </h2>
@@ -1692,7 +1692,7 @@ export default function LowVoltageSwitchReport() {
 
           {/* Switch Data Section */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Switch Data
             </h2>
@@ -1880,7 +1880,7 @@ export default function LowVoltageSwitchReport() {
 
           {/* Fuse Data Section */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Fuse Data
             </h2>
@@ -2047,7 +2047,7 @@ export default function LowVoltageSwitchReport() {
 
           {/* Measured Insulation Resistance Values */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Measured Insulation Resistance Values
             </h2>
@@ -2170,7 +2170,7 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
@@ -2186,7 +2186,7 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
@@ -2202,7 +2202,7 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
@@ -2218,7 +2218,7 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
@@ -2234,7 +2234,7 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
@@ -2250,7 +2250,7 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
@@ -2266,7 +2266,7 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
@@ -2282,7 +2282,7 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
@@ -2298,7 +2298,7 @@ export default function LowVoltageSwitchReport() {
                           })
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-base ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                   </tr>
@@ -2309,7 +2309,7 @@ export default function LowVoltageSwitchReport() {
 
           {/* Temperature Corrected Insulation Resistance Values */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Temperature Corrected Insulation Resistance Values
             </h2>
@@ -2453,7 +2453,7 @@ export default function LowVoltageSwitchReport() {
 
           {/* Contact Resistance */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Contact Resistance
             </h2>
@@ -2666,7 +2666,7 @@ export default function LowVoltageSwitchReport() {
 
           {/* Visual & Mechanical Inspection */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual & Mechanical Inspection
             </h2>
@@ -2729,7 +2729,7 @@ export default function LowVoltageSwitchReport() {
 
           {/* Test Equipment */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
@@ -2965,7 +2965,7 @@ export default function LowVoltageSwitchReport() {
           <section
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments.enclosure?.trim() ? "print:hidden" : ""}`}
           >
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>

@@ -486,7 +486,7 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
   const getReportTypeBadge = (type: string) => {
     if (type === "technician_progress") {
       return (
-        <Badge className="bg-[#f26722] text-white">
+        <Badge className="bg-brand text-white">
           <ClipboardList className="w-3 h-3 mr-1" />
           Technician Progress
         </Badge>
@@ -1087,7 +1087,7 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
         <div className="flex gap-2">
           <Button
             onClick={() => handleCreateNew("technician_progress")}
-            className="bg-[#f26722] hover:bg-[#e55611] text-white"
+            className="bg-brand hover:bg-brand-dark text-white"
             leftIcon={<Plus className="w-4 h-4 mr-2" />}
           >
             Technician Progress Report
@@ -1254,14 +1254,14 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
                   onClick={() => handleSave(false)}
                   disabled={saving}
                   variant="outline"
-                  className="border-[#f26722] text-[#f26722] hover:bg-[#f26722]/10"
+                  className="border-brand text-brand hover:bg-brand/10"
                 >
                   {saving ? "Saving..." : "Save Draft"}
                 </Button>
                 <Button
                   onClick={() => handleSave(true)}
                   disabled={saving}
-                  className="bg-[#f26722] hover:bg-[#e55611] text-white"
+                  className="bg-brand hover:bg-brand-dark text-white"
                 >
                   {saving ? "Submitting..." : "Save & Submit"}
                 </Button>

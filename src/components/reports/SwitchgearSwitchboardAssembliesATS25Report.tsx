@@ -1402,7 +1402,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
 
           {/* Job Information */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
@@ -1642,7 +1642,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
 
           {/* Nameplate */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Nameplate Data
             </h2>
@@ -1842,7 +1842,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
 
           {/* Visual & Mechanical Inspection */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
@@ -1910,7 +1910,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
 
           {/* Electrical - Contact Resistance */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
                 Electrical - Contact Resistance Tests
@@ -1981,7 +1981,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                               }));
                             }}
                             readOnly={!isEditing}
-                            className={`block flex-1 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block flex-1 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                           {isEditing &&
                             formData.contactResistance.length > 1 && (
@@ -2021,7 +2021,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2040,7 +2040,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                               }))
                             }
                             disabled={!isEditing}
-                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {CONTACT_RESISTANCE_UNITS.map((u) => (
                               <option key={u} value={u}>
@@ -2104,7 +2104,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                                   }));
                                 }}
                                 disabled={!isEditing}
-                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               >
                                 {["<10%", "<25%", "<50%", "<75%", "<100%"].map(
                                   (c) => (
@@ -2135,7 +2135,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                                   }));
                                 }}
                                 disabled={!isEditing}
-                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               >
                                 {(
                                   [
@@ -2220,7 +2220,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                                   )
                                 }
                                 disabled={!isEditing}
-                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               >
                                 {[
                                   "N/A",
@@ -2270,7 +2270,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                                   )
                                 }
                                 disabled={!isEditing}
-                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               >
                                 {(
                                   [
@@ -2303,7 +2303,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
 
           {/* Electrical - Insulation Resistance Tests */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
                 Electrical - Insulation Resistance Tests
@@ -2416,7 +2416,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                               }));
                             }}
                             readOnly={!isEditing}
-                            className={`block flex-1 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block flex-1 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                           {isEditing &&
                             formData.insulationMeasured.length > 1 && (
@@ -2460,7 +2460,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2479,7 +2479,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                               }))
                             }
                             disabled={!isEditing}
-                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {INSULATION_RESISTANCE_UNITS.map((u) => (
                               <option key={u} value={u}>
@@ -2559,7 +2559,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2603,7 +2603,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                                 }))
                               }
                               disabled={!isEditing}
-                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             >
                               {INSULATION_RESISTANCE_UNITS.map((u) => (
                                 <option key={u} value={u}>
@@ -2676,7 +2676,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
 
           {/* Dielectric Withstand */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-xl font-semibold text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold flex-grow">
                 Electrical - Dielectric Withstand Tests
@@ -2787,7 +2787,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                               }));
                             }}
                             readOnly={!isEditing}
-                            className={`block flex-1 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block flex-1 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                           {isEditing &&
                             formData.dielectricWithstand.length > 1 && (
@@ -2819,7 +2819,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2838,7 +2838,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                               }))
                             }
                             disabled={!isEditing}
-                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {DIELECTRIC_WITHSTAND_UNITS.map((u) => (
                               <option key={u} value={u}>
@@ -2867,7 +2867,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                               }));
                             }}
                             disabled={!isEditing}
-                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             <option value=""></option>
                             <option value="PASS">PASS</option>
@@ -2887,7 +2887,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
 
           {/* Test Equipment — same piece of equipment may be used for multiple roles (e.g. Megohmmeter and Hipot). */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
@@ -3299,7 +3299,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
           <div
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>

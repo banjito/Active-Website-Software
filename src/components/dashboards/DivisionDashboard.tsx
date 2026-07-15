@@ -578,7 +578,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90 mobile-btn-sm mobile-text-xs"
+                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90 mobile-btn-sm mobile-text-xs"
                 >
                   View all customers
                   <ChevronRight className="ml-1 h-3 w-3 mobile-icon-xs" />
@@ -605,7 +605,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90"
                 >
                   View all contacts
                   <ChevronRight className="ml-1 h-3 w-3" />
@@ -633,7 +633,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                    className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90"
                   >
                     View all documents
                     <ChevronRight className="ml-1 h-3 w-3" />
@@ -710,7 +710,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
         <Tabs defaultValue="jobs" className="w-full">
           <TabsList className="flex justify-between bg-transparent space-x-0 border-b overflow-x-auto mobile-scroll">
             <TabsTrigger
-              className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
+              className="data-[state=active]:border-b-2 data-[state=active]:border-brand data-[state=active]:text-brand data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
               value="jobs"
             >
               <div className="flex flex-col items-center justify-center px-2">
@@ -723,7 +723,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
 
             {showDocumentation && (
               <TabsTrigger
-                className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-brand data-[state=active]:text-brand data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
                 value="documents"
               >
                 <div className="flex flex-col items-center justify-center px-2">
@@ -737,7 +737,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
 
             {showTechnicians && (
               <TabsTrigger
-                className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-brand data-[state=active]:text-brand data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
                 value="technicians"
               >
                 <div className="flex flex-col items-center justify-center px-2">
@@ -751,7 +751,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
 
             {showEquipment && (
               <TabsTrigger
-                className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-brand data-[state=active]:text-brand data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
                 value="equipment"
               >
                 <div className="flex flex-col items-center justify-center px-2">
@@ -765,7 +765,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
 
             {showCalibrations && (
               <TabsTrigger
-                className="data-[state=active]:border-b-2 data-[state=active]:border-[#f26722] data-[state=active]:text-[#f26722] data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
+                className="data-[state=active]:border-b-2 data-[state=active]:border-brand data-[state=active]:text-brand data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
                 value="calibrations"
               >
                 <div className="flex flex-col items-center justify-center px-2">
@@ -793,7 +793,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                           <div className="p-3 sm:p-4 flex flex-col h-full mobile-card-compact">
                             <div className="flex justify-between items-start gap-2 mobile-gap-1">
                               <div className="min-w-0 flex-1">
-                                <p className="font-medium text-[#f26722] truncate text-sm sm:text-base mobile-card-title">
+                                <p className="font-medium text-brand truncate text-sm sm:text-base mobile-card-title">
                                   {maskJobTitle(job.title)}
                                 </p>
                                 <p className="text-xs sm:text-sm text-neutral-600 dark:text-white mt-1 line-clamp-2 mobile-text-xs">

@@ -3,6 +3,7 @@ import {
   getAccountingDigestEmail,
   getDigestRecipientEmails,
 } from '../_shared/digestRecipients.ts'
+import { BRAND_COLOR, COMPANY_FULL_NAME, COMPANY_NAME, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -69,14 +70,14 @@ serve(async (req) => {
         )
       }
 
-      const fromEmail = (Deno.env.get('POSTMARK_FROM') ?? 'john.chambers@ampqes.com').trim()
-      const fromHeader = fromEmail.includes('<') ? fromEmail : `AMP System <${fromEmail}>`
+      const fromEmail = DEFAULT_FROM_EMAIL
+      const fromHeader = fromEmail.includes('<') ? fromEmail : `${COMPANY_NAME} System <${fromEmail}>`
       const toEmail = recipientEmails.join(', ')
 
       const emailSubject = 'Daily Ready-to-Bill Report - No Jobs'
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background-color: #f26722; color: white; padding: 20px; text-align: center;">
+          <div style="background-color: ${BRAND_COLOR}; color: white; padding: 20px; text-align: center;">
             <h1 style="margin: 0; font-size: 24px;">Daily Ready-to-Bill Report</h1>
           </div>
           
@@ -87,7 +88,7 @@ serve(async (req) => {
           </div>
           
           <div style="padding: 20px; text-align: center; color: #666; font-size: 14px; border-top: 1px solid #eee;">
-            <p style="margin: 0;">Daily Ready-to-Bill Report from AMP Quality Energy Services</p>
+            <p style="margin: 0;">Daily Ready-to-Bill Report from ${COMPANY_FULL_NAME}</p>
             <p style="margin: 5px 0 0 0;">Generated on ${new Date().toLocaleString()}</p>
           </div>
         </div>
@@ -176,14 +177,14 @@ Generated on ${new Date().toLocaleString()}
         <td style="padding: 12px; border-bottom: 1px solid #ddd;">${job.updatedDate}</td>
         <td style="padding: 12px; border-bottom: 1px solid #ddd;">
           <a href="${supabaseUrl.replace('/rest/v1', '')}/jobs/${job.jobId}" 
-             style="color: #f26722; text-decoration: none; font-weight: 500;">View</a>
+             style="color: ${BRAND_COLOR}; text-decoration: none; font-weight: 500;">View</a>
         </td>
       </tr>
     `).join('')
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;">
-        <div style="background-color: #f26722; color: white; padding: 20px; text-align: center;">
+        <div style="background-color: ${BRAND_COLOR}; color: white; padding: 20px; text-align: center;">
           <h1 style="margin: 0; font-size: 24px;">Daily Ready-to-Bill Report</h1>
           <p style="margin: 10px 0 0 0; font-size: 16px;">${jobs.length} Job${jobs.length !== 1 ? 's' : ''} Ready for Billing</p>
         </div>
@@ -198,7 +199,7 @@ Generated on ${new Date().toLocaleString()}
           <div style="overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
               <thead>
-                <tr style="background-color: #f26722; color: white;">
+                <tr style="background-color: ${BRAND_COLOR}; color: white;">
                   <th style="padding: 12px; text-align: left; font-weight: bold;">Job Number</th>
                   <th style="padding: 12px; text-align: left; font-weight: bold;">Title</th>
                   <th style="padding: 12px; text-align: left; font-weight: bold;">Customer</th>
@@ -215,7 +216,7 @@ Generated on ${new Date().toLocaleString()}
         </div>
         
         <div style="padding: 20px; text-align: center; color: #666; font-size: 14px; border-top: 1px solid #eee;">
-          <p style="margin: 0;">Daily Ready-to-Bill Report from AMP Quality Energy Services</p>
+          <p style="margin: 0;">Daily Ready-to-Bill Report from ${COMPANY_FULL_NAME}</p>
           <p style="margin: 5px 0 0 0;">Generated on ${new Date().toLocaleString()}</p>
         </div>
       </div>
@@ -265,8 +266,8 @@ Generated on ${new Date().toLocaleString()}
       )
     }
 
-    const fromEmail = (Deno.env.get('POSTMARK_FROM') ?? 'john.chambers@ampqes.com').trim()
-    const fromHeader = fromEmail.includes('<') ? fromEmail : `AMP System <${fromEmail}>`
+    const fromEmail = DEFAULT_FROM_EMAIL
+    const fromHeader = fromEmail.includes('<') ? fromEmail : `${COMPANY_NAME} System <${fromEmail}>`
     const toEmail = recipientEmails.join(', ')
 
     const pmRes = await fetch('https://api.postmarkapp.com/email', {

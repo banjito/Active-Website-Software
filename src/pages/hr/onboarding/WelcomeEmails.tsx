@@ -328,7 +328,7 @@ export const WelcomeEmails: React.FC = () => {
             resetForm();
             setIsCreateModalOpen(true);
           }}
-          className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+          className="bg-brand hover:bg-brand/90 text-white"
         >
           <Plus className="h-4 w-4 mr-2" />
           Create Email
@@ -678,7 +678,7 @@ export const WelcomeEmails: React.FC = () => {
             </Button>
             <Button
               onClick={handleCreate}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               Create Email
             </Button>
@@ -894,7 +894,7 @@ export const WelcomeEmails: React.FC = () => {
             </Button>
             <Button
               onClick={handleUpdate}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               Update Email
             </Button>

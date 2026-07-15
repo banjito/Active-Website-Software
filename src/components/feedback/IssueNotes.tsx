@@ -421,7 +421,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
       <div className="flex flex-col min-h-[280px] max-h-[400px] bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
         <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
           <h3 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-            <MessageCircle className="h-4 w-4 text-[#f26722]" />
+            <MessageCircle className="h-4 w-4 text-brand" />
             Comments & feedback
           </h3>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
@@ -455,10 +455,10 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                   <button
                     type="button"
                     onClick={() => setProfileViewUserId(note.user_id)}
-                    className={`flex-shrink-0 h-8 w-8 rounded-none overflow-hidden flex items-center justify-center text-xs font-medium cursor-pointer hover:ring-2 hover:ring-[#f26722] ${
+                    className={`flex-shrink-0 h-8 w-8 rounded-none overflow-hidden flex items-center justify-center text-xs font-medium cursor-pointer hover:ring-2 hover:ring-brand ${
                       !profileImageUrl &&
                       (isCurrentUser
-                        ? "bg-[#f26722] text-white"
+                        ? "bg-brand text-white"
                         : "bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300")
                     }`}
                     title="View profile"
@@ -492,7 +492,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                       </span>
                     </div>
                     <div
-                      className={`rounded-none px-3 py-2 text-sm ${isCurrentUser ? "bg-[#f26722] text-white" : "bg-neutral-100 dark:bg-dark-100 text-neutral-900 dark:text-white"}`}
+                      className={`rounded-none px-3 py-2 text-sm ${isCurrentUser ? "bg-brand text-white" : "bg-neutral-100 dark:bg-dark-100 text-neutral-900 dark:text-white"}`}
                     >
                       {isEditing ? (
                         <div className="space-y-2">
@@ -637,7 +637,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
                 onChange={(e) => setNewNote(e.target.value)}
                 onPaste={handlePaste}
                 placeholder="Add a comment or paste an image..."
-                className="flex-1 min-w-0 h-8 px-2 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+                className="flex-1 min-w-0 h-8 px-2 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 text-neutral-900 dark:text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
@@ -663,7 +663,7 @@ export default function IssueNotes({ issueId, canComment }: IssueNotesProps) {
               <button
                 type="submit"
                 disabled={submitting || (!newNote.trim() && !selectedFile)}
-                className="p-1.5 bg-[#f26722] text-white rounded hover:bg-[#e55611] disabled:opacity-50 shrink-0"
+                className="p-1.5 bg-brand text-white rounded hover:bg-brand-dark disabled:opacity-50 shrink-0"
                 title="Send"
               >
                 {submitting ? (

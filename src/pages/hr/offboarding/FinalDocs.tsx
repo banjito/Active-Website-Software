@@ -350,7 +350,7 @@ export const FinalDocs: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-            <FileText className="h-6 w-6 text-[#f26722]" />
+            <FileText className="h-6 w-6 text-brand" />
             Final Documents
           </h1>
           <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
@@ -452,7 +452,7 @@ export const FinalDocs: React.FC = () => {
         <CardContent className="p-0">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-[#f26722]" />
+              <Loader2 className="h-8 w-8 animate-spin text-brand" />
             </div>
           ) : filteredTemplates.length === 0 ? (
             <div className="text-center py-12 px-4">
@@ -728,7 +728,7 @@ export const FinalDocs: React.FC = () => {
                     onChange={(e) =>
                       setFormData((p) => ({ ...p, required: e.target.checked }))
                     }
-                    className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                    className="rounded border-neutral-300 text-brand focus:ring-brand"
                   />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     Required for offboarding

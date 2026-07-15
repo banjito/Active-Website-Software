@@ -162,7 +162,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
 
                 <div className="flex justify-center">
                   <Button
-                    className="bg-[#f26722] hover:bg-[#f26722]/90 text-white h-11 px-8 text-base rounded-none inline-flex items-center whitespace-nowrap"
+                    className="bg-brand hover:bg-brand/90 text-white h-11 px-8 text-base rounded-none inline-flex items-center whitespace-nowrap"
                     onClick={onClose}
                   >
                     Get Started <span className="ml-1">›</span>

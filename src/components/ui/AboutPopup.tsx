@@ -238,7 +238,7 @@ export const AboutPopup: React.FC<AboutPopupProps> = ({ isOpen, onClose }) => {
               <div className="p-8">
                 <div className="prose prose-orange dark:prose-invert max-w-none">
                   <p className="text-neutral-700 dark:text-dark-400">
-                    In 2009, our founder, Brian, felt called to step out in
+                    In 2009, Brian Rodgers felt called to step out in
                     faith and start a new venture. With the support of his wife,
                     he left his previous role and launched AMP, but the road
                     wasn't easy. On his first day, he faced unexpected

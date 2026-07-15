@@ -54,6 +54,7 @@ import {
 } from "@/services/vendorPOService";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { fetchVendors, Vendor } from "@/services/vendorService";
+import { companyConfig } from "@/lib/companyConfig";
 
 const emptyPOForm: VendorPOFormData = {
   vendor_id: null,
@@ -61,11 +62,11 @@ const emptyPOForm: VendorPOFormData = {
   terms: "NET 30",
   quote_number: "",
   quote_references: "",
-  ship_to_name: "AMP Quality Energy Services",
-  ship_to_address: "616 Church St. NE",
-  ship_to_city: "Decatur",
-  ship_to_state: "AL",
-  ship_to_zip: "35601",
+  ship_to_name: companyConfig.fullName,
+  ship_to_address: companyConfig.shipToAddress,
+  ship_to_city: companyConfig.shipToCity,
+  ship_to_state: companyConfig.shipToState,
+  ship_to_zip: companyConfig.shipToZip,
   status: "pending",
   notes: "",
   authorized_by: "",
@@ -240,11 +241,11 @@ const VendorPOs: React.FC = () => {
       terms: po.terms || "NET 30",
       quote_number: po.quote_number || "",
       quote_references: po.quote_references || "",
-      ship_to_name: po.ship_to_name || "AMP Quality Energy Services",
-      ship_to_address: po.ship_to_address || "616 Church St. NE",
-      ship_to_city: po.ship_to_city || "Decatur",
-      ship_to_state: po.ship_to_state || "AL",
-      ship_to_zip: po.ship_to_zip || "35601",
+      ship_to_name: po.ship_to_name || companyConfig.fullName,
+      ship_to_address: po.ship_to_address || companyConfig.shipToAddress,
+      ship_to_city: po.ship_to_city || companyConfig.shipToCity,
+      ship_to_state: po.ship_to_state || companyConfig.shipToState,
+      ship_to_zip: po.ship_to_zip || companyConfig.shipToZip,
       status: po.status,
       notes: po.notes || "",
       authorized_by: po.authorized_by || "",
@@ -492,7 +493,7 @@ const VendorPOs: React.FC = () => {
             </div>
             <Button
               onClick={openNewPO}
-              className="bg-[#f26722] hover:bg-[#e55611]"
+              className="bg-brand hover:bg-brand-dark"
             >
               <Plus className="h-4 w-4 mr-2" />
               New PO
@@ -544,7 +545,7 @@ const VendorPOs: React.FC = () => {
                     className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-dark-200 transition-colors"
                   >
                     <td className="px-4 py-4">
-                      <span className="font-medium text-[#f26722]">
+                      <span className="font-medium text-brand">
                         {po.po_number}
                       </span>
                     </td>
@@ -632,7 +633,7 @@ const VendorPOs: React.FC = () => {
                 {pos.length === 0 && (
                   <Button
                     onClick={openNewPO}
-                    className="mt-4 bg-[#f26722] hover:bg-[#e55611]"
+                    className="mt-4 bg-brand hover:bg-brand-dark"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Create First PO
@@ -658,7 +659,7 @@ const VendorPOs: React.FC = () => {
             {/* Header */}
             <div className="flex justify-between items-start border-b pb-4 mb-6">
               <div className="text-sm text-neutral-600 dark:text-neutral-400">
-                256-513-8255
+                {companyConfig.phone}
               </div>
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
@@ -666,7 +667,7 @@ const VendorPOs: React.FC = () => {
                 </h2>
               </div>
               <div className="text-right text-sm text-neutral-600 dark:text-neutral-400">
-                P.O. Box 1725 Decatur, AL 35602
+                {companyConfig.addressLine}
               </div>
             </div>
 
@@ -971,7 +972,7 @@ const VendorPOs: React.FC = () => {
 
             {/* Footer Info */}
             <div className="text-center text-sm text-blue-600 dark:text-blue-400 mb-6 py-2 bg-blue-50 dark:bg-blue-900/20 rounded">
-              Remit Invoices to: accounting@ampqes.com
+              Remit Invoices to: {companyConfig.accountingEmail}
             </div>
 
             <div className="grid grid-cols-2 gap-8">
@@ -1012,7 +1013,7 @@ const VendorPOs: React.FC = () => {
             <Button
               onClick={handleSavePO}
               disabled={saving}
-              className="bg-[#f26722] hover:bg-[#e55611]"
+              className="bg-brand hover:bg-brand-dark"
             >
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {editPO ? "Update PO" : "Create PO"}
@@ -1040,7 +1041,7 @@ const VendorPOs: React.FC = () => {
                 {/* Header */}
                 <div className="flex justify-between items-start border-b pb-4 mb-4">
                   <div className="text-sm text-neutral-600 dark:text-neutral-400">
-                    256-513-8255
+                    {companyConfig.phone}
                   </div>
                   <div className="text-center">
                     <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
@@ -1048,7 +1049,7 @@ const VendorPOs: React.FC = () => {
                     </h2>
                   </div>
                   <div className="text-right text-sm text-neutral-600 dark:text-neutral-400">
-                    P.O. Box 1725 Decatur, AL 35602
+                    {companyConfig.addressLine}
                   </div>
                 </div>
 
@@ -1171,7 +1172,7 @@ const VendorPOs: React.FC = () => {
                 </table>
 
                 <div className="text-center text-sm text-blue-600 dark:text-blue-400 mb-4">
-                  Remit Invoices to: accounting@ampqes.com
+                  Remit Invoices to: {companyConfig.accountingEmail}
                 </div>
 
                 {selectedPO.authorized_by && (
@@ -1406,11 +1407,11 @@ function printPO(po: VendorPO) {
     </head>
     <body>
       <div class="header">
-        <div class="header-left">256-513-8255</div>
+        <div class="header-left">${companyConfig.phone}</div>
         <div class="header-center">
           <h1>PURCHASE ORDER</h1>
         </div>
-        <div class="header-right">P.O. Box 1725 Decatur, AL 35602</div>
+        <div class="header-right">${companyConfig.addressLine}</div>
       </div>
 
       <div class="info-row">
@@ -1489,7 +1490,7 @@ function printPO(po: VendorPO) {
         </tfoot>
       </table>
 
-      <div class="remit">Remit Invoices to: accounting@ampqes.com</div>
+      <div class="remit">Remit Invoices to: ${companyConfig.accountingEmail}</div>
 
       <div class="signature">
         <span class="label">Authorized Signature:</span>

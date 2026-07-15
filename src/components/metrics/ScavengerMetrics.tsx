@@ -142,7 +142,7 @@ export function ScavengerMetrics({ division }: ScavengerMetricsProps) {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="requests" name="Requests" fill="#f26722" />
+                  <Bar dataKey="requests" name="Requests" fill="var(--brand)" />
                   <Bar dataKey="found" name="Found" fill="#8D5F3D" />
                 </BarChart>
               </ResponsiveContainer>
@@ -164,7 +164,7 @@ export function ScavengerMetrics({ division }: ScavengerMetricsProps) {
                   <YAxis type="category" dataKey="type" width={100} />
                   <Tooltip formatter={(value) => `${value}%`} />
                   <Legend />
-                  <Bar dataKey="success" name="Success Rate %" fill="#f26722" />
+                  <Bar dataKey="success" name="Success Rate %" fill="var(--brand)" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -182,10 +182,10 @@ export function ScavengerMetrics({ division }: ScavengerMetricsProps) {
                 >
                   <defs>
                     <linearGradient id="colorTime" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f26722" stopOpacity={0.8} />
+                      <stop offset="5%" stopColor="var(--brand)" stopOpacity={0.8} />
                       <stop
                         offset="95%"
-                        stopColor="#f26722"
+                        stopColor="var(--brand)"
                         stopOpacity={0.1}
                       />
                     </linearGradient>
@@ -198,7 +198,7 @@ export function ScavengerMetrics({ division }: ScavengerMetricsProps) {
                     type="monotone"
                     dataKey="avgTime"
                     name="Avg. Completion Time"
-                    stroke="#f26722"
+                    stroke="var(--brand)"
                     fillOpacity={1}
                     fill="url(#colorTime)"
                   />

@@ -666,7 +666,7 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
                                         status.sentAt,
                                       )
                                     }
-                                    className="ml-2 p-0.5 text-neutral-400 hover:text-[#f26722] dark:hover:text-[#f26722] transition-colors"
+                                    className="ml-2 p-0.5 text-neutral-400 hover:text-brand dark:hover:text-brand transition-colors"
                                     title="Edit sent date"
                                   >
                                     <Pencil className="w-3 h-3" />

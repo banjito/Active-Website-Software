@@ -43,6 +43,7 @@ import { canLogInteractions } from "@/lib/roles";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { navigateFromShortcut } from "@/lib/shortcutNavigation";
 import { cn } from "@/lib/utils";
+import { useSiteLogos } from "@/services/siteThemeService";
 
 type ReviewNotification = {
   jobId: string;
@@ -107,10 +108,10 @@ type CalibrationEquipmentItem = {
 };
 
 const headerIconButtonClass =
-  "rounded-none w-10 h-10 p-0 flex items-center justify-center text-neutral-600 dark:text-white hover:text-[#f26722] dark:hover:text-[#f26722] bg-transparent hover:bg-transparent focus:outline-none focus:text-[#f26722] focus:bg-[#f26722]/10 focus:ring-2 focus:ring-[#f26722]/30";
+  "rounded-none w-10 h-10 p-0 flex items-center justify-center text-neutral-600 dark:text-white hover:text-brand dark:hover:text-brand bg-transparent hover:bg-transparent focus:outline-none focus:text-brand focus:bg-brand/10 focus:ring-2 focus:ring-brand/30";
 
 const headerIconButtonActiveClass =
-  "text-[#f26722] bg-[#f26722]/10 ring-2 ring-[#f26722]/30";
+  "text-brand bg-brand/10 ring-2 ring-brand/30";
 
 type HeaderTooltip = {
   text: string;
@@ -129,6 +130,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { iconUrl } = useSiteLogos();
   const { isDemoMode, toggleDemoMode, maskJobTitle } = useDemoMode();
   const { setDivision } = useDivision();
   const { theme, setTheme } = useTheme();
@@ -931,7 +933,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         <div className="flex items-center w-full min-w-0">
           <Link to="/portal" className="shrink-0" aria-label="Back to home">
             <img
-              src="/AMP-vector-filled.svg"
+              src={iconUrl}
               alt="AMP Logo"
               className="h-12 cursor-pointer hover:opacity-80 transition-opacity"
             />
@@ -944,7 +946,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   key={shortcut.id}
                   data-shortcut-tab
                   onClick={() => handleHeaderShortcutClick(shortcut.url)}
-                  className="px-3 py-1.5 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-[#f26722] dark:hover:text-[#f26722] hover:bg-orange-50 dark:hover:bg-dark-200 rounded-none transition-colors whitespace-nowrap border border-transparent hover:border-orange-200 dark:hover:border-orange-900/30"
+                  className="px-3 py-1.5 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-brand dark:hover:text-brand hover:bg-orange-50 dark:hover:bg-dark-200 rounded-none transition-colors whitespace-nowrap border border-transparent hover:border-orange-200 dark:hover:border-orange-900/30"
                   title={shortcut.url}
                 >
                   {shortcut.title}
@@ -1055,7 +1057,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 >
                   <ClipboardCheck className="h-5 w-5" />
                   {reviewJobCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-none bg-[#f26722] text-white text-[10px] leading-[18px] text-center">
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-none bg-brand text-white text-[10px] leading-[18px] text-center">
                       {Math.min(99, reviewJobCount)}
                     </span>
                   )}
@@ -1138,12 +1140,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                         value={contactsSearch}
                         onChange={(e) => setContactsSearch(e.target.value)}
                         placeholder="Search…"
-                        className="w-full rounded-none border border-neutral-300 dark:border-dark-200 bg-white dark:bg-dark-100 py-1 pl-7 pr-2 text-xs text-neutral-900 dark:text-neutral-100 outline-none focus:border-[#f26722]"
+                        className="w-full rounded-none border border-neutral-300 dark:border-dark-200 bg-white dark:bg-dark-100 py-1 pl-7 pr-2 text-xs text-neutral-900 dark:text-neutral-100 outline-none focus:border-brand"
                       />
                     </div>
                     <a
                       href="/hr/data/call-list"
-                      className="text-xs text-[#f26722] hover:underline whitespace-nowrap"
+                      className="text-xs text-brand hover:underline whitespace-nowrap"
                       onClick={() => setIsContactsOpen(false)}
                     >
                       Manage in HR portal
@@ -1195,7 +1197,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                               <td className="py-2 px-3 whitespace-nowrap">
                                 <a
                                   href={`tel:${c.work_phone.replace(/\D/g, "")}`}
-                                  className="text-[#f26722] hover:underline"
+                                  className="text-brand hover:underline"
                                 >
                                   {c.work_phone}
                                 </a>
@@ -1239,7 +1241,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 >
                   <Bell className="h-5 w-5" />
                   {totalUnreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-none bg-[#f26722] text-white text-[10px] leading-[18px] text-center">
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-none bg-brand text-white text-[10px] leading-[18px] text-center">
                       {Math.min(99, totalUnreadCount)}
                     </span>
                   )}
@@ -1258,7 +1260,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                               setIsNotificationsOpen(false);
                               navigate("/notifications");
                             }}
-                            className="font-medium text-[#f26722] hover:underline"
+                            className="font-medium text-brand hover:underline"
                           >
                             View All
                           </button>
@@ -1352,7 +1354,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                 setJobGroups([]);
                                 setNotifications([]);
                               }}
-                              className="text-[#f26722] hover:underline"
+                              className="text-brand hover:underline"
                             >
                               Back
                             </button>
@@ -1421,7 +1423,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                               {detailStatus && (
                                 <button
                                   onClick={markAllSeenInCurrentStatus}
-                                  className="text-[#f26722] hover:underline"
+                                  className="text-brand hover:underline"
                                 >
                                   Mark all seen
                                 </button>
@@ -1432,7 +1434,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                   setJobGroups([]);
                                   setNotifications([]);
                                 }}
-                                className="text-[#f26722] hover:underline"
+                                className="text-brand hover:underline"
                               >
                                 Back
                               </button>
@@ -1496,7 +1498,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                           <>
                             <button
                               onClick={() => navigate("/neta/field-equipment")}
-                              className="text-xs text-[#f26722] hover:underline"
+                              className="text-xs text-brand hover:underline"
                             >
                               View field equipment
                             </button>
@@ -1506,7 +1508,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                 setJobGroups([]);
                                 setNotifications([]);
                               }}
-                              className="text-xs text-[#f26722] hover:underline"
+                              className="text-xs text-brand hover:underline"
                             >
                               Back to summary
                             </button>
@@ -1518,7 +1520,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                               setJobGroups([]);
                               setNotifications([]);
                             }}
-                            className="text-xs text-[#f26722] hover:underline"
+                            className="text-xs text-brand hover:underline"
                           >
                             Back to summary
                           </button>
@@ -1584,21 +1586,21 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                         </div>
                         <button
                           onClick={handleViewProfile}
-                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50"
                         >
-                          <Eye className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+                          <Eye className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                           View Profile
                         </button>
                         <button
                           type="button"
                           onClick={handleSettingsToggle}
-                          className={`flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50 ${
+                          className={`flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50 ${
                             isSettingsSubmenuOpen
                               ? "bg-neutral-100 dark:bg-dark-50"
                               : ""
                           }`}
                         >
-                          <Settings className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+                          <Settings className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                           Settings
                         </button>
                         <button
@@ -1606,28 +1608,28 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                             setIsProfileMenuOpen(false);
                             navigate("/hr/handbook");
                           }}
-                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50"
                         >
-                          <BookOpen className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+                          <BookOpen className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                           Employee Handbook
                         </button>
                         {canSeeDemoMode && (
                           <button
                             onClick={toggleDemoMode}
-                            className="flex items-center justify-between w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50"
+                            className="flex items-center justify-between w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50"
                           >
                             <span className="flex items-center">
                               {isDemoMode ? (
-                                <EyeOff className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+                                <EyeOff className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                               ) : (
-                                <Eye className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+                                <Eye className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                               )}
                               Demo Mode
                             </span>
                             <span
                               className={`inline-flex items-center px-2 py-0.5 rounded-none text-xs font-medium ${
                                 isDemoMode
-                                  ? "bg-[#f26722] text-white"
+                                  ? "bg-brand text-white"
                                   : "bg-neutral-200 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-300"
                               }`}
                             >
@@ -1637,20 +1639,20 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                         )}
                         <button
                           onClick={toggleDarkMode}
-                          className="flex items-center justify-between w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-neutral-100 dark:hover:bg-dark-50"
+                          className="flex items-center justify-between w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50"
                         >
                           <span className="flex items-center">
                             {isDark ? (
-                              <Sun className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+                              <Sun className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                             ) : (
-                              <Moon className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+                              <Moon className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                             )}
                             {isDark ? "Light Mode" : "Dark Mode (In Testing)"}
                           </span>
                           <span
                             className={`inline-flex items-center px-2 py-0.5 rounded-none text-xs font-medium ${
                               isDark
-                                ? "bg-[#f26722] text-white"
+                                ? "bg-brand text-white"
                                 : "bg-neutral-200 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-300"
                             }`}
                           >
@@ -1661,9 +1663,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                         <button
                           onClick={handleSignOut}
                           disabled={isSigningOut}
-                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-[#f26722] hover:bg-red-600/10 dark:hover:bg-dark-50"
+                          className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-red-600/10 dark:hover:bg-dark-50"
                         >
-                          <LogOut className="mr-3 h-5 w-5 text-neutral-400 dark:text-[#f26722]" />
+                          <LogOut className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                           {isSigningOut ? "Signing out..." : "Sign Out"}
                         </button>
                       </div>

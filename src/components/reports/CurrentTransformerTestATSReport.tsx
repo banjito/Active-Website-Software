@@ -11,6 +11,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -827,7 +828,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
       {/* Job Information */}
       <div className="mb-6">
-        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <div className="w-full h-1 bg-brand mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-job-info">
           Job Information
         </h2>
@@ -1022,7 +1023,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
       {/* Device Data */}
       <div className="mb-6">
-        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <div className="w-full h-1 bg-brand mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-device-data">
           Device Data
         </h2>
@@ -1204,7 +1205,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
       {/* Visual and Mechanical Inspection */}
       <div className="mb-6">
-        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <div className="w-full h-1 bg-brand mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-visual-mechanical">
           Visual and Mechanical Inspection
         </h2>
@@ -1254,7 +1255,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                           )
                         }
                         disabled={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {visualInspectionOptions.map((option) => (
                           <option key={option} value={option}>
@@ -1281,7 +1282,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </div>
                     <div className="hidden print:block">
@@ -1297,7 +1298,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
       {/* Electrical Tests */}
       <div className="mb-6">
-        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <div className="w-full h-1 bg-brand mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-electrical-tests">
           Electrical Tests
         </h2>
@@ -1555,7 +1556,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
       {/* Test Equipment Used */}
       <div className="mb-6">
-        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <div className="w-full h-1 bg-brand mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-test-equipment">
           Test Equipment Used
         </h2>
@@ -1662,7 +1663,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                 )
               }
               readOnly={!isEditing}
-              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
             />
           </div>
         </div>
@@ -1699,7 +1700,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
       <div
         className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
       >
-        <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+        <div className="w-full h-1 bg-brand mb-4"></div>
         <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold section-comments">
           Comments
         </h2>
@@ -1759,8 +1760,8 @@ if (typeof document !== "undefined") {
       }
 
       /* Hide standalone orange divider bars and use h2 top border instead */
-      [class*="bg-\\[\\#f26722\\]"][class*="h-1"] { display: none !important; }
-      h2 { border-top: 2px solid #f26722 !important; padding-top: 6px !important; margin-top: 10px !important; }
+      [class*="bg-\\[\\${BRAND_COLOR}\\]"][class*="h-1"] { display: none !important; }
+      h2 { border-top: 2px solid ${BRAND_COLOR} !important; padding-top: 6px !important; margin-top: 10px !important; }
 
       .form-input, .form-select, .form-textarea {
         background-color: white !important;

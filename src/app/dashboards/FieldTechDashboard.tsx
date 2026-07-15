@@ -352,7 +352,7 @@ export const FieldTechDashboard: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90"
                   rightIcon={<ChevronRight className="h-3 w-3" />}
                 >
                   View all customers
@@ -378,7 +378,7 @@ export const FieldTechDashboard: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90"
                   rightIcon={<ChevronRight className="h-3 w-3" />}
                 >
                   View all contacts
@@ -404,7 +404,7 @@ export const FieldTechDashboard: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90"
                   rightIcon={<ChevronRight className="h-3 w-3" />}
                 >
                   View all documents
@@ -495,7 +495,7 @@ export const FieldTechDashboard: React.FC = () => {
                       <div className="p-3 sm:p-4 flex flex-col h-full">
                         <div className="flex justify-between items-start gap-2">
                           <div className="min-w-0 flex-1">
-                            <p className="font-medium text-[#f26722] truncate text-sm sm:text-base">
+                            <p className="font-medium text-brand truncate text-sm sm:text-base">
                               {maskJobTitle(job.title)}
                             </p>
                             <p className="text-xs sm:text-sm text-neutral-600 dark:text-white mt-1 line-clamp-2">

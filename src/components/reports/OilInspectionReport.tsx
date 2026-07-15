@@ -2342,7 +2342,7 @@ const OilInspectionReport: React.FC = () => {
 
           {/* Job Information */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
@@ -2383,7 +2383,7 @@ const OilInspectionReport: React.FC = () => {
                       handleChange(null, "userName", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     placeholder="Enter User Name"
                   />
                 </div>
@@ -2398,7 +2398,7 @@ const OilInspectionReport: React.FC = () => {
                       handleChange(null, "identifier", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     placeholder="Transformer ID / Name"
                   />
                 </div>
@@ -2414,7 +2414,7 @@ const OilInspectionReport: React.FC = () => {
                         handleTemperatureChange(Number(e.target.value))
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div>
@@ -2465,7 +2465,7 @@ const OilInspectionReport: React.FC = () => {
                       handleChange(null, "technicians", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2477,7 +2477,7 @@ const OilInspectionReport: React.FC = () => {
                     value={formData.date}
                     onChange={(e) => handleChange(null, "date", e.target.value)}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2491,7 +2491,7 @@ const OilInspectionReport: React.FC = () => {
                       handleChange(null, "substation", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2505,7 +2505,7 @@ const OilInspectionReport: React.FC = () => {
                       handleChange(null, "eqptLocation", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2515,7 +2515,7 @@ const OilInspectionReport: React.FC = () => {
                   <input
                     type="number"
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     placeholder="Optional"
                   />
                 </div>
@@ -2543,7 +2543,7 @@ const OilInspectionReport: React.FC = () => {
 
           {/* Nameplate Data */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Nameplate Data
             </h2>
@@ -2564,7 +2564,7 @@ const OilInspectionReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2582,7 +2582,7 @@ const OilInspectionReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2600,7 +2600,7 @@ const OilInspectionReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -2618,7 +2618,7 @@ const OilInspectionReport: React.FC = () => {
                     handleNestedChange("nameplateData", "kva", e.target.value)
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2636,7 +2636,7 @@ const OilInspectionReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
               <div>
@@ -2654,7 +2654,7 @@ const OilInspectionReport: React.FC = () => {
                     )
                   }
                   readOnly={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
             </div>
@@ -2687,7 +2687,7 @@ const OilInspectionReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditing}
-                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                   <span className="text-neutral-500 dark:text-white">/</span>
                   <input
@@ -2700,7 +2700,7 @@ const OilInspectionReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditing}
-                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex justify-center space-x-4">
@@ -2723,7 +2723,7 @@ const OilInspectionReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditing}
-                        className="form-radio h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-700 focus:ring-[#f26722]"
+                        className="form-radio h-4 w-4 text-brand border-neutral-300 dark:border-neutral-700 focus:ring-brand"
                       />
                       <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                         {conn}
@@ -2751,7 +2751,7 @@ const OilInspectionReport: React.FC = () => {
                           })
                         }
                         disabled={!isEditing}
-                        className="form-radio h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-700 focus:ring-[#f26722]"
+                        className="form-radio h-4 w-4 text-brand border-neutral-300 dark:border-neutral-700 focus:ring-brand"
                       />
                       <span className="ml-2 text-sm text-neutral-700 dark:text-white">
                         {mat}
@@ -2775,7 +2775,7 @@ const OilInspectionReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditing}
-                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                   <span className="text-neutral-500 dark:text-white">/</span>
                   <input
@@ -2790,7 +2790,7 @@ const OilInspectionReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditing}
-                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div className="flex justify-center space-x-4">
@@ -2885,7 +2885,7 @@ const OilInspectionReport: React.FC = () => {
                             );
                           }}
                           readOnly={!isEditing}
-                          className={`w-full text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`w-full text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           placeholder={index === 5 || index === 6 ? "-" : ""}
                         />
                       ),
@@ -2934,7 +2934,7 @@ const OilInspectionReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                       <span className="text-neutral-500 dark:text-white">
                         /
@@ -2956,7 +2956,7 @@ const OilInspectionReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </div>
                     <div className="flex items-center space-x-2">
@@ -2980,7 +2980,7 @@ const OilInspectionReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </div>
                     <div className="flex items-center space-x-2">
@@ -3004,7 +3004,7 @@ const OilInspectionReport: React.FC = () => {
                           )
                         }
                         readOnly={!isEditing}
-                        className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </div>
                   </div>
@@ -3015,7 +3015,7 @@ const OilInspectionReport: React.FC = () => {
 
           {/* Visual and Mechanical Inspection */}
           <section className="mb-6 visual-mechanical-inspection">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
@@ -3065,7 +3065,7 @@ const OilInspectionReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`w-full text-sm rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full text-sm rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {visualInspectionOptions.map((option) => (
                               <option
@@ -3092,7 +3092,7 @@ const OilInspectionReport: React.FC = () => {
                               )
                             }
                             readOnly={!isEditing}
-                            className={`w-full text-sm rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`w-full text-sm rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             placeholder="Optional comments"
                           />
                         </td>
@@ -3105,7 +3105,7 @@ const OilInspectionReport: React.FC = () => {
 
           {/* Insulation Resistance Tests */}
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Insulation Resistance
             </h2>
@@ -3178,7 +3178,7 @@ const OilInspectionReport: React.FC = () => {
                                 )
                               }
                               disabled={!isEditing}
-                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             >
                               {testVoltageOptions.map((voltage) => (
                                 <option
@@ -3208,7 +3208,7 @@ const OilInspectionReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                           <td className="px-1 py-1 border-r dark:border-neutral-700">
@@ -3228,7 +3228,7 @@ const OilInspectionReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                           <td className="px-1 py-1 border-r dark:border-neutral-700">
@@ -3248,7 +3248,7 @@ const OilInspectionReport: React.FC = () => {
                                 )
                               }
                               readOnly={!isEditing}
-                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </td>
                           <td className="px-1 py-1">
@@ -3268,7 +3268,7 @@ const OilInspectionReport: React.FC = () => {
                                 )
                               }
                               disabled={!isEditing}
-                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             >
                               {insulationResistanceUnits.map((unit) => (
                                 <option
@@ -3524,7 +3524,7 @@ const OilInspectionReport: React.FC = () => {
             <>
               {/* Turns Ratio Tests Section */}
               <section className="mb-6 manual-section">
-                <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+                <div className="w-full h-1 bg-brand mb-4"></div>
                 <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
                   Turns Ratio Tests (TTR)
                 </h2>
@@ -3631,7 +3631,7 @@ const OilInspectionReport: React.FC = () => {
                                   );
                                 }}
                                 readOnly={!isEditing}
-                                className={`w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               />
                             </td>
                             <td className="px-3 py-2">
@@ -3653,7 +3653,7 @@ const OilInspectionReport: React.FC = () => {
                                   );
                                 }}
                                 readOnly={!isEditing}
-                                className={`w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               />
                             </td>
                             <td className="px-3 py-2">
@@ -3668,7 +3668,7 @@ const OilInspectionReport: React.FC = () => {
                                   )
                                 }
                                 readOnly={!isEditing}
-                                className={`w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               />
                             </td>
                             <td className="px-3 py-2">
@@ -3691,7 +3691,7 @@ const OilInspectionReport: React.FC = () => {
                                   )
                                 }
                                 readOnly={!isEditing}
-                                className={`w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               />
                             </td>
                             <td className="px-3 py-2">
@@ -3714,7 +3714,7 @@ const OilInspectionReport: React.FC = () => {
                                   )
                                 }
                                 readOnly={!isEditing}
-                                className={`w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               />
                             </td>
                             <td className="px-3 py-2">
@@ -3997,7 +3997,7 @@ const OilInspectionReport: React.FC = () => {
 
               {/* Secondary Winding Resistance */}
               <section className="mb-6 manual-section">
-                <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+                <div className="w-full h-1 bg-brand mb-4"></div>
                 <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
                   Electrical Tests - Winding Resistance - Secondary Side
                 </h2>
@@ -4258,7 +4258,7 @@ const OilInspectionReport: React.FC = () => {
 
               {/* Excitation Tests Section */}
               <section className="mb-6 manual-section">
-                <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+                <div className="w-full h-1 bg-brand mb-4"></div>
                 <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
                   Excitation Tests
                 </h2>
@@ -4278,7 +4278,7 @@ const OilInspectionReport: React.FC = () => {
                         )
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                     />
                   </div>
                   <div>
@@ -4296,7 +4296,7 @@ const OilInspectionReport: React.FC = () => {
                         )
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                     />
                   </div>
                 </div>
@@ -4387,7 +4387,7 @@ const OilInspectionReport: React.FC = () => {
                                 );
                               }}
                               readOnly={!isEditing}
-                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                             />
                           </td>
                           <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
@@ -4405,7 +4405,7 @@ const OilInspectionReport: React.FC = () => {
                                 );
                               }}
                               readOnly={!isEditing}
-                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                             />
                           </td>
                           <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
@@ -4431,7 +4431,7 @@ const OilInspectionReport: React.FC = () => {
                                 );
                               }}
                               readOnly={!isEditing}
-                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                             />
                           </td>
                           <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
@@ -4449,7 +4449,7 @@ const OilInspectionReport: React.FC = () => {
                                 );
                               }}
                               readOnly={!isEditing}
-                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                             />
                           </td>
                           <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
@@ -4475,7 +4475,7 @@ const OilInspectionReport: React.FC = () => {
                                 );
                               }}
                               readOnly={!isEditing}
-                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                             />
                           </td>
                           <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
@@ -4493,7 +4493,7 @@ const OilInspectionReport: React.FC = () => {
                                 );
                               }}
                               readOnly={!isEditing}
-                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                             />
                           </td>
                           <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
@@ -4522,7 +4522,7 @@ const OilInspectionReport: React.FC = () => {
 
               {/* Power Factor Tests Section */}
               <section className="mb-6">
-                <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+                <div className="w-full h-1 bg-brand mb-4"></div>
                 <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
                   Power Factor Tests
                 </h2>
@@ -4542,7 +4542,7 @@ const OilInspectionReport: React.FC = () => {
                         )
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                     />
                   </div>
                   <div>
@@ -4560,7 +4560,7 @@ const OilInspectionReport: React.FC = () => {
                         )
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                     />
                   </div>
                 </div>
@@ -4642,7 +4642,7 @@ const OilInspectionReport: React.FC = () => {
                                 });
                               }}
                               readOnly={!isEditing}
-                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                             />
                           </td>
                           <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
@@ -4660,7 +4660,7 @@ const OilInspectionReport: React.FC = () => {
                                 });
                               }}
                               readOnly={!isEditing}
-                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                             />
                           </td>
                           <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
@@ -4795,7 +4795,7 @@ const OilInspectionReport: React.FC = () => {
                                   );
                                 }}
                                 readOnly={!isEditing}
-                                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                               />
                             </td>
                             <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
@@ -4817,7 +4817,7 @@ const OilInspectionReport: React.FC = () => {
                                   );
                                 }}
                                 readOnly={!isEditing}
-                                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                               />
                             </td>
                             <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
@@ -4941,7 +4941,7 @@ const OilInspectionReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -4958,7 +4958,7 @@ const OilInspectionReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -4975,7 +4975,7 @@ const OilInspectionReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -4995,7 +4995,7 @@ const OilInspectionReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -5012,7 +5012,7 @@ const OilInspectionReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -5029,7 +5029,7 @@ const OilInspectionReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -5046,7 +5046,7 @@ const OilInspectionReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -5070,7 +5070,7 @@ const OilInspectionReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -5094,7 +5094,7 @@ const OilInspectionReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -5117,7 +5117,7 @@ const OilInspectionReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -5140,7 +5140,7 @@ const OilInspectionReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -5160,7 +5160,7 @@ const OilInspectionReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -5179,7 +5179,7 @@ const OilInspectionReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -5196,7 +5196,7 @@ const OilInspectionReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -5213,7 +5213,7 @@ const OilInspectionReport: React.FC = () => {
                       })
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -5237,7 +5237,7 @@ const OilInspectionReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -5260,7 +5260,7 @@ const OilInspectionReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -5281,7 +5281,7 @@ const OilInspectionReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -5302,7 +5302,7 @@ const OilInspectionReport: React.FC = () => {
                       )
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -5429,7 +5429,7 @@ const OilInspectionReport: React.FC = () => {
           <section
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>
@@ -5438,7 +5438,7 @@ const OilInspectionReport: React.FC = () => {
               onChange={(e) => handleChange(null, "comments", e.target.value)}
               rows={6}
               readOnly={!isEditing}
-              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white resize-vertical print:hidden ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white resize-vertical print:hidden ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
             />
           </section>
         </div>

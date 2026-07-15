@@ -9,6 +9,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { ReportHeader } from "./common/ReportHeader";
 import { getAssetName } from "./reportMappings";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 type ResultOption =
   | "Select One"
@@ -770,7 +771,7 @@ const PotentialTransformerATSReport: React.FC = () => {
 
       /* Section headers with orange dividers for fillable report */
       h2 {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 8px !important;
         margin-top: 16px !important;
       }
@@ -843,7 +844,7 @@ const PotentialTransformerATSReport: React.FC = () => {
         /* Create actual section dividers */
         .mb-6 {
           margin-top: 12px !important;
-          border-top: 1px solid #f26722 !important;
+          border-top: 1px solid ${BRAND_COLOR} !important;
           padding-top: 8px !important;
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
@@ -2129,7 +2130,7 @@ const PotentialTransformerATSReport: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+        <div className="w-full h-1 bg-brand mb-4 print:hidden" />
 
         {/* Device Data */}
         <div className="mb-6">
@@ -2312,7 +2313,7 @@ const PotentialTransformerATSReport: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+        <div className="w-full h-1 bg-brand mb-4 print:hidden" />
 
         {/* Visual and Mechanical Inspection */}
         <div className="mb-6">
@@ -2408,7 +2409,7 @@ const PotentialTransformerATSReport: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+        <div className="w-full h-1 bg-brand mb-4 print:hidden" />
 
         {/* Fuse Data */}
         <div className="mb-6">
@@ -2544,7 +2545,7 @@ const PotentialTransformerATSReport: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+        <div className="w-full h-1 bg-brand mb-4 print:hidden" />
 
         {/* Electrical Tests */}
         <div className="mb-6">
@@ -2959,7 +2960,7 @@ const PotentialTransformerATSReport: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+        <div className="w-full h-1 bg-brand mb-4 print:hidden" />
 
         {/* Test Equipment Used */}
         <div className="mb-6">
@@ -3277,7 +3278,7 @@ const PotentialTransformerATSReport: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+        <div className="w-full h-1 bg-brand mb-4 print:hidden" />
 
         {/* Comments */}
         <div

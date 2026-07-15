@@ -41,7 +41,7 @@ export function RevenueForecastChart({
   data, 
   fontColor = 'var(--foreground)', 
   actualColor = '#4f46e5', 
-  forecastColor = '#f26722' 
+  forecastColor = 'var(--brand)' 
 }: RevenueForecastChartProps) {
   
   return (

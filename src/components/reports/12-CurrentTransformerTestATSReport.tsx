@@ -20,6 +20,7 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useSaveIndicator } from "./common/useSaveIndicator";
 import { ReportHeader } from "./common/ReportHeader";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -380,7 +381,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
 
       /* Section headers with orange dividers for fillable report */
       h2 {
-        border-top: 2px solid #f26722 !important;
+        border-top: 2px solid ${BRAND_COLOR} !important;
         padding-top: 8px !important;
         margin-top: 16px !important;
       }
@@ -415,11 +416,11 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         button { display: none !important; }
         h2 { font-size: 9px !important; font-weight: bold !important; margin: 0 !important; margin-top: 0 !important; padding: 1px 0 !important; background-color: transparent !important; color: black !important; text-transform: none !important; border: none !important; border-bottom: 1px solid black !important; line-height: 1.2 !important; padding-bottom: 2px !important; padding-top: 0 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; position: relative !important; }
         h2::before { display: none !important; }
-        .mb-6 { margin-top: 12px !important; border-top: 2px solid #f26722 !important; padding-top: 8px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .mb-6 { margin-top: 12px !important; border-top: 2px solid ${BRAND_COLOR} !important; padding-top: 8px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         .mb-6:first-of-type { border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; }
 
         /* Force orange dividers with higher specificity */
-        div.mb-6 { border-top: 2px solid #f26722 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        div.mb-6 { border-top: 2px solid ${BRAND_COLOR} !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         div.mb-6:first-of-type { border-top: none !important; }
         table { margin-bottom: 8px !important; }
         .status-pass { background-color: #22c55e !important; border: 2px solid #16a34a !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -507,7 +508,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         div[class*='print:border-black'] { border: none !important; box-shadow: none !important; background: transparent !important; }
 
         /* Orange dividers - must come after universal border removal */
-        div.mb-6 { border-top: 2px solid #f26722 !important; margin-top: 12px !important; padding-top: 8px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        div.mb-6 { border-top: 2px solid ${BRAND_COLOR} !important; margin-top: 12px !important; padding-top: 8px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         div.mb-6:first-of-type { border-top: none !important; margin-top: 0 !important; padding-top: 0 !important; }
 
         /* Completely remove input borders in tables - highest specificity */
@@ -1636,7 +1637,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     value={formData.identifier}
                     onChange={(e) => handleChange("identifier", e.target.value)}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     placeholder="Enter Identifier"
                   />
                 </div>
@@ -1653,7 +1654,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       handleChange("technicians", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1665,7 +1666,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     value={formData.substation}
                     onChange={(e) => handleChange("substation", e.target.value)}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 {/* Neutralized old print-only block (kept non-printing) */}
@@ -1699,7 +1700,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                       handleChange("eqptLocation", e.target.value)
                     }
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1711,7 +1712,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     value={formData.date}
                     onChange={(e) => handleChange("date", e.target.value)}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -1723,7 +1724,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                     value={formData.userName}
                     onChange={(e) => handleChange("userName", e.target.value)}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     placeholder="Enter User Name"
                   />
                 </div>
@@ -1740,7 +1741,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                         handleFahrenheitChange(Number(e.target.value))
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div>
@@ -1754,7 +1755,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                         handleCelsiusChange(Number(e.target.value))
                       }
                       readOnly={!isEditing}
-                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     />
                   </div>
                   <div>
@@ -2121,7 +2122,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                         formData.electricalTests.ratioPolarity.length >=
                         MAX_RATIO_POLARITY_ROWS
                       }
-                      className="px-3 py-1 text-sm font-medium text-white bg-[#f26722] rounded-none hover:bg-[#e55611] disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-1 text-sm font-medium text-white bg-brand rounded-none hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Add Row
                     </button>

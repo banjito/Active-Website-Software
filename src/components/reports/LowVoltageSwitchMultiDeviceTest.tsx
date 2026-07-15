@@ -1138,7 +1138,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
           isPrintMode ? "block px-4 mb-2" : "hidden print:block px-4 mb-2"
         }
       >
-        <div className="w-full h-1 bg-[#f26722] mb-2"></div>
+        <div className="w-full h-1 bg-brand mb-2"></div>
         <h2 className="text-base font-bold mb-2 text-black pb-2">
           Job Information
         </h2>
@@ -1176,7 +1176,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
       >
         {/* Visual and Mechanical Inspection */}
         <div>
-          <div className="w-full h-1 bg-[#f26722] mb-1"></div>
+          <div className="w-full h-1 bg-brand mb-1"></div>
           <h2 className="text-sm font-bold mb-1 text-black">
             Visual and Mechanical Inspection
           </h2>
@@ -1251,7 +1251,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
         {/* Enclosure Data */}
         <div>
-          <div className="w-full h-1 bg-[#f26722] mb-1"></div>
+          <div className="w-full h-1 bg-brand mb-1"></div>
           <h2 className="text-sm font-bold mb-1 text-black">Enclosure Data</h2>
           <table
             style={{
@@ -1336,7 +1336,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
         {/* Switch Data */}
         <div>
-          <div className="w-full h-1 bg-[#f26722] mb-1"></div>
+          <div className="w-full h-1 bg-brand mb-1"></div>
           <h2 className="text-sm font-bold mb-1 text-black">Switch Data</h2>
           <table
             style={{
@@ -1445,7 +1445,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
         {/* Fuse Data */}
         <div>
-          <div className="w-full h-1 bg-[#f26722] mb-1"></div>
+          <div className="w-full h-1 bg-brand mb-1"></div>
           <h2 className="text-sm font-bold mb-1 text-black">Fuse Data</h2>
           <table
             style={{
@@ -1554,7 +1554,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
         {/* Insulation Resistance - Measured */}
         <div>
-          <div className="w-full h-1 bg-[#f26722] mb-1"></div>
+          <div className="w-full h-1 bg-brand mb-1"></div>
           <h2 className="text-sm font-bold mb-1 text-black">
             Electrical Tests - Measured Insulation Resistance
           </h2>
@@ -1831,7 +1831,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
         {/* Insulation Resistance - Corrected */}
         <div>
-          <div className="w-full h-1 bg-[#f26722] mb-1"></div>
+          <div className="w-full h-1 bg-brand mb-1"></div>
           <h2 className="text-sm font-bold mb-1 text-black">
             Electrical Tests - Temperature Corrected IR Values
           </h2>
@@ -2108,7 +2108,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
         {/* Contact Resistance */}
         <div>
-          <div className="w-full h-1 bg-[#f26722] mb-1"></div>
+          <div className="w-full h-1 bg-brand mb-1"></div>
           <h2 className="text-sm font-bold mb-1 text-black">
             Electrical Tests - Contact Resistance
           </h2>
@@ -2287,7 +2287,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
         {/* Test Equipment Used */}
         <div>
-          <div className="w-full h-1 bg-[#f26722] mb-1"></div>
+          <div className="w-full h-1 bg-brand mb-1"></div>
           <h2 className="text-sm font-bold mb-1 text-black">
             Test Equipment Used
           </h2>
@@ -2401,7 +2401,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
         {formData.comments?.trim() && (
           <div>
-            <div className="w-full h-1 bg-[#f26722] mb-1"></div>
+            <div className="w-full h-1 bg-brand mb-1"></div>
             <h2 className="text-sm font-bold mb-1 text-black">Comments</h2>
             <div
               style={{
@@ -2490,7 +2490,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
             {/* Job Information */}
             <section className="mb-6 job-info-section print:hidden">
-              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <div className="w-full h-1 bg-brand mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Job Information
               </h2>
@@ -2630,7 +2630,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
             {/* Visual and Mechanical Inspection */}
             <section className="mb-6 visual-mechanical-section print:hidden">
-              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <div className="w-full h-1 bg-brand mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Visual and Mechanical Inspection
               </h2>
@@ -2670,7 +2670,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                               handleVisualMechanicalChange(idx, e.target.value)
                             }
                             disabled={!isEditing}
-                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                            className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
                           >
                             {visualMechanicalOptions.map((opt) => (
                               <option key={opt} value={opt}>
@@ -2687,7 +2687,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             </section>
             {/* Enclosure Data */}
             <section className="mb-6 enclosure-section print:hidden">
-              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <div className="w-full h-1 bg-brand mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Enclosure Data
               </h2>
@@ -2809,7 +2809,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
             {/* Switch Data */}
             <section className="mb-6 switch-data-section print:hidden">
-              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <div className="w-full h-1 bg-brand mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Switch Data
               </h2>
@@ -2948,7 +2948,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
             {/* Fuse Data */}
             <section className="mb-6 fuse-data-section print:hidden">
-              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <div className="w-full h-1 bg-brand mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Fuse Data
               </h2>
@@ -3077,7 +3077,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
             {/* Electrical Tests - Measured Insulation Resistance Values */}
             <section className="mb-6 insulation-measured-section print:hidden">
-              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <div className="w-full h-1 bg-brand mb-4"></div>
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                   Electrical Tests - Measured Insulation Resistance Values
@@ -3091,7 +3091,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                         setField("irTestVoltage", e.target.value)
                       }
                       disabled={!isEditing}
-                      className={`w-28 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`w-28 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     >
                       {[
                         "250V",
@@ -3113,7 +3113,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                       value={formData.irUnits}
                       onChange={(e) => setField("irUnits", e.target.value)}
                       disabled={!isEditing}
-                      className={`w-20 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      className={`w-20 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     >
                       {["MΩ", "GΩ", "TΩ"].map((u) => (
                         <option key={u} value={u}>
@@ -3141,7 +3141,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setApplyIrReading(">2200")}
-                          className="px-3 py-1.5 rounded-none border border-[#f26722] bg-[#f26722] text-white hover:bg-[#e55c1a] text-sm font-medium"
+                          className="px-3 py-1.5 rounded-none border border-brand bg-brand text-white hover:bg-brand-dark text-sm font-medium"
                         >
                           Add &gt;2200
                         </button>
@@ -3518,7 +3518,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                                     ? applyReadingToIrRow(idx)
                                     : clearIrRow(idx)
                                 }
-                                className="rounded border-neutral-400 text-[#f26722] focus:ring-[#f26722]"
+                                className="rounded border-neutral-400 text-brand focus:ring-brand"
                                 title={`Apply ${applyIrReading} to this row`}
                               />
                               <span className="text-xs text-neutral-600 dark:text-neutral-400">
@@ -3536,7 +3536,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
             {/* Electrical Tests - Temperature Corrected Insulation Resistance Values */}
             <section className="mb-6 insulation-corrected-section print:hidden">
-              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <div className="w-full h-1 bg-brand mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Electrical Tests - Temperature Corrected Insulation Resistance
                 Values
@@ -3655,7 +3655,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
             {/* Electrical Tests - Contact Resistance */}
             <section className="mb-6 contact-resistance-section print:hidden">
-              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <div className="w-full h-1 bg-brand mb-4"></div>
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                   Electrical Tests - Contact Resistance
@@ -3666,7 +3666,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                     value={formData.contactUnits}
                     onChange={(e) => setField("contactUnits", e.target.value)}
                     disabled={!isEditing}
-                    className={`w-20 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`w-20 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   >
                     {["mΩ", "µΩ"].map((u) => (
                       <option key={u} value={u}>
@@ -3843,7 +3843,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
             {/* Test Equipment Used */}
             <section className="mb-6 test-equipment-section print:hidden">
-              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <div className="w-full h-1 bg-brand mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Test Equipment Used
               </h2>
@@ -3995,7 +3995,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
             {/* Comments */}
             <section className="mb-6 comments-section print:hidden">
-              <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+              <div className="w-full h-1 bg-brand mb-4"></div>
               <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Comments
               </h2>
@@ -4006,7 +4006,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                 onChange={(e) => setField("comments", e.target.value)}
                 readOnly={!isEditing}
                 rows={4}
-                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${isPrintMode ? "hidden" : ""} print:hidden comments-onscreen`}
+                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""} ${isPrintMode ? "hidden" : ""} print:hidden comments-onscreen`}
               />
             </section>
           </div>

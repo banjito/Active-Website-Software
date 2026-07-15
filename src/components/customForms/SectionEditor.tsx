@@ -795,7 +795,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                                 next[idx] = { ...next[idx], options: opts };
                                 onUpdate({ aboveTableFields: next });
                               }}
-                              className="text-[10px] text-[#f26722] hover:underline"
+                              className="text-[10px] text-brand hover:underline"
                             >
                               + Add option
                             </button>
@@ -1138,7 +1138,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                                 };
                                 onUpdate({ settingFields: next });
                               }}
-                              className="text-[10px] text-[#f26722] hover:underline"
+                              className="text-[10px] text-brand hover:underline"
                             >
                               + Add option
                             </button>
@@ -1336,7 +1336,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     onChange={(e) =>
                       onUpdate({ layout: e.target.value as any })
                     }
-                    className="w-full px-3 py-2 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white text-sm"
+                    className="w-full px-3 py-2 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand text-neutral-900 dark:text-white text-sm"
                   >
                     <option value="single-column">Single Column</option>
                     <option value="two-column">Two Columns</option>
@@ -1896,7 +1896,7 @@ const ColumnEditor: React.FC<{
                       }
                       onUpdate({ field: { ...field, ...updates } });
                     }}
-                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white"
+                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none focus:ring-2 focus:ring-brand focus:border-brand text-neutral-900 dark:text-white"
                   >
                     <option value={FieldType.TEXT}>Text</option>
                     <option value={FieldType.NUMBER}>Number</option>
@@ -1989,7 +1989,7 @@ const ColumnEditor: React.FC<{
                   <select
                     value={getPopulateFromValue()}
                     onChange={(e) => handlePopulateFromSelect(e.target.value)}
-                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white"
+                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none focus:ring-2 focus:ring-brand focus:border-brand text-neutral-900 dark:text-white"
                   >
                     <option value="">— Select a field —</option>
                     {Array.from(
@@ -2059,7 +2059,7 @@ const ColumnEditor: React.FC<{
                             },
                           });
                         }}
-                        className="px-2 py-1 text-xs font-mono bg-neutral-200 dark:bg-neutral-600 rounded hover:bg-[#f26722] hover:text-white dark:hover:bg-[#e55611]"
+                        className="px-2 py-1 text-xs font-mono bg-neutral-200 dark:bg-neutral-600 rounded hover:bg-brand hover:text-white dark:hover:bg-brand-dark"
                         title={`${opt.friendlyRef} — ${opt.description}`}
                       >
                         {opt.friendlyRef}
@@ -2201,7 +2201,7 @@ const FieldEditor: React.FC<{
               }
               onUpdate(updates);
             }}
-            className="px-2 py-1 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722] text-neutral-900 dark:text-white text-xs"
+            className="px-2 py-1 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand text-neutral-900 dark:text-white text-xs"
           >
             <option value={FieldType.TEXT}>Text</option>
             <option value={FieldType.NUMBER}>Number</option>

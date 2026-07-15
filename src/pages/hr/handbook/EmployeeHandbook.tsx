@@ -32,6 +32,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "../../../components/ui/toast";
+import { companyConfig } from "@/lib/companyConfig";
 
 /* ------------------------------------------------------------------ */
 /* Handbook content                                                    */
@@ -107,7 +108,7 @@ const SECTIONS: Section[] = [
       {
         title: "About the Company",
         body: [
-          "In 2009, our founder, Brian, felt called to step out in faith and start a new venture. With the support of his wife, he left his previous role and launched AMP, but the road wasn't easy. On his first day, he faced unexpected transitions, financial uncertainty, and even a car accident. Yet, within days, opportunities began to emerge.",
+          "In 2009, Brian Rodgers felt called to step out in faith and start a new venture. With the support of his wife, he left his previous role and launched AMP, but the road wasn't easy. On his first day, he faced unexpected transitions, financial uncertainty, and even a car accident. Yet, within days, opportunities began to emerge.",
           "A former customer reached out, insisting on working with Brian directly. With no equipment and just one employee, AMP took on its first project, marking the start of our journey.",
           "In 2015, a downturn brought significant challenges, leaving Brian as the sole employee. However, through perseverance, careful planning, and the support of trusted advisors, AMP rebuilt stronger than ever.",
           "Today, AMP has grown into a thriving company with a dedicated team, guided by our commitment to faith, integrity, and service. At AMP, we believe that no matter the business, we're in the people business.",
@@ -911,13 +912,22 @@ const SECTIONS: Section[] = [
   },
 ];
 
-const BRAND = "#f26722";
+const BRAND = "var(--brand)";
 
 /* ------------------------------------------------------------------ */
 /* Component                                                           */
 /* ------------------------------------------------------------------ */
 
 export const EmployeeHandbook: React.FC = () => {
+  // Handbook text is AMP-specific legal content; buyer instances hide it
+  // (VITE_COMPANY_SHOW_HR_HANDBOOK=false) until they supply their own.
+  if (!companyConfig.showHrHandbook) {
+    return (
+      <div className="p-8 text-center text-neutral-600 dark:text-neutral-300">
+        The employee handbook has not been set up for this company yet.
+      </div>
+    );
+  }
   const [query, setQuery] = useState("");
   const [activeId, setActiveId] = useState<string>(SECTIONS[0].id);
   const [showTop, setShowTop] = useState(false);
@@ -1086,7 +1096,7 @@ export const EmployeeHandbook: React.FC = () => {
           </div>
         </div>
         <a
-          href="https://vdxprdihmbqomwqfldpo.supabase.co/storage/v1/object/public/documents/onboarding-documents/e-sign-forms/1772133131661_y166aion.pdf"
+          href={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/documents/onboarding-documents/e-sign-forms/1772133131661_y166aion.pdf`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 rounded-md bg-white/15 px-3 py-2 text-xs font-medium hover:bg-white/25 transition-colors"
@@ -1105,7 +1115,7 @@ export const EmployeeHandbook: React.FC = () => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search the handbook…"
-                className="w-full rounded-md border border-neutral-200 dark:border-dark-200 bg-neutral-50 dark:bg-dark-100 pl-8 pr-8 py-2 text-xs text-neutral-800 dark:text-dark-900 focus:outline-none focus:ring-2 focus:ring-[#f26722]/40"
+                className="w-full rounded-md border border-neutral-200 dark:border-dark-200 bg-neutral-50 dark:bg-dark-100 pl-8 pr-8 py-2 text-xs text-neutral-800 dark:text-dark-900 focus:outline-none focus:ring-2 focus:ring-brand/40"
               />
               {query && (
                 <button
@@ -1119,7 +1129,7 @@ export const EmployeeHandbook: React.FC = () => {
           </div>
           {!query && (
             <div className="flex items-center gap-2 px-4 pt-3 pb-1">
-              <BookOpen className="h-3.5 w-3.5 text-[#f26722]" />
+              <BookOpen className="h-3.5 w-3.5 text-brand" />
               <span className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-dark-500">
                 Table of Contents
               </span>
@@ -1139,13 +1149,13 @@ export const EmployeeHandbook: React.FC = () => {
                   onClick={() => scrollToSection(section.id)}
                   className={`group flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-xs transition-colors ${
                     isActive
-                      ? "bg-[#f26722]/10 text-[#f26722] font-semibold"
+                      ? "bg-brand/10 text-brand font-semibold"
                       : "text-neutral-600 dark:text-dark-600 hover:bg-black/5 dark:hover:bg-dark-50"
                   }`}
                 >
                   <span
                     className={
-                      isActive ? "text-[#f26722]" : "text-neutral-400"
+                      isActive ? "text-brand" : "text-neutral-400"
                     }
                   >
                     {section.icon}
@@ -1160,7 +1170,7 @@ export const EmployeeHandbook: React.FC = () => {
                   </span>
                   <ChevronRight
                     className={`h-3 w-3 flex-shrink-0 ${
-                      isActive ? "text-[#f26722]" : "text-transparent group-hover:text-neutral-400"
+                      isActive ? "text-brand" : "text-transparent group-hover:text-neutral-400"
                     }`}
                   />
                 </button>
@@ -1204,7 +1214,7 @@ export const EmployeeHandbook: React.FC = () => {
                     <div key={i}>
                       <h3 className="mb-2 flex items-baseline gap-2 text-sm font-semibold text-neutral-800 dark:text-dark-900">
                         {sub.number && (
-                          <span className="text-[#f26722] font-bold">
+                          <span className="text-brand font-bold">
                             {sub.number}
                           </span>
                         )}
@@ -1243,7 +1253,7 @@ export const EmployeeHandbook: React.FC = () => {
                         sub.title === "CEO Welcome Letter" && (
                           <div className="mt-6">
                             <div className="mb-3 flex items-center gap-2">
-                              <Target className="h-4 w-4 text-[#f26722]" />
+                              <Target className="h-4 w-4 text-brand" />
                               <h3 className="text-sm font-semibold text-neutral-800 dark:text-dark-900">
                                 AMP's 7 Core Values
                               </h3>
@@ -1255,7 +1265,7 @@ export const EmployeeHandbook: React.FC = () => {
                                   className="rounded-lg border border-neutral-200 dark:border-dark-200 p-3"
                                 >
                                   <div className="mb-1 flex items-center gap-2">
-                                    <CheckCircle2 className="h-4 w-4 text-[#f26722]" />
+                                    <CheckCircle2 className="h-4 w-4 text-brand" />
                                     <span className="text-sm font-semibold text-neutral-900 dark:text-white">
                                       {v.title}
                                     </span>
@@ -1279,7 +1289,7 @@ export const EmployeeHandbook: React.FC = () => {
               <section
                 id="acknowledgment"
                 ref={(el) => (sectionRefs.current["acknowledgment"] = el)}
-                className="scroll-mt-24 rounded-xl border-2 border-[#f26722]/40 bg-white dark:bg-dark-150 overflow-hidden shadow-sm"
+                className="scroll-mt-24 rounded-xl border-2 border-brand/40 bg-white dark:bg-dark-150 overflow-hidden shadow-sm"
               >
                 <div className="flex items-center gap-3 px-6 py-4 border-b border-neutral-200 dark:border-dark-200">
                   <span
@@ -1333,7 +1343,7 @@ export const EmployeeHandbook: React.FC = () => {
                       className="flex w-full items-start gap-3 rounded-lg border border-neutral-200 dark:border-dark-200 p-3 text-left hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors"
                     >
                       {item.value ? (
-                        <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#f26722]" />
+                        <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand" />
                       ) : (
                         <Circle className="mt-0.5 h-5 w-5 flex-shrink-0 text-neutral-300" />
                       )}

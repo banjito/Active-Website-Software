@@ -355,7 +355,7 @@ export const ESignatures: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => openSignModal(offer, "candidate")}
-                      className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                      className="bg-brand hover:bg-brand/90 text-white"
                     >
                       <PenTool className="h-4 w-4 mr-1" />
                       Sign as Candidate
@@ -500,7 +500,7 @@ export const ESignatures: React.FC = () => {
             </Button>
             <Button
               onClick={handleSubmitSignature}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
               disabled={!signatureData || !signerName || !signerEmail}
             >
               Submit Signature

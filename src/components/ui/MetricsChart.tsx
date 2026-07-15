@@ -39,7 +39,7 @@ export const MetricsChart: React.FC<MetricsChartProps> = ({
   type,
   data,
   title,
-  colors = ["#f26722", "#8D5F3D", "#FFB74D", "#FF8A65", "#FFD54F"],
+  colors = ["var(--brand)", "#8D5F3D", "#FFB74D", "#FF8A65", "#FFD54F"],
   height = 300,
 }) => {
   // Basic validation to avoid rendering errors

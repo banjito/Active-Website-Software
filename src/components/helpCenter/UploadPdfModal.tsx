@@ -243,14 +243,14 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
           <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
             Select PDF or Video File
           </label>
-          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 dark:border-neutral-600 border-dashed rounded-none hover:border-[#f26722] transition-colors">
+          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 dark:border-neutral-600 border-dashed rounded-none hover:border-brand transition-colors">
             <div className="space-y-1 text-center">
               {selectedFile ? (
                 <div className="flex flex-col items-center">
                   {isVideoFile(selectedFile) ? (
-                    <Video className="w-12 h-12 text-[#f26722] mb-2" />
+                    <Video className="w-12 h-12 text-brand mb-2" />
                   ) : (
-                    <FileText className="w-12 h-12 text-[#f26722] mb-2" />
+                    <FileText className="w-12 h-12 text-brand mb-2" />
                   )}
                   <p className="text-sm font-medium text-neutral-900 dark:text-white">
                     {selectedFile.name}
@@ -278,7 +278,7 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
                   <div className="flex text-sm text-neutral-600 dark:text-neutral-400">
                     <label
                       htmlFor="file-upload"
-                      className="relative cursor-pointer rounded-none font-medium text-[#f26722] hover:text-[#e55611] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#f26722] focus-within:ring-offset-2"
+                      className="relative cursor-pointer rounded-none font-medium text-brand hover:text-brand-dark focus-within:outline-none focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2"
                     >
                       <span>Upload a file</span>
                       <input
@@ -337,7 +337,7 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
               setSelectedCategory(e.target.value as PortalCategory)
             }
             disabled={isUploading}
-            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:ring-2 focus:ring-[#f26722] focus:border-transparent"
+            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:ring-2 focus:ring-brand focus:border-transparent"
           >
             {Object.entries(PORTAL_CATEGORY_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
@@ -360,7 +360,7 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
             </div>
             <div className="w-full bg-neutral-200 dark:bg-dark-100 rounded-none h-2">
               <div
-                className="bg-[#f26722] h-2 rounded-none transition-all duration-300"
+                className="bg-brand h-2 rounded-none transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
@@ -381,7 +381,7 @@ export const UploadPdfModal: React.FC<UploadPdfModalProps> = ({
             type="button"
             onClick={handleUpload}
             disabled={!selectedFile || !documentName.trim() || isUploading}
-            className="bg-[#f26722] hover:bg-[#e55611] text-white"
+            className="bg-brand hover:bg-brand-dark text-white"
           >
             {isUploading ? (
               <>

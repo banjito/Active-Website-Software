@@ -240,7 +240,7 @@ export const QuickBooksDashboard: React.FC = () => {
                 onClick={() => onPageChange(page)}
                 className={`px-3 py-1 text-sm rounded ${
                   currentPage === page
-                    ? "bg-[#f26722] text-white"
+                    ? "bg-brand text-white"
                     : "hover:bg-neutral-100 dark:hover:bg-neutral-700"
                 }`}
               >

@@ -7,6 +7,7 @@ import { navigateAfterSave } from "./ReportUtils";
 import { ReportHeader } from "./common/ReportHeader";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { companyConfig } from "@/lib/companyConfig";
 
 // Slug used for routing AND for asset.file_url. Detected by JobDetail to
 // classify this asset as an "Internal Form".
@@ -715,7 +716,7 @@ const JobHazardAnalysisForm: React.FC = () => {
             </div>
             <div className="text-center py-2">
               <div className="text-base font-bold leading-tight">
-                AMP Quality Energy Services
+                {companyConfig.fullName}
               </div>
               <div className="text-lg font-bold leading-tight">
                 Job Hazard Analysis
@@ -1105,7 +1106,7 @@ const JobHazardAnalysisForm: React.FC = () => {
               <button
                 type="button"
                 onClick={addJobStep}
-                className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-[#f26722] rounded-none hover:bg-[#e55611]"
+                className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-brand rounded-none hover:bg-brand-dark"
               >
                 <Plus className="h-4 w-4" /> Add Row
               </button>
@@ -1196,7 +1197,7 @@ const JobHazardAnalysisForm: React.FC = () => {
             />
             <div className="text-center flex-1">
               <div className="text-base font-bold leading-tight">
-                AMP Quality Energy Services
+                {companyConfig.fullName}
               </div>
               <div className="text-base font-bold leading-tight">
                 Safety Brief Acknowledgement Form
@@ -1359,7 +1360,7 @@ const JobHazardAnalysisForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={addAttendee}
-                  className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-[#f26722] rounded-none hover:bg-[#e55611]"
+                  className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-brand rounded-none hover:bg-brand-dark"
                 >
                   <Plus className="h-4 w-4" /> Add Attendee
                 </button>
@@ -1437,7 +1438,7 @@ const JobHazardAnalysisForm: React.FC = () => {
                           })
                         }
                         disabled={readOnly}
-                        className="h-4 w-4 accent-[#f26722]"
+                        className="h-4 w-4 accent-brand"
                       />
                     </td>
                     {!readOnly && (
@@ -1464,7 +1465,7 @@ const JobHazardAnalysisForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={addCompletedWork}
-                  className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-[#f26722] rounded-none hover:bg-[#e55611]"
+                  className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-brand rounded-none hover:bg-brand-dark"
                 >
                   <Plus className="h-4 w-4" /> Add Row
                 </button>

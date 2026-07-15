@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSupabaseHealth } from "@/hooks/useSupabaseHealth";
+import { useSiteLogos } from "@/services/siteThemeService";
 
 /**
  * Full-screen maintenance overlay shown whenever the app can't reach Supabase
@@ -9,6 +10,7 @@ import { useSupabaseHealth } from "@/hooks/useSupabaseHealth";
  * responds again.
  */
 export default function ConnectionStatusOverlay() {
+  const { logoUrl, hideLogo } = useSiteLogos();
   const { status, isBrowserOffline, checkNow } = useSupabaseHealth();
   const [retrying, setRetrying] = useState(false);
 
@@ -53,22 +55,24 @@ export default function ConnectionStatusOverlay() {
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-950/95 backdrop-blur-sm p-6"
     >
       <div className="w-full max-w-md rounded-none border border-neutral-800 bg-neutral-900 px-8 py-10 text-center shadow-2xl">
-        <img
-          src="/ampOS_full_logo.svg"
-          alt="ampOS"
-          // The logo artwork is solid black; invert it to white for the dark overlay.
-          className="mx-auto mb-8 h-9 w-auto opacity-90 [filter:brightness(0)_invert(1)]"
-          onError={(e) => {
-            // Hide the image gracefully if the asset path ever changes.
-            (e.currentTarget as HTMLImageElement).style.display = "none";
-          }}
-        />
+        {!hideLogo && (
+          <img
+            src={logoUrl}
+            alt="ampOS"
+            // The logo artwork is solid black; invert it to white for the dark overlay.
+            className="mx-auto mb-8 h-9 w-auto opacity-90 [filter:brightness(0)_invert(1)]"
+            onError={(e) => {
+              // Hide the image gracefully if the asset path ever changes.
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
+          />
+        )}
 
         {/* Pulsing status dot / spinner */}
         <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center">
           <span className="relative flex h-14 w-14 items-center justify-center">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#f26722] opacity-20" />
-            <span className="relative inline-flex h-10 w-10 animate-spin rounded-full border-2 border-neutral-700 border-t-[#f26722]" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-20" />
+            <span className="relative inline-flex h-10 w-10 animate-spin rounded-full border-2 border-neutral-700 border-t-brand" />
           </span>
         </div>
 
@@ -83,7 +87,7 @@ export default function ConnectionStatusOverlay() {
           type="button"
           onClick={handleRetry}
           disabled={retrying}
-          className="inline-flex items-center justify-center gap-2 rounded-none bg-[#f26722] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#d9591b] disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-none bg-brand px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
         >
           {retrying ? "Checking…" : "Try again"}
         </button>

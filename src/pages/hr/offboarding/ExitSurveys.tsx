@@ -573,7 +573,7 @@ export const ExitSurveys: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-            <MessageSquare className="h-6 w-6 text-[#f26722]" />
+            <MessageSquare className="h-6 w-6 text-brand" />
             Exit Surveys
           </h1>
           <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
@@ -643,7 +643,7 @@ export const ExitSurveys: React.FC = () => {
         <CardContent className="p-0">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-[#f26722]" />
+              <Loader2 className="h-8 w-8 animate-spin text-brand" />
             </div>
           ) : filteredSurveys.length === 0 ? (
             <div className="text-center py-12 px-4">
@@ -737,7 +737,7 @@ export const ExitSurveys: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => openResponses(s)}
-                          className="inline-flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-300 hover:text-[#f26722] hover:underline"
+                          className="inline-flex items-center gap-1.5 text-sm text-neutral-600 dark:text-neutral-300 hover:text-brand hover:underline"
                           title="View who filled it out and their answers"
                         >
                           <BarChart3 className="h-4 w-4 text-neutral-400" />
@@ -881,7 +881,7 @@ export const ExitSurveys: React.FC = () => {
                         is_template: e.target.checked,
                       }))
                     }
-                    className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                    className="rounded border-neutral-300 text-brand focus:ring-brand"
                   />
                   <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     Save as template
@@ -897,7 +897,7 @@ export const ExitSurveys: React.FC = () => {
                         is_optional: e.target.checked,
                       }))
                     }
-                    className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                    className="rounded border-neutral-300 text-brand focus:ring-brand"
                   />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     Optional (recommended)
@@ -914,7 +914,7 @@ export const ExitSurveys: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
-                  <Paperclip className="h-4 w-4 text-[#f26722]" />
+                  <Paperclip className="h-4 w-4 text-brand" />
                   Attached documents (optional)
                 </label>
               </div>
@@ -953,7 +953,7 @@ export const ExitSurveys: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowDocPicker(!showDocPicker)}
-                  className="border-[#f26722] text-[#f26722] hover:bg-[#f26722]/10"
+                  className="border-brand text-brand hover:bg-brand/10"
                 >
                   <Link2 className="h-3.5 w-3.5 mr-1.5" />
                   Add from document library
@@ -990,7 +990,7 @@ export const ExitSurveys: React.FC = () => {
                             file_url: d.file_url!,
                           })
                         }
-                        className="w-full text-left px-3 py-2 text-sm rounded hover:bg-[#f26722]/10 text-neutral-700 dark:text-neutral-300"
+                        className="w-full text-left px-3 py-2 text-sm rounded hover:bg-brand/10 text-neutral-700 dark:text-neutral-300"
                       >
                         {d.name}
                       </button>
@@ -1059,7 +1059,7 @@ export const ExitSurveys: React.FC = () => {
                             onChange={(e) =>
                               updateQuestion(i, "required", e.target.checked)
                             }
-                            className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                            className="rounded border-neutral-300 text-brand focus:ring-brand"
                           />
                           <span className="text-sm text-neutral-600 dark:text-neutral-400">
                             Required
@@ -1135,7 +1135,7 @@ export const ExitSurveys: React.FC = () => {
                         key={i}
                         className="text-sm text-neutral-600 dark:text-neutral-400 flex items-center gap-2"
                       >
-                        <FileText className="h-4 w-4 text-[#f26722]" />
+                        <FileText className="h-4 w-4 text-brand" />
                         {d.name}
                       </li>
                     ))}

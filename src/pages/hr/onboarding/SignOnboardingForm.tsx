@@ -192,7 +192,7 @@ export const SignOnboardingForm: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[320px]">
-        <Loader2 className="h-8 w-8 animate-spin text-[#f26722]" />
+        <Loader2 className="h-8 w-8 animate-spin text-brand" />
       </div>
     );
   }
@@ -331,7 +331,7 @@ export const SignOnboardingForm: React.FC = () => {
                 <Button
                   onClick={handleSubmit}
                   disabled={!signatureData || signing}
-                  className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                  className="bg-brand hover:bg-brand/90 text-white"
                 >
                   {signing ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />

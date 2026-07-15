@@ -2,6 +2,7 @@
 // @ts-ignore deno: types are resolved at runtime
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { getDigestRecipientEmails } from '../_shared/digestRecipients.ts'
+import { BRAND_COLOR, COMPANY_NAME, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
 // Local TS linting shim (for non-Deno editors)
 declare const Deno: {
   env: { get: (name: string) => string | undefined }
@@ -194,10 +195,10 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
   <title>Daily Review Report</title>
   <style>
     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
-    .header { background-color: #f26722; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    .header { background-color: ${BRAND_COLOR}; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
     .summary { background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
     .job-item { background-color: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 10px; }
-    .job-header { font-weight: bold; color: #f26722; margin-bottom: 5px; }
+    .job-header { font-weight: bold; color: ${BRAND_COLOR}; margin-bottom: 5px; }
     .job-details { color: #666; font-size: 14px; }
     .report-count { background-color: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
     .footer { text-align: center; color: #666; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; }
@@ -272,8 +273,8 @@ To review these reports, log in to the AMP system and check the Review Shortcuts
     }
 
     // Verified sender in Postmark (set POSTMARK_FROM or defaults to your verified address)
-    const fromEmail = (Deno.env.get('POSTMARK_FROM') ?? 'john.chambers@ampqes.com').trim()
-    const fromHeader = fromEmail.includes('<') ? fromEmail : `AMP System <${fromEmail}>`
+    const fromEmail = DEFAULT_FROM_EMAIL
+    const fromHeader = fromEmail.includes('<') ? fromEmail : `${COMPANY_NAME} System <${fromEmail}>`
 
     const pmRes = await fetch('https://api.postmarkapp.com/email', {
       method: 'POST',

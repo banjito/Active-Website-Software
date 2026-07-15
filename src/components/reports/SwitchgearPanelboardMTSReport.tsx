@@ -1441,7 +1441,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
           {/* Job Information */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+            <div className="w-full h-1 bg-brand mb-4 print:hidden"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-job-info">
               Job Information
             </h2>
@@ -1649,7 +1649,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
           {/* Nameplate Data */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+            <div className="w-full h-1 bg-brand mb-4 print:hidden"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-nameplate-data">
               Nameplate Data
             </h2>
@@ -1803,7 +1803,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
           {/* Visual and Mechanical Inspection */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+            <div className="w-full h-1 bg-brand mb-4 print:hidden"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-visual-mechanical">
               Visual and Mechanical Inspection
             </h2>
@@ -1871,7 +1871,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
           {/* Electrical Tests - Measured Insulation Resistance */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+            <div className="w-full h-1 bg-brand mb-4 print:hidden"></div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-neutral-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold flex-grow">
                 Electrical Tests - Measured Insulation Resistance Values
@@ -1899,7 +1899,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                       )
                     }
                     disabled={!isEditing}
-                    className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   >
                     <option value="">Select...</option>
                     {INSULATION_RESISTANCE_TEST_VOLTAGES.map((opt) => (
@@ -2016,7 +2016,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2035,7 +2035,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {INSULATION_RESISTANCE_UNITS.map((unit) => (
                               <option
@@ -2061,7 +2061,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
           {/* Electrical Tests - Temperature Corrected Insulation Resistance */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+            <div className="w-full h-1 bg-brand mb-4 print:hidden"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold">
               Temperature Corrected Values
             </h2>
@@ -2192,7 +2192,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
           {/* Electrical Tests - Contact Resistance */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+            <div className="w-full h-1 bg-brand mb-4 print:hidden"></div>
             <div className="mb-4">
               <h2 className="text-xl font-semibold text-neutral-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold flex-grow">
                 Contact Resistance
@@ -2263,7 +2263,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               }));
                             }}
                             readOnly={!isEditing}
-                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                         </div>
                         <div className="hidden print:block text-center">
@@ -2288,7 +2288,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                                   }));
                                 }}
                                 readOnly={!isEditing}
-                                className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                               />
                             </div>
                             <div className="hidden print:block text-center">
@@ -2308,7 +2308,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {CONTACT_RESISTANCE_UNITS.map((unit) => (
                               <option
@@ -2334,7 +2334,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
           {/* Electrical Tests - Dielectric Withstand */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+            <div className="w-full h-1 bg-brand mb-4 print:hidden"></div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-neutral-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold flex-grow">
                 Dielectric Withstand
@@ -2352,7 +2352,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                     )
                   }
                   disabled={!isEditing}
-                  className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 >
                   {DIELECTRIC_WITHSTAND_TEST_VOLTAGES.map((opt) => (
                     <option key={opt} value={opt}>
@@ -2433,7 +2433,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                                 }));
                               }}
                               readOnly={!isEditing}
-                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                             />
                           </div>
                           <div className="hidden print:block text-center">
@@ -2452,7 +2452,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                               )
                             }
                             disabled={!isEditing}
-                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {DIELECTRIC_WITHSTAND_UNITS.map((unit) => (
                               <option
@@ -2478,7 +2478,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
           {/* Test Equipment Used */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+            <div className="w-full h-1 bg-brand mb-4 print:hidden"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-test-equipment">
               Test Equipment Used
             </h2>
@@ -2846,7 +2846,7 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
           <section
             className={`mb-6 section-comments print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
-            <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+            <div className="w-full h-1 bg-brand mb-4 print:hidden"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white pb-2 print:text-black print:border-b print:border-black print:font-bold section-comments">
               Comments
             </h2>

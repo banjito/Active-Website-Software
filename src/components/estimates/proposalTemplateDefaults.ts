@@ -16,6 +16,7 @@
  */
 
 import type { EstimatingPresets } from "../../services/estimatingPresetsService";
+import { companyConfig } from "@/lib/companyConfig";
 
 /** Tokens available inside editable template sections. */
 export const TEMPLATE_TOKENS: { token: string; description: string }[] = [
@@ -71,30 +72,30 @@ const KNOWN_TOKEN_NAMES = new Set(
 
 /** Greeting + furnish-services sentence + NETA standard line. */
 export const DEFAULT_PROPOSAL_INTRO_HTML = `<div class="amp-section" style="margin: 8px 0;">Dear {{contactName}},</div>
-        <div class="amp-section">AMP LLC is pleased to offer the following proposal for your consideration.</div>
-        <div class="amp-section" style="margin: 8px 0;">AMP LLC will furnish field technical services, tooling, instrumentation, and equipment to perform the listed scope at {{projectTitle}}{{jobsiteLocation}}.</div>
+        <div class="amp-section">${companyConfig.legalName} is pleased to offer the following proposal for your consideration.</div>
+        <div class="amp-section" style="margin: 8px 0;">${companyConfig.legalName} will furnish field technical services, tooling, instrumentation, and equipment to perform the listed scope at {{projectTitle}}{{jobsiteLocation}}.</div>
         <div class="amp-section" style="margin: 8px 0;">
           <span id="neta-standard-text">{{netaStandardText}}</span>
         </div>`;
 
 /** Payment-terms sentence + "This price is based upon the following" list. */
-export const DEFAULT_PROPOSAL_TERMS_HTML = `<div class="amp-section">AMP LLC does not offer or accept terms greater than 90 days. No retainage is allowed. This work is subject to progress billing where applicable.</div>
+export const DEFAULT_PROPOSAL_TERMS_HTML = `<div class="amp-section">${companyConfig.legalName} does not offer or accept terms greater than 90 days. No retainage is allowed. This work is subject to progress billing where applicable.</div>
         <div class="amp-section" style="margin-top: 8px;">This price is based upon the following:</div>
         <ol class="amp-section" style="margin: 4px 0 4px 20px;">
           <li>The schedule for this work will be mutually determined.</li>
           <li>Work to be performed during normal working hours, Monday through Friday.{{alternateRatesNote}}</li>
           <li>Repairs and/or retests, if required, will be separately quoted.</li>
-          <li>All site work delays beyond AMP Quality Energy Services control will be billed in accordance with AMP Quality Energy Services {{currentYear}} T&M Rate Sheet.</li>
+          <li>All site work delays beyond ${companyConfig.fullName} control will be billed in accordance with ${companyConfig.fullName} {{currentYear}} T&M Rate Sheet.</li>
           <li>Aerial lift for overhead work to be provided by others.</li>
           <li>Arc flash analysis, short circuit, and coordination study to be quoted separately.</li>
-          <li>All work performed by AMP will be in accordance with the safety policy attached</li>
+          <li>All work performed by ${companyConfig.name} will be in accordance with the safety policy attached</li>
         </ol>`;
 
 /** Conclusion paragraph, PO email line, validity statement. */
 export const DEFAULT_PROPOSAL_CONCLUSION_HTML = `<div style="margin-top: 12px;"><b style="font-size: 1.15em;">Conclusion</b></div>
         <div>This proposal is valid for 120 days.</div>
-        <div style="margin-top: 8px;">We appreciate the opportunity to provide a proposal for this scope of work. AMP Quality Energy Services enjoys the opportunity to display our core principles daily: Attentiveness, Commitment, Creativity, Dependability, Diligence, Integrity, and Poise. If we ever fall short of these values, we ask that you inform us, so we may do whatever it takes to elicit forgiveness.</div>
-        <div style="margin-top: 8px;"><b><i>Please send purchase orders to <a href="mailto:purchaseorders@ampqes.com">purchaseorders@ampqes.com</a>.</i></b></div>
+        <div style="margin-top: 8px;">We appreciate the opportunity to provide a proposal for this scope of work. ${companyConfig.fullName} enjoys the opportunity to display our core principles daily: Attentiveness, Commitment, Creativity, Dependability, Diligence, Integrity, and Poise. If we ever fall short of these values, we ask that you inform us, so we may do whatever it takes to elicit forgiveness.</div>
+        <div style="margin-top: 8px;"><b><i>Please send purchase orders to <a href="mailto:${companyConfig.purchaseOrdersEmail}">${companyConfig.purchaseOrdersEmail}</a>.</i></b></div>
         <div style="margin-top: 8px;">Should you have any questions please contact the undersigned.</div>`;
 
 /** Sign-off + signature image + signer name/title. */
@@ -111,8 +112,8 @@ export const DEFAULT_PROPOSAL_SIGNATURE_HTML = `<div style="margin-top: 12px;">S
  * combined letters); this is the shared content inside it.
  */
 export const DEFAULT_PROPOSAL_SAFETY_POLICY_HTML = `<div style="font-weight: bold; margin-bottom: 4px;">LOCKOUT / TAGOUT</div>
-          <div>On a jobsite where the customer has an established Lockout program or there is a lockout procedure already established, AMP employees will follow local Lockout program provided that it does not expose the employee to greater risk than the AMP procedure below.</div>
-          <div style="margin-top: 4px;">In the absence of a local lockout procedure, AMP employees will follow the following procedure.</div>
+          <div>On a jobsite where the customer has an established Lockout program or there is a lockout procedure already established, ${companyConfig.name} employees will follow local Lockout program provided that it does not expose the employee to greater risk than the ${companyConfig.name} procedure below.</div>
+          <div style="margin-top: 4px;">In the absence of a local lockout procedure, ${companyConfig.name} employees will follow the following procedure.</div>
           <ul style="margin: 4px 0 4px 16px;">
             <li>The employees shall be notified that a lockout (tagout) system is going to be implemented and the reason therefore. The qualified employee implementing the lockout (tagout) shall know the disconnecting means location for all sources of electrical energy and the location of all sources of potential energy. The qualified person shall be knowledgeable of hazards associated with all energy sources.</li>
             <li>If the electrical supply is energized, the qualified person shall deenergize and disconnect the electric supply and relieve all stored energy.</li>
@@ -127,11 +128,11 @@ export const DEFAULT_PROPOSAL_SAFETY_POLICY_HTML = `<div style="font-weight: bol
           </ul>
           <div style="margin-top: 6px; font-weight: bold;">Procedure Involving More Than One Person.</div>
           <div>For a simple lockout/tagout and where more than one person is involved in the job or task, each person shall install his or her own personal lockout (tagout) device.</div>
-          <div style="margin-top: 8px;">Safety is the utmost priority at AMP Quality Energy Services and we reserve the right to stop work on any project that our technicians deem as unsafe. AMP Quality Energy Services technicians follow NFPA 70E, ANSI, NETA, and OSHA safety guidelines. Lock out/Tag out of all energy sources is required prior to working on an electrical system. Any exceptions to the above-mentioned specifications will need to be made in writing prior to shut-down for our safety officer's evaluation. Drop hazard mitigation shall be implemented while working at heights.</div>
+          <div style="margin-top: 8px;">Safety is the utmost priority at ${companyConfig.fullName} and we reserve the right to stop work on any project that our technicians deem as unsafe. ${companyConfig.fullName} technicians follow NFPA 70E, ANSI, NETA, and OSHA safety guidelines. Lock out/Tag out of all energy sources is required prior to working on an electrical system. Any exceptions to the above-mentioned specifications will need to be made in writing prior to shut-down for our safety officer's evaluation. Drop hazard mitigation shall be implemented while working at heights.</div>
           <div style="margin-top: 12px; font-size: 1.0em; font-weight: bold; text-align: center;">END OF SAFETY POLICY</div>`;
 
-export const DEFAULT_PROPOSAL_SIGNER_NAME = "Brian Rodgers";
-export const DEFAULT_PROPOSAL_SIGNER_TITLE = "Chief Executive Officer";
+export const DEFAULT_PROPOSAL_SIGNER_NAME = companyConfig.signerName;
+export const DEFAULT_PROPOSAL_SIGNER_TITLE = companyConfig.signerTitle;
 
 /**
  * Top display block: letter number, date, and customer name/company/address.
@@ -147,7 +148,7 @@ export const DEFAULT_PROPOSAL_HEADER_HTML = `<div class="amp-section"><b style="
         </div>`;
 
 /** Footer line that follows the proposal main body (address / phone). */
-export const DEFAULT_PROPOSAL_FOOTER_HTML = `<div style="width:100%;font-size:0.85em;color:#555;border-top:1px solid #ccc;padding:4px 0;text-align:center;margin-top:12px;">P.O. Box 1725 | Decatur, Alabama 35602 | (256) 513-8255</div>`;
+export const DEFAULT_PROPOSAL_FOOTER_HTML = `<div style="width:100%;font-size:0.85em;color:#555;border-top:1px solid #ccc;padding:4px 0;text-align:center;margin-top:12px;">${companyConfig.addressFooter} | ${companyConfig.phone}</div>`;
 
 // ---------------------------------------------------------------------------
 // NETA standard options (editable list)

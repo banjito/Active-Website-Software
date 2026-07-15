@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { BRAND_COLOR, COMPANY_FULL_NAME, COMPANY_NAME, COMPANY_OPS_EMAIL, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -111,7 +112,7 @@ serve(async (req) => {
     
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background-color: #f26722; color: white; padding: 20px; text-align: center;">
+        <div style="background-color: ${BRAND_COLOR}; color: white; padding: 20px; text-align: center;">
           <h1 style="margin: 0; font-size: 24px;">Job Ready for Billing</h1>
         </div>
         
@@ -147,14 +148,14 @@ serve(async (req) => {
           
           <div style="margin-top: 20px; text-align: center;">
             <a href="${supabaseUrl.replace('/rest/v1', '')}/jobs/${jobData.id}" 
-               style="background-color: #f26722; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+               style="background-color: ${BRAND_COLOR}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
               View Job Details
             </a>
           </div>
         </div>
         
         <div style="padding: 20px; text-align: center; color: #666; font-size: 14px; border-top: 1px solid #eee;">
-          <p style="margin: 0;">This is an automated notification from AMP Quality Energy Services</p>
+          <p style="margin: 0;">This is an automated notification from ${COMPANY_FULL_NAME}</p>
           <p style="margin: 5px 0 0 0;">Generated on ${new Date().toLocaleString()}</p>
         </div>
       </div>
@@ -174,7 +175,7 @@ Action Required: This job is now ready for billing and invoicing.
 
 View Job Details: ${supabaseUrl.replace('/rest/v1', '')}/jobs/${jobData.id}
 
-This is an automated notification from AMP Quality Energy Services
+This is an automated notification from ${COMPANY_FULL_NAME}
 Generated on ${new Date().toLocaleString()}
     `
 
@@ -193,9 +194,9 @@ Generated on ${new Date().toLocaleString()}
     }
 
     // Verified sender in Postmark
-    const fromEmail = (Deno.env.get('POSTMARK_FROM') ?? 'john.chambers@ampqes.com').trim()
-    const fromHeader = fromEmail.includes('<') ? fromEmail : `AMP System <${fromEmail}>`
-    const toEmail = 'john.chambers@ampqes.com' // TESTING: Changed from accounting@ampqes.com
+    const fromEmail = DEFAULT_FROM_EMAIL
+    const fromHeader = fromEmail.includes('<') ? fromEmail : `${COMPANY_NAME} System <${fromEmail}>`
+    const toEmail = COMPANY_OPS_EMAIL // TESTING: Changed from accounting@ampqes.com
 
     const pmRes = await fetch('https://api.postmarkapp.com/email', {
       method: 'POST',

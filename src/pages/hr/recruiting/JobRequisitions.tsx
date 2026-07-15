@@ -749,7 +749,7 @@ export const JobRequisitions: React.FC = () => {
             Export CSV
           </Button>
           <Button
-            className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+            className="bg-brand hover:bg-brand/90 text-white"
             onClick={() => {
               resetForm();
               setIsCreateModalOpen(true);
@@ -849,7 +849,7 @@ export const JobRequisitions: React.FC = () => {
                   placeholder="Search by title, department, or location..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -857,7 +857,7 @@ export const JobRequisitions: React.FC = () => {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                  className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                 >
                   <option value="all">All Status</option>
                   <option value="draft">Draft</option>
@@ -870,7 +870,7 @@ export const JobRequisitions: React.FC = () => {
               <select
                 value={filterDepartment}
                 onChange={(e) => setFilterDepartment(e.target.value)}
-                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
               >
                 <option value="all">All Departments</option>
                 {departments.map((dept) => (
@@ -882,7 +882,7 @@ export const JobRequisitions: React.FC = () => {
               <select
                 value={filterPriority}
                 onChange={(e) => setFilterPriority(e.target.value)}
-                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
               >
                 <option value="all">All Priorities</option>
                 <option value="low">Low</option>
@@ -1404,7 +1404,7 @@ export const JobRequisitions: React.FC = () => {
                         key={uid}
                         className="flex items-center gap-2 p-2.5 border border-neutral-200 dark:border-dark-200 rounded-none bg-neutral-50 dark:bg-dark-100"
                       >
-                        <div className="w-6 h-6 rounded-none bg-[#f26722] text-white flex items-center justify-center text-xs font-bold shrink-0">
+                        <div className="w-6 h-6 rounded-none bg-brand text-white flex items-center justify-center text-xs font-bold shrink-0">
                           {idx + 1}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -1460,7 +1460,7 @@ export const JobRequisitions: React.FC = () => {
                       }
                       value={approverSearchTerm}
                       onChange={(e) => setApproverSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] text-sm"
+                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand text-sm"
                     />
                   </div>
                   {approverSearchTerm && (
@@ -1509,7 +1509,7 @@ export const JobRequisitions: React.FC = () => {
             <Button
               onClick={handleCreate}
               disabled={saving}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               {saving ? "Creating..." : "Create Requisition"}
             </Button>
@@ -1653,7 +1653,7 @@ export const JobRequisitions: React.FC = () => {
                           key={uid}
                           className="flex items-center gap-2 p-2.5 border border-neutral-200 dark:border-dark-200 rounded-none bg-neutral-50 dark:bg-dark-100"
                         >
-                          <div className="w-6 h-6 rounded-none bg-[#f26722] text-white flex items-center justify-center text-xs font-bold shrink-0">
+                          <div className="w-6 h-6 rounded-none bg-brand text-white flex items-center justify-center text-xs font-bold shrink-0">
                             {idx + 1}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -1708,7 +1708,7 @@ export const JobRequisitions: React.FC = () => {
                         }
                         value={approverSearchTerm}
                         onChange={(e) => setApproverSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722] text-sm"
+                        className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand text-sm"
                       />
                     </div>
                     {approverSearchTerm && (
@@ -1813,7 +1813,7 @@ export const JobRequisitions: React.FC = () => {
             <Button
               onClick={handleEdit}
               disabled={saving}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               {saving ? "Saving..." : "Save Changes"}
             </Button>
@@ -2034,7 +2034,7 @@ export const JobRequisitions: React.FC = () => {
                   setIsViewModalOpen(false);
                   openEditModal(selectedRequisition);
                 }}
-                className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                className="bg-brand hover:bg-brand/90 text-white"
               >
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
@@ -2064,7 +2064,7 @@ export const JobRequisitions: React.FC = () => {
         <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Send className="h-5 w-5 text-[#f26722]" />
+              <Send className="h-5 w-5 text-brand" />
               Submit for Approval
             </DialogTitle>
             <DialogDescription>
@@ -2088,7 +2088,7 @@ export const JobRequisitions: React.FC = () => {
                         key={uid}
                         className="flex items-center gap-2 p-3 border border-neutral-200 dark:border-dark-200 rounded-none bg-neutral-50 dark:bg-dark-100"
                       >
-                        <div className="w-7 h-7 rounded-none bg-[#f26722] text-white flex items-center justify-center text-xs font-bold">
+                        <div className="w-7 h-7 rounded-none bg-brand text-white flex items-center justify-center text-xs font-bold">
                           {idx + 1}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -2146,7 +2146,7 @@ export const JobRequisitions: React.FC = () => {
                     placeholder="Search by name or email..."
                     value={approverSearchTerm}
                     onChange={(e) => setApproverSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                    className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                   />
                 </div>
                 {approverSearchTerm && (
@@ -2196,7 +2196,7 @@ export const JobRequisitions: React.FC = () => {
             <Button
               onClick={handleSubmitForApproval}
               disabled={saving || selectedApprovers.length < 1}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               <Send className="mr-2 h-4 w-4" />
               {saving

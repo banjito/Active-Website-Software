@@ -567,7 +567,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="hidden print:block w-full h-1 bg-[#f26722] mb-4"></div>
+          <div className="hidden print:block w-full h-1 bg-brand mb-4"></div>
           <ReportHeader
             title={reportName}
             isAutoSaving={false}
@@ -589,7 +589,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
 
           {/* Job Information (mirrors MV VLF layout) */}
           <section className="mb-6 job-info-section">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden"></div>
+            <div className="w-full h-1 bg-brand mb-4 print:hidden"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:hidden">
               Job Details
             </h2>
@@ -823,7 +823,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
                 }}
               />
               {/* Print divider below job info */}
-              <div className="w-full h-1 bg-[#f26722] my-4"></div>
+              <div className="w-full h-1 bg-brand my-4"></div>
             </div>
           </section>
 
@@ -1212,7 +1212,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
             </div>
           </section>
           {/* Print divider between chart and reading */}
-          <div className="hidden print:block w-full h-1 bg-[#f26722] my-4"></div>
+          <div className="hidden print:block w-full h-1 bg-brand my-4"></div>
 
           {/* Removed print-only summary */}
 
@@ -1233,7 +1233,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
 
           {/* Ground Test Equipment - table lookup at bottom like other reports */}
           <section className="mb-20">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+            <div className="w-full h-1 bg-brand mb-4 print:hidden" />
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Ground Test Equipment
             </h2>

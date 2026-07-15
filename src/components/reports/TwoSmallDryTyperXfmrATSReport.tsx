@@ -1525,7 +1525,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
       </div>
       {/* End Print Header */}
       {/* Print-only job info — must sit directly after header (see PDF_PRINTING_SPACING_FIX.md / MediumVoltageVLFReport) */}
-      <div className="hidden print:block w-full h-1 bg-[#f26722] mb-1"></div>
+      <div className="hidden print:block w-full h-1 bg-brand mb-1"></div>
       <h2 className="hidden print:block text-xl font-semibold mb-1 text-black border-b border-black pb-1">
         Job Information
       </h2>
@@ -1552,7 +1552,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
 
           {/* On-screen job info only — print uses JobInfoPrintTable above */}
           <section className="mb-6 print:hidden">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
+            <div className="w-full h-1 bg-brand mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
               Job Information
             </h2>
@@ -1750,7 +1750,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           </section>
 
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
+            <div className="w-full h-1 bg-brand mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Nameplate Data
             </h2>
@@ -1912,7 +1912,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                         handleChange(e.target.name, e.target.value)
                       }
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-brand border-neutral-300 dark:border-neutral-700 focus:ring-brand"
                     />
                     <span className="ml-1 text-sm text-neutral-700 dark:text-white">
                       {opt}
@@ -1937,7 +1937,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                         handleChange(e.target.name, e.target.value)
                       }
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-brand border-neutral-300 dark:border-neutral-700 focus:ring-brand"
                     />
                     <span className="ml-1 text-sm text-neutral-700 dark:text-white">
                       {opt}
@@ -1985,7 +1985,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                         handleChange(e.target.name, e.target.value)
                       }
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-brand border-neutral-300 dark:border-neutral-700 focus:ring-brand"
                     />
                     <span className="ml-1 text-sm text-neutral-700 dark:text-white">
                       {opt}
@@ -2010,7 +2010,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                         handleChange(e.target.name, e.target.value)
                       }
                       disabled={!isEditing}
-                      className="form-radio h-4 w-4 text-[#f26722] border-neutral-300 dark:border-neutral-700 focus:ring-[#f26722]"
+                      className="form-radio h-4 w-4 text-brand border-neutral-300 dark:border-neutral-700 focus:ring-brand"
                     />
                     <span className="ml-1 text-sm text-neutral-700 dark:text-white">
                       {opt}
@@ -2379,7 +2379,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           </section>
 
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
+            <div className="w-full h-1 bg-brand mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Visual and Mechanical Inspection
             </h2>
@@ -2488,7 +2488,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           </section>
 
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
+            <div className="w-full h-1 bg-brand mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Measured Insulation Resistance
             </h2>
@@ -2828,7 +2828,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           </section>
 
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
+            <div className="w-full h-1 bg-brand mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical - Turns Ratio Tests
             </h2>
@@ -3173,7 +3173,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           </section>
 
           <section className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
+            <div className="w-full h-1 bg-brand mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Test Equipment Used
             </h2>
@@ -3405,7 +3405,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
           <section
             className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
           >
-            <div className="w-full h-1 bg-[#f26722] mb-4 print-divider"></div>
+            <div className="w-full h-1 bg-brand mb-4 print-divider"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Comments
             </h2>

@@ -302,7 +302,7 @@ export function StandardsComplianceUpdates() {
             Export
           </Button>
           <Button
-            className="bg-[#f26722] hover:bg-[#f26722]/90"
+            className="bg-brand hover:bg-brand/90"
             onClick={() =>
               activeTab === "standards"
                 ? setShowStandardModal(true)
@@ -743,7 +743,7 @@ export function StandardsComplianceUpdates() {
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-[#f26722] hover:bg-[#f26722]/90"
+                  className="bg-brand hover:bg-brand/90"
                 >
                   Add Standard
                 </Button>
@@ -862,7 +862,7 @@ export function StandardsComplianceUpdates() {
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-[#f26722] hover:bg-[#f26722]/90"
+                  className="bg-brand hover:bg-brand/90"
                 >
                   Add Requirement
                 </Button>

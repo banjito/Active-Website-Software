@@ -3655,9 +3655,9 @@ export default function OpportunityDetail() {
                   setShowAssignDraftPrompt(false);
                   setShowAssignExistingPicker(true);
                 }}
-                className="flex w-full items-center gap-3 rounded-none border border-neutral-200 dark:border-dark-300 p-4 text-left hover:border-[#f26722] hover:bg-orange-50 dark:hover:bg-dark-100 transition-colors"
+                className="flex w-full items-center gap-3 rounded-none border border-neutral-200 dark:border-dark-300 p-4 text-left hover:border-brand hover:bg-orange-50 dark:hover:bg-dark-100 transition-colors"
               >
-                <Building2 className="h-5 w-5 text-[#f26722] flex-shrink-0" />
+                <Building2 className="h-5 w-5 text-brand flex-shrink-0" />
                 <div>
                   <div className="font-medium text-neutral-900 dark:text-white">
                     Add to Existing Opportunity
@@ -3670,7 +3670,7 @@ export default function OpportunityDetail() {
               <button
                 type="button"
                 onClick={handlePromoteDraftToNew}
-                className="flex w-full items-center gap-3 rounded-none border border-neutral-200 dark:border-dark-300 p-4 text-left hover:border-[#f26722] hover:bg-orange-50 dark:hover:bg-dark-100 transition-colors"
+                className="flex w-full items-center gap-3 rounded-none border border-neutral-200 dark:border-dark-300 p-4 text-left hover:border-brand hover:bg-orange-50 dark:hover:bg-dark-100 transition-colors"
               >
                 <FilePlus2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
                 <div>
@@ -3978,7 +3978,7 @@ export default function OpportunityDetail() {
                     value={customerSearch}
                     onChange={(e) => setCustomerSearch(e.target.value)}
                     placeholder="Search customers (name or company)"
-                    className="mt-1 mb-2 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 mb-2 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                   />
                   {editFormData.customer_id && (
                     <div className="text-xs text-neutral-600 dark:text-neutral-400 mb-1">
@@ -3990,7 +3990,7 @@ export default function OpportunityDetail() {
                         "Unknown"}
                       <button
                         type="button"
-                        className="ml-2 underline text-[#f26722] hover:text-[#f26722]/90"
+                        className="ml-2 underline text-brand hover:text-brand/90"
                         onClick={() => {
                           setEditFormData((prev) => ({
                             ...prev,
@@ -4073,7 +4073,7 @@ export default function OpportunityDetail() {
                         contact_id: e.target.value || null,
                       }))
                     }
-                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                     disabled={!editFormData.customer_id}
                   >
                     <option
@@ -4108,7 +4108,7 @@ export default function OpportunityDetail() {
                     value={editFormData.title}
                     onChange={handleInputChange}
                     required
-                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                   />
                 </div>
 
@@ -4125,7 +4125,7 @@ export default function OpportunityDetail() {
                     value={editFormData.description}
                     onChange={handleInputChange}
                     rows={3}
-                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                   />
                 </div>
 
@@ -4143,7 +4143,7 @@ export default function OpportunityDetail() {
                       name="expected_value"
                       value={editFormData.expected_value}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                     />
                   </div>
 
@@ -4160,7 +4160,7 @@ export default function OpportunityDetail() {
                       name="probability"
                       value={editFormData.probability}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                       min="0"
                       max="100"
                     />
@@ -4181,7 +4181,7 @@ export default function OpportunityDetail() {
                       value={editFormData.status}
                       onChange={handleInputChange}
                       required
-                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                     >
                       <option
                         value="awareness"
@@ -4253,7 +4253,7 @@ export default function OpportunityDetail() {
                       name="opportunity_created_date"
                       value={editFormData.opportunity_created_date || ""}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                     />
                   </div>
 
@@ -4270,7 +4270,7 @@ export default function OpportunityDetail() {
                       name="letter_proposal_date"
                       value={editFormData.letter_proposal_date || ""}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                     />
                   </div>
 
@@ -4287,7 +4287,7 @@ export default function OpportunityDetail() {
                       name="proposal_due_date"
                       value={editFormData.proposal_due_date || ""}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                     />
                   </div>
                 </div>
@@ -4306,7 +4306,7 @@ export default function OpportunityDetail() {
                       value={editFormData.amp_division}
                       onChange={handleInputChange}
                       required
-                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                     >
                       <option
                         value=""
@@ -4365,7 +4365,7 @@ export default function OpportunityDetail() {
                       name="opportunity_type"
                       value={editFormData.opportunity_type}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                     >
                       <option
                         value="large_acceptance"
@@ -4419,7 +4419,7 @@ export default function OpportunityDetail() {
                       name="documents_stage"
                       value={editFormData.documents_stage || ""}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                     >
                       <option
                         value=""
@@ -4504,7 +4504,7 @@ export default function OpportunityDetail() {
                       name="selected_letter_proposal"
                       value={editFormData.selected_letter_proposal}
                       onChange={handleLetterProposalChange}
-                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                     >
                       <option
                         value=""
@@ -4554,7 +4554,7 @@ export default function OpportunityDetail() {
                     name="quoted_amount"
                     value={editFormData.quoted_amount}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                     placeholder="Enter NET 30 price"
                   />
                   {editFormData.selected_letter_proposal &&
@@ -4579,7 +4579,7 @@ export default function OpportunityDetail() {
                     value={editFormData.notes}
                     onChange={handleInputChange}
                     rows={3}
-                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                    className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                   />
                 </div>
 
@@ -4597,7 +4597,7 @@ export default function OpportunityDetail() {
                       name="reviewed_by"
                       value={editFormData.reviewed_by}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                      className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                       placeholder="Enter reviewer name"
                     />
                   </div>
@@ -4642,7 +4642,7 @@ export default function OpportunityDetail() {
                         name="jobsite_location"
                         value={editFormData.jobsite_location}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                        className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                         placeholder="Enter jobsite address"
                       />
                     </div>
@@ -4685,7 +4685,7 @@ export default function OpportunityDetail() {
                           name="estimated_start_date"
                           value={editFormData.estimated_start_date}
                           onChange={handleInputChange}
-                          className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                          className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                         />
                       </div>
 
@@ -4703,7 +4703,7 @@ export default function OpportunityDetail() {
                           value={editFormData.estimated_end_date}
                           onChange={handleInputChange}
                           min={editFormData.estimated_start_date || undefined}
-                          className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                          className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                         />
                       </div>
                     </div>
@@ -4721,7 +4721,7 @@ export default function OpportunityDetail() {
                         name="period_of_performance"
                         value={editFormData.period_of_performance}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                        className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                         placeholder="e.g., 2 weeks, 30 days"
                       />
                     </div>
@@ -4754,7 +4754,7 @@ export default function OpportunityDetail() {
                                         e.target.checked,
                                       )
                                     }
-                                    className="h-4 w-4 text-[#f26722] focus:ring-[#f26722] border-neutral-300 rounded"
+                                    className="h-4 w-4 text-brand focus:ring-brand border-neutral-300 rounded"
                                   />
                                   <span className="text-sm text-neutral-700 dark:text-white">
                                     {quote.title} (
@@ -4797,7 +4797,7 @@ export default function OpportunityDetail() {
                             name="total_man_hours"
                             value={editFormData.total_man_hours}
                             onChange={handleInputChange}
-                            className="block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-[#f26722] focus:border-[#f26722] dark:bg-dark-150 dark:text-white"
+                            className="block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                             placeholder="0"
                             min="0"
                             step="0.1"
@@ -4820,7 +4820,7 @@ export default function OpportunityDetail() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-4 py-2 text-sm font-medium text-white bg-[#f26722] border border-transparent rounded-none shadow-sm hover:bg-[#f26722]/90 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 text-sm font-medium text-white bg-brand border border-transparent rounded-none shadow-sm hover:bg-brand/90 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? "Saving..." : "Save"}
                   </button>
@@ -4966,7 +4966,7 @@ export default function OpportunityDetail() {
                               setActiveEstimateId(null);
                               setShowEstimate("new");
                             }}
-                            className="text-[#f26722] hover:underline font-medium"
+                            className="text-brand hover:underline font-medium"
                           >
                             Open Estimate
                           </button>{" "}
@@ -5059,7 +5059,7 @@ export default function OpportunityDetail() {
                                 setShowDivisionAnalytics(true);
                               }
                             }}
-                            className="text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90"
+                            className="text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90"
                           >
                             {formatDivisionName(opportunity.amp_division)}
                           </button>
@@ -5119,7 +5119,7 @@ export default function OpportunityDetail() {
                           onClick={() => setIsOpportunityTypeEditing(true)}
                           className="mt-1 text-left"
                         >
-                          <span className="text-neutral-900 dark:text-dark-900 hover:text-[#f26722] dark:hover:text-[#f26722]">
+                          <span className="text-neutral-900 dark:text-dark-900 hover:text-brand dark:hover:text-brand">
                             {(() => {
                               let type = (opportunity as any).opportunity_type;
 
@@ -5199,7 +5199,7 @@ export default function OpportunityDetail() {
                           onClick={() => setIsDocumentsStageEditing(true)}
                           className="mt-1 text-left"
                         >
-                          <span className="text-neutral-900 dark:text-dark-900 hover:text-[#f26722] dark:hover:text-[#f26722]">
+                          <span className="text-neutral-900 dark:text-dark-900 hover:text-brand dark:hover:text-brand">
                             {(opportunity as any).documents_stage ||
                               "Not specified"}
                             <ChevronDown className="ml-1 h-3 w-3 inline" />
@@ -5221,7 +5221,7 @@ export default function OpportunityDetail() {
                               </span>
                               <Link
                                 to={`/jobs/${opportunity.job_id}`}
-                                className="text-[#f26722] hover:text-[#f26722]/90 dark:text-[#f26722] dark:hover:text-[#f26722]/90 text-sm"
+                                className="text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90 text-sm"
                               >
                                 View Job #{opportunity.job_id}
                               </Link>
@@ -5359,10 +5359,10 @@ export default function OpportunityDetail() {
                             !opportunity.exclude_from_quoted_total,
                           )
                         }
-                        className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-none transition-colors focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 dark:focus:ring-offset-dark-150 ${
+                        className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-none transition-colors focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-dark-150 ${
                           opportunity.exclude_from_quoted_total
                             ? "bg-neutral-300 dark:bg-neutral-600"
-                            : "bg-[#f26722]"
+                            : "bg-brand"
                         }`}
                       >
                         <span
@@ -5529,7 +5529,7 @@ export default function OpportunityDetail() {
                                 ?.click()
                             }
                             disabled={uploadingFile}
-                            className="text-[#f26722] border-[#f26722] hover:bg-[#f26722] hover:text-white"
+                            className="text-brand border-brand hover:bg-brand hover:text-white"
                           >
                             <Upload className="h-4 w-4 mr-1" />
                             {uploadingFile ? "Uploading..." : "Upload"}
@@ -5549,7 +5549,7 @@ export default function OpportunityDetail() {
                                 <div className="flex-1">
                                   <button
                                     onClick={() => handlePreviewFile(agreement)}
-                                    className="text-sm font-medium text-[#f26722] hover:text-[#f26722]/90 hover:underline text-left"
+                                    className="text-sm font-medium text-brand hover:text-brand/90 hover:underline text-left"
                                   >
                                     {agreement.name}
                                   </button>
@@ -5609,7 +5609,7 @@ export default function OpportunityDetail() {
                                     link.click();
                                     document.body.removeChild(link);
                                   }}
-                                  className="p-1 h-6 w-6 text-[#f26722] hover:bg-[#f26722] hover:text-white"
+                                  className="p-1 h-6 w-6 text-brand hover:bg-brand hover:text-white"
                                   title="Download"
                                 >
                                   <Download className="h-3 w-3" />
@@ -5640,7 +5640,7 @@ export default function OpportunityDetail() {
                       <div className="mt-6">
                         <Button
                           variant="outline"
-                          className="bg-[#f26722] text-white hover:bg-[#f26722]/90"
+                          className="bg-brand text-white hover:bg-brand/90"
                           onClick={() => setShowJobDialog(true)}
                         >
                           View Associated Job
@@ -5678,7 +5678,7 @@ export default function OpportunityDetail() {
                         setShowEstimate("new");
                         setEstimateOpenSignal((s) => s + 1);
                       }}
-                      className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-none font-medium transition-colors"
+                      className="bg-brand text-white hover:bg-brand/90 px-4 py-2 rounded-none font-medium transition-colors"
                     >
                       Generate Estimate
                     </button>
@@ -5687,7 +5687,7 @@ export default function OpportunityDetail() {
                         setShowEstimate("view");
                         setEstimateOpenSignal((s) => s + 1);
                       }}
-                      className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-none font-medium transition-colors"
+                      className="bg-brand text-white hover:bg-brand/90 px-4 py-2 rounded-none font-medium transition-colors"
                     >
                       Show Estimates
                     </button>
@@ -5697,7 +5697,7 @@ export default function OpportunityDetail() {
                           current === "letters" ? current : "letters",
                         );
                       }}
-                      className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-none font-medium transition-colors"
+                      className="bg-brand text-white hover:bg-brand/90 px-4 py-2 rounded-none font-medium transition-colors"
                     >
                       Show Letter Proposals
                     </button>
@@ -5705,7 +5705,7 @@ export default function OpportunityDetail() {
                       onClick={() => {
                         setShowEstimate("letter");
                       }}
-                      className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-none font-medium transition-colors"
+                      className="bg-brand text-white hover:bg-brand/90 px-4 py-2 rounded-none font-medium transition-colors"
                     >
                       Generate Letter Proposal
                     </button>
@@ -5713,7 +5713,7 @@ export default function OpportunityDetail() {
                       onClick={() => {
                         setShowEstimate("combined-letter");
                       }}
-                      className="bg-[#f26722] text-white hover:bg-[#f26722]/90 px-4 py-2 rounded-none font-medium transition-colors"
+                      className="bg-brand text-white hover:bg-brand/90 px-4 py-2 rounded-none font-medium transition-colors"
                     >
                       Generate Combined Letter Proposal
                     </button>
@@ -5809,7 +5809,7 @@ export default function OpportunityDetail() {
                 <div className="mt-5 flex justify-end space-x-3">
                   <button
                     type="button"
-                    className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                    className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
                     onClick={() => setConfirmConvertToJobOpen(false)}
                   >
                     Cancel
@@ -5817,7 +5817,7 @@ export default function OpportunityDetail() {
                   <button
                     type="button"
                     disabled={isConvertingToJob}
-                    className="px-4 py-2 text-sm font-medium text-white bg-[#f26722] border border-transparent rounded-none shadow-sm hover:bg-[#f26722]/90 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 text-sm font-medium text-white bg-brand border border-transparent rounded-none shadow-sm hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleConvertToJob}
                   >
                     {isConvertingToJob ? "Creating..." : "Convert to Job"}
@@ -5882,7 +5882,7 @@ export default function OpportunityDetail() {
                           }
                           className={`flex w-full items-center justify-between gap-3 rounded-none border px-3 py-2 text-left transition-colors disabled:opacity-50 ${
                             isCurrent
-                              ? "border-[#f26722] bg-[#f26722]/5"
+                              ? "border-brand bg-brand/5"
                               : "border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-dark-200"
                           }`}
                         >
@@ -5901,7 +5901,7 @@ export default function OpportunityDetail() {
                               {lpAmount ? formatMoney(lpAmount) : "—"}
                             </span>
                             {isCurrent && (
-                              <Check className="h-4 w-4 text-[#f26722]" />
+                              <Check className="h-4 w-4 text-brand" />
                             )}
                           </div>
                         </button>
@@ -5913,7 +5913,7 @@ export default function OpportunityDetail() {
                 <div className="mt-5 flex justify-end">
                   <button
                     type="button"
-                    className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-[#f26722] focus:ring-offset-2"
+                    className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm hover:bg-neutral-50 dark:hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
                     onClick={() => setLetterPickerOpen(false)}
                   >
                     Cancel
@@ -6107,7 +6107,7 @@ export default function OpportunityDetail() {
                         previewFile &&
                         window.open(previewFile.file_url, "_blank")
                       }
-                      className="text-[#f26722] border-[#f26722] hover:bg-[#f26722] hover:text-white"
+                      className="text-brand border-brand hover:bg-brand hover:text-white"
                     >
                       <ExternalLink className="h-4 w-4 mr-1" />
                       Open in New Tab
@@ -6166,7 +6166,7 @@ export default function OpportunityDetail() {
                               previewFile &&
                               window.open(previewFile.file_url, "_blank")
                             }
-                            className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                            className="bg-brand hover:bg-brand/90 text-white"
                           >
                             <Download className="h-4 w-4 mr-2" />
                             Download File

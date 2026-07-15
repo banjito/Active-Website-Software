@@ -953,7 +953,7 @@ export const FormBuilder: React.FC = () => {
                           netaSectionInput.trim().toLowerCase(),
                       ) && (
                         <div
-                          className="px-3 py-2 cursor-pointer border-t border-neutral-100 bg-orange-50 text-sm font-medium text-[#f26722] hover:bg-orange-100 dark:border-neutral-700 dark:bg-orange-900/20"
+                          className="px-3 py-2 cursor-pointer border-t border-neutral-100 bg-orange-50 text-sm font-medium text-brand hover:bg-orange-100 dark:border-neutral-700 dark:bg-orange-900/20"
                           onClick={async () => {
                             const success = await createNetaSection(
                               netaSectionInput.trim(),
@@ -1133,7 +1133,7 @@ export const FormBuilder: React.FC = () => {
                   </h3>
                   <Button
                     onClick={() => setShowSidebar(true)}
-                    className="bg-[#f26722] hover:bg-[#e55611] border-none"
+                    className="bg-brand hover:bg-brand-dark border-none"
                     leftIcon={<PanelLeftOpen className="w-4 h-4" />}
                   >
                     Show Components
@@ -1276,7 +1276,7 @@ export const FormBuilder: React.FC = () => {
 
           <DragOverlay>
             {activeId ? (
-              <div className="bg-white dark:bg-dark-150 p-4 rounded-none shadow-lg border-2 border-[#f26722]">
+              <div className="bg-white dark:bg-dark-150 p-4 rounded-none shadow-lg border-2 border-brand">
                 Dragging...
               </div>
             ) : null}

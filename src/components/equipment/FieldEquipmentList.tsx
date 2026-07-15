@@ -43,6 +43,7 @@ import { PageLayout } from "../ui/PageLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/Tabs";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Switch } from "../ui/Switch";
+import { employeeEmailRegex, employeeNameEmailRegex } from "@/lib/companyConfig";
 
 interface SubComponent {
   qty: number;
@@ -881,7 +882,7 @@ export default function FieldEquipmentList() {
   const deriveNameFromEmail = (email?: string | null): string | null => {
     if (!email) return null;
     const lower = String(email).toLowerCase();
-    const m = lower.match(/^([a-z]+)\.([a-z]+)@ampqes\.com$/i);
+    const m = lower.match(employeeNameEmailRegex);
     if (!m) return null;
     const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
     return `${cap(m[1])} ${cap(m[2])}`;
@@ -1461,7 +1462,7 @@ export default function FieldEquipmentList() {
     const query = (userSearchQueries[equipmentId] || "").toLowerCase();
     return users.filter((u) => {
       const email = u.email?.toLowerCase() || "";
-      if (!/@ampqes\.com$/i.test(email)) return false;
+      if (!employeeEmailRegex.test(email)) return false;
       const name = displayUserName(u).toLowerCase();
       return email.includes(query) || name.includes(query);
     });
@@ -1649,12 +1650,12 @@ export default function FieldEquipmentList() {
             <div className="flex items-center gap-2">
               <Button
                 onClick={() => navigate(maintenancePath)}
-                className="group flex items-center gap-2 border border-[#f26722] bg-transparent text-[#f26722] hover:bg-[#f26722] hover:text-white"
+                className="group flex items-center gap-2 border border-brand bg-transparent text-brand hover:bg-brand hover:text-white"
                 leftIcon={
-                  <TriangleAlert className="h-4 w-4 text-[#f26722] group-hover:text-white" />
+                  <TriangleAlert className="h-4 w-4 text-brand group-hover:text-white" />
                 }
               >
-                <span className="text-[#f26722] group-hover:text-white">
+                <span className="text-brand group-hover:text-white">
                   Maintenance
                 </span>
               </Button>
@@ -1732,7 +1733,7 @@ export default function FieldEquipmentList() {
               onChange={(e) =>
                 setServiceFilter(e.target.value as ServiceFilter)
               }
-              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             >
               <option value="all">All equipment</option>
               <option value="in_service">In service only</option>
@@ -1745,7 +1746,7 @@ export default function FieldEquipmentList() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#f26722] min-w-[180px]"
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand min-w-[180px]"
             >
               <option value="">All categories</option>
               <option value="__uncategorized__">Uncategorized</option>
@@ -2142,7 +2143,7 @@ export default function FieldEquipmentList() {
                                   const tabButtonClass = (t: AssignedType) =>
                                     `flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-xs font-medium border-b-2 transition-colors ${
                                       activeAssignTab === t
-                                        ? "border-[#f26722] text-[#f26722]"
+                                        ? "border-brand text-brand"
                                         : "border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
                                     }`;
                                   return (
@@ -2546,7 +2547,7 @@ export default function FieldEquipmentList() {
                                       onClick={() => handleCheckOut(item.id)}
                                       className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100"
                                     >
-                                      <ArrowUp className="h-4 w-4 text-[#f26722]" />
+                                      <ArrowUp className="h-4 w-4 text-brand" />
                                       Check Out
                                     </button>
                                   )}
@@ -2562,7 +2563,7 @@ export default function FieldEquipmentList() {
                                     }}
                                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100"
                                   >
-                                    <Pencil className="h-4 w-4 text-[#f26722]" />
+                                    <Pencil className="h-4 w-4 text-brand" />
                                     Edit
                                   </button>
                                   <button
@@ -2930,7 +2931,7 @@ export default function FieldEquipmentList() {
                             in_service: checked,
                           }))
                         }
-                        checkedClassName="bg-[#f26722]"
+                        checkedClassName="bg-brand"
                       />
                     </div>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -3183,7 +3184,7 @@ export default function FieldEquipmentList() {
                               { ...emptySubComponent },
                             ]);
                           }}
-                          className="flex items-center gap-1 text-sm text-[#f26722] hover:text-[#e55611] font-medium"
+                          className="flex items-center gap-1 text-sm text-brand hover:text-brand-dark font-medium"
                         >
                           <Plus className="h-3.5 w-3.5" />
                           Add Sub Component
@@ -3233,7 +3234,7 @@ export default function FieldEquipmentList() {
                           notes: e.target.value,
                         }))
                       }
-                      className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#f26722]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
                       rows={3}
                       placeholder="Additional notes or comments..."
                     />
@@ -3642,7 +3643,7 @@ export default function FieldEquipmentList() {
                                 handleCheckOut(viewingEquipment.id);
                                 setViewingEquipment(null);
                               }}
-                              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-[#f26722]/10 text-[#f26722] hover:bg-[#f26722]/20 dark:bg-[#f26722]/20 dark:hover:bg-[#f26722]/30 rounded-none transition-colors"
+                              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-brand/10 text-brand hover:bg-brand/20 dark:bg-brand/20 dark:hover:bg-brand/30 rounded-none transition-colors"
                             >
                               <ArrowUp className="h-4 w-4" />
                               Check Out

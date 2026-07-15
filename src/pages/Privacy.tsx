@@ -1,4 +1,5 @@
 import React from "react";
+import { companyConfig } from "@/lib/companyConfig";
 
 const Privacy: React.FC = () => {
   return (
@@ -253,7 +254,8 @@ const Privacy: React.FC = () => {
               </li>
             </ul>
             <p className="mt-4">
-              To exercise these rights, please contact us at support@ampos.io.
+              To exercise these rights, please contact us at{" "}
+              {companyConfig.supportEmail}.
             </p>
           </section>
 
@@ -344,11 +346,11 @@ const Privacy: React.FC = () => {
               practices, please contact us at:
             </p>
             <p className="mt-2">
-              <strong>AMP OS</strong>
+              <strong>{companyConfig.name} OS</strong>
               <br />
-              Email: support@ampos.io
+              Email: {companyConfig.supportEmail}
               <br />
-              Website: https://ampos.io
+              Website: {companyConfig.productUrl}
             </p>
           </section>
 

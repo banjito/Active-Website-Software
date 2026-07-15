@@ -337,7 +337,7 @@ export const TerminationWorkflows: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-            <DoorOpen className="h-6 w-6 text-[#f26722]" />
+            <DoorOpen className="h-6 w-6 text-brand" />
             Termination Workflows
           </h1>
           <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
@@ -390,7 +390,7 @@ export const TerminationWorkflows: React.FC = () => {
         <CardContent className="p-0">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-[#f26722]" />
+              <Loader2 className="h-8 w-8 animate-spin text-brand" />
             </div>
           ) : filteredWorkflows.length === 0 ? (
             <div className="text-center py-12 px-4">
@@ -587,7 +587,7 @@ export const TerminationWorkflows: React.FC = () => {
                         is_template: e.target.checked,
                       }))
                     }
-                    className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                    className="rounded border-neutral-300 text-brand focus:ring-brand"
                   />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     Save as template
@@ -669,7 +669,7 @@ export const TerminationWorkflows: React.FC = () => {
                             onChange={(e) =>
                               updateTask(i, "required", e.target.checked)
                             }
-                            className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                            className="rounded border-neutral-300 text-brand focus:ring-brand"
                           />
                           <span className="text-sm text-neutral-600 dark:text-neutral-400">
                             Required
@@ -749,7 +749,7 @@ export const TerminationWorkflows: React.FC = () => {
                             onChange={(e) =>
                               updateDocument(i, "required", e.target.checked)
                             }
-                            className="rounded border-neutral-300 text-[#f26722] focus:ring-[#f26722]"
+                            className="rounded border-neutral-300 text-brand focus:ring-brand"
                           />
                           <span className="text-sm text-neutral-600 dark:text-neutral-400">
                             Required
@@ -819,7 +819,7 @@ export const TerminationWorkflows: React.FC = () => {
                   <ul className="space-y-2">
                     {selectedWorkflow.tasks.map((t) => (
                       <li key={t.id} className="flex items-start gap-2 text-sm">
-                        <span className="w-1.5 h-1.5 rounded-none bg-[#f26722] mt-2 flex-shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-none bg-brand mt-2 flex-shrink-0" />
                         <div>
                           <span className="text-neutral-900 dark:text-white">
                             {t.title}
@@ -858,7 +858,7 @@ export const TerminationWorkflows: React.FC = () => {
                   <ul className="space-y-2">
                     {selectedWorkflow.documents.map((d) => (
                       <li key={d.id} className="flex items-start gap-2 text-sm">
-                        <span className="w-1.5 h-1.5 rounded-none bg-[#f26722] mt-2 flex-shrink-0" />
+                        <span className="w-1.5 h-1.5 rounded-none bg-brand mt-2 flex-shrink-0" />
                         <div>
                           <span className="text-neutral-900 dark:text-white">
                             {d.name || "Unnamed"}

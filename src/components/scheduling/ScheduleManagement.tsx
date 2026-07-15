@@ -15,6 +15,7 @@ import { TechnicianCalendar } from "./TechnicianCalendar";
 import { Clock, Save, Plus, XCircle, Calendar } from "lucide-react";
 import dayjs from "dayjs";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { employeeNameEmailRegex } from "@/lib/companyConfig";
 
 // Interfaces
 interface ScheduleManagementProps {
@@ -60,7 +61,7 @@ export function ScheduleManagement({
   const deriveNameFromEmail = (email?: string | null): string | null => {
     if (!email) return null;
     const lower = String(email).toLowerCase();
-    const m = lower.match(/^([a-z]+)\.([a-z]+)@ampqes\.com$/i);
+    const m = lower.match(employeeNameEmailRegex);
     if (!m) return null;
     const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
     return `${cap(m[1])} ${cap(m[2])}`;

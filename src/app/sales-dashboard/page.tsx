@@ -42,7 +42,7 @@ export default function SalesDashboard() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
           <Card
-            className="border border-neutral-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors"
+            className="border border-neutral-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-brand dark:hover:border-amp-orange-600 transition-colors"
             onClick={() => navigate("/sales-dashboard/opportunities")}
           >
             <CardHeader className="p-6">
@@ -63,7 +63,7 @@ export default function SalesDashboard() {
           </Card>
 
           <Card
-            className="border border-neutral-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors"
+            className="border border-neutral-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-brand dark:hover:border-amp-orange-600 transition-colors"
             onClick={() => navigate("/sales-dashboard/customers")}
           >
             <CardHeader className="p-6">
@@ -84,7 +84,7 @@ export default function SalesDashboard() {
           </Card>
 
           <Card
-            className="border border-neutral-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-[#f26722] dark:hover:border-amp-orange-600 transition-colors"
+            className="border border-neutral-200 dark:border-dark-200 dark:bg-dark-150 cursor-pointer hover:border-brand dark:hover:border-amp-orange-600 transition-colors"
             onClick={() => navigate("/sales-dashboard/contacts")}
           >
             <CardHeader className="p-6">

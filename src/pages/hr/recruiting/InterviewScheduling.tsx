@@ -1139,7 +1139,7 @@ ${interviewFormData.overallFeedback || "N/A"}
             {viewMode === "list" ? "Calendar View" : "List View"}
           </Button>
           <Button
-            className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+            className="bg-brand hover:bg-brand/90 text-white"
             leftIcon={<Plus className="mr-2 h-4 w-4" />}
             onClick={() => {
               resetForm();
@@ -1372,7 +1372,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                             href={interview.video_link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[#f26722] hover:underline"
+                            className="text-brand hover:underline"
                           >
                             Join Meeting
                           </a>
@@ -1642,7 +1642,7 @@ ${interviewFormData.overallFeedback || "N/A"}
             <Button
               onClick={isEditModalOpen ? handleEdit : handleCreate}
               disabled={saving}
-              className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+              className="bg-brand hover:bg-brand/90 text-white"
             >
               {saving
                 ? "Saving..."
@@ -2005,7 +2005,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                         href={selectedInterview.video_link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#f26722] hover:underline"
+                        className="text-brand hover:underline"
                       >
                         {selectedInterview.video_link}
                       </a>
@@ -2211,7 +2211,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                   setIsViewModalOpen(false);
                   openEditModal(selectedInterview);
                 }}
-                className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                className="bg-brand hover:bg-brand/90 text-white"
               >
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
@@ -2244,7 +2244,7 @@ ${interviewFormData.overallFeedback || "N/A"}
               {selectedInterview &&
                 !getStageIsFinal(selectedInterview.interview_stage) && (
                   <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 px-4 py-2 rounded-none">
-                    <Timer className="h-5 w-5 text-[#f26722]" />
+                    <Timer className="h-5 w-5 text-brand" />
                     <span className="text-lg font-mono font-semibold text-neutral-900 dark:text-white">
                       {formatTime(elapsedTime)}
                     </span>
@@ -2607,8 +2607,8 @@ ${interviewFormData.overallFeedback || "N/A"}
                           }
                           className={`w-10 h-10 rounded-none border-2 flex items-center justify-center font-semibold transition-colors ${
                             interviewFormData.rating === rating
-                              ? "bg-[#f26722] border-[#f26722] text-white"
-                              : "border-neutral-300 text-neutral-700 dark:text-neutral-300 hover:border-[#f26722]"
+                              ? "bg-brand border-brand text-white"
+                              : "border-neutral-300 text-neutral-700 dark:text-neutral-300 hover:border-brand"
                           }`}
                         >
                           {rating}
@@ -2637,7 +2637,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                 <Button
                   onClick={handleSaveInterview}
                   disabled={saving}
-                  className="bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                  className="bg-brand hover:bg-brand/90 text-white"
                 >
                   {saving ? "Saving..." : "Complete Interview"}
                 </Button>

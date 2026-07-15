@@ -219,9 +219,9 @@ const SortableBlock: React.FC<SortableBlockProps> = ({
         style={blockWrapperStyle}
         className={`group relative bg-white dark:bg-dark-150 border rounded-none transition-all ${
           isSelected
-            ? "border-[#f26722] ring-2 ring-[#f26722]/20"
+            ? "border-brand ring-2 ring-brand/20"
             : isBlockResizing
-              ? "border-[#f26722] ring-2 ring-[#f26722]/20"
+              ? "border-brand ring-2 ring-brand/20"
               : "border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600"
         }`}
         onClick={onSelect}
@@ -276,8 +276,8 @@ const SortableBlock: React.FC<SortableBlockProps> = ({
             <div
               className={`w-1 h-12 rounded-none transition-colors ${
                 isBlockResizing
-                  ? "bg-[#f26722]"
-                  : "bg-transparent group-hover:bg-neutral-300 dark:group-hover:bg-neutral-500 group-hover/resize:bg-[#f26722]"
+                  ? "bg-brand"
+                  : "bg-transparent group-hover:bg-neutral-300 dark:group-hover:bg-neutral-500 group-hover/resize:bg-brand"
               }`}
             />
           </div>
@@ -285,7 +285,7 @@ const SortableBlock: React.FC<SortableBlockProps> = ({
 
         {/* Width badge during resize */}
         {isBlockResizing && (
-          <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-[#f26722] text-white text-xs rounded-none font-medium pointer-events-none whitespace-nowrap shadow-md">
+          <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-brand text-white text-xs rounded-none font-medium pointer-events-none whitespace-nowrap shadow-md">
             {blockWidth}
           </div>
         )}
@@ -521,8 +521,8 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
                   onClick={() => onUpdate({ ...imageConfig, width: value })}
                   className={`px-2.5 py-1 text-xs font-medium rounded-none transition-colors ${
                     currentWidth === value
-                      ? "bg-[#f26722] text-white"
-                      : "bg-white dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-600 hover:border-[#f26722] hover:text-[#f26722]"
+                      ? "bg-brand text-white"
+                      : "bg-white dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-600 hover:border-brand hover:text-brand"
                   }`}
                 >
                   {label}
@@ -540,7 +540,7 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
                     }
                   }}
                   placeholder="Custom %"
-                  className="w-20 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] outline-none"
+                  className="w-20 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-xs focus:ring-1 focus:ring-brand focus:border-brand outline-none"
                 />
                 <button
                   onClick={handleCustomWidthSubmit}
@@ -566,8 +566,8 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
                   onClick={() => onUpdate({ ...imageConfig, alignment: value })}
                   className={`p-1.5 rounded-none transition-colors ${
                     (imageConfig.alignment || "center") === value
-                      ? "bg-[#f26722] text-white"
-                      : "bg-white dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-600 hover:border-[#f26722] hover:text-[#f26722]"
+                      ? "bg-brand text-white"
+                      : "bg-white dark:bg-dark-100 text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-600 hover:border-brand hover:text-brand"
                   }`}
                   title={label}
                 >
@@ -618,7 +618,7 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
         >
           {isUploading ? (
             <div className="flex flex-col items-center gap-2 py-4">
-              <Loader2 className="w-8 h-8 text-[#f26722] animate-spin" />
+              <Loader2 className="w-8 h-8 text-brand animate-spin" />
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 Uploading image...
               </p>
@@ -632,7 +632,7 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
 
               {/* Browse button */}
               <div className="mb-4">
-                <label className="inline-flex items-center gap-2 px-4 py-2 bg-[#f26722] hover:bg-[#e55611] text-white font-medium rounded-none cursor-pointer transition-colors text-sm">
+                <label className="inline-flex items-center gap-2 px-4 py-2 bg-brand hover:bg-brand-dark text-white font-medium rounded-none cursor-pointer transition-colors text-sm">
                   <Upload className="w-4 h-4" />
                   Browse Files
                   <input
@@ -666,13 +666,13 @@ const ImageBlockEditor: React.FC<ImageBlockEditorProps> = ({
                       }
                     }}
                     placeholder="https://example.com/image.jpg"
-                    className="w-full pl-8 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:ring-1 focus:ring-[#f26722] focus:border-[#f26722] outline-none"
+                    className="w-full pl-8 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:ring-1 focus:ring-brand focus:border-brand outline-none"
                   />
                 </div>
                 <button
                   onClick={handleUrlSubmit}
                   disabled={!urlInput.trim()}
-                  className="px-3 py-2 bg-[#f26722] hover:bg-[#e55611] disabled:bg-neutral-300 disabled:dark:bg-neutral-600 text-white rounded-none transition-colors text-sm font-medium flex items-center gap-1"
+                  className="px-3 py-2 bg-brand hover:bg-brand-dark disabled:bg-neutral-300 disabled:dark:bg-neutral-600 text-white rounded-none transition-colors text-sm font-medium flex items-center gap-1"
                   title="Set image URL"
                 >
                   <Check className="w-4 h-4" />
@@ -722,7 +722,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
                 }
                 className={`px-2 py-0.5 text-xs rounded ${
                   headingConfig.level === level
-                    ? "bg-[#f26722] text-white"
+                    ? "bg-brand text-white"
                     : "bg-neutral-100 dark:bg-dark-100 text-neutral-700 dark:text-neutral-300"
                 }`}
               >
@@ -807,7 +807,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
               const newItems = [...(listConfig.items || []), { content: "" }];
               onUpdate({ ...listConfig, items: newItems });
             }}
-            className="flex items-center gap-1 text-sm text-[#f26722] hover:underline"
+            className="flex items-center gap-1 text-sm text-brand hover:underline"
           >
             <Plus className="w-4 h-4" /> Add item
           </button>
@@ -868,7 +868,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
                 }
                 className={`px-2 py-0.5 text-xs rounded ${
                   calloutConfig.type === type.value
-                    ? "bg-[#f26722] text-white"
+                    ? "bg-brand text-white"
                     : "bg-neutral-100 dark:bg-dark-100 text-neutral-700 dark:text-neutral-300"
                 }`}
               >
@@ -901,7 +901,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
       const stepConfig = config as StepBlockConfig;
       return (
         <div className="flex gap-4">
-          <div className="flex-shrink-0 w-10 h-10 bg-[#f26722] text-white rounded-none flex items-center justify-center font-bold text-lg">
+          <div className="flex-shrink-0 w-10 h-10 bg-brand text-white rounded-none flex items-center justify-center font-bold text-lg">
             {stepConfig.stepNumber || 1}
           </div>
           <div className="flex-1 space-y-2">
@@ -1049,7 +1049,7 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ block, onUpdate }) => {
               const newRows = [...rows, headers.map(() => "")];
               onUpdate({ ...tableConfig, rows: newRows });
             }}
-            className="flex items-center gap-1 text-sm text-[#f26722] hover:underline"
+            className="flex items-center gap-1 text-sm text-brand hover:underline"
           >
             <Plus className="w-4 h-4" /> Add row
           </button>
@@ -1417,7 +1417,7 @@ export const GuideBuilder: React.FC = () => {
             <Button
               onClick={handleSave}
               disabled={isSaving}
-              className="bg-[#f26722] hover:bg-[#e55611] text-white"
+              className="bg-brand hover:bg-brand-dark text-white"
             >
               <Save className="w-4 h-4 mr-2" />
               {isSaving ? "Saving..." : guideId ? "Update" : "Save"}
@@ -1541,7 +1541,7 @@ export const GuideBuilder: React.FC = () => {
                     }));
                     setIsDirty(true);
                   }}
-                  className="rounded border-neutral-300 dark:border-neutral-600 text-[#f26722] focus:ring-[#f26722]"
+                  className="rounded border-neutral-300 dark:border-neutral-600 text-brand focus:ring-brand"
                 />
                 <span className="text-sm text-neutral-700 dark:text-neutral-300">
                   Published
@@ -1603,7 +1603,7 @@ export const GuideBuilder: React.FC = () => {
               <div className="relative">
                 <button
                   onClick={() => setShowBlockLibrary(!showBlockLibrary)}
-                  className="w-full py-4 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-none flex items-center justify-center gap-2 text-neutral-500 dark:text-neutral-400 hover:border-[#f26722] hover:text-[#f26722] transition-colors"
+                  className="w-full py-4 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-none flex items-center justify-center gap-2 text-neutral-500 dark:text-neutral-400 hover:border-brand hover:text-brand transition-colors"
                 >
                   <Plus className="w-5 h-5" />
                   Add Content Block
@@ -1752,7 +1752,7 @@ const PreviewBlock: React.FC<{ block: ContentBlock }> = ({ block }) => {
       const sConfig = config as StepBlockConfig;
       return (
         <div className="flex gap-4">
-          <div className="flex-shrink-0 w-10 h-10 bg-[#f26722] text-white rounded-none flex items-center justify-center font-bold text-lg">
+          <div className="flex-shrink-0 w-10 h-10 bg-brand text-white rounded-none flex items-center justify-center font-bold text-lg">
             {sConfig.stepNumber}
           </div>
           <div>

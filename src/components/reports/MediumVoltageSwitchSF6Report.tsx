@@ -591,7 +591,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
         th, td { border: 1px solid black !important; padding: 2px 3px !important; font-size: 9px !important; text-align: center !important; }
 
         /* Remove colored backgrounds */
-        .bg-neutral-50, .dark\\:bg-dark-200, .bg-[#f26722] { background: white !important; }
+        .bg-neutral-50, .dark\\:bg-dark-200, .bg-brand { background: white !important; }
 
         /* Page setup */
         html, body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif !important; font-size: 9px !important; background: white !important; line-height: 1.1 !important; }
@@ -1491,7 +1491,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+        <div className="w-full h-1 bg-brand mb-4 print:hidden" />
 
         {/* Job Information */}
         <div className="mb-6">
@@ -1643,7 +1643,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
             />
           </div>
         </div>
-        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+        <div className="w-full h-1 bg-brand mb-4 print:hidden" />
 
         {/* Nameplate Data */}
         <div className="mb-6">
@@ -1861,7 +1861,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
             })()}
           </div>
         </div>
-        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+        <div className="w-full h-1 bg-brand mb-4 print:hidden" />
 
         {/* VFI Data */}
         <div className="mb-6">
@@ -1987,7 +1987,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
             })()}
           </div>
         </div>
-        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+        <div className="w-full h-1 bg-brand mb-4 print:hidden" />
 
         {/* Visual and Mechanical Inspection + Counter Readings */}
         <div className="mb-6">
@@ -2040,7 +2040,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                           )
                         }
                         disabled={!isEditMode}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       >
                         {RESULT_OPTIONS.map((opt) => (
                           <option key={opt} value={opt}>
@@ -2052,7 +2052,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
                     <td className="px-3 py-2">
                       <input
                         type="text"
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         readOnly={!isEditMode}
                       />
                     </td>
@@ -2299,7 +2299,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
             </table>
           </div>
         </section>
-        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+        <div className="w-full h-1 bg-brand mb-4 print:hidden" />
 
         {/* Electrical Tests - Temperature Corrected IR */}
         <section className="mb-6">
@@ -2475,7 +2475,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
             </table>
           </div>
         </section>
-        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+        <div className="w-full h-1 bg-brand mb-4 print:hidden" />
 
         {/* Electrical Tests - Contact Resistance */}
         <section className="mb-6">
@@ -2574,7 +2574,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
             </table>
           </div>
         </section>
-        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+        <div className="w-full h-1 bg-brand mb-4 print:hidden" />
 
         {/* Electrical Tests - Dielectric Withstand */}
         <section className="mb-6">
@@ -2777,7 +2777,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
             </table>
           </div>
         </section>
-        <div className="w-full h-1 bg-[#f26722] mb-4 print:hidden" />
+        <div className="w-full h-1 bg-brand mb-4 print:hidden" />
 
         {/* Test Equipment Used */}
         <div className="mb-6">

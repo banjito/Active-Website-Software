@@ -18,6 +18,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 const REPORT_TABLE = "low_voltage_panelboard_small_breaker_reports";
 const LEGACY_NORMALIZED_TABLE = "low_voltage_cable_test_3sets";
@@ -1120,7 +1121,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
           }
           readOnly={!isEditing || isReadOnly}
           placeholder={placeholder}
-          className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing || isReadOnly ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+          className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing || isReadOnly ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
         />
       </div>
     );
@@ -1199,7 +1200,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
           isPrintMode ? "block px-4 mb-2" : "hidden print:block px-4 mb-2"
         }
       >
-        <div className="w-full h-1 bg-[#f26722] mb-2"></div>
+        <div className="w-full h-1 bg-brand mb-2"></div>
         <h2 className="text-base font-bold mb-2 text-black pb-2">
           Job Information
         </h2>
@@ -1231,7 +1232,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
       >
         {/* Nameplate Data */}
         <div>
-          <div className="w-full h-1 bg-[#f26722] mb-2"></div>
+          <div className="w-full h-1 bg-brand mb-2"></div>
           <h2 className="text-base font-bold mb-2 text-black border-black pb-2">
             Nameplate Data
           </h2>
@@ -1341,7 +1342,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
 
         {/* Visual and Mechanical Inspection */}
         <div>
-          <div className="w-full h-1 bg-[#f26722] mb-2"></div>
+          <div className="w-full h-1 bg-brand mb-2"></div>
           <h2 className="text-base font-bold mb-2 text-black border-black pb-2">
             Visual and Mechanical Inspection
           </h2>
@@ -1377,7 +1378,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
 
         {/* Test Equipment Used */}
         <div>
-          <div className="w-full h-1 bg-[#f26722] mb-2"></div>
+          <div className="w-full h-1 bg-brand mb-2"></div>
           <h2 className="text-base font-bold mb-2 text-black border-black pb-2">
             Test Equipment Used
           </h2>
@@ -1432,7 +1433,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
         {/* Electrical Tests */}
         <div style={{ pageBreakInside: "auto" }}>
           <div
-            className="w-full h-1 bg-[#f26722] mb-1"
+            className="w-full h-1 bg-brand mb-1"
             style={{ pageBreakAfter: "avoid" }}
           ></div>
           <h2
@@ -1562,7 +1563,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
 
           {/* --- Job Information Section (Screen only) --- */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
               Job Information
             </h2>
@@ -1783,7 +1784,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
 
           {/* --- Nameplate Data Section (Screen only) --- */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 font-semibold pb-2">
               Nameplate Data
             </h2>
@@ -1989,7 +1990,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
 
           {/* --- Visual and Mechanical Inspection Section (Screen only) --- */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 font-semibold pb-2">
               Visual and Mechanical Inspection
             </h2>
@@ -2034,7 +2035,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                             )
                           }
                           disabled={!isEditing}
-                          className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         >
                           {visualInspectionResultOptions.map((opt) => (
                             <option key={opt} value={opt}>
@@ -2052,7 +2053,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
 
           {/* --- Test Equipment Used Section (Screen only) --- */}
           <div className="mb-6">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 font-semibold pb-2">
               Test Equipment Used
             </h2>
@@ -2396,7 +2397,7 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
 
           {/* --- Electrical Tests Section (Screen only) --- */}
           <div className="mb-6 electrical-tests-section">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
+            <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 font-semibold pb-2">
               Electrical Tests
             </h2>
@@ -2743,8 +2744,8 @@ if (typeof document !== "undefined") {
       .print\\:text-center { text-align: center !important; }
 
       /* Force orange dividers for sections */
-      .w-full.h-1.bg-\\[\\#f26722\\] {
-        background-color: #f26722 !important;
+      .w-full.h-1.bg-\\[\\${BRAND_COLOR}\\] {
+        background-color: ${BRAND_COLOR} !important;
         height: 4px !important;
       }
 

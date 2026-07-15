@@ -182,7 +182,7 @@ export const CityComparisonTable: React.FC = () => {
                 onClick={() => goToCity(r.division)}
                 className="group cursor-pointer !border-0 transition-colors hover:!bg-neutral-50 dark:hover:!bg-dark-200/60"
               >
-                <TableCell className="font-medium text-neutral-800 transition-colors group-hover:text-[#f26722] dark:text-white">
+                <TableCell className="font-medium text-neutral-800 transition-colors group-hover:text-brand dark:text-white">
                   {formatDivisionDisplay(r.division)}
                 </TableCell>
                 <TableCell className="text-center text-sm font-semibold tabular-nums text-neutral-900 dark:text-white">

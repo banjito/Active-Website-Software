@@ -21,20 +21,20 @@ import { AuthorAvatar } from "@/components/sales/AuthorAvatar";
 type FeedFilter = "all" | "call" | "email" | "in_person";
 
 const typeIcon = (type: string) => {
-  if (type === "call") return <Phone className="h-4 w-4 text-[#f26722]" />;
+  if (type === "call") return <Phone className="h-4 w-4 text-brand" />;
   if (type === "email")
     return <Mail className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
   return <UserIcon className="h-4 w-4 text-purple-600 dark:text-purple-400" />;
 };
 
 const typeBg = (type: string) => {
-  if (type === "call") return "bg-[#f26722]/10";
+  if (type === "call") return "bg-brand/10";
   if (type === "email") return "bg-blue-100 dark:bg-blue-900";
   return "bg-purple-100 dark:bg-purple-900";
 };
 
 const typeBadge = (type: string) => {
-  if (type === "call") return "bg-[#f26722]/10 text-[#f26722]";
+  if (type === "call") return "bg-brand/10 text-brand";
   if (type === "email")
     return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
   return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
@@ -86,12 +86,12 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
     <div className="bg-white dark:bg-dark-150 rounded-none shadow p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-[#f26722]" />
+          <MessageSquare className="h-5 w-5 text-brand" />
           Interactions Feed
         </h2>
         <button
           onClick={load}
-          className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-[#f26722] dark:text-neutral-400"
+          className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-brand dark:text-neutral-400"
           title="Refresh"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -107,7 +107,7 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
             onClick={() => setFilter(f)}
             className={`px-4 py-2 text-sm font-medium ${
               filter === f
-                ? "text-[#f26722] border-b-2 border-[#f26722]"
+                ? "text-brand border-b-2 border-brand"
                 : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
             }`}
           >
@@ -161,7 +161,7 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
                       <h3 className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                         <Link
                           to={`/sales-dashboard/customers/${item.customer_id}`}
-                          className="hover:text-[#f26722] hover:underline"
+                          className="hover:text-brand hover:underline"
                         >
                           {item.customer_name}
                         </Link>
@@ -170,7 +170,7 @@ export const InteractionsFeed: React.FC<{ limit?: number }> = ({
                             <span className="text-neutral-400"> · </span>
                             <Link
                               to={`/sales-dashboard/contacts/${item.contact_id}`}
-                              className="hover:text-[#f26722] hover:underline"
+                              className="hover:text-brand hover:underline"
                             >
                               {item.contact_display_name}
                             </Link>

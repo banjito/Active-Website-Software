@@ -158,7 +158,7 @@ const DailyReport: React.FC = () => {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#f26722] focus:border-[#f26722]"
+            className="rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-1.5 text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand focus:border-brand"
           />
         </div>
       </div>
@@ -166,7 +166,7 @@ const DailyReport: React.FC = () => {
       <Card className="border border-neutral-200 dark:border-neutral-700 dark:bg-dark-150">
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-medium text-neutral-900 dark:text-white flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-[#f26722]" />
+            <Calendar className="h-4 w-4 text-brand" />
             Estimates due{" "}
             {new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", {
               weekday: "short",
@@ -217,7 +217,7 @@ const DailyReport: React.FC = () => {
                           <div className="min-w-0 flex-1 flex items-center gap-2">
                             <FileText className="h-4 w-4 text-neutral-400 dark:text-neutral-500 flex-shrink-0" />
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-neutral-900 dark:text-white truncate group-hover:text-[#f26722]">
+                              <p className="text-sm font-medium text-neutral-900 dark:text-white truncate group-hover:text-brand">
                                 {item.title}
                               </p>
                               {item.customer_name && (
@@ -265,7 +265,7 @@ const DailyReport: React.FC = () => {
                           <div className="min-w-0 flex-1 flex items-center gap-2">
                             <FileText className="h-4 w-4 text-neutral-400 dark:text-neutral-500 flex-shrink-0" />
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-neutral-900 dark:text-white truncate group-hover:text-[#f26722]">
+                              <p className="text-sm font-medium text-neutral-900 dark:text-white truncate group-hover:text-brand">
                                 {item.title}
                               </p>
                               {item.customer_name && (

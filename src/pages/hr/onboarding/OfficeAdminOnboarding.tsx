@@ -134,7 +134,7 @@ export const OfficeAdminOnboarding: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-            <Briefcase className="h-8 w-8 text-[#f26722]" />
+            <Briefcase className="h-8 w-8 text-brand" />
             Office Admin Onboarding
           </h1>
           <p className="text-neutral-600 dark:text-neutral-400 mt-2">
@@ -170,7 +170,7 @@ export const OfficeAdminOnboarding: React.FC = () => {
                   }}
                   className={
                     statusFilter === status
-                      ? "bg-[#f26722] hover:bg-[#f26722]/90 text-white"
+                      ? "bg-brand hover:bg-brand/90 text-white"
                       : ""
                   }
                 >
@@ -225,7 +225,7 @@ export const OfficeAdminOnboarding: React.FC = () => {
                             e.stopPropagation();
                             setDetailTask(t);
                           }}
-                          className="text-left font-medium text-[#f26722] hover:underline flex items-center gap-1.5"
+                          className="text-left font-medium text-brand hover:underline flex items-center gap-1.5"
                         >
                           <Eye className="h-3.5 w-3.5 flex-shrink-0" />
                           {t.name}
@@ -320,7 +320,7 @@ export const OfficeAdminOnboarding: React.FC = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5 text-[#f26722]" />
+              <Briefcase className="h-5 w-5 text-brand" />
               {detailTask?.name}
             </DialogTitle>
             <DialogDescription>

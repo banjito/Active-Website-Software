@@ -1053,6 +1053,26 @@ export default function OpportunityDetail() {
     }
   }, [opportunity, loading, id]);
 
+  // Open a specific existing estimate in view mode when navigated with
+  // ?openEstimate=<estimateId> (used by the standalone Estimates list page).
+  useEffect(() => {
+    const openEstimateId = search.get("openEstimate");
+    if (openEstimateId && opportunity && !loading && id) {
+      setActiveEstimateId(openEstimateId);
+      setShowEstimate("view");
+      setEstimateOpenSignal((s) => s + 1);
+
+      // Clean the param so it does not re-trigger on refresh/navigation.
+      const params = new URLSearchParams(location.search);
+      params.delete("openEstimate");
+      const newSearch = params.toString();
+      navigate(location.pathname + (newSearch ? "?" + newSearch : ""), {
+        replace: true,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opportunity, loading, id]);
+
   // Read any existing merge lock for this group from localStorage
   useEffect(() => {
     if (id === "merge" && mergedIds.length > 0) {

@@ -2940,6 +2940,17 @@ export default function EstimateSheet({
     );
   };
 
+  // At-a-glance NET 30 breakdown of the FINAL (M-F) sell price into labor, travel, and materials.
+  // Each cost bucket is grossed up by the same final mark-up (÷0.96) and NET 30 term factor that
+  // produce the FINAL value, so the three rows add up to the NET 30 FINAL price (before mobilization).
+  const getNet30Breakdown = () => {
+    const markup = (v: number) => (v / 0.96) * paymentTermFactors.net30;
+    const materials = markup(getMaterialExpenseBase());
+    const labor = markup(getWorkLaborCost());
+    const travel = markup(getTotalTravelCost());
+    return { materials, labor, travel, total: materials + labor + travel };
+  };
+
   // Plain-text version of the quote terms block, for pasting straight into a quote.
   const buildQuoteText = () => {
     const f = getFinalValue();
@@ -13000,6 +13011,133 @@ export default function EstimateSheet({
                               </table>
                             </div>
                           </div>
+                        </div>
+
+                        {/* At-a-glance NET 30 cost breakdown (after final mark-up) */}
+                        <div
+                          style={{
+                            ...styles.summarySection,
+                            width: "100%",
+                            marginTop: "12px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontWeight: "bold",
+                              marginBottom: "5px",
+                            }}
+                          >
+                            NET 30 Cost Breakdown
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "12px",
+                              color: "var(--text-color)",
+                              opacity: 0.9,
+                              marginBottom: "8px",
+                            }}
+                          >
+                            Total pricing by category after final mark-up, in NET
+                            30 terms (excludes mobilization).
+                          </div>
+                          {(() => {
+                            const b = getNet30Breakdown();
+                            return (
+                              <table
+                                style={{
+                                  ...styles.table,
+                                  width: "50%",
+                                  minWidth: "260px",
+                                  fontSize: "12px",
+                                }}
+                              >
+                                <tbody>
+                                  <tr>
+                                    <td
+                                      style={{
+                                        ...styles.tableCell,
+                                        padding: "6px 8px",
+                                        textAlign: "left",
+                                      }}
+                                    >
+                                      Labor
+                                    </td>
+                                    <td
+                                      style={{
+                                        ...styles.tableCell,
+                                        padding: "6px 8px",
+                                        textAlign: "right",
+                                      }}
+                                    >
+                                      {formatCurrency(Math.ceil(b.labor))}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td
+                                      style={{
+                                        ...styles.tableCell,
+                                        padding: "6px 8px",
+                                        textAlign: "left",
+                                      }}
+                                    >
+                                      Travel
+                                    </td>
+                                    <td
+                                      style={{
+                                        ...styles.tableCell,
+                                        padding: "6px 8px",
+                                        textAlign: "right",
+                                      }}
+                                    >
+                                      {formatCurrency(Math.ceil(b.travel))}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td
+                                      style={{
+                                        ...styles.tableCell,
+                                        padding: "6px 8px",
+                                        textAlign: "left",
+                                      }}
+                                    >
+                                      Materials
+                                    </td>
+                                    <td
+                                      style={{
+                                        ...styles.tableCell,
+                                        padding: "6px 8px",
+                                        textAlign: "right",
+                                      }}
+                                    >
+                                      {formatCurrency(Math.ceil(b.materials))}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td
+                                      style={{
+                                        ...styles.tableCell,
+                                        padding: "6px 8px",
+                                        textAlign: "left",
+                                        fontWeight: "bold",
+                                      }}
+                                    >
+                                      Total
+                                    </td>
+                                    <td
+                                      style={{
+                                        ...styles.tableCell,
+                                        padding: "6px 8px",
+                                        textAlign: "right",
+                                        fontWeight: "bold",
+                                      }}
+                                    >
+                                      {formatCurrency(Math.ceil(b.total))}
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            );
+                          })()}
                         </div>
 
                         {/* Quantity for combined letter proposal */}

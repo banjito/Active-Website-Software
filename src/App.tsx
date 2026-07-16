@@ -38,6 +38,7 @@ import ResetPassword from "./components/auth/ResetPassword";
 import JobDiagnostics from "./components/jobs/JobDiagnostics";
 import OpportunityList from "./components/jobs/OpportunityList";
 import OpportunityDetail from "./components/jobs/OpportunityDetail";
+import EstimatesListPage from "./components/estimates/EstimatesListPage";
 import OpportunitiesCalendarView from "./components/jobs/OpportunitiesCalendarView";
 import { AuthProvider, RequireAuth } from "./lib/AuthContext";
 import { ThemeProvider } from "./components/theme/theme-provider";
@@ -1029,6 +1030,16 @@ function App() {
                       <RequireAuth>
                         <SalesLayout>
                           <OpportunitiesCalendarView />
+                        </SalesLayout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/sales-dashboard/estimates"
+                    element={
+                      <RequireAuth>
+                        <SalesLayout>
+                          <EstimatesListPage />
                         </SalesLayout>
                       </RequireAuth>
                     }

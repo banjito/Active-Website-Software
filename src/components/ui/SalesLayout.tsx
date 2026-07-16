@@ -60,6 +60,19 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
                 </Button>
               </Link>
 
+              <Link to="/sales-dashboard/estimates">
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start pl-0 text-left font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start ${
+                    location.pathname === "/sales-dashboard/estimates"
+                      ? "bg-black/5 dark:bg-dark-50"
+                      : ""
+                  }`}
+                >
+                  Estimates
+                </Button>
+              </Link>
+
               <Link to="/sales-dashboard/opportunities/calendar">
                 <Button
                   variant="ghost"

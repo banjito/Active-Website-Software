@@ -1197,7 +1197,9 @@ export default function PortalLanding() {
 
   return (
     <div className="min-h-screen bg-background text-foreground dark:bg-[#1e1e1e] dark:text-white">
-      <HeaderBar onEnterEditMode={handleEnterEditMode} />
+      <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-neutral-200 dark:border-dark-200">
+        <HeaderBar onEnterEditMode={handleEnterEditMode} />
+      </div>
 
       {/* Easter egg: click the ampOS logo and Brian slowly creeps in from the left */}
       <div

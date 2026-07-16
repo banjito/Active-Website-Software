@@ -125,6 +125,9 @@ export async function saveComponentDefaultOverride(
   if (sectionConfig.cellFormulas != null && typeof sectionConfig.cellFormulas === 'object') {
     defaultConfig.cellFormulas = sectionConfig.cellFormulas;
   }
+  if (sectionConfig.staticCells != null && typeof sectionConfig.staticCells === 'object') {
+    defaultConfig.staticCells = sectionConfig.staticCells;
+  }
   if (Array.isArray(sectionConfig.aboveTableFields)) {
     defaultConfig.aboveTableFields = sectionConfig.aboveTableFields;
   }

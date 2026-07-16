@@ -14,6 +14,7 @@ import {
   type ConditionalRowConfig,
   type ColumnConfig,
 } from "@/lib/types/customForms";
+import { packGroupedFieldGrid } from "@/lib/customForms/groupedFieldGrid";
 
 function isVisibleWhen(
   visibleWhen: Record<string, string | string[]> | undefined,
@@ -399,44 +400,43 @@ export const SectionContent: React.FC<{ section: SectionConfig }> = ({
               : section.layout === "two-column"
                 ? 2
                 : 1;
-    const fieldRows: (typeof section.fields)[] = [];
-    for (let i = 0; i < section.fields.length; i += columns) {
-      fieldRows.push(section.fields.slice(i, i + columns));
-    }
+    const gridRows = packGroupedFieldGrid(section.fields, columns);
     return (
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-700">
           <tbody>
-            {fieldRows.map((row, rowIdx) => (
+            {gridRows.map((row, rowIdx) => (
               <tr key={rowIdx}>
-                {row.map((field) => (
-                  <td
-                    key={field.id}
-                    className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 align-top"
-                  >
-                    <div className="text-xs font-medium text-neutral-500 dark:text-white uppercase mb-1">
-                      {field.label}
-                      {field.unit && (
-                        <span className="text-neutral-400 ml-1 normal-case">
-                          ({field.unit})
-                        </span>
-                      )}
-                      {field.required && (
-                        <span className="text-red-500 ml-1">*</span>
-                      )}
-                    </div>
-                    <div
-                      className={`${field.type === "textarea" ? "h-16" : "h-8"} bg-neutral-100 dark:bg-dark-100 rounded`}
-                    />
-                  </td>
-                ))}
-                {row.length < columns &&
-                  Array.from({ length: columns - row.length }).map((_, i) => (
+                {row.map((slot, slotIdx) =>
+                  slot.type === "empty" ? (
                     <td
-                      key={`empty-${i}`}
+                      key={`empty-${slotIdx}`}
                       className="border border-neutral-300 dark:border-neutral-700 px-3 py-2"
                     />
-                  ))}
+                  ) : (
+                    <td
+                      key={slot.field.id}
+                      colSpan={slot.colSpan > 1 ? slot.colSpan : undefined}
+                      rowSpan={slot.rowSpan > 1 ? slot.rowSpan : undefined}
+                      className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 align-top"
+                    >
+                      <div className="text-xs font-medium text-neutral-500 dark:text-white uppercase mb-1">
+                        {slot.field.label}
+                        {slot.field.unit && (
+                          <span className="text-neutral-400 ml-1 normal-case">
+                            ({slot.field.unit})
+                          </span>
+                        )}
+                        {slot.field.required && (
+                          <span className="text-red-500 ml-1">*</span>
+                        )}
+                      </div>
+                      <div
+                        className={`${slot.field.type === "textarea" ? "h-16" : "h-8"} bg-neutral-100 dark:bg-dark-100 rounded`}
+                      />
+                    </td>
+                  ),
+                )}
               </tr>
             ))}
           </tbody>

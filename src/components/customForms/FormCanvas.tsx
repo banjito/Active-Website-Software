@@ -31,6 +31,7 @@ import {
 } from "@/lib/types/customForms";
 import { getComponentDefinition } from "@/lib/customForms/componentLibrary";
 import { getSectionReferenceCode } from "@/lib/customForms/formCellResolution";
+import { packGroupedFieldGrid } from "@/lib/customForms/groupedFieldGrid";
 
 function isVisibleWhen(
   visibleWhen: Record<string, string | string[]> | undefined,
@@ -442,13 +443,30 @@ const SectionPreview: React.FC<{
                     );
                   }
 
+                  const staticText =
+                    col.field?.cellBehavior === "static"
+                      ? (section.staticCells?.[cellKey] ??
+                        col.field?.staticValue ??
+                        "")
+                      : "";
+
                   return (
                     <td
                       key={col.id}
                       className="border border-neutral-300 dark:border-neutral-600 px-2 py-1"
                       style={col.width ? { width: col.width } : undefined}
                     >
-                      {cellFormula ? (
+                      {col.field?.cellBehavior === "static" ? (
+                        <div className="h-6 flex items-center">
+                          <span className="text-[11px] text-neutral-700 dark:text-neutral-300 truncate">
+                            {staticText || (
+                              <span className="italic text-neutral-400">
+                                static
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                      ) : cellFormula ? (
                         <div className="h-6 bg-amber-50 dark:bg-amber-900/20 rounded px-1 flex items-center">
                           <span className="text-[10px] font-mono text-amber-700 dark:text-amber-300 truncate">
                             {cellFormula}
@@ -523,56 +541,55 @@ const SectionPreview: React.FC<{
                 ? 2
                 : 1;
     const code = getSectionReferenceCode(section);
-    const fieldRows: (typeof section.fields)[] = [];
-    for (let i = 0; i < section.fields.length; i += columns) {
-      fieldRows.push(section.fields.slice(i, i + columns));
-    }
+    const gridRows = packGroupedFieldGrid(section.fields, columns);
     const isJobInfo = section.componentType === "job-info";
     return (
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-xs">
           <tbody>
-            {fieldRows.map((row, rowIdx) => (
+            {gridRows.map((row, rowIdx) => (
               <tr key={rowIdx}>
-                {row.map((field) => (
-                  <td
-                    key={field.id}
-                    className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 align-top"
-                  >
-                    <div className="font-medium text-neutral-700 dark:text-neutral-300">
-                      {field.label}
-                      {field.unit && (
-                        <span className="text-neutral-500 ml-1">
-                          ({field.unit})
-                        </span>
-                      )}
-                      {field.required && (
-                        <span className="text-red-500 ml-1">*</span>
-                      )}
-                      {field.readOnly && (
-                        <span className="text-blue-500 ml-1 text-[10px]">
-                          (Auto)
-                        </span>
-                      )}
-                    </div>
-                    <div
-                      className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5"
-                      title={`${section.title || "Section"} » ${field.label || field.id}`}
-                    >
-                      {`{${code}.${field.id}}`}
-                    </div>
-                    <div
-                      className={`h-6 mt-1 ${field.readOnly ? "bg-neutral-200 dark:bg-dark-200" : "bg-neutral-100 dark:bg-dark-100"} rounded`}
-                    ></div>
-                  </td>
-                ))}
-                {row.length < columns &&
-                  Array.from({ length: columns - row.length }).map((_, i) => (
+                {row.map((slot, slotIdx) =>
+                  slot.type === "empty" ? (
                     <td
-                      key={`empty-${i}`}
+                      key={`empty-${slotIdx}`}
                       className="border border-neutral-300 dark:border-neutral-600 px-2 py-1"
                     ></td>
-                  ))}
+                  ) : (
+                    <td
+                      key={slot.field.id}
+                      colSpan={slot.colSpan > 1 ? slot.colSpan : undefined}
+                      rowSpan={slot.rowSpan > 1 ? slot.rowSpan : undefined}
+                      className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 align-top"
+                    >
+                      <div className="font-medium text-neutral-700 dark:text-neutral-300">
+                        {slot.field.label}
+                        {slot.field.unit && (
+                          <span className="text-neutral-500 ml-1">
+                            ({slot.field.unit})
+                          </span>
+                        )}
+                        {slot.field.required && (
+                          <span className="text-red-500 ml-1">*</span>
+                        )}
+                        {slot.field.readOnly && (
+                          <span className="text-blue-500 ml-1 text-[10px]">
+                            (Auto)
+                          </span>
+                        )}
+                      </div>
+                      <div
+                        className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5"
+                        title={`${section.title || "Section"} » ${slot.field.label || slot.field.id}`}
+                      >
+                        {`{${code}.${slot.field.id}}`}
+                      </div>
+                      <div
+                        className={`h-6 mt-1 ${slot.field.readOnly ? "bg-neutral-200 dark:bg-dark-200" : "bg-neutral-100 dark:bg-dark-100"} rounded`}
+                      ></div>
+                    </td>
+                  ),
+                )}
               </tr>
             ))}
           </tbody>

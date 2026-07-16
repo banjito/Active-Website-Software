@@ -90,8 +90,16 @@ export interface FieldConfig {
   /** For TEMPERATURE_HUMIDITY: default °F and % (e.g. 68, 50) */
   defaultTemperature?: number;
   defaultHumidity?: number;
-  /** For table cells: user entry, copy from another field, or calculate from formula */
-  cellBehavior?: 'user' | 'populate' | 'calculate';
+  /** For grouped-field grid layout: how many grid columns this field spans (default 1).
+   *  Lets the builder widen a field instead of relying on equal auto-sizing. */
+  colSpan?: number;
+  /** For grouped-field grid layout: how many grid rows this field spans (default 1). */
+  rowSpan?: number;
+  /** For table cells: a fixed value defined in the builder, shown read-only in the filler/print.
+   *  Used when cellBehavior is 'static'. */
+  staticValue?: string;
+  /** For table cells: user entry, copy from another field, calculate from formula, or a fixed static value */
+  cellBehavior?: 'user' | 'populate' | 'calculate' | 'static';
   /** When cellBehavior is 'populate', copy value from this field */
   populateFrom?: {
     sectionId: string;
@@ -195,6 +203,10 @@ export interface SectionConfig {
    *  e.g. { "row0_col-voltage": "{ND.ratedVoltage}", "row2_col-power": "{ND.ratedCurrent}*{ND.ratedVoltage}" }
    */
   cellFormulas?: Record<string, string>;
+
+  /** Per-cell static text for columns whose cellBehavior is 'static'. Key = "row{N}_{colId}".
+   *  Rendered read-only in the filler/print (e.g. NETA section numbers, fixed descriptions). */
+  staticCells?: Record<string, string>;
 
   /** Per-table print layout: margins and row height. Applied in preview and print/PDF. */
   printLayout?: TablePrintLayout;

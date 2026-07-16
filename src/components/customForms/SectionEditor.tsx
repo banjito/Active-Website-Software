@@ -220,6 +220,124 @@ interface SectionEditorProps {
   onToggleFormulaEditing?: () => void;
 }
 
+// ---------------------------------------------------------------------------
+// Conditional-table helpers: keep row/column `visibleWhen` references in sync
+// when a setting dropdown, its options, or option values change. Without this,
+// renaming/removing a setting value orphans every `visibleWhen` that pointed at
+// it, so those rows/columns can never match again and disappear permanently.
+// ---------------------------------------------------------------------------
+
+/** Number of grid columns a grouped-field component renders with (mirrors the filler). */
+function layoutColumnCount(section: SectionConfig): number {
+  if (section.componentType === ComponentType.JOB_INFO) return 5;
+  switch (section.layout) {
+    case "five-column":
+      return 5;
+    case "four-column":
+      return 4;
+    case "three-column":
+      return 3;
+    case "two-column":
+      return 2;
+    default:
+      return 1;
+  }
+}
+
+type VisibleWhen = Record<string, string | string[]>;
+
+/** Apply a transform to the value(s) a single settingId maps to in a visibleWhen map. */
+function transformVisibleWhen(
+  vw: VisibleWhen | undefined,
+  settingId: string,
+  transform: (values: string[]) => string[],
+): VisibleWhen | undefined {
+  if (!vw || !(settingId in vw)) return vw;
+  const current = vw[settingId];
+  const list = Array.isArray(current) ? current : current != null ? [current] : [];
+  const nextList = transform(list);
+  const next: VisibleWhen = { ...vw };
+  if (nextList.length === 0) {
+    delete next[settingId];
+  } else {
+    next[settingId] = nextList.length === 1 ? nextList[0] : nextList;
+  }
+  return next;
+}
+
+/** Map a visibleWhen transform across every conditional row and column of a section. */
+function remapSectionVisibleWhen(
+  section: SectionConfig,
+  settingId: string,
+  transform: (values: string[]) => string[],
+): Partial<SectionConfig> {
+  const update: Partial<SectionConfig> = {};
+  if (section.conditionalRows) {
+    update.conditionalRows = section.conditionalRows.map((r) => ({
+      ...r,
+      visibleWhen: transformVisibleWhen(r.visibleWhen, settingId, transform),
+    }));
+  }
+  if (section.columns) {
+    update.columns = section.columns.map((c) => ({
+      ...c,
+      visibleWhen: transformVisibleWhen(c.visibleWhen, settingId, transform),
+    }));
+  }
+  return update;
+}
+
+/** Rename an option value everywhere it is referenced (rows/columns/default). */
+function renameSettingValue(
+  section: SectionConfig,
+  settingId: string,
+  oldValue: string,
+  newValue: string,
+): Partial<SectionConfig> {
+  if (oldValue === newValue) return {};
+  return remapSectionVisibleWhen(section, settingId, (values) =>
+    values.map((v) => (v === oldValue ? newValue : v)),
+  );
+}
+
+/** Remove a deleted option value from every row/column visibleWhen. */
+function removeSettingValue(
+  section: SectionConfig,
+  settingId: string,
+  removedValue: string,
+): Partial<SectionConfig> {
+  return remapSectionVisibleWhen(section, settingId, (values) =>
+    values.filter((v) => v !== removedValue),
+  );
+}
+
+/** Strip a deleted setting's key from every row/column visibleWhen. */
+function removeSettingReferences(
+  section: SectionConfig,
+  settingId: string,
+): Partial<SectionConfig> {
+  const strip = (vw: VisibleWhen | undefined): VisibleWhen | undefined => {
+    if (!vw || !(settingId in vw)) return vw;
+    const next = { ...vw };
+    delete next[settingId];
+    return next;
+  };
+  const update: Partial<SectionConfig> = {};
+  if (section.conditionalRows) {
+    update.conditionalRows = section.conditionalRows.map((r) => ({
+      ...r,
+      visibleWhen: strip(r.visibleWhen),
+    }));
+  }
+  if (section.columns) {
+    update.columns = section.columns.map((c) => ({
+      ...c,
+      visibleWhen: strip(c.visibleWhen),
+    }));
+  }
+  return update;
+}
+
 export const SectionEditor: React.FC<SectionEditorProps> = ({
   section,
   allSections = [],
@@ -258,6 +376,21 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
     reordered.splice(newIndex, 0, moved);
     onUpdate({ columns: reordered });
   };
+
+  const handleFieldDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !section.fields) return;
+    const oldIndex = section.fields.findIndex((f) => f.id === active.id);
+    const newIndex = section.fields.findIndex((f) => f.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const reordered = [...section.fields];
+    const [moved] = reordered.splice(oldIndex, 1);
+    reordered.splice(newIndex, 0, moved);
+    onUpdate({ fields: reordered });
+  };
+
+  // Grid width for grouped fields – bounds the per-field "span columns" control
+  const fieldGridColumns = layoutColumnCount(section);
 
   const handleSaveAsDefault = async () => {
     if (!onSaveAsDefault) return;
@@ -807,108 +940,6 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                 </div>
               )}
 
-              {/* Print layout (table margins & row height) */}
-              <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3 mt-3">
-                <h4 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-                  Print layout
-                </h4>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
-                  Margins and row height for preview and print/PDF (e.g. 0, 4px,
-                  0.25in).
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
-                      Margin top
-                    </label>
-                    <Input
-                      value={section.printLayout?.marginTop ?? ""}
-                      onChange={(e) =>
-                        onUpdate({
-                          printLayout: {
-                            ...section.printLayout,
-                            marginTop: e.target.value || undefined,
-                          },
-                        })
-                      }
-                      placeholder="0"
-                      className="text-xs py-1"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
-                      Margin bottom
-                    </label>
-                    <Input
-                      value={section.printLayout?.marginBottom ?? ""}
-                      onChange={(e) =>
-                        onUpdate({
-                          printLayout: {
-                            ...section.printLayout,
-                            marginBottom: e.target.value || undefined,
-                          },
-                        })
-                      }
-                      placeholder="0"
-                      className="text-xs py-1"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
-                      Margin left
-                    </label>
-                    <Input
-                      value={section.printLayout?.marginLeft ?? ""}
-                      onChange={(e) =>
-                        onUpdate({
-                          printLayout: {
-                            ...section.printLayout,
-                            marginLeft: e.target.value || undefined,
-                          },
-                        })
-                      }
-                      placeholder="0"
-                      className="text-xs py-1"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
-                      Margin right
-                    </label>
-                    <Input
-                      value={section.printLayout?.marginRight ?? ""}
-                      onChange={(e) =>
-                        onUpdate({
-                          printLayout: {
-                            ...section.printLayout,
-                            marginRight: e.target.value || undefined,
-                          },
-                        })
-                      }
-                      placeholder="0"
-                      className="text-xs py-1"
-                    />
-                  </div>
-                </div>
-                <div className="mt-2">
-                  <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
-                    Row height
-                  </label>
-                  <Input
-                    value={section.printLayout?.rowHeight ?? ""}
-                    onChange={(e) =>
-                      onUpdate({
-                        printLayout: {
-                          ...section.printLayout,
-                          rowHeight: e.target.value || undefined,
-                        },
-                      })
-                    }
-                    placeholder="auto or e.g. 24px"
-                    className="text-xs py-1"
-                  />
-                </div>
-              </div>
 
               {/* Columns */}
               <div>
@@ -980,6 +1011,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                           currentSectionId={section.id}
                           allSections={allSections}
                           settingFields={section.settingFields}
+                          onSectionUpdate={onUpdate}
                           onUpdate={(updates) => {
                             const newColumns = [...(section.columns || [])];
                             newColumns[index] = { ...column, ...updates };
@@ -1069,7 +1101,10 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                                 const next = (
                                   section.settingFields || []
                                 ).filter((_, i) => i !== idx);
-                                onUpdate({ settingFields: next });
+                                onUpdate({
+                                  settingFields: next,
+                                  ...removeSettingReferences(section, sf.id),
+                                });
                               }}
                             >
                               <Trash2 className="w-3 h-3 text-red-500" />
@@ -1090,31 +1125,66 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                                 <Input
                                   value={opt.value}
                                   onChange={(e) => {
+                                    const newValue = e.target.value;
+                                    const oldValue = opt.value;
                                     const next = [
                                       ...(section.settingFields || []),
                                     ];
                                     const opts = [...(next[idx].options || [])];
                                     opts[oIdx] = {
                                       ...opt,
-                                      value: e.target.value,
-                                      label: e.target.value,
+                                      value: newValue,
+                                      label: newValue,
                                     };
-                                    next[idx] = { ...next[idx], options: opts };
-                                    onUpdate({ settingFields: next });
+                                    next[idx] = {
+                                      ...next[idx],
+                                      options: opts,
+                                      // Keep default pointed at the renamed value
+                                      defaultValue:
+                                        next[idx].defaultValue === oldValue
+                                          ? newValue
+                                          : next[idx].defaultValue,
+                                    };
+                                    // Cascade the rename into every row/column visibleWhen
+                                    onUpdate({
+                                      settingFields: next,
+                                      ...renameSettingValue(
+                                        section,
+                                        sf.id,
+                                        oldValue,
+                                        newValue,
+                                      ),
+                                    });
                                   }}
                                   className="w-16 h-5 text-[10px] py-0"
                                 />
                                 <button
                                   type="button"
                                   onClick={() => {
+                                    const removedValue = opt.value;
                                     const next = [
                                       ...(section.settingFields || []),
                                     ];
                                     const opts = next[idx].options.filter(
                                       (_, i) => i !== oIdx,
                                     );
-                                    next[idx] = { ...next[idx], options: opts };
-                                    onUpdate({ settingFields: next });
+                                    next[idx] = {
+                                      ...next[idx],
+                                      options: opts,
+                                      // Retarget default if it pointed at the removed value
+                                      defaultValue:
+                                        next[idx].defaultValue === removedValue
+                                          ? opts[0]?.value
+                                          : next[idx].defaultValue,
+                                    };
+                                    onUpdate({
+                                      settingFields: next,
+                                      ...removeSettingValue(
+                                        section,
+                                        sf.id,
+                                        removedValue,
+                                      ),
+                                    });
                                   }}
                                 >
                                   <X className="w-3 h-3" />
@@ -1373,34 +1443,47 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                   </Button>
                 </div>
 
-                <div className="space-y-2">
-                  {section.fields?.map((field, index) => (
-                    <FieldEditor
-                      key={field.id}
-                      field={field}
-                      onUpdate={(updates) => {
-                        const newFields = [...(section.fields || [])];
-                        newFields[index] = { ...field, ...updates };
-                        onUpdate({ fields: newFields });
-                      }}
-                      onAppendOption={
-                        onAppendOptionToSectionFieldsField
-                          ? () =>
-                              onAppendOptionToSectionFieldsField(
-                                section.id,
-                                index,
-                              )
-                          : undefined
-                      }
-                      onDelete={() => {
-                        const newFields = section.fields?.filter(
-                          (f) => f.id !== field.id,
-                        );
-                        onUpdate({ fields: newFields });
-                      }}
-                    />
-                  ))}
-                </div>
+                <DndContext
+                  sensors={columnSensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleFieldDragEnd}
+                >
+                  <SortableContext
+                    items={section.fields?.map((f) => f.id) || []}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-2">
+                      {section.fields?.map((field, index) => (
+                        <SortableFieldEditor
+                          key={field.id}
+                          id={field.id}
+                          field={field}
+                          gridColumns={fieldGridColumns}
+                          onUpdate={(updates) => {
+                            const newFields = [...(section.fields || [])];
+                            newFields[index] = { ...field, ...updates };
+                            onUpdate({ fields: newFields });
+                          }}
+                          onAppendOption={
+                            onAppendOptionToSectionFieldsField
+                              ? () =>
+                                  onAppendOptionToSectionFieldsField(
+                                    section.id,
+                                    index,
+                                  )
+                              : undefined
+                          }
+                          onDelete={() => {
+                            const newFields = section.fields?.filter(
+                              (f) => f.id !== field.id,
+                            );
+                            onUpdate({ fields: newFields });
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
               </div>
             </div>
           </div>
@@ -1491,112 +1574,6 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
           </div>
         )}
 
-        {/* Print layout for sections that render a table but don't have Table Settings (fields / single field / checklist) */}
-        {!section.columns &&
-          (section.fields?.length ||
-            section.field ||
-            section.checklistItems?.length) && (
-            <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3 mt-3">
-              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-2">
-                Print layout
-              </h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
-                Table margins and row height for preview and print/PDF.
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
-                    Margin top
-                  </label>
-                  <Input
-                    value={section.printLayout?.marginTop ?? ""}
-                    onChange={(e) =>
-                      onUpdate({
-                        printLayout: {
-                          ...section.printLayout,
-                          marginTop: e.target.value || undefined,
-                        },
-                      })
-                    }
-                    placeholder="0"
-                    className="text-xs py-1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
-                    Margin bottom
-                  </label>
-                  <Input
-                    value={section.printLayout?.marginBottom ?? ""}
-                    onChange={(e) =>
-                      onUpdate({
-                        printLayout: {
-                          ...section.printLayout,
-                          marginBottom: e.target.value || undefined,
-                        },
-                      })
-                    }
-                    placeholder="0"
-                    className="text-xs py-1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
-                    Margin left
-                  </label>
-                  <Input
-                    value={section.printLayout?.marginLeft ?? ""}
-                    onChange={(e) =>
-                      onUpdate({
-                        printLayout: {
-                          ...section.printLayout,
-                          marginLeft: e.target.value || undefined,
-                        },
-                      })
-                    }
-                    placeholder="0"
-                    className="text-xs py-1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
-                    Margin right
-                  </label>
-                  <Input
-                    value={section.printLayout?.marginRight ?? ""}
-                    onChange={(e) =>
-                      onUpdate({
-                        printLayout: {
-                          ...section.printLayout,
-                          marginRight: e.target.value || undefined,
-                        },
-                      })
-                    }
-                    placeholder="0"
-                    className="text-xs py-1"
-                  />
-                </div>
-              </div>
-              <div className="mt-2">
-                <label className="block text-xs text-neutral-500 dark:text-neutral-400 mb-0.5">
-                  Row height
-                </label>
-                <Input
-                  value={section.printLayout?.rowHeight ?? ""}
-                  onChange={(e) =>
-                    onUpdate({
-                      printLayout: {
-                        ...section.printLayout,
-                        rowHeight: e.target.value || undefined,
-                      },
-                    })
-                  }
-                  placeholder="auto or e.g. 24px"
-                  className="text-xs py-1"
-                />
-              </div>
-            </div>
-          )}
       </div>
     </div>
   );
@@ -1612,6 +1589,7 @@ const SortableColumnEditor: React.FC<{
   onUpdate: (updates: Partial<ColumnConfig>) => void;
   onDelete: () => void;
   onAppendOption?: () => void;
+  onSectionUpdate?: (updates: Partial<SectionConfig>) => void;
 }> = ({ id, ...rest }) => {
   const {
     attributes,
@@ -1638,6 +1616,40 @@ const SortableColumnEditor: React.FC<{
   );
 };
 
+/** Sortable wrapper for FieldEditor – provides drag handle and transform */
+const SortableFieldEditor: React.FC<{
+  id: string;
+  field: FieldConfig;
+  gridColumns: number;
+  onUpdate: (updates: Partial<FieldConfig>) => void;
+  onDelete: () => void;
+  onAppendOption?: () => void;
+}> = ({ id, ...rest }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <FieldEditor
+        dragHandleProps={{ ...attributes, ...listeners }}
+        {...rest}
+      />
+    </div>
+  );
+};
+
 /**
  * Column Editor for table columns – includes "Populate from field" / "Calculate from formula"
  * and for conditional tables: "Show when" (column visibility by setting).
@@ -1651,6 +1663,8 @@ const ColumnEditor: React.FC<{
   onDelete: () => void;
   onAppendOption?: () => void;
   dragHandleProps?: Record<string, unknown>;
+  /** Update section-level fields (used to store per-row static cell text). */
+  onSectionUpdate?: (updates: Partial<SectionConfig>) => void;
 }> = ({
   column,
   currentSectionId,
@@ -1660,6 +1674,7 @@ const ColumnEditor: React.FC<{
   onDelete,
   onAppendOption,
   dragHandleProps,
+  onSectionUpdate,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const field = column.field;
@@ -1668,7 +1683,29 @@ const ColumnEditor: React.FC<{
     allSections /* include current section so user can pick column+row from same table */,
   );
 
-  const handleBehaviorChange = (next: "user" | "populate" | "calculate") => {
+  // Parent section – used to enumerate rows and store per-row static text.
+  const parentSection = allSections.find((s) => s.id === currentSectionId);
+  const staticRows: { index: number; label: string }[] = parentSection
+    ?.conditionalRows?.length
+    ? parentSection.conditionalRows.map((r, i) => ({
+        index: i,
+        label: r.label || `Row ${i + 1}`,
+      }))
+    : Array.from({ length: parentSection?.rows ?? 0 }).map((_, i) => ({
+        index: i,
+        label: `Row ${i + 1}`,
+      }));
+  const setStaticCell = (rowIndex: number, val: string) => {
+    const key = `row${rowIndex}_${column.id}`;
+    const next = { ...(parentSection?.staticCells ?? {}) };
+    if (val === "") delete next[key];
+    else next[key] = val;
+    onSectionUpdate?.({ staticCells: next });
+  };
+
+  const handleBehaviorChange = (
+    next: "user" | "populate" | "calculate" | "static",
+  ) => {
     onUpdate({
       field: {
         ...field,
@@ -1681,6 +1718,11 @@ const ColumnEditor: React.FC<{
         ...(next === "populate" && { calculation: undefined }),
         ...(next === "calculate" && {
           populateFrom: undefined,
+          readOnly: true,
+        }),
+        ...(next === "static" && {
+          populateFrom: undefined,
+          calculation: undefined,
           readOnly: true,
         }),
       },
@@ -1874,7 +1916,62 @@ const ColumnEditor: React.FC<{
                   <Calculator className="w-3.5 h-3.5 text-neutral-500" />
                   <span className="text-xs">Calculate from formula</span>
                 </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name={`cell-${column.id}`}
+                    checked={behavior === "static"}
+                    onChange={() => handleBehaviorChange("static")}
+                    className="rounded"
+                  />
+                  <Type className="w-3.5 h-3.5 text-neutral-500" />
+                  <span className="text-xs">Static text</span>
+                </label>
               </div>
+
+              {behavior === "static" && (
+                <div className="mt-2 space-y-2 pt-2 border-t border-neutral-200 dark:border-neutral-600">
+                  <div>
+                    <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">
+                      Same text for every row
+                    </label>
+                    <Input
+                      value={field.staticValue ?? ""}
+                      onChange={(e) =>
+                        onUpdate({
+                          field: { ...field, staticValue: e.target.value },
+                        })
+                      }
+                      placeholder="e.g. Satisfactory"
+                      className="text-xs"
+                    />
+                  </div>
+                  {staticRows.length > 0 && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-500 dark:text-neutral-400 block">
+                        Or set a value per row (overrides the above)
+                      </label>
+                      {staticRows.map((r) => (
+                        <div key={r.index} className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-neutral-500 dark:text-neutral-400 w-24 shrink-0 truncate">
+                            {r.label}
+                          </span>
+                          <Input
+                            value={
+                              parentSection?.staticCells?.[
+                                `row${r.index}_${column.id}`
+                              ] ?? ""
+                            }
+                            onChange={(e) => setStaticCell(r.index, e.target.value)}
+                            placeholder="—"
+                            className="flex-1 text-xs h-7"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {behavior === "user" && (
                 <div className="mt-2 space-y-2 pt-2 border-t border-neutral-200 dark:border-neutral-600">
@@ -2139,7 +2236,20 @@ const FieldEditor: React.FC<{
   onAppendOption?: () => void;
   hideDelete?: boolean;
   compact?: boolean;
-}> = ({ field, onUpdate, onDelete, onAppendOption, hideDelete, compact }) => {
+  /** Drag handle props from the sortable wrapper (grouped-field reordering) */
+  dragHandleProps?: Record<string, unknown>;
+  /** Grid width of the parent grouped-field component; enables the span controls */
+  gridColumns?: number;
+}> = ({
+  field,
+  onUpdate,
+  onDelete,
+  onAppendOption,
+  hideDelete,
+  compact,
+  dragHandleProps,
+  gridColumns,
+}) => {
   const [isExpanded, setIsExpanded] = useState(!compact);
   const [addOptionCooldown, setAddOptionCooldown] = useState(false);
 
@@ -2163,6 +2273,15 @@ const FieldEditor: React.FC<{
   return (
     <div className="bg-neutral-50 dark:bg-dark-100 rounded p-3 space-y-2">
       <div className="flex items-center justify-between">
+        {dragHandleProps && (
+          <button
+            type="button"
+            className="cursor-grab active:cursor-grabbing p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 touch-none"
+            {...dragHandleProps}
+          >
+            <GripVertical className="w-3.5 h-3.5" />
+          </button>
+        )}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="flex-1 text-left text-sm font-medium text-neutral-900 dark:text-white"
@@ -2301,6 +2420,48 @@ const FieldEditor: React.FC<{
               Required
             </label>
           </div>
+
+          {/* Field size within the component grid (width = columns spanned, height = rows spanned) */}
+          {gridColumns != null && gridColumns > 1 && (
+            <div className="pt-2 border-t dark:border-neutral-700 grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">
+                  Width (columns)
+                </label>
+                <select
+                  value={field.colSpan ?? 1}
+                  onChange={(e) =>
+                    onUpdate({
+                      colSpan: Math.max(1, parseInt(e.target.value, 10) || 1),
+                    })
+                  }
+                  className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none focus:ring-2 focus:ring-brand focus:border-brand text-neutral-900 dark:text-white"
+                >
+                  {Array.from({ length: gridColumns }).map((_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {i + 1} of {gridColumns}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">
+                  Height (rows)
+                </label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={field.rowSpan ?? 1}
+                  onChange={(e) =>
+                    onUpdate({
+                      rowSpan: Math.max(1, parseInt(e.target.value, 10) || 1),
+                    })
+                  }
+                  className="text-xs"
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

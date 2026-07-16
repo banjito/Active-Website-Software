@@ -23,6 +23,7 @@ import {
 } from "@/lib/types/customForms";
 import { fahrenheitToCelsius, getTCF } from "@/lib/utils/temperatureCorrection";
 import { getCellValue } from "@/lib/customForms/formCellResolution";
+import { packGroupedFieldGrid } from "@/lib/customForms/groupedFieldGrid";
 import { EquipmentAutocomplete } from "@/components/equipment/EquipmentAutocomplete";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
@@ -712,6 +713,25 @@ export const CustomFormFiller: React.FC = () => {
     const readOnlyClasses =
       "w-full px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-600 rounded bg-neutral-50 dark:bg-dark-200 text-neutral-700 dark:text-neutral-300";
 
+    // Static text: a fixed builder-defined value, shown read-only. Per-cell text
+    // (staticCells[row{N}_{colId}]) wins over a single column-wide field.staticValue.
+    if (field.cellBehavior === "static") {
+      let staticText: string = field.staticValue ?? "";
+      if (cellContext?.colId != null) {
+        const sec = template?.structure?.sections?.find(
+          (s) => s.id === cellContext.baseSectionId,
+        );
+        const cellVal =
+          sec?.staticCells?.[`row${cellContext.rowIndex}_${cellContext.colId}`];
+        if (cellVal != null && cellVal !== "") staticText = cellVal;
+      }
+      return (
+        <span className="block w-full px-2 py-1.5 text-sm text-neutral-900 dark:text-white">
+          {staticText}
+        </span>
+      );
+    }
+
     switch (field.type) {
       case "textarea":
         return (
@@ -901,10 +921,7 @@ export const CustomFormFiller: React.FC = () => {
                 : section.layout === "two-column"
                   ? 2
                   : 1;
-      const fieldRows: (typeof section.fields)[] = [];
-      for (let i = 0; i < section.fields.length; i += columns) {
-        fieldRows.push(section.fields.slice(i, i + columns));
-      }
+      const gridRows = packGroupedFieldGrid(section.fields, columns);
       const colWidth = `${100 / columns}%`;
       return (
         <div className="overflow-x-auto" style={wrapperStyle}>
@@ -918,34 +935,36 @@ export const CustomFormFiller: React.FC = () => {
               ))}
             </colgroup>
             <tbody>
-              {fieldRows.map((row, rowIdx) => (
+              {gridRows.map((row, rowIdx) => (
                 <tr key={rowIdx} style={rowStyle}>
-                  {row.map((field) => (
-                    <td
-                      key={field.id}
-                      className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 align-top"
-                    >
-                      <div className="text-xs font-medium text-neutral-500 dark:text-white uppercase mb-1">
-                        {field.label}
-                        {field.unit && (
-                          <span className="text-neutral-400 ml-1 normal-case">
-                            ({field.unit})
-                          </span>
-                        )}
-                        {field.required && (
-                          <span className="text-red-500 ml-1">*</span>
-                        )}
-                      </div>
-                      {renderField(section.id, field)}
-                    </td>
-                  ))}
-                  {row.length < columns &&
-                    Array.from({ length: columns - row.length }).map((_, i) => (
+                  {row.map((slot, slotIdx) =>
+                    slot.type === "empty" ? (
                       <td
-                        key={`empty-${i}`}
+                        key={`empty-${slotIdx}`}
                         className="border border-neutral-300 dark:border-neutral-600 px-3 py-2"
                       ></td>
-                    ))}
+                    ) : (
+                      <td
+                        key={slot.field.id}
+                        colSpan={slot.colSpan > 1 ? slot.colSpan : undefined}
+                        rowSpan={slot.rowSpan > 1 ? slot.rowSpan : undefined}
+                        className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 align-top"
+                      >
+                        <div className="text-xs font-medium text-neutral-500 dark:text-white uppercase mb-1">
+                          {slot.field.label}
+                          {slot.field.unit && (
+                            <span className="text-neutral-400 ml-1 normal-case">
+                              ({slot.field.unit})
+                            </span>
+                          )}
+                          {slot.field.required && (
+                            <span className="text-red-500 ml-1">*</span>
+                          )}
+                        </div>
+                        {renderField(section.id, slot.field)}
+                      </td>
+                    ),
+                  )}
                 </tr>
               ))}
             </tbody>

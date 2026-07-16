@@ -1,33 +1,31 @@
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import { useSupabaseHealth } from "@/hooks/useSupabaseHealth";
-import { useSiteLogos } from "@/services/siteThemeService";
 
 /**
- * Full-screen maintenance overlay shown whenever the app can't reach Supabase
- * — e.g. the database is being upgraded, the project is restarting/paused, or
- * the user has lost their internet connection. It auto-recovers: the underlying
- * health hook keeps polling and the overlay disappears the moment the backend
- * responds again.
+ * Non-blocking connection status toast, shown whenever the app can't reach
+ * Supabase — e.g. the database is being upgraded, the project is
+ * restarting/paused, or the user has lost their internet connection. It matches
+ * the update toast in the top-right corner and lets the user keep working. It
+ * auto-recovers: the underlying health hook keeps polling and the toast
+ * disappears the moment the backend responds again. The user can also dismiss
+ * it manually; it re-arms for the next outage.
  */
 export default function ConnectionStatusOverlay() {
-  const { logoUrl, hideLogo } = useSiteLogos();
   const { status, isBrowserOffline, checkNow } = useSupabaseHealth();
   const [retrying, setRetrying] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   const isDown = status === "down";
+  const visible = isDown && !dismissed;
 
-  // Lock body scroll while the overlay is visible.
+  // Re-arm the toast each time the backend goes down again after recovering,
+  // so dismissing it only hides the current outage — not all future ones.
   useEffect(() => {
-    if (isDown) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = prev;
-      };
-    }
+    if (!isDown) setDismissed(false);
   }, [isDown]);
 
-  if (!isDown) return null;
+  if (!visible) return null;
 
   const handleRetry = async () => {
     setRetrying(true);
@@ -40,8 +38,8 @@ export default function ConnectionStatusOverlay() {
   };
 
   const heading = isBrowserOffline
-    ? "You seem to be offline..."
-    : "We're getting ampOS back online!";
+    ? "You seem to be offline…"
+    : "Reconnecting to ampOS…";
 
   const subtext = isBrowserOffline
     ? "Check your internet connection. ampOS will reconnect automatically as soon as you're back online."
@@ -49,52 +47,40 @@ export default function ConnectionStatusOverlay() {
 
   return (
     <div
-      role="alertdialog"
+      role="alert"
       aria-live="assertive"
       aria-label={heading}
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-neutral-950/95 backdrop-blur-sm p-6"
+      className="fixed top-4 right-4 z-[9999] max-w-sm rounded-none border border-neutral-200 bg-white p-4 shadow-md transition-all duration-300 ease-in-out dark:border-neutral-700 dark:bg-dark-150"
     >
-      <div className="w-full max-w-md rounded-none border border-neutral-800 bg-neutral-900 px-8 py-10 text-center shadow-2xl">
-        {!hideLogo && (
-          <img
-            src={logoUrl}
-            alt="ampOS"
-            // The logo artwork is solid black; invert it to white for the dark overlay.
-            className="mx-auto mb-8 h-9 w-auto opacity-90 [filter:brightness(0)_invert(1)]"
-            onError={(e) => {
-              // Hide the image gracefully if the asset path ever changes.
-              (e.currentTarget as HTMLImageElement).style.display = "none";
-            }}
-          />
-        )}
-
-        {/* Pulsing status dot / spinner */}
-        <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center">
-          <span className="relative flex h-14 w-14 items-center justify-center">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-20" />
-            <span className="relative inline-flex h-10 w-10 animate-spin rounded-full border-2 border-neutral-700 border-t-brand" />
-          </span>
+      <div className="flex items-start">
+        {/* Spinner mirrors the overlay's status indicator, sized like a toast icon. */}
+        <div className="mr-3 mt-0.5 flex-shrink-0">
+          <span className="inline-flex h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-brand dark:border-neutral-600 dark:border-t-brand" />
         </div>
-
-        <h1 className="mb-3 text-xl font-semibold text-neutral-50">
-          {heading}
-        </h1>
-        <p className="mb-8 text-sm leading-relaxed text-neutral-400">
-          {subtext}
-        </p>
-
+        <div className="flex-1">
+          <h3 className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+            {heading}
+          </h3>
+          <p className="mt-1 text-sm text-neutral-700 dark:text-white">
+            {subtext}
+          </p>
+          <button
+            type="button"
+            onClick={handleRetry}
+            disabled={retrying}
+            className="mt-2 inline-flex items-center rounded-none bg-brand px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-brand/40 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {retrying ? "Checking…" : "Try again"}
+          </button>
+        </div>
         <button
           type="button"
-          onClick={handleRetry}
-          disabled={retrying}
-          className="inline-flex items-center justify-center gap-2 rounded-none bg-brand px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
+          aria-label="Dismiss"
+          className="ml-4 inline-flex flex-shrink-0 text-neutral-400 hover:text-neutral-500 focus:outline-none"
+          onClick={() => setDismissed(true)}
         >
-          {retrying ? "Checking…" : "Try again"}
+          <X className="h-4 w-4" />
         </button>
-
-        <p className="mt-6 text-xs text-neutral-600">
-          Checking for a connection automatically…
-        </p>
       </div>
     </div>
   );

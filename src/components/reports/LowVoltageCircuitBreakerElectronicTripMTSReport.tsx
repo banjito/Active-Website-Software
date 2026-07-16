@@ -5361,9 +5361,12 @@ if (typeof document !== "undefined") {
       white-space: nowrap !important;
     }
 
-    /* Hide tolerance input section in print */
-    .no-print-tolerance-section {
-      display: block !important;
+    /* Tolerance input section is screen-only (values are already shown in the
+       results table). Force visible on screen; it is hidden in print below. */
+    @media screen {
+      .no-print-tolerance-section {
+        display: block !important;
+      }
     }
 
     /* Ensure tolerance inputs display full numbers without truncation */

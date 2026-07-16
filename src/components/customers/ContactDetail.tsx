@@ -443,14 +443,14 @@ export default function ContactDetail() {
                     divisions: contact.divisions || [],
                   });
                 }}
-                className="px-4 py-2 bg-brand text-white rounded hover:bg-brand/90 transition-colors flex items-center"
+                className="px-4 py-2 bg-brand text-white rounded-none hover:bg-brand/90 transition-colors flex items-center"
               >
                 <Edit className="h-4 w-4 mr-1" />
                 Edit
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors flex items-center"
+                className="px-4 py-2 bg-red-600 text-white rounded-none hover:bg-red-700 transition-colors flex items-center"
               >
                 <Trash2 className="h-4 w-4 mr-1" />
                 Delete
@@ -474,13 +474,13 @@ export default function ContactDetail() {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
+                className="px-4 py-2 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-none"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                className="px-4 py-2 bg-red-600 text-white rounded-none hover:bg-red-700"
               >
                 Delete
               </button>
@@ -623,7 +623,7 @@ export default function ContactDetail() {
                           is_primary: e.target.checked,
                         })
                       }
-                      className="h-4 w-4 text-brand focus:ring-brand border-neutral-300 rounded"
+                      className="h-4 w-4 text-brand focus:ring-brand border-neutral-300 rounded-none"
                     />
                     <label
                       htmlFor="is_primary"
@@ -687,7 +687,7 @@ export default function ContactDetail() {
                         divisions: contact.divisions || [],
                       });
                     }}
-                    className="px-4 py-2 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
+                    className="px-4 py-2 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-none"
                     disabled={isSaving}
                   >
                     <X className="h-4 w-4 inline mr-1" />
@@ -695,7 +695,7 @@ export default function ContactDetail() {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-brand text-white rounded hover:bg-brand/90 transition-colors flex items-center"
+                    className="px-4 py-2 bg-brand text-white rounded-none hover:bg-brand/90 transition-colors flex items-center"
                     disabled={isSaving}
                   >
                     <Save className="h-4 w-4 mr-1" />
@@ -987,14 +987,14 @@ export default function ContactDetail() {
                         setShowNoteForm(false);
                         setEditingNoteId(null);
                       }}
-                      className="px-3 py-1.5 text-sm text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded"
+                      className="px-3 py-1.5 text-sm text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-none"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSaveNote}
                       disabled={noteFormSaving}
-                      className="px-4 py-1.5 text-sm bg-brand text-white rounded hover:bg-brand/90 disabled:opacity-50"
+                      className="px-4 py-1.5 text-sm bg-brand text-white rounded-none hover:bg-brand/90 disabled:opacity-50"
                     >
                       {noteFormSaving
                         ? "Saving..."

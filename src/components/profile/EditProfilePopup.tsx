@@ -3,21 +3,13 @@ import { createPortal } from "react-dom";
 import {
   User as UserIcon,
   X,
-  Upload,
-  ChevronLeft,
-  ChevronRight,
-  Mail,
-  MapPin,
-  Briefcase,
-  Calendar,
-  LinkIcon,
   Check,
   Camera,
-  ChevronDown,
-  Eye,
   Image,
   Phone,
   Target,
+  FileText,
+  ClipboardCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { supabase } from "@/lib/supabase";
@@ -30,8 +22,9 @@ import ReactCrop, {
   makeAspectCrop,
 } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
-import { ProfileView } from "./ProfileView";
 import { formatDivisionDisplay } from "@/lib/utils/divisionDisplay";
+
+type EditSection = "basic" | "details" | "review";
 
 interface EditProfilePopupProps {
   isOpen: boolean;
@@ -168,7 +161,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   const { user } = useAuth();
   const editingUserId = targetUserId || user?.id || "";
   const isEditingOwnProfile = !!user?.id && editingUserId === user.id;
-  const [step, setStep] = useState(1);
+  const [activeSection, setActiveSection] = useState<EditSection>("basic");
   const [name, setName] = useState(currentUser?.name || "");
   const [selectedRole, setSelectedRole] = useState(currentUser?.role || "");
   const [bio, setBio] = useState(
@@ -215,9 +208,6 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [isImageHovering, setIsImageHovering] = useState(false);
-  const [showProfileView, setShowProfileView] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
 
   // Cropping state
   const [isCropping, setIsCropping] = useState(false);
@@ -230,7 +220,6 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverFileInputRef = useRef<HTMLInputElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   // Hydrate the form from server data only ONCE per open. Without this guard,
   // an auth-context refresh (token refresh / window focus / soft refresh) hands
   // back a new user_metadata reference, re-firing the effects below and wiping
@@ -244,6 +233,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       // Reset so the form re-hydrates fresh the next time it opens.
       metaHydratedRef.current = false;
       profilesHydratedRef.current = false;
+      setActiveSection("basic");
       return;
     }
     if (metaHydratedRef.current) return;
@@ -349,23 +339,6 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
     user?.user_metadata?.coverImage,
     user?.user_metadata?.profileImage,
   ]);
-
-  // Handle clicks outside the dropdown
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setShowDropdown(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   const availableRoles = [
     "Admin",
@@ -956,19 +929,6 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
     }
   };
 
-  const handleViewProfile = () => {
-    setShowDropdown(false);
-    setShowProfileView(true);
-  };
-
-  const nextStep = () => {
-    if (step < 3) setStep(step + 1);
-  };
-
-  const prevStep = () => {
-    if (step > 1) setStep(step - 1);
-  };
-
   // Handle backdrop click for the cropping modal
   const handleCropBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Only close if the click is directly on the backdrop itself
@@ -980,10 +940,32 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
   if (!isOpen) return null;
 
+  const navSections: {
+    key: EditSection;
+    label: string;
+    icon: React.ReactNode;
+  }[] = [
+    {
+      key: "basic",
+      label: "Basic Information",
+      icon: <UserIcon className="h-4 w-4" />,
+    },
+    {
+      key: "details",
+      label: "Additional Details",
+      icon: <FileText className="h-4 w-4" />,
+    },
+    {
+      key: "review",
+      label: "Review",
+      icon: <ClipboardCheck className="h-4 w-4" />,
+    },
+  ];
+
   const modalContent = (
     <>
       <div
-        className={`fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto ${isCropping ? "hidden" : ""}`}
+        className={`fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 ${isCropping ? "hidden" : ""}`}
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
@@ -992,33 +974,41 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="w-full max-w-3xl max-h-[calc(100vh-2rem)] flex flex-col bg-white dark:bg-dark-150 rounded-none shadow-2xl overflow-hidden my-auto"
+          className="w-full max-w-4xl h-[600px] max-h-[calc(100vh-2rem)] flex bg-white dark:bg-dark-150 rounded-none shadow-2xl overflow-hidden relative"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header - fixed height */}
-          <div className="relative flex-shrink-0">
-            {/* Cover Image Area */}
-            <div className="h-40 bg-gradient-to-r from-neutral-300 to-neutral-400 dark:from-dark-200 dark:to-dark-300 relative group">
-              {coverImage ? (
-                <img
-                  src={coverImage}
-                  alt="Cover"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-neutral-500 dark:text-dark-400">
-                  {/* Placeholder content if no cover image */}
-                  <Image className="w-10 h-10 opacity-50" />
-                </div>
-              )}
-              {/* Edit Cover Button Overlay */}
-              <button
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 z-20 text-neutral-500 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 rounded-none p-1.5"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          {/* Sidebar */}
+          <div className="w-64 flex-shrink-0 flex flex-col border-r border-neutral-200 dark:border-dark-200 bg-neutral-50 dark:bg-dark-100">
+            {/* Cover + avatar */}
+            <div className="relative flex-shrink-0">
+              <div
+                className="h-20 bg-gradient-to-r from-neutral-300 to-neutral-400 dark:from-dark-200 dark:to-dark-300 overflow-hidden cursor-pointer group relative"
                 onClick={() => coverFileInputRef.current?.click()}
-                className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
               >
-                <Camera className="h-6 w-6 mr-2" />
-                Change Cover
-              </button>
+                {coverImage ? (
+                  <img
+                    src={coverImage}
+                    alt="Cover"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-neutral-500 dark:text-dark-400">
+                    <Image className="w-6 h-6 opacity-50" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera className="h-4 w-4 mr-1" />
+                  Cover
+                </div>
+              </div>
               <input
                 ref={coverFileInputRef}
                 type="file"
@@ -1026,134 +1016,108 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                 onChange={handleCoverImageUpload}
                 className="hidden"
               />
-            </div>
-
-            {/* Profile Image & Info Row */}
-            <div className="p-4 flex items-end justify-between border-b border-neutral-200 dark:border-dark-200 relative -mt-12 z-10">
-              {/* Left side: Profile Image and Edit Profile Title */}
-              <div className="flex items-end space-x-4">
-                {/* Profile Image with Dropdown */}
-                <div className="relative" ref={dropdownRef}>
-                  <div
-                    className="w-20 h-20 rounded-none overflow-hidden border-4 border-white dark:border-dark-100 shadow-xl cursor-pointer bg-neutral-200 dark:bg-dark-150"
-                    onClick={() => setShowDropdown(!showDropdown)}
-                    onMouseEnter={() => setIsImageHovering(true)}
-                    onMouseLeave={() => setIsImageHovering(false)}
-                  >
-                    {profileImage ? (
-                      <img
-                        src={profileImage}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <UserIcon className="w-8 h-8 text-neutral-400 dark:text-white" />
-                      </div>
-                    )}
-                    {isImageHovering && (
-                      <div className="absolute inset-0 bg-black/50 rounded-none flex items-center justify-center pointer-events-none">
-                        <ChevronDown className="h-6 w-6 text-white" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Dropdown Menu */}
-                  {showDropdown && (
-                    <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-dark-150 rounded-none shadow-lg z-20 border border-neutral-200 dark:border-dark-300">
-                      <div className="py-1">
-                        <button
-                          onClick={() => {
-                            fileInputRef.current?.click();
-                            setShowDropdown(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-200 flex items-center"
-                        >
-                          <Camera className="h-4 w-4 mr-2" />
-                          Change Photo
-                        </button>
-                        <button
-                          onClick={handleViewProfile}
-                          className="w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-200 flex items-center"
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Profile
-                        </button>
-                      </div>
+              <div className="px-4 -mt-10">
+                <div
+                  className="relative w-20 h-20 rounded-none overflow-hidden border-4 border-white dark:border-dark-100 shadow-lg bg-neutral-200 dark:bg-dark-150 cursor-pointer group"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-neutral-200 dark:bg-dark-150">
+                      <UserIcon className="w-8 h-8 text-neutral-400 dark:text-white" />
                     </div>
                   )}
-
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </div>
-
-                {/* Edit Profile Title and Step */}
-                <div className="pb-2">
-                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                    Edit Profile
-                  </h2>
-                  <p className="text-sm text-neutral-500 dark:text-white">
-                    Step {step} of 3
-                  </p>
-                </div>
-              </div>
-
-              {/* Right side: Close Button */}
-              <button
-                onClick={onClose}
-                className="text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-200 mb-2"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-          </div>
-
-          {/* Scrollable: progress + content + nav */}
-          <div className="flex-1 min-h-0 overflow-y-auto">
-            {/* Progress indicator */}
-            <div className="px-8 py-4 flex items-center space-x-2 flex-shrink-0">
-              {[1, 2, 3].map((i) => (
-                <React.Fragment key={i}>
-                  <div
-                    className={`w-8 h-8 rounded-none flex items-center justify-center font-medium transition-colors ${
-                      step === i
-                        ? "bg-brand text-white"
-                        : step > i
-                          ? "bg-brand/20 text-brand"
-                          : "bg-neutral-100 dark:bg-dark-150 text-neutral-500 dark:text-white"
-                    }`}
-                  >
-                    {step > i ? <Check className="h-4 w-4" /> : i}
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Camera className="h-5 w-5 text-white" />
                   </div>
-                  {i < 3 && (
-                    <div
-                      className={`h-1 flex-1 ${
-                        step > i
-                          ? "bg-brand"
-                          : "bg-neutral-100 dark:bg-dark-150"
-                      }`}
-                    />
-                  )}
-                </React.Fragment>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </div>
+            </div>
+
+            {/* Name / role / email */}
+            <div className="px-4 pt-2 pb-3 border-b border-neutral-200 dark:border-dark-200 flex-shrink-0">
+              <h1 className="text-lg font-bold text-neutral-900 dark:text-white leading-tight truncate">
+                {name || user?.email?.split("@")[0] || "Your Profile"}
+              </h1>
+              {(user?.user_metadata?.role || selectedRole) && (
+                <div className="mt-1 inline-flex items-center rounded-none bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand">
+                  {user?.user_metadata?.role || selectedRole}
+                </div>
+              )}
+              {user?.email && (
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 truncate">
+                  {user.email}
+                </p>
+              )}
+            </div>
+
+            {/* Nav */}
+            <div className="flex-1 overflow-y-auto py-2">
+              {navSections.map((s) => (
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={() => setActiveSection(s.key)}
+                  className={`w-full flex items-center gap-2.5 px-4 py-2 text-sm text-left transition-colors ${
+                    activeSection === s.key
+                      ? "bg-brand/10 text-brand font-medium border-r-2 border-brand"
+                      : "text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-200"
+                  }`}
+                >
+                  {s.icon}
+                  <span className="truncate">{s.label}</span>
+                </button>
               ))}
             </div>
 
-            {/* Content */}
-            <div className="p-8">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={step}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {step === 1 && (
+            {/* Save button */}
+            <div className="p-3 border-t border-neutral-200 dark:border-dark-200 flex-shrink-0">
+              <Button
+                type="submit"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="w-full bg-brand hover:bg-brand/90 text-white"
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center justify-center">
+                    <div className="h-4 w-4 border-2 border-t-transparent border-white rounded-none animate-spin mr-2" />
+                    Saving...
+                  </div>
+                ) : showSuccess ? (
+                  <div className="flex items-center justify-center">
+                    <Check className="mr-2 h-4 w-4" />
+                    Saved!
+                  </div>
+                ) : (
+                  "Save Changes"
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Content pane */}
+          <div className="flex-1 min-w-0 overflow-y-auto overscroll-contain px-6 py-5">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSection}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                  {activeSection === "basic" && (
                     <div className="space-y-6">
                       <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                         Basic Information
@@ -1237,7 +1201,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                     </div>
                   )}
 
-                  {step === 2 && (
+                  {activeSection === "details" && (
                     <div className="space-y-6">
                       <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                         Additional Details
@@ -1388,7 +1352,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                     </div>
                   )}
 
-                  {step === 3 && (
+                  {activeSection === "review" && (
                     <div className="space-y-6">
                       <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                         Review & Submit
@@ -1516,74 +1480,8 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                       </div>
                     </div>
                   )}
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Navigation buttons */}
-              <div className="flex justify-between mt-8">
-                <div>
-                  {step > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={prevStep}
-                      className="px-4 py-2 flex items-center"
-                    >
-                      <span className="flex items-center">
-                        <ChevronLeft className="mr-2 h-4 w-4" />
-                        Back
-                      </span>
-                    </Button>
-                  )}
-                </div>
-
-                <div>
-                  {step < 3 ? (
-                    <Button
-                      type="button"
-                      onClick={nextStep}
-                      className="bg-brand hover:bg-brand/90 text-white px-4 py-2 flex items-center justify-center min-w-[120px]"
-                    >
-                      <span className="flex items-center">
-                        Continue
-                        <ChevronRight className="ml-2 h-4 w-4" />
-                      </span>
-                    </Button>
-                  ) : (
-                    <div className="flex items-center space-x-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={onClose}
-                        className="px-4 py-2"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        onClick={handleSubmit}
-                        disabled={isSubmitting}
-                        className="bg-brand hover:bg-brand/90 text-white px-4 py-2 min-w-[100px]"
-                      >
-                        {isSubmitting ? (
-                          <div className="flex items-center">
-                            <div className="h-4 w-4 border-2 border-t-transparent border-white rounded-none animate-spin mr-2" />
-                            Saving...
-                          </div>
-                        ) : showSuccess ? (
-                          <div className="flex items-center">
-                            <Check className="mr-2 h-4 w-4" />
-                            Saved!
-                          </div>
-                        ) : (
-                          "Save Changes"
-                        )}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </motion.div>
       </div>
@@ -1652,13 +1550,6 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Profile View Modal */}
-      {showProfileView && (
-        <ProfileView
-          isOpen={showProfileView}
-          onClose={() => setShowProfileView(false)}
-        />
-      )}
     </>
   );
 

@@ -2,11 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   MapPin,
   Briefcase,
-  LinkIcon,
   Mail,
   Edit2,
   X,
-  Image,
   User,
   Building2,
   FileText,
@@ -202,6 +200,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     jacket: "",
   });
   const [savingFrSizes, setSavingFrSizes] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("overview");
+
+  // Reset to the overview tab whenever the modal opens or the profile changes
+  useEffect(() => {
+    if (isOpen) setActiveTab("overview");
+  }, [isOpen, userId]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -1495,94 +1499,149 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         />
       )}
 
-      <div
-        className={`fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4 pt-4 pb-6 overflow-y-auto min-h-screen ${
-          isEditProfileOpen ? "pointer-events-none" : ""
-        }`}
-        onClick={handleBackdropClick}
-        aria-hidden={isEditProfileOpen}
-      >
-        <div
-          className="w-full max-w-3xl max-h-[calc(100vh-2rem)] flex flex-col bg-white dark:bg-dark-150 rounded-none shadow-2xl overflow-hidden my-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Sticky header with close button - always visible */}
-          <div className="absolute top-3 right-3 z-20 flex-shrink-0">
-            <button
-              onClick={onClose}
-              className="text-white bg-black/40 hover:bg-black/60 rounded-none p-1.5 shadow-lg"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          </div>
+      {(() => {
+        const showSensitiveTabs =
+          !limitedView && canViewSensitiveSection && !!profileIdToFetch;
+        const tabs: { key: string; label: string; icon: React.ReactNode }[] = [
+          {
+            key: "overview",
+            label: "Overview",
+            icon: <User className="h-4 w-4" />,
+          },
+        ];
+        if (showSensitiveTabs) {
+          tabs.push(
+            {
+              key: "documents",
+              label: "Documents",
+              icon: <FileText className="h-4 w-4" />,
+            },
+            {
+              key: "certifications",
+              label: "Certifications",
+              icon: <Award className="h-4 w-4" />,
+            },
+            {
+              key: "employment",
+              label: "Employment",
+              icon: <Briefcase className="h-4 w-4" />,
+            },
+            {
+              key: "oneonone",
+              label: "1:1 Check-Ins",
+              icon: <ClipboardList className="h-4 w-4" />,
+            },
+            {
+              key: "career",
+              label: "Career",
+              icon: <TrendingUp className="h-4 w-4" />,
+            },
+          );
+        }
+        const currentTab = tabs.some((t) => t.key === activeTab)
+          ? activeTab
+          : "overview";
 
-          {/* Scrollable area: cover + all profile content */}
-          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
-            {/* Cover Image */}
+        return (
+          <div
+            className={`fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 ${
+              isEditProfileOpen ? "pointer-events-none" : ""
+            }`}
+            onClick={handleBackdropClick}
+            aria-hidden={isEditProfileOpen}
+          >
             <div
-              className="h-40 flex-shrink-0 bg-gradient-to-r from-neutral-300 to-neutral-400 dark:from-dark-200 dark:to-dark-300 relative overflow-hidden cursor-pointer"
-              onClick={(e) => coverImage && handlePhotoClick(e, coverImage)}
+              className="w-full max-w-4xl h-[600px] max-h-[calc(100vh-2rem)] flex bg-white dark:bg-dark-150 rounded-none shadow-2xl overflow-hidden relative"
+              onClick={(e) => e.stopPropagation()}
             >
-              {coverImage ? (
-                <img
-                  src={coverImage}
-                  alt="Cover"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-neutral-500 dark:text-dark-400">
-                  <Image className="w-10 h-10 opacity-50" />
-                </div>
-              )}
-            </div>
+              {/* Close button */}
+              <button
+                onClick={onClose}
+                className="absolute top-3 right-3 z-20 text-neutral-500 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 rounded-none p-1.5"
+              >
+                <X className="h-5 w-5" />
+              </button>
 
-            {/* Profile Content */}
-            <div className="px-6 pb-6">
-              {/* Profile Image */}
-              <div className="relative -mt-16 mb-4">
-                <div
-                  className={`w-32 h-32 rounded-none overflow-hidden border-4 border-white dark:border-dark-100 shadow-xl bg-neutral-200 dark:bg-dark-150 ${profileImage ? "cursor-pointer" : ""}`}
-                  onClick={(e) =>
-                    profileImage && handlePhotoClick(e, profileImage)
-                  }
-                >
-                  {profileImage ? (
-                    <img
-                      src={profileImage}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-neutral-200 dark:bg-dark-150">
-                      <span className="text-4xl text-neutral-400 dark:text-white">
-                        {name ? name.charAt(0).toUpperCase() : "?"}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Profile Info */}
-              <div className="space-y-6">
-                {/* Name and Role */}
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-                      {displayName}
-                    </h1>
-                    {role && (
-                      <div className="mt-1 inline-flex items-center rounded-none bg-brand/10 px-2.5 py-0.5 text-xs font-medium text-brand">
-                        {role}
-                      </div>
-                    )}
-                    {!limitedView && (
-                      <p className="text-neutral-500 dark:text-white mt-1">
-                        {profileUser?.email}
-                      </p>
+              {/* Sidebar */}
+              <div className="w-64 flex-shrink-0 flex flex-col border-r border-neutral-200 dark:border-dark-200 bg-neutral-50 dark:bg-dark-100">
+                {/* Cover + avatar */}
+                <div className="relative flex-shrink-0">
+                  <div
+                    className="h-20 bg-gradient-to-r from-neutral-300 to-neutral-400 dark:from-dark-200 dark:to-dark-300 overflow-hidden cursor-pointer"
+                    onClick={(e) =>
+                      coverImage && handlePhotoClick(e, coverImage)
+                    }
+                  >
+                    {coverImage && (
+                      <img
+                        src={coverImage}
+                        alt="Cover"
+                        className="w-full h-full object-cover"
+                      />
                     )}
                   </div>
-                  {/* Edit Button - own profile plus HR/Admin for any profile */}
-                  {canEditThisProfile && (
+                  <div className="px-4 -mt-10">
+                    <div
+                      className={`w-20 h-20 rounded-none overflow-hidden border-4 border-white dark:border-dark-100 shadow-lg bg-neutral-200 dark:bg-dark-150 ${profileImage ? "cursor-pointer" : ""}`}
+                      onClick={(e) =>
+                        profileImage && handlePhotoClick(e, profileImage)
+                      }
+                    >
+                      {profileImage ? (
+                        <img
+                          src={profileImage}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-neutral-200 dark:bg-dark-150">
+                          <span className="text-2xl text-neutral-400 dark:text-white">
+                            {name ? name.charAt(0).toUpperCase() : "?"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Name / role / email */}
+                <div className="px-4 pt-2 pb-3 border-b border-neutral-200 dark:border-dark-200 flex-shrink-0">
+                  <h1 className="text-lg font-bold text-neutral-900 dark:text-white leading-tight truncate">
+                    {displayName}
+                  </h1>
+                  {role && (
+                    <div className="mt-1 inline-flex items-center rounded-none bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand">
+                      {role}
+                    </div>
+                  )}
+                  {!limitedView && profileUser?.email && (
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 truncate">
+                      {profileUser.email}
+                    </p>
+                  )}
+                </div>
+
+                {/* Nav */}
+                <div className="flex-1 overflow-y-auto py-2">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveTab(tab.key)}
+                      className={`w-full flex items-center gap-2.5 px-4 py-2 text-sm text-left transition-colors ${
+                        currentTab === tab.key
+                          ? "bg-brand/10 text-brand font-medium border-r-2 border-brand"
+                          : "text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-200"
+                      }`}
+                    >
+                      {tab.icon}
+                      <span className="truncate">{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Edit button */}
+                {canEditThisProfile && (
+                  <div className="p-3 shrink-0">
                     <Button
                       type="button"
                       variant="outline"
@@ -1592,594 +1651,593 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         e.stopPropagation();
                         setIsEditProfileOpen(true);
                       }}
-                      className="flex items-center gap-2"
-                      aria-label="Edit profile" leftIcon={<Edit2 className="h-4 w-4" />}>
+                      className="w-full flex items-center justify-center gap-2"
+                      aria-label="Edit profile"
+                      leftIcon={<Edit2 className="h-4 w-4" />}
+                    >
                       Edit Profile
                     </Button>
-                  )}
-                </div>
-
-                {/* Profile Not Set Up Message */}
-                {!isProfileSetUp && (
-                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-none p-4">
-                    <div className="flex items-start gap-3">
-                      <User className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-1">
-                          User profile not set up
-                        </h3>
-                        <p className="text-sm text-amber-700 dark:text-amber-300">
-                          This user hasn't completed their profile setup yet.
-                          Basic information is shown below.
-                        </p>
-                      </div>
-                    </div>
                   </div>
                 )}
+              </div>
 
-                {/* Bio */}
-                {bio && (
-                  <div>
-                    <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
-                      Bio
-                    </h2>
-                    <p className="text-neutral-700 dark:text-white">{bio}</p>
-                  </div>
-                )}
-
-                {/* Contact & Personal Info */}
-                <div className="space-y-3">
-                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
-                    Personal Information
-                  </h2>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {jobTitle && (
-                      <div className="flex items-center text-neutral-700 dark:text-white">
-                        <Briefcase className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
-                        <div>
-                          <p className="text-sm text-neutral-500 dark:text-white">
-                            Job title
-                          </p>
-                          <p>{jobTitle}</p>
-                        </div>
-                      </div>
-                    )}
-                    {department && (
-                      <div className="flex items-center text-neutral-700 dark:text-white">
-                        <Building2 className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
-                        <div>
-                          <p className="text-sm text-neutral-500 dark:text-white">
-                            Department
-                          </p>
-                          <p>{department}</p>
-                        </div>
-                      </div>
-                    )}
-                    <div className="flex items-center text-neutral-700 dark:text-white">
-                      <Briefcase className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
-                      <div>
-                        <p className="text-sm text-neutral-500 dark:text-white">
-                          NETA Division
-                        </p>
-                        <p>
-                          {formatDivisionDisplay(division) || "Not specified"}
-                        </p>
-                      </div>
-                    </div>
-                    {!limitedView && formattedBirthday && (
-                      <div className="flex items-center text-neutral-700 dark:text-white">
-                        <MapPin className="mr-2 h-4 w-4 text-neutral-500 dark:text-white" />
-                        <div>
-                          <p className="text-sm text-neutral-500 dark:text-white">
-                            Birthday
-                          </p>
-                          <p>{formattedBirthday}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {!limitedView && profileUser?.email && (
-                      <div className="flex items-center text-neutral-700 dark:text-white">
-                        <Mail className="mr-2 h-4 w-4 text-neutral-500 dark:text-white" />
-                        <div>
-                          <p className="text-sm text-neutral-500 dark:text-white">
-                            Email
-                          </p>
-                          <a
-                            href={`mailto:${profileUser.email}`}
-                            className="text-brand hover:underline"
-                          >
-                            {profileUser.email}
-                          </a>
-                        </div>
-                      </div>
-                    )}
-                    {workPhone && (
-                      <div className="flex items-center text-neutral-700 dark:text-white">
-                        <Phone className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
-                        <div>
-                          <p className="text-sm text-neutral-500 dark:text-white">
-                            Work Phone
-                          </p>
-                          <a
-                            href={`tel:${workPhone}`}
-                            className="text-brand hover:underline"
-                          >
-                            {workPhone}
-                          </a>
-                        </div>
-                      </div>
-                    )}
-                    {personalPhone && (
-                      <div className="flex items-center text-neutral-700 dark:text-white">
-                        <Phone className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
-                        <div>
-                          <p className="text-sm text-neutral-500 dark:text-white">
-                            Personal Phone
-                          </p>
-                          <a
-                            href={`tel:${personalPhone}`}
-                            className="text-brand hover:underline"
-                          >
-                            {personalPhone}
-                          </a>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Emergency Contact - hidden in limited view */}
-                  {!limitedView &&
-                    (emergencyContactName || emergencyContactPhone) && (
-                      <div className="pt-4 border-t border-neutral-200 dark:border-dark-200">
-                        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-brand" />
-                          Emergency Contact
-                        </h2>
-                        <div className="text-sm text-neutral-700 dark:text-neutral-200 space-y-1">
-                          <p className="font-medium">{emergencyContactName}</p>
-                          {emergencyContactRelationship && (
-                            <p className="text-muted-foreground">
-                              {emergencyContactRelationship}
+              {/* Content pane */}
+              <div className="flex-1 min-w-0 overflow-y-auto overscroll-contain px-6 py-5">
+                {/* Overview */}
+                {currentTab === "overview" && (
+                  <div className="space-y-6">
+                    {/* Profile Not Set Up Message */}
+                    {!isProfileSetUp && (
+                      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-none p-4">
+                        <div className="flex items-start gap-3">
+                          <User className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-1">
+                              User profile not set up
+                            </h3>
+                            <p className="text-sm text-amber-700 dark:text-amber-300">
+                              This user hasn't completed their profile setup
+                              yet. Basic information is shown below.
                             </p>
-                          )}
-                          {emergencyContactPhone && (
-                            <a
-                              href={`tel:${emergencyContactPhone}`}
-                              className="text-brand hover:underline"
-                            >
-                              {emergencyContactPhone}
-                            </a>
-                          )}
+                          </div>
                         </div>
                       </div>
                     )}
 
-                  {/* Goals */}
-                  {goalsText && (
-                    <div className="pt-4 border-t border-neutral-200 dark:border-dark-200">
-                      <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
-                        <Target className="h-4 w-4 text-brand" />
-                        Goals
+                    {/* Bio */}
+                    {bio && (
+                      <div>
+                        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
+                          Bio
+                        </h2>
+                        <p className="text-neutral-700 dark:text-white">
+                          {bio}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Contact & Personal Info */}
+                    <div className="space-y-3">
+                      <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                        Personal Information
                       </h2>
-                      <p className="text-sm text-neutral-700 dark:text-neutral-200 whitespace-pre-wrap">
-                        {goalsText}
-                      </p>
-                    </div>
-                  )}
 
-                  {/* Documents, Certifications, Title History, Compensation - only visible to profile owner or their manager (direct reports); hidden in limited view */}
-                  {!limitedView &&
-                  canViewSensitiveSection &&
-                  profileIdToFetch ? (
-                    <div className="mt-6 pt-4 border-t border-neutral-200 dark:border-dark-200 space-y-5">
-                      {loadingMyData ? (
-                        <div className="flex justify-center py-6">
-                          <LoadingSpinner size="md" />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {jobTitle && (
+                          <div className="flex items-center text-neutral-700 dark:text-white">
+                            <Briefcase className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
+                            <div>
+                              <p className="text-sm text-neutral-500 dark:text-white">
+                                Job title
+                              </p>
+                              <p>{jobTitle}</p>
+                            </div>
+                          </div>
+                        )}
+                        {department && (
+                          <div className="flex items-center text-neutral-700 dark:text-white">
+                            <Building2 className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
+                            <div>
+                              <p className="text-sm text-neutral-500 dark:text-white">
+                                Department
+                              </p>
+                              <p>{department}</p>
+                            </div>
+                          </div>
+                        )}
+                        <div className="flex items-center text-neutral-700 dark:text-white">
+                          <Briefcase className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
+                          <div>
+                            <p className="text-sm text-neutral-500 dark:text-white">
+                              NETA Division
+                            </p>
+                            <p>
+                              {formatDivisionDisplay(division) ||
+                                "Not specified"}
+                            </p>
+                          </div>
                         </div>
-                      ) : (
-                        <>
-                          <div>
-                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
-                              <FileText className="h-4 w-4 text-brand" />
-                              {viewingOwnProfile ? "My documents" : "Documents"}
-                            </h3>
-                            {myDocuments.length === 0 ? (
-                              <p className="text-sm text-muted-foreground">
-                                No documents on file.
+                        {!limitedView && formattedBirthday && (
+                          <div className="flex items-center text-neutral-700 dark:text-white">
+                            <MapPin className="mr-2 h-4 w-4 text-neutral-500 dark:text-white" />
+                            <div>
+                              <p className="text-sm text-neutral-500 dark:text-white">
+                                Birthday
                               </p>
-                            ) : (
-                              <ul className="space-y-1.5">
-                                {myDocuments.map((doc) => (
-                                  <li
-                                    key={doc.id}
-                                    className="flex items-center justify-between gap-2 text-sm group"
-                                  >
-                                    <span className="text-neutral-700 dark:text-neutral-200 truncate flex-1 min-w-0">
-                                      {doc.name}
-                                    </span>
-                                    <div className="flex items-center gap-1 flex-shrink-0">
-                                      {viewingOwnProfile && (
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            setEditingDocument({
-                                              id: doc.id,
-                                              name: doc.name,
-                                              description:
-                                                doc.description ?? "",
-                                              expiration_date:
-                                                doc.expiration_date
-                                                  ? doc.expiration_date.slice(
-                                                      0,
-                                                      10,
-                                                    )
-                                                  : "",
-                                            })
-                                          }
-                                          className="p-1 rounded text-neutral-500 hover:text-brand hover:bg-neutral-100 dark:hover:bg-dark-200"
-                                          title="Edit document"
-                                        >
-                                          <Edit2 className="h-3.5 w-3.5" />
-                                        </button>
-                                      )}
-                                      <a
-                                        href={doc.file_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-brand hover:underline inline-flex items-center gap-1"
-                                      >
-                                        Open{" "}
-                                        <ExternalLink className="h-3 w-3" />
-                                      </a>
-                                    </div>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
+                              <p>{formattedBirthday}</p>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
-                              <Award className="h-4 w-4 text-brand" />
-                              {viewingOwnProfile
-                                ? "My certifications"
-                                : "Certifications"}
-                            </h3>
-                            {myCertifications.length === 0 ? (
-                              <p className="text-sm text-muted-foreground">
-                                No certifications on file.
+                        )}
+                        {!limitedView && profileUser?.email && (
+                          <div className="flex items-center text-neutral-700 dark:text-white">
+                            <Mail className="mr-2 h-4 w-4 text-neutral-500 dark:text-white" />
+                            <div>
+                              <p className="text-sm text-neutral-500 dark:text-white">
+                                Email
                               </p>
-                            ) : (
-                              <ul className="space-y-1.5">
-                                {myCertifications.map((cert) => (
-                                  <li
-                                    key={cert.id}
-                                    className="text-sm text-neutral-700 dark:text-neutral-200 flex items-center justify-between gap-2 group"
-                                  >
-                                    <span className="flex-1 min-w-0">
-                                      {cert.cert_name}
-                                    </span>
-                                    <div className="flex items-center gap-2 flex-shrink-0">
-                                      <span
-                                        className={`text-xs px-1.5 py-0.5 rounded ${cert.status === "active" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200" : "bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300"}`}
-                                      >
-                                        {cert.status}
-                                      </span>
-                                      {viewingOwnProfile && (
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            setEditingCertification({
-                                              id: cert.id,
-                                              cert_name: cert.cert_name,
-                                              cert_date: cert.cert_date
-                                                ? cert.cert_date.slice(0, 10)
-                                                : "",
-                                              expiration_date:
-                                                cert.expiration_date
-                                                  ? cert.expiration_date.slice(
-                                                      0,
-                                                      10,
-                                                    )
-                                                  : "",
-                                              renewal_date: cert.renewal_date
-                                                ? cert.renewal_date.slice(0, 10)
-                                                : "",
-                                              status: cert.status,
-                                              notes: cert.notes ?? "",
-                                            })
-                                          }
-                                          className="p-1 rounded text-neutral-500 hover:text-brand hover:bg-neutral-100 dark:hover:bg-dark-200"
-                                          title="Edit certification"
-                                        >
-                                          <Edit2 className="h-3.5 w-3.5" />
-                                        </button>
-                                      )}
-                                    </div>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
+                              <a
+                                href={`mailto:${profileUser.email}`}
+                                className="text-brand hover:underline"
+                              >
+                                {profileUser.email}
+                              </a>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
-                              <History className="h-4 w-4 text-brand" />
-                              Title history
-                            </h3>
-                            {myTitleHistory.length === 0 ? (
-                              <p className="text-sm text-muted-foreground">
-                                No title history yet.
+                        )}
+                        {workPhone && (
+                          <div className="flex items-center text-neutral-700 dark:text-white">
+                            <Phone className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
+                            <div>
+                              <p className="text-sm text-neutral-500 dark:text-white">
+                                Work Phone
                               </p>
-                            ) : (
-                              <ul className="space-y-1.5">
-                                {myTitleHistory.map((entry) => (
-                                  <li
-                                    key={entry.id}
-                                    className="text-sm text-neutral-700 dark:text-neutral-200 flex justify-between gap-2"
-                                  >
-                                    <span>{entry.title}</span>
-                                    <span className="text-muted-foreground text-xs flex-shrink-0">
-                                      {formatDateOnly(entry.effective_from)}
-                                    </span>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
+                              <a
+                                href={`tel:${workPhone}`}
+                                className="text-brand hover:underline"
+                              >
+                                {workPhone}
+                              </a>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
-                              <DollarSign className="h-4 w-4 text-brand" />
-                              Compensation
-                            </h3>
-                            {compensationAmount != null ? (
-                              <p className="text-sm text-neutral-700 dark:text-neutral-200">
-                                {formatCompensation(
-                                  compensationAmount,
-                                  payType,
-                                  payFrequency,
-                                )}
+                        )}
+                        {personalPhone && (
+                          <div className="flex items-center text-neutral-700 dark:text-white">
+                            <Phone className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
+                            <div>
+                              <p className="text-sm text-neutral-500 dark:text-white">
+                                Personal Phone
                               </p>
-                            ) : (
-                              <p className="text-sm text-muted-foreground">
-                                No compensation on file.
-                              </p>
-                            )}
-                            {myCompensationHistory.length > 0 && (
-                              <ul className="space-y-1.5 mt-3 text-sm text-muted-foreground">
-                                {myCompensationHistory
-                                  .slice(0, 5)
-                                  .map((entry) => (
-                                    <li
-                                      key={entry.id}
-                                      className="flex justify-between gap-2"
-                                    >
-                                      <span>
-                                        {formatCompensation(
-                                          entry.amount,
-                                          entry.pay_type,
-                                          entry.pay_frequency,
-                                        )}
-                                      </span>
-                                      <span className="text-xs">
-                                        {formatDateOnly(entry.effective_from)}
-                                      </span>
-                                    </li>
-                                  ))}
-                              </ul>
-                            )}
+                              <a
+                                href={`tel:${personalPhone}`}
+                                className="text-brand hover:underline"
+                              >
+                                {personalPhone}
+                              </a>
+                            </div>
                           </div>
+                        )}
+                      </div>
 
-                          {/* FR (Flame-Resistant) clothing sizes - EE can edit; visible to profile owner and manager */}
-                          <div>
-                            <div className="flex items-center justify-between gap-2 mb-2">
-                              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                                <Shirt className="h-4 w-4 text-brand" />
-                                FR clothing sizes
-                              </h3>
-                              {canEditEeData && !editingFrSizes && (
-                                <button
-                                  type="button"
-                                  onClick={handleStartEditFrSizes}
-                                  className="text-xs text-brand hover:text-brand-dark hover:underline flex items-center gap-1 shrink-0"
+                      {/* Emergency Contact - hidden in limited view */}
+                      {!limitedView &&
+                        (emergencyContactName || emergencyContactPhone) && (
+                          <div className="pt-4 border-t border-neutral-200 dark:border-dark-200">
+                            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-brand" />
+                              Emergency Contact
+                            </h2>
+                            <div className="text-sm text-neutral-700 dark:text-neutral-200 space-y-1">
+                              <p className="font-medium">
+                                {emergencyContactName}
+                              </p>
+                              {emergencyContactRelationship && (
+                                <p className="text-muted-foreground">
+                                  {emergencyContactRelationship}
+                                </p>
+                              )}
+                              {emergencyContactPhone && (
+                                <a
+                                  href={`tel:${emergencyContactPhone}`}
+                                  className="text-brand hover:underline"
                                 >
-                                  <Edit2 className="h-3 w-3" />
-                                  {frSizes.shirt ||
-                                  frSizes.pant ||
-                                  frSizes.jacket
-                                    ? "Edit sizes"
-                                    : "Add sizes"}
-                                </button>
+                                  {emergencyContactPhone}
+                                </a>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground mb-2">
-                              Update annually or bi-annually if your sizes
-                              change.
-                            </p>
-                            {editingFrSizes ? (
-                              <div className="space-y-3">
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                  <div>
-                                    <Label
-                                      htmlFor="fr-shirt"
-                                      className="text-xs"
-                                    >
-                                      Shirt
-                                    </Label>
-                                    <Input
-                                      id="fr-shirt"
-                                      value={frSizesDraft.shirt}
-                                      onChange={(e) =>
-                                        setFrSizesDraft((d) => ({
-                                          ...d,
-                                          shirt: e.target.value,
-                                        }))
-                                      }
-                                      placeholder="e.g. M, L, XL"
-                                      className="mt-1 h-9"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label
-                                      htmlFor="fr-pant"
-                                      className="text-xs"
-                                    >
-                                      Pants
-                                    </Label>
-                                    <Input
-                                      id="fr-pant"
-                                      value={frSizesDraft.pant}
-                                      onChange={(e) =>
-                                        setFrSizesDraft((d) => ({
-                                          ...d,
-                                          pant: e.target.value,
-                                        }))
-                                      }
-                                      placeholder="e.g. 32x30"
-                                      className="mt-1 h-9"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label
-                                      htmlFor="fr-jacket"
-                                      className="text-xs"
-                                    >
-                                      Jacket
-                                    </Label>
-                                    <Input
-                                      id="fr-jacket"
-                                      value={frSizesDraft.jacket}
-                                      onChange={(e) =>
-                                        setFrSizesDraft((d) => ({
-                                          ...d,
-                                          jacket: e.target.value,
-                                        }))
-                                      }
-                                      placeholder="e.g. L, XL"
-                                      className="mt-1 h-9"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    onClick={handleSaveFrSizes}
-                                    disabled={savingFrSizes}
-                                  >
-                                    {savingFrSizes ? "Saving…" : "Save"}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => setEditingFrSizes(false)}
-                                    disabled={savingFrSizes}
-                                  >
-                                    Cancel
-                                  </Button>
-                                </div>
-                              </div>
-                            ) : (
-                              <>
-                                {frSizes.shirt ||
-                                frSizes.pant ||
-                                frSizes.jacket ? (
-                                  <div className="text-sm text-neutral-700 dark:text-neutral-200 space-y-1">
-                                    {frSizes.shirt && (
-                                      <p>
-                                        <span className="text-muted-foreground">
-                                          Shirt:
-                                        </span>{" "}
-                                        {frSizes.shirt}
-                                      </p>
-                                    )}
-                                    {frSizes.pant && (
-                                      <p>
-                                        <span className="text-muted-foreground">
-                                          Pants:
-                                        </span>{" "}
-                                        {frSizes.pant}
-                                      </p>
-                                    )}
-                                    {frSizes.jacket && (
-                                      <p>
-                                        <span className="text-muted-foreground">
-                                          Jacket:
-                                        </span>{" "}
-                                        {frSizes.jacket}
-                                      </p>
-                                    )}
-                                    {frSizes.updated_at && (
-                                      <p className="text-xs text-muted-foreground mt-1">
-                                        Last updated{" "}
-                                        {formatDateOnly(frSizes.updated_at)}
-                                      </p>
-                                    )}
-                                  </div>
-                                ) : (
-                                  <p className="text-sm text-muted-foreground">
-                                    No FR sizes on file.
-                                  </p>
-                                )}
-                              </>
-                            )}
                           </div>
+                        )}
 
-                          {/* One-on-One Check-Ins — visible to the employee, their org-chart managers, HR, and admins */}
-                          {(viewingOwnProfile ||
-                            isManagerViewingReport ||
-                            isHrViewer ||
-                            isAdminViewer) && (
-                            <OneOnOneList
-                              employeeId={profileIdToFetch!}
-                              employeeName={displayName}
-                              currentUserId={user?.id || ""}
-                              currentUserName={
-                                user?.user_metadata?.name ||
-                                user?.email?.split("@")[0] ||
-                                ""
-                              }
-                              canStartNew={
-                                isManagerViewingReport ||
-                                isHrViewer ||
-                                isAdminViewer
-                              }
-                              canEdit={
-                                isManagerViewingReport ||
-                                isHrViewer ||
-                                isAdminViewer
-                              }
-                            />
-                          )}
+                      {/* Goals */}
+                      {goalsText && (
+                        <div className="pt-4 border-t border-neutral-200 dark:border-dark-200">
+                          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2 flex items-center gap-2">
+                            <Target className="h-4 w-4 text-brand" />
+                            Goals
+                          </h2>
+                          <p className="text-sm text-neutral-700 dark:text-neutral-200 whitespace-pre-wrap">
+                            {goalsText}
+                          </p>
+                        </div>
+                      )}
 
-                          {/* Career Development - placeholder */}
-                          <div>
-                            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
-                              <TrendingUp className="h-4 w-4 text-brand" />
-                              Career Development
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                              Career development notes and plans will appear
-                              here when configured.
-                            </p>
-                          </div>
-                        </>
+                      {/* Note when sensitive sections are restricted */}
+                      {!limitedView && !canViewSensitiveSection && (
+                        <div className="pt-4 border-t border-neutral-200 dark:border-dark-200">
+                          <p className="text-sm text-muted-foreground">
+                            Documents, certifications, employment history, and
+                            compensation are only visible to the profile owner,
+                            their manager, or admins.
+                          </p>
+                        </div>
                       )}
                     </div>
-                  ) : !limitedView && !canViewSensitiveSection ? (
-                    <div className="mt-6 pt-4 border-t border-neutral-200 dark:border-dark-200">
-                      <p className="text-sm text-muted-foreground">
-                        Documents, certifications, title history, and
-                        compensation are only visible to the profile owner,
-                        their manager, or admins.
-                      </p>
+                  </div>
+                )}
+
+                {/* Documents */}
+                {currentTab === "documents" &&
+                  (loadingMyData ? (
+                    <div className="flex justify-center py-6">
+                      <LoadingSpinner size="md" />
                     </div>
-                  ) : null}
-                </div>
+                  ) : (
+                    <div>
+                      <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-3">
+                        <FileText className="h-4 w-4 text-brand" />
+                        {viewingOwnProfile ? "My documents" : "Documents"}
+                      </h3>
+                      {myDocuments.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                          No documents on file.
+                        </p>
+                      ) : (
+                        <ul className="space-y-1.5">
+                          {myDocuments.map((doc) => (
+                            <li
+                              key={doc.id}
+                              className="flex items-center justify-between gap-2 text-sm group"
+                            >
+                              <span className="text-neutral-700 dark:text-neutral-200 truncate flex-1 min-w-0">
+                                {doc.name}
+                              </span>
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                {viewingOwnProfile && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setEditingDocument({
+                                        id: doc.id,
+                                        name: doc.name,
+                                        description: doc.description ?? "",
+                                        expiration_date: doc.expiration_date
+                                          ? doc.expiration_date.slice(0, 10)
+                                          : "",
+                                      })
+                                    }
+                                    className="p-1 rounded text-neutral-500 hover:text-brand hover:bg-neutral-100 dark:hover:bg-dark-200"
+                                    title="Edit document"
+                                  >
+                                    <Edit2 className="h-3.5 w-3.5" />
+                                  </button>
+                                )}
+                                <a
+                                  href={doc.file_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-brand hover:underline inline-flex items-center gap-1"
+                                >
+                                  Open <ExternalLink className="h-3 w-3" />
+                                </a>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+
+                {/* Certifications */}
+                {currentTab === "certifications" &&
+                  (loadingMyData ? (
+                    <div className="flex justify-center py-6">
+                      <LoadingSpinner size="md" />
+                    </div>
+                  ) : (
+                    <div>
+                      <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-3">
+                        <Award className="h-4 w-4 text-brand" />
+                        {viewingOwnProfile
+                          ? "My certifications"
+                          : "Certifications"}
+                      </h3>
+                      {myCertifications.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                          No certifications on file.
+                        </p>
+                      ) : (
+                        <ul className="space-y-1.5">
+                          {myCertifications.map((cert) => (
+                            <li
+                              key={cert.id}
+                              className="text-sm text-neutral-700 dark:text-neutral-200 flex items-center justify-between gap-2 group"
+                            >
+                              <span className="flex-1 min-w-0">
+                                {cert.cert_name}
+                              </span>
+                              <div className="flex items-center gap-2 flex-shrink-0">
+                                <span
+                                  className={`text-xs px-1.5 py-0.5 rounded ${cert.status === "active" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200" : "bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300"}`}
+                                >
+                                  {cert.status}
+                                </span>
+                                {viewingOwnProfile && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setEditingCertification({
+                                        id: cert.id,
+                                        cert_name: cert.cert_name,
+                                        cert_date: cert.cert_date
+                                          ? cert.cert_date.slice(0, 10)
+                                          : "",
+                                        expiration_date: cert.expiration_date
+                                          ? cert.expiration_date.slice(0, 10)
+                                          : "",
+                                        renewal_date: cert.renewal_date
+                                          ? cert.renewal_date.slice(0, 10)
+                                          : "",
+                                        status: cert.status,
+                                        notes: cert.notes ?? "",
+                                      })
+                                    }
+                                    className="p-1 rounded text-neutral-500 hover:text-brand hover:bg-neutral-100 dark:hover:bg-dark-200"
+                                    title="Edit certification"
+                                  >
+                                    <Edit2 className="h-3.5 w-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+
+                {/* Employment: title history + compensation + FR sizes */}
+                {currentTab === "employment" &&
+                  (loadingMyData ? (
+                    <div className="flex justify-center py-6">
+                      <LoadingSpinner size="md" />
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
+                          <History className="h-4 w-4 text-brand" />
+                          Title history
+                        </h3>
+                        {myTitleHistory.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">
+                            No title history yet.
+                          </p>
+                        ) : (
+                          <ul className="space-y-1.5">
+                            {myTitleHistory.map((entry) => (
+                              <li
+                                key={entry.id}
+                                className="text-sm text-neutral-700 dark:text-neutral-200 flex justify-between gap-2"
+                              >
+                                <span>{entry.title}</span>
+                                <span className="text-muted-foreground text-xs flex-shrink-0">
+                                  {formatDateOnly(entry.effective_from)}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
+                          <DollarSign className="h-4 w-4 text-brand" />
+                          Compensation
+                        </h3>
+                        {compensationAmount != null ? (
+                          <p className="text-sm text-neutral-700 dark:text-neutral-200">
+                            {formatCompensation(
+                              compensationAmount,
+                              payType,
+                              payFrequency,
+                            )}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            No compensation on file.
+                          </p>
+                        )}
+                        {myCompensationHistory.length > 0 && (
+                          <ul className="space-y-1.5 mt-3 text-sm text-muted-foreground">
+                            {myCompensationHistory.slice(0, 5).map((entry) => (
+                              <li
+                                key={entry.id}
+                                className="flex justify-between gap-2"
+                              >
+                                <span>
+                                  {formatCompensation(
+                                    entry.amount,
+                                    entry.pay_type,
+                                    entry.pay_frequency,
+                                  )}
+                                </span>
+                                <span className="text-xs">
+                                  {formatDateOnly(entry.effective_from)}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+
+                      {/* FR (Flame-Resistant) clothing sizes */}
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+                            <Shirt className="h-4 w-4 text-brand" />
+                            FR clothing sizes
+                          </h3>
+                          {canEditEeData && !editingFrSizes && (
+                            <button
+                              type="button"
+                              onClick={handleStartEditFrSizes}
+                              className="text-xs text-brand hover:text-brand-dark hover:underline flex items-center gap-1 shrink-0"
+                            >
+                              <Edit2 className="h-3 w-3" />
+                              {frSizes.shirt || frSizes.pant || frSizes.jacket
+                                ? "Edit sizes"
+                                : "Add sizes"}
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-2">
+                          Update annually or bi-annually if your sizes change.
+                        </p>
+                        {editingFrSizes ? (
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              <div>
+                                <Label htmlFor="fr-shirt" className="text-xs">
+                                  Shirt
+                                </Label>
+                                <Input
+                                  id="fr-shirt"
+                                  value={frSizesDraft.shirt}
+                                  onChange={(e) =>
+                                    setFrSizesDraft((d) => ({
+                                      ...d,
+                                      shirt: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="e.g. M, L, XL"
+                                  className="mt-1 h-9"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="fr-pant" className="text-xs">
+                                  Pants
+                                </Label>
+                                <Input
+                                  id="fr-pant"
+                                  value={frSizesDraft.pant}
+                                  onChange={(e) =>
+                                    setFrSizesDraft((d) => ({
+                                      ...d,
+                                      pant: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="e.g. 32x30"
+                                  className="mt-1 h-9"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="fr-jacket" className="text-xs">
+                                  Jacket
+                                </Label>
+                                <Input
+                                  id="fr-jacket"
+                                  value={frSizesDraft.jacket}
+                                  onChange={(e) =>
+                                    setFrSizesDraft((d) => ({
+                                      ...d,
+                                      jacket: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="e.g. L, XL"
+                                  className="mt-1 h-9"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={handleSaveFrSizes}
+                                disabled={savingFrSizes}
+                              >
+                                {savingFrSizes ? "Saving…" : "Save"}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setEditingFrSizes(false)}
+                                disabled={savingFrSizes}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            {frSizes.shirt || frSizes.pant || frSizes.jacket ? (
+                              <div className="text-sm text-neutral-700 dark:text-neutral-200 space-y-1">
+                                {frSizes.shirt && (
+                                  <p>
+                                    <span className="text-muted-foreground">
+                                      Shirt:
+                                    </span>{" "}
+                                    {frSizes.shirt}
+                                  </p>
+                                )}
+                                {frSizes.pant && (
+                                  <p>
+                                    <span className="text-muted-foreground">
+                                      Pants:
+                                    </span>{" "}
+                                    {frSizes.pant}
+                                  </p>
+                                )}
+                                {frSizes.jacket && (
+                                  <p>
+                                    <span className="text-muted-foreground">
+                                      Jacket:
+                                    </span>{" "}
+                                    {frSizes.jacket}
+                                  </p>
+                                )}
+                                {frSizes.updated_at && (
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Last updated{" "}
+                                    {formatDateOnly(frSizes.updated_at)}
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">
+                                No FR sizes on file.
+                              </p>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                {/* One-on-One Check-Ins */}
+                {currentTab === "oneonone" && profileIdToFetch && (
+                  <OneOnOneList
+                    employeeId={profileIdToFetch}
+                    employeeName={displayName}
+                    currentUserId={user?.id || ""}
+                    currentUserName={
+                      user?.user_metadata?.name ||
+                      user?.email?.split("@")[0] ||
+                      ""
+                    }
+                    canStartNew={
+                      isManagerViewingReport || isHrViewer || isAdminViewer
+                    }
+                    canEdit={
+                      isManagerViewingReport || isHrViewer || isAdminViewer
+                    }
+                  />
+                )}
+
+                {/* Career Development */}
+                {currentTab === "career" && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
+                      <TrendingUp className="h-4 w-4 text-brand" />
+                      Career Development
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Career development notes and plans will appear here when
+                      configured.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* Edit document modal */}
       <Dialog

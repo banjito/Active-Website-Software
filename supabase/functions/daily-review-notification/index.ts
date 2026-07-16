@@ -65,15 +65,22 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     console.log(`Found ${assetsData.length} assets ready for review`)
 
-    // Get job links for these assets
+    // Get job links for these assets.
+    // Query in batches: a single .in() with hundreds of ids builds a URL that
+    // exceeds the server's length limit and fails with "Bad Request".
     const assetIds = assetsData.map(a => a.id)
-    const { data: jobAssetLinks, error: linksError } = await supabase
-      .schema('neta_ops')
-      .from('job_assets')
-      .select('job_id, asset_id')
-      .in('asset_id', assetIds)
-
-    if (linksError) throw linksError
+    const IN_BATCH_SIZE = 100
+    const jobAssetLinks: { job_id: string; asset_id: string }[] = []
+    for (let i = 0; i < assetIds.length; i += IN_BATCH_SIZE) {
+      const batch = assetIds.slice(i, i + IN_BATCH_SIZE)
+      const { data: batchLinks, error: linksError } = await supabase
+        .schema('neta_ops')
+        .from('job_assets')
+        .select('job_id, asset_id')
+        .in('asset_id', batch)
+      if (linksError) throw linksError
+      if (batchLinks) jobAssetLinks.push(...batchLinks)
+    }
 
     if (!jobAssetLinks || jobAssetLinks.length === 0) {
       return new Response(
@@ -110,29 +117,39 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
       )
     }
 
-    // Fetch job details (only include jobs that are whitelisted for daily emails)
-    const { data: jobsData, error: jobsError } = await supabase
-      .schema('neta_ops')
-      .from('jobs')
-      .select('id, title, job_number, division, customer_id, include_in_daily_email')
-      .in('id', jobIds)
-      .eq('include_in_daily_email', true)
-
-    if (jobsError) throw jobsError
-    if (!jobsData) throw new Error('No job data returned')
+    // Fetch job details (only include jobs that are whitelisted for daily emails).
+    // Batched for the same URL-length reason as the job_assets query above.
+    const jobsData: {
+      id: string; title: string; job_number: string; division: string;
+      customer_id: string | null; include_in_daily_email: boolean;
+    }[] = []
+    for (let i = 0; i < jobIds.length; i += IN_BATCH_SIZE) {
+      const batch = jobIds.slice(i, i + IN_BATCH_SIZE)
+      const { data: batchJobs, error: jobsError } = await supabase
+        .schema('neta_ops')
+        .from('jobs')
+        .select('id, title, job_number, division, customer_id, include_in_daily_email')
+        .in('id', batch)
+        .eq('include_in_daily_email', true)
+      if (jobsError) throw jobsError
+      if (batchJobs) jobsData.push(...batchJobs)
+    }
 
     // Batch-fetch all customers in one query (avoids N+1)
     const customerIds = [...new Set(jobsData.filter(j => j.customer_id).map(j => j.customer_id))]
     let customerMap: Record<string, { name?: string; company_name?: string }> = {}
     if (customerIds.length > 0) {
       try {
-        const { data: customersData } = await supabase
-          .schema('common')
-          .from('customers')
-          .select('id, name, company_name')
-          .in('id', customerIds)
-        if (customersData) {
-          customersData.forEach((c: any) => { customerMap[c.id] = c })
+        for (let i = 0; i < customerIds.length; i += IN_BATCH_SIZE) {
+          const batch = customerIds.slice(i, i + IN_BATCH_SIZE)
+          const { data: customersData } = await supabase
+            .schema('common')
+            .from('customers')
+            .select('id, name, company_name')
+            .in('id', batch)
+          if (customersData) {
+            customersData.forEach((c: any) => { customerMap[c.id] = c })
+          }
         }
       } catch {
         // ignore customer lookup errors

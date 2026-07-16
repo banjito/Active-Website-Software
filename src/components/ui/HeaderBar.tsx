@@ -33,6 +33,7 @@ import { ReviewShortcutsDropdown } from "@/components/shortcuts/ReviewShortcutsD
 import {
   canAccessReportApprovals,
   fetchJobsWithReportsForReview,
+  fetchJobAssetLinksByAssetIds,
 } from "@/lib/reviewShortcuts";
 import { supabase } from "@/lib/supabase";
 import { fetchAmpContacts } from "@/services/ampContactsService";
@@ -484,13 +485,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
       return { assets: [], groups: [] as JobGroup[] };
 
     const assetIds = assetsData.map((a) => a.id);
-    const { data: links, error: linksError } = await supabase
-      .schema("neta_ops")
-      .from("job_assets")
-      .select("job_id, asset_id")
-      .in("asset_id", assetIds);
-    if (linksError) throw linksError;
-    if (!links || links.length === 0)
+    const links = await fetchJobAssetLinksByAssetIds(assetIds);
+    if (links.length === 0)
       return { assets: [], groups: [] as JobGroup[] };
 
     const jobIdByAsset: Record<string, string> = {};

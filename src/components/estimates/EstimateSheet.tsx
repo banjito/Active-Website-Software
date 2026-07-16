@@ -7493,7 +7493,7 @@ export default function EstimateSheet({
                               <th style={styles.tableHeader}>
                                 MATERIAL EXTENSION
                               </th>
-                              <th style={styles.tableHeader}>LABOR (MEN)</th>
+                              <th style={styles.tableHeader}>LABOR (TECHS)</th>
                               <th style={styles.tableHeader}>LABOR (HOURS)</th>
                               <th style={styles.tableHeader}>LABOR UNIT</th>
                               <th style={styles.tableHeader}>LABOR TOTAL</th>
@@ -8459,7 +8459,7 @@ export default function EstimateSheet({
                             <th style={styles.tableHeader}>
                               MATERIAL EXTENSION
                             </th>
-                            <th style={styles.tableHeader}>LABOR (MEN)</th>
+                            <th style={styles.tableHeader}>LABOR (TECHS)</th>
                             <th style={styles.tableHeader}>LABOR (HOURS)</th>
                             <th style={styles.tableHeader}>LABOR UNIT</th>
                             <th style={styles.tableHeader}>LABOR TOTAL</th>

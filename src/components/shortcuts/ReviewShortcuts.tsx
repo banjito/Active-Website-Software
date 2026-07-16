@@ -15,6 +15,7 @@ import {
   formatReviewTimeAgo,
   getJobReviewPath,
   getReviewUrgencyColorClass,
+  extractErrorMessage,
   type JobWithReportsReadyForReview,
 } from "@/lib/reviewShortcuts";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -35,7 +36,7 @@ export const ReviewShortcuts: React.FC = () => {
       const data = await fetchJobsWithReportsForReview();
       setJobsWithReports(data);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = extractErrorMessage(err);
       console.error("Error fetching jobs with reports for review:", err);
       setError(`Failed to load jobs with reports: ${message}`);
     } finally {

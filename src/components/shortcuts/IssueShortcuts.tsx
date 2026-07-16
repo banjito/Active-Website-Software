@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { fetchJobAssetLinksByAssetIds } from "@/lib/reviewShortcuts";
 import { AlertCircle, FileText, Clock, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -43,13 +44,8 @@ export const IssueShortcuts: React.FC = () => {
       }
 
       const assetIds = assets.map((a) => a.id);
-      const { data: links, error: linksError } = await supabase
-        .schema("neta_ops")
-        .from("job_assets")
-        .select("job_id, asset_id")
-        .in("asset_id", assetIds);
-      if (linksError) throw linksError;
-      if (!links || links.length === 0) {
+      const links = await fetchJobAssetLinksByAssetIds(assetIds);
+      if (links.length === 0) {
         setGroups([]);
         return;
       }

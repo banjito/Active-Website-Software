@@ -3,9 +3,11 @@ import { AlertCircle, Clock, FileText, Flag } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import {
   fetchJobsWithReportsForReview,
+  fetchJobAssetLinksByAssetIds,
   formatReviewTimeAgo,
   getJobReviewPath,
   getReviewUrgencyColorClass,
+  extractErrorMessage,
   type JobWithReportsReadyForReview,
 } from "@/lib/reviewShortcuts";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -47,16 +49,10 @@ export const ReviewShortcutsDropdown: React.FC<
     if (!flags || flags.length === 0) return {};
 
     const assetIds = Array.from(new Set(flags.map((flag) => flag.asset_id)));
-    const { data: links, error: linksError } = await supabase
-      .schema("neta_ops")
-      .from("job_assets")
-      .select("job_id, asset_id")
-      .in("asset_id", assetIds);
-
-    if (linksError) throw linksError;
+    const links = await fetchJobAssetLinksByAssetIds(assetIds);
 
     const jobIdByAssetId = new Map(
-      (links || []).map((link) => [link.asset_id, link.job_id]),
+      links.map((link) => [link.asset_id, link.job_id]),
     );
 
     return flags.reduce<Record<string, FlagJobInfo>>((acc, flag) => {
@@ -144,7 +140,7 @@ export const ReviewShortcutsDropdown: React.FC<
       );
       setJobs([...reviewJobs, ...flagOnlyJobs]);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = extractErrorMessage(err);
       console.error("Error fetching jobs with reports for review:", err);
       setError(`Failed to load: ${message}`);
       setJobs([]);

@@ -19,8 +19,61 @@ export interface JobWithReportsReadyForReview {
   }>;
 }
 
+/**
+ * Extracts a human-readable message from an unknown error. Supabase's
+ * PostgrestError is a plain object ({ message, details, hint, code }), not an
+ * Error instance, so `err instanceof Error` misses it and it collapses to
+ * "Unknown error". Handle both shapes here.
+ */
+export function extractErrorMessage(err: unknown): string {
+  if (err instanceof Error) {
+    return err.message;
+  }
+  if (err && typeof err === 'object') {
+    const e = err as { message?: unknown; details?: unknown; hint?: unknown; code?: unknown };
+    const parts = [e.message, e.details, e.hint].filter(
+      (part): part is string => typeof part === 'string' && part.length > 0
+    );
+    if (parts.length > 0) {
+      const base = parts.join(' — ');
+      return typeof e.code === 'string' && e.code ? `${base} (${e.code})` : base;
+    }
+  }
+  if (typeof err === 'string' && err.length > 0) {
+    return err;
+  }
+  return 'Unknown error';
+}
+
 export function canAccessReportApprovals(user: User | null | undefined): boolean {
   return user?.user_metadata?.role === 'Admin' || isSuperUser(user?.email);
+}
+
+/**
+ * Fetches neta_ops.job_assets links for the given asset ids. Supabase/PostgREST
+ * puts `.in(...)` filters in the URL, so passing a large id list (hundreds of
+ * `ready_for_review` assets) blows past the server's URI length limit and the
+ * request fails with 400 Bad Request. Chunk the ids and merge the results.
+ */
+export async function fetchJobAssetLinksByAssetIds(
+  assetIds: string[],
+  chunkSize = 100
+): Promise<Array<{ job_id: string; asset_id: string }>> {
+  if (assetIds.length === 0) return [];
+
+  const links: Array<{ job_id: string; asset_id: string }> = [];
+  for (let i = 0; i < assetIds.length; i += chunkSize) {
+    const chunk = assetIds.slice(i, i + chunkSize);
+    const { data, error } = await supabase
+      .schema('neta_ops')
+      .from('job_assets')
+      .select('job_id, asset_id')
+      .in('asset_id', chunk);
+
+    if (error) throw error;
+    if (data) links.push(...data);
+  }
+  return links;
 }
 
 export function getJobReviewPath(jobId: string, user: User | null | undefined): string {
@@ -34,7 +87,7 @@ export async function fetchJobsWithReportsForReview(): Promise<JobWithReportsRea
   const { data: assetsData, error: assetsError } = await supabase
     .schema('neta_ops')
     .from('assets')
-    .select('id, name, created_at, file_url, status, submitted_at, approved_at, sent_at')
+    .select('id, name, created_at, status')
     .eq('status', 'ready_for_review')
     .order('created_at', { ascending: true });
 
@@ -51,14 +104,8 @@ export async function fetchJobsWithReportsForReview(): Promise<JobWithReportsRea
   }
 
   const assetIds = assetsData.map((asset) => asset.id);
-  const { data: jobAssetLinks, error: linksError } = await supabase
-    .schema('neta_ops')
-    .from('job_assets')
-    .select('job_id, asset_id')
-    .in('asset_id', assetIds);
-
-  if (linksError) throw linksError;
-  if (!jobAssetLinks || jobAssetLinks.length === 0) return [];
+  const jobAssetLinks = await fetchJobAssetLinksByAssetIds(assetIds);
+  if (jobAssetLinks.length === 0) return [];
 
   const assetsByJob = jobAssetLinks.reduce(
     (acc, link) => {

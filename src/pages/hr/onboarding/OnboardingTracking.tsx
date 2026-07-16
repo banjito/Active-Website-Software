@@ -986,9 +986,7 @@ export const OnboardingTracking: React.FC = () => {
             </select>
             <Button
               onClick={handleOpenAddPerson}
-              className="bg-brand hover:bg-brand/90 text-white"
-            >
-              <UserPlus className="h-4 w-4 mr-2" />
+              className="bg-brand hover:bg-brand/90 text-white" leftIcon={<UserPlus className="h-4 w-4" />}>
               Add person
             </Button>
           </div>
@@ -1167,9 +1165,7 @@ export const OnboardingTracking: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => setSelectedTracking(record)}
-                        title="Manage packets"
-                      >
-                        <Folder className="h-4 w-4 mr-1" />
+                        title="Manage packets" leftIcon={<Folder className="h-4 w-4" />}>
                         Packets
                       </Button>
                     </div>
@@ -1186,9 +1182,8 @@ export const OnboardingTracking: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page <= 1}
-                    >
-                      <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                      disabled={page <= 1} leftIcon={<ChevronLeft className="h-4 w-4" />}>
+                      Previous
                     </Button>
                     <Button
                       variant="outline"
@@ -1196,9 +1191,8 @@ export const OnboardingTracking: React.FC = () => {
                       onClick={() =>
                         setPage((p) => Math.min(totalPages, p + 1))
                       }
-                      disabled={page >= totalPages}
-                    >
-                      Next <ChevronRight className="h-4 w-4 ml-1" />
+                      disabled={page >= totalPages} rightIcon={<ChevronRight className="h-4 w-4" />}>
+                      Next
                     </Button>
                   </div>
                 </div>
@@ -1291,9 +1285,7 @@ export const OnboardingTracking: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleUnlinkAccount(selectedTracking.id)}
-                        disabled={linkingAccount}
-                      >
-                        <X className="h-3.5 w-3.5 mr-1" />
+                        disabled={linkingAccount} leftIcon={<X className="h-3.5 w-3.5" />}>
                         Unlink
                       </Button>
                     </div>
@@ -1383,9 +1375,7 @@ export const OnboardingTracking: React.FC = () => {
                         toast({ title: "Copy failed", variant: "destructive" }),
                     );
                   }}
-                  className="flex-shrink-0"
-                >
-                  <Link2 className="h-3.5 w-3.5 mr-1" />
+                  className="flex-shrink-0" leftIcon={<Link2 className="h-3.5 w-3.5" />}>
                   Copy link
                 </Button>
               </div>
@@ -1478,9 +1468,7 @@ export const OnboardingTracking: React.FC = () => {
                                 navigate(
                                   `/hr/onboarding/new-hire-packets?packetId=${p.id}`,
                                 )
-                              }
-                            >
-                              <Folder className="h-3.5 w-3.5 mr-1" />
+                              } leftIcon={<Folder className="h-3.5 w-3.5" />}>
                               View
                             </Button>
                           </li>

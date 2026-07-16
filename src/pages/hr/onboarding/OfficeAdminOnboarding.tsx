@@ -142,8 +142,7 @@ export const OfficeAdminOnboarding: React.FC = () => {
             completed.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchData}>
-          <RefreshCw className="h-4 w-4 mr-2" />
+        <Button variant="outline" size="sm" onClick={fetchData} leftIcon={<RefreshCw className="h-4 w-4" />}>
           Refresh
         </Button>
       </div>
@@ -295,17 +294,15 @@ export const OfficeAdminOnboarding: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page <= 1}
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                  disabled={page <= 1} leftIcon={<ChevronLeft className="h-4 w-4" />}>
+                  Previous
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page >= totalPages}
-                >
-                  Next <ChevronRight className="h-4 w-4 ml-1" />
+                  disabled={page >= totalPages} rightIcon={<ChevronRight className="h-4 w-4" />}>
+                  Next
                 </Button>
               </div>
             </div>

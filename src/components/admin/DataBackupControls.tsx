@@ -315,9 +315,7 @@ export const DataBackupControls: React.FC = () => {
             onClick={fetchBackups}
             disabled={loading}
             variant="outline"
-            className="flex items-center gap-2"
-          >
-            <RotateCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            className="flex items-center gap-2" leftIcon={<RotateCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />}>
             Refresh
           </Button>
         </div>
@@ -376,9 +374,7 @@ export const DataBackupControls: React.FC = () => {
             <div className="pt-2">
               <Button
                 variant="outline"
-                className="w-full flex items-center justify-center gap-2"
-              >
-                <Database className="h-4 w-4" />
+                className="w-full flex items-center justify-center gap-2" leftIcon={<Database className="h-4 w-4" />}>
                 <span>View Detailed Health</span>
               </Button>
             </div>
@@ -407,9 +403,7 @@ export const DataBackupControls: React.FC = () => {
             <Button
               onClick={createBackup}
               disabled={creating || !backupName.trim()}
-              className="w-full flex items-center justify-center gap-2 mt-2"
-            >
-              <Upload className="h-4 w-4" />
+              className="w-full flex items-center justify-center gap-2 mt-2" leftIcon={<Upload className="h-4 w-4" />}>
               {creating ? "Creating Backup..." : "Create Backup Now"}
             </Button>
           </CardContent>
@@ -510,8 +504,7 @@ export const DataBackupControls: React.FC = () => {
             </div>
 
             <div className="pt-2">
-              <Button variant="outline" className="w-full">
-                <Clock className="h-4 w-4 mr-2" />
+              <Button variant="outline" className="w-full" leftIcon={<Clock className="h-4 w-4" />}>
                 <span>Save Schedule</span>
               </Button>
             </div>
@@ -576,9 +569,7 @@ export const DataBackupControls: React.FC = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex items-center gap-1"
-                        >
-                          <Download className="h-4 w-4" />
+                          className="flex items-center gap-1" leftIcon={<Download className="h-4 w-4" />}>
                           <span>Download</span>
                         </Button>
                         {backup.status === "completed" && (
@@ -587,9 +578,7 @@ export const DataBackupControls: React.FC = () => {
                             size="sm"
                             className="flex items-center gap-1"
                             onClick={() => startRestore(backup.id)}
-                            disabled={restoreStatus.inProgress}
-                          >
-                            <RotateCw className="h-4 w-4" />
+                            disabled={restoreStatus.inProgress} leftIcon={<RotateCw className="h-4 w-4" />}>
                             <span>Restore</span>
                           </Button>
                         )}

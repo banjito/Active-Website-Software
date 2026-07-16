@@ -621,9 +621,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                       )
                         ? "bg-black/5 dark:bg-dark-50"
                         : ""
-                    }`}
-                  >
-                    <UserCheck className="mr-2 h-3.5 w-3.5 text-brand" />
+                    }`} leftIcon={<UserCheck className="h-3.5 w-3.5 text-brand" />}>
                     Your Onboarding
                   </Button>
                 </Link>
@@ -634,9 +632,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                       location.pathname.startsWith("/hr/data/employee-profiles")
                         ? "bg-black/5 dark:bg-dark-50"
                         : ""
-                    }`}
-                  >
-                    <UserCircle className="mr-2 h-3.5 w-3.5 text-brand" />
+                    }`} leftIcon={<UserCircle className="h-3.5 w-3.5 text-brand" />}>
                     Employee Profiles
                   </Button>
                 </Link>
@@ -647,9 +643,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                       location.pathname.startsWith("/hr/data/org-chart")
                         ? "bg-black/5 dark:bg-dark-50"
                         : ""
-                    }`}
-                  >
-                    <Network className="mr-2 h-3.5 w-3.5 text-brand" />
+                    }`} leftIcon={<Network className="h-3.5 w-3.5 text-brand" />}>
                     Org Chart
                   </Button>
                 </Link>
@@ -662,9 +656,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                       )
                         ? "bg-black/5 dark:bg-dark-50"
                         : ""
-                    }`}
-                  >
-                    <Shield className="mr-2 h-3.5 w-3.5 text-brand" />
+                    }`} leftIcon={<Shield className="h-3.5 w-3.5 text-brand" />}>
                     Document Acknowledgment
                   </Button>
                 </Link>

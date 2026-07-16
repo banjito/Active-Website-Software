@@ -173,14 +173,12 @@ export default function EngineeringPage() {
       actions={
         <div className="flex items-center gap-2">
           {activeTab === "designs" && (
-            <Button onClick={() => setCreateDesignOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button onClick={() => setCreateDesignOpen(true)} leftIcon={<Plus className="h-4 w-4" />}>
               New Design
             </Button>
           )}
           {activeTab === "documentation" && (
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button leftIcon={<Plus className="h-4 w-4" />}>
               Upload Document
             </Button>
           )}

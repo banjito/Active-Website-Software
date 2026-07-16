@@ -540,11 +540,7 @@ export const SystemHealthMonitoring: React.FC = () => {
           variant="outline"
           size="sm"
           onClick={handleRefresh}
-          disabled={loading}
-        >
-          <RefreshCw
-            className={`mr-1 h-4 w-4 ${loading ? "animate-spin" : ""}`}
-          />
+          disabled={loading} leftIcon={<RefreshCw className={`mr-1 h-4 w-4 ${loading ? "animate-spin" : ""}`} />}>
           {loading ? "Checking..." : "Refresh"}
         </Button>
       </CardHeader>

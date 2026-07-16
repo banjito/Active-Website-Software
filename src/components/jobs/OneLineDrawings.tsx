@@ -254,9 +254,7 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
             <Button
               onClick={() => setShowUploadDialog(true)}
               size="sm"
-              className="bg-brand hover:bg-brand-dark text-white"
-            >
-              <Plus className="h-4 w-4 mr-2" />
+              className="bg-brand hover:bg-brand-dark text-white" leftIcon={<Plus className="h-4 w-4" />}>
               Upload Drawing
             </Button>
           </div>
@@ -269,9 +267,7 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
               <Button
                 onClick={() => setShowUploadDialog(true)}
                 variant="outline"
-                className="mt-4"
-              >
-                <Upload className="h-4 w-4 mr-2" />
+                className="mt-4" leftIcon={<Upload className="h-4 w-4" />}>
                 Upload First Drawing
               </Button>
             </div>
@@ -501,9 +497,7 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
                   <Button
                     onClick={() => handleDownload(previewDrawing)}
                     variant="outline"
-                    className="mt-4"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
+                    className="mt-4" leftIcon={<Download className="h-4 w-4" />}>
                     Download to View
                   </Button>
                 </div>
@@ -515,9 +509,7 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
               </Button>
               <Button
                 onClick={() => handleDownload(previewDrawing)}
-                className="bg-brand hover:bg-brand-dark text-white"
-              >
-                <Download className="h-4 w-4 mr-2" />
+                className="bg-brand hover:bg-brand-dark text-white" leftIcon={<Download className="h-4 w-4" />}>
                 Download
               </Button>
             </DialogFooter>

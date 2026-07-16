@@ -419,9 +419,7 @@ export function CertificateGenerator({ division }: CertificateGeneratorProps) {
             setEditingCertificateId(null);
             setForm(defaultFormState);
             setShowForm(true);
-          }}
-        >
-          <Plus className="mr-2 h-4 w-4" />
+          }} leftIcon={<Plus className="h-4 w-4" />}>
           Create Certificate
         </Button>
       </div>
@@ -508,9 +506,7 @@ export function CertificateGenerator({ division }: CertificateGeneratorProps) {
                         setEditingCertificateId(null);
                         setForm(defaultFormState);
                         setShowForm(true);
-                      }}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
+                      }} leftIcon={<Plus className="h-4 w-4" />}>
                       Create Certificate
                     </Button>
                   </div>
@@ -584,9 +580,7 @@ export function CertificateGenerator({ division }: CertificateGeneratorProps) {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleGeneratePDF(certificate)}
-                            >
-                              <Download className="h-4 w-4 mr-1" />
+                              onClick={() => handleGeneratePDF(certificate)} leftIcon={<Download className="h-4 w-4" />}>
                               Download
                             </Button>
                             <Button
@@ -594,25 +588,19 @@ export function CertificateGenerator({ division }: CertificateGeneratorProps) {
                               variant="outline"
                               onClick={() =>
                                 handleEmailCertificate(certificate)
-                              }
-                            >
-                              <Mail className="h-4 w-4 mr-1" />
+                              } leftIcon={<Mail className="h-4 w-4" />}>
                               Email
                             </Button>
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleEdit(certificate)}
-                            >
-                              <Edit className="h-4 w-4 mr-1" />
+                              onClick={() => handleEdit(certificate)} leftIcon={<Edit className="h-4 w-4" />}>
                               Edit
                             </Button>
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleDelete(certificate.id)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-1" />
+                              onClick={() => handleDelete(certificate.id)} leftIcon={<Trash2 className="h-4 w-4" />}>
                               Delete
                             </Button>
                           </div>

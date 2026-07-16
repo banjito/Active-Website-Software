@@ -122,8 +122,8 @@ export const EmployeePortal: React.FC = () => {
             <UserCircle className="h-5 w-5 text-muted-foreground" />
             <CardTitle>Personal data</CardTitle>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setProfileViewOpen(true)}>
-            View full profile <ExternalLink className="ml-1 h-3.5 w-3.5" />
+          <Button variant="outline" size="sm" onClick={() => setProfileViewOpen(true)} rightIcon={<ExternalLink className="h-3.5 w-3.5" />}>
+            View full profile
           </Button>
         </CardHeader>
         <CardContent className="space-y-2">

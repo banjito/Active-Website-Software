@@ -223,8 +223,7 @@ export const SignatureProfileManager: React.FC<
           ) : profiles.length === 0 && !isAdding ? (
             <div className="text-center py-8 text-neutral-500">
               <p>No signature profiles yet.</p>
-              <Button onClick={handleAdd} className="mt-4" variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
+              <Button onClick={handleAdd} className="mt-4" variant="outline" leftIcon={<Plus className="h-4 w-4" />}>
                 Add First Profile
               </Button>
             </div>
@@ -324,9 +323,7 @@ export const SignatureProfileManager: React.FC<
                         <Button
                           onClick={handleSaveEdit}
                           size="sm"
-                          className="bg-brand hover:bg-brand-dark text-white"
-                        >
-                          <Save className="h-4 w-4 mr-2" />
+                          className="bg-brand hover:bg-brand-dark text-white" leftIcon={<Save className="h-4 w-4" />}>
                           Save
                         </Button>
                         <Button
@@ -472,9 +469,7 @@ export const SignatureProfileManager: React.FC<
                       <Button
                         onClick={handleSaveNew}
                         size="sm"
-                        className="bg-brand hover:bg-brand-dark text-white"
-                      >
-                        <Save className="h-4 w-4 mr-2" />
+                        className="bg-brand hover:bg-brand-dark text-white" leftIcon={<Save className="h-4 w-4" />}>
                         Save
                       </Button>
                       <Button
@@ -494,8 +489,7 @@ export const SignatureProfileManager: React.FC<
 
         <DialogFooter>
           {!isAdding && (
-            <Button onClick={handleAdd} variant="outline" className="mr-auto">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button onClick={handleAdd} variant="outline" className="mr-auto" leftIcon={<Plus className="h-4 w-4" />}>
               Add Profile
             </Button>
           )}

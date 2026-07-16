@@ -292,9 +292,7 @@ export default function RoleAuditLogs({
             size="sm"
             onClick={loadLogs}
             disabled={loading}
-            className="flex items-center gap-1"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            className="flex items-center gap-1" leftIcon={<RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />}>
             Refresh
           </Button>
         </div>

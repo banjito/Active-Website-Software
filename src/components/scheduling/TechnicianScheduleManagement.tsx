@@ -430,9 +430,7 @@ export function TechnicianScheduleManagement({
               <CardTitle>Time-Off Requests</CardTitle>
               <Button
                 onClick={() => setShowTimeOffForm(true)}
-                disabled={!selectedTechnician || isLoading}
-              >
-                <Plus className="mr-2 h-4 w-4" />
+                disabled={!selectedTechnician || isLoading} leftIcon={<Plus className="h-4 w-4" />}>
                 Request Time Off
               </Button>
             </CardHeader>
@@ -485,9 +483,7 @@ export function TechnicianScheduleManagement({
                               disabled={request.user_id !== user?.id}
                               onClick={() =>
                                 handleCancelTimeOffRequest(request.id)
-                              }
-                            >
-                              <XCircle className="h-4 w-4 mr-1" />
+                              } leftIcon={<XCircle className="h-4 w-4" />}>
                               Cancel
                             </Button>
                             {user?.user_metadata?.role === "Admin" ||
@@ -501,9 +497,7 @@ export function TechnicianScheduleManagement({
                                         request.id,
                                         "rejected",
                                       )
-                                    }
-                                  >
-                                    <XCircle className="h-4 w-4 mr-1" />
+                                    } leftIcon={<XCircle className="h-4 w-4" />}>
                                     Reject
                                   </Button>
                                   <Button
@@ -513,9 +507,7 @@ export function TechnicianScheduleManagement({
                                         request.id,
                                         "approved",
                                       )
-                                    }
-                                  >
-                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                    } leftIcon={<CheckCircle className="h-4 w-4" />}>
                                     Approve
                                   </Button>
                                 </>

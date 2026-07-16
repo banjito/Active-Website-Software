@@ -670,13 +670,10 @@ const VendorManagement: React.FC = () => {
           />
           <Button
             variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Upload className="mr-2 h-4 w-4" />
+            onClick={() => fileInputRef.current?.click()} leftIcon={<Upload className="h-4 w-4" />}>
             Import Excel
           </Button>
-          <Button onClick={openNewVendor}>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button onClick={openNewVendor} leftIcon={<Plus className="h-4 w-4" />}>
             Add Vendor
           </Button>
         </div>
@@ -775,8 +772,7 @@ const VendorManagement: React.FC = () => {
               {vendors.length === 0 ? (
                 <div>
                   <p className="mb-4">No vendors have been added yet.</p>
-                  <Button onClick={openNewVendor}>
-                    <Plus className="mr-2 h-4 w-4" />
+                  <Button onClick={openNewVendor} leftIcon={<Plus className="h-4 w-4" />}>
                     Add Your First Vendor
                   </Button>
                 </div>
@@ -1378,9 +1374,8 @@ const VendorManagement: React.FC = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => openNewContact(selectedVendor)}
-                    >
-                      <Plus className="h-4 w-4 mr-1" /> Add
+                      onClick={() => openNewContact(selectedVendor)} leftIcon={<Plus className="h-4 w-4" />}>
+                      Add
                     </Button>
                   </div>
                   {(selectedVendor.contacts || []).length === 0 ? (

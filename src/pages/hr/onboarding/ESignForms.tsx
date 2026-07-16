@@ -593,9 +593,7 @@ export const ESignForms: React.FC = () => {
             resetForm();
             setIsCreateModalOpen(true);
           }}
-          className="bg-brand hover:bg-brand/90 text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" />
+          className="bg-brand hover:bg-brand/90 text-white" leftIcon={<Plus className="h-4 w-4" />}>
           Create Form
         </Button>
       </div>
@@ -698,17 +696,13 @@ export const ESignForms: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openViewModal(form)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
+                      onClick={() => openViewModal(form)} leftIcon={<Eye className="h-4 w-4" />}>
                       View
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openEditModal(form)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
+                      onClick={() => openEditModal(form)} leftIcon={<Edit className="h-4 w-4" />}>
                       Edit
                     </Button>
                     <Button
@@ -734,17 +728,15 @@ export const ESignForms: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page <= 1}
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                  disabled={page <= 1} leftIcon={<ChevronLeft className="h-4 w-4" />}>
+                  Previous
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page >= totalPages}
-                >
-                  Next <ChevronRight className="h-4 w-4 ml-1" />
+                  disabled={page >= totalPages} rightIcon={<ChevronRight className="h-4 w-4" />}>
+                  Next
                 </Button>
               </div>
             </div>
@@ -865,9 +857,7 @@ export const ESignForms: React.FC = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleDocumentAdd}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
+                  onClick={handleDocumentAdd} leftIcon={<Plus className="h-4 w-4" />}>
                   Add Document
                 </Button>
               </div>
@@ -967,9 +957,7 @@ export const ESignForms: React.FC = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleFormFieldAdd}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
+                  onClick={handleFormFieldAdd} leftIcon={<Plus className="h-4 w-4" />}>
                   Add Field
                 </Button>
               </div>
@@ -1044,9 +1032,7 @@ export const ESignForms: React.FC = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleSignatureFieldAdd}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
+                  onClick={handleSignatureFieldAdd} leftIcon={<Plus className="h-4 w-4" />}>
                   Add Signature
                 </Button>
               </div>
@@ -1250,9 +1236,7 @@ export const ESignForms: React.FC = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleDocumentAdd}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
+                  onClick={handleDocumentAdd} leftIcon={<Plus className="h-4 w-4" />}>
                   Add Document
                 </Button>
               </div>
@@ -1347,9 +1331,7 @@ export const ESignForms: React.FC = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleFormFieldAdd}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
+                  onClick={handleFormFieldAdd} leftIcon={<Plus className="h-4 w-4" />}>
                   Add Field
                 </Button>
               </div>
@@ -1424,9 +1406,7 @@ export const ESignForms: React.FC = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleSignatureFieldAdd}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
+                  onClick={handleSignatureFieldAdd} leftIcon={<Plus className="h-4 w-4" />}>
                   Add Signature
                 </Button>
               </div>
@@ -1576,9 +1556,7 @@ export const ESignForms: React.FC = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => openDocumentViewer(doc)}
-                              className="flex items-center gap-1"
-                            >
-                              <Eye className="h-4 w-4" />
+                              className="flex items-center gap-1" leftIcon={<Eye className="h-4 w-4" />}>
                               View
                             </Button>
                             <Button
@@ -1710,18 +1688,14 @@ export const ESignForms: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => handleDocumentOpenInNewTab(selectedDocument)}
-                    className="flex items-center gap-1"
-                  >
-                    <ExternalLink className="h-4 w-4" />
+                    className="flex items-center gap-1" leftIcon={<ExternalLink className="h-4 w-4" />}>
                     Open in New Tab
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleDocumentDownload(selectedDocument)}
-                    className="flex items-center gap-1"
-                  >
-                    <Download className="h-4 w-4" />
+                    className="flex items-center gap-1" leftIcon={<Download className="h-4 w-4" />}>
                     Download
                   </Button>
                 </div>
@@ -1752,9 +1726,7 @@ export const ESignForms: React.FC = () => {
                           onClick={() =>
                             handleDocumentOpenInNewTab(selectedDocument)
                           }
-                          className="flex items-center gap-2"
-                        >
-                          <ExternalLink className="w-4 h-4" />
+                          className="flex items-center gap-2" leftIcon={<ExternalLink className="w-4 h-4" />}>
                           Open in New Tab
                         </Button>
                         <Button
@@ -1762,9 +1734,7 @@ export const ESignForms: React.FC = () => {
                           onClick={() =>
                             handleDocumentDownload(selectedDocument)
                           }
-                          className="flex items-center gap-2"
-                        >
-                          <Download className="w-4 h-4" />
+                          className="flex items-center gap-2" leftIcon={<Download className="w-4 h-4" />}>
                           Download
                         </Button>
                       </div>
@@ -1809,9 +1779,7 @@ export const ESignForms: React.FC = () => {
                               onClick={() =>
                                 handleDocumentOpenInNewTab(selectedDocument)
                               }
-                              className="flex items-center gap-2"
-                            >
-                              <ExternalLink className="w-4 h-4" />
+                              className="flex items-center gap-2" leftIcon={<ExternalLink className="w-4 h-4" />}>
                               Open in New Tab
                             </Button>
                             <Button
@@ -1819,9 +1787,7 @@ export const ESignForms: React.FC = () => {
                               onClick={() =>
                                 handleDocumentDownload(selectedDocument)
                               }
-                              className="flex items-center gap-2"
-                            >
-                              <Download className="w-4 h-4" />
+                              className="flex items-center gap-2" leftIcon={<Download className="w-4 h-4" />}>
                               Download to View
                             </Button>
                           </div>

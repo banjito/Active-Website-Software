@@ -471,8 +471,7 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold">Quality Control Metrics</h2>
         <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => setShowReportDialog(true)}>
-            <FileText className="mr-2 h-4 w-4" />
+          <Button variant="outline" onClick={() => setShowReportDialog(true)} leftIcon={<FileText className="h-4 w-4" />}>
             Generate Report
           </Button>
           <Button
@@ -480,9 +479,7 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
               setEditingMetricId(null);
               setForm(defaultFormState);
               setShowForm(true);
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" />
+            }} leftIcon={<Plus className="h-4 w-4" />}>
             Add Metric
           </Button>
         </div>
@@ -688,9 +685,7 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
                         setEditingMetricId(null);
                         setForm(defaultFormState);
                         setShowForm(true);
-                      }}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
+                      }} leftIcon={<Plus className="h-4 w-4" />}>
                       Add Metric
                     </Button>
                   </div>
@@ -788,17 +783,13 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleEdit(metric)}
-                            >
-                              <Edit className="h-4 w-4 mr-1" />
+                              onClick={() => handleEdit(metric)} leftIcon={<Edit className="h-4 w-4" />}>
                               Edit
                             </Button>
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleDelete(metric.id)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-1" />
+                              onClick={() => handleDelete(metric.id)} leftIcon={<Trash2 className="h-4 w-4" />}>
                               Delete
                             </Button>
                           </div>
@@ -1059,9 +1050,7 @@ export function QualityMetrics({ division }: QualityMetricsProps) {
                 onClick={() => {
                   generatePDFReport();
                   setShowReportDialog(false);
-                }}
-              >
-                <Download className="mr-2 h-4 w-4" />
+                }} leftIcon={<Download className="h-4 w-4" />}>
                 Generate PDF
               </Button>
             </div>

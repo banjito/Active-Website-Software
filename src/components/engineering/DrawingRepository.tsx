@@ -270,8 +270,7 @@ const DrawingRepository: React.FC = () => {
       subtitle="Manage and access engineering drawings and technical illustrations"
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="mr-2 h-4 w-4" />
+          <Button variant="outline" size="sm" leftIcon={<Download className="h-4 w-4" />}>
             Export Drawings
           </Button>
           <Button
@@ -280,9 +279,7 @@ const DrawingRepository: React.FC = () => {
               activeTab === "drawings"
                 ? setShowDrawingModal(true)
                 : setShowProjectModal(true)
-            }
-          >
-            <Plus className="mr-2 h-4 w-4" />
+            } leftIcon={<Plus className="h-4 w-4" />}>
             Add {activeTab === "drawings" ? "Drawing" : "Project"}
           </Button>
         </div>
@@ -300,8 +297,7 @@ const DrawingRepository: React.FC = () => {
               className="pl-9 w-full"
             />
           </div>
-          <Button variant="outline" className="flex gap-2 w-full sm:w-auto">
-            <Filter className="h-4 w-4 mr-2" />
+          <Button variant="outline" className="flex gap-2 w-full sm:w-auto" leftIcon={<Filter className="h-4 w-4" />}>
             Filter
           </Button>
         </div>

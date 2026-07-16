@@ -249,9 +249,9 @@ const CustomerSatisfaction: React.FC<CustomerSatisfactionProps> = ({ customerId,
         <Button 
           variant="primary" 
           onClick={() => setShowNewSurveyModal(true)}
-          disabled={surveyTemplates.length === 0}
-        >
-          <FaPlus className="me-1" /> Create Survey
+          disabled={surveyTemplates.length === 0}>
+          <FaPlus className="me-1" />
+          Create Survey
         </Button>
       </div>
       
@@ -307,9 +307,9 @@ const CustomerSatisfaction: React.FC<CustomerSatisfactionProps> = ({ customerId,
                       <Button 
                         variant="primary" 
                         onClick={() => setShowNewSurveyModal(true)}
-                        disabled={surveyTemplates.length === 0}
-                      >
-                        <FaPlus className="me-1" /> Create First Survey
+                        disabled={surveyTemplates.length === 0}>
+                        <FaPlus className="me-1" />
+                        Create First Survey
                       </Button>
                     </div>
                   )}
@@ -385,9 +385,9 @@ const CustomerSatisfaction: React.FC<CustomerSatisfactionProps> = ({ customerId,
                   variant="primary" 
                   size="sm"
                   onClick={() => setShowNewSurveyModal(true)}
-                  disabled={surveyTemplates.length === 0}
-                >
-                  <FaPlus className="me-1" /> Create Survey
+                  disabled={surveyTemplates.length === 0}>
+                  <FaPlus className="me-1" />
+                  Create Survey
                 </Button>
               </div>
             </Card.Header>
@@ -440,9 +440,9 @@ const CustomerSatisfaction: React.FC<CustomerSatisfactionProps> = ({ customerId,
                                 if (customerEmail) {
                                   setEmailAddress(customerEmail);
                                 }
-                              }}
-                            >
-                              <FaEnvelope className="me-1" /> Send
+                              }}>
+                              <FaEnvelope className="me-1" />
+                              Send
                             </Button>
                           )}
                           {(survey.status === 'draft' || survey.status === 'sent') && (
@@ -465,9 +465,9 @@ const CustomerSatisfaction: React.FC<CustomerSatisfactionProps> = ({ customerId,
                   <Button 
                     variant="primary" 
                     onClick={() => setShowNewSurveyModal(true)}
-                    disabled={surveyTemplates.length === 0}
-                  >
-                    <FaPlus className="me-1" /> Create First Survey
+                    disabled={surveyTemplates.length === 0}>
+                    <FaPlus className="me-1" />
+                    Create First Survey
                   </Button>
                 </div>
               )}

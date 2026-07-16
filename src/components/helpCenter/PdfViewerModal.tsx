@@ -106,9 +106,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
               variant="outline"
               size="sm"
               onClick={handleDownload}
-              className="flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
+              className="flex items-center gap-2" leftIcon={<Download className="w-4 h-4" />}>
               Download
             </Button>
             <Button
@@ -116,9 +114,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
               variant="outline"
               size="sm"
               onClick={handleOpenInNewTab}
-              className="flex items-center gap-2"
-            >
-              <ExternalLink className="w-4 h-4" />
+              className="flex items-center gap-2" leftIcon={<ExternalLink className="w-4 h-4" />}>
               Open in New Tab
             </Button>
           </div>
@@ -173,18 +169,14 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
                         type="button"
                         variant="outline"
                         onClick={handleOpenInNewTab}
-                        className="flex items-center gap-2"
-                      >
-                        <ExternalLink className="w-4 h-4" />
+                        className="flex items-center gap-2" leftIcon={<ExternalLink className="w-4 h-4" />}>
                         Open in New Tab
                       </Button>
                       <Button
                         type="button"
                         variant="outline"
                         onClick={handleDownload}
-                        className="flex items-center gap-2"
-                      >
-                        <Download className="w-4 h-4" />
+                        className="flex items-center gap-2" leftIcon={<Download className="w-4 h-4" />}>
                         Download PDF
                       </Button>
                     </div>

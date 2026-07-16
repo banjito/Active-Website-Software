@@ -279,17 +279,14 @@ export const SignatureSectionsManager: React.FC<
                   variant="outline"
                   size="sm"
                   onClick={() => addPerson(sectionIndex)}
-                  className="w-full"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
+                  className="w-full" leftIcon={<Plus className="h-4 w-4" />}>
                   Add Person
                 </Button>
               </div>
             </div>
           ))}
 
-          <Button variant="outline" onClick={addSection} className="w-full">
-            <Plus className="h-4 w-4 mr-2" />
+          <Button variant="outline" onClick={addSection} className="w-full" leftIcon={<Plus className="h-4 w-4" />}>
             Add Section
           </Button>
         </div>

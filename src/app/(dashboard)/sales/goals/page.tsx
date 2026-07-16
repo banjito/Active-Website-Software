@@ -15,14 +15,12 @@ export default function GoalsPage() {
         </div>
         <div className="flex space-x-3">
           <Link to="/sales/goals/dashboard">
-            <Button variant="outline" className="mr-2">
-              <BarChartIcon className="h-5 w-5 mr-2" />
+            <Button variant="outline" className="mr-2" leftIcon={<BarChartIcon className="h-5 w-5" />}>
               Dashboard
             </Button>
           </Link>
           <Link to="/sales/goals/new">
-            <Button>
-              <PlusIcon className="h-5 w-5 mr-2" />
+            <Button leftIcon={<PlusIcon className="h-5 w-5" />}>
               New Goal
             </Button>
           </Link>

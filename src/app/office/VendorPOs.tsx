@@ -493,9 +493,7 @@ const VendorPOs: React.FC = () => {
             </div>
             <Button
               onClick={openNewPO}
-              className="bg-brand hover:bg-brand-dark"
-            >
-              <Plus className="h-4 w-4 mr-2" />
+              className="bg-brand hover:bg-brand-dark" leftIcon={<Plus className="h-4 w-4" />}>
               New PO
             </Button>
           </div>
@@ -633,9 +631,7 @@ const VendorPOs: React.FC = () => {
                 {pos.length === 0 && (
                   <Button
                     onClick={openNewPO}
-                    className="mt-4 bg-brand hover:bg-brand-dark"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
+                    className="mt-4 bg-brand hover:bg-brand-dark" leftIcon={<Plus className="h-4 w-4" />}>
                     Create First PO
                   </Button>
                 )}
@@ -843,8 +839,8 @@ const VendorPOs: React.FC = () => {
                 <label className="text-sm font-bold text-neutral-700 dark:text-neutral-300">
                   Line Items
                 </label>
-                <Button size="sm" variant="outline" onClick={addLineItem}>
-                  <Plus className="h-4 w-4 mr-1" /> Add Item
+                <Button size="sm" variant="outline" onClick={addLineItem} leftIcon={<Plus className="h-4 w-4" />}>
+                  Add Item
                 </Button>
               </div>
               <div className="overflow-x-auto">
@@ -1184,8 +1180,7 @@ const VendorPOs: React.FC = () => {
               </div>
 
               <DialogFooter>
-                <Button variant="outline" onClick={() => printPO(selectedPO)}>
-                  <Printer className="h-4 w-4 mr-2" />
+                <Button variant="outline" onClick={() => printPO(selectedPO)} leftIcon={<Printer className="h-4 w-4" />}>
                   Print / PDF
                 </Button>
                 <Button variant="outline" onClick={() => setShowPOView(false)}>

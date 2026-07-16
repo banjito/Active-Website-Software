@@ -346,18 +346,14 @@ export const ESignatures: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openViewModal(offer)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
+                      onClick={() => openViewModal(offer)} leftIcon={<Eye className="h-4 w-4" />}>
                       View
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => openSignModal(offer, "candidate")}
-                      className="bg-brand hover:bg-brand/90 text-white"
-                    >
-                      <PenTool className="h-4 w-4 mr-1" />
+                      className="bg-brand hover:bg-brand/90 text-white" leftIcon={<PenTool className="h-4 w-4" />}>
                       Sign as Candidate
                     </Button>
                   </div>
@@ -411,9 +407,7 @@ export const ESignatures: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openViewModal(offer)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
+                      onClick={() => openViewModal(offer)} leftIcon={<Eye className="h-4 w-4" />}>
                       View Signatures
                     </Button>
                   </div>

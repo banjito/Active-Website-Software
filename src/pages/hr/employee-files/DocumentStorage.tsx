@@ -641,13 +641,10 @@ export const DocumentStorage: React.FC<DocumentStorageProps> = ({
             <div className="flex gap-2 justify-end mb-4">
               <Button
                 onClick={() => setIsFolderModalOpen(true)}
-                variant="outline"
-              >
-                <FolderPlus className="mr-2 h-4 w-4" />
+                variant="outline" leftIcon={<FolderPlus className="h-4 w-4" />}>
                 New Folder
               </Button>
-              <Button onClick={() => setIsUploadModalOpen(true)}>
-                <Upload className="mr-2 h-4 w-4" />
+              <Button onClick={() => setIsUploadModalOpen(true)} leftIcon={<Upload className="h-4 w-4" />}>
                 Upload Document
               </Button>
             </div>
@@ -692,9 +689,7 @@ export const DocumentStorage: React.FC<DocumentStorageProps> = ({
                 <div className="flex items-center gap-2">
                   <Button
                     variant={showArchived ? "default" : "outline"}
-                    onClick={() => setShowArchived(!showArchived)}
-                  >
-                    <Archive className="mr-2 h-4 w-4" />
+                    onClick={() => setShowArchived(!showArchived)} leftIcon={<Archive className="h-4 w-4" />}>
                     {showArchived ? "Hide Archived" : "Show Archived"}
                   </Button>
                 </div>

@@ -438,8 +438,7 @@ export const PublicOfferSigning: React.FC = () => {
                 </p>
               )}
             </div>
-            <Button onClick={generatePDF} variant="outline" className="w-full">
-              <Download className="mr-2 h-4 w-4" />
+            <Button onClick={generatePDF} variant="outline" className="w-full" leftIcon={<Download className="h-4 w-4" />}>
               Download PDF Copy
             </Button>
           </CardContent>
@@ -615,9 +614,7 @@ export const PublicOfferSigning: React.FC = () => {
                 onClick={handleDecline}
                 variant="outline"
                 disabled={signing}
-                className="text-red-600 hover:text-red-700"
-              >
-                <XCircle className="mr-2 h-4 w-4" />
+                className="text-red-600 hover:text-red-700" leftIcon={<XCircle className="h-4 w-4" />}>
                 Decline Offer
               </Button>
             </div>

@@ -375,9 +375,8 @@ export const HRTasks: React.FC = () => {
             resetForm();
             setIsCreateModalOpen(true);
           }}
-          className="bg-brand hover:bg-brand/90 text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" /> Create Task
+          className="bg-brand hover:bg-brand/90 text-white" leftIcon={<Plus className="h-4 w-4" />}>
+          Create Task
         </Button>
       </div>
 
@@ -445,16 +444,14 @@ export const HRTasks: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openViewModal(task)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" /> View
+                      onClick={() => openViewModal(task)} leftIcon={<Eye className="h-4 w-4" />}>
+                      View
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openEditModal(task)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" /> Edit
+                      onClick={() => openEditModal(task)} leftIcon={<Edit className="h-4 w-4" />}>
+                      Edit
                     </Button>
                     <Button
                       variant="outline"
@@ -479,17 +476,15 @@ export const HRTasks: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page <= 1}
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                  disabled={page <= 1} leftIcon={<ChevronLeft className="h-4 w-4" />}>
+                  Previous
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page >= totalPages}
-                >
-                  Next <ChevronRight className="h-4 w-4 ml-1" />
+                  disabled={page >= totalPages} rightIcon={<ChevronRight className="h-4 w-4" />}>
+                  Next
                 </Button>
               </div>
             </div>

@@ -116,9 +116,7 @@ export const SavedComponentsDialog: React.FC<SavedComponentsDialogProps> = ({
                         variant="outline"
                         size="sm"
                         className="gap-1"
-                        onClick={() => handleAdd(saved, false)}
-                      >
-                        <Plus className="w-3.5 h-3.5" />
+                        onClick={() => handleAdd(saved, false)} leftIcon={<Plus className="w-3.5 h-3.5" />}>
                         Add to form
                       </Button>
                       <Button
@@ -126,9 +124,7 @@ export const SavedComponentsDialog: React.FC<SavedComponentsDialogProps> = ({
                         size="sm"
                         className="gap-1"
                         onClick={() => handleAdd(saved, true)}
-                        title="Add to form and open in editor"
-                      >
-                        <Pencil className="w-3.5 h-3.5" />
+                        title="Add to form and open in editor" leftIcon={<Pencil className="w-3.5 h-3.5" />}>
                         Edit
                       </Button>
                       {!isConfirmingDelete ? (
@@ -137,9 +133,7 @@ export const SavedComponentsDialog: React.FC<SavedComponentsDialogProps> = ({
                           size="sm"
                           className="gap-1 text-red-600 hover:text-red-700 hover:border-red-300 dark:text-red-400"
                           onClick={() => handleDelete(saved.id)}
-                          disabled={isDeleting}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          disabled={isDeleting} leftIcon={<Trash2 className="w-3.5 h-3.5" />}>
                           Delete
                         </Button>
                       ) : (

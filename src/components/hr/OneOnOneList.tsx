@@ -143,9 +143,7 @@ export const OneOnOneList: React.FC<OneOnOneListProps> = ({
                 setEditingCheckin(null);
                 setShowForm(true);
               }}
-              className="bg-[#4a4e8a] hover:bg-[#3a3e78] text-white text-xs"
-            >
-              <ClipboardList className="h-3.5 w-3.5 mr-1.5" />
+              className="bg-[#4a4e8a] hover:bg-[#3a3e78] text-white text-xs" leftIcon={<ClipboardList className="h-3.5 w-3.5" />}>
               Start One-on-One
             </Button>
           )}

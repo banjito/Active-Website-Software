@@ -344,8 +344,7 @@ export const TerminationWorkflows: React.FC = () => {
             Define tasks and documents for employee offboarding
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="h-4 w-4 mr-2" />
+        <Button onClick={openCreate} leftIcon={<Plus className="h-4 w-4" />}>
           New Workflow
         </Button>
       </div>
@@ -404,8 +403,7 @@ export const TerminationWorkflows: React.FC = () => {
                   : "Create your first termination workflow"}
               </p>
               {!search && filterStatus === "all" && (
-                <Button variant="outline" className="mt-4" onClick={openCreate}>
-                  <Plus className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="mt-4" onClick={openCreate} leftIcon={<Plus className="h-4 w-4" />}>
                   Create Workflow
                 </Button>
               )}
@@ -606,9 +604,7 @@ export const TerminationWorkflows: React.FC = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={addTask}
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  onClick={addTask} leftIcon={<Plus className="h-3.5 w-3.5" />}>
                   Add Task
                 </Button>
               </div>
@@ -700,9 +696,7 @@ export const TerminationWorkflows: React.FC = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={addDocument}
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  onClick={addDocument} leftIcon={<Plus className="h-3.5 w-3.5" />}>
                   Add Document
                 </Button>
               </div>

@@ -973,9 +973,7 @@ export const OfferApprovals: React.FC = () => {
             setApproverSearchTerm("");
             setNewApproverId("");
             setIsManageApproversModalOpen(true);
-          }}
-        >
-          <Settings className="h-4 w-4 mr-2" />
+          }} leftIcon={<Settings className="h-4 w-4" />}>
           Manage Approvers
         </Button>
       </div>
@@ -1171,26 +1169,20 @@ export const OfferApprovals: React.FC = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => openExtendModal(offer)}
-                              title="Extend expiration / refresh link"
-                            >
-                              <RefreshCw className="h-4 w-4 mr-1" />
+                              title="Extend expiration / refresh link" leftIcon={<RefreshCw className="h-4 w-4" />}>
                               Extend
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleGenerateSigningLink(offer)}
-                              title="Generate Signing Link"
-                            >
-                              <LinkIcon className="h-4 w-4 mr-1" />
+                              title="Generate Signing Link" leftIcon={<LinkIcon className="h-4 w-4" />}>
                               Offer Link
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => openViewModal(offer)}
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
+                              onClick={() => openViewModal(offer)} leftIcon={<Eye className="h-4 w-4" />}>
                               View
                             </Button>
                           </div>
@@ -1200,18 +1192,14 @@ export const OfferApprovals: React.FC = () => {
                                 size="sm"
                                 onClick={() => handleSequentialApprove(offer)}
                                 disabled={approving}
-                                className="bg-green-600 hover:bg-green-700 text-white"
-                              >
-                                <CheckCircle className="h-4 w-4 mr-1" />
+                                className="bg-green-600 hover:bg-green-700 text-white" leftIcon={<CheckCircle className="h-4 w-4" />}>
                                 {approving ? "Approving..." : "Approve"}
                               </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => openRejectModal(offer)}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                              >
-                                <XCircle className="h-4 w-4 mr-1" />
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" leftIcon={<XCircle className="h-4 w-4" />}>
                                 Reject
                               </Button>
                             </div>
@@ -1292,26 +1280,20 @@ export const OfferApprovals: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => openExtendModal(offer)}
-                        title="Extend expiration / refresh link"
-                      >
-                        <RefreshCw className="h-4 w-4 mr-1" />
+                        title="Extend expiration / refresh link" leftIcon={<RefreshCw className="h-4 w-4" />}>
                         Extend
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleGenerateSigningLink(offer)}
-                        title="Generate Signing Link"
-                      >
-                        <LinkIcon className="h-4 w-4 mr-1" />
+                        title="Generate Signing Link" leftIcon={<LinkIcon className="h-4 w-4" />}>
                         Offer Letter Link
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => openViewModal(offer)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
+                        onClick={() => openViewModal(offer)} leftIcon={<Eye className="h-4 w-4" />}>
                         View Offer
                       </Button>
                     </div>
@@ -1359,9 +1341,7 @@ export const OfferApprovals: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openViewModal(offer)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
+                      onClick={() => openViewModal(offer)} leftIcon={<Eye className="h-4 w-4" />}>
                       View Offer
                     </Button>
                     <Button
@@ -1369,9 +1349,7 @@ export const OfferApprovals: React.FC = () => {
                       onClick={() => handleSendToOnboarding(offer.id)}
                       disabled={sendingToOnboardingOfferId === offer.id}
                       title="Send to Onboarding"
-                      className="bg-brand hover:bg-brand/90 text-white"
-                    >
-                      <UserPlus className="h-4 w-4 mr-1" />
+                      className="bg-brand hover:bg-brand/90 text-white" leftIcon={<UserPlus className="h-4 w-4" />}>
                       {sendingToOnboardingOfferId === offer.id
                         ? "Sending..."
                         : "Send to Onboarding"}
@@ -1412,9 +1390,7 @@ export const OfferApprovals: React.FC = () => {
                 variant="outline"
                 size="sm"
                 disabled={uploadingAttachment}
-                onClick={() => attachmentInputRef.current?.click()}
-              >
-                <Upload className="h-4 w-4 mr-1" />
+                onClick={() => attachmentInputRef.current?.click()} leftIcon={<Upload className="h-4 w-4" />}>
                 {uploadingAttachment ? "Uploading..." : "Add attachment"}
               </Button>
             </div>
@@ -1488,17 +1464,13 @@ export const OfferApprovals: React.FC = () => {
                               handleSequentialApprove(selectedOffer)
                             }
                             disabled={approving}
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-2" />
+                            className="bg-green-600 hover:bg-green-700 text-white" leftIcon={<CheckCircle className="h-4 w-4" />}>
                             {approving ? "Approving..." : "Approve"}
                           </Button>
                           <Button
                             onClick={() => openRejectModal(selectedOffer)}
                             variant="outline"
-                            className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20"
-                          >
-                            <XCircle className="h-4 w-4 mr-2" />
+                            className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20" leftIcon={<XCircle className="h-4 w-4" />}>
                             Reject
                           </Button>
                         </div>
@@ -1649,9 +1621,7 @@ export const OfferApprovals: React.FC = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => openExtendModal(selectedOffer)}
-                        >
-                          <RefreshCw className="h-4 w-4 mr-1" />
+                          onClick={() => openExtendModal(selectedOffer)} leftIcon={<RefreshCw className="h-4 w-4" />}>
                           Extend / Refresh Link
                         </Button>
                       </div>
@@ -1719,9 +1689,7 @@ export const OfferApprovals: React.FC = () => {
               {selectedOffer && (
                 <Button
                   variant="outline"
-                  onClick={() => generatePDF(selectedOffer)}
-                >
-                  <Download className="h-4 w-4 mr-2" />
+                  onClick={() => generatePDF(selectedOffer)} leftIcon={<Download className="h-4 w-4" />}>
                   Download PDF
                 </Button>
               )}
@@ -1767,9 +1735,7 @@ export const OfferApprovals: React.FC = () => {
                   setApproverSearchTerm("");
                   setNewApproverId("");
                   setIsAddApproverModalOpen(true);
-                }}
-              >
-                <Plus className="h-4 w-4 mr-1" />
+                }} leftIcon={<Plus className="h-4 w-4" />}>
                 Add Approver
               </Button>
             </div>
@@ -2087,9 +2053,7 @@ export const OfferApprovals: React.FC = () => {
             <Button
               onClick={handleSequentialReject}
               disabled={!rejectReason.trim() || rejecting}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              <XCircle className="mr-2 h-4 w-4" />
+              className="bg-red-600 hover:bg-red-700 text-white" leftIcon={<XCircle className="h-4 w-4" />}>
               {rejecting ? "Rejecting..." : "Reject Offer"}
             </Button>
           </DialogFooter>
@@ -2150,11 +2114,7 @@ export const OfferApprovals: React.FC = () => {
             <Button
               onClick={handleExtendExpiration}
               disabled={!extendNewDate || extending}
-              className="bg-brand hover:bg-brand/90 text-white"
-            >
-              <RefreshCw
-                className={`mr-2 h-4 w-4 ${extending ? "animate-spin" : ""}`}
-              />
+              className="bg-brand hover:bg-brand/90 text-white" leftIcon={<RefreshCw className={`mr-2 h-4 w-4 ${extending ? "animate-spin" : ""}`} />}>
               {extending ? "Updating..." : "Save & Refresh"}
             </Button>
           </DialogFooter>

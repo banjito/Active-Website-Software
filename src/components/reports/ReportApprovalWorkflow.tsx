@@ -2835,9 +2835,7 @@ export function ReportApprovalWorkflow({
                                         onClick={() =>
                                           handleDownloadPdfReport(report)
                                         }
-                                        title="Download/Print PDF"
-                                      >
-                                        <Download className="h-4 w-4 mr-2" />
+                                        title="Download/Print PDF" leftIcon={<Download className="h-4 w-4" />}>
                                         {activeTab === "approved" ||
                                         activeTab === "accepted"
                                           ? "Print"
@@ -3036,9 +3034,7 @@ export function ReportApprovalWorkflow({
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleDownloadPdfReport(report)}
-                                title="Download/Print PDF"
-                              >
-                                <Download className="h-4 w-4 mr-2" />
+                                title="Download/Print PDF" leftIcon={<Download className="h-4 w-4" />}>
                                 {activeTab === "approved" ||
                                 activeTab === "accepted"
                                   ? "Print"
@@ -3102,9 +3098,7 @@ export function ReportApprovalWorkflow({
                                 report.status === "approved"
                                   ? "text-blue-600 hover:text-blue-700 border-blue-300 hover:border-blue-400"
                                   : "text-green-600 hover:text-green-700 border-green-300 hover:border-green-400"
-                              }`}
-                            >
-                              <Download className="h-4 w-4 mr-2" />
+                              }`} leftIcon={<Download className="h-4 w-4" />}>
                               {report.status === "approved"
                                 ? "Mark as Sent"
                                 : "Mark as Approved"}
@@ -3161,9 +3155,7 @@ export function ReportApprovalWorkflow({
                         reviewStatus === "approved" ? "secondary" : "outline"
                       }
                       onClick={() => setReviewStatus("approved")}
-                      className="flex-1"
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
+                      className="flex-1" leftIcon={<CheckCircle className="h-4 w-4" />}>
                       Approve
                     </Button>
                     <Button
@@ -3172,9 +3164,7 @@ export function ReportApprovalWorkflow({
                         reviewStatus === "rejected" ? "secondary" : "outline"
                       }
                       onClick={() => setReviewStatus("rejected")}
-                      className="flex-1"
-                    >
-                      <XCircle className="h-4 w-4 mr-2" />
+                      className="flex-1" leftIcon={<XCircle className="h-4 w-4" />}>
                       Reject
                     </Button>
                   </div>

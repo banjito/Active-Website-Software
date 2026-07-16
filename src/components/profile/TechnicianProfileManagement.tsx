@@ -531,9 +531,7 @@ export function TechnicianProfileManagement({
                           notes: "",
                         });
                       }}
-                      disabled={!selectedTechnician || isLoading}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
+                      disabled={!selectedTechnician || isLoading} leftIcon={<Plus className="h-4 w-4" />}>
                       Add Skill
                     </Button>
                   </div>
@@ -672,9 +670,7 @@ export function TechnicianProfileManagement({
                           </Button>
                           <Button
                             onClick={handleAddSkill}
-                            disabled={isLoading || !skillForm.skillName}
-                          >
-                            <Save className="mr-2 h-4 w-4" />
+                            disabled={isLoading || !skillForm.skillName} leftIcon={<Save className="h-4 w-4" />}>
                             {editingSkillId ? "Update Skill" : "Save Skill"}
                           </Button>
                         </div>

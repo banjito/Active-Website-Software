@@ -400,8 +400,7 @@ const DocumentManagement: React.FC = () => {
             </SelectContent>
           </SelectRoot>
 
-          <Button onClick={handleSelectFilesClick}>
-            <Upload size={16} className="mr-2" />
+          <Button onClick={handleSelectFilesClick} leftIcon={<Upload size={16} />}>
             Upload
           </Button>
 

@@ -1384,9 +1384,7 @@ export const GuideBuilder: React.FC = () => {
             <Button
               variant="ghost"
               onClick={() => navigate("/help-center")}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
+              className="flex items-center gap-2" leftIcon={<ArrowLeft className="w-4 h-4" />}>
               <span className="hidden sm:inline">Back to Help Center</span>
             </Button>
             <div className="h-6 w-px bg-neutral-300 dark:bg-neutral-600" />
@@ -1417,9 +1415,7 @@ export const GuideBuilder: React.FC = () => {
             <Button
               onClick={handleSave}
               disabled={isSaving}
-              className="bg-brand hover:bg-brand-dark text-white"
-            >
-              <Save className="w-4 h-4 mr-2" />
+              className="bg-brand hover:bg-brand-dark text-white" leftIcon={<Save className="w-4 h-4" />}>
               {isSaving ? "Saving..." : guideId ? "Update" : "Save"}
             </Button>
           </div>

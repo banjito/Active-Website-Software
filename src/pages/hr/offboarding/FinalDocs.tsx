@@ -358,8 +358,7 @@ export const FinalDocs: React.FC = () => {
             documents
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="h-4 w-4 mr-2" />
+        <Button onClick={openCreate} leftIcon={<Plus className="h-4 w-4" />}>
           New Template
         </Button>
       </div>
@@ -466,8 +465,7 @@ export const FinalDocs: React.FC = () => {
                   : "Create your first document template"}
               </p>
               {!search && filterType === "all" && (
-                <Button variant="outline" className="mt-4" onClick={openCreate}>
-                  <Plus className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="mt-4" onClick={openCreate} leftIcon={<Plus className="h-4 w-4" />}>
                   Create Template
                 </Button>
               )}
@@ -817,9 +815,7 @@ export const FinalDocs: React.FC = () => {
                           selectedTemplate.attachment_name!,
                           selectedTemplate.attachment_data!,
                         )
-                      }
-                    >
-                      <Download className="h-4 w-4 mr-2" />
+                      } leftIcon={<Download className="h-4 w-4" />}>
                       Download {selectedTemplate.attachment_name}
                     </Button>
                   </div>

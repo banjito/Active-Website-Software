@@ -256,9 +256,7 @@ export const CompPositionDetails: React.FC = () => {
           onClick={() => {
             resetForm();
             setIsCreateModalOpen(true);
-          }}
-        >
-          <Plus className="mr-2 h-4 w-4" />
+          }} leftIcon={<Plus className="h-4 w-4" />}>
           Create Offer Details
         </Button>
       </div>
@@ -686,9 +684,7 @@ export const CompPositionDetails: React.FC = () => {
                   setIsViewModalOpen(false);
                   openEditModal(selectedOffer);
                 }}
-                className="bg-brand hover:bg-brand/90 text-white"
-              >
-                <Edit className="mr-2 h-4 w-4" />
+                className="bg-brand hover:bg-brand/90 text-white" leftIcon={<Edit className="h-4 w-4" />}>
                 Edit
               </Button>
             )}

@@ -510,9 +510,7 @@ export default function FacilityManagement() {
                     <div>
                       <Button
                         className="w-full"
-                        onClick={() => setShowBookingForm(true)}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
+                        onClick={() => setShowBookingForm(true)} leftIcon={<Plus className="h-4 w-4" />}>
                         New Booking
                       </Button>
                     </div>

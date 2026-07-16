@@ -416,8 +416,7 @@ export default function ExpenseTracking() {
         <div className="flex gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <FileDown className="w-4 h-4 mr-2" />
+              <Button variant="outline" leftIcon={<FileDown className="w-4 h-4" />}>
                 Export
               </Button>
             </DropdownMenuTrigger>
@@ -601,18 +600,14 @@ export default function ExpenseTracking() {
                       onClick={() =>
                         selectedExpense && handleReject(selectedExpense)
                       }
-                      disabled={!rejectionReason}
-                    >
-                      <X className="w-4 h-4 mr-2" />
+                      disabled={!rejectionReason} leftIcon={<X className="w-4 h-4" />}>
                       Reject
                     </Button>
                     <Button
                       variant="primary"
                       onClick={() =>
                         selectedExpense && handleApprove(selectedExpense)
-                      }
-                    >
-                      <Check className="w-4 h-4 mr-2" />
+                      } leftIcon={<Check className="w-4 h-4" />}>
                       Approve
                     </Button>
                   </div>

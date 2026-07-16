@@ -237,9 +237,7 @@ export default function JobSurveys({
         <h2 className="text-xl font-semibold">Customer Surveys</h2>
         <Button
           onClick={handleOpenCreateModal}
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
+          className="flex items-center gap-2" leftIcon={<Plus className="h-4 w-4" />}>
           Create Survey
         </Button>
       </div>
@@ -310,27 +308,21 @@ export default function JobSurveys({
                   {status === "completed" ? (
                     <Button
                       variant="outline"
-                      className="flex items-center gap-2"
-                    >
-                      <BarChart className="h-4 w-4" />
+                      className="flex items-center gap-2" leftIcon={<BarChart className="h-4 w-4" />}>
                       View Results
                     </Button>
                   ) : (
                     <>
                       <Button
                         variant="outline"
-                        className="flex items-center gap-2"
-                      >
-                        <Eye className="h-4 w-4" />
+                        className="flex items-center gap-2" leftIcon={<Eye className="h-4 w-4" />}>
                         View Survey
                       </Button>
                       {!survey.sent_at && (
                         <>
                           <Button
                             variant="outline"
-                            className="flex items-center gap-2"
-                          >
-                            <Mail className="h-4 w-4" />
+                            className="flex items-center gap-2" leftIcon={<Mail className="h-4 w-4" />}>
                             Send
                           </Button>
                         </>

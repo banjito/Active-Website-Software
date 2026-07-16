@@ -1166,18 +1166,14 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
                       variant="outline"
                       size="sm"
                       onClick={() => handleViewReport(report)}
-                      className="text-neutral-600 dark:text-neutral-300"
-                    >
-                      <Eye className="w-4 h-4 mr-1" />
+                      className="text-neutral-600 dark:text-neutral-300" leftIcon={<Eye className="w-4 h-4" />}>
                       View
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleEditReport(report)}
-                      className="text-blue-600 dark:text-blue-400"
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
+                      className="text-blue-600 dark:text-blue-400" leftIcon={<Edit className="w-4 h-4" />}>
                       Edit
                     </Button>
                     {isAdmin && (
@@ -1242,9 +1238,7 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
             {!isEditMode && (
               <Button
                 onClick={() => setIsEditMode(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Edit className="w-4 h-4 mr-2" />
+                className="bg-blue-600 hover:bg-blue-700 text-white" leftIcon={<Edit className="w-4 h-4" />}>
                 Edit Report
               </Button>
             )}

@@ -619,13 +619,10 @@ export const DocumentAcknowledgment: React.FC = () => {
           <div className="flex gap-2">
             <Button
               className="bg-brand hover:bg-brand/90 text-white"
-              onClick={() => setShowAddModal(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" />
+              onClick={() => setShowAddModal(true)} leftIcon={<Plus className="h-4 w-4" />}>
               Add document
             </Button>
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="h-4 w-4 mr-2" />
+            <Button variant="outline" onClick={handleExport} leftIcon={<Download className="h-4 w-4" />}>
               Export CSV
             </Button>
           </div>
@@ -783,9 +780,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => openSignModal(form)}
-                              className="text-brand border-brand hover:bg-brand/10"
-                            >
-                              <PenTool className="h-4 w-4 mr-1" />
+                              className="text-brand border-brand hover:bg-brand/10" leftIcon={<PenTool className="h-4 w-4" />}>
                               Acknowledge
                             </Button>
                           )}
@@ -807,9 +802,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => handleRestoreDocument(form.id)}
-                            title="Restore document"
-                          >
-                            <RotateCcw className="h-4 w-4 mr-1" />
+                            title="Restore document" leftIcon={<RotateCcw className="h-4 w-4" />}>
                             Restore
                           </Button>
                           <Button

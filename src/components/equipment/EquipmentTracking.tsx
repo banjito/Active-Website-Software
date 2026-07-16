@@ -496,9 +496,7 @@ export const EquipmentTracking = forwardRef<
               onClick={() => {
                 onClose();
                 handleEditEquipment(equipment);
-              }}
-            >
-              <Edit className="h-4 w-4 mr-2" />
+              }} leftIcon={<Edit className="h-4 w-4" />}>
               Edit
             </Button>
             <Button
@@ -506,9 +504,7 @@ export const EquipmentTracking = forwardRef<
               onClick={() => {
                 onClose();
                 handleDeleteEquipment(equipment.id);
-              }}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
+              }} leftIcon={<Trash2 className="h-4 w-4" />}>
               Delete
             </Button>
           </div>
@@ -728,9 +724,7 @@ export const EquipmentTracking = forwardRef<
                     </Button>
                     <Button
                       onClick={handleSaveEquipment}
-                      disabled={isLoading || !form.name}
-                    >
-                      <Save className="mr-2 h-4 w-4" />
+                      disabled={isLoading || !form.name} leftIcon={<Save className="h-4 w-4" />}>
                       {editingEquipmentId
                         ? "Update Equipment"
                         : "Save Equipment"}

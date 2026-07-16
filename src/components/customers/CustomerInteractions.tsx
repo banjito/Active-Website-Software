@@ -270,7 +270,8 @@ const CustomerInteractions: React.FC<CustomerInteractionsProps> = ({ customerId,
         <div className="d-flex justify-content-between align-items-center mb-3 bg-light p-3 rounded border">
           <span className="text-danger"><FaExclamationCircle className="me-2" />{error}</span>
           <Button variant="outline-primary" size="sm" onClick={loadInteractions}>
-            <FaSync className="me-1" /> Retry
+            <FaSync className="me-1" />
+            Retry
           </Button>
         </div>
       )}

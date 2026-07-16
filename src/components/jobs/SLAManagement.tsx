@@ -346,17 +346,13 @@ export function SLAManagement({ jobId, jobDetails }: SLAManagementProps) {
               size="sm"
               onClick={handleRefreshStatus}
               disabled={!hasActiveSLAs}
-              title="Refresh SLA Status"
-            >
-              <RefreshCw className="h-4 w-4 mr-1" />
+              title="Refresh SLA Status" leftIcon={<RefreshCw className="h-4 w-4" />}>
               Refresh
             </Button>
             <Button
               size="sm"
               onClick={() => setShowAddSLADialog(true)}
-              title="Add SLA to Job"
-            >
-              <Plus className="h-4 w-4 mr-1" />
+              title="Add SLA to Job" leftIcon={<Plus className="h-4 w-4" />}>
               Add SLA
             </Button>
           </div>

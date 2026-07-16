@@ -1027,9 +1027,7 @@ export const OfferLetters: React.FC = () => {
                 is_default: false,
               });
               setIsTemplateModalOpen(true);
-            }}
-          >
-            <FileText className="mr-2 h-4 w-4" />
+            }} leftIcon={<FileText className="h-4 w-4" />}>
             New Template
           </Button>
           <Button
@@ -1056,9 +1054,7 @@ export const OfferLetters: React.FC = () => {
               });
               setCustomizedContent("");
               setIsCreateOfferModalOpen(true);
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" />
+            }} leftIcon={<Plus className="h-4 w-4" />}>
             Create Offer
           </Button>
         </div>
@@ -1249,9 +1245,7 @@ export const OfferLetters: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleSendToApprovals(offer.id)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        <Send className="h-4 w-4 mr-1" />
+                        className="bg-blue-600 hover:bg-blue-700 text-white" leftIcon={<Send className="h-4 w-4" />}>
                         Send to Approvals
                       </Button>
                     )}
@@ -1295,9 +1289,7 @@ export const OfferLetters: React.FC = () => {
                         onClick={() => handleSendToOnboarding(offer.id)}
                         disabled={sendingToOnboardingOfferId === offer.id}
                         title="Send to Onboarding"
-                        className="bg-brand/10 hover:bg-brand/20 text-brand border-brand/30"
-                      >
-                        <UserPlus className="h-4 w-4 mr-1" />
+                        className="bg-brand/10 hover:bg-brand/20 text-brand border-brand/30" leftIcon={<UserPlus className="h-4 w-4" />}>
                         {sendingToOnboardingOfferId === offer.id
                           ? "Sending..."
                           : "Send to Onboarding"}
@@ -1674,8 +1666,7 @@ export const OfferLetters: React.FC = () => {
               />
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handlePreview}>
-                <Eye className="mr-2 h-4 w-4" />
+              <Button variant="outline" onClick={handlePreview} leftIcon={<Eye className="h-4 w-4" />}>
                 Preview
               </Button>
             </div>
@@ -1758,9 +1749,7 @@ export const OfferLetters: React.FC = () => {
                 variant="outline"
                 size="sm"
                 disabled={uploadingAttachment}
-                onClick={() => attachmentInputRef.current?.click()}
-              >
-                <Upload className="h-4 w-4 mr-1" />
+                onClick={() => attachmentInputRef.current?.click()} leftIcon={<Upload className="h-4 w-4" />}>
                 {uploadingAttachment ? "Uploading..." : "Add attachment"}
               </Button>
             </div>
@@ -1923,11 +1912,7 @@ export const OfferLetters: React.FC = () => {
             <Button
               onClick={handleExtendExpiration}
               disabled={!extendNewDate || extending}
-              className="bg-brand hover:bg-brand/90 text-white"
-            >
-              <RefreshCw
-                className={`mr-2 h-4 w-4 ${extending ? "animate-spin" : ""}`}
-              />
+              className="bg-brand hover:bg-brand/90 text-white" leftIcon={<RefreshCw className={`mr-2 h-4 w-4 ${extending ? "animate-spin" : ""}`} />}>
               {extending ? "Updating..." : "Save & Refresh"}
             </Button>
           </DialogFooter>

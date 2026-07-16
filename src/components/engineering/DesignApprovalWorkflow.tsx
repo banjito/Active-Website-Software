@@ -254,8 +254,7 @@ export function DesignApprovalWorkflow({ refreshTrigger = 0 }: DesignApprovalWor
             onKeyDown={(e) => e.key === 'Enter' && fetchDesigns()}
           />
         </div>
-        <Button onClick={() => setShowFilters(!showFilters)} variant="outline">
-          <Filter className="h-4 w-4 mr-2" />
+        <Button onClick={() => setShowFilters(!showFilters)} variant="outline" leftIcon={<Filter className="h-4 w-4" />}>
           Filters
         </Button>
       </div>

@@ -3400,9 +3400,7 @@ export default function FieldEquipmentList() {
                           setIsOpen(false);
                           handleDelete(editingEquipmentId);
                         }}
-                        className="flex items-center gap-2"
-                      >
-                        <Trash2 className="h-4 w-4" />
+                        className="flex items-center gap-2" leftIcon={<Trash2 className="h-4 w-4" />}>
                         Delete
                       </Button>
                     )}
@@ -3845,9 +3843,7 @@ export default function FieldEquipmentList() {
                         setViewingEquipment(null);
                         handleEdit(viewingEquipment);
                       }}
-                      className="flex items-center gap-2"
-                    >
-                      <Pencil className="h-4 w-4" />
+                      className="flex items-center gap-2" leftIcon={<Pencil className="h-4 w-4" />}>
                       Edit Equipment
                     </Button>
                   )}
@@ -3884,9 +3880,7 @@ export default function FieldEquipmentList() {
                       if (viewingTrackingUrl) {
                         window.open(viewingTrackingUrl, "_blank");
                       }
-                    }}
-                  >
-                    <ExternalLink className="h-4 w-4 mr-1" />
+                    }} leftIcon={<ExternalLink className="h-4 w-4" />}>
                     Open in New Tab
                   </Button>
                   <Button
@@ -3980,9 +3974,7 @@ export default function FieldEquipmentList() {
                       if (viewingCertificate) {
                         window.open(viewingCertificate, "_blank");
                       }
-                    }}
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
+                    }} leftIcon={<Eye className="h-4 w-4" />}>
                     Open in New Tab
                   </Button>
                   <Button
@@ -3995,9 +3987,7 @@ export default function FieldEquipmentList() {
                         link.download = "calibration_certificate.pdf";
                         link.click();
                       }
-                    }}
-                  >
-                    <Download className="h-4 w-4 mr-1" />
+                    }} leftIcon={<Download className="h-4 w-4" />}>
                     Download
                   </Button>
                   <Button

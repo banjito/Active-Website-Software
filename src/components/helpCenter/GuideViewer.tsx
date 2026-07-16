@@ -213,8 +213,7 @@ export const GuideViewer: React.FC = () => {
         <p className="text-neutral-500 dark:text-neutral-400 mb-4">
           The guide you're looking for doesn't exist or has been removed.
         </p>
-        <Button onClick={() => navigate("/help-center")}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
+        <Button onClick={() => navigate("/help-center")} leftIcon={<ArrowLeft className="w-4 h-4" />}>
           Back to Help Center
         </Button>
       </div>
@@ -233,9 +232,7 @@ export const GuideViewer: React.FC = () => {
               <Button
                 variant="ghost"
                 onClick={() => navigate("/help-center")}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
+                className="flex items-center gap-2" leftIcon={<ArrowLeft className="w-4 h-4" />}>
                 <span className="hidden sm:inline">Help Center</span>
               </Button>
               <div className="h-6 w-px bg-neutral-300 dark:bg-neutral-600" />
@@ -261,9 +258,7 @@ export const GuideViewer: React.FC = () => {
               {isAdmin && (
                 <Button
                   onClick={() => navigate(`/help-center/builder/${guide.id}`)}
-                  className="bg-brand hover:bg-brand-dark text-white"
-                >
-                  <Edit3 className="w-4 h-4 mr-2" />
+                  className="bg-brand hover:bg-brand-dark text-white" leftIcon={<Edit3 className="w-4 h-4" />}>
                   <span className="hidden sm:inline">Edit</span>
                 </Button>
               )}
@@ -341,9 +336,7 @@ export const GuideViewer: React.FC = () => {
                       onClick={() =>
                         navigate(`/help-center/builder/${guide.id}`)
                       }
-                      className="bg-brand hover:bg-brand-dark text-white"
-                    >
-                      <Edit3 className="w-4 h-4 mr-2" />
+                      className="bg-brand hover:bg-brand-dark text-white" leftIcon={<Edit3 className="w-4 h-4" />}>
                       Add Content
                     </Button>
                   )}

@@ -258,9 +258,8 @@ export const ShortcutManager: React.FC<ShortcutManagerProps> = ({
                 shortcuts.length >= MAX_SHORTCUTS
                   ? `Maximum ${MAX_SHORTCUTS} shortcuts allowed`
                   : undefined
-              }
-            >
-              <PlusCircle className="h-4 w-4 mr-2" /> Add Shortcut
+              } leftIcon={<PlusCircle className="h-4 w-4" />}>
+              Add Shortcut
             </Button>
           </div>
 

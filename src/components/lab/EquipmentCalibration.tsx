@@ -152,9 +152,7 @@ export function EquipmentCalibration({ division }: EquipmentCalibrationProps) {
             setEditingEquipmentId(null);
             setEquipmentForm(defaultEquipmentForm);
             setShowEquipmentForm(true);
-          }}
-        >
-          <Plus className="mr-2 h-4 w-4" />
+          }} leftIcon={<Plus className="h-4 w-4" />}>
           Add Equipment
         </Button>
       </div>
@@ -232,17 +230,13 @@ export function EquipmentCalibration({ division }: EquipmentCalibrationProps) {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleEditEquipment(item)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
+                        onClick={() => handleEditEquipment(item)} leftIcon={<Edit className="h-4 w-4" />}>
                         Edit
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleCalibrate(item)}
-                      >
-                        <Wrench className="h-4 w-4 mr-1" />
+                        onClick={() => handleCalibrate(item)} leftIcon={<Wrench className="h-4 w-4" />}>
                         Calibrate
                       </Button>
                     </div>

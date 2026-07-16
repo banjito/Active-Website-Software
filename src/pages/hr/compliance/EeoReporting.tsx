@@ -213,9 +213,7 @@ export const EeoReporting: React.FC = () => {
           <Button
             variant="outline"
             onClick={handleExport}
-            disabled={!overallSummary || overallSummary.total === 0}
-          >
-            <Download className="h-4 w-4 mr-2" />
+            disabled={!overallSummary || overallSummary.total === 0} leftIcon={<Download className="h-4 w-4" />}>
             Export CSV
           </Button>
         </div>

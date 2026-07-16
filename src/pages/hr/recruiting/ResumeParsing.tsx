@@ -20,8 +20,7 @@ export const ResumeParsing: React.FC = () => {
             Auto-capture applicant data from resumes
           </p>
         </div>
-        <Button className="bg-brand hover:bg-brand/90 text-white">
-          <Upload className="mr-2 h-4 w-4" />
+        <Button className="bg-brand hover:bg-brand/90 text-white" leftIcon={<Upload className="h-4 w-4" />}>
           Upload Resume
         </Button>
       </div>

@@ -341,9 +341,7 @@ export const Checklists: React.FC = () => {
             resetForm();
             setIsCreateModalOpen(true);
           }}
-          className="bg-brand hover:bg-brand/90 text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" />
+          className="bg-brand hover:bg-brand/90 text-white" leftIcon={<Plus className="h-4 w-4" />}>
           Create Checklist
         </Button>
       </div>
@@ -447,17 +445,13 @@ export const Checklists: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openViewModal(checklist)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
+                      onClick={() => openViewModal(checklist)} leftIcon={<Eye className="h-4 w-4" />}>
                       View
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openEditModal(checklist)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
+                      onClick={() => openEditModal(checklist)} leftIcon={<Edit className="h-4 w-4" />}>
                       Edit
                     </Button>
                     <Button
@@ -483,17 +477,15 @@ export const Checklists: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page <= 1}
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                  disabled={page <= 1} leftIcon={<ChevronLeft className="h-4 w-4" />}>
+                  Previous
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page >= totalPages}
-                >
-                  Next <ChevronRight className="h-4 w-4 ml-1" />
+                  disabled={page >= totalPages} rightIcon={<ChevronRight className="h-4 w-4" />}>
+                  Next
                 </Button>
               </div>
             </div>
@@ -587,9 +579,7 @@ export const Checklists: React.FC = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleItemAdd}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
+                  onClick={handleItemAdd} leftIcon={<Plus className="h-4 w-4" />}>
                   Add Item
                 </Button>
               </div>
@@ -821,9 +811,7 @@ export const Checklists: React.FC = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleItemAdd}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
+                  onClick={handleItemAdd} leftIcon={<Plus className="h-4 w-4" />}>
                   Add Item
                 </Button>
               </div>

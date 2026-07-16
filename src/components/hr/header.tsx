@@ -37,8 +37,7 @@ export function Header({ title, subtitle }: HeaderProps) {
         </div>
 
         {/* Quick Add */}
-        <Button size="sm" className="gap-2">
-          <Plus className="w-4 h-4" />
+        <Button size="sm" className="gap-2" leftIcon={<Plus className="w-4 h-4" />}>
           Add Employee
         </Button>
 

@@ -141,9 +141,7 @@ export function PDFSignatureFieldPlacer({
               setIsPlacing(true);
               setNewFieldName("");
             }}
-            disabled={isPlacing}
-          >
-            <Plus className="h-4 w-4 mr-1" />
+            disabled={isPlacing} leftIcon={<Plus className="h-4 w-4" />}>
             {isPlacing ? "Click on PDF to place" : "Add Signature Field"}
           </Button>
           {isPlacing && (
@@ -183,9 +181,7 @@ export function PDFSignatureFieldPlacer({
             variant="outline"
             size="sm"
             onClick={handleSave}
-            disabled={isSaving}
-          >
-            <Save className="h-4 w-4 mr-1" />
+            disabled={isSaving} leftIcon={<Save className="h-4 w-4" />}>
             {isSaving ? "Saving..." : "Save Fields"}
           </Button>
           <Button variant="outline" size="sm" onClick={onClose}>

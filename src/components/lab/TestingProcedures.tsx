@@ -273,9 +273,7 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
             setForm(defaultFormState);
             setSelectedFile(null);
             setShowForm(true);
-          }}
-        >
-          <Plus className="mr-2 h-4 w-4" />
+          }} leftIcon={<Plus className="h-4 w-4" />}>
           Add Procedure
         </Button>
       </div>
@@ -398,17 +396,13 @@ export function TestingProcedures({ division }: TestingProceduresProps) {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleEdit(procedure)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
+                        onClick={() => handleEdit(procedure)} leftIcon={<Edit className="h-4 w-4" />}>
                         Edit
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleDelete(procedure.id)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
+                        onClick={() => handleDelete(procedure.id)} leftIcon={<Trash2 className="h-4 w-4" />}>
                         Delete
                       </Button>
                     </div>

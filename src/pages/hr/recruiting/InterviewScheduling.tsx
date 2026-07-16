@@ -1255,9 +1255,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                           variant="outline"
                           size="sm"
                           onClick={() => openStartInterviewModal(interview)}
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                        >
-                          <Play className="h-4 w-4 mr-1" />
+                          className="bg-green-600 hover:bg-green-700 text-white" leftIcon={<Play className="h-4 w-4" />}>
                           Start Interview
                         </Button>
                       )}
@@ -1391,9 +1389,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                           variant="outline"
                           size="sm"
                           onClick={() => openStartInterviewModal(interview)}
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                        >
-                          <Play className="h-4 w-4 mr-1" />
+                          className="bg-green-600 hover:bg-green-700 text-white" leftIcon={<Play className="h-4 w-4" />}>
                           Start Interview
                         </Button>
                       )}
@@ -1488,18 +1484,14 @@ ${interviewFormData.overallFeedback || "N/A"}
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={openManageTemplatesModal}
-                    >
-                      <ListChecks className="h-4 w-4 mr-1" />
+                      onClick={openManageTemplatesModal} leftIcon={<ListChecks className="h-4 w-4" />}>
                       Edit stage questions
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={openCreateStageModal}
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
+                      onClick={openCreateStageModal} leftIcon={<Plus className="h-4 w-4" />}>
                       New stage
                     </Button>
                   </div>
@@ -1784,12 +1776,10 @@ ${interviewFormData.overallFeedback || "N/A"}
             ) : (
               <>
                 <div className="flex items-center justify-between gap-2 mb-4">
-                  <Button variant="outline" size="sm" onClick={backToStageList}>
-                    <ArrowLeft className="h-4 w-4 mr-1" />
+                  <Button variant="outline" size="sm" onClick={backToStageList} leftIcon={<ArrowLeft className="h-4 w-4" />}>
                     Back to stages
                   </Button>
-                  <Button variant="outline" size="sm" onClick={openAddQuestion}>
-                    <Plus className="h-4 w-4 mr-2" />
+                  <Button variant="outline" size="sm" onClick={openAddQuestion} leftIcon={<Plus className="h-4 w-4" />}>
                     Add question
                   </Button>
                 </div>
@@ -2211,9 +2201,7 @@ ${interviewFormData.overallFeedback || "N/A"}
                   setIsViewModalOpen(false);
                   openEditModal(selectedInterview);
                 }}
-                className="bg-brand hover:bg-brand/90 text-white"
-              >
-                <Edit className="mr-2 h-4 w-4" />
+                className="bg-brand hover:bg-brand/90 text-white" leftIcon={<Edit className="h-4 w-4" />}>
                 Edit
               </Button>
             )}
@@ -2554,18 +2542,14 @@ ${interviewFormData.overallFeedback || "N/A"}
                     <Button
                       onClick={() => setShowApproveConfirm(true)}
                       className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 text-lg"
-                      size="lg"
-                    >
-                      <Check className="mr-2 h-5 w-5" />
+                      size="lg" leftIcon={<Check className="h-5 w-5" />}>
                       Approve Position
                     </Button>
                     <Button
                       onClick={() => setShowDenyConfirm(true)}
                       variant="outline"
                       className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20 px-8 py-6 text-lg"
-                      size="lg"
-                    >
-                      <X className="mr-2 h-5 w-5" />
+                      size="lg" leftIcon={<X className="h-5 w-5" />}>
                       Deny Position
                     </Button>
                   </div>

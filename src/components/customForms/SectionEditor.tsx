@@ -794,8 +794,8 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                           ],
                         });
                       }}
+                      leftIcon={<Plus className="w-3 h-3" />}
                     >
-                      <Plus className="w-3 h-3 mr-1" />
                       Add field
                     </Button>
                   </div>
@@ -964,8 +964,8 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                         }));
                         onUpdate({ columns: evenColumns });
                       }}
+                      leftIcon={<Columns className="w-3 h-3" />}
                     >
-                      <Columns className="w-3 h-3 mr-1" />
                       Even %
                     </Button>
                     <Button
@@ -986,8 +986,8 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                           columns: [...(section.columns || []), newColumn],
                         });
                       }}
+                      leftIcon={<Plus className="w-3 h-3" />}
                     >
-                      <Plus className="w-3 h-3 mr-1" />
                       Add Column
                     </Button>
                   </div>
@@ -1072,8 +1072,8 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                             ],
                           });
                         }}
+                        leftIcon={<Plus className="w-3 h-3" />}
                       >
-                        <Plus className="w-3 h-3 mr-1" />
                         Add dropdown
                       </Button>
                     </div>
@@ -1270,8 +1270,8 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                             ],
                           });
                         }}
+                        leftIcon={<Plus className="w-3 h-3" />}
                       >
-                        <Plus className="w-3 h-3 mr-1" />
                         Add row
                       </Button>
                     </div>
@@ -1437,8 +1437,8 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                         fields: [...(section.fields || []), newField],
                       });
                     }}
+                    leftIcon={<Plus className="w-3 h-3" />}
                   >
-                    <Plus className="w-3 h-3 mr-1" />
                     Add Field
                   </Button>
                 </div>
@@ -1545,8 +1545,8 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                       ],
                     });
                   }}
+                  leftIcon={<Plus className="w-3 h-3" />}
                 >
-                  <Plus className="w-3 h-3 mr-1" />
                   Add Item
                 </Button>
               </div>

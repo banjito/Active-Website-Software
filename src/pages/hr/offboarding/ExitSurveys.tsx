@@ -580,8 +580,7 @@ export const ExitSurveys: React.FC = () => {
             Collect optional feedback from departing employees
           </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="h-4 w-4 mr-2" />
+        <Button onClick={openCreate} leftIcon={<Plus className="h-4 w-4" />}>
           New Survey
         </Button>
       </div>
@@ -657,8 +656,7 @@ export const ExitSurveys: React.FC = () => {
                   : "Create your first exit survey"}
               </p>
               {!search && filterStatus === "all" && (
-                <Button variant="outline" className="mt-4" onClick={openCreate}>
-                  <Plus className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="mt-4" onClick={openCreate} leftIcon={<Plus className="h-4 w-4" />}>
                   Create Survey
                 </Button>
               )}
@@ -751,9 +749,7 @@ export const ExitSurveys: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => openSendModal(s)}
-                          >
-                            <Send className="h-3.5 w-3.5 mr-1" />
+                            onClick={() => openSendModal(s)} leftIcon={<Send className="h-3.5 w-3.5" />}>
                             Send
                           </Button>
                           <Button
@@ -953,9 +949,7 @@ export const ExitSurveys: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowDocPicker(!showDocPicker)}
-                  className="border-brand text-brand hover:bg-brand/10"
-                >
-                  <Link2 className="h-3.5 w-3.5 mr-1.5" />
+                  className="border-brand text-brand hover:bg-brand/10" leftIcon={<Link2 className="h-3.5 w-3.5" />}>
                   Add from document library
                 </Button>
                 <label className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium border border-neutral-300 dark:border-neutral-600 rounded-none cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
@@ -1010,9 +1004,7 @@ export const ExitSurveys: React.FC = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={addQuestion}
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  onClick={addQuestion} leftIcon={<Plus className="h-3.5 w-3.5" />}>
                   Add Question
                 </Button>
               </div>
@@ -1341,9 +1333,7 @@ export const ExitSurveys: React.FC = () => {
                   </Button>
                   <Button
                     onClick={handleCreateLink}
-                    disabled={!sendEmployeeId || loadingEmployees}
-                  >
-                    <Link2 className="h-4 w-4 mr-2" />
+                    disabled={!sendEmployeeId || loadingEmployees} leftIcon={<Link2 className="h-4 w-4" />}>
                     Create link
                   </Button>
                 </DialogFooter>
@@ -1359,8 +1349,7 @@ export const ExitSurveys: React.FC = () => {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={copyLinkToClipboard} className="flex-1">
-                    <Copy className="h-4 w-4 mr-2" />
+                  <Button onClick={copyLinkToClipboard} className="flex-1" leftIcon={<Copy className="h-4 w-4" />}>
                     Copy link
                   </Button>
                   <Button

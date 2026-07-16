@@ -405,8 +405,7 @@ export default function AssetTracking() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Asset Tracking</h2>
-        <Button onClick={() => setShowAssetForm(true)}>
-          <Plus className="w-4 h-4 mr-2" />
+        <Button onClick={() => setShowAssetForm(true)} leftIcon={<Plus className="w-4 h-4" />}>
           Add New Asset
         </Button>
       </div>

@@ -528,9 +528,7 @@ export function VehicleTracking({
                 onClick={() => {
                   onClose();
                   handleEditVehicle(vehicle.id);
-                }}
-              >
-                <Edit className="mr-2 h-4 w-4" />
+                }} leftIcon={<Edit className="h-4 w-4" />}>
                 Edit Vehicle
               </Button>
             </div>
@@ -548,9 +546,7 @@ export function VehicleTracking({
           {!showVehicleDialog && !hideAddButton && (
             <Button
               onClick={() => setShowVehicleDialog(true)}
-              disabled={isLoading}
-            >
-              <Plus className="mr-2 h-4 w-4" />
+              disabled={isLoading} leftIcon={<Plus className="h-4 w-4" />}>
               Add Vehicle
             </Button>
           )}
@@ -782,8 +778,7 @@ export function VehicleTracking({
                     >
                       Cancel
                     </Button>
-                    <Button onClick={handleSaveVehicle} disabled={isLoading}>
-                      <Save className="h-4 w-4 mr-2" />
+                    <Button onClick={handleSaveVehicle} disabled={isLoading} leftIcon={<Save className="h-4 w-4" />}>
                       Save Vehicle
                     </Button>
                   </div>
@@ -806,8 +801,7 @@ export function VehicleTracking({
                   system.
                 </p>
                 {!showVehicleDialog && !hideAddButton && (
-                  <Button onClick={() => setShowVehicleDialog(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
+                  <Button onClick={() => setShowVehicleDialog(true)} leftIcon={<Plus className="h-4 w-4" />}>
                     Add First Vehicle
                   </Button>
                 )}

@@ -862,9 +862,7 @@ export const CandidateTracking: React.FC = () => {
           onClick={() => {
             resetForm();
             setIsCreateModalOpen(true);
-          }}
-        >
-          <Plus className="mr-2 h-4 w-4" />
+          }} leftIcon={<Plus className="h-4 w-4" />}>
           Add Candidate
         </Button>
       </div>
@@ -1032,9 +1030,7 @@ export const CandidateTracking: React.FC = () => {
                             `/hr/recruiting/interview-scheduling?candidateId=${candidate.id}`,
                           );
                         }}
-                        className="bg-brand hover:bg-brand/90 text-white border-brand"
-                      >
-                        <Calendar className="mr-2 h-4 w-4" />
+                        className="bg-brand hover:bg-brand/90 text-white border-brand" leftIcon={<Calendar className="h-4 w-4" />}>
                         Schedule Interview
                       </Button>
                     )}
@@ -1108,17 +1104,13 @@ export const CandidateTracking: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => openViewModal(candidate)}
-                      >
-                        <Eye className="mr-2 h-4 w-4" />
+                        onClick={() => openViewModal(candidate)} leftIcon={<Eye className="h-4 w-4" />}>
                         View
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => openEditModal(candidate)}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
+                        onClick={() => openEditModal(candidate)} leftIcon={<Edit className="h-4 w-4" />}>
                         Edit
                       </Button>
                     </div>
@@ -2298,9 +2290,7 @@ export const CandidateTracking: React.FC = () => {
                           variant="outline"
                           size="sm"
                           onClick={handleUnlinkUser}
-                          disabled={linkingUser}
-                        >
-                          <X className="h-3.5 w-3.5 mr-1" />
+                          disabled={linkingUser} leftIcon={<X className="h-3.5 w-3.5" />}>
                           Unlink
                         </Button>
                       </div>
@@ -2382,9 +2372,7 @@ export const CandidateTracking: React.FC = () => {
                   setIsViewModalOpen(false);
                   openEditModal(selectedCandidate);
                 }}
-                className="bg-brand hover:bg-brand/90 text-white"
-              >
-                <Edit className="mr-2 h-4 w-4" />
+                className="bg-brand hover:bg-brand/90 text-white" leftIcon={<Edit className="h-4 w-4" />}>
                 Edit
               </Button>
             )}

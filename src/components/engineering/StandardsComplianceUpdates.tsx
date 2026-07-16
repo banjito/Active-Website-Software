@@ -297,8 +297,7 @@ export function StandardsComplianceUpdates() {
       subtitle="Track and manage engineering standards and compliance requirements"
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="mr-2 h-4 w-4" />
+          <Button variant="outline" size="sm" leftIcon={<Download className="h-4 w-4" />}>
             Export
           </Button>
           <Button
@@ -307,9 +306,7 @@ export function StandardsComplianceUpdates() {
               activeTab === "standards"
                 ? setShowStandardModal(true)
                 : setShowComplianceModal(true)
-            }
-          >
-            <Plus className="mr-2 h-4 w-4" />
+            } leftIcon={<Plus className="h-4 w-4" />}>
             Add {activeTab === "standards" ? "Standard" : "Compliance"}
           </Button>
         </div>
@@ -328,8 +325,7 @@ export function StandardsComplianceUpdates() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" className="flex gap-2 w-full sm:w-auto">
-            <Filter className="h-4 w-4" />
+          <Button variant="outline" className="flex gap-2 w-full sm:w-auto" leftIcon={<Filter className="h-4 w-4" />}>
             Filter
           </Button>
         </div>

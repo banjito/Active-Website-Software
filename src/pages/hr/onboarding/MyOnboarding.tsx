@@ -666,9 +666,7 @@ export const MyOnboarding: React.FC = () => {
                       <Button
                         size="sm"
                         onClick={() => openPacketDetail(p.id)}
-                        className="bg-brand hover:bg-brand/90 text-white flex-shrink-0"
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
+                        className="bg-brand hover:bg-brand/90 text-white flex-shrink-0" leftIcon={<Eye className="h-4 w-4" />}>
                         {packetFullySigned[p.id] ? "View" : "View & sign"}
                       </Button>
                     </li>
@@ -742,9 +740,7 @@ export const MyOnboarding: React.FC = () => {
                     <Button
                       size="sm"
                       onClick={() => openChecklistModal(c.id)}
-                      className="bg-brand hover:bg-brand/90 text-white"
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
+                      className="bg-brand hover:bg-brand/90 text-white" leftIcon={<Eye className="h-4 w-4" />}>
                       View
                     </Button>
                   </li>
@@ -1080,9 +1076,7 @@ export const MyOnboarding: React.FC = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => openDocumentViewer(doc)}
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
+                              onClick={() => openDocumentViewer(doc)} leftIcon={<Eye className="h-4 w-4" />}>
                               View
                             </Button>
                           ) : (
@@ -1125,17 +1119,13 @@ export const MyOnboarding: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleDocumentOpenInNewTab(selectedDocument)}
-                  >
-                    <ExternalLink className="h-4 w-4 mr-1" />
+                    onClick={() => handleDocumentOpenInNewTab(selectedDocument)} leftIcon={<ExternalLink className="h-4 w-4" />}>
                     Open in New Tab
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleDocumentDownload(selectedDocument)}
-                  >
-                    <Download className="h-4 w-4 mr-1" />
+                    onClick={() => handleDocumentDownload(selectedDocument)} leftIcon={<Download className="h-4 w-4" />}>
                     Download
                   </Button>
                 </div>

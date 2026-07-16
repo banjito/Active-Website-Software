@@ -5549,9 +5549,7 @@ export default function OpportunityDetail() {
                                 ?.click()
                             }
                             disabled={uploadingFile}
-                            className="text-brand border-brand hover:bg-brand hover:text-white"
-                          >
-                            <Upload className="h-4 w-4 mr-1" />
+                            className="text-brand border-brand hover:bg-brand hover:text-white" leftIcon={<Upload className="h-4 w-4" />}>
                             {uploadingFile ? "Uploading..." : "Upload"}
                           </Button>
                         </div>
@@ -6127,9 +6125,7 @@ export default function OpportunityDetail() {
                         previewFile &&
                         window.open(previewFile.file_url, "_blank")
                       }
-                      className="text-brand border-brand hover:bg-brand hover:text-white"
-                    >
-                      <ExternalLink className="h-4 w-4 mr-1" />
+                      className="text-brand border-brand hover:bg-brand hover:text-white" leftIcon={<ExternalLink className="h-4 w-4" />}>
                       Open in New Tab
                     </Button>
                     <Button
@@ -6186,9 +6182,7 @@ export default function OpportunityDetail() {
                               previewFile &&
                               window.open(previewFile.file_url, "_blank")
                             }
-                            className="bg-brand hover:bg-brand/90 text-white"
-                          >
-                            <Download className="h-4 w-4 mr-2" />
+                            className="bg-brand hover:bg-brand/90 text-white" leftIcon={<Download className="h-4 w-4" />}>
                             Download File
                           </Button>
                         </div>

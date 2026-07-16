@@ -439,9 +439,8 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                   shortcuts.length >= MAX_SHORTCUTS
                     ? `Maximum ${MAX_SHORTCUTS} shortcuts allowed`
                     : undefined
-                }
-              >
-                <Search className="h-3 w-3 mr-1" /> Quick Add
+                } leftIcon={<Search className="h-3 w-3" />}>
+                Quick Add
               </Button>
               <Button
                 size="sm"
@@ -452,9 +451,8 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                   shortcuts.length >= MAX_SHORTCUTS
                     ? `Maximum ${MAX_SHORTCUTS} shortcuts allowed`
                     : undefined
-                }
-              >
-                <PlusCircle className="h-3 w-3 mr-1" /> Custom
+                } leftIcon={<PlusCircle className="h-3 w-3" />}>
+                Custom
               </Button>
             </div>
           </div>

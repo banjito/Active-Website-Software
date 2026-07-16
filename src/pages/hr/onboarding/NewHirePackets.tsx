@@ -662,9 +662,7 @@ export const NewHirePackets: React.FC = () => {
             resetForm();
             setIsCreateModalOpen(true);
           }}
-          className="bg-brand hover:bg-brand/90 text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" />
+          className="bg-brand hover:bg-brand/90 text-white" leftIcon={<Plus className="h-4 w-4" />}>
           Create Packet
         </Button>
       </div>
@@ -766,25 +764,19 @@ export const NewHirePackets: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openViewModal(packet)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
+                      onClick={() => openViewModal(packet)} leftIcon={<Eye className="h-4 w-4" />}>
                       View
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openEditModal(packet)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
+                      onClick={() => openEditModal(packet)} leftIcon={<Edit className="h-4 w-4" />}>
                       Edit
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDuplicate(packet)}
-                    >
-                      <Download className="h-4 w-4 mr-1" />
+                      onClick={() => handleDuplicate(packet)} leftIcon={<Download className="h-4 w-4" />}>
                       Duplicate
                     </Button>
                     <Button
@@ -810,17 +802,15 @@ export const NewHirePackets: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page <= 1}
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                  disabled={page <= 1} leftIcon={<ChevronLeft className="h-4 w-4" />}>
+                  Previous
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page >= totalPages}
-                >
-                  Next <ChevronRight className="h-4 w-4 ml-1" />
+                  disabled={page >= totalPages} rightIcon={<ChevronRight className="h-4 w-4" />}>
+                  Next
                 </Button>
               </div>
             </div>
@@ -923,9 +913,7 @@ export const NewHirePackets: React.FC = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleDocumentAdd}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
+                  onClick={handleDocumentAdd} leftIcon={<Plus className="h-4 w-4" />}>
                   Add Document
                 </Button>
               </div>
@@ -1155,9 +1143,7 @@ export const NewHirePackets: React.FC = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleDocumentAdd}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
+                  onClick={handleDocumentAdd} leftIcon={<Plus className="h-4 w-4" />}>
                   Add Document
                 </Button>
               </div>
@@ -1356,9 +1342,7 @@ export const NewHirePackets: React.FC = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => openDocumentViewer(doc)}
-                              className="flex items-center gap-1"
-                            >
-                              <Eye className="h-4 w-4" />
+                              className="flex items-center gap-1" leftIcon={<Eye className="h-4 w-4" />}>
                               View
                             </Button>
                             <Button
@@ -1428,18 +1412,14 @@ export const NewHirePackets: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => handleDocumentOpenInNewTab(selectedDocument)}
-                    className="flex items-center gap-1"
-                  >
-                    <ExternalLink className="h-4 w-4" />
+                    className="flex items-center gap-1" leftIcon={<ExternalLink className="h-4 w-4" />}>
                     Open in New Tab
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleDocumentDownload(selectedDocument)}
-                    className="flex items-center gap-1"
-                  >
-                    <Download className="h-4 w-4" />
+                    className="flex items-center gap-1" leftIcon={<Download className="h-4 w-4" />}>
                     Download
                   </Button>
                 </div>
@@ -1470,9 +1450,7 @@ export const NewHirePackets: React.FC = () => {
                           onClick={() =>
                             handleDocumentOpenInNewTab(selectedDocument)
                           }
-                          className="flex items-center gap-2"
-                        >
-                          <ExternalLink className="w-4 h-4" />
+                          className="flex items-center gap-2" leftIcon={<ExternalLink className="w-4 h-4" />}>
                           Open in New Tab
                         </Button>
                         <Button
@@ -1480,9 +1458,7 @@ export const NewHirePackets: React.FC = () => {
                           onClick={() =>
                             handleDocumentDownload(selectedDocument)
                           }
-                          className="flex items-center gap-2"
-                        >
-                          <Download className="w-4 h-4" />
+                          className="flex items-center gap-2" leftIcon={<Download className="w-4 h-4" />}>
                           Download
                         </Button>
                       </div>
@@ -1527,9 +1503,7 @@ export const NewHirePackets: React.FC = () => {
                               onClick={() =>
                                 handleDocumentOpenInNewTab(selectedDocument)
                               }
-                              className="flex items-center gap-2"
-                            >
-                              <ExternalLink className="w-4 h-4" />
+                              className="flex items-center gap-2" leftIcon={<ExternalLink className="w-4 h-4" />}>
                               Open in New Tab
                             </Button>
                             <Button
@@ -1537,9 +1511,7 @@ export const NewHirePackets: React.FC = () => {
                               onClick={() =>
                                 handleDocumentDownload(selectedDocument)
                               }
-                              className="flex items-center gap-2"
-                            >
-                              <Download className="w-4 h-4" />
+                              className="flex items-center gap-2" leftIcon={<Download className="w-4 h-4" />}>
                               Download to View
                             </Button>
                           </div>

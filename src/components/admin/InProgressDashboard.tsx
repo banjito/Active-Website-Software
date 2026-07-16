@@ -1483,9 +1483,7 @@ const InProgressDashboard: React.FC = () => {
                                   setModalLoading(false);
                                 }
                               }}
-                              className="hover:bg-brand hover:text-white hover:border-brand transition-colors"
-                            >
-                              <Eye className="h-3 w-3 mr-1" />
+                              className="hover:bg-brand hover:text-white hover:border-brand transition-colors" leftIcon={<Eye className="h-3 w-3" />}>
                               Opportunity
                             </Button>
                           )}
@@ -1517,9 +1515,7 @@ const InProgressDashboard: React.FC = () => {
                                 setModalLoading(false);
                               }
                             }}
-                            className="hover:bg-brand hover:text-white hover:border-brand transition-colors"
-                          >
-                            <Eye className="h-3 w-3 mr-1" />
+                            className="hover:bg-brand hover:text-white hover:border-brand transition-colors" leftIcon={<Eye className="h-3 w-3" />}>
                             View Job
                           </Button>
                         </div>

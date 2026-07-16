@@ -465,8 +465,7 @@ export const VersionTracking: React.FC<VersionTrackingProps> = ({
             </p>
           </div>
           {selectedEmployeeId && (
-            <Button onClick={() => handleOpenCertModal()}>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button onClick={() => handleOpenCertModal()} leftIcon={<Plus className="h-4 w-4" />}>
               Add Certification
             </Button>
           )}
@@ -476,8 +475,7 @@ export const VersionTracking: React.FC<VersionTrackingProps> = ({
       {/* Action Button - Show when embedded */}
       {initialEmployeeId && selectedEmployeeId && (
         <div className="flex gap-2 justify-end">
-          <Button onClick={() => handleOpenCertModal()}>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button onClick={() => handleOpenCertModal()} leftIcon={<Plus className="h-4 w-4" />}>
             Add Certification
           </Button>
         </div>

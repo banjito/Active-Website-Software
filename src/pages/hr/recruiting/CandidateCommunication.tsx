@@ -243,15 +243,12 @@ Your Team`,
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={openNewTemplate}>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button variant="outline" onClick={openNewTemplate} leftIcon={<Plus className="h-4 w-4" />}>
             New template
           </Button>
           <Button
             className="bg-brand hover:bg-brand/90 text-white"
-            onClick={openCompose}
-          >
-            <Mail className="mr-2 h-4 w-4" />
+            onClick={openCompose} leftIcon={<Mail className="h-4 w-4" />}>
             Compose with template
           </Button>
         </div>
@@ -336,9 +333,7 @@ Your Team`,
               variant="outline"
               className="w-full"
               onClick={openCompose}
-              disabled={templates.length === 0 || candidates.length === 0}
-            >
-              <Mail className="mr-2 h-4 w-4" />
+              disabled={templates.length === 0 || candidates.length === 0} leftIcon={<Mail className="h-4 w-4" />}>
               Compose with template
             </Button>
             {templates.length === 0 && (
@@ -521,9 +516,7 @@ Your Team`,
                           filled.body,
                           previewCandidate!,
                         )
-                      }
-                    >
-                      <Copy className="h-4 w-4 mr-1" />
+                      } leftIcon={<Copy className="h-4 w-4" />}>
                       Copy for {previewCandidate?.first_name}
                     </Button>
                     <Button
@@ -535,9 +528,7 @@ Your Team`,
                           filled.subject,
                           filled.body,
                         )
-                      }
-                    >
-                      <Send className="h-4 w-4 mr-1" />
+                      } leftIcon={<Send className="h-4 w-4" />}>
                       Open in email
                     </Button>
                   </div>

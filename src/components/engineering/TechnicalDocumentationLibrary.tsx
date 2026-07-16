@@ -302,17 +302,13 @@ export function TechnicalDocumentationLibrary() {
           <Button
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2"
-          >
-            <Filter className="h-4 w-4" />
+            className="flex items-center gap-2" leftIcon={<Filter className="h-4 w-4" />}>
             Filters
           </Button>
 
           <Button
             onClick={() => setShowUploadDialog(true)}
-            className="flex items-center gap-2"
-          >
-            <Folder className="h-4 w-4" />
+            className="flex items-center gap-2" leftIcon={<Folder className="h-4 w-4" />}>
             Upload Document
           </Button>
         </div>

@@ -422,9 +422,7 @@ export const ESignRecordkeeping: React.FC = () => {
         <Button
           variant="outline"
           onClick={handleExport}
-          disabled={filteredRows.length === 0}
-        >
-          <Download className="h-4 w-4 mr-2" />
+          disabled={filteredRows.length === 0} leftIcon={<Download className="h-4 w-4" />}>
           Export audit log
         </Button>
       </div>

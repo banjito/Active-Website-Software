@@ -142,8 +142,7 @@ const SalesGoalManagement: React.FC = () => {
         </div>
         <div>
           {!showForm && (
-            <Button variant="primary" onClick={handleAddGoal}>
-              <PlusCircle size={16} className="mr-2" />
+            <Button variant="primary" onClick={handleAddGoal} leftIcon={<PlusCircle size={16} />}>
               Create New Goal
             </Button>
           )}
@@ -287,8 +286,7 @@ const SalesGoalManagement: React.FC = () => {
                   You don't have any sales goals yet. Create your first goal to
                   get started.
                 </p>
-                <Button variant="primary" onClick={handleAddGoal}>
-                  <PlusCircle size={16} className="mr-2" />
+                <Button variant="primary" onClick={handleAddGoal} leftIcon={<PlusCircle size={16} />}>
                   Create Your First Goal
                 </Button>
               </div>

@@ -434,9 +434,9 @@ const SurveyTemplates: React.FC = () => {
         <h4>Survey Templates</h4>
         <Button 
           variant="primary" 
-          onClick={() => openTemplateModal()}
-        >
-          <FaPlus className="me-1" /> Create Template
+          onClick={() => openTemplateModal()}>
+          <FaPlus className="me-1" />
+          Create Template
         </Button>
       </div>
       
@@ -500,9 +500,9 @@ const SurveyTemplates: React.FC = () => {
                   <p className="text-muted">No templates available</p>
                   <Button 
                     variant="primary" 
-                    onClick={() => openTemplateModal()}
-                  >
-                    <FaPlus className="me-1" /> Create First Template
+                    onClick={() => openTemplateModal()}>
+                    <FaPlus className="me-1" />
+                    Create First Template
                   </Button>
                 </div>
               )}
@@ -521,9 +521,9 @@ const SurveyTemplates: React.FC = () => {
                   <Button 
                     variant="primary" 
                     size="sm"
-                    onClick={() => openQuestionModal()}
-                  >
-                    <FaPlus className="me-1" /> Add Question
+                    onClick={() => openQuestionModal()}>
+                    <FaPlus className="me-1" />
+                    Add Question
                   </Button>
                 )}
               </div>
@@ -618,9 +618,9 @@ const SurveyTemplates: React.FC = () => {
                     <p className="text-muted">No questions in this template</p>
                     <Button 
                       variant="primary" 
-                      onClick={() => openQuestionModal()}
-                    >
-                      <FaPlus className="me-1" /> Add First Question
+                      onClick={() => openQuestionModal()}>
+                      <FaPlus className="me-1" />
+                      Add First Question
                     </Button>
                   </div>
                 )

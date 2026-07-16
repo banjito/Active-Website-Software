@@ -306,13 +306,10 @@ ${attendeeList ? `\nAttendees: ${attendeeList}` : ""}
         <div className="flex items-center gap-2">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="relative">
-                <Bell className="h-4 w-4" />
-                {notificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-none h-4 w-4 flex items-center justify-center">
+              <Button variant="outline" size="sm" className="relative" leftIcon={<Bell className="h-4 w-4" />}>
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-none h-4 w-4 flex items-center justify-center">
                     {notificationCount}
                   </span>
-                )}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-80 p-0" align="end">
@@ -665,13 +662,10 @@ ${attendeeList ? `\nAttendees: ${attendeeList}` : ""}
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setShowPreferences(true)}
-              >
-                <Bell className="h-4 w-4 mr-2" />
+                onClick={() => setShowPreferences(true)} leftIcon={<Bell className="h-4 w-4" />}>
                 Settings
               </Button>
-              <Button size="sm" onClick={() => {}}>
-                <Mail className="h-4 w-4 mr-2" />
+              <Button size="sm" onClick={() => {}} leftIcon={<Mail className="h-4 w-4" />}>
                 Sync Calendar
               </Button>
             </div>

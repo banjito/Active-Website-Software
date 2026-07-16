@@ -148,9 +148,7 @@ export const SignatureProfileSelector: React.FC<
                   <Button
                     onClick={() => setIsManagerOpen(true)}
                     variant="outline"
-                    className="mt-4"
-                  >
-                    <Users className="h-4 w-4 mr-2" />
+                    className="mt-4" leftIcon={<Users className="h-4 w-4" />}>
                     Create Profile
                   </Button>
                 </div>

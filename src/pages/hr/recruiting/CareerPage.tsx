@@ -129,9 +129,7 @@ export const CareerPage: React.FC = () => {
         </div>
         <Button
           className="bg-brand hover:bg-brand/90 text-white"
-          onClick={() => window.open("/careers", "_blank")}
-        >
-          <Globe className="mr-2 h-4 w-4" />
+          onClick={() => window.open("/careers", "_blank")} leftIcon={<Globe className="h-4 w-4" />}>
           View Public Page
         </Button>
       </div>
@@ -247,9 +245,7 @@ export const CareerPage: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openPreviewModal(req)}
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
+                      onClick={() => openPreviewModal(req)} leftIcon={<Eye className="h-4 w-4" />}>
                       Preview
                     </Button>
                   </div>

@@ -292,9 +292,7 @@ export const TestEquipmentManager: React.FC<TestEquipmentManagerProps> = ({
               disabled={!form.name.trim() || saving}
               isLoading={saving}
               size="sm"
-              className="bg-brand text-white hover:bg-brand-dark"
-            >
-              <Save className="h-4 w-4 mr-1" />
+              className="bg-brand text-white hover:bg-brand-dark" leftIcon={<Save className="h-4 w-4" />}>
               {editingEquipment ? "Save Changes" : "Add Equipment"}
             </Button>
           </div>

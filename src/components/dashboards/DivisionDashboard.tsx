@@ -578,10 +578,8 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90 mobile-btn-sm mobile-text-xs"
-                >
+                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90 mobile-btn-sm mobile-text-xs" rightIcon={<ChevronRight className="h-3 w-3 mobile-icon-xs" />}>
                   View all customers
-                  <ChevronRight className="ml-1 h-3 w-3 mobile-icon-xs" />
                 </Button>
               </Link>
             </div>
@@ -605,10 +603,8 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90"
-                >
+                  className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90" rightIcon={<ChevronRight className="h-3 w-3" />}>
                   View all contacts
-                  <ChevronRight className="ml-1 h-3 w-3" />
                 </Button>
               </Link>
             </div>
@@ -633,10 +629,8 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90"
-                  >
+                    className="mt-1 sm:mt-2 h-6 sm:h-8 px-0 text-xs text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90" rightIcon={<ChevronRight className="h-3 w-3" />}>
                     View all documents
-                    <ChevronRight className="ml-1 h-3 w-3" />
                   </Button>
                 </Link>
               </div>
@@ -849,10 +843,8 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
                       <Button
                         variant="outline"
                         size="sm"
-                        className="touch-target"
-                      >
+                        className="touch-target" rightIcon={<ChevronRight className="h-3 w-3" />}>
                         View all jobs
-                        <ChevronRight className="ml-1 h-3 w-3" />
                       </Button>
                     </Link>
                   </div>

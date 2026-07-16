@@ -318,9 +318,7 @@ export default function RoleManagement() {
         <Button
           onClick={startNewRole}
           size="md"
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
+          className="flex items-center gap-2" leftIcon={<Plus className="h-4 w-4" />}>
           Create New Role
         </Button>
       </div>
@@ -447,17 +445,13 @@ export default function RoleManagement() {
           <Button
             variant="outline"
             onClick={cancelEdit}
-            className="flex items-center gap-2"
-          >
-            <XCircle className="h-4 w-4" />
+            className="flex items-center gap-2" leftIcon={<XCircle className="h-4 w-4" />}>
             Cancel
           </Button>
           <Button
             disabled={loading}
             onClick={saveRole}
-            className="flex items-center gap-2"
-          >
-            <Save className="h-4 w-4" />
+            className="flex items-center gap-2" leftIcon={<Save className="h-4 w-4" />}>
             Save Role
           </Button>
         </div>
@@ -585,9 +579,7 @@ export default function RoleManagement() {
             variant="outline"
             size="sm"
             onClick={addPermission}
-            className="flex items-center gap-1"
-          >
-            <Plus className="h-4 w-4" />
+            className="flex items-center gap-1" leftIcon={<Plus className="h-4 w-4" />}>
             Add Permission
           </Button>
         </CardHeader>

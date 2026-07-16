@@ -328,9 +328,7 @@ export const WelcomeEmails: React.FC = () => {
             resetForm();
             setIsCreateModalOpen(true);
           }}
-          className="bg-brand hover:bg-brand/90 text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" />
+          className="bg-brand hover:bg-brand/90 text-white" leftIcon={<Plus className="h-4 w-4" />}>
           Create Email
         </Button>
       </div>
@@ -418,33 +416,25 @@ export const WelcomeEmails: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => openViewModal(email)}
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
+                    onClick={() => openViewModal(email)} leftIcon={<Eye className="h-4 w-4" />}>
                     View
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => openPreviewModal(email)}
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
+                    onClick={() => openPreviewModal(email)} leftIcon={<Eye className="h-4 w-4" />}>
                     Preview
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => openEditModal(email)}
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
+                    onClick={() => openEditModal(email)} leftIcon={<Edit className="h-4 w-4" />}>
                     Edit
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleSend(email)}
-                  >
-                    <Send className="h-4 w-4 mr-1" />
+                    onClick={() => handleSend(email)} leftIcon={<Send className="h-4 w-4" />}>
                     Send
                   </Button>
                   <Button
@@ -624,9 +614,7 @@ export const WelcomeEmails: React.FC = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleVariableAdd}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
+                  onClick={handleVariableAdd} leftIcon={<Plus className="h-4 w-4" />}>
                   Add Variable
                 </Button>
               </div>
@@ -843,9 +831,7 @@ export const WelcomeEmails: React.FC = () => {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleVariableAdd}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
+                  onClick={handleVariableAdd} leftIcon={<Plus className="h-4 w-4" />}>
                   Add Variable
                 </Button>
               </div>

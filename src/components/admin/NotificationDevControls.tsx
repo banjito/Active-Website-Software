@@ -120,8 +120,8 @@ export const NotificationDevControls: React.FC = () => {
           >
             {loading ? <LoadingSpinner size="xs" /> : "Refresh"}
           </Button>
-          <Button variant="outline" onClick={clearAllHidden}>
-            <XCircle className="h-4 w-4 mr-2" /> Clear Hidden
+          <Button variant="outline" onClick={clearAllHidden} leftIcon={<XCircle className="h-4 w-4" />}>
+            Clear Hidden
           </Button>
         </div>
 

@@ -85,9 +85,7 @@ export function PDFEditor({
             variant="outline"
             size="sm"
             onClick={handlePrint}
-            className="text-neutral-600 hover:text-neutral-800"
-          >
-            <Download className="h-4 w-4 mr-1" />
+            className="text-neutral-600 hover:text-neutral-800" leftIcon={<Download className="h-4 w-4" />}>
             Print
           </Button>
         </div>

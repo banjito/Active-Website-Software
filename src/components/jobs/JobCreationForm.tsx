@@ -234,9 +234,7 @@ export function JobCreationForm({
               : division === "armadillo"
                 ? "bg-green-600 hover:bg-green-700"
                 : "bg-purple-600 hover:bg-purple-700"
-          } text-white font-medium px-4 py-2`}
-        >
-          <Plus className="h-4 w-4 mr-2" />
+          } text-white font-medium px-4 py-2`} leftIcon={<Plus className="h-4 w-4" />}>
           {buttonText ||
             `Create ${division.charAt(0).toUpperCase() + division.slice(1)} Job`}
         </Button>
@@ -246,8 +244,7 @@ export function JobCreationForm({
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
               NETA Technician Jobs
             </h2>
-            <Button onClick={() => setShowForm(true)}>
-              <Plus className="h-4 w-4 mr-2" />
+            <Button onClick={() => setShowForm(true)} leftIcon={<Plus className="h-4 w-4" />}>
               Create New Job
             </Button>
           </div>

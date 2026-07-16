@@ -663,8 +663,7 @@ export default function CalendarSystem() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight">Company Calendar</h2>
         <div className="flex items-center space-x-2">
-          <Button onClick={() => setShowEventForm(true)}>
-            <Plus className="w-4 h-4 mr-2" />
+          <Button onClick={() => setShowEventForm(true)} leftIcon={<Plus className="w-4 h-4" />}>
             Add Event
           </Button>
         </div>

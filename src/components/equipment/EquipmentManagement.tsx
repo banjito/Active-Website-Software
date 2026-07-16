@@ -525,9 +525,7 @@ export default function EquipmentManagement({
               resetForm();
               setIsCreateModalOpen(true);
             }}
-            className="flex items-center gap-2"
-          >
-            <Plus size={16} />
+            className="flex items-center gap-2" leftIcon={<Plus size={16} />}>
             Add Equipment
           </Button>
         )}

@@ -743,9 +743,7 @@ export const JobRequisitions: React.FC = () => {
           <Button
             variant="outline"
             onClick={exportToCSV}
-            disabled={filteredAndSortedRequisitions.length === 0}
-          >
-            <Download className="mr-2 h-4 w-4" />
+            disabled={filteredAndSortedRequisitions.length === 0} leftIcon={<Download className="h-4 w-4" />}>
             Export CSV
           </Button>
           <Button
@@ -753,9 +751,7 @@ export const JobRequisitions: React.FC = () => {
             onClick={() => {
               resetForm();
               setIsCreateModalOpen(true);
-            }}
-          >
-            <Plus className="mr-2 h-4 w-4" />
+            }} leftIcon={<Plus className="h-4 w-4" />}>
             New Requisition
           </Button>
         </div>
@@ -1204,9 +1200,7 @@ export const JobRequisitions: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => openSubmitApprovalModal(req.id)}
-                      >
-                        <Send className="mr-2 h-4 w-4" />
+                        onClick={() => openSubmitApprovalModal(req.id)} leftIcon={<Send className="h-4 w-4" />}>
                         Submit for Approval
                       </Button>
                     )}
@@ -1215,9 +1209,7 @@ export const JobRequisitions: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handlePost(req.id)}
-                        className="bg-green-50 hover:bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-                      >
-                        <CheckCircle className="mr-2 h-4 w-4" />
+                        className="bg-green-50 hover:bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400" leftIcon={<CheckCircle className="h-4 w-4" />}>
                         Post Job
                       </Button>
                     )}
@@ -1226,9 +1218,7 @@ export const JobRequisitions: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleClose(req.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      >
-                        <XCircle className="mr-2 h-4 w-4" />
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" leftIcon={<XCircle className="h-4 w-4" />}>
                         Close Position
                       </Button>
                     )}
@@ -1237,17 +1227,13 @@ export const JobRequisitions: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openViewModal(req)}
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
+                      onClick={() => openViewModal(req)} leftIcon={<Eye className="h-4 w-4" />}>
                       View
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openEditModal(req)}
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
+                      onClick={() => openEditModal(req)} leftIcon={<Edit className="h-4 w-4" />}>
                       Edit
                     </Button>
                     {req.status === "draft" && (
@@ -1255,9 +1241,7 @@ export const JobRequisitions: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDelete(req.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" leftIcon={<Trash2 className="h-4 w-4" />}>
                         Delete
                       </Button>
                     )}
@@ -2034,9 +2018,7 @@ export const JobRequisitions: React.FC = () => {
                   setIsViewModalOpen(false);
                   openEditModal(selectedRequisition);
                 }}
-                className="bg-brand hover:bg-brand/90 text-white"
-              >
-                <Edit className="mr-2 h-4 w-4" />
+                className="bg-brand hover:bg-brand/90 text-white" leftIcon={<Edit className="h-4 w-4" />}>
                 Edit
               </Button>
             )}
@@ -2046,9 +2028,7 @@ export const JobRequisitions: React.FC = () => {
                   setIsViewModalOpen(false);
                   handlePost(selectedRequisition.id);
                 }}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                <CheckCircle className="mr-2 h-4 w-4" />
+                className="bg-green-600 hover:bg-green-700 text-white" leftIcon={<CheckCircle className="h-4 w-4" />}>
                 Post Job
               </Button>
             )}
@@ -2196,9 +2176,7 @@ export const JobRequisitions: React.FC = () => {
             <Button
               onClick={handleSubmitForApproval}
               disabled={saving || selectedApprovers.length < 1}
-              className="bg-brand hover:bg-brand/90 text-white"
-            >
-              <Send className="mr-2 h-4 w-4" />
+              className="bg-brand hover:bg-brand/90 text-white" leftIcon={<Send className="h-4 w-4" />}>
               {saving
                 ? "Submitting..."
                 : `Submit with ${selectedApprovers.length} Approver${selectedApprovers.length !== 1 ? "s" : ""}`}

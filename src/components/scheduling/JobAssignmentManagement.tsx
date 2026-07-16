@@ -470,8 +470,7 @@ export function JobAssignmentManagement({
         </div>
 
         {canEditAssignments && (
-          <Button onClick={() => setShowAssignmentForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
+          <Button onClick={() => setShowAssignmentForm(true)} leftIcon={<Plus className="h-4 w-4" />}>
             New Assignment
           </Button>
         )}
@@ -579,9 +578,7 @@ export function JobAssignmentManagement({
                                 variant="outline"
                                 onClick={() =>
                                   handleUpdateStatus(assignment.id, "cancelled")
-                                }
-                              >
-                                <XCircle className="h-4 w-4 mr-1" />
+                                } leftIcon={<XCircle className="h-4 w-4" />}>
                                 Cancel
                               </Button>
                             </>
@@ -592,9 +589,7 @@ export function JobAssignmentManagement({
                               size="sm"
                               onClick={() =>
                                 handleUpdateStatus(assignment.id, "completed")
-                              }
-                            >
-                              <CheckCircle className="h-4 w-4 mr-1" />
+                              } leftIcon={<CheckCircle className="h-4 w-4" />}>
                               Complete
                             </Button>
                           )}

@@ -495,8 +495,7 @@ export function EquipmentTracking({
         </div>
 
         {canEditEquipment && (
-          <Button onClick={() => setShowEquipmentForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
+          <Button onClick={() => setShowEquipmentForm(true)} leftIcon={<Plus className="h-4 w-4" />}>
             Add Equipment
           </Button>
         )}

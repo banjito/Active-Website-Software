@@ -200,8 +200,7 @@ export const SignOnboardingForm: React.FC = () => {
   if (!form) {
     return (
       <div className="space-y-4">
-        <Button variant="outline" onClick={() => navigate(backPath)}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
+        <Button variant="outline" onClick={() => navigate(backPath)} leftIcon={<ArrowLeft className="h-4 w-4" />}>
           Back to Your Onboarding
         </Button>
         <p className="text-neutral-600 dark:text-neutral-400">
@@ -221,8 +220,7 @@ export const SignOnboardingForm: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <Button variant="outline" onClick={() => navigate(backPath)}>
-        <ArrowLeft className="h-4 w-4 mr-2" />
+      <Button variant="outline" onClick={() => navigate(backPath)} leftIcon={<ArrowLeft className="h-4 w-4" />}>
         Back to Your Onboarding
       </Button>
 
@@ -344,8 +342,7 @@ export const SignOnboardingForm: React.FC = () => {
             </>
           )}
           {alreadySigned && (
-            <Button variant="outline" onClick={() => navigate(backPath)}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
+            <Button variant="outline" onClick={() => navigate(backPath)} leftIcon={<ArrowLeft className="h-4 w-4" />}>
               Back to Your Onboarding
             </Button>
           )}

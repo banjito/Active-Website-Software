@@ -2359,8 +2359,7 @@ export const OrgChart: React.FC = () => {
           </p>
         </div>
         {canEdit && (
-          <Button onClick={() => openAddModal()}>
-            <UserPlus className="h-4 w-4 mr-2" />
+          <Button onClick={() => openAddModal()} leftIcon={<UserPlus className="h-4 w-4" />}>
             Add Person
           </Button>
         )}
@@ -2516,8 +2515,7 @@ export const OrgChart: React.FC = () => {
                   : "The organization chart has not been set up yet"}
               </p>
               {canEdit && (
-                <Button onClick={() => openAddModal()}>
-                  <UserPlus className="h-4 w-4 mr-2" />
+                <Button onClick={() => openAddModal()} leftIcon={<UserPlus className="h-4 w-4" />}>
                   Add First Person
                 </Button>
               )}

@@ -375,10 +375,7 @@ export const RequisitionApprovals: React.FC = () => {
             Review and approve job requisitions assigned to you
           </p>
         </div>
-        <Button variant="outline" onClick={fetchData} disabled={loading}>
-          <RefreshCw
-            className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
-          />
+        <Button variant="outline" onClick={fetchData} disabled={loading} leftIcon={<RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />}>
           Refresh
         </Button>
       </div>
@@ -611,9 +608,7 @@ export const RequisitionApprovals: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => openViewModal(req)}
-                      >
-                        <Eye className="mr-2 h-4 w-4" />
+                        onClick={() => openViewModal(req)} leftIcon={<Eye className="h-4 w-4" />}>
                         Review
                       </Button>
                       {canApprove && (
@@ -622,18 +617,14 @@ export const RequisitionApprovals: React.FC = () => {
                             size="sm"
                             onClick={() => handleApprove(req.id)}
                             disabled={approving}
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                          >
-                            <CheckCircle className="mr-2 h-4 w-4" />
+                            className="bg-green-600 hover:bg-green-700 text-white" leftIcon={<CheckCircle className="h-4 w-4" />}>
                             {approving ? "Approving..." : "Approve"}
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => openRejectModal(req)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                          >
-                            <XCircle className="mr-2 h-4 w-4" />
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" leftIcon={<XCircle className="h-4 w-4" />}>
                             Reject
                           </Button>
                         </>
@@ -870,17 +861,13 @@ export const RequisitionApprovals: React.FC = () => {
                     setIsViewModalOpen(false);
                     openRejectModal(selectedRequisition);
                   }}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                >
-                  <XCircle className="mr-2 h-4 w-4" />
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20" leftIcon={<XCircle className="h-4 w-4" />}>
                   Reject
                 </Button>
                 <Button
                   onClick={() => handleApprove(selectedRequisition.id)}
                   disabled={approving}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <CheckCircle className="mr-2 h-4 w-4" />
+                  className="bg-green-600 hover:bg-green-700 text-white" leftIcon={<CheckCircle className="h-4 w-4" />}>
                   {approving ? "Approving..." : "Approve Requisition"}
                 </Button>
               </>
@@ -947,9 +934,7 @@ export const RequisitionApprovals: React.FC = () => {
             <Button
               onClick={handleReject}
               disabled={!rejectReason.trim() || rejecting}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              <XCircle className="mr-2 h-4 w-4" />
+              className="bg-red-600 hover:bg-red-700 text-white" leftIcon={<XCircle className="h-4 w-4" />}>
               {rejecting ? "Rejecting..." : "Reject Requisition"}
             </Button>
           </DialogFooter>

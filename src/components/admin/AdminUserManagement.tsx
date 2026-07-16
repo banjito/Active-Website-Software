@@ -544,8 +544,7 @@ export default function AdminUserManagement() {
             Refresh
           </Button>
           {/* Placeholder for Invite User functionality */}
-          {/* <Button className="flex items-center gap-2">
-            <UserPlus className="h-4 w-4" />
+          {/* <Button className="flex items-center gap-2" leftIcon={<UserPlus className="h-4 w-4" />}>
             Invite User
           </Button> */}
         </div>

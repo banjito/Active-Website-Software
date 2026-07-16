@@ -460,9 +460,7 @@ export function ScheduleManagement({
                       userId: selectedTechnician,
                     }));
                   }}
-                  disabled={!selectedTechnician || isLoading}
-                >
-                  <Clock className="mr-2 h-4 w-4" />
+                  disabled={!selectedTechnician || isLoading} leftIcon={<Clock className="h-4 w-4" />}>
                   Add Regular Availability
                 </Button>
                 <Button
@@ -477,9 +475,7 @@ export function ScheduleManagement({
                     setShowExceptionForm(true);
                   }}
                   disabled={!selectedTechnician || isLoading}
-                  variant="outline"
-                >
-                  <XCircle className="mr-2 h-4 w-4" />
+                  variant="outline" leftIcon={<XCircle className="h-4 w-4" />}>
                   Add Time Off
                 </Button>
               </div>
@@ -503,9 +499,7 @@ export function ScheduleManagement({
                       userId: selectedTechnician,
                     }));
                   }}
-                  disabled={!selectedTechnician || isLoading}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
+                  disabled={!selectedTechnician || isLoading} leftIcon={<Plus className="h-4 w-4" />}>
                   Add Availability
                 </Button>
               </div>
@@ -595,9 +589,7 @@ export function ScheduleManagement({
                       </Button>
                       <Button
                         onClick={handleAddAvailability}
-                        disabled={isLoading}
-                      >
-                        <Save className="mr-2 h-4 w-4" />
+                        disabled={isLoading} leftIcon={<Save className="h-4 w-4" />}>
                         Save Availability
                       </Button>
                     </div>
@@ -659,9 +651,7 @@ export function ScheduleManagement({
                     }));
                     setShowExceptionForm(true);
                   }}
-                  disabled={!selectedTechnician || isLoading}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
+                  disabled={!selectedTechnician || isLoading} leftIcon={<Plus className="h-4 w-4" />}>
                   Add Time Off
                 </Button>
               </div>
@@ -775,8 +765,7 @@ export function ScheduleManagement({
                       >
                         Cancel
                       </Button>
-                      <Button onClick={handleAddException} disabled={isLoading}>
-                        <Save className="mr-2 h-4 w-4" />
+                      <Button onClick={handleAddException} disabled={isLoading} leftIcon={<Save className="h-4 w-4" />}>
                         Save{" "}
                         {exceptionForm.isAvailable
                           ? "Special Hours"

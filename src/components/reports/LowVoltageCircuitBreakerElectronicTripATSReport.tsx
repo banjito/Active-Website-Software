@@ -6599,7 +6599,23 @@ if (typeof document !== "undefined") {
       }
 
       /* Page break control */
-      section { page-break-inside: avoid !important; }
+      section {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      /* overflow-x-auto wrappers create a block formatting context that
+         defeats page-break-inside:avoid, so a section's table gets pushed
+         to the next page while its heading is orphaned (e.g. Insulation
+         Resistance). Neutralize the scroll wrapper in print. */
+      .overflow-x-auto { overflow: visible !important; }
+
+      /* Never break right after a section heading — keep it with its table. */
+      section h2,
+      section h3 {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+      }
 
       /* Ensure everything fits on one page */
       .max-w-7xl {

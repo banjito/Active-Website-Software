@@ -6829,74 +6829,48 @@ export default function JobDetail() {
   ) => {
     setSelectedSignatureProfileIds(selectedIds);
 
-    // Regenerate the document HTML with new signature profiles if this is a summary
+    // Regenerate the signature sections if this is a summary
     if (docType === "summary" || docType === "both") {
       try {
-        // Extract existing content from current HTML
-        const parser = new DOMParser();
-        const currentDoc = parser.parseFromString(docHtml, "text/html");
-        const body = currentDoc.body;
+        // Operate directly on the LIVE editor DOM. The user's edits live only in
+        // the contentEditable DOM (docHtml state is intentionally not updated on
+        // every keystroke), so rebuilding from docHtml would wipe those edits.
+        const editor = generatedDocEditorRef.current;
+        if (!editor) return;
 
-        // Find the executive summary section
-        const summaryPage = body
+        // Find the executive summary section in the live DOM
+        const summaryPage = editor
           .querySelector(".amp-page .exec-title")
-          ?.closest(".amp-page");
+          ?.closest(".amp-page") as HTMLElement | null;
         if (summaryPage) {
-          // Replace the signature sections in the summary
+          const newSigHtml = await generateSignatureSectionsHTML(selectedIds);
+
+          // Replace the signature sections in the summary in place
           const sigGrid = summaryPage.querySelector(".sig-grid");
           if (sigGrid) {
-            const newSigHtml = await generateSignatureSectionsHTML(selectedIds);
             if (newSigHtml) {
               sigGrid.outerHTML = newSigHtml;
             } else if (selectedIds.size === 0) {
               // Remove signature grid if no profiles selected
               sigGrid.remove();
             }
-          } else if (selectedIds.size > 0) {
+          } else if (selectedIds.size > 0 && newSigHtml) {
             // Add signature grid if it doesn't exist
             const execSection = summaryPage.querySelector(
               ".exec-section:last-of-type",
             );
             if (execSection) {
-              const newSigHtml =
-                await generateSignatureSectionsHTML(selectedIds);
-              if (newSigHtml) {
-                execSection.insertAdjacentHTML("afterend", newSigHtml);
-              }
+              execSection.insertAdjacentHTML("afterend", newSigHtml);
             }
           }
 
-          // Reconstruct the full HTML
-          const newBodyHtml = body.innerHTML;
-          const headHtml = currentDoc.head.innerHTML;
+          ensureEditablePadding();
+          ensureFixedElements();
 
-          const newHtml = `<!doctype html>
-<html>
-<head>
-${headHtml}
-</head>
-<body>
-${newBodyHtml}
-</body>
-</html>`;
-
-          setDocHtml(newHtml);
+          // Keep docHtml in sync with the live DOM (which now includes both the
+          // user's edits and the new signatures) for saving/printing.
           docUpdateSourceRef.current = "programmatic";
-
-          // Update the editor content
-          setTimeout(() => {
-            const editor = generatedDocEditorRef.current;
-            if (editor) {
-              const editorDoc = editor.ownerDocument || document;
-              const tempDiv = editorDoc.createElement("div");
-              tempDiv.innerHTML = newHtml;
-              const bodyContent =
-                tempDiv.querySelector("body")?.innerHTML || newBodyHtml;
-              editor.innerHTML = bodyContent;
-              ensureEditablePadding();
-              ensureFixedElements();
-            }
-          }, 100);
+          setDocHtml(buildFullDocumentHTML());
         }
       } catch (e) {
         console.error("Error updating signature profiles:", e);

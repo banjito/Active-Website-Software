@@ -251,7 +251,7 @@ export const EstimatesListPage: React.FC = () => {
       </div>
 
       {loadError && (
-        <div className="mb-4 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
+        <div className="mb-4 rounded-md border border-red-300 bg-red-50 px-3 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
           {loadError}
         </div>
       )}
@@ -271,22 +271,22 @@ export const EstimatesListPage: React.FC = () => {
           <table className="min-w-full divide-y divide-neutral-200 dark:divide-dark-200">
             <thead className="bg-neutral-50 dark:bg-dark-100">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
                   Quote #
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
                   Title
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
                   Customer
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
                   Salesperson
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
                   Created
                 </th>
               </tr>
@@ -298,10 +298,10 @@ export const EstimatesListPage: React.FC = () => {
                   onClick={() => openEstimate(row)}
                   className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-100"
                 >
-                  <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-black dark:text-dark-900">
+                  <td className="whitespace-nowrap px-3 py-3 text-sm font-medium text-black dark:text-dark-900">
                     {row.quoteNumber}
                   </td>
-                  <td className="px-4 py-3 text-sm text-black dark:text-dark-900">
+                  <td className="px-3 py-3 text-sm text-black dark:text-dark-900">
                     {row.title}
                     {row.revisionCount > 1 && (
                       <span className="ml-2 rounded bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-500 dark:bg-dark-100 dark:text-neutral-400">
@@ -309,13 +309,13 @@ export const EstimatesListPage: React.FC = () => {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-black dark:text-dark-900">
+                  <td className="px-3 py-3 text-sm text-black dark:text-dark-900">
                     {row.customerName}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
+                  <td className="whitespace-nowrap px-3 py-3 text-sm text-neutral-600 dark:text-neutral-300">
                     {row.salesPerson || "—"}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-sm">
+                  <td className="whitespace-nowrap px-3 py-3 text-sm">
                     <span
                       className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${getEstimateApprovalColor(
                         row.status,
@@ -324,9 +324,9 @@ export const EstimatesListPage: React.FC = () => {
                       {formatEstimateApprovalStatus(row.status)}
                     </span>
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-sm text-neutral-600 dark:text-neutral-300">
+                  <td className="whitespace-nowrap px-3 py-3 text-sm text-neutral-600 dark:text-neutral-300">
                     {row.createdAt
-                      ? format(new Date(row.createdAt), "MMM d, yyyy")
+                      ? format(new Date(row.createdAt), "MMM d, yyyy h:mm a")
                       : "—"}
                   </td>
                 </tr>

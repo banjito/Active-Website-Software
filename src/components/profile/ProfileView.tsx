@@ -1651,7 +1651,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         e.stopPropagation();
                         setIsEditProfileOpen(true);
                       }}
-                      className="w-full flex items-center justify-center gap-2"
+                      className="border-none w-full flex items-center justify-center gap-2"
                       aria-label="Edit profile"
                       leftIcon={<Edit2 className="h-4 w-4" />}
                     >

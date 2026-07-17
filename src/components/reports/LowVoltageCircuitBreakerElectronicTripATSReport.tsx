@@ -2663,7 +2663,11 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
   const recomputeTopFromMultiplier = (state: any, section: SectionKey) => {
     const res = state?.primaryInjection?.results?.[section];
     if (!res) return;
-    const rated = Number(res.ratedAmperes1);
+    const ratedRaw = `${res.ratedAmperes1 ?? ""}`.trim();
+    const rated = Number(ratedRaw);
+    // Preserve a user-entered non-numeric override such as "N/A": don't wipe
+    // the manually entered test amperes when the rated value isn't a number.
+    if (ratedRaw !== "" && !isFinite(rated)) return;
     const multPct = parsePercent(res.multiplier);
     if (!isFinite(rated) || !isFinite(multPct) || multPct === 0) {
       // For instantaneous allow blank; others clear if invalid
@@ -2678,10 +2682,10 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
   const recomputeBottomTolerance = (state: any, section: SectionKey) => {
     const res = state?.primaryInjection?.results?.[section];
     if (!res) return;
-    const test2 = Number(res.testAmperes2);
+    const test2 = Number(`${res.testAmperes2 ?? ""}`.trim());
     if (!isFinite(test2)) {
-      res.toleranceMin2 = "";
-      res.toleranceMax2 = "";
+      // Non-numeric override such as "N/A": leave the min/max cells as the
+      // user entered them instead of erasing their input on every recompute.
       return;
     }
     const minPct = parsePercent(res.toleranceMin);
@@ -2859,14 +2863,11 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                   className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
               </div>
-              <div className="flex items-center space-x-1">
-                <div>
-                  <label
-                    htmlFor="temperature.fahrenheit"
-                    className="form-label"
-                  >
-                    Temp:
-                  </label>
+              <div>
+                <label htmlFor="temperature.fahrenheit" className="form-label">
+                  Temp:
+                </label>
+                <div className="flex items-center gap-1">
                   <input
                     id="temperature.fahrenheit"
                     type="number"
@@ -2875,28 +2876,21 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                       handleFahrenheitChange(Number(e.target.value))
                     }
                     readOnly={!isEditing}
-                    className={`form-input w-16 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-14 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
-                  <span className="ml-1 text-xs">°F</span>
-                </div>
-                <div>
-                  <label
-                    htmlFor="temperature.celsius"
-                    className="form-label sr-only"
-                  >
+                  <span className="text-xs">°F</span>
+                  <label htmlFor="temperature.celsius" className="sr-only">
                     Celsius
                   </label>
                   <input
                     id="temperature.celsius"
                     type="number"
                     value={formData.temperature.celsius}
-                    onChange={(e) =>
-                      handleCelsiusChange(Number(e.target.value))
-                    }
+                    onChange={(e) => handleCelsiusChange(Number(e.target.value))}
                     readOnly={!isEditing}
-                    className={`form-input w-16 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`form-input w-14 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
-                  <span className="ml-1 text-xs">°C</span>
+                  <span className="text-xs">°C</span>
                 </div>
               </div>
               <div>
@@ -4183,9 +4177,14 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                     ].map((settingType) => (
                       <tr key={`tested-${settingType}`}>
                         <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-sm text-neutral-900 dark:text-white">
-                          {settingType
-                            .replace("Time", " Time")
-                            .replace("Fault", " Fault")}
+                          {
+                            {
+                              longTime: "Long Time",
+                              shortTime: "Short Time",
+                              instantaneous: "Instantaneous",
+                              groundFault: "Ground Fault",
+                            }[settingType]
+                          }
                         </td>
                         <td className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center">
                           <input
@@ -4290,7 +4289,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                 <thead className="bg-neutral-50 dark:bg-dark-150">
                   <tr>
                     <th
-                      className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-white whitespace-nowrap"
+                      className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white whitespace-nowrap"
                       rowSpan={2}
                     >
                       Function
@@ -4304,6 +4303,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                     <th
                       className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white whitespace-nowrap"
                       colSpan={2}
+                      rowSpan={2}
                     >
                       Multiplier %
                     </th>
@@ -4321,8 +4321,6 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white whitespace-nowrap"></th>
-                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white whitespace-nowrap"></th>
                     <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white whitespace-nowrap">
                       Min
                     </th>
@@ -5117,7 +5115,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                 </colgroup>
                 <thead className="bg-neutral-50 dark:bg-dark-150">
                   <tr>
-                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-left text-sm font-medium text-neutral-900 dark:text-white">
+                    <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
                       Function
                     </th>
                     <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
@@ -6071,6 +6069,43 @@ if (typeof document !== "undefined") {
     html { height: 100%; }
     body { overflow-x: hidden; min-height: 100vh; padding-bottom: 100px; }
     textarea { min-height: 200px !important; }
+
+    /* Primary-injection tables: draw full grid lines and keep the columns
+       fixed/even. The body cells only carry a horizontal divide-y otherwise,
+       which leaves the columns borderless and looking messy, and something
+       upstream relaxes table-layout so the pole columns render uneven. */
+    .primary-injection-poles-table,
+    .primary-injection-main-table {
+      border-collapse: collapse !important;
+      table-layout: fixed !important;
+      width: 100% !important;
+    }
+    .primary-injection-poles-table th,
+    .primary-injection-poles-table td,
+    .primary-injection-main-table th,
+    .primary-injection-main-table td {
+      border: 1px solid #d4d4d4;
+    }
+    .dark .primary-injection-poles-table th,
+    .dark .primary-injection-poles-table td,
+    .dark .primary-injection-main-table th,
+    .dark .primary-injection-main-table td {
+      border-color: #525252;
+    }
+    /* Even pole columns: Function / Row / Pole 1 / Pole 2 / Pole 3.
+       Widths are set on the cells (not just col) because an upstream
+       table table-layout auto rule can win over the colgroup, and in auto
+       layout col widths are ignored while cell widths still hold. */
+    .primary-injection-poles-table th:nth-child(1),
+    .primary-injection-poles-table td:nth-child(1) { width: 20% !important; }
+    .primary-injection-poles-table th:nth-child(2),
+    .primary-injection-poles-table td:nth-child(2) { width: 14% !important; }
+    .primary-injection-poles-table th:nth-child(3),
+    .primary-injection-poles-table td:nth-child(3),
+    .primary-injection-poles-table th:nth-child(4),
+    .primary-injection-poles-table td:nth-child(4),
+    .primary-injection-poles-table th:nth-child(5),
+    .primary-injection-poles-table td:nth-child(5) { width: 22% !important; }
 
     @media print {
       * {
@@ -7051,6 +7086,17 @@ if (typeof document !== "undefined") {
       .primary-injection-poles-table col:nth-child(3),
       .primary-injection-poles-table col:nth-child(4),
       .primary-injection-poles-table col:nth-child(5) { width: 21.33% !important; }
+
+      /* The generic .max-w-7xl table th:nth-child(N) width: 8% rules
+         earlier in this stylesheet outrank the col widths above on some
+         engines, collapsing the Pole 1/2 headers and letting Pole 3 absorb
+         the leftover space. Pin the header cells to the same widths as the
+         columns with higher specificity so all three poles stay even. */
+      .max-w-7xl table.primary-injection-poles-table thead th:nth-child(1) { width: 22% !important; }
+      .max-w-7xl table.primary-injection-poles-table thead th:nth-child(2) { width: 14% !important; }
+      .max-w-7xl table.primary-injection-poles-table thead th:nth-child(3),
+      .max-w-7xl table.primary-injection-poles-table thead th:nth-child(4),
+      .max-w-7xl table.primary-injection-poles-table thead th:nth-child(5) { width: 21.33% !important; }
 
       .primary-injection-poles-table td:nth-child(3) div,
       .primary-injection-poles-table td:nth-child(4) div,

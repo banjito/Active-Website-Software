@@ -42,3 +42,6 @@ electron/renderer-dist/
 # The packaged offline app is far too large for git — host it externally
 # (GitHub Releases / blob storage), not in the repo.
 public/assets/offline-software.zip 
+# SKM PowerTools device library (120MB) + generated catalog data
+PTW.LIB
+*.ndjson

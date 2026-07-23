@@ -50,7 +50,7 @@ function getEventColor(opportunity: OpportunityCalendarItem): string {
       return "var(--cal-in-progress)";
     case "no_quote":
     case "no quote":
-      return "var(--cal-gray)";
+      return "var(--cal-no-quote)";
     default:
       // No estimate exists yet — not started
       return "var(--cal-not-started)";
@@ -416,7 +416,7 @@ export function OpportunitiesCalendarView() {
             title="Not submitting a quote for this opportunity"
           >
             <span
-              className="w-2.5 h-2.5 rounded-none bg-[var(--cal-gray)]"
+              className="w-2.5 h-2.5 rounded-none bg-[var(--cal-no-quote)]"
               aria-hidden
             />{" "}
             No Quote

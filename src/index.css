@@ -42,6 +42,7 @@
         --cal-approved-to-send: #db2777;
         --cal-sent: #16a34a;
         --cal-gray: #dc2626;
+        --cal-no-quote: #000000;
     }
 
     .dark {
@@ -77,6 +78,7 @@
         --cal-approved-to-send: #f472b6;
         --cal-sent: #22c55e;
         --cal-gray: #f87171;
+        --cal-no-quote: #ffffff;
     }
 }
 

@@ -867,6 +867,14 @@ export default function EstimateSheet({
     ...DEFAULT_PAYMENT_TERM_FACTORS,
   });
 
+  // "Net terms only" override: when true, the tax factor (×1.09 on materials/
+  // expenses) and the final markup (÷0.96 on the subtotal) are neutralized so
+  // that only the net-term factors affect the FINAL price. Material markup is
+  // left untouched.
+  const [netTermsOnly, setNetTermsOnly] = useState<boolean>(false);
+  const taxFactor = netTermsOnly ? 1.0 : 1.09;
+  const finalMarkupDivisor = netTermsOnly ? 1.0 : 0.96;
+
   // Mobilization factors state (threshold-based)
   // base: <= 100,000; over100k: > 100,000; over500k: > 500,000; over1m: > 1,000,000
   const [mobilizationFactors, setMobilizationFactors] = useState({
@@ -1219,6 +1227,8 @@ export default function EstimateSheet({
         ) {
           setSelectedSovPriceTerm(savedDraft.selectedSovPriceTerm);
         }
+        // Restore "net terms only" override if present in draft
+        setNetTermsOnly(!!savedDraft.netTermsOnly);
 
         setDraftRestored(true);
       }
@@ -1236,6 +1246,7 @@ export default function EstimateSheet({
         mobilizationFactors,
         combinedLetterQuantity,
         selectedSovPriceTerm,
+        netTermsOnly,
       };
       // Save to Supabase (debounced by the service)
       updatePreference(`drafts.${draftKey}`, draftData);
@@ -1247,6 +1258,7 @@ export default function EstimateSheet({
     mobilizationFactors,
     combinedLetterQuantity,
     selectedSovPriceTerm,
+    netTermsOnly,
     isOpen,
     isNewQuote,
     opportunityId,
@@ -1698,6 +1710,9 @@ export default function EstimateSheet({
         }
       }
 
+      // Restore "net terms only" override (tax factor + final markup)
+      setNetTermsOnly(!!parsedData.netTermsOnly);
+
       // Restore quantity for combined letter proposal (default 1)
       if (
         parsedData.combinedLetterQuantity !== undefined &&
@@ -1889,6 +1904,7 @@ export default function EstimateSheet({
       isManualSaturdayHours: isManualSaturdayHours,
       isManualSundayHours: isManualSundayHours,
       letterPaymentTerm: letterPaymentTerm,
+      netTermsOnly: netTermsOnly,
     };
 
     // Debug: Log what's being saved
@@ -2870,9 +2886,9 @@ export default function EstimateSheet({
   const getMaterialExpenseBase = () => {
     return (
       toNum(data.calculatedValues.totalMaterial) *
-        1.09 *
+        taxFactor *
         toNum(materialMarkup) +
-      toNum(data.calculatedValues.totalExpense) * 1.09 +
+      toNum(data.calculatedValues.totalExpense) * taxFactor +
       toNum(data.calculatedValues.nonSovExpense) * 1.0
     );
   };
@@ -2894,7 +2910,7 @@ export default function EstimateSheet({
         getWorkLaborCost() +
         getTravelLaborCost() +
         getTravelNonLaborCost()) /
-        0.96,
+        finalMarkupDivisor,
     );
   };
 
@@ -2915,7 +2931,7 @@ export default function EstimateSheet({
         workLabor +
         travelLabor +
         getTravelNonLaborCost()) /
-        0.96,
+        finalMarkupDivisor,
     );
   };
 
@@ -2936,7 +2952,7 @@ export default function EstimateSheet({
         workLabor +
         travelLabor +
         getTravelNonLaborCost()) /
-        0.96,
+        finalMarkupDivisor,
     );
   };
 
@@ -2944,7 +2960,8 @@ export default function EstimateSheet({
   // Each cost bucket is grossed up by the same final mark-up (÷0.96) and NET 30 term factor that
   // produce the FINAL value, so the three rows add up to the NET 30 FINAL price (before mobilization).
   const getNet30Breakdown = () => {
-    const markup = (v: number) => (v / 0.96) * paymentTermFactors.net30;
+    const markup = (v: number) =>
+      (v / finalMarkupDivisor) * paymentTermFactors.net30;
     const materials = markup(getMaterialExpenseBase());
     const labor = markup(getWorkLaborCost());
     const travel = markup(getTotalTravelCost());
@@ -5112,12 +5129,16 @@ export default function EstimateSheet({
       // Filter out placeholder/empty rows so only real items appear in the letter
       sovItems = parsedData.sovItems.filter(shouldShowSovItemInProposal);
     }
+    // "Net terms only" override for this saved quote (falls back to off).
+    const parsedNetTermsOnly = !!parsedData.netTermsOnly;
+    const parsedTaxFactor = parsedNetTermsOnly ? 1.0 : 1.09;
+    const parsedFinalMarkupDivisor = parsedNetTermsOnly ? 1.0 : 0.96;
     // --- Build the material + expense base (shared across all day-type scenarios) ---
     function getMaterialExpenseBaseParsed(parsed: any) {
       const cv = parsed.calculatedValues || {};
       return (
-        (cv.totalMaterial || 0) * 1.09 * materialMarkup +
-        (cv.totalExpense || 0) * 1.09 +
+        (cv.totalMaterial || 0) * parsedTaxFactor * materialMarkup +
+        (cv.totalExpense || 0) * parsedTaxFactor +
         (cv.nonSovExpense || 0) * 1.0
       );
     }
@@ -5182,7 +5203,7 @@ export default function EstimateSheet({
         getWorkLaborCostParsed(hs) +
         getTravelLaborCostParsed(hs) +
         travelNonLabor) /
-        0.96,
+        parsedFinalMarkupDivisor,
     );
     const finalValue = baseFinalValue * (singleLetterScopeQuantity || 1);
 
@@ -5197,7 +5218,7 @@ export default function EstimateSheet({
             getWorkLaborCostParsed(satHS) +
             getTravelLaborCostParsed(satHS) +
             travelNonLabor) /
-            0.96,
+            parsedFinalMarkupDivisor,
         )
       : baseFinalValue;
     const satFinalValue = satBaseFinalValue * (singleLetterScopeQuantity || 1);
@@ -5207,7 +5228,7 @@ export default function EstimateSheet({
             getWorkLaborCostParsed(sunHS) +
             getTravelLaborCostParsed(sunHS) +
             travelNonLabor) /
-            0.96,
+            parsedFinalMarkupDivisor,
         )
       : baseFinalValue;
     const sunFinalValue = sunBaseFinalValue * (singleLetterScopeQuantity || 1);
@@ -5515,6 +5536,14 @@ export default function EstimateSheet({
           ? mobilizationFactors
           : getMobilizationFactorsForCombinedScope(parsedData);
 
+      // Per-scope "net terms only" override; use live form state only for the active tab
+      const scopeNetTermsOnly =
+        originalQuoteIndex === selectedQuoteIndex && selectedQuoteIndex >= 0
+          ? netTermsOnly
+          : !!parsedData.netTermsOnly;
+      const scopeTaxFactor = scopeNetTermsOnly ? 1.0 : 1.09;
+      const scopeFinalMarkupDivisor = scopeNetTermsOnly ? 1.0 : 0.96;
+
       // Calculate final value for this quote
       function getFinalNumeratorWithoutTravel(parsed: any) {
         const cv = parsed.calculatedValues || {};
@@ -5526,8 +5555,8 @@ export default function EstimateSheet({
         const overtimeHours = hs.overtimeHours || 0;
         const doubleTimeHours = hs.doubleTimeHours || 0;
         return (
-          totalMaterial * 1.09 * materialMarkup +
-          totalExpense * 1.09 +
+          totalMaterial * scopeTaxFactor * materialMarkup +
+          totalExpense * scopeTaxFactor +
           nonSovExpense * 1.0 +
           straightTimeHours * quoteHourlyRates.straightTime +
           overtimeHours * quoteHourlyRates.overtime +
@@ -5563,8 +5592,8 @@ export default function EstimateSheet({
       // Material/expense base (shared across day-type scenarios)
       const cv = parsedData.calculatedValues || {};
       const matExpBase =
-        (cv.totalMaterial || 0) * 1.09 * materialMarkup +
-        (cv.totalExpense || 0) * 1.09 +
+        (cv.totalMaterial || 0) * scopeTaxFactor * materialMarkup +
+        (cv.totalExpense || 0) * scopeTaxFactor +
         (cv.nonSovExpense || 0) * 1.0;
 
       const hs = parsedData.hoursSummary || {};
@@ -5580,7 +5609,8 @@ export default function EstimateSheet({
       const travelNonLaborSafe = Math.max(0, travelNonLabor);
 
       const finalValue = Math.ceil(
-        (matExpBase + workLabor + travelLabor + travelNonLaborSafe) / 0.96,
+        (matExpBase + workLabor + travelLabor + travelNonLaborSafe) /
+          scopeFinalMarkupDivisor,
       );
       const validFinalValue =
         isNaN(finalValue) || !isFinite(finalValue) ? 0 : finalValue;
@@ -5601,7 +5631,9 @@ export default function EstimateSheet({
             quoteHourlyRates.straightTime +
           (dayHS?.travelOvertimeHours || 0) * quoteHourlyRates.overtime +
           (dayHS?.travelDoubleTimeHours || 0) * quoteHourlyRates.doubleTime;
-        return Math.ceil((matExpBase + wl + tl + travelNonLaborSafe) / 0.96);
+        return Math.ceil(
+          (matExpBase + wl + tl + travelNonLaborSafe) / scopeFinalMarkupDivisor,
+        );
       };
 
       const satFinalValue = hasSat ? calcDayValue(satHS) : validFinalValue;
@@ -9474,7 +9506,7 @@ export default function EstimateSheet({
                                   padding: "12px 8px",
                                 }}
                               >
-                                1.09
+                                {taxFactor}
                               </td>
                               <td
                                 style={{
@@ -9484,7 +9516,8 @@ export default function EstimateSheet({
                                 }}
                               >
                                 {formatCurrency(
-                                  data.calculatedValues.totalMaterial * 1.09,
+                                  data.calculatedValues.totalMaterial *
+                                    taxFactor,
                                 )}
                               </td>
                               <td
@@ -9521,7 +9554,7 @@ export default function EstimateSheet({
                               >
                                 {formatCurrency(
                                   data.calculatedValues.totalMaterial *
-                                    1.09 *
+                                    taxFactor *
                                     materialMarkup,
                                 )}
                               </td>
@@ -9548,9 +9581,10 @@ export default function EstimateSheet({
                               >
                                 {formatCurrency(
                                   data.calculatedValues.totalMaterial *
-                                    1.09 *
+                                    taxFactor *
                                     materialMarkup +
-                                    data.calculatedValues.totalExpense * 1.09 +
+                                    data.calculatedValues.totalExpense *
+                                      taxFactor +
                                     data.calculatedValues.nonSovExpense * 1.0,
                                 )}
                               </td>
@@ -9558,6 +9592,44 @@ export default function EstimateSheet({
                           </tbody>
                         </table>
                       </div>
+                      {/* Net terms only override: neutralizes the tax factor and
+                          final markup so only the net-term factors affect price */}
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: "8px",
+                          marginTop: "12px",
+                          padding: "10px 12px",
+                          border: "1px solid var(--border, #e5e5e5)",
+                          borderRadius: "6px",
+                          cursor: isViewMode ? "default" : "pointer",
+                          fontSize: "13px",
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={netTermsOnly}
+                          onChange={(e) => {
+                            if (isViewMode) return;
+                            setNetTermsOnly(e.target.checked);
+                            setIsDirty(true);
+                          }}
+                          disabled={isViewMode}
+                          style={{ marginTop: "2px" }}
+                        />
+                        <span>
+                          <strong>Net terms only</strong> (override tax &amp;
+                          markup)
+                          <br />
+                          <span style={{ color: "var(--muted, #737373)" }}>
+                            Removes the tax factor (&times;1.09) and final markup
+                            (&divide;0.96) so only the net-term factors affect the
+                            final price. Material markup is unaffected.
+                          </span>
+                        </span>
+                      </label>
                           </div>
                         )}
                         {activeSummarySection === "hoursLabor" && (

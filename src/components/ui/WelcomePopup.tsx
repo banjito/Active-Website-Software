@@ -1,4 +1,5 @@
 import React, { useCallback } from "react";
+import { createPortal } from "react-dom";
 import { X, Globe, Zap, ArrowRight, Briefcase, Check } from "lucide-react";
 import { Button } from "./Button";
 import { supabase } from "@/lib/supabase";
@@ -55,7 +56,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
   // Don't render anything if not open
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto"
       onClick={handleBackdropClick}
@@ -173,6 +174,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };

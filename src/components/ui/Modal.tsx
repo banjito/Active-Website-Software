@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -35,7 +36,7 @@ export function Modal({
     full: "max-w-full w-full h-full m-0 rounded-none",
   };
 
-  return (
+  return createPortal(
     <div
       className={cn(
         "fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm",
@@ -86,6 +87,7 @@ export function Modal({
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

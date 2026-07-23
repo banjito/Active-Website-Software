@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   MapPin,
   Briefcase,
@@ -1302,18 +1303,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   // Show loading state
   if (isLoading) {
-    return (
+    return createPortal(
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div className="bg-white dark:bg-dark-150 rounded-none p-8 flex items-center gap-3">
           <LoadingSpinner size="sm" />
         </div>
-      </div>
+      </div>,
+      document.body,
     );
   }
 
   // Show error state if no profile found
   if (!profileUser) {
-    return (
+    return createPortal(
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div className="bg-white dark:bg-dark-150 rounded-none p-8 text-center max-w-md">
           <div className="flex flex-col items-center">
@@ -1357,7 +1359,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
           </div>
         </div>
-      </div>
+      </div>,
+      document.body,
     );
   }
 
@@ -1470,7 +1473,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     }
   };
 
-  return (
+  return createPortal(
     <>
       {/* Edit Profile Modal */}
       {isEditProfileOpen && (
@@ -2430,6 +2433,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           onClose={handleCloseEnlargedPhoto}
         />
       )}
-    </>
+    </>,
+    document.body,
   );
 };

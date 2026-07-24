@@ -242,6 +242,26 @@ const MOCK_COURSES: Course[] = [
     ],
   },
   {
+    id: "theory2",
+    title: "Electrical Theory II Training",
+    description:
+      "Electrical Theory II training session recorded 07/23/2026. Continues from Electrical Theory I with deeper coverage of core electrical concepts for field technicians.",
+    category: "OTHER",
+    thumbnail: "🔌",
+    estimatedDurationMinutes: 227,
+    isRequired: false,
+    sequentialUnlock: false,
+    lessons: [
+      {
+        id: "theory2-l1",
+        title: "Electrical Theory II Training",
+        type: "VIDEO",
+        durationSeconds: 13646,
+        youtubeId: "QrF8sVWhYrQ",
+      },
+    ],
+  },
+  {
     id: "onboard",
     title: "New Technician Onboarding",
     description:

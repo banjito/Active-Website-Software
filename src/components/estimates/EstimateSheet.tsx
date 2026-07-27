@@ -5479,7 +5479,7 @@ export default function EstimateSheet({
             : ""
         }
         ${pricingHtml}
-        ${showMobilizationInLetter ? `<div class="amp-section">Mobilization costs of ${mobilization} shall be paid out of the above agreed upon price before the first day of work.</div>` : ""}
+        ${showMobilizationInLetter ? `<div class="amp-section">Mobilization costs of <b>${mobilization}</b> shall be paid out of the above agreed upon price before the first day of work.</div>` : ""}
         ${renderCustomSectionsAt("after_pricing", templateTokens)}
         ${termsHtml}
         ${renderCustomSectionsAt("after_terms", templateTokens)}
@@ -6806,8 +6806,8 @@ export default function EstimateSheet({
     );
     const updated = html
       .replace(
-        /(Mobilization costs of )(\$[\d,]+\.\d{2})/,
-        (_m, g1) => `${g1}${newMobilization}`,
+        /(Mobilization costs of )(?:<b>)?\$[\d,]+\.\d{2}(?:<\/b>)?/,
+        (_m, g1) => `${g1}<b>${newMobilization}</b>`,
       )
       .replace(
         /(Option 1:\s*Where NET 30[^<]*<b>)(\$[\d,]+\.\d{2})(<\/b>)/i,

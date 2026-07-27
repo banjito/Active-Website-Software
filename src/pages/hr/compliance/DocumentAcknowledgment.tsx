@@ -32,6 +32,7 @@ import {
   Trash2,
   RotateCcw,
   Megaphone,
+  Users,
 } from "lucide-react";
 import {
   onboardingService,
@@ -42,6 +43,8 @@ import { useAuth } from "../../../lib/AuthContext";
 import { supabase } from "../../../lib/supabase";
 import { toast } from "../../../components/ui/toast";
 import { SignatureFieldPosition } from "../../../components/pdf/PDFSignatureFieldPlacer";
+import { employeeEmailRegex } from "../../../lib/companyConfig";
+import { formatDivisionShort } from "../../../lib/utils/divisionDisplay";
 
 const ANNOUNCEMENT_CATEGORIES = [
   { value: "general", label: "General" },
@@ -60,6 +63,30 @@ const DOC_TYPES = [
   { value: "standard", label: "Handbook" },
   { value: "agreement", label: "Agreement" },
 ] as const;
+
+interface AssignedEmployee {
+  id: string;
+  email: string;
+  name: string;
+}
+
+interface RosterEmployee extends AssignedEmployee {
+  division: string;
+}
+
+type DocAssignment =
+  | { type: "all" }
+  | { type: "selected"; employees: AssignedEmployee[] };
+
+// Assignment lives in custom_fields.assignment; absent means "all employees"
+// (which also covers documents created before targeting existed).
+const getAssignment = (form: ESignForm): DocAssignment => {
+  const a = (form as any).custom_fields?.assignment;
+  if (a?.type === "selected" && Array.isArray(a.employees)) {
+    return { type: "selected", employees: a.employees };
+  }
+  return { type: "all" };
+};
 
 export const DocumentAcknowledgment: React.FC = () => {
   const { user } = useAuth();
@@ -85,6 +112,16 @@ export const DocumentAcknowledgment: React.FC = () => {
     file: null as File | null,
     requiresSignature: true,
   });
+  const [employees, setEmployees] = useState<RosterEmployee[]>([]);
+  const [assignTo, setAssignTo] = useState<"all" | "selected">("all");
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [employeeSearch, setEmployeeSearch] = useState("");
+  const [assignModalForm, setAssignModalForm] = useState<ESignForm | null>(
+    null,
+  );
+  const [savingAssignment, setSavingAssignment] = useState(false);
   const [createAnnouncement, setCreateAnnouncement] = useState(false);
   const [announcementFields, setAnnouncementFields] = useState({
     content: "",
@@ -103,6 +140,40 @@ export const DocumentAcknowledgment: React.FC = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (!isManager) return;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .schema("common")
+          .from("profiles")
+          .select("*");
+        if (error) throw error;
+        const roster: RosterEmployee[] = (data || [])
+          .filter((p: any) =>
+            employeeEmailRegex.test((p.email || "").toLowerCase()),
+          )
+          .filter((p: any) => (p.employment_status || "active") === "active")
+          .map((p: any) => ({
+            id: p.id,
+            email: p.email || "",
+            name:
+              p.full_name ||
+              p.user_metadata?.name ||
+              (p.email || "").split("@")[0] ||
+              "Unknown",
+            division: p.division || p.user_metadata?.division || "",
+          }))
+          .sort((a: RosterEmployee, b: RosterEmployee) =>
+            a.name.localeCompare(b.name),
+          );
+        setEmployees(roster);
+      } catch (e) {
+        console.error("Failed to load employee roster:", e);
+      }
+    })();
+  }, [isManager]);
 
   async function loadData() {
     try {
@@ -140,7 +211,18 @@ export const DocumentAcknowledgment: React.FC = () => {
   const effectiveTab: DocTab = !isManager ? "active" : activeTab;
   const baseForms = effectiveTab === "active" ? activeForms : archivedForms;
 
-  const filteredForms = baseForms.filter((f) => {
+  // Non-managers only see documents assigned to everyone or to them specifically
+  const currentEmail = (user?.email || "").toLowerCase();
+  const visibleForms = baseForms.filter((f) => {
+    if (isManager) return true;
+    const assignment = getAssignment(f);
+    if (assignment.type !== "selected") return true;
+    return assignment.employees.some(
+      (e) => (e.email || "").toLowerCase() === currentEmail,
+    );
+  });
+
+  const filteredForms = visibleForms.filter((f) => {
     if (filter !== "all") {
       if (filter === "handbook" && f.form_type !== "standard") return false;
       if (filter === "policy" && f.form_type !== "policy") return false;
@@ -192,6 +274,7 @@ export const DocumentAcknowledgment: React.FC = () => {
     docName: string,
     docDescription: string,
     fileUrl: string,
+    assignment: DocAssignment,
   ) => {
     if (!user?.id || !createAnnouncement) return;
     try {
@@ -214,15 +297,28 @@ export const DocumentAcknowledgment: React.FC = () => {
             ? new Date().toISOString()
             : null,
         expires_at: null,
+        // Announcement audience mirrors the document's assignment
+        audience:
+          assignment.type === "selected"
+            ? { type: "selected", employees: assignment.employees }
+            : null,
         // Store the document link in content so portal can show it
       };
       // Append a document acknowledgment link marker to content so portal knows
       payload.content += `\n\n---\n📄 [View & Acknowledge Document](${fileUrl})`;
 
-      const { error } = await supabase
+      let { error } = await supabase
         .schema("common")
         .from("announcements")
         .insert([payload]);
+      if (error && /audience/i.test(error.message || "")) {
+        // audience column not migrated yet — insert without targeting
+        delete payload.audience;
+        ({ error } = await supabase
+          .schema("common")
+          .from("announcements")
+          .insert([payload]));
+      }
       if (error) throw error;
       toast({
         title: "Announcement created",
@@ -239,6 +335,211 @@ export const DocumentAcknowledgment: React.FC = () => {
     }
   };
 
+  const buildAssignment = (): DocAssignment | null => {
+    if (assignTo === "all") return { type: "all" };
+    const selected = employees.filter((e) => selectedEmployeeIds.has(e.id));
+    if (selected.length === 0) return null;
+    return {
+      type: "selected",
+      employees: selected.map(({ id, email, name }) => ({ id, email, name })),
+    };
+  };
+
+  const resetAssignmentState = () => {
+    setAssignTo("all");
+    setSelectedEmployeeIds(new Set());
+    setEmployeeSearch("");
+  };
+
+  const toggleEmployee = (id: string) => {
+    setSelectedEmployeeIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleDivision = (division: string) => {
+    const members = employees.filter((e) => e.division === division);
+    setSelectedEmployeeIds((prev) => {
+      const next = new Set(prev);
+      const allSelected = members.every((m) => next.has(m.id));
+      members.forEach((m) => {
+        if (allSelected) next.delete(m.id);
+        else next.add(m.id);
+      });
+      return next;
+    });
+  };
+
+  const openAssignModal = (form: ESignForm) => {
+    const assignment = getAssignment(form);
+    setAssignTo(assignment.type);
+    setSelectedEmployeeIds(
+      new Set(
+        assignment.type === "selected"
+          ? assignment.employees.map((e) => e.id)
+          : [],
+      ),
+    );
+    setEmployeeSearch("");
+    setAssignModalForm(form);
+  };
+
+  const handleSaveAssignment = async () => {
+    if (!assignModalForm) return;
+    const assignment = buildAssignment();
+    if (!assignment) {
+      toast({
+        title: "Error",
+        description: "Select at least one employee",
+        variant: "destructive",
+      });
+      return;
+    }
+    setSavingAssignment(true);
+    try {
+      await onboardingService.updateESignForm(assignModalForm.id, {
+        custom_fields: {
+          ...((assignModalForm as any).custom_fields || {}),
+          assignment,
+        },
+      } as any);
+      toast({
+        title: "Assignment updated",
+        description:
+          assignment.type === "all"
+            ? "Document is now assigned to all employees."
+            : `Document assigned to ${assignment.employees.length} employee${assignment.employees.length === 1 ? "" : "s"}.`,
+        variant: "success",
+      });
+      setAssignModalForm(null);
+      resetAssignmentState();
+      loadData();
+    } catch (e: any) {
+      toast({
+        title: "Error",
+        description: e?.message || "Failed to update assignment",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingAssignment(false);
+    }
+  };
+
+  const divisions = Array.from(
+    new Set(employees.map((e) => e.division).filter(Boolean)),
+  ).sort((a, b) =>
+    formatDivisionShort(a).localeCompare(formatDivisionShort(b)),
+  );
+
+  const renderAssignmentPicker = () => {
+    const q = employeeSearch.trim().toLowerCase();
+    const listed = q
+      ? employees.filter(
+          (e) =>
+            e.name.toLowerCase().includes(q) ||
+            e.email.toLowerCase().includes(q) ||
+            formatDivisionShort(e.division).toLowerCase().includes(q),
+        )
+      : employees;
+    return (
+      <div className="space-y-3">
+        <div className="flex gap-4">
+          {(
+            [
+              { value: "all", label: "All employees" },
+              { value: "selected", label: "Specific employees" },
+            ] as const
+          ).map((opt) => (
+            <label
+              key={opt.value}
+              className="flex items-center gap-2 text-sm cursor-pointer"
+            >
+              <input
+                type="radio"
+                name="assign-to"
+                checked={assignTo === opt.value}
+                onChange={() => setAssignTo(opt.value)}
+                className="h-4 w-4 text-brand focus:ring-brand border-neutral-300"
+              />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+        {assignTo === "selected" && (
+          <div className="space-y-2">
+            {divisions.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {divisions.map((d) => {
+                  const members = employees.filter((e) => e.division === d);
+                  const allSelected = members.every((m) =>
+                    selectedEmployeeIds.has(m.id),
+                  );
+                  return (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => toggleDivision(d)}
+                      className={`px-2 py-1 text-xs rounded-none border transition-colors ${
+                        allSelected
+                          ? "bg-brand text-white border-brand"
+                          : "border-neutral-300 dark:border-neutral-600 text-neutral-600 dark:text-neutral-300 hover:border-brand hover:text-brand"
+                      }`}
+                    >
+                      {formatDivisionShort(d)} ({members.length})
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <Input
+              placeholder="Search employees..."
+              value={employeeSearch}
+              onChange={(e) => setEmployeeSearch(e.target.value)}
+            />
+            <div className="max-h-48 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-none divide-y divide-neutral-100 dark:divide-neutral-800">
+              {listed.length === 0 ? (
+                <p className="text-sm text-muted-foreground p-3">
+                  {employees.length === 0
+                    ? "Loading employees…"
+                    : "No employees match your search."}
+                </p>
+              ) : (
+                listed.map((e) => (
+                  <label
+                    key={e.id}
+                    className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedEmployeeIds.has(e.id)}
+                      onChange={() => toggleEmployee(e.id)}
+                      className="h-4 w-4 text-brand focus:ring-brand border-neutral-300 rounded"
+                    />
+                    <span className="flex-1 truncate">{e.name}</span>
+                    {e.division && (
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        {formatDivisionShort(e.division)}
+                      </span>
+                    )}
+                  </label>
+                ))
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {selectedEmployeeIds.size} employee
+              {selectedEmployeeIds.size === 1 ? "" : "s"} selected. Only
+              assigned employees will see this document and be required to
+              acknowledge it.
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const createFormWithAttachment = async (
     pending: {
       name: string;
@@ -250,6 +551,7 @@ export const DocumentAcknowledgment: React.FC = () => {
     },
     signatureFields?: SignatureFieldPosition[],
     requiresSignature: boolean = true,
+    assignment: DocAssignment = { type: "all" },
   ) => {
     if (!user?.id) return;
     const docName = pending.name.trim();
@@ -266,7 +568,7 @@ export const DocumentAcknowledgment: React.FC = () => {
       file_path: pending.file_path,
     };
     if (signatureFields?.length) attachedDoc.signature_fields = signatureFields;
-    const customFields = { attached_documents: [attachedDoc] };
+    const customFields = { attached_documents: [attachedDoc], assignment };
     await onboardingService.createESignForm({
       name: docName,
       description: pending.description.trim() || undefined,
@@ -309,6 +611,15 @@ export const DocumentAcknowledgment: React.FC = () => {
       });
       return;
     }
+    const assignment = buildAssignment();
+    if (!assignment) {
+      toast({
+        title: "Error",
+        description: "Select at least one employee to assign this document to",
+        variant: "destructive",
+      });
+      return;
+    }
     setUploading(true);
     try {
       const fileExt = addForm.file.name.split(".").pop() || "pdf";
@@ -342,11 +653,13 @@ export const DocumentAcknowledgment: React.FC = () => {
         },
         undefined,
         addForm.requiresSignature,
+        assignment,
       );
       await createLinkedAnnouncement(
         addForm.name.trim(),
         addForm.description.trim(),
         publicUrl,
+        assignment,
       );
       toast({
         title: "Success",
@@ -361,6 +674,7 @@ export const DocumentAcknowledgment: React.FC = () => {
         file: null,
         requiresSignature: true,
       });
+      resetAssignmentState();
       setCreateAnnouncement(false);
       setAnnouncementFields({
         content: "",
@@ -565,14 +879,20 @@ export const DocumentAcknowledgment: React.FC = () => {
 
   const handleExport = () => {
     const rows: string[][] = [
-      ["Document", "Type", "Signer", "Email", "Status", "Signed At"],
+      ["Document", "Type", "Assigned To", "Signer", "Email", "Status", "Signed At"],
     ];
     filteredForms.forEach((form) => {
       const subs = submissionsByForm[form.id] || [];
-      if (subs.length === 0) {
+      const assignment = getAssignment(form);
+      const assignedLabel =
+        assignment.type === "selected"
+          ? `${assignment.employees.length} employees`
+          : "All employees";
+      if (subs.length === 0 && assignment.type !== "selected") {
         rows.push([
           form.name,
           form.form_type || "—",
+          assignedLabel,
           "—",
           "—",
           "No submissions",
@@ -583,12 +903,31 @@ export const DocumentAcknowledgment: React.FC = () => {
           rows.push([
             form.name,
             form.form_type || "—",
+            assignedLabel,
             s.signer_name,
             s.signer_email,
             s.status,
             formatDate(s.signed_at || undefined),
           ]);
         });
+      }
+      if (assignment.type === "selected") {
+        const signedEmails = new Set(
+          subs.map((s) => (s.signer_email || "").toLowerCase()),
+        );
+        assignment.employees
+          .filter((e) => !signedEmails.has((e.email || "").toLowerCase()))
+          .forEach((e) => {
+            rows.push([
+              form.name,
+              form.form_type || "—",
+              assignedLabel,
+              e.name,
+              e.email,
+              "Not signed",
+              "—",
+            ]);
+          });
       }
     });
     const csv = rows
@@ -639,14 +978,14 @@ export const DocumentAcknowledgment: React.FC = () => {
             Filter by document type or search by name
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-4">
+        <CardContent className="flex flex-wrap items-stretch gap-4">
           <div className="flex flex-wrap gap-2">
             {(["all", "handbook", "policy", "agreement"] as const).map((f) => (
               <Button
                 key={f}
                 variant={filter === f ? "primary" : "outline"}
-                size="sm"
                 onClick={() => setFilter(f)}
+                className="h-10 w-24"
               >
                 {f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
               </Button>
@@ -658,7 +997,7 @@ export const DocumentAcknowledgment: React.FC = () => {
               placeholder="Search documents..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
+              className="h-10 pl-9"
             />
           </div>
         </CardContent>
@@ -731,9 +1070,26 @@ export const DocumentAcknowledgment: React.FC = () => {
         <div className="space-y-4">
           {filteredForms.map((form) => {
             const submissions = submissionsByForm[form.id] || [];
-            const signedCount = submissions.filter(
-              (s) => s.status === "signed",
-            ).length;
+            const assignment = getAssignment(form);
+            const signedEmails = new Set(
+              submissions
+                .filter((s) => s.status === "signed")
+                .map((s) => (s.signer_email || "").toLowerCase()),
+            );
+            const outstanding =
+              assignment.type === "selected"
+                ? assignment.employees.filter(
+                    (e) => !signedEmails.has((e.email || "").toLowerCase()),
+                  )
+                : [];
+            const signedCount =
+              assignment.type === "selected"
+                ? assignment.employees.length - outstanding.length
+                : submissions.filter((s) => s.status === "signed").length;
+            const totalCount =
+              assignment.type === "selected"
+                ? assignment.employees.length
+                : submissions.length;
             const isExpanded = expandedFormId === form.id;
 
             return (
@@ -752,10 +1108,18 @@ export const DocumentAcknowledgment: React.FC = () => {
                         {form.description || form.form_type || "Document"}
                       </CardDescription>
                       <p className="text-sm text-muted-foreground mt-2">
-                        {signedCount} of {submissions.length} signed
+                        {signedCount} of {totalCount} signed
                         {form.requires_acknowledgment &&
                           " (requires acknowledgment)"}
                       </p>
+                      {isManager && (
+                        <span className="inline-flex items-center gap-1 mt-1.5 rounded-none bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
+                          <Users className="h-3 w-3" />
+                          {assignment.type === "selected"
+                            ? `Assigned to ${assignment.employees.length} employee${assignment.employees.length === 1 ? "" : "s"}`
+                            : "All employees"}
+                        </span>
+                      )}
                       {getAttachmentUrl(form) && (
                         <a
                           href={getAttachmentUrl(form)!}
@@ -785,14 +1149,24 @@ export const DocumentAcknowledgment: React.FC = () => {
                             </Button>
                           )}
                           {isManager && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleArchiveDocument(form.id)}
-                              title="Archive document"
-                            >
-                              <Archive className="h-4 w-4 text-neutral-500" />
-                            </Button>
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openAssignModal(form)}
+                                title="Assign to employees"
+                              >
+                                <Users className="h-4 w-4 text-neutral-500" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleArchiveDocument(form.id)}
+                                title="Archive document"
+                              >
+                                <Archive className="h-4 w-4 text-neutral-500" />
+                              </Button>
+                            </>
                           )}
                         </>
                       )}
@@ -824,6 +1198,27 @@ export const DocumentAcknowledgment: React.FC = () => {
                 </CardHeader>
                 {isExpanded && (
                   <CardContent>
+                    {isManager &&
+                      assignment.type === "selected" &&
+                      outstanding.length > 0 && (
+                        <div className="mb-4 border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 rounded-none p-3">
+                          <p className="text-sm font-medium text-amber-800 dark:text-amber-300 flex items-center gap-1.5 mb-2">
+                            <Clock className="h-4 w-4" />
+                            Outstanding ({outstanding.length})
+                          </p>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1">
+                            {outstanding.map((e) => (
+                              <span
+                                key={e.id}
+                                className="text-sm text-amber-900 dark:text-amber-200"
+                                title={e.email}
+                              >
+                                {e.name}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     {submissions.length === 0 ? (
                       <p className="text-sm text-muted-foreground py-4">
                         No acknowledgments recorded yet.
@@ -874,8 +1269,14 @@ export const DocumentAcknowledgment: React.FC = () => {
         </div>
       )}
 
-      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent className="sm:max-w-[480px]">
+      <Dialog
+        open={showAddModal}
+        onOpenChange={(open) => {
+          setShowAddModal(open);
+          if (!open) resetAssignmentState();
+        }}
+      >
+        <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add document for acknowledgment</DialogTitle>
             <DialogDescription>
@@ -987,6 +1388,15 @@ export const DocumentAcknowledgment: React.FC = () => {
               </span>
             </div>
 
+            {/* Assign to employees */}
+            <div className="border-t pt-4 mt-2 space-y-2">
+              <label className="text-sm font-medium flex items-center gap-1.5">
+                <Users className="h-4 w-4 text-brand" />
+                Assign to
+              </label>
+              {renderAssignmentPicker()}
+            </div>
+
             {/* Create announcement toggle */}
             <div className="border-t pt-4 mt-2 space-y-3">
               <div className="flex items-center gap-3">
@@ -1013,6 +1423,12 @@ export const DocumentAcknowledgment: React.FC = () => {
                   Also create an announcement
                 </label>
               </div>
+              {createAnnouncement && assignTo === "selected" && (
+                <p className="text-xs text-muted-foreground">
+                  The announcement will only be shown to the employees assigned
+                  this document.
+                </p>
+              )}
 
               {createAnnouncement && (
                 <div className="space-y-3 pl-1 border-l-2 border-brand/30 ml-4 pl-4">
@@ -1123,6 +1539,54 @@ export const DocumentAcknowledgment: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Assign existing document to employees */}
+      {assignModalForm && (
+        <Dialog
+          open={!!assignModalForm}
+          onOpenChange={(open) => {
+            if (!open) {
+              setAssignModalForm(null);
+              resetAssignmentState();
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Assign: {assignModalForm.name}</DialogTitle>
+              <DialogDescription>
+                Choose who is required to acknowledge this document. Employees
+                not assigned will not see it.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">{renderAssignmentPicker()}</div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setAssignModalForm(null);
+                  resetAssignmentState();
+                }}
+                disabled={savingAssignment}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveAssignment}
+                disabled={
+                  savingAssignment ||
+                  (assignTo === "selected" && selectedEmployeeIds.size === 0)
+                }
+              >
+                {savingAssignment ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : null}
+                Save assignment
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Acknowledge / Sign modal: PDF viewer + signature pad */}
       {formToSign && (

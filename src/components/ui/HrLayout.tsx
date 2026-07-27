@@ -38,6 +38,8 @@ import {
   Phone,
   UserCheck,
   BookOpen,
+  Search,
+  X,
 } from "lucide-react";
 import { Button } from "./Button";
 import { HeaderBar } from "./HeaderBar";
@@ -89,6 +91,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
         .catch(() => {});
     }
   }, [user]);
+  const [navSearch, setNavSearch] = useState("");
   const [expandedSections, setExpandedSections] = useState<
     Record<string, boolean>
   >({
@@ -534,6 +537,49 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
     },
   ];
 
+  // Flat list of every page the current user can reach, for the sidebar search
+  const standaloneNavItems: { path: string; label: string; section?: string }[] =
+    isHrFullAccess
+      ? [
+          { path: "/hr/handbook", label: "Employee Handbook" },
+          { path: "/hr/announcements", label: "Announcements" },
+          { path: "/hr/employee-files", label: "Employee Files" },
+          { path: "/hr/self-service/manager-portal", label: "Manager Portal" },
+        ]
+      : [
+          { path: "/hr/handbook", label: "Employee Handbook" },
+          { path: "/hr/employee-files", label: "Employee Files" },
+          { path: "/hr/onboarding/your-onboarding", label: "Your Onboarding" },
+          { path: "/hr/data/employee-profiles", label: "Employee Profiles" },
+          { path: "/hr/data/org-chart", label: "Org Chart" },
+          {
+            path: "/hr/compliance/document-acknowledgment",
+            label: "Document Acknowledgment",
+          },
+          { path: "/hr/self-service/manager-portal", label: "Manager Portal" },
+        ];
+  const searchableNavItems = [
+    ...standaloneNavItems,
+    ...(isHrFullAccess
+      ? menuSections.flatMap((s) =>
+          s.items.map((i) => ({
+            path: i.path,
+            label: i.label,
+            section: s.label,
+          })),
+        )
+      : []),
+  ];
+  const navQuery = navSearch.trim().toLowerCase();
+  const navResults = navQuery
+    ? searchableNavItems.filter(
+        (i) =>
+          i.label.toLowerCase().includes(navQuery) ||
+          (i.section || "").toLowerCase().includes(navQuery) ||
+          i.path.toLowerCase().includes(navQuery),
+      )
+    : [];
+
   return (
     <div className="flex min-h-screen flex-col bg-background dark:bg-dark-background text-foreground">
       <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-neutral-200 dark:border-dark-200">
@@ -544,6 +590,66 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
         <div className="w-64 min-w-[16rem] flex-shrink-0 flex flex-col border-r border-black/10 bg-white dark:bg-dark-150 dark:border-dark-200">
           {/* Sidebar Links */}
           <div className="flex flex-col gap-1 p-4 flex-grow overflow-y-auto">
+            {/* Page search */}
+            <div className="relative mb-1">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400 pointer-events-none" />
+              <input
+                type="text"
+                value={navSearch}
+                onChange={(e) => setNavSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") setNavSearch("");
+                }}
+                placeholder="Search HR pages..."
+                className="w-full h-8 pl-7 pr-7 text-xs rounded-none border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-100 text-black dark:text-dark-900 placeholder:text-neutral-400 focus:outline-none focus:border-brand"
+              />
+              {navSearch && (
+                <button
+                  onClick={() => setNavSearch("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+                  title="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            {navQuery ? (
+              <div className="flex flex-col gap-0.5">
+                {navResults.length === 0 ? (
+                  <p className="text-xs text-muted-foreground px-2 py-2">
+                    No pages match &quot;{navSearch.trim()}&quot;
+                  </p>
+                ) : (
+                  navResults.map((item) => (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setNavSearch("")}
+                    >
+                      <Button
+                        variant="ghost"
+                        className={`w-full !justify-start pl-2 text-left h-auto py-1.5 font-normal text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 ${
+                          location.pathname.startsWith(item.path)
+                            ? "bg-black/5 dark:bg-dark-50"
+                            : ""
+                        }`}
+                      >
+                        <span className="flex flex-col items-start">
+                          <span className="text-xs">{item.label}</span>
+                          {item.section && (
+                            <span className="text-[10px] text-muted-foreground">
+                              {item.section}
+                            </span>
+                          )}
+                        </span>
+                      </Button>
+                    </Link>
+                  ))
+                )}
+              </div>
+            ) : (
+              <>
             {/* Standalone top-level items */}
             <Link to="/hr/handbook">
               <Button
@@ -676,6 +782,8 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                   </Button>
                 </Link>
               </div>
+            )}
+              </>
             )}
           </div>
         </div>

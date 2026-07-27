@@ -20,6 +20,7 @@ import {
   Loader2,
   ExternalLink,
   Search,
+  Users,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "../../../components/ui/toast";
@@ -28,6 +29,24 @@ import {
   ESignForm,
 } from "../../../services/hr/onboardingService";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { employeeEmailRegex } from "../../../lib/companyConfig";
+import { formatDivisionShort } from "../../../lib/utils/divisionDisplay";
+
+interface AudienceEmployee {
+  id: string;
+  email: string;
+  name: string;
+}
+
+interface RosterEmployee extends AudienceEmployee {
+  division: string;
+}
+
+// null audience = visible to all employees
+type AnnouncementAudience = {
+  type: "selected";
+  employees: AudienceEmployee[];
+} | null;
 
 interface Announcement {
   id: string;
@@ -43,6 +62,7 @@ interface Announcement {
   created_at: string;
   updated_at: string;
   expires_at: string | null;
+  audience?: AnnouncementAudience;
 }
 
 interface AnnouncementFormData {
@@ -151,6 +171,12 @@ export function Announcements() {
     x: number;
     y: number;
   } | null>(null);
+  const [employees, setEmployees] = useState<RosterEmployee[]>([]);
+  const [audienceType, setAudienceType] = useState<"all" | "selected">("all");
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [employeeSearch, setEmployeeSearch] = useState("");
 
   const showTooltip = (text: string) => (e: React.MouseEvent) =>
     setTooltip({ text, x: e.clientX, y: e.clientY });
@@ -210,8 +236,78 @@ export function Announcements() {
       fetchAnnouncements();
       fetchAvailableDocs();
       fetchHelpGuides();
+      fetchEmployeeRoster();
     }
   }, [user]);
+
+  async function fetchEmployeeRoster() {
+    try {
+      const { data, error } = await supabase
+        .schema("common")
+        .from("profiles")
+        .select("*");
+      if (error) throw error;
+      const roster: RosterEmployee[] = (data || [])
+        .filter((p: any) =>
+          employeeEmailRegex.test((p.email || "").toLowerCase()),
+        )
+        .filter((p: any) => (p.employment_status || "active") === "active")
+        .map((p: any) => ({
+          id: p.id,
+          email: p.email || "",
+          name:
+            p.full_name ||
+            p.user_metadata?.name ||
+            (p.email || "").split("@")[0] ||
+            "Unknown",
+          division: p.division || p.user_metadata?.division || "",
+        }))
+        .sort((a: RosterEmployee, b: RosterEmployee) =>
+          a.name.localeCompare(b.name),
+        );
+      setEmployees(roster);
+    } catch (err) {
+      console.error("Failed to load employee roster:", err);
+    }
+  }
+
+  const buildAudience = (): AnnouncementAudience | undefined => {
+    if (audienceType === "all") return null;
+    const selected = employees.filter((e) => selectedEmployeeIds.has(e.id));
+    if (selected.length === 0) return undefined;
+    return {
+      type: "selected",
+      employees: selected.map(({ id, email, name }) => ({ id, email, name })),
+    };
+  };
+
+  const toggleEmployee = (id: string) => {
+    setSelectedEmployeeIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleDivision = (division: string) => {
+    const members = employees.filter((e) => e.division === division);
+    setSelectedEmployeeIds((prev) => {
+      const next = new Set(prev);
+      const allSelected = members.every((m) => next.has(m.id));
+      members.forEach((m) => {
+        if (allSelected) next.delete(m.id);
+        else next.add(m.id);
+      });
+      return next;
+    });
+  };
+
+  const divisions = Array.from(
+    new Set(employees.map((e) => e.division).filter(Boolean)),
+  ).sort((a, b) =>
+    formatDivisionShort(a).localeCompare(formatDivisionShort(b)),
+  );
 
   async function fetchHelpGuides() {
     try {
@@ -339,6 +435,9 @@ export function Announcements() {
     setShowDocPicker(false);
     setLinkType("document");
     setAttachments([]);
+    setAudienceType("all");
+    setSelectedEmployeeIds(new Set());
+    setEmployeeSearch("");
     setIsFormOpen(true);
   }
 
@@ -375,6 +474,15 @@ export function Announcements() {
         name: decodeURIComponent(url.split("/").pop() || "attachment"),
       })),
     );
+    setAudienceType(a.audience?.type === "selected" ? "selected" : "all");
+    setSelectedEmployeeIds(
+      new Set(
+        a.audience?.type === "selected"
+          ? a.audience.employees.map((e) => e.id)
+          : [],
+      ),
+    );
+    setEmployeeSearch("");
     setIsEditing(true);
     setEditingId(a.id);
     setIsFormOpen(true);
@@ -383,6 +491,17 @@ export function Announcements() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
+
+    const audience = buildAudience();
+    if (audience === undefined) {
+      toast({
+        title: "Error",
+        description:
+          "Select at least one employee for the audience, or choose All employees",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       setFormLoading(true);
@@ -407,16 +526,30 @@ export function Announcements() {
         expires_at: formData.expires_at
           ? new Date(formData.expires_at).toISOString()
           : null,
+        audience,
         updated_at: new Date().toISOString(),
       };
 
-      if (isEditing && editingId) {
-        const { error } = await supabase
-          .schema("common")
-          .from("announcements")
-          .update(payload)
-          .eq("id", editingId);
+      // Retries without audience if the column hasn't been migrated yet
+      const saveAnnouncement = async () => {
+        const run = () =>
+          isEditing && editingId
+            ? supabase
+                .schema("common")
+                .from("announcements")
+                .update(payload)
+                .eq("id", editingId)
+            : supabase.schema("common").from("announcements").insert([payload]);
+        let { error } = await run();
+        if (error && /audience/i.test(error.message || "")) {
+          delete payload.audience;
+          ({ error } = await run());
+        }
         if (error) throw error;
+      };
+
+      if (isEditing && editingId) {
+        await saveAnnouncement();
         toast({
           title: "Updated",
           description: "Announcement updated successfully",
@@ -426,11 +559,7 @@ export function Announcements() {
         payload.author_name =
           user.user_metadata?.name || user.email || "Unknown";
         payload.author_id = user.id;
-        const { error } = await supabase
-          .schema("common")
-          .from("announcements")
-          .insert([payload]);
-        if (error) throw error;
+        await saveAnnouncement();
         toast({
           title: "Created",
           description: "Announcement created successfully",
@@ -707,6 +836,13 @@ export function Announcements() {
                         {CATEGORIES.find((c) => c.value === a.category)
                           ?.label || a.category}
                       </span>
+                      {a.audience?.type === "selected" && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-none text-xs font-medium bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200">
+                          <Users className="h-3 w-3" />
+                          {a.audience.employees.length} employee
+                          {a.audience.employees.length === 1 ? "" : "s"}
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 mt-1">
                       {a.excerpt || stripSystemLinks(a.content)}
@@ -1108,6 +1244,122 @@ export function Announcements() {
                     </label>
                   </div>
                 </div>
+              </div>
+
+              {/* Audience targeting */}
+              <div className="border-t border-neutral-200 dark:border-neutral-700 pt-4 space-y-3">
+                <label className="text-sm font-medium flex items-center gap-1.5 text-neutral-700 dark:text-white">
+                  <Users className="h-4 w-4 text-brand" />
+                  Audience
+                </label>
+                <div className="flex gap-4">
+                  {(
+                    [
+                      { value: "all", label: "All employees" },
+                      { value: "selected", label: "Specific employees" },
+                    ] as const
+                  ).map((opt) => (
+                    <label
+                      key={opt.value}
+                      className="flex items-center gap-2 text-sm cursor-pointer text-neutral-700 dark:text-white"
+                    >
+                      <input
+                        type="radio"
+                        name="announcement-audience"
+                        checked={audienceType === opt.value}
+                        onChange={() => setAudienceType(opt.value)}
+                        className="h-4 w-4 text-brand focus:ring-brand border-neutral-300"
+                      />
+                      {opt.label}
+                    </label>
+                  ))}
+                </div>
+                {audienceType === "selected" && (
+                  <div className="space-y-2">
+                    {divisions.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {divisions.map((d) => {
+                          const members = employees.filter(
+                            (e) => e.division === d,
+                          );
+                          const allSelected = members.every((m) =>
+                            selectedEmployeeIds.has(m.id),
+                          );
+                          return (
+                            <button
+                              key={d}
+                              type="button"
+                              onClick={() => toggleDivision(d)}
+                              className={`px-2 py-1 text-xs rounded-none border transition-colors ${
+                                allSelected
+                                  ? "bg-brand text-white border-brand"
+                                  : "border-neutral-300 dark:border-neutral-600 text-neutral-600 dark:text-neutral-300 hover:border-brand hover:text-brand"
+                              }`}
+                            >
+                              {formatDivisionShort(d)} ({members.length})
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <input
+                      type="text"
+                      placeholder="Search employees..."
+                      value={employeeSearch}
+                      onChange={(e) => setEmployeeSearch(e.target.value)}
+                      className="block w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
+                    />
+                    <div className="max-h-48 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-none divide-y divide-neutral-100 dark:divide-neutral-800">
+                      {(() => {
+                        const q = employeeSearch.trim().toLowerCase();
+                        const listed = q
+                          ? employees.filter(
+                              (e) =>
+                                e.name.toLowerCase().includes(q) ||
+                                e.email.toLowerCase().includes(q) ||
+                                formatDivisionShort(e.division)
+                                  .toLowerCase()
+                                  .includes(q),
+                            )
+                          : employees;
+                        if (listed.length === 0) {
+                          return (
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400 p-3">
+                              {employees.length === 0
+                                ? "Loading employees…"
+                                : "No employees match your search."}
+                            </p>
+                          );
+                        }
+                        return listed.map((e) => (
+                          <label
+                            key={e.id}
+                            className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedEmployeeIds.has(e.id)}
+                              onChange={() => toggleEmployee(e.id)}
+                              className="h-4 w-4 text-brand focus:ring-brand border-neutral-300 rounded"
+                            />
+                            <span className="flex-1 truncate">{e.name}</span>
+                            {e.division && (
+                              <span className="text-xs text-neutral-500 dark:text-neutral-400 shrink-0">
+                                {formatDivisionShort(e.division)}
+                              </span>
+                            )}
+                          </label>
+                        ));
+                      })()}
+                    </div>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                      {selectedEmployeeIds.size} employee
+                      {selectedEmployeeIds.size === 1 ? "" : "s"} selected.
+                      Only selected employees will see this announcement on
+                      their portal.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Link Document or Help Guide */}

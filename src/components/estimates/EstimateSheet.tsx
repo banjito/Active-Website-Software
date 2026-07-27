@@ -875,6 +875,13 @@ export default function EstimateSheet({
   const taxFactor = netTermsOnly ? 1.0 : 1.09;
   const finalMarkupDivisor = netTermsOnly ? 1.0 : 0.96;
 
+  // Manual price override: when on, the FINAL (M-F) value is forced to the exact
+  // dollar amount the user types (e.g. a $1,950 minimum call-out fee) instead of
+  // being derived from materials/labor/markup. Everything downstream (NET terms,
+  // mobilization, SOV item prices, letter proposal) is computed from this value.
+  const [manualPriceOverride, setManualPriceOverride] = useState<boolean>(false);
+  const [manualPriceValue, setManualPriceValue] = useState<number>(0);
+
   // Mobilization factors state (threshold-based)
   // base: <= 100,000; over100k: > 100,000; over500k: > 500,000; over1m: > 1,000,000
   const [mobilizationFactors, setMobilizationFactors] = useState({
@@ -1229,6 +1236,9 @@ export default function EstimateSheet({
         }
         // Restore "net terms only" override if present in draft
         setNetTermsOnly(!!savedDraft.netTermsOnly);
+        // Restore manual price override if present in draft
+        setManualPriceOverride(!!savedDraft.manualPriceOverride);
+        setManualPriceValue(toNum(savedDraft.manualPriceValue));
 
         setDraftRestored(true);
       }
@@ -1247,6 +1257,8 @@ export default function EstimateSheet({
         combinedLetterQuantity,
         selectedSovPriceTerm,
         netTermsOnly,
+        manualPriceOverride,
+        manualPriceValue,
       };
       // Save to Supabase (debounced by the service)
       updatePreference(`drafts.${draftKey}`, draftData);
@@ -1259,6 +1271,8 @@ export default function EstimateSheet({
     combinedLetterQuantity,
     selectedSovPriceTerm,
     netTermsOnly,
+    manualPriceOverride,
+    manualPriceValue,
     isOpen,
     isNewQuote,
     opportunityId,
@@ -1713,6 +1727,10 @@ export default function EstimateSheet({
       // Restore "net terms only" override (tax factor + final markup)
       setNetTermsOnly(!!parsedData.netTermsOnly);
 
+      // Restore manual price override (exact FINAL value)
+      setManualPriceOverride(!!parsedData.manualPriceOverride);
+      setManualPriceValue(toNum(parsedData.manualPriceValue));
+
       // Restore quantity for combined letter proposal (default 1)
       if (
         parsedData.combinedLetterQuantity !== undefined &&
@@ -1905,6 +1923,8 @@ export default function EstimateSheet({
       isManualSundayHours: isManualSundayHours,
       letterPaymentTerm: letterPaymentTerm,
       netTermsOnly: netTermsOnly,
+      manualPriceOverride: manualPriceOverride,
+      manualPriceValue: manualPriceValue,
     };
 
     // Debug: Log what's being saved
@@ -2905,6 +2925,9 @@ export default function EstimateSheet({
 
   // Helper function to get the exact FINAL value (G54) as shown in UI — Monday-Friday scenario
   const getFinalValue = () => {
+    if (manualPriceOverride) {
+      return Math.max(0, toNum(manualPriceValue));
+    }
     return Math.ceil(
       (getMaterialExpenseBase() +
         getWorkLaborCost() +
@@ -2916,6 +2939,7 @@ export default function EstimateSheet({
 
   // FINAL value for Saturday scenario
   const getSaturdayFinalValue = () => {
+    if (manualPriceOverride) return getFinalValue();
     const sat = data.saturdayHoursSummary;
     if (!sat) return getFinalValue();
     const workLabor =
@@ -2937,6 +2961,7 @@ export default function EstimateSheet({
 
   // FINAL value for Sunday/Holiday scenario
   const getSundayFinalValue = () => {
+    if (manualPriceOverride) return getFinalValue();
     const sun = data.sundayHoursSummary;
     if (!sun) return getFinalValue();
     const workLabor =
@@ -5198,13 +5223,17 @@ export default function EstimateSheet({
     const hs = parsedData.hoursSummary || {};
     const matExpBase = getMaterialExpenseBaseParsed(parsedData);
     const travelNonLabor = getParsedTravelNonLaborCost();
-    const baseFinalValue = Math.ceil(
-      (matExpBase +
-        getWorkLaborCostParsed(hs) +
-        getTravelLaborCostParsed(hs) +
-        travelNonLabor) /
-        parsedFinalMarkupDivisor,
-    );
+    // Manual price override forces the FINAL value to the exact saved amount.
+    const parsedManualOverride = !!parsedData.manualPriceOverride;
+    const baseFinalValue = parsedManualOverride
+      ? Math.max(0, toNum(parsedData.manualPriceValue))
+      : Math.ceil(
+          (matExpBase +
+            getWorkLaborCostParsed(hs) +
+            getTravelLaborCostParsed(hs) +
+            travelNonLabor) /
+            parsedFinalMarkupDivisor,
+        );
     const finalValue = baseFinalValue * (singleLetterScopeQuantity || 1);
 
     // Saturday/Sunday final values (if applicable)
@@ -5212,25 +5241,27 @@ export default function EstimateSheet({
     const sunHS = parsedData.sundayHoursSummary;
     const hasSaturdayPricing = !!parsedData.showSaturdayHours && !!satHS;
     const hasSundayPricing = !!parsedData.showSundayHours && !!sunHS;
-    const satBaseFinalValue = hasSaturdayPricing
-      ? Math.ceil(
-          (matExpBase +
-            getWorkLaborCostParsed(satHS) +
-            getTravelLaborCostParsed(satHS) +
-            travelNonLabor) /
-            parsedFinalMarkupDivisor,
-        )
-      : baseFinalValue;
+    const satBaseFinalValue =
+      hasSaturdayPricing && !parsedManualOverride
+        ? Math.ceil(
+            (matExpBase +
+              getWorkLaborCostParsed(satHS) +
+              getTravelLaborCostParsed(satHS) +
+              travelNonLabor) /
+              parsedFinalMarkupDivisor,
+          )
+        : baseFinalValue;
     const satFinalValue = satBaseFinalValue * (singleLetterScopeQuantity || 1);
-    const sunBaseFinalValue = hasSundayPricing
-      ? Math.ceil(
-          (matExpBase +
-            getWorkLaborCostParsed(sunHS) +
-            getTravelLaborCostParsed(sunHS) +
-            travelNonLabor) /
-            parsedFinalMarkupDivisor,
-        )
-      : baseFinalValue;
+    const sunBaseFinalValue =
+      hasSundayPricing && !parsedManualOverride
+        ? Math.ceil(
+            (matExpBase +
+              getWorkLaborCostParsed(sunHS) +
+              getTravelLaborCostParsed(sunHS) +
+              travelNonLabor) /
+              parsedFinalMarkupDivisor,
+          )
+        : baseFinalValue;
     const sunFinalValue = sunBaseFinalValue * (singleLetterScopeQuantity || 1);
     const mobilizationRaw = (() => {
       const factor = getMobilizationFactor(finalValue);
@@ -5544,6 +5575,17 @@ export default function EstimateSheet({
       const scopeTaxFactor = scopeNetTermsOnly ? 1.0 : 1.09;
       const scopeFinalMarkupDivisor = scopeNetTermsOnly ? 1.0 : 0.96;
 
+      // Per-scope manual price override; use live form state only for the active tab.
+      // When set (not null), the FINAL value is forced to this exact amount.
+      const scopeManualOverride =
+        originalQuoteIndex === selectedQuoteIndex && selectedQuoteIndex >= 0
+          ? manualPriceOverride
+            ? Math.max(0, toNum(manualPriceValue))
+            : null
+          : parsedData.manualPriceOverride
+            ? Math.max(0, toNum(parsedData.manualPriceValue))
+            : null;
+
       // Calculate final value for this quote
       function getFinalNumeratorWithoutTravel(parsed: any) {
         const cv = parsed.calculatedValues || {};
@@ -5608,10 +5650,13 @@ export default function EstimateSheet({
       const travelNonLabor = computeTravelTotals(parsedTravel).nonLaborCost;
       const travelNonLaborSafe = Math.max(0, travelNonLabor);
 
-      const finalValue = Math.ceil(
-        (matExpBase + workLabor + travelLabor + travelNonLaborSafe) /
-          scopeFinalMarkupDivisor,
-      );
+      const finalValue =
+        scopeManualOverride != null
+          ? scopeManualOverride
+          : Math.ceil(
+              (matExpBase + workLabor + travelLabor + travelNonLaborSafe) /
+                scopeFinalMarkupDivisor,
+            );
       const validFinalValue =
         isNaN(finalValue) || !isFinite(finalValue) ? 0 : finalValue;
 
@@ -5636,8 +5681,14 @@ export default function EstimateSheet({
         );
       };
 
-      const satFinalValue = hasSat ? calcDayValue(satHS) : validFinalValue;
-      const sunFinalValue = hasSun ? calcDayValue(sunHS) : validFinalValue;
+      const satFinalValue =
+        hasSat && scopeManualOverride == null
+          ? calcDayValue(satHS)
+          : validFinalValue;
+      const sunFinalValue =
+        hasSun && scopeManualOverride == null
+          ? calcDayValue(sunHS)
+          : validFinalValue;
 
       return {
         quote,
@@ -9630,6 +9681,85 @@ export default function EstimateSheet({
                           </span>
                         </span>
                       </label>
+                      {/* Manual price override: force the FINAL (M-F) value to an
+                          exact dollar amount (e.g. a $1,950 minimum call-out fee) */}
+                      <div
+                        style={{
+                          marginTop: "12px",
+                          padding: "10px 12px",
+                          border: "1px solid var(--border, #e5e5e5)",
+                          borderRadius: "6px",
+                          fontSize: "13px",
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        <label
+                          style={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            gap: "8px",
+                            cursor: isViewMode ? "default" : "pointer",
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={manualPriceOverride}
+                            onChange={(e) => {
+                              if (isViewMode) return;
+                              setManualPriceOverride(e.target.checked);
+                              // Seed the box with the current calculated price the
+                              // first time it's turned on, so the user tweaks from
+                              // a sensible starting number instead of $0.
+                              if (
+                                e.target.checked &&
+                                toNum(manualPriceValue) <= 0
+                              ) {
+                                setManualPriceValue(getFinalValue());
+                              }
+                              setIsDirty(true);
+                            }}
+                            disabled={isViewMode}
+                            style={{ marginTop: "2px" }}
+                          />
+                          <span>
+                            <strong>Manual price override</strong>
+                            <br />
+                            <span style={{ color: "var(--muted, #737373)" }}>
+                              Type an exact FINAL price and everything (NET terms,
+                              mobilization, SOV item prices) is calculated from it.
+                            </span>
+                          </span>
+                        </label>
+                        {manualPriceOverride && (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                              marginTop: "10px",
+                            }}
+                          >
+                            <span style={{ fontWeight: "bold" }}>FINAL $</span>
+                            <input
+                              type="number"
+                              min={0}
+                              step="0.01"
+                              value={
+                                manualPriceValue === 0 ? "" : manualPriceValue
+                              }
+                              placeholder="0.00"
+                              onChange={(e) => {
+                                if (isViewMode) return;
+                                setManualPriceValue(toNum(e.target.value));
+                                setIsDirty(true);
+                              }}
+                              disabled={isViewMode}
+                              className="form-input"
+                              style={{ width: "140px", textAlign: "right" }}
+                            />
+                          </div>
+                        )}
+                      </div>
                           </div>
                         )}
                         {activeSummarySection === "hoursLabor" && (

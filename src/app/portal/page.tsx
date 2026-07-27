@@ -640,29 +640,45 @@ export default function PortalLanding() {
     async function fetchPortalAnnouncements() {
       try {
         const now = new Date().toISOString();
-        const { data, error } = await supabase
-          .schema("common")
-          .from("announcements")
-          .select(
-            "id, title, content, excerpt, author_name, category, is_pinned, published_at, created_at",
-          )
-          .eq("is_published", true)
-          .or(`published_at.is.null,published_at.lte.${now}`)
-          .or(`expires_at.is.null,expires_at.gt.${now}`)
-          .order("is_pinned", { ascending: false })
-          .order("published_at", { ascending: false, nullsFirst: false })
-          .limit(10);
+        const fetchWithColumns = (columns: string) =>
+          supabase
+            .schema("common")
+            .from("announcements")
+            .select(columns)
+            .eq("is_published", true)
+            .or(`published_at.is.null,published_at.lte.${now}`)
+            .or(`expires_at.is.null,expires_at.gt.${now}`)
+            .order("is_pinned", { ascending: false })
+            .order("published_at", { ascending: false, nullsFirst: false })
+            .limit(10);
+        const baseColumns =
+          "id, title, content, excerpt, author_name, category, is_pinned, published_at, created_at";
+        let { data, error } = await fetchWithColumns(
+          `${baseColumns}, audience`,
+        );
+        if (error?.code === "42703") {
+          // audience column not migrated yet — fall back to untargeted behavior
+          ({ data, error } = await fetchWithColumns(baseColumns));
+        }
         if (error) {
           console.error("Error fetching portal announcements:", error);
           return;
         }
-        setPortalAnnouncements(data || []);
+        // Hide announcements targeted at a specific audience the user isn't in
+        const email = (user?.email || "").toLowerCase();
+        const visible = (data || []).filter((a: any) => {
+          if (a.audience?.type !== "selected") return true;
+          return (a.audience.employees || []).some(
+            (e: any) => (e.email || "").toLowerCase() === email,
+          );
+        });
+        setPortalAnnouncements(visible);
       } catch (err) {
         console.error("Error fetching portal announcements:", err);
       }
     }
     fetchPortalAnnouncements();
-  }, []);
+  }, [user?.email]);
 
   // Fetch current user's announcement state (acknowledged / dismissed) so we can hide dismissed on home
   useEffect(() => {

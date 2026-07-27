@@ -43,8 +43,11 @@ import { useAuth } from "../../../lib/AuthContext";
 import { supabase } from "../../../lib/supabase";
 import { toast } from "../../../components/ui/toast";
 import { SignatureFieldPosition } from "../../../components/pdf/PDFSignatureFieldPlacer";
-import { employeeEmailRegex } from "../../../lib/companyConfig";
 import { formatDivisionShort } from "../../../lib/utils/divisionDisplay";
+import {
+  fetchEmployeeRoster,
+  RosterEmployee,
+} from "../../../lib/utils/employeeRoster";
 
 const ANNOUNCEMENT_CATEGORIES = [
   { value: "general", label: "General" },
@@ -68,10 +71,6 @@ interface AssignedEmployee {
   id: string;
   email: string;
   name: string;
-}
-
-interface RosterEmployee extends AssignedEmployee {
-  division: string;
 }
 
 type DocAssignment =
@@ -145,30 +144,7 @@ export const DocumentAcknowledgment: React.FC = () => {
     if (!isManager) return;
     (async () => {
       try {
-        const { data, error } = await supabase
-          .schema("common")
-          .from("profiles")
-          .select("*");
-        if (error) throw error;
-        const roster: RosterEmployee[] = (data || [])
-          .filter((p: any) =>
-            employeeEmailRegex.test((p.email || "").toLowerCase()),
-          )
-          .filter((p: any) => (p.employment_status || "active") === "active")
-          .map((p: any) => ({
-            id: p.id,
-            email: p.email || "",
-            name:
-              p.full_name ||
-              p.user_metadata?.name ||
-              (p.email || "").split("@")[0] ||
-              "Unknown",
-            division: p.division || p.user_metadata?.division || "",
-          }))
-          .sort((a: RosterEmployee, b: RosterEmployee) =>
-            a.name.localeCompare(b.name),
-          );
-        setEmployees(roster);
+        setEmployees(await fetchEmployeeRoster());
       } catch (e) {
         console.error("Failed to load employee roster:", e);
       }
@@ -949,10 +925,6 @@ export const DocumentAcknowledgment: React.FC = () => {
           <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
             Document Acknowledgment
           </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
-            Signed handbook and policy acknowledgments. Track who has
-            acknowledged which documents.
-          </p>
         </div>
         {isManager && (
           <div className="flex gap-2">

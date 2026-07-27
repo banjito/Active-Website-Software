@@ -29,17 +29,16 @@ import {
   ESignForm,
 } from "../../../services/hr/onboardingService";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { employeeEmailRegex } from "../../../lib/companyConfig";
 import { formatDivisionShort } from "../../../lib/utils/divisionDisplay";
+import {
+  fetchEmployeeRoster,
+  RosterEmployee,
+} from "../../../lib/utils/employeeRoster";
 
 interface AudienceEmployee {
   id: string;
   email: string;
   name: string;
-}
-
-interface RosterEmployee extends AudienceEmployee {
-  division: string;
 }
 
 // null audience = visible to all employees
@@ -236,36 +235,13 @@ export function Announcements() {
       fetchAnnouncements();
       fetchAvailableDocs();
       fetchHelpGuides();
-      fetchEmployeeRoster();
+      loadEmployeeRoster();
     }
   }, [user]);
 
-  async function fetchEmployeeRoster() {
+  async function loadEmployeeRoster() {
     try {
-      const { data, error } = await supabase
-        .schema("common")
-        .from("profiles")
-        .select("*");
-      if (error) throw error;
-      const roster: RosterEmployee[] = (data || [])
-        .filter((p: any) =>
-          employeeEmailRegex.test((p.email || "").toLowerCase()),
-        )
-        .filter((p: any) => (p.employment_status || "active") === "active")
-        .map((p: any) => ({
-          id: p.id,
-          email: p.email || "",
-          name:
-            p.full_name ||
-            p.user_metadata?.name ||
-            (p.email || "").split("@")[0] ||
-            "Unknown",
-          division: p.division || p.user_metadata?.division || "",
-        }))
-        .sort((a: RosterEmployee, b: RosterEmployee) =>
-          a.name.localeCompare(b.name),
-        );
-      setEmployees(roster);
+      setEmployees(await fetchEmployeeRoster());
     } catch (err) {
       console.error("Failed to load employee roster:", err);
     }

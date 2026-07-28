@@ -387,21 +387,21 @@ function ArmadilloRedirect() {
   );
 }
 
-// Redirect Meetings to Ninety until the internal page is ready
-function NinetyRedirect() {
+// Redirect Meetings to Runway until the internal page is ready
+function RunwayRedirect() {
   useEffect(() => {
-    window.open("https://www.app.ninety.io/", "_blank", "noopener,noreferrer");
+    window.open("https://www.app.runwayos.io/", "_blank", "noopener,noreferrer");
   }, []);
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-neutral-600 dark:text-neutral-400">
-      <p>Opening Ninety in a new tab…</p>
+      <p>Opening Runway in a new tab…</p>
       <a
-        href="https://www.app.ninety.io/"
+        href="https://www.app.runwayos.io/"
         target="_blank"
         rel="noopener noreferrer"
         className="text-brand underline"
       >
-        Open Ninety
+        Open Runway
       </a>
     </div>
   );
@@ -1782,8 +1782,8 @@ function App() {
                   />
 
                   {/* === Meetings — external redirect until internal page is ready === */}
-                  <Route path="/meetings" element={<NinetyRedirect />} />
-                  <Route path="/meetings/*" element={<NinetyRedirect />} />
+                  <Route path="/meetings" element={<RunwayRedirect />} />
+                  <Route path="/meetings/*" element={<RunwayRedirect />} />
 
                   {/* === Division-Specific Dashboard Routes === */}
                   {/* These specific routes should come before the generic /:division/dashboard route */}

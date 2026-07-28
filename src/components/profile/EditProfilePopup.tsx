@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
+import { isSuperUser } from "@/lib/roles";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactCrop, {
   type Crop,
@@ -163,6 +164,14 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   const isEditingOwnProfile = !!user?.id && editingUserId === user.id;
   const [activeSection, setActiveSection] = useState<EditSection>("basic");
   const [name, setName] = useState(currentUser?.name || "");
+  // Login email. Editable by the account owner (immediate change, no
+  // confirmation) and by super admins editing someone else. The
+  // admin-update-user-email edge function re-enforces this.
+  const [email, setEmail] = useState(currentUser?.email || user?.email || "");
+  const canEditEmail = isEditingOwnProfile || isSuperUser(user?.email);
+  const originalEmail = (
+    isEditingOwnProfile ? user?.email : currentUser?.email
+  )?.toLowerCase();
   const [selectedRole, setSelectedRole] = useState(currentUser?.role || "");
   const [bio, setBio] = useState(
     currentUser?.bio || user?.user_metadata?.bio || "",
@@ -239,6 +248,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
     if (metaHydratedRef.current) return;
     if (isEditingOwnProfile && user?.user_metadata) {
       setName(user.user_metadata.name || "");
+      setEmail(user.email || "");
       setSelectedRole(user.user_metadata.role || "");
       setBio(user.user_metadata.bio || "");
       setDivision(user.user_metadata.division || "");
@@ -262,6 +272,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
     }
     if (currentUser) {
       setName(currentUser.name || "");
+      setEmail(currentUser.email || "");
       setSelectedRole(currentUser.role || "");
       setBio(currentUser.bio || "");
       setDivision(currentUser.division || "");
@@ -826,6 +837,46 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
     setIsSubmitting(true);
 
     try {
+      // Handle a login-email change first so a failure aborts before we report
+      // success. Only fires when the field is editable and actually changed.
+      const trimmedEmail = email.trim().toLowerCase();
+      if (canEditEmail && trimmedEmail && trimmedEmail !== originalEmail) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+          alert("Please enter a valid email address.");
+          setIsSubmitting(false);
+          return;
+        }
+        const { error: emailError } = await supabase.functions.invoke(
+          "admin-update-user-email",
+          { body: { userId: editingUserId, newEmail: trimmedEmail } },
+        );
+        if (emailError) {
+          let message = "Failed to update email.";
+          if (
+            emailError &&
+            typeof emailError === "object" &&
+            "context" in emailError &&
+            (emailError as any).context instanceof Response
+          ) {
+            try {
+              const payload = await (emailError as any).context.json();
+              if (payload?.error) message = payload.error;
+            } catch {
+              /* keep fallback */
+            }
+          } else if (emailError instanceof Error) {
+            message = emailError.message;
+          }
+          alert(message);
+          setIsSubmitting(false);
+          return;
+        }
+        // Pull the new email into the current session when changing our own.
+        if (isEditingOwnProfile) {
+          await supabase.auth.refreshSession();
+        }
+      }
+
       // Prepare metadata, explicitly excluding role
       const userMetadata: { [key: string]: any } = {
         name,
@@ -1158,10 +1209,22 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                           </label>
                           <input
                             type="email"
-                            value={user?.email || ""}
-                            disabled
-                            className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-none shadow-sm bg-neutral-50 dark:bg-dark-150 text-neutral-500 dark:text-white cursor-not-allowed"
+                            value={canEditEmail ? email : user?.email || ""}
+                            onChange={(e) => setEmail(e.target.value)}
+                            disabled={!canEditEmail}
+                            className={`w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-none shadow-sm ${
+                              canEditEmail
+                                ? "focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
+                                : "bg-neutral-50 dark:bg-dark-150 text-neutral-500 dark:text-white cursor-not-allowed"
+                            }`}
                           />
+                          {canEditEmail && (
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                              This is your login email. Changing it takes effect
+                              immediately — use the exact address you'll sign in
+                              with. Your reports and history stay linked.
+                            </p>
+                          )}
                         </div>
 
                         {/* Phone Numbers */}

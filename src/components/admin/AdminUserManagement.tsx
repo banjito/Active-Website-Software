@@ -11,6 +11,7 @@ import {
   AlertCircle,
   RefreshCw,
   KeyRound,
+  Mail,
   Camera,
   Ban,
   UserCheck,
@@ -41,6 +42,14 @@ export default function AdminUserManagement() {
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [emailLoadingUserId, setEmailLoadingUserId] = useState<string | null>(
+    null,
+  );
+  const [emailSuccessUserId, setEmailSuccessUserId] = useState<string | null>(
+    null,
+  );
+  const [emailErrorUserId, setEmailErrorUserId] = useState<string | null>(null);
   const [passwordLoadingUserId, setPasswordLoadingUserId] = useState<
     string | null
   >(null);
@@ -59,6 +68,9 @@ export default function AdminUserManagement() {
   );
 
   const canChangePasswords = isSuperUser(currentUser?.email);
+  // Email is a login credential, so changing another user's email is limited to
+  // super admins (matches password reset). The edge function re-enforces this.
+  const canChangeEmails = isSuperUser(currentUser?.email);
   // Admin and up may change other users' profile images. The server RPC
   // (admin_update_user_metadata) enforces this independently.
   const currentRole = currentUser?.user_metadata?.role as string | undefined;
@@ -226,6 +238,8 @@ export default function AdminUserManagement() {
     setEditingUser(userId);
     setNewPassword("");
     setConfirmPassword("");
+    setNewEmail(users.find((u) => u.id === userId)?.email || "");
+    setEmailErrorUserId(null);
     // Ensure we set a valid Role type or null
     const validRole = Object.keys(ROLES).includes(currentRole as string)
       ? (currentRole as Role)
@@ -306,6 +320,72 @@ export default function AdminUserManagement() {
       setPasswordErrorUserId(userId);
     } finally {
       setPasswordLoadingUserId(null);
+    }
+  };
+
+  const handleChangeEmail = async (userId: string) => {
+    setError(null);
+    setEmailSuccessUserId(null);
+    setEmailErrorUserId(null);
+
+    const trimmed = newEmail.trim().toLowerCase();
+    const current = users.find((u) => u.id === userId)?.email?.toLowerCase();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setError("Please enter a valid email address.");
+      setEmailErrorUserId(userId);
+      return;
+    }
+    if (trimmed === current) {
+      setError("That is already this user's email.");
+      setEmailErrorUserId(userId);
+      return;
+    }
+
+    try {
+      setEmailLoadingUserId(userId);
+
+      const { error } = await supabase.functions.invoke(
+        "admin-update-user-email",
+        {
+          body: { userId, newEmail: trimmed },
+        },
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      // Reflect the new email locally without a full refetch.
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, email: trimmed } : u)),
+      );
+      setEmailSuccessUserId(userId);
+      setTimeout(() => setEmailSuccessUserId(null), 3000);
+    } catch (err) {
+      let message =
+        err instanceof Error ? err.message : "Could not change email";
+
+      if (
+        err &&
+        typeof err === "object" &&
+        "context" in err &&
+        err.context instanceof Response
+      ) {
+        try {
+          const payload = await err.context.json();
+          if (payload?.error) {
+            message = payload.error;
+          }
+        } catch {
+          // Keep the fallback message above.
+        }
+      }
+
+      setError(message);
+      setEmailErrorUserId(userId);
+    } finally {
+      setEmailLoadingUserId(null);
     }
   };
 
@@ -627,12 +707,14 @@ export default function AdminUserManagement() {
                         {updateSuccessUserId === user.id && (
                           <CheckCircle className="inline-block h-4 w-4 ml-2 text-green-500 flex-shrink-0" />
                         )}
-                        {passwordSuccessUserId === user.id && (
+                        {(passwordSuccessUserId === user.id ||
+                          emailSuccessUserId === user.id) && (
                           <CheckCircle className="inline-block h-4 w-4 ml-2 text-green-500 flex-shrink-0" />
                         )}
                         {/* Error Indicator */}
                         {(updateErrorUserId === user.id ||
-                          passwordErrorUserId === user.id) && (
+                          passwordErrorUserId === user.id ||
+                          emailErrorUserId === user.id) && (
                           <AlertCircle className="inline-block h-4 w-4 ml-2 text-red-500 flex-shrink-0" />
                         )}
                       </p>
@@ -735,6 +817,40 @@ export default function AdminUserManagement() {
                               </Button>
                             </div>
                           </div>
+
+                          {/* Email */}
+                          {canChangeEmails && (
+                            <div>
+                              <p className="mb-2 text-sm font-medium text-neutral-900 dark:text-white">
+                                Email address
+                              </p>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <input
+                                  type="email"
+                                  value={newEmail}
+                                  onChange={(e) => setNewEmail(e.target.value)}
+                                  placeholder="name@company.com"
+                                  className="flex-1 min-w-[220px] px-3 py-2 border border-neutral-300 rounded-none focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleChangeEmail(user.id)}
+                                  disabled={emailLoadingUserId === user.id}
+                                  className="bg-brand hover:bg-brand-dark text-white"
+                                  leftIcon={<Mail className="h-4 w-4" />}
+                                >
+                                  {emailLoadingUserId === user.id
+                                    ? "Saving..."
+                                    : "Save email"}
+                                </Button>
+                              </div>
+                              <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                Changes their login email immediately (no
+                                confirmation email). Reports and history stay
+                                linked — they key off the user ID, not the email.
+                              </p>
+                            </div>
+                          )}
 
                           {/* Password */}
                           {canChangePasswords && (

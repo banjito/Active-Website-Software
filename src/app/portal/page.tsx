@@ -1089,7 +1089,7 @@ export default function PortalLanding() {
         break;
       case "Meetings":
         window.open(
-          "https://www.app.ninety.io/",
+          "https://www.app.runwayos.io/",
           "_blank",
           "noopener,noreferrer",
         );

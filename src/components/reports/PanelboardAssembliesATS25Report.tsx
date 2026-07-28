@@ -34,6 +34,7 @@ const INSULATION_RESISTANCE_UNITS = ["kΩ", "MΩ", "GΩ"];
 const CONTACT_RESISTANCE_UNITS = ["µΩ", "mΩ", "Ω"];
 const DIELECTRIC_WITHSTAND_UNITS = ["µA", "mA"];
 const RATED_VOLTAGE_OPTIONS = [
+  "N/L",
   "250",
   "480",
   "600",

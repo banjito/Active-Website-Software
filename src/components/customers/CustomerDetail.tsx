@@ -37,6 +37,12 @@ import {
   DIVISION_OPTIONS,
 } from "../../services/customerService";
 import { extractLogoColors, normalizeHexColor } from "@/lib/brandColors";
+import {
+  PAYMENT_TERM_OPTIONS,
+  formatAllowedTerms,
+  hasPaymentTermRestriction,
+  normalizeAllowedTerms,
+} from "@/lib/paymentTerms";
 import CustomerDocumentManagement from "./CustomerDocumentManagement";
 import CustomerHealthMonitoring from "./CustomerHealth";
 import { toast } from "../../components/ui/toast";
@@ -133,6 +139,8 @@ export default function CustomerDetail() {
     divisions: string[];
     logo_url: string;
     brand_primary: string;
+    allowed_payment_terms: string[];
+    payment_terms_note: string;
   }>({
     company_name: "",
     email: "",
@@ -142,6 +150,8 @@ export default function CustomerDetail() {
     divisions: [],
     logo_url: "",
     brand_primary: "",
+    allowed_payment_terms: [],
+    payment_terms_note: "",
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
@@ -363,6 +373,10 @@ export default function CustomerDetail() {
         divisions: customerData.divisions || [],
         logo_url: customerData.logo_url || "",
         brand_primary: customerData.brand_primary || "",
+        allowed_payment_terms: normalizeAllowedTerms(
+          customerData.allowed_payment_terms,
+        ),
+        payment_terms_note: customerData.payment_terms_note || "",
       });
       setLogoFile(null);
       setLogoPreviewUrl(null);
@@ -457,7 +471,13 @@ export default function CustomerDetail() {
     if (!customer) return;
     try {
       setIsSavingCustomer(true);
-      const { divisions, brand_primary, ...rest } = customerEditForm;
+      const {
+        divisions,
+        brand_primary,
+        allowed_payment_terms,
+        payment_terms_note,
+        ...rest
+      } = customerEditForm;
 
       const normalizedColor = brand_primary.trim().toUpperCase();
       if (normalizedColor && !/^#[0-9A-F]{6}$/.test(normalizedColor)) {
@@ -474,6 +494,11 @@ export default function CustomerDetail() {
         divisions: divisions.length > 0 ? divisions : (null as any),
         logo_url: nextLogoUrl,
         brand_primary: normalizedColor || null,
+        // Empty selection = no restriction, stored as NULL so it reads the same as
+        // every untouched customer.
+        allowed_payment_terms:
+          allowed_payment_terms.length > 0 ? allowed_payment_terms : null,
+        payment_terms_note: payment_terms_note.trim() || null,
       });
       setIsCustomerEditOpen(false);
       await fetchCustomerData();
@@ -1024,6 +1049,31 @@ export default function CustomerDetail() {
                   })}
                 </div>
                 {!customer.divisions || customer.divisions.length === 0}
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-neutral-900 dark:text-white flex items-center mb-2">
+                  <Tag className="h-4 w-4 text-neutral-400 mr-2" />
+                  Payment Terms We Offer
+                </h3>
+                {hasPaymentTermRestriction(customer) ? (
+                  <div className="border-l-4 border-amber-500 bg-amber-50 dark:bg-amber-900/20 px-3 py-2">
+                    <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+                      {formatAllowedTerms(customer.allowed_payment_terms)} only
+                    </p>
+                    {customer.payment_terms_note && (
+                      <p className="mt-1 text-xs text-amber-800 dark:text-amber-300 whitespace-pre-wrap">
+                        {customer.payment_terms_note}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    No restriction — NET 30, 60 or 90.
+                    {customer.payment_terms_note
+                      ? ` ${customer.payment_terms_note}`
+                      : ""}
+                  </p>
+                )}
               </div>
               <div className="flex items-start">
                 <Mail className="h-5 w-5 text-brand mt-0.5" />
@@ -2685,6 +2735,68 @@ export default function CustomerDetail() {
                   <option value="active">active</option>
                   <option value="inactive">inactive</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
+                  Payment Terms We Offer
+                </label>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
+                  Leave all unselected if there is no restriction. Anything
+                  selected here is shown to the estimator on the estimate sheet
+                  and when generating a letter proposal.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {PAYMENT_TERM_OPTIONS.map((term) => (
+                    <button
+                      key={term.value}
+                      type="button"
+                      onClick={() => {
+                        setCustomerEditForm((prev) => ({
+                          ...prev,
+                          allowed_payment_terms:
+                            prev.allowed_payment_terms.includes(term.value)
+                              ? prev.allowed_payment_terms.filter(
+                                  (t) => t !== term.value,
+                                )
+                              : [...prev.allowed_payment_terms, term.value],
+                        }));
+                      }}
+                      className={`px-3 py-1 rounded-none text-sm font-medium transition-colors ${
+                        customerEditForm.allowed_payment_terms.includes(
+                          term.value,
+                        )
+                          ? "bg-brand text-white"
+                          : "bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
+                      }`}
+                    >
+                      {term.label}
+                    </button>
+                  ))}
+                </div>
+                {customerEditForm.allowed_payment_terms.length === 0 && (
+                  <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
+                    No restriction — all terms may be offered.
+                  </p>
+                )}
+                <label
+                  htmlFor="payment_terms_note"
+                  className="block text-sm font-medium text-neutral-700 dark:text-white mt-3"
+                >
+                  Reason / note for estimators
+                </label>
+                <textarea
+                  id="payment_terms_note"
+                  rows={2}
+                  value={customerEditForm.payment_terms_note}
+                  onChange={(e) =>
+                    setCustomerEditForm((prev) => ({
+                      ...prev,
+                      payment_terms_note: e.target.value,
+                    }))
+                  }
+                  placeholder="e.g. Paid-when-paid contracts and payment history — NET 90 only."
+                  className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-2">

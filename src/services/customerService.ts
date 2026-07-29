@@ -42,6 +42,10 @@ export interface Customer {
   // Customer-portal branding (shared with the portal via common.customers).
   logo_url?: string | null;
   brand_primary?: string | null;
+  // Payment terms we're willing to offer this customer. Empty/null = no restriction.
+  // See @/lib/paymentTerms.
+  allowed_payment_terms?: string[] | null;
+  payment_terms_note?: string | null;
 }
 
 export const DIVISION_OPTIONS = [

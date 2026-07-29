@@ -64,6 +64,14 @@ import CopyEstimateToOpportunityModal, {
 } from "./CopyEstimateToOpportunityModal";
 import type { EstimatingScopeLibraryItem } from "../../services/estimatingScopeLibraryService";
 import { BRAND_COLOR } from "@/lib/companyConfig";
+import {
+  PAYMENT_TERM_OPTIONS,
+  formatAllowedTerms,
+  hasPaymentTermRestriction,
+  isTermAllowed,
+  normalizeAllowedTerms,
+  type PaymentTermValue,
+} from "@/lib/paymentTerms";
 
 // Styles from the original code
 const styles = {
@@ -246,6 +254,9 @@ interface OpportunityData {
     name: string;
     company_name: string;
     address: string;
+    // Payment terms guardrails — empty/null means no restriction. See @/lib/paymentTerms.
+    allowed_payment_terms?: string[] | null;
+    payment_terms_note?: string | null;
   };
 }
 
@@ -1066,7 +1077,9 @@ export default function EstimateSheet({
           const { data: custData, error: custError } = await supabase
             .schema("common")
             .from("customers")
-            .select("id, name, company_name, address")
+            .select(
+              "id, name, company_name, address, allowed_payment_terms, payment_terms_note",
+            )
             .eq("id", oppData.customer_id)
             .single<OpportunityData["customer"]>();
           if (!custError && custData) {
@@ -1133,6 +1146,8 @@ export default function EstimateSheet({
             name: "",
             company_name: "",
             address: "",
+            allowed_payment_terms: null,
+            payment_terms_note: null,
           },
         };
         setOpportunityData(transformedData);
@@ -4028,11 +4043,37 @@ export default function EstimateSheet({
     };
   }, []);
 
+  // ---- Customer payment-terms guardrails -------------------------------------
+  // Some customers may only be offered certain terms (set on the customer profile).
+  // We pre-select the allowed term for them, flag anything off-limits in the letter
+  // dialogs, and pop a notice before they pick a quote so it can't be missed.
+  const customerTerms = opportunityData?.customer;
+  const paymentTermsRestricted = hasPaymentTermRestriction(customerTerms);
+  const allowedPaymentTerms = normalizeAllowedTerms(
+    customerTerms?.allowed_payment_terms,
+  );
+  const allowedPaymentTermsLabel = formatAllowedTerms(
+    customerTerms?.allowed_payment_terms,
+  );
+  const customerDisplayName =
+    customerTerms?.company_name || customerTerms?.name || "this customer";
+
+  /**
+   * Force the letter onto an allowed term. Called when a letter dialog opens so the
+   * estimator starts from the right default instead of having to remember.
+   */
+  function applyCustomerPaymentTerms() {
+    if (!paymentTermsRestricted) return;
+    setLetterShowAllTerms(false);
+    setLetterPaymentTerm(allowedPaymentTerms[0] as PaymentTermValue);
+  }
+
   // Add this above the return statement in the EstimateSheet component
   function handleGenerateLetterProposal() {
     setLetterIncludeMF(true);
     setLetterIncludeSaturday(showSaturdayHours);
     setLetterIncludeSunday(showSundayHours);
+    applyCustomerPaymentTerms();
     setIsQuoteSelectOpen(true);
   }
 
@@ -4041,12 +4082,110 @@ export default function EstimateSheet({
     setLetterIncludeSaturday(showSaturdayHours);
     setLetterIncludeSunday(showSundayHours);
     setSelectedQuotesForCombined([]);
+    applyCustomerPaymentTerms();
     setIsCombinedQuoteSelectOpen(true);
   }
+
+  const [isPaymentTermsNoticeOpen, setIsPaymentTermsNoticeOpen] =
+    useState(false);
+  const paymentTermsNoticeShownRef = useRef(false);
 
   const [isQuoteSelectOpen, setIsQuoteSelectOpen] = useState(false);
   const [isCombinedQuoteSelectOpen, setIsCombinedQuoteSelectOpen] =
     useState(false);
+
+  // The customer record loads asynchronously, so a letter dialog can open before we
+  // know about a restriction. Re-apply (and pop the notice) as soon as we do, once
+  // per dialog session.
+  useEffect(() => {
+    const letterDialogOpen = isQuoteSelectOpen || isCombinedQuoteSelectOpen;
+    if (!letterDialogOpen) {
+      paymentTermsNoticeShownRef.current = false;
+      return;
+    }
+    if (!paymentTermsRestricted || paymentTermsNoticeShownRef.current) return;
+    paymentTermsNoticeShownRef.current = true;
+    applyCustomerPaymentTerms();
+    setIsPaymentTermsNoticeOpen(true);
+  }, [isQuoteSelectOpen, isCombinedQuoteSelectOpen, paymentTermsRestricted]);
+
+  /**
+   * "Payment Terms in Letter" controls, shared by the single and combined letter
+   * dialogs. When the customer is restricted, off-limits terms are disabled in the
+   * dropdown and "show all terms" is called out in red — the estimator can still
+   * override, but not by accident.
+   */
+  function renderLetterPaymentTermsPicker() {
+    return (
+      <>
+        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200 mb-2">
+          Payment Terms in Letter
+        </p>
+        {paymentTermsRestricted && (
+          <div className="mb-3 border-l-4 border-amber-500 bg-amber-50 dark:bg-amber-900/20 px-3 py-2">
+            <p className="text-sm font-bold text-amber-900 dark:text-amber-200">
+              {customerDisplayName}: {allowedPaymentTermsLabel} only
+            </p>
+            {customerTerms?.payment_terms_note && (
+              <p className="mt-1 text-xs text-amber-800 dark:text-amber-300 whitespace-pre-wrap">
+                {customerTerms.payment_terms_note}
+              </p>
+            )}
+          </div>
+        )}
+        <label className="flex items-center cursor-pointer mb-2">
+          <input
+            type="checkbox"
+            checked={letterShowAllTerms}
+            onChange={(e) => setLetterShowAllTerms(e.target.checked)}
+            className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
+          />
+          <span className="text-sm text-neutral-700 dark:text-neutral-200">
+            Show all payment terms (NET 30, 60, 90)
+          </span>
+        </label>
+        {letterShowAllTerms && paymentTermsRestricted && (
+          <p className="mb-2 text-sm font-semibold text-red-600 dark:text-red-400">
+            This letter will quote terms we do not offer{" "}
+            {customerDisplayName}. Uncheck to send{" "}
+            {allowedPaymentTermsLabel} only.
+          </p>
+        )}
+        {!letterShowAllTerms && (
+          <>
+            <select
+              value={letterPaymentTerm}
+              onChange={(e) =>
+                setLetterPaymentTerm(
+                  e.target.value as "net30" | "net60" | "net90",
+                )
+              }
+              className="w-full px-2 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded text-sm bg-white dark:bg-dark-100 dark:text-white"
+            >
+              {PAYMENT_TERM_OPTIONS.map((term) => {
+                const allowed = isTermAllowed(customerTerms, term.value);
+                return (
+                  <option
+                    key={term.value}
+                    value={term.value}
+                    disabled={!allowed}
+                  >
+                    {term.label}
+                    {allowed ? "" : " — not offered to this customer"}
+                  </option>
+                );
+              })}
+            </select>
+            {!isTermAllowed(customerTerms, letterPaymentTerm) && (
+              <p className="mt-2 text-sm font-semibold text-red-600 dark:text-red-400">
+                We do not offer this term to {customerDisplayName}.
+              </p>
+            )}
+          </>
+        )}
+      </>
+    );
+  }
   const [isLetterProposalOpen, setIsLetterProposalOpen] = useState(false);
   const [isLettersListOpen, setIsLettersListOpen] = useState(false);
   const [letters, setLetters] = useState<
@@ -7268,6 +7407,37 @@ export default function EstimateSheet({
                         {isNewQuote ? "1" : Math.max(quotes.length, 1)}
                       </div>
                     </div>
+
+                    {/* Payment terms this customer may be offered. Only rendered
+                        when they're restricted — otherwise it's just noise. */}
+                    {paymentTermsRestricted && (
+                      <div
+                        style={{
+                          marginBottom: "16px",
+                          padding: "10px 14px",
+                          borderLeft: "6px solid #d97706",
+                          background: "#fef3c7",
+                          color: "#78350f",
+                        }}
+                      >
+                        <div
+                          style={{ fontWeight: 700, fontSize: "14px" }}
+                        >
+                          Payment terms: offer {allowedPaymentTermsLabel} only
+                        </div>
+                        {customerTerms?.payment_terms_note && (
+                          <div
+                            style={{
+                              marginTop: "3px",
+                              fontSize: "12px",
+                              whiteSpace: "pre-wrap",
+                            }}
+                          >
+                            {customerTerms.payment_terms_note}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Improved Header Layout */}
                     <div
@@ -13422,6 +13592,45 @@ export default function EstimateSheet({
       </Dialog>
 
       {/* Quote Selection Modal */}
+      {/* Payment terms notice — fires ahead of quote selection so a restricted
+          customer's terms can't be missed on the way to a letter proposal. */}
+      {isPaymentTermsNoticeOpen && paymentTermsRestricted && (
+        <Dialog
+          open={isPaymentTermsNoticeOpen}
+          onClose={() => setIsPaymentTermsNoticeOpen(false)}
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-60"
+        >
+          <div className="bg-white dark:bg-dark-150 text-neutral-900 dark:text-neutral-100 rounded-none shadow-lg max-w-md w-full border-t-8 border-amber-500">
+            <div className="p-6">
+              <h2 className="text-lg font-bold mb-1 dark:text-white">
+                Payment Terms Notice
+              </h2>
+              <p className="text-sm text-neutral-600 dark:text-neutral-300 mb-4">
+                {customerDisplayName}
+              </p>
+              <p className="text-2xl font-extrabold text-amber-600 dark:text-amber-400 mb-3">
+                Offer {allowedPaymentTermsLabel} only
+              </p>
+              {customerTerms?.payment_terms_note && (
+                <p className="text-sm text-neutral-700 dark:text-neutral-200 whitespace-pre-wrap mb-4">
+                  {customerTerms.payment_terms_note}
+                </p>
+              )}
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
+                The letter has been set to {allowedPaymentTermsLabel}. You can
+                still change it below, but it will be flagged.
+              </p>
+              <Button
+                onClick={() => setIsPaymentTermsNoticeOpen(false)}
+                className="bg-brand text-white w-full"
+              >
+                Got it
+              </Button>
+            </div>
+          </div>
+        </Dialog>
+      )}
+
       {isQuoteSelectOpen && (
         <Dialog
           open={isQuoteSelectOpen}
@@ -13540,35 +13749,7 @@ export default function EstimateSheet({
                 </div>
               </div>
               <div className="mt-3 p-3 bg-neutral-50 dark:bg-dark-100 rounded-none border border-neutral-200 dark:border-neutral-700">
-                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200 mb-2">
-                  Payment Terms in Letter
-                </p>
-                <label className="flex items-center cursor-pointer mb-2">
-                  <input
-                    type="checkbox"
-                    checked={letterShowAllTerms}
-                    onChange={(e) => setLetterShowAllTerms(e.target.checked)}
-                    className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
-                  />
-                  <span className="text-sm text-neutral-700 dark:text-neutral-200">
-                    Show all payment terms (NET 30, 60, 90)
-                  </span>
-                </label>
-                {!letterShowAllTerms && (
-                  <select
-                    value={letterPaymentTerm}
-                    onChange={(e) =>
-                      setLetterPaymentTerm(
-                        e.target.value as "net30" | "net60" | "net90",
-                      )
-                    }
-                    className="w-full px-2 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded text-sm bg-white dark:bg-dark-100 dark:text-white"
-                  >
-                    <option value="net30">NET 30</option>
-                    <option value="net60">NET 60</option>
-                    <option value="net90">NET 90</option>
-                  </select>
-                )}
+                {renderLetterPaymentTermsPicker()}
               </div>
             </div>
             <ul>
@@ -13756,35 +13937,7 @@ export default function EstimateSheet({
                   </div>
                 </div>
                 <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-600">
-                  <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                    Payment Terms in Letter
-                  </p>
-                  <label className="flex items-center cursor-pointer mb-2">
-                    <input
-                      type="checkbox"
-                      checked={letterShowAllTerms}
-                      onChange={(e) => setLetterShowAllTerms(e.target.checked)}
-                      className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
-                    />
-                    <span className="text-sm text-neutral-700 dark:text-neutral-300">
-                      Show all payment terms (NET 30, 60, 90)
-                    </span>
-                  </label>
-                  {!letterShowAllTerms && (
-                    <select
-                      value={letterPaymentTerm}
-                      onChange={(e) =>
-                        setLetterPaymentTerm(
-                          e.target.value as "net30" | "net60" | "net90",
-                        )
-                      }
-                      className="w-full px-2 py-1.5 border border-neutral-300 rounded text-sm bg-white dark:bg-dark-100 dark:text-white dark:border-neutral-600"
-                    >
-                      <option value="net30">NET 30</option>
-                      <option value="net60">NET 60</option>
-                      <option value="net90">NET 90</option>
-                    </select>
-                  )}
+                  {renderLetterPaymentTermsPicker()}
                 </div>
               </div>
             </div>

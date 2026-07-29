@@ -4768,7 +4768,10 @@ CREATE TABLE common.customers (
     divisions text[],
     logo_url text,
     brand_primary text,
-    CONSTRAINT customers_brand_primary_hex CHECK (((brand_primary IS NULL) OR (brand_primary ~* '^#[0-9a-f]{6}$'::text)))
+    allowed_payment_terms text[],
+    payment_terms_note text,
+    CONSTRAINT customers_brand_primary_hex CHECK (((brand_primary IS NULL) OR (brand_primary ~* '^#[0-9a-f]{6}$'::text))),
+    CONSTRAINT customers_allowed_payment_terms_values CHECK (((allowed_payment_terms IS NULL) OR (allowed_payment_terms <@ ARRAY['net30'::text, 'net60'::text, 'net90'::text])))
 );
 
 

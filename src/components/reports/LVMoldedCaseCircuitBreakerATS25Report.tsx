@@ -6416,6 +6416,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                               }));
                             }}
                             readOnly={!isEditing}
+                            placeholder={isEditing ? undefined : ""}
                             className="w-full"
                           />
                         </td>
@@ -6459,7 +6460,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                             }
                             readOnly={!isEditing}
                             className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
-                            placeholder="MM/DD/YYYY"
+                            placeholder={isEditing ? "MM/DD/YYYY" : ""}
                           />
                         </td>
                       </tr>

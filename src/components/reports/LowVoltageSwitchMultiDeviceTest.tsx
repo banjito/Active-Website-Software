@@ -288,6 +288,7 @@ const visualMechanicalOptions = [
 interface FormData {
   // Job info
   customer: string;
+  address: string;
   jobNumber: string;
   technicians: string;
   date: string;
@@ -415,6 +416,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
 
   const [formData, setFormData] = useState<FormData>({
     customer: "",
+    address: "",
     jobNumber: "",
     technicians: "",
     date: new Date().toISOString().split("T")[0],
@@ -739,10 +741,12 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             date: prev.date || new Date().toISOString().split("T")[0],
             // Set current user if not already set
             user: prev.user || user?.email || "",
-            // Prefer job site_address over customer address
-            address: maskCustomerAddress(
-              (jobData as any).site_address || customerData.address || "",
-            ),
+            // Keep a saved report address; otherwise prefer job site_address
+            address:
+              prev.address ||
+              maskCustomerAddress(
+                (jobData as any).site_address || customerData.address || "",
+              ),
           }));
         }
       }
@@ -770,6 +774,9 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
           setFormData((prev) => ({
             ...prev,
             customer: maskCustomerName(d.reportInfo?.customer ?? prev.customer),
+            address: maskCustomerAddress(
+              d.reportInfo?.address ?? prev.address,
+            ),
             jobNumber: d.reportInfo?.jobNumber ?? prev.jobNumber,
             technicians: d.reportInfo?.technicians ?? prev.technicians,
             date: d.reportInfo?.date ?? prev.date,
@@ -936,7 +943,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
     const normalized: any = {
       reportInfo: {
         customer: maskCustomerName(formData.customer),
-        address: maskCustomerAddress((formData as any).address),
+        address: maskCustomerAddress(formData.address),
         userName: formData.user,
         date: formData.date,
         identifier: formData.identifier,
@@ -1145,6 +1152,7 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
         <JobInfoPrintTable
           data={{
             customer: maskCustomerName(formData.customer),
+            address: maskCustomerAddress(formData.address),
             jobNumber: formData.jobNumber,
             technicians: formData.technicians,
             date: formData.date,
@@ -2505,6 +2513,15 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
                     className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                     value={maskCustomerName(formData.customer)}
                     onChange={(e) => setField("customer", e.target.value)}
+                    readOnly={!isEditing}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Address:</label>
+                  <input
+                    className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    value={maskCustomerAddress(formData.address)}
+                    onChange={(e) => setField("address", e.target.value)}
                     readOnly={!isEditing}
                   />
                 </div>

@@ -1277,62 +1277,65 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
         Visual and Mechanical Inspection
       </h2>
 
-      {/* Screen view — dropdowns */}
-      <table className="w-full border-collapse visual-mechanical-table print:hidden">
-        <colgroup>
-          <col style={{ width: "10%" }} />
-          <col style={{ width: "75%" }} />
-          <col style={{ width: "15%" }} />
-        </colgroup>
-        <thead>
-          <tr>
-            <th className="border border-neutral-300 dark:border-neutral-700 p-2 text-left">
-              NETA Section
-            </th>
-            <th className="border border-neutral-300 dark:border-neutral-700 p-2 text-left">
-              Description
-            </th>
-            <th className="border border-neutral-300 dark:border-neutral-700 p-2 text-center">
-              Results
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {form.visual.map((row, idx) => (
-            <tr key={row.neta}>
-              <td className="border border-neutral-300 dark:border-neutral-700 p-2 align-top">
-                {row.neta}
-              </td>
-              <td className="border border-neutral-300 dark:border-neutral-700 p-2 align-top">
-                {row.description}
-              </td>
-              <td className="border border-neutral-300 dark:border-neutral-700 p-2 align-top">
-                <select
-                  className="form-select"
-                  value={row.result}
-                  onChange={(e) => {
-                    if (!isEditMode) return;
-                    const v = e.target.value;
-                    setForm((prev) => ({
-                      ...prev,
-                      visual: prev.visual.map((r, i) =>
-                        i === idx ? { ...r, result: v } : r,
-                      ),
-                    }));
-                  }}
-                  disabled={!isEditMode}
-                >
-                  {visualOptions.map((opt) => (
-                    <option key={opt} value={opt === "Select One" ? "" : opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </td>
+      {/* Screen view — dropdowns. print:hidden must live on the wrapper div: the
+          PDF/force-print CSS forces every table inside #report-container visible. */}
+      <div className="print:hidden">
+        <table className="w-full border-collapse visual-mechanical-table">
+          <colgroup>
+            <col style={{ width: "10%" }} />
+            <col style={{ width: "75%" }} />
+            <col style={{ width: "15%" }} />
+          </colgroup>
+          <thead>
+            <tr>
+              <th className="border border-neutral-300 dark:border-neutral-700 p-2 text-left">
+                NETA Section
+              </th>
+              <th className="border border-neutral-300 dark:border-neutral-700 p-2 text-left">
+                Description
+              </th>
+              <th className="border border-neutral-300 dark:border-neutral-700 p-2 text-center">
+                Results
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {form.visual.map((row, idx) => (
+              <tr key={row.neta}>
+                <td className="border border-neutral-300 dark:border-neutral-700 p-2 align-top">
+                  {row.neta}
+                </td>
+                <td className="border border-neutral-300 dark:border-neutral-700 p-2 align-top">
+                  {row.description}
+                </td>
+                <td className="border border-neutral-300 dark:border-neutral-700 p-2 align-top">
+                  <select
+                    className="form-select"
+                    value={row.result}
+                    onChange={(e) => {
+                      if (!isEditMode) return;
+                      const v = e.target.value;
+                      setForm((prev) => ({
+                        ...prev,
+                        visual: prev.visual.map((r, i) =>
+                          i === idx ? { ...r, result: v } : r,
+                        ),
+                      }));
+                    }}
+                    disabled={!isEditMode}
+                  >
+                    {visualOptions.map((opt) => (
+                      <option key={opt} value={opt === "Select One" ? "" : opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Print view — plain text so values actually render */}
       <table

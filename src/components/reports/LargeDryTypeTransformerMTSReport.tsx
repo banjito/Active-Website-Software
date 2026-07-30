@@ -3037,6 +3037,58 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
 
 // Add print styles
 if (typeof document !== "undefined") {
+  // Turns Ratio table has 10 columns; without pinned widths it exceeds the
+  // printable width (the shared wrapper CSS falls back to table-layout: auto
+  // in the PDF/preview path). Applied to both the @media print and the
+  // .force-print (preview/PDF) contexts.
+  const turnsRatioFitCss = (scope: string) => `
+      ${scope} table.turns-ratio-table {
+        table-layout: fixed !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: 7px !important;
+      }
+      ${scope} table.turns-ratio-table th,
+      ${scope} table.turns-ratio-table td {
+        padding: 1px 2px !important;
+        font-size: 7px !important;
+        line-height: 1.1 !important;
+        text-align: center !important;
+        white-space: normal !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
+        overflow: hidden !important;
+      }
+      ${scope} table.turns-ratio-table input {
+        font-size: 7px !important;
+        padding: 0 1px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        text-align: center !important;
+      }
+      ${scope} table.turns-ratio-table th:nth-child(1),
+      ${scope} table.turns-ratio-table td:nth-child(1) { width: 6% !important; }
+      ${scope} table.turns-ratio-table th:nth-child(2),
+      ${scope} table.turns-ratio-table td:nth-child(2) { width: 12% !important; }
+      ${scope} table.turns-ratio-table th:nth-child(3),
+      ${scope} table.turns-ratio-table td:nth-child(3) { width: 12% !important; }
+      ${scope} table.turns-ratio-table th:nth-child(4),
+      ${scope} table.turns-ratio-table td:nth-child(4),
+      ${scope} table.turns-ratio-table th:nth-child(6),
+      ${scope} table.turns-ratio-table td:nth-child(6),
+      ${scope} table.turns-ratio-table th:nth-child(8),
+      ${scope} table.turns-ratio-table td:nth-child(8) { width: 11% !important; }
+      ${scope} table.turns-ratio-table th:nth-child(5),
+      ${scope} table.turns-ratio-table td:nth-child(5),
+      ${scope} table.turns-ratio-table th:nth-child(7),
+      ${scope} table.turns-ratio-table td:nth-child(7),
+      ${scope} table.turns-ratio-table th:nth-child(9),
+      ${scope} table.turns-ratio-table td:nth-child(9) { width: 9% !important; }
+      ${scope} table.turns-ratio-table th:nth-child(10),
+      ${scope} table.turns-ratio-table td:nth-child(10) { width: 10% !important; }
+  `;
+
   const style = document.createElement("style");
   style.textContent = `
     /* Hide navigation bar and scrollbar */
@@ -3133,16 +3185,12 @@ if (typeof document !== "undefined") {
       .print\\:hidden { display: none !important; }
       .hidden.print\\:block { display: block !important; }
 
-      /* Turns Ratio table: make Tap column very small in print, others auto-scale */
-      table.turns-ratio-table { table-layout: fixed !important; width: 100% !important; }
-      table.turns-ratio-table th:nth-child(1),
-      table.turns-ratio-table td:nth-child(1) {
-        width: 4% !important;
-        white-space: nowrap !important;
-        padding: 2px !important;
-        text-align: center !important;
-      }
+      /* Turns Ratio table: pin column widths so all 10 columns fit the page */
+${turnsRatioFitCss("#report-container")}
     }
+
+    /* Same fit rules for the preview/PDF (force-print) rendering path */
+${turnsRatioFitCss(".force-print #report-container")}
   `;
   document.head.appendChild(style);
 }

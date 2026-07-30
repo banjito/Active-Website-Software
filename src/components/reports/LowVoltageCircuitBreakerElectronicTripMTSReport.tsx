@@ -3426,8 +3426,15 @@ const LowVoltageCircuitBreakerElectronicTripMTSReport: React.FC = () => {
                 </div>
               </div>
 
-              {/* Tolerance Input Section - Screen Only (Hidden in Print) */}
-              <div className="mb-4 p-4 bg-neutral-50 dark:bg-dark-200 rounded-none border border-neutral-300 dark:border-neutral-600 no-print-tolerance-section print:hidden">
+              {/* Tolerance Input Section - Screen Only (Hidden in Print).
+                  Gated on isPrintMode, not just print:hidden: the PDF export
+                  (Browserless) and the approval preview both render ?print=true
+                  with SCREEN media, so @media-print rules never fire there. */}
+              <div
+                className={`mb-4 p-4 bg-neutral-50 dark:bg-dark-200 rounded-none border border-neutral-300 dark:border-neutral-600 no-print-tolerance-section print:hidden ${
+                  isPrintMode ? "hidden" : ""
+                }`}
+              >
                 <h3 className="text-md font-semibold mb-3 text-neutral-900 dark:text-white">
                   Tolerance Settings
                 </h3>
@@ -5362,12 +5369,11 @@ if (typeof document !== "undefined") {
     }
 
     /* Tolerance input section is screen-only (values are already shown in the
-       results table). Force visible on screen; it is hidden in print below. */
-    @media screen {
-      .no-print-tolerance-section {
-        display: block !important;
-      }
-    }
+       results table). Visibility is controlled by the component (isPrintMode +
+       print:hidden) -- no force-visible rule here, or it would win over the
+       Tailwind hidden class in the ?print=true PDF export, which renders in
+       SCREEN media. It is also hidden via @media print below for the browser
+       Print button. */
 
     /* Ensure tolerance inputs display full numbers without truncation */
     .no-print-tolerance-section input[type="text"] {

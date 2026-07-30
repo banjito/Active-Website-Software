@@ -80,6 +80,11 @@ import {
 } from "../ui/Dialog";
 import { toast } from "@/components/ui/toast";
 import { ReportApprovalWorkflow } from "../reports/ReportApprovalWorkflow";
+import { EvaluationResultBadge } from "../reports/EvaluationResultBadge";
+import {
+  extractEvaluationResult,
+  type EvaluationResult,
+} from "../../lib/reportEvaluations";
 import { getAssetName } from "../reports/reportMappings";
 import JobDeliverables from "./JobDeliverables";
 import AfterActionReports from "./AfterActionReports";
@@ -474,6 +479,11 @@ export default function JobDetail() {
   const [openReportFlagCount, setOpenReportFlagCount] = useState(0);
   const [reportTimestampsByAsset, setReportTimestampsByAsset] = useState<
     Record<string, ReportAuditInfo>
+  >({});
+  // PASS / FAIL / LIMITED SERVICE per report asset, so the list shows the
+  // equipment evaluation without having to open each report.
+  const [assetEvaluations, setAssetEvaluations] = useState<
+    Record<string, EvaluationResult>
   >({});
   const [searchQuery, setSearchQuery] = useState("");
   // Date filter/sort for the linked reports list
@@ -4757,6 +4767,7 @@ export default function JobDetail() {
       if (!jobAssets || jobAssets.length === 0) return;
       const nameUpdates: Record<string, string> = {};
       const substationUpdates: Record<string, string> = {};
+      const evaluationUpdates: Record<string, EvaluationResult> = {};
 
       // First, load substations from database for PDF reports and other assets that have it stored
       jobAssets.forEach((asset) => {
@@ -4997,6 +5008,12 @@ export default function JobDetail() {
           }
           if (!data) return;
 
+          // Equipment evaluation (PASS / FAIL / LIMITED SERVICE) for the list view
+          const evaluation = extractEvaluationResult(data);
+          if (evaluation) {
+            evaluationUpdates[asset.id] = evaluation;
+          }
+
           // Heuristics to find current identifier
           // Check direct field first (for GFI Trip Test and similar reports that store identifier directly)
           // Also check variations like breakerIdentifier, eqptIdentifier used by different reports
@@ -5115,6 +5132,7 @@ export default function JobDetail() {
       if (Object.keys(substationUpdates).length > 0) {
         setAssetSubstations((prev) => ({ ...prev, ...substationUpdates }));
       }
+      setAssetEvaluations(evaluationUpdates);
     })();
   }, [jobAssets]);
 
@@ -11111,6 +11129,7 @@ export default function JobDetail() {
                                         <TableHead>Asset Name</TableHead>
                                         <TableHead>Urgency</TableHead>
                                         <TableHead>Status</TableHead>
+                                        <TableHead>Result</TableHead>
                                         <TableHead>Date Added</TableHead>
                                         <TableHead>Submitted</TableHead>
                                         <TableHead>Approved/Issued</TableHead>
@@ -11375,6 +11394,18 @@ export default function JobDetail() {
                                                   </option>
                                                 </select>
                                               )}
+                                            </TableCell>
+                                            <TableCell>
+                                              <EvaluationResultBadge
+                                                result={
+                                                  assetEvaluations[asset.id]
+                                                }
+                                                fallback={
+                                                  <span className="text-neutral-400">
+                                                    -
+                                                  </span>
+                                                }
+                                              />
                                             </TableCell>
                                             <TableCell>
                                               {format(

@@ -52,6 +52,11 @@ import "jspdf-autotable";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { supabase } from "@/lib/supabase";
 import { canApproveReports, canExportReports } from "@/lib/roles";
+import {
+  fetchEvaluationResults,
+  type EvaluationResult,
+} from "@/lib/reportEvaluations";
+import { EvaluationResultBadge } from "./EvaluationResultBadge";
 
 interface ReportApprovalWorkflowProps {
   division?: string;
@@ -144,6 +149,12 @@ export function ReportApprovalWorkflow({
   >(null);
   const [flagAlertCounts, setFlagAlertCounts] = useState({ total: 0, sent: 0 });
 
+  // Equipment evaluation (PASS / FAIL / LIMITED SERVICE) per report, so
+  // reviewers can spot problem reports before opening them.
+  const [evaluationsByReport, setEvaluationsByReport] = useState<
+    Record<string, EvaluationResult>
+  >({});
+
   // Role-based access control
   const [userRole, setUserRole] = useState<string>("");
   const [userPermissions, setUserPermissions] = useState<{
@@ -165,6 +176,29 @@ export function ReportApprovalWorkflow({
       job_id: jobId,
     }));
   }, [jobId]);
+
+  // Resolve PASS / FAIL / LIMITED SERVICE for the reports currently listed.
+  // Only reports whose evaluation isn't known yet are looked up, so paging in
+  // more reports doesn't re-query the ones already resolved.
+  useEffect(() => {
+    let cancelled = false;
+    const pending = reports
+      .filter((r) => !evaluationsByReport[r.id])
+      .map((r) => ({ id: r.id, file_url: r.report_data?.file_url }));
+    if (pending.length === 0) return;
+    (async () => {
+      try {
+        const results = await fetchEvaluationResults(pending);
+        if (cancelled || Object.keys(results).length === 0) return;
+        setEvaluationsByReport((prev) => ({ ...prev, ...results }));
+      } catch (e) {
+        console.warn("Failed to load report evaluations:", e);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [reports]);
 
   // Load data on component mount and when filters change
   useEffect(() => {
@@ -2786,6 +2820,9 @@ export function ReportApprovalWorkflow({
                                       ) : null;
                                     })()}
                                     {getStatusBadge(report.status)}
+                                    <EvaluationResultBadge
+                                      result={evaluationsByReport[report.id]}
+                                    />
                                     {renderFlaggedBadge(report.id)}
                                   </div>
                                   <div className="mt-1 text-xs text-neutral-500 flex items-center gap-4 flex-wrap">
@@ -2997,6 +3034,9 @@ export function ReportApprovalWorkflow({
                               ) : null;
                             })()}
                             {getStatusBadge(report.status)}
+                            <EvaluationResultBadge
+                              result={evaluationsByReport[report.id]}
+                            />
                             {renderFlaggedBadge(report.id)}
                           </div>
                           <div className="mt-1 text-xs text-neutral-500 flex items-center gap-4 flex-wrap">

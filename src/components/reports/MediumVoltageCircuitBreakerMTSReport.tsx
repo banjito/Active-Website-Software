@@ -1772,6 +1772,11 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
                   "w-32",
                 )}
               </div>
+              {/* Print-only: selects/labels are hidden in print, so echo the value as text */}
+              <div className="hidden print:block mb-2 text-sm text-black">
+                <span className="font-bold">Test Voltage:</span>{" "}
+                {formData.insulationResistanceMeasured.testVoltage || ""}
+              </div>
               <table className="w-full table-fixed border-collapse border border-neutral-300 dark:border-neutral-600">
                 <colgroup>
                   <col style={{ width: "16%" }} />
@@ -2112,6 +2117,14 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Print-only: labels/inputs outside tables are hidden in print */}
+                <div className="hidden print:block mb-1 text-sm text-black">
+                  <span className="font-bold">Test Voltage:</span>{" "}
+                  {formData.dielectricWithstand.closed.testVoltage || ""}
+                  <span className="font-bold ml-6">Test Duration:</span>{" "}
+                  {formData.dielectricWithstand.closed.testDuration || ""}
+                </div>
+
                 {/* Measurement Table */}
                 <div className="lg:col-span-3">
                   <table className="w-full table-fixed border-collapse border border-neutral-300 dark:border-neutral-600">
@@ -2216,6 +2229,14 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
                       "w-full",
                     )}
                   </div>
+                </div>
+
+                {/* Print-only: labels/inputs outside tables are hidden in print */}
+                <div className="hidden print:block mb-1 text-sm text-black">
+                  <span className="font-bold">Test Voltage:</span>{" "}
+                  {formData.dielectricWithstand.open.testVoltage || ""}
+                  <span className="font-bold ml-6">Test Duration:</span>{" "}
+                  {formData.dielectricWithstand.open.testDuration || ""}
                 </div>
 
                 {/* Measurement Table */}

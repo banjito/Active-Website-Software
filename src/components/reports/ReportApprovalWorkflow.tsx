@@ -57,6 +57,13 @@ import {
   type EvaluationResult,
 } from "@/lib/reportEvaluations";
 import { EvaluationResultBadge } from "./EvaluationResultBadge";
+import { splitAssetName } from "./reportMappings";
+
+// A report's title is the stored asset name, "<report type> - <asset identifier>".
+// The list shows the identifier as the headline and the report type underneath,
+// so several reports on the same asset are easy to tell apart.
+const getReportNameParts = (report: TechnicalReport) =>
+  splitAssetName(report.title || "", report.report_type);
 
 interface ReportApprovalWorkflowProps {
   division?: string;
@@ -273,9 +280,22 @@ export function ReportApprovalWorkflow({
         return mult * (ta - tb);
       }
       if (sort.by === "alphabetical") {
-        const sa = (a.title || "").toLowerCase();
-        const sb = (b.title || "").toLowerCase();
-        return mult * sa.localeCompare(sb, undefined, { sensitivity: "base" });
+        // Sort by the identifier shown in the list, then by report type, so all
+        // the reports for one asset stay together.
+        const pa = getReportNameParts(a);
+        const pb = getReportNameParts(b);
+        const byIdentifier = (pa.assetIdentifier || "\uffff").localeCompare(
+          pb.assetIdentifier || "\uffff",
+          undefined,
+          { sensitivity: "base" },
+        );
+        if (byIdentifier !== 0) return mult * byIdentifier;
+        return (
+          mult *
+          pa.reportType.localeCompare(pb.reportType, undefined, {
+            sensitivity: "base",
+          })
+        );
       }
       // sort.by === 'substation'
       const sa = getSub(a) || "\uffff";
@@ -2664,8 +2684,12 @@ export function ReportApprovalWorkflow({
                   <option value="submission_date_desc">
                     Submission date (newest first)
                   </option>
-                  <option value="alphabetical_asc">Name (A–Z)</option>
-                  <option value="alphabetical_desc">Name (Z–A)</option>
+                  <option value="alphabetical_asc">
+                    Asset Identifier (A–Z)
+                  </option>
+                  <option value="alphabetical_desc">
+                    Asset Identifier (Z–A)
+                  </option>
                   <option value="substation_asc">Substation (A–Z)</option>
                   <option value="substation_desc">Substation (Z–A)</option>
                 </select>
@@ -2803,7 +2827,9 @@ export function ReportApprovalWorkflow({
                                 <div className="flex-1 min-w-0 pr-3">
                                   <div className="flex items-center gap-3">
                                     <h4 className="text-sm font-semibold truncate">
-                                      {report.title}
+                                      {getReportNameParts(report)
+                                        .assetIdentifier ||
+                                        getReportNameParts(report).reportType}
                                     </h4>
                                     {/* Urgency indicator */}
                                     {(() => {
@@ -2826,6 +2852,12 @@ export function ReportApprovalWorkflow({
                                     {renderFlaggedBadge(report.id)}
                                   </div>
                                   <div className="mt-1 text-xs text-neutral-500 flex items-center gap-4 flex-wrap">
+                                    {getReportNameParts(report)
+                                      .assetIdentifier && (
+                                      <span className="font-medium">
+                                        {getReportNameParts(report).reportType}
+                                      </span>
+                                    )}
                                     <span>
                                       Submitted:{" "}
                                       {formatDate(report.submitted_at)}
@@ -3017,7 +3049,8 @@ export function ReportApprovalWorkflow({
                         <div className="flex-1 min-w-0 pr-3">
                           <div className="flex items-center gap-3">
                             <h4 className="text-sm font-semibold truncate">
-                              {report.title}
+                              {getReportNameParts(report).assetIdentifier ||
+                                getReportNameParts(report).reportType}
                             </h4>
                             {/* Urgency indicator */}
                             {(() => {
@@ -3040,6 +3073,11 @@ export function ReportApprovalWorkflow({
                             {renderFlaggedBadge(report.id)}
                           </div>
                           <div className="mt-1 text-xs text-neutral-500 flex items-center gap-4 flex-wrap">
+                            {getReportNameParts(report).assetIdentifier && (
+                              <span className="font-medium">
+                                {getReportNameParts(report).reportType}
+                              </span>
+                            )}
                             <span>
                               Submitted: {formatDate(report.submitted_at)}
                             </span>

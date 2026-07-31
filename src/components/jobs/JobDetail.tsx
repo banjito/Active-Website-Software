@@ -85,7 +85,12 @@ import {
   extractEvaluationResult,
   type EvaluationResult,
 } from "../../lib/reportEvaluations";
-import { getAssetName } from "../reports/reportMappings";
+import {
+  getAssetName,
+  getReportSlugFromFileUrl,
+  splitAssetName,
+  type AssetNameParts,
+} from "../reports/reportMappings";
 import JobDeliverables from "./JobDeliverables";
 import AfterActionReports from "./AfterActionReports";
 import { pdfExportService } from "../../services/pdfExportService";
@@ -493,7 +498,7 @@ export default function JobDetail() {
   const [assetDateStart, setAssetDateStart] = useState("");
   const [assetDateEnd, setAssetDateEnd] = useState("");
   const [assetSortField, setAssetSortField] = useState<
-    "name" | "created" | "submitted" | "approved" | null
+    "name" | "identifier" | "created" | "submitted" | "approved" | null
   >(null);
   const [assetSortDirection, setAssetSortDirection] = useState<"asc" | "desc">(
     "desc",
@@ -2662,6 +2667,37 @@ export default function JobDetail() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isAssetSortMenuOpen]);
 
+  // Asset names are stored as "<report type> - <asset identifier>". Every
+  // project view shows the two halves separately so that several reports on the
+  // same piece of equipment read as one asset instead of several.
+  const getAssetParts = React.useCallback(
+    (asset: Asset): AssetNameParts =>
+      splitAssetName(
+        dynamicAssetNames[asset.id] || asset.name || "",
+        getReportSlugFromFileUrl(asset.file_url),
+      ),
+    [dynamicAssetNames],
+  );
+
+  // Sort by identifier first so all the reports for one asset sit together,
+  // then by report type. Assets without an identifier fall to the bottom.
+  const compareAssetParts = React.useCallback(
+    (a: Asset, b: Asset): number => {
+      const partsA = getAssetParts(a);
+      const partsB = getAssetParts(b);
+      if (!partsA.assetIdentifier !== !partsB.assetIdentifier) {
+        return partsA.assetIdentifier ? -1 : 1;
+      }
+      const byIdentifier = compareAlphanumericLabels(
+        partsA.assetIdentifier,
+        partsB.assetIdentifier,
+      );
+      if (byIdentifier !== 0) return byIdentifier;
+      return compareAlphanumericLabels(partsA.reportType, partsB.reportType);
+    },
+    [getAssetParts],
+  );
+
   useEffect(() => {
     // Filter job assets when search query or status filter changes
     let filtered = jobAssets;
@@ -2740,9 +2776,14 @@ export default function JobDetail() {
       const direction = assetSortDirection === "asc" ? 1 : -1;
       filtered = [...filtered].sort((a, b) => {
         if (assetSortField === "name") {
-          const aName = (dynamicAssetNames[a.id] || a.name || "").toLowerCase();
-          const bName = (dynamicAssetNames[b.id] || b.name || "").toLowerCase();
-          return aName.localeCompare(bName) * direction;
+          const aType = getAssetParts(a).reportType.toLowerCase();
+          const bType = getAssetParts(b).reportType.toLowerCase();
+          const byType = aType.localeCompare(bType);
+          if (byType !== 0) return byType * direction;
+          return compareAssetParts(a, b) * direction;
+        }
+        if (assetSortField === "identifier") {
+          return compareAssetParts(a, b) * direction;
         }
         // Missing dates always sort to the bottom
         const aRaw = getAssetDate(a, assetSortField);
@@ -2770,6 +2811,8 @@ export default function JobDetail() {
     assetSortField,
     assetSortDirection,
     reportTimestampsByAsset,
+    getAssetParts,
+    compareAssetParts,
   ]);
 
   function clearAssetDateFilter() {
@@ -2864,11 +2907,12 @@ export default function JobDetail() {
       })
       .map((asset) => {
         const audit = reportTimestampsByAsset[asset.id] || {};
-        const displayName = dynamicAssetNames[asset.id] || asset.name;
+        const { reportType, assetIdentifier } = getAssetParts(asset);
 
         return {
           asset,
-          displayName,
+          reportType,
+          assetIdentifier,
           status: asset.status || "not started",
           substation: assetSubstations[asset.id] || asset.substation || "",
           submittedAt: audit.submitted_at || asset.submitted_at || null,
@@ -2892,9 +2936,15 @@ export default function JobDetail() {
           sensitivity: "base",
         });
         if (subCompare !== 0) return subCompare;
-        return compareAlphanumericLabels(a.displayName, b.displayName);
+        return compareAssetParts(a.asset, b.asset);
       });
-  }, [jobAssets, dynamicAssetNames, assetSubstations, reportTimestampsByAsset]);
+  }, [
+    jobAssets,
+    assetSubstations,
+    reportTimestampsByAsset,
+    getAssetParts,
+    compareAssetParts,
+  ]);
 
   const formatAuditDate = (dateStr?: string | null) => {
     if (!dateStr) return "-";
@@ -5014,43 +5064,42 @@ export default function JobDetail() {
             evaluationUpdates[asset.id] = evaluation;
           }
 
-          // Heuristics to find current identifier
-          // Check direct field first (for GFI Trip Test and similar reports that store identifier directly)
-          // Also check variations like breakerIdentifier, eqptIdentifier used by different reports
+          // Heuristics to find the current asset identifier. Reports store it
+          // under a handful of different keys, and some carry more than one:
+          // a breaker report also records the panelboard/switchboard it lives
+          // in as the equipment identifier, so the breaker identifier — the
+          // value that actually makes the asset unique — is checked first.
+          const pickIdentifier = (source: any, keys: string[]): string => {
+            if (!source || typeof source !== "object") return "";
+            for (const key of keys) {
+              const value = source[key];
+              if (typeof value === "string" && value.trim()) {
+                return value.trim();
+              }
+            }
+            return "";
+          };
+          const columnKeys = [
+            "breakerIdentifier",
+            "identifier",
+            "eqpt_location",
+            "eqptIdentifier",
+          ];
+          const formKeys = [
+            "breakerIdentifier",
+            "identifier",
+            "eqptLocation",
+            "location",
+            "equipment_location",
+            "eqptIdentifier",
+          ];
           const identifier =
-            data.identifier ||
-            data.eqpt_location ||
-            data.breakerIdentifier ||
-            data.eqptIdentifier ||
-            (data.report_info &&
-              (data.report_info.identifier ||
-                data.report_info.eqptLocation ||
-                data.report_info.location ||
-                data.report_info.breakerIdentifier ||
-                data.report_info.eqptIdentifier)) ||
-            (data.report_data &&
-              (data.report_data.identifier ||
-                data.report_data.eqptLocation ||
-                data.report_data.location ||
-                data.report_data.breakerIdentifier ||
-                data.report_data.eqptIdentifier ||
-                (data.report_data.reportInfo &&
-                  (data.report_data.reportInfo.identifier ||
-                    data.report_data.reportInfo.eqptLocation ||
-                    data.report_data.reportInfo.location ||
-                    data.report_data.reportInfo.breakerIdentifier)))) ||
-            (data.data &&
-              (data.data.identifier ||
-                data.data.eqptLocation ||
-                data.data.location ||
-                data.data.equipment_location ||
-                data.data.breakerIdentifier ||
-                data.data.eqptIdentifier ||
-                (data.data.reportInfo &&
-                  (data.data.reportInfo.identifier ||
-                    data.data.reportInfo.eqptLocation ||
-                    data.data.reportInfo.location ||
-                    data.data.reportInfo.breakerIdentifier)))) ||
+            pickIdentifier(data, columnKeys) ||
+            pickIdentifier(data.report_info, formKeys) ||
+            pickIdentifier(data.report_data, formKeys) ||
+            pickIdentifier(data.report_data?.reportInfo, formKeys) ||
+            pickIdentifier(data.data, formKeys) ||
+            pickIdentifier(data.data?.reportInfo, formKeys) ||
             "";
 
           if (identifier && typeof identifier === "string") {
@@ -10516,7 +10565,11 @@ export default function JobDetail() {
                                   </div>
                                   {renderAssetToggleOptions(
                                     [
-                                      { value: "name", label: "Name" },
+                                      { value: "name", label: "Report Type" },
+                                      {
+                                        value: "identifier",
+                                        label: "Asset Identifier",
+                                      },
                                       { value: "created", label: "Date Created" },
                                       {
                                         value: "submitted",
@@ -11126,7 +11179,8 @@ export default function JobDetail() {
                                   <Table>
                                     <TableHeader>
                                       <TableRow>
-                                        <TableHead>Asset Name</TableHead>
+                                        <TableHead>Report Type</TableHead>
+                                        <TableHead>Asset Identifier</TableHead>
                                         <TableHead>Urgency</TableHead>
                                         <TableHead>Status</TableHead>
                                         <TableHead>Result</TableHead>
@@ -11142,19 +11196,17 @@ export default function JobDetail() {
                                     <TableBody>
                                       {groups[folderKey]
                                         .slice()
-                                        .sort((a, b) => {
-                                          const nameA =
-                                            dynamicAssetNames[a.id] || a.name;
-                                          const nameB =
-                                            dynamicAssetNames[b.id] || b.name;
-                                          return compareAlphanumericLabels(
-                                            nameA,
-                                            nameB,
-                                          );
-                                        })
+                                        // Keep the order chosen in the sort menu
+                                        // when there is one; otherwise group the
+                                        // reports of each asset together.
+                                        .sort((a, b) =>
+                                          assetSortField
+                                            ? 0
+                                            : compareAssetParts(a, b),
+                                        )
                                         .map((asset) => (
                                           <TableRow key={asset.id}>
-                                            <TableCell className="font-medium">
+                                            <TableCell>
                                               <input
                                                 type="checkbox"
                                                 className="mr-2"
@@ -11193,11 +11245,16 @@ export default function JobDetail() {
                                                     }
                                                   />
                                                 )}
-                                              {dynamicAssetNames[asset.id] ||
-                                                (asset.id ===
-                                                "low-voltage-cable-test-12sets"
-                                                  ? "3-Low Voltage Cable Test ATS"
-                                                  : asset.name)}
+                                              {getAssetParts(asset).reportType ||
+                                                "Untitled Report"}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                              {getAssetParts(asset)
+                                                .assetIdentifier || (
+                                                <span className="text-neutral-400 dark:text-neutral-500">
+                                                  —
+                                                </span>
+                                              )}
                                             </TableCell>
                                             <TableCell>
                                               <select
@@ -11651,7 +11708,8 @@ export default function JobDetail() {
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead>Report</TableHead>
+                                <TableHead>Report Type</TableHead>
+                                <TableHead>Asset Identifier</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Submitted for Review</TableHead>
                                 <TableHead>Approved</TableHead>
@@ -11662,12 +11720,21 @@ export default function JobDetail() {
                             <TableBody>
                               {reportAuditRows.map((row) => (
                                 <TableRow key={row.asset.id}>
-                                  <TableCell className="font-medium min-w-[240px]">
-                                    <div>{row.displayName}</div>
+                                  <TableCell className="min-w-[220px]">
+                                    <div>
+                                      {row.reportType || "Untitled Report"}
+                                    </div>
                                     {row.substation && (
                                       <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                                         {row.substation}
                                       </div>
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="font-medium min-w-[160px]">
+                                    {row.assetIdentifier || (
+                                      <span className="text-neutral-400 dark:text-neutral-500">
+                                        —
+                                      </span>
                                     )}
                                   </TableCell>
                                   <TableCell>

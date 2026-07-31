@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { MessageCircle, X, AlertCircle, Clock, User } from "lucide-react";
 import { format } from "date-fns";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { splitAssetName } from "@/components/reports/reportMappings";
 
 interface AssetCommentsDialogProps {
   isOpen: boolean;
@@ -35,6 +36,8 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
   >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Stored asset names are "<report type> - <asset identifier>".
+  const assetNameParts = splitAssetName(assetName);
 
   useEffect(() => {
     if (isOpen && assetId) {
@@ -275,7 +278,12 @@ export const AssetCommentsDialog: React.FC<AssetCommentsDialogProps> = ({
         {/* Asset Info */}
         <div className="px-6 py-3 bg-neutral-50 dark:bg-dark-150 border-b border-neutral-200 dark:border-neutral-700">
           <p className="text-sm text-neutral-600 dark:text-white">
-            <span className="font-medium">Asset:</span> {assetName}
+            <span className="font-medium">Asset:</span>{" "}
+            {assetNameParts.assetIdentifier || "—"}
+          </p>
+          <p className="text-sm text-neutral-600 dark:text-white">
+            <span className="font-medium">Report:</span>{" "}
+            {assetNameParts.reportType || assetName}
           </p>
         </div>
 

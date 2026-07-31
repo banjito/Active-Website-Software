@@ -12,6 +12,10 @@ import {
   X,
   Check,
 } from "lucide-react";
+import {
+  getReportSlugFromFileUrl,
+  splitAssetName,
+} from "../reports/reportMappings";
 
 interface Asset {
   id: string;
@@ -52,7 +56,8 @@ type StatusCategory =
 
 interface ReportStatus {
   assetId: string;
-  assetName: string;
+  reportType: string;
+  assetIdentifier: string;
   category: StatusCategory;
   urgency: "normal" | "critical";
   createdAt: Date | null;
@@ -233,9 +238,15 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
 
       newCounts[category]++;
 
+      const { reportType, assetIdentifier } = splitAssetName(
+        dynamicAssetNames[asset.id] || asset.name || "",
+        getReportSlugFromFileUrl(asset.file_url),
+      );
+
       statuses.push({
         assetId: asset.id,
-        assetName: dynamicAssetNames[asset.id] || asset.name,
+        reportType,
+        assetIdentifier,
         category,
         urgency: asset.urgency || "normal",
         createdAt,
@@ -583,8 +594,13 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
                     {getCategoryIcon(status.category)}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
-                        {status.assetName}
+                        {status.assetIdentifier || status.reportType}
                       </p>
+                      {status.assetIdentifier && status.reportType && (
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                          {status.reportType}
+                        </p>
+                      )}
 
                       {/* Timestamps section */}
                       <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 space-y-0.5">

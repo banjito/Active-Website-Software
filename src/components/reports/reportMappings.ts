@@ -81,4 +81,112 @@ export const getAssetName = (routeSlug: string, identifier?: string): string => 
     return `${reportName} - ${identifier.trim()}`;
   }
   return reportName;
-}; 
+};
+
+// The two halves of an asset name. Assets are stored as a single
+// "<report type> - <asset identifier>" string (see getAssetName above), but the
+// project views show them as two separate values: the report type (which repeats
+// across many assets) and the asset identifier (the unique piece of equipment).
+export interface AssetNameParts {
+  reportType: string;
+  assetIdentifier: string;
+}
+
+// Known report titles, longest first, so that a title that is a prefix of
+// another one (e.g. '2-Large Dry Type Xfmr. …') never wins over the longer match.
+const KNOWN_REPORT_NAMES: string[] = Array.from(
+  new Set(Object.values(REPORT_NAMES)),
+).sort((a, b) => b.length - a.length);
+
+const ASSET_NAME_SEPARATOR = " - ";
+
+const splitOnSeparator = (
+  name: string,
+  reportType: string,
+): AssetNameParts | null => {
+  if (name === reportType) {
+    return { reportType, assetIdentifier: "" };
+  }
+  if (name.startsWith(reportType + ASSET_NAME_SEPARATOR)) {
+    return {
+      reportType,
+      assetIdentifier: name
+        .slice(reportType.length + ASSET_NAME_SEPARATOR.length)
+        .trim(),
+    };
+  }
+  return null;
+};
+
+// Lists re-render on every keystroke in the report search boxes, so results are
+// cached: the same handful of names is split over and over.
+const splitCache = new Map<string, AssetNameParts>();
+
+/**
+ * Split a stored asset name into its report type and asset identifier.
+ *
+ * Pass `routeSlug` (the report slug from the asset's `file_url`) whenever it is
+ * known — it pins the report type instead of relying on the name itself.
+ */
+export const splitAssetName = (
+  assetName: string,
+  routeSlug?: string,
+): AssetNameParts => {
+  const cacheKey = `${routeSlug || ""}\u0000${assetName || ""}`;
+  const cached = splitCache.get(cacheKey);
+  if (cached) return cached;
+  const parts = computeAssetNameParts(assetName, routeSlug);
+  splitCache.set(cacheKey, parts);
+  return parts;
+};
+
+const computeAssetNameParts = (
+  assetName: string,
+  routeSlug?: string,
+): AssetNameParts => {
+  const name = (assetName || "").trim();
+  if (!name) return { reportType: "", assetIdentifier: "" };
+
+  // 1. Preferred: the report type the slug maps to.
+  const slugReportName = routeSlug ? REPORT_NAMES[routeSlug] : undefined;
+  if (slugReportName) {
+    const bySlug = splitOnSeparator(name, slugReportName);
+    if (bySlug) return bySlug;
+  }
+
+  // 2. Any other known report title the name starts with. Covers assets saved
+  //    before a slug was renamed, and assets we have no slug for (PDF uploads).
+  for (const reportName of KNOWN_REPORT_NAMES) {
+    const byName = splitOnSeparator(name, reportName);
+    if (byName) return byName;
+  }
+
+  // 3. The report title was renamed since the asset was saved (or this is a
+  //    custom form / imported PDF). Fall back to the last separator: report
+  //    titles may contain ' - ' themselves, identifiers almost never do.
+  const lastSep = name.lastIndexOf(ASSET_NAME_SEPARATOR);
+  if (lastSep > 0) {
+    return {
+      reportType: slugReportName || name.slice(0, lastSep).trim(),
+      assetIdentifier: name.slice(lastSep + ASSET_NAME_SEPARATOR.length).trim(),
+    };
+  }
+
+  // 4. Nothing to split on — the whole name is the report type.
+  return { reportType: slugReportName || name, assetIdentifier: "" };
+};
+
+/**
+ * Pull the report route slug out of an asset `file_url`
+ * (`report:/jobs/{jobId}/{slug}/{reportId}`). Returns undefined for PDF
+ * uploads, custom forms and anything else that is not a report asset.
+ */
+export const getReportSlugFromFileUrl = (
+  fileUrl?: string | null,
+): string | undefined => {
+  if (!fileUrl || !fileUrl.startsWith("report:")) return undefined;
+  const parts = (fileUrl.split(":/")[1] || "").split("/");
+  // ['jobs', jobId, slug, reportId]
+  const slug = (parts[2] || "").split("?")[0];
+  return slug || undefined;
+};

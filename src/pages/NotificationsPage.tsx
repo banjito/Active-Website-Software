@@ -21,6 +21,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useAuth } from "@/lib/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { canAccessReportApprovals } from "@/lib/reviewShortcuts";
+import { splitAssetName } from "@/components/reports/reportMappings";
 
 type StatusKey = "ready_for_review" | "issue" | "approved";
 type FeedFilter = "all" | "unread" | "read";
@@ -32,7 +33,8 @@ type ReportNotification = {
   jobId: string;
   jobTitle: string;
   jobNumber?: string;
-  assetName: string;
+  reportType: string;
+  assetIdentifier: string;
   createdAt: string;
   urgency?: "normal" | "critical";
 };
@@ -278,6 +280,11 @@ export default function NotificationsPage() {
           if (!jobId || hiddenJobIds.has(jobId)) return null;
           const job = jobById.get(jobId);
           if (!job || job.deleted_at) return null;
+          // Asset names are stored as "<report type> - <asset identifier>";
+          // show the identifier as the headline and the type underneath.
+          const { reportType, assetIdentifier } = splitAssetName(
+            asset.name || "Report",
+          );
           return {
             kind: "report",
             id: asset.id,
@@ -285,7 +292,8 @@ export default function NotificationsPage() {
             jobId,
             jobTitle: job.title || "Job",
             jobNumber: job.job_number,
-            assetName: asset.name || "Report",
+            reportType,
+            assetIdentifier,
             createdAt: asset.created_at,
             urgency: asset.urgency || "normal",
           };
@@ -983,7 +991,7 @@ export default function NotificationsPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <h2 className="font-medium text-neutral-900 dark:text-white">
                           {item.kind === "report"
-                            ? item.assetName
+                            ? item.assetIdentifier || item.reportType
                             : item.equipmentName}
                         </h2>
                         {!itemRead && (
@@ -1008,6 +1016,11 @@ export default function NotificationsPage() {
 
                       {item.kind === "report" ? (
                         <>
+                          {item.assetIdentifier && item.reportType && (
+                            <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                              {item.reportType}
+                            </p>
+                          )}
                           <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">
                             {item.jobNumber ? `Job ${item.jobNumber}` : "Job"} •{" "}
                             {item.jobTitle}

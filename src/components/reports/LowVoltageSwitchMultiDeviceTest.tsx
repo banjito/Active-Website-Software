@@ -2124,24 +2124,28 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             Units: {formData.contactUnits}
           </div>
           <table
+            className="cr-print-table"
             style={{
               width: "100%",
+              maxWidth: "100%",
               borderCollapse: "collapse",
               fontSize: "8px",
               tableLayout: "fixed",
             }}
           >
+            {/* Position needs more than an even 1/10 share: identifiers such as
+                "Transformer L-15-UAEQT00302" are far wider than a reading cell. */}
             <colgroup>
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "10%" }} />
+              <col style={{ width: "19%" }} />
+              <col style={{ width: "9%" }} />
+              <col style={{ width: "9%" }} />
+              <col style={{ width: "9%" }} />
+              <col style={{ width: "9%" }} />
+              <col style={{ width: "9%" }} />
+              <col style={{ width: "9%" }} />
+              <col style={{ width: "9%" }} />
+              <col style={{ width: "9%" }} />
+              <col style={{ width: "9%" }} />
             </colgroup>
             <thead style={{ backgroundColor: "#f0f0f0" }}>
               <tr>
@@ -4037,6 +4041,33 @@ export default LowVoltageSwitchMultiDeviceTest;
 
 // Print styles (scoped)
 if (typeof document !== "undefined") {
+  // Contact Resistance print table: 10 columns whose first cell holds a free-text
+  // position identifier. Long identifiers ("Transformer L-15-UAEQT00302") used to
+  // widen that column and push the whole table past the right page margin, because
+  // the shared wrapper CSS can force table-layout: auto in the print/PDF paths.
+  // Pin the layout, give Position a real share of the width, and let it wrap.
+  const contactResistanceFitCss = (scope: string) => `
+      ${scope} table.cr-print-table {
+        table-layout: fixed !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: 8px !important;
+      }
+      ${scope} table.cr-print-table col:nth-child(1) { width: 19% !important; }
+      ${scope} table.cr-print-table col:nth-child(n+2) { width: 9% !important; }
+      ${scope} table.cr-print-table th,
+      ${scope} table.cr-print-table td {
+        padding: 2px 3px !important;
+        line-height: 1.1 !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+        overflow: hidden !important;
+      }
+      ${scope} table.cr-print-table tbody td:first-child { text-align: left !important; }
+      ${scope} table.cr-print-table tbody td:not(:first-child) { text-align: center !important; }
+  `;
+
   const style = document.createElement("style");
   style.textContent = `
     /* Hide number input arrows globally (screen + print) */
@@ -4245,7 +4276,20 @@ if (typeof document !== "undefined") {
       section { break-inside: avoid !important; margin-bottom: 20px !important; page-break-inside: avoid !important; }
       .grid { display: grid !important; }
       .flex { display: flex !important; }
+
+      /* Contact Resistance print table: keep all 10 columns inside the page */
+${contactResistanceFitCss("#report-container")}
+${contactResistanceFitCss(".is-windows #report-container")}
     }
+
+    /* Same fit rules for the preview/PDF (force-print) rendering path */
+${contactResistanceFitCss(".force-print #report-container")}
+${contactResistanceFitCss(".force-print.is-windows #report-container")}
+
+    /* ...and for the deliverable viewer, which copies the report into
+       .report-section and forces table-layout: auto on Windows */
+${contactResistanceFitCss(".report-section")}
+${contactResistanceFitCss(".is-windows .report-section")}
   `;
   document.head.appendChild(style);
 }

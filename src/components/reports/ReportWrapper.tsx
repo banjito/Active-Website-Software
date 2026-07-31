@@ -43,7 +43,74 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
     );
   };
 
+  /**
+   * Accessible name of a button. The report header's Save/Edit controls are
+   * icon-only, so text content alone never identifies them — fall back to the
+   * title/aria-label they carry.
+   */
+  const labelOf = (button: HTMLButtonElement) =>
+    ((button.textContent || "").trim() ||
+      button.getAttribute("title") ||
+      button.getAttribute("aria-label") ||
+      "")
+      .trim()
+      .toLowerCase();
+
   const findSaveButton = () => {
+    const container = document.getElementById("report-container");
+    if (!container) return null;
+
+    const buttons = Array.from(
+      container.querySelectorAll("button"),
+    ) as HTMLButtonElement[];
+    const candidates = buttons.filter((button) => {
+      if (button.disabled || !isVisible(button)) return false;
+      const text = labelOf(button);
+      if (!text) return false;
+      if (
+        text.includes("ready") ||
+        text.includes("review") ||
+        text.includes("print") ||
+        text.includes("preview") ||
+        text.includes("approve") ||
+        text.includes("reject")
+      ) {
+        return false;
+      }
+      return (
+        text === "save" ||
+        text === "saved" ||
+        text.includes("save report") ||
+        text.includes("save new report") ||
+        text.includes("save & close") ||
+        text.includes("update report")
+      );
+    });
+
+    // Prefer plain Save — "Save & Close" navigates away from the report, which
+    // would tear down the preview the reviewer is approving from.
+    return (
+      candidates.find((button) => {
+        const text = labelOf(button);
+        return text === "save" || text === "saved";
+      }) ||
+      candidates[0] ||
+      null
+    );
+  };
+
+  /**
+   * True while the Save control is showing its post-save "Saved" confirmation.
+   * Forms that are always editable (custom forms) never leave edit mode, so
+   * this is how a completed save is detected for them.
+   */
+  const hasJustSavedIndicator = () => {
+    const button = findSaveButton();
+    return Boolean(button && labelOf(button) === "saved");
+  };
+
+  /** The Edit control rendered by ReportHeader (and its per-report variants). */
+  const findEditButton = () => {
     const container = document.getElementById("report-container");
     if (!container) return null;
 
@@ -53,25 +120,8 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
     return (
       buttons.find((button) => {
         if (button.disabled || !isVisible(button)) return false;
-        const text = (button.textContent || "").trim().toLowerCase();
-        if (!text) return false;
-        if (
-          text.includes("ready") ||
-          text.includes("review") ||
-          text.includes("print") ||
-          text.includes("preview") ||
-          text.includes("approve") ||
-          text.includes("reject")
-        ) {
-          return false;
-        }
-        return (
-          text === "save" ||
-          text.includes("save report") ||
-          text.includes("save new report") ||
-          text.includes("save & close") ||
-          text.includes("update report")
-        );
+        const label = labelOf(button);
+        return label === "edit" || label === "edit report";
       }) || null
     );
   };
@@ -140,6 +190,38 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
     };
   }, [isEditing]);
 
+  // The approval review modal opens the report with ?edit=true when a reviewer
+  // clicks Edit. Click the report's own Edit control so they land straight in
+  // edit mode instead of having to find it themselves. The report loads its
+  // data asynchronously, so poll briefly until the button shows up.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (new URLSearchParams(window.location.search).get("edit") !== "true") {
+      return;
+    }
+
+    let settled = false;
+    const clickEdit = () => {
+      if (settled) return true;
+      const editButton = findEditButton();
+      if (!editButton) return false;
+      settled = true;
+      editButton.click();
+      return true;
+    };
+
+    if (clickEdit()) return;
+
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => {
+      if (clickEdit() || Date.now() - startedAt > 15000) {
+        window.clearInterval(timer);
+      }
+    }, 200);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
   // Listen for save-then-approve requests from parent approval modal
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -182,7 +264,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
               window.clearInterval(waitForSave);
               return;
             }
-            if (!deriveIsEditingFromDom()) {
+            if (!deriveIsEditingFromDom() || hasJustSavedIndicator()) {
               window.clearInterval(waitForSave);
               complete(true);
               return;

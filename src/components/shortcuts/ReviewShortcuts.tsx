@@ -200,9 +200,9 @@ export const ReviewShortcuts: React.FC = () => {
                         {report.title}
                       </span>
                       <span
-                        className={`font-medium ${getReviewUrgencyColorClass(report.submitted_at)}`}
+                        className={`font-medium ${getReviewUrgencyColorClass(report.review_date)}`}
                       >
-                        {formatReviewTimeAgo(report.submitted_at)}
+                        {formatReviewTimeAgo(report.review_date)}
                       </span>
                     </div>
                   ))}

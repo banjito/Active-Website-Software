@@ -52,6 +52,7 @@ import "jspdf-autotable";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { supabase } from "@/lib/supabase";
 import { canApproveReports, canExportReports } from "@/lib/roles";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 import {
   fetchEvaluationResults,
   type EvaluationResult,
@@ -76,6 +77,7 @@ const REPORT_APPROVAL_LOAD_LIMIT = 500;
 // Inline SVGs (lucide) for the vanilla-JS review modal toolbar buttons.
 const EYE_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
 const PRINTER_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>`;
+const PENCIL_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`;
 
 export function ReportApprovalWorkflow({
   division,
@@ -1691,10 +1693,20 @@ export function ReportApprovalWorkflow({
                 <button id="report-print-btn" title="Print" style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#525252;">
                   ${PRINTER_ICON_SVG}
                 </button>
+                ${
+                  canReview
+                    ? `
+                <button id="report-edit-btn" title="Edit report" style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:${BRAND_COLOR};">
+                  ${PENCIL_ICON_SVG}
+                </button>
+                `
+                    : ""
+                }
               </div>
               ${
                 canReview
                   ? `
+              <p id="report-edit-hint" style="display:none;font-size:0.8125rem;color:#6b7280;margin:0;">Editing — use Save &amp; Approve to save your changes.</p>
               <div style="display:flex;flex-direction:column;flex:1;min-height:0;">
                 <label style="display:block;font-size:0.875rem;font-weight:500;color:#374151;margin-bottom:0.5rem;">Review Notes</label>
                 <textarea
@@ -1734,10 +1746,25 @@ export function ReportApprovalWorkflow({
       </div>
     `;
 
+    // Whether the reviewer has swapped the preview iframe for the live,
+    // editable report, and whether that report currently has an open edit
+    // session (reported by ReportWrapper via postMessage).
+    let inEditMode = false;
+    let hasUnsavedChanges = false;
+
     // Add close handler
     const closeBtn = document.getElementById("report-view-close-btn");
     if (closeBtn) {
       closeBtn.onclick = () => {
+        if (
+          inEditMode &&
+          hasUnsavedChanges &&
+          !window.confirm(
+            "Close this report? Any unsaved changes will be lost.",
+          )
+        ) {
+          return;
+        }
         const modal = document.getElementById("report-view-modal");
         if (modal) modal.remove();
       };
@@ -1771,8 +1798,6 @@ export function ReportApprovalWorkflow({
         "review-comments-input",
       ) as HTMLTextAreaElement;
 
-      // Track unsaved changes from iframe (report edit mode)
-      let hasUnsavedChanges = false;
       const updateApproveBtnText = () => {
         if (approveBtn) {
           approveBtn.textContent = hasUnsavedChanges
@@ -1780,6 +1805,57 @@ export function ReportApprovalWorkflow({
             : "✓ Save & Approve";
         }
       };
+
+      // Edit toggle: reload the preview iframe as the live (non-print) report
+      // with ?edit=true, which drops the reviewer straight into edit mode. The
+      // report is then saved by "Save & Approve" (see requestSave below).
+      const editBtn = document.getElementById("report-edit-btn");
+      const editHint = document.getElementById("report-edit-hint");
+
+      const getPreviewIframe = () =>
+        document.querySelector(
+          'iframe[title="Report Preview"]',
+        ) as HTMLIFrameElement | null;
+
+      const applyEditModeChrome = () => {
+        if (editBtn) {
+          editBtn.setAttribute(
+            "title",
+            inEditMode ? "Back to preview" : "Edit report",
+          );
+          editBtn.style.background = inEditMode ? "#525252" : BRAND_COLOR;
+        }
+        if (editHint) {
+          editHint.style.display = inEditMode ? "block" : "none";
+        }
+      };
+
+      if (editBtn) {
+        editBtn.onclick = () => {
+          const iframe = getPreviewIframe();
+          if (!iframe) return;
+
+          if (inEditMode) {
+            if (
+              hasUnsavedChanges &&
+              !window.confirm(
+                "Leave edit mode? Any unsaved changes to this report will be lost.",
+              )
+            ) {
+              return;
+            }
+            inEditMode = false;
+            hasUnsavedChanges = false;
+            updateApproveBtnText();
+            iframe.src = fullReportUrl;
+          } else {
+            inEditMode = true;
+            iframe.src = `${openReportUrl}&edit=true`;
+          }
+          applyEditModeChrome();
+        };
+      }
+
       const messageHandler = (e: MessageEvent) => {
         if (e.data?.type === "reportEditState") {
           hasUnsavedChanges = !!e.data.isEditing;
@@ -1861,9 +1937,7 @@ export function ReportApprovalWorkflow({
           if (hasUnsavedChanges) {
             approveBtn.textContent = "Saving...";
             approveBtn.setAttribute("disabled", "true");
-            const iframe = document.querySelector(
-              'iframe[title="Report Preview"]',
-            ) as HTMLIFrameElement | null;
+            const iframe = getPreviewIframe();
             if (iframe?.contentWindow) {
               iframe.contentWindow.postMessage({ type: "requestSave" }, "*");
             } else {

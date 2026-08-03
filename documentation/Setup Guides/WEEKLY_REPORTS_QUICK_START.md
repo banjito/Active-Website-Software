@@ -42,7 +42,7 @@ Deploy manually through the Supabase Dashboard:
 4. Paste into the editor
 5. Click **Deploy**
 
-That's it! The functions will use your existing Postmark and environment variables.
+That's it! The functions will use your existing Resend and environment variables.
 
 ---
 
@@ -164,7 +164,7 @@ To: 'email1@company.com, email2@company.com',
 
 ## 📊 Monitor
 
-- **Postmark Dashboard:** See delivery status
+- **Resend Dashboard:** See delivery status
 - **Supabase Logs:** Edge Functions → Click function → Logs
 - **GitHub Actions:** Actions tab → View workflow runs
 
@@ -177,7 +177,7 @@ To: 'email1@company.com, email2@company.com',
 - Run test scripts to see what data exists
 
 ### Emails not sending?
-- Check Postmark dashboard for errors
+- Check Resend dashboard for errors
 - Verify environment variables in Supabase
 - Check function logs for errors
 

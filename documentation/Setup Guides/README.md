@@ -75,8 +75,8 @@ Set in Supabase Dashboard → Project Settings → Edge Functions:
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `POSTMARK_API_KEY` | ✅ | Postmark email API key |
-| `POSTMARK_FROM` | No | Sender email (default: john.chambers@ampqes.com) |
+| `RESEND_API_KEY` | ✅ | Resend email API key |
+| `RESEND_FROM` | No | Sender email (default: jack.lyons@ampqes.com) |
 | `REVIEW_NOTIFICATION_EMAIL` | ✅ | Daily review recipient |
 | `WEEKLY_REPORT_EMAIL` | No | Weekly reports recipient |
 
@@ -142,7 +142,7 @@ In Supabase Dashboard:
 ### 4. Verify
 
 1. Check GitHub Actions tab for scheduled runs
-2. Check Postmark dashboard for sent emails
+2. Check Resend dashboard for sent emails
 3. Check Supabase function logs for errors
 
 ---
@@ -167,7 +167,7 @@ All services stay within free tiers:
 | Service | Free Tier | Expected Usage |
 |---------|-----------|----------------|
 | Supabase Edge Functions | 500K invocations/month | ~200/month |
-| Postmark | 100 emails/month | ~80/month |
+| Resend | 3,000 emails/month | ~80/month |
 | GitHub Actions | 2,000 minutes/month | ~15 min/month |
 
 ---
@@ -176,7 +176,7 @@ All services stay within free tiers:
 
 ### Emails Not Sending
 
-1. ✅ Check Postmark dashboard for delivery status
+1. ✅ Check Resend dashboard for delivery status
 2. ✅ Verify environment variables in Supabase
 3. ✅ Check Supabase function logs
 4. ✅ Verify recipient email addresses

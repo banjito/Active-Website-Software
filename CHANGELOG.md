@@ -275,7 +275,7 @@ GitHub Actions workflows:
    - Deploy `weekly-po-report`
 
 3. **Set Environment Variables**
-   - `POSTMARK_API_KEY` - for email sending
+   - `RESEND_API_KEY` - for email sending
    - `WEEKLY_REPORT_EMAIL` - recipient for weekly reports
 
 4. **Enable GitHub Actions**

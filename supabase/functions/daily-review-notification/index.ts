@@ -2,7 +2,8 @@
 // @ts-ignore deno: types are resolved at runtime
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { getDigestRecipientEmails } from '../_shared/digestRecipients.ts'
-import { BRAND_COLOR, COMPANY_NAME, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
+import { BRAND_COLOR, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
+import { buildFromHeader, getEmailApiKey, sendEmail } from '../_shared/email.ts'
 // Local TS linting shim (for non-Deno editors)
 declare const Deno: {
   env: { get: (name: string) => string | undefined }
@@ -189,7 +190,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
       )
     }
 
-    const notificationEmail = recipientEmails.join(', ')
 
     // Email content
     const totalReports = jobsWithReports.reduce((sum, j) => sum + j.reports_count, 0)
@@ -274,13 +274,12 @@ This is an automated daily report generated at 12:00 PM Central Time.
 To review these reports, log in to the AMP system and check the Review Shortcuts on the portal page.
     `
 
-    // Send via Postmark (single, reliable path)
-    const postmarkApiKey = Deno.env.get('POSTMARK_API_KEY')
-    if (!postmarkApiKey) {
+    // Send via Resend (single, reliable path)
+    if (!getEmailApiKey()) {
       return new Response(
         JSON.stringify({
           success: true,
-          message: 'Email not sent: POSTMARK_API_KEY not configured',
+          message: 'Email not sent: RESEND_API_KEY not configured',
           jobsCount: jobsWithReports.length,
           reportsCount: totalReports,
           emailSent: false
@@ -289,30 +288,20 @@ To review these reports, log in to the AMP system and check the Review Shortcuts
       )
     }
 
-    // Verified sender in Postmark (set POSTMARK_FROM or defaults to your verified address)
+    // Sender must be on a Resend-verified domain (set RESEND_FROM)
     const fromEmail = DEFAULT_FROM_EMAIL
-    const fromHeader = fromEmail.includes('<') ? fromEmail : `${COMPANY_NAME} System <${fromEmail}>`
+    const fromHeader = buildFromHeader(fromEmail)
 
-    const pmRes = await fetch('https://api.postmarkapp.com/email', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Postmark-Server-Token': postmarkApiKey
-      },
-      body: JSON.stringify({
-        From: fromHeader,
-        To: notificationEmail,
-        Subject: emailSubject,
-        HtmlBody: emailHtml,
-        TextBody: emailText,
-        MessageStream: 'outbound'
-      })
+    const sendRes = await sendEmail({
+      from: fromHeader,
+      to: recipientEmails,
+      subject: emailSubject,
+      html: emailHtml,
+      text: emailText
     })
 
-    if (!pmRes.ok) {
-      const errText = await pmRes.text()
-      throw new Error(`Postmark API failed: ${pmRes.status} - ${errText}`)
+    if (!sendRes.ok) {
+      throw new Error(`Resend API failed: ${sendRes.status} - ${sendRes.body}`)
     }
 
     return new Response(

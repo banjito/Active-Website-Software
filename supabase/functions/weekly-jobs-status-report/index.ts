@@ -5,7 +5,8 @@
 // @ts-ignore deno: remote module types resolved at runtime
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { getDigestRecipientEmails } from '../_shared/digestRecipients.ts'
-import { BRAND_COLOR, COMPANY_FULL_NAME, COMPANY_NAME, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
+import { BRAND_COLOR, COMPANY_FULL_NAME, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
+import { buildFromHeader, getEmailApiKey, sendEmail } from '../_shared/email.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -222,15 +223,13 @@ Generated on ${new Date().toLocaleString()}
       )
     }
 
-    const notificationEmail = recipientEmails.join(', ')
 
-    // Send via Postmark
-    const postmarkApiKey = Deno.env.get('POSTMARK_API_KEY')
-    if (!postmarkApiKey) {
+    // Send via Resend
+    if (!getEmailApiKey()) {
       return new Response(
         JSON.stringify({
           success: true,
-          message: 'Email not sent: POSTMARK_API_KEY not configured',
+          message: 'Email not sent: RESEND_API_KEY not configured',
           jobCount: enrichedJobs.length,
           emailSent: false
         }),
@@ -239,28 +238,18 @@ Generated on ${new Date().toLocaleString()}
     }
 
     const fromEmail = DEFAULT_FROM_EMAIL
-    const fromHeader = fromEmail.includes('<') ? fromEmail : `${COMPANY_NAME} System <${fromEmail}>`
+    const fromHeader = buildFromHeader(fromEmail)
 
-    const pmRes = await fetch('https://api.postmarkapp.com/email', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Postmark-Server-Token': postmarkApiKey
-      },
-      body: JSON.stringify({
-        From: fromHeader,
-        To: notificationEmail,
-        Subject: emailSubject,
-        HtmlBody: emailHtml,
-        TextBody: emailText,
-        MessageStream: 'outbound'
-      })
+    const sendRes = await sendEmail({
+      from: fromHeader,
+      to: recipientEmails,
+      subject: emailSubject,
+      html: emailHtml,
+      text: emailText
     })
 
-    if (!pmRes.ok) {
-      const errText = await pmRes.text()
-      throw new Error(`Postmark API failed: ${pmRes.status} - ${errText}`)
+    if (!sendRes.ok) {
+      throw new Error(`Resend API failed: ${sendRes.status} - ${sendRes.body}`)
     }
 
     console.log('Weekly jobs status report sent successfully')

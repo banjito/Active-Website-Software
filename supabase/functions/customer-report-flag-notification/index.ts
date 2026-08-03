@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { BRAND_COLOR, COMPANY_ADMIN_EMAIL, COMPANY_FULL_NAME, COMPANY_NAME } from '../_shared/companyConfig.ts'
+import { BRAND_COLOR, COMPANY_ADMIN_EMAIL, COMPANY_FULL_NAME } from '../_shared/companyConfig.ts'
+import { buildFromHeader, getEmailApiKey, sendEmail } from '../_shared/email.ts'
 
 console.log("customer-report-flag-notification: function loaded");
 
@@ -93,16 +94,15 @@ serve(async (req) => {
       console.warn("Context lookup failed:", e);
     }
 
-    const pmKey = Deno.env.get("POSTMARK_API_KEY");
-    if (!pmKey)
+    if (!getEmailApiKey())
       return new Response(
-        JSON.stringify({ emailSent: false, message: "no POSTMARK_API_KEY" }),
+        JSON.stringify({ emailSent: false, message: "no RESEND_API_KEY" }),
         { headers },
       );
 
     const ADMIN_NOTIFY_EMAIL = COMPANY_ADMIN_EMAIL;
-    const from = (Deno.env.get("POSTMARK_FROM") ?? COMPANY_ADMIN_EMAIL).trim();
-    const fromHeader = from.includes("<") ? from : `${COMPANY_NAME} System <${from}>`;
+    const from = (Deno.env.get("RESEND_FROM") ?? COMPANY_ADMIN_EMAIL).trim();
+    const fromHeader = buildFromHeader(from);
     const appUrl = (
       Deno.env.get("APP_URL") ||
       Deno.env.get("SITE_URL") ||
@@ -137,27 +137,17 @@ serve(async (req) => {
     const emailSubject = `Report flagged by customer: ${reportName || assetId}`;
 
     console.log("Sending flag notification to:", ADMIN_NOTIFY_EMAIL);
-    const pmRes = await fetch("https://api.postmarkapp.com/email", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "X-Postmark-Server-Token": pmKey,
-      },
-      body: JSON.stringify({
-        From: fromHeader,
-        To: ADMIN_NOTIFY_EMAIL,
-        Subject: emailSubject,
-        HtmlBody: htmlBody,
-        TextBody: textBodyStr,
-        MessageStream: "outbound",
-      }),
+    const sendRes = await sendEmail({
+      from: fromHeader,
+      to: ADMIN_NOTIFY_EMAIL,
+      subject: emailSubject,
+      html: htmlBody,
+      text: textBodyStr,
     });
-    const pmText = await pmRes.text();
-    console.log("Postmark response:", pmRes.status, pmText);
+    console.log("Resend response:", sendRes.status, sendRes.body);
 
     return new Response(
-      JSON.stringify({ emailSent: pmRes.ok, sentTo: [ADMIN_NOTIFY_EMAIL] }),
+      JSON.stringify({ emailSent: sendRes.ok, sentTo: [ADMIN_NOTIFY_EMAIL] }),
       { headers },
     );
   } catch (e) {

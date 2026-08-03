@@ -3,7 +3,8 @@ import {
   getAccountingDigestEmail,
   getDigestRecipientEmails,
 } from '../_shared/digestRecipients.ts'
-import { BRAND_COLOR, COMPANY_FULL_NAME, COMPANY_NAME, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
+import { BRAND_COLOR, COMPANY_FULL_NAME, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
+import { buildFromHeader, getEmailApiKey, sendEmail } from '../_shared/email.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -42,12 +43,11 @@ serve(async (req) => {
     if (!jobs || jobs.length === 0) {
       console.log('No ready-to-bill jobs found')
       
-      const postmarkApiKey = Deno.env.get('POSTMARK_API_KEY')
-      if (!postmarkApiKey) {
+      if (!getEmailApiKey()) {
         return new Response(
           JSON.stringify({
             success: true,
-            message: 'No jobs to report and POSTMARK_API_KEY not configured',
+            message: 'No jobs to report and RESEND_API_KEY not configured',
             jobCount: 0,
             emailSent: false
           }),
@@ -71,8 +71,7 @@ serve(async (req) => {
       }
 
       const fromEmail = DEFAULT_FROM_EMAIL
-      const fromHeader = fromEmail.includes('<') ? fromEmail : `${COMPANY_NAME} System <${fromEmail}>`
-      const toEmail = recipientEmails.join(', ')
+      const fromHeader = buildFromHeader(fromEmail)
 
       const emailSubject = 'Daily Ready-to-Bill Report - No Jobs'
       const emailHtml = `
@@ -102,21 +101,12 @@ No jobs are currently ready for billing.
 Generated on ${new Date().toLocaleString()}
       `
 
-      await fetch('https://api.postmarkapp.com/email', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'X-Postmark-Server-Token': postmarkApiKey
-        },
-        body: JSON.stringify({
-          From: fromHeader,
-          To: toEmail,
-          Subject: emailSubject,
-          HtmlBody: emailHtml,
-          TextBody: emailText,
-          MessageStream: 'outbound'
-        })
+      await sendEmail({
+        from: fromHeader,
+        to: recipientEmails,
+        subject: emailSubject,
+        html: emailHtml,
+        text: emailText
       })
 
       return new Response(
@@ -237,13 +227,12 @@ ${jobRowsText}
 Generated on ${new Date().toLocaleString()}
     `
 
-    // Send via Postmark
-    const postmarkApiKey = Deno.env.get('POSTMARK_API_KEY')
-    if (!postmarkApiKey) {
+    // Send via Resend
+    if (!getEmailApiKey()) {
       return new Response(
         JSON.stringify({
           success: true,
-          message: 'Email not sent: POSTMARK_API_KEY not configured',
+          message: 'Email not sent: RESEND_API_KEY not configured',
           jobCount: jobs.length,
           emailSent: false
         }),
@@ -267,29 +256,19 @@ Generated on ${new Date().toLocaleString()}
     }
 
     const fromEmail = DEFAULT_FROM_EMAIL
-    const fromHeader = fromEmail.includes('<') ? fromEmail : `${COMPANY_NAME} System <${fromEmail}>`
+    const fromHeader = buildFromHeader(fromEmail)
     const toEmail = recipientEmails.join(', ')
 
-    const pmRes = await fetch('https://api.postmarkapp.com/email', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Postmark-Server-Token': postmarkApiKey
-      },
-      body: JSON.stringify({
-        From: fromHeader,
-        To: toEmail,
-        Subject: emailSubject,
-        HtmlBody: emailHtml,
-        TextBody: emailText,
-        MessageStream: 'outbound'
-      })
+    const sendRes = await sendEmail({
+      from: fromHeader,
+      to: recipientEmails,
+      subject: emailSubject,
+      html: emailHtml,
+      text: emailText
     })
 
-    if (!pmRes.ok) {
-      const errText = await pmRes.text()
-      throw new Error(`Postmark API failed: ${pmRes.status} - ${errText}`)
+    if (!sendRes.ok) {
+      throw new Error(`Resend API failed: ${sendRes.status} - ${sendRes.body}`)
     }
 
     console.log(`Daily ready-to-bill report sent successfully: ${jobs.length} jobs`)

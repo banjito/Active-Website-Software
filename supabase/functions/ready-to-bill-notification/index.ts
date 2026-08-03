@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { BRAND_COLOR, COMPANY_FULL_NAME, COMPANY_NAME, COMPANY_OPS_EMAIL, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
+import { BRAND_COLOR, COMPANY_FULL_NAME, COMPANY_OPS_EMAIL, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
+import { buildFromHeader, getEmailApiKey, sendEmail } from '../_shared/email.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -179,13 +180,12 @@ This is an automated notification from ${COMPANY_FULL_NAME}
 Generated on ${new Date().toLocaleString()}
     `
 
-    // Send via Postmark
-    const postmarkApiKey = Deno.env.get('POSTMARK_API_KEY')
-    if (!postmarkApiKey) {
+    // Send via Resend
+    if (!getEmailApiKey()) {
       return new Response(
         JSON.stringify({
           success: true,
-          message: 'Email not sent: POSTMARK_API_KEY not configured',
+          message: 'Email not sent: RESEND_API_KEY not configured',
           jobId: jobData.id,
           emailSent: false
         }),
@@ -193,31 +193,21 @@ Generated on ${new Date().toLocaleString()}
       )
     }
 
-    // Verified sender in Postmark
+    // Sender must be on a Resend-verified domain
     const fromEmail = DEFAULT_FROM_EMAIL
-    const fromHeader = fromEmail.includes('<') ? fromEmail : `${COMPANY_NAME} System <${fromEmail}>`
+    const fromHeader = buildFromHeader(fromEmail)
     const toEmail = COMPANY_OPS_EMAIL // TESTING: Changed from accounting@ampqes.com
 
-    const pmRes = await fetch('https://api.postmarkapp.com/email', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Postmark-Server-Token': postmarkApiKey
-      },
-      body: JSON.stringify({
-        From: fromHeader,
-        To: toEmail,
-        Subject: emailSubject,
-        HtmlBody: emailHtml,
-        TextBody: emailText,
-        MessageStream: 'outbound'
-      })
+    const sendRes = await sendEmail({
+      from: fromHeader,
+      to: toEmail,
+      subject: emailSubject,
+      html: emailHtml,
+      text: emailText
     })
 
-    if (!pmRes.ok) {
-      const errText = await pmRes.text()
-      throw new Error(`Postmark API failed: ${pmRes.status} - ${errText}`)
+    if (!sendRes.ok) {
+      throw new Error(`Resend API failed: ${sendRes.status} - ${sendRes.body}`)
     }
 
     console.log('Ready-to-bill notification sent successfully for job:', jobId)

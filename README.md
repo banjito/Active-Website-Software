@@ -42,7 +42,7 @@ npm run lint
 - **Styling**: Tailwind CSS with dark mode support
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
-- **Email**: Postmark
+- **Email**: Resend
 - **Deployment**: Netlify
 - **Icons**: Lucide React
 
@@ -350,8 +350,8 @@ See `netlify.toml` for deployment settings.
 |----------|---------|
 | `VITE_SUPABASE_URL` | Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key |
-| `POSTMARK_API_KEY` | Email service |
-| `POSTMARK_FROM` | Sender email |
+| `RESEND_API_KEY` | Email service |
+| `RESEND_FROM` | Sender email |
 
 ---
 

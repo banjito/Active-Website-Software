@@ -33,11 +33,24 @@ export const COMPANY_ADMIN_EMAIL = env(
   "jack.lyons@ampqes.com"
 );
 
-/** Operations mailbox: default sender and legacy notification recipient. */
+/** Operations mailbox: default sender and billing-notification recipient. */
 export const COMPANY_OPS_EMAIL = env(
   "COMPANY_OPS_EMAIL",
-  "john.chambers@ampqes.com"
+  "jack.lyons@ampqes.com"
 );
+
+/**
+ * Addresses that never receive notifications, even when they turn up as an
+ * issue reporter or interested party. Departed staff go here so stale rows in
+ * the database don't keep mailing them.
+ */
+export const COMPANY_SUPPRESSED_EMAILS = env(
+  "COMPANY_SUPPRESSED_EMAILS",
+  "john.chambers@ampqes.com"
+)
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
 
 /** Emails allowed to use the admin password-reset function. */
 export const COMPANY_SUPERUSER_EMAILS = env(
@@ -63,8 +76,11 @@ export const COMPANY_EMPLOYEE_DOMAINS = env(
 /** Brand color for email HTML headers/buttons. */
 export const BRAND_COLOR = env("COMPANY_BRAND_COLOR", "#f26722");
 
-/** Default From address when POSTMARK_FROM is not set. */
-export const DEFAULT_FROM_EMAIL = env("POSTMARK_FROM", COMPANY_OPS_EMAIL);
+/**
+ * Default From address for transactional email. Must be on a domain verified
+ * in Resend, otherwise every send is rejected.
+ */
+export const DEFAULT_FROM_EMAIL = env("RESEND_FROM", COMPANY_OPS_EMAIL);
 
 /** True if the email belongs to an employee domain. */
 export const isEmployeeEmailDomain = (email: string): boolean => {

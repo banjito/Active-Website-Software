@@ -50,8 +50,8 @@ supabase functions deploy daily-ready-to-bill-report
 The daily report uses the same environment variables as your other email functions:
 
 ### Required Variables (should already be set):
-- **POSTMARK_API_KEY**: Your Postmark API key
-- **POSTMARK_FROM**: Sender email (defaults to john.chambers@ampqes.com)
+- **RESEND_API_KEY**: Your Resend API key
+- **RESEND_FROM**: Sender email (defaults to jack.lyons@ampqes.com)
 - **SUPABASE_URL**: Your Supabase project URL
 - **SUPABASE_SERVICE_ROLE_KEY**: Your service role key
 
@@ -152,7 +152,7 @@ The daily report includes:
 ### Frequency:
 - Runs **every day** at the scheduled time
 - ~30 emails per month
-- Well within Postmark's free tier
+- Well within Resend's free tier
 
 ## 🔍 Troubleshooting
 
@@ -172,8 +172,8 @@ The daily report includes:
    node scripts/test-daily-ready-to-bill-report.js
    ```
 
-4. **Check Postmark Dashboard**:
-   - Go to https://account.postmarkapp.com
+4. **Check Resend Dashboard**:
+   - Go to https://resend.com/emails
    - View activity to see if email was sent
 
 ### Empty Report Even Though Jobs Exist?

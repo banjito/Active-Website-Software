@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { BRAND_COLOR, COMPANY_FULL_NAME, COMPANY_NAME, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
+import { BRAND_COLOR, COMPANY_FULL_NAME, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
+import { buildFromHeader, getEmailApiKey, sendEmail } from '../_shared/email.ts'
 
 console.log("requisition-approval-notification: function loaded")
 
@@ -64,13 +65,11 @@ serve(async (req) => {
     console.log("Approver:", approverName, approverEmail)
 
     // 3. Build the email
-    const pmKey = Deno.env.get('POSTMARK_API_KEY')
-    if (!pmKey) {
-      return new Response(JSON.stringify({ emailSent: false, message: 'no POSTMARK_API_KEY' }), { headers })
+    if (!getEmailApiKey()) {
+      return new Response(JSON.stringify({ emailSent: false, message: 'no RESEND_API_KEY' }), { headers })
     }
 
-    const from = DEFAULT_FROM_EMAIL
-    const fromHeader = from.includes('<') ? from : `${COMPANY_NAME} System <${from}>`
+    const fromHeader = buildFromHeader(DEFAULT_FROM_EMAIL)
     const appUrl = (Deno.env.get('APP_URL') || Deno.env.get('SITE_URL') || '').replace(/\/$/, '')
     const approvalLink = appUrl ? `${appUrl}/hr/recruiting/requisition-approvals` : ''
     const safeTitle = (requisition.title || '').replace(/</g, '&lt;')
@@ -139,22 +138,16 @@ serve(async (req) => {
 
     // 4. Send the email
     console.log("Sending approval notification to:", approverEmail)
-    const pmRes = await fetch('https://api.postmarkapp.com/email', {
-      method: 'POST',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Postmark-Server-Token': pmKey },
-      body: JSON.stringify({
-        From: fromHeader,
-        To: approverEmail,
-        Subject: emailSubject,
-        HtmlBody: htmlBody,
-        TextBody: textBody,
-        MessageStream: 'outbound'
-      })
+    const sendRes = await sendEmail({
+      from: fromHeader,
+      to: approverEmail,
+      subject: emailSubject,
+      html: htmlBody,
+      text: textBody
     })
-    const pmText = await pmRes.text()
-    console.log("Postmark response:", pmRes.status, pmText)
+    console.log("Resend response:", sendRes.status, sendRes.body)
 
-    return new Response(JSON.stringify({ emailSent: pmRes.ok, sentTo: approverEmail }), { headers })
+    return new Response(JSON.stringify({ emailSent: sendRes.ok, sentTo: approverEmail }), { headers })
   } catch (e) {
     console.error("ERROR:", e)
     const msg = e instanceof Error ? e.message : String(e)

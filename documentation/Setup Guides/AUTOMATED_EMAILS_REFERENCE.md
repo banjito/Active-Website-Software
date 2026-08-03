@@ -162,8 +162,8 @@ All email functions use these shared environment variables:
 
 | Variable | Purpose | Required | Default |
 |----------|---------|----------|---------|
-| `POSTMARK_API_KEY` | Postmark email service API key | ✅ Yes | - |
-| `POSTMARK_FROM` | Sender email address | No | john.chambers@ampqes.com |
+| `RESEND_API_KEY` | Resend email service API key | ✅ Yes | - |
+| `RESEND_FROM` | Sender email address | No | jack.lyons@ampqes.com |
 | `REVIEW_NOTIFICATION_EMAIL` | Used by **seed script only** (legacy recipient) | No | - |
 | `WEEKLY_REPORT_EMAIL` | Used by **seed script only** | No | Falls back to `REVIEW_NOTIFICATION_EMAIL` |
 | `ACCOUNTING_NOTIFICATION_EMAIL` | Always CC'd on daily ready-to-bill digest | No | accounting@ampqes.com |
@@ -259,15 +259,15 @@ As Needed:
 - Daily Ready-to-Bill Report: ~30 emails/month
 - Weekly Reports: ~8 emails/month (2 x 4 weeks)
 - Ready to Bill (instant): Variable (based on job completions)
-- **Total: ~70-80 emails/month** (within Postmark's 100/month free tier)
+- **Total: ~70-80 emails/month** (within Resend's free tier)
 
 ---
 
 ## 🔍 Monitoring & Logs
 
 ### Check Email Delivery
-1. **Postmark Dashboard**
-   - Go to https://account.postmarkapp.com
+1. **Resend Dashboard**
+   - Go to https://resend.com/emails
    - Activity → Search for emails
    - View delivery status, opens, bounces
 
@@ -312,7 +312,7 @@ schedule:
 ## 💡 Troubleshooting
 
 ### No Emails Received?
-1. ✅ Check Postmark dashboard for delivery status
+1. ✅ Check Resend dashboard for delivery status
 2. ✅ Verify environment variables are set correctly
 3. ✅ Check Supabase function logs for errors
 4. ✅ Confirm email address is correct and not blocking
@@ -349,7 +349,7 @@ schedule:
 | Service | Free Tier | Current Usage | Cost |
 |---------|-----------|---------------|------|
 | Supabase Edge Functions | 500K invocations/month | ~190/month | $0 |
-| Postmark | 100 emails/month | ~70-80/month | $0 |
+| Resend | 3,000 emails/month | ~70-80/month | $0 |
 | GitHub Actions | 2,000 minutes/month | ~15 minutes/month | $0 |
 | **Total** | - | - | **$0/month** |
 

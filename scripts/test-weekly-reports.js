@@ -48,7 +48,7 @@ async function testWeeklyReports() {
     console.log('ℹ️  No emails were sent');
     console.log('   This could be because:');
     console.log('   - No data matches the criteria (normal)');
-    console.log('   - POSTMARK_API_KEY is not configured\n');
+    console.log('   - RESEND_API_KEY is not configured\n');
   }
 }
 

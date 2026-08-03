@@ -38,8 +38,8 @@ supabase functions deploy ready-to-bill-notification
 The ready-to-bill notification uses the same environment variables as your existing daily email system:
 
 ### Required Variables (should already be set):
-- **POSTMARK_API_KEY**: Your Postmark API key
-- **POSTMARK_FROM**: Sender email (defaults to john.chambers@ampqes.com)
+- **RESEND_API_KEY**: Your Resend API key
+- **RESEND_FROM**: Sender email (defaults to jack.lyons@ampqes.com)
 - **SUPABASE_URL**: Your Supabase project URL
 - **SUPABASE_SERVICE_ROLE_KEY**: Your service role key
 
@@ -108,8 +108,8 @@ Job Ready to Bill: [JOB-NUMBER] - [JOB-TITLE]
    - Check the logs for any errors
 
 2. **Verify Environment Variables**:
-   - Ensure POSTMARK_API_KEY is set and valid
-   - Check POSTMARK_FROM is a verified sender
+   - Ensure RESEND_API_KEY is set and valid
+   - Check RESEND_FROM is a verified sender
 
 3. **Test the Function Directly**:
    ```bash

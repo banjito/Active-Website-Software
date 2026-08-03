@@ -58,15 +58,15 @@ Deploy manually through the Supabase Dashboard (same process as your daily email
 The weekly reports use the **same environment variables** as your existing daily email system, so if those are already set up, you're good to go!
 
 ### Required Variables (should already be set):
-- **POSTMARK_API_KEY**: Your Postmark API key for sending emails
-- **POSTMARK_FROM**: Sender email (defaults to john.chambers@ampqes.com)
+- **RESEND_API_KEY**: Your Resend API key for sending emails
+- **RESEND_FROM**: Sender email (defaults to jack.lyons@ampqes.com)
 - **SUPABASE_URL**: Your Supabase project URL
 - **SUPABASE_SERVICE_ROLE_KEY**: Your service role key
 
 ### Optional New Variable:
 - **WEEKLY_REPORT_EMAIL**: Email address to receive the reports
   - If not set, falls back to `REVIEW_NOTIFICATION_EMAIL`
-  - If that's not set either, defaults to john.chambers@ampqes.com
+  - If that's not set either, defaults to jack.lyons@ampqes.com
 
 ### To add the new variable (optional):
 1. Go to your Supabase Dashboard
@@ -213,9 +213,9 @@ If you prefer using cron-job.org or similar:
 ## 🔍 Troubleshooting
 
 ### No Email Received?
-- ✅ Check that POSTMARK_API_KEY is set correctly
+- ✅ Check that RESEND_API_KEY is set correctly
 - ✅ Verify WEEKLY_REPORT_EMAIL or REVIEW_NOTIFICATION_EMAIL is set
-- ✅ Check Postmark dashboard for delivery status
+- ✅ Check Resend dashboard for delivery status
 - ✅ Look at Supabase Edge Function logs for errors
 
 ### Empty Report?
@@ -236,7 +236,7 @@ The schedule is set for Monday 8:00 AM CST (14:00 UTC). To adjust:
 - Check Supabase Dashboard → Edge Functions → Logs
 - Verify environment variables are set
 - Test with curl commands first
-- Check that your Postmark account is active
+- Check that your Resend account is active
 
 ---
 
@@ -298,7 +298,7 @@ After completing this setup, you'll have:
 ## 💰 Cost Breakdown
 
 - **Supabase Edge Functions:** 500,000 invocations/month free (you'll use ~8/month)
-- **Postmark:** 100 emails/month free tier (you'll use ~13/month)
+- **Resend:** 3,000 emails/month free tier (you'll use ~13/month)
 - **GitHub Actions:** 2,000 minutes/month free (you'll use ~2 minutes/month)
 - **Total:** $0/month
 
@@ -312,7 +312,7 @@ After completing this setup, you'll have:
 - [ ] Verify GitHub Actions secrets are set
 - [ ] Test the GitHub Actions workflow manually
 - [ ] Wait for first Monday at 8am to verify automatic execution
-- [ ] Check Postmark dashboard for delivery confirmation
+- [ ] Check Resend dashboard for delivery confirmation
 
 ---
 
@@ -329,7 +329,7 @@ After completing this setup, you'll have:
 **Need Help?** Check the logs in:
 - **Supabase Dashboard** → Edge Functions → Logs
 - **GitHub Actions** → Workflow runs → Click on a run to see details
-- **Postmark Dashboard** → Activity → Search for your emails
+- **Resend Dashboard** → Activity → Search for your emails
 
 ---
 

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { BRAND_COLOR, COMPANY_ADMIN_EMAIL, COMPANY_FULL_NAME, COMPANY_NAME, COMPANY_OPS_EMAIL } from '../_shared/companyConfig.ts'
+import { BRAND_COLOR, COMPANY_ADMIN_EMAIL, COMPANY_FULL_NAME, COMPANY_SUPPRESSED_EMAILS } from '../_shared/companyConfig.ts'
+import { buildFromHeader, getEmailApiKey, sendEmail } from '../_shared/email.ts'
 
 console.log("issue-resolved-notification: function loaded");
 
@@ -118,9 +119,8 @@ serve(async (req) => {
       emailsToSend.push(ADMIN_NOTIFY_EMAIL);
     }
 
-    const LEGACY_NOTIFY_EMAIL = COMPANY_OPS_EMAIL;
     const filteredEmailsToSend = emailsToSend.filter(
-      (email) => email.trim().toLowerCase() !== LEGACY_NOTIFY_EMAIL,
+      (email) => !COMPANY_SUPPRESSED_EMAILS.includes(email.trim().toLowerCase()),
     );
 
     console.log("Emails to notify:", filteredEmailsToSend);
@@ -133,17 +133,16 @@ serve(async (req) => {
     }
 
     // 4. Build email content based on action
-    const pmKey = Deno.env.get("POSTMARK_API_KEY");
-    if (!pmKey)
+    if (!getEmailApiKey())
       return new Response(
-        JSON.stringify({ emailSent: false, message: "no POSTMARK_API_KEY" }),
+        JSON.stringify({ emailSent: false, message: "no RESEND_API_KEY" }),
         { headers },
       );
 
     const label =
       issue.type === "feature_request" ? "Feature request" : "Issue";
-    const from = (Deno.env.get("POSTMARK_FROM") ?? COMPANY_ADMIN_EMAIL).trim();
-    const fromHeader = from.includes("<") ? from : `${COMPANY_NAME} System <${from}>`;
+    const from = (Deno.env.get("RESEND_FROM") ?? COMPANY_ADMIN_EMAIL).trim();
+    const fromHeader = buildFromHeader(from);
     const appUrl = (
       Deno.env.get("APP_URL") ||
       Deno.env.get("SITE_URL") ||
@@ -217,25 +216,15 @@ serve(async (req) => {
     for (const email of filteredEmailsToSend) {
       try {
         console.log("Sending to:", email);
-        const pmRes = await fetch("https://api.postmarkapp.com/email", {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            "X-Postmark-Server-Token": pmKey,
-          },
-          body: JSON.stringify({
-            From: fromHeader,
-            To: email,
-            Subject: emailSubject,
-            HtmlBody: htmlBody,
-            TextBody: textBodyStr,
-            MessageStream: "outbound",
-          }),
+        const sendRes = await sendEmail({
+          from: fromHeader,
+          to: email,
+          subject: emailSubject,
+          html: htmlBody,
+          text: textBodyStr,
         });
-        const pmText = await pmRes.text();
-        console.log("Postmark response for", email, ":", pmRes.status, pmText);
-        if (pmRes.ok) sentTo.push(email);
+        console.log("Resend response for", email, ":", sendRes.status, sendRes.body);
+        if (sendRes.ok) sentTo.push(email);
       } catch (e) {
         console.warn("Failed to send to", email, e);
       }

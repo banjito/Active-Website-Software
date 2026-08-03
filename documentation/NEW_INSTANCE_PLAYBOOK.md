@@ -29,7 +29,7 @@ Rough time budget: ~1 day the first time, half a day once practiced.
 | Supabase project | supabase.com → New project | Project URL, anon key, service-role key, DB password | Paid tier recommended (backups) |
 | Netlify site (staff app) | netlify.com | Site + custom domain | Free tier works to start |
 | Netlify site (customer portal) | netlify.com | Second site, e.g. `customer.<their-domain>` | Free tier |
-| Postmark | postmarkapp.com | Server API token + verified sender domain (their domain!) | Paid, ~$15/mo |
+| Resend | resend.com | API key + verified sending domain (their domain!) | Free to 3,000 emails/mo |
 | QuickBooks app | developer.intuit.com | Client ID + secret, redirect URI configured | Free |
 | Browserless | browserless.io | API token (report PDF rendering) | Paid |
 | DeepSeek | platform.deepseek.com | API key (custom-form AI generator — optional) | Pay-per-use |
@@ -69,7 +69,7 @@ Then set the function secrets (Dashboard → Edge Functions → Secrets, or
 - `COMPANY_BRAND_COLOR` — hex, used in notification emails
 - `ACCOUNTING_NOTIFICATION_EMAIL` — their accounting inbox
 
-**Email** — `POSTMARK_API_KEY`, `POSTMARK_FROM` (must be on their verified domain)
+**Email** — `RESEND_API_KEY`, `RESEND_FROM` (must be on their verified domain)
 
 **QuickBooks** — `QB_CLIENT_ID`, `QB_CLIENT_SECRET`, `QB_ENVIRONMENT`
 (`production`), `QB_REDIRECT_URI` (their staff-app URL +

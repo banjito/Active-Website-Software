@@ -2519,115 +2519,128 @@ const MediumVoltageCableVLFTest = () => {
                     className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
                   />
                 </div>
+              </div>
 
-                <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    From
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.cableInfo?.from || ""}
-                    onChange={(e) =>
-                      handleChange("cableInfo", {
-                        ...formData.cableInfo,
-                        from: e.target.value,
-                      })
-                    }
-                    readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
-                  />
+              <div>
+                <h3 className="text-base font-semibold mb-2 text-neutral-900 dark:text-white">
+                  From Termination
+                </h3>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                  <div className="flex items-center">
+                    <label className="w-1/2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      Equipment ID
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.cableInfo?.from || ""}
+                      onChange={(e) =>
+                        handleChange("cableInfo", {
+                          ...formData.cableInfo,
+                          from: e.target.value,
+                        })
+                      }
+                      readOnly={!isEditMode}
+                      className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <label className="w-1/2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      Termination Data
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.terminationData?.terminationData || ""}
+                      onChange={(e) =>
+                        handleChange("terminationData", {
+                          ...formData.terminationData,
+                          terminationData: e.target.value,
+                        })
+                      }
+                      readOnly={!isEditMode}
+                      className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <label className="w-1/2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      Rated Voltage (kV)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.terminationData?.ratedVoltage || ""}
+                      onChange={(e) =>
+                        handleChange("terminationData", {
+                          ...formData.terminationData,
+                          ratedVoltage: e.target.value,
+                        })
+                      }
+                      readOnly={!isEditMode}
+                      className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    To
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.cableInfo?.to || ""}
-                    onChange={(e) =>
-                      handleChange("cableInfo", {
-                        ...formData.cableInfo,
-                        to: e.target.value,
-                      })
-                    }
-                    readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
-                  />
-                </div>
+              </div>
 
-                <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    Termination Data
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.terminationData?.terminationData || ""}
-                    onChange={(e) =>
-                      handleChange("terminationData", {
-                        ...formData.terminationData,
-                        terminationData: e.target.value,
-                      })
-                    }
-                    readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
-                  />
-                </div>
-                <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    Termination Data
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.terminationData?.terminationData2 || ""}
-                    onChange={(e) =>
-                      handleChange("terminationData", {
-                        ...formData.terminationData,
-                        terminationData2: e.target.value,
-                      })
-                    }
-                    readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
-                  />
-                </div>
-
-                <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    Rated Voltage (kV)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.terminationData?.ratedVoltage || ""}
-                    onChange={(e) =>
-                      handleChange("terminationData", {
-                        ...formData.terminationData,
-                        ratedVoltage: e.target.value,
-                      })
-                    }
-                    readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
-                  />
-                </div>
-                <div className="flex items-center">
-                  <label className="w-1/2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    Rated Voltage (kV)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.terminationData?.ratedVoltage2 || ""}
-                    onChange={(e) =>
-                      handleChange("terminationData", {
-                        ...formData.terminationData,
-                        ratedVoltage2: e.target.value,
-                      })
-                    }
-                    readOnly={!isEditMode}
-                    className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
-                  />
+              <div>
+                <h3 className="text-base font-semibold mb-2 text-neutral-900 dark:text-white">
+                  To Termination
+                </h3>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                  <div className="flex items-center">
+                    <label className="w-1/2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      Equipment ID
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.cableInfo?.to || ""}
+                      onChange={(e) =>
+                        handleChange("cableInfo", {
+                          ...formData.cableInfo,
+                          to: e.target.value,
+                        })
+                      }
+                      readOnly={!isEditMode}
+                      className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <label className="w-1/2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      Termination Data
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.terminationData?.terminationData2 || ""}
+                      onChange={(e) =>
+                        handleChange("terminationData", {
+                          ...formData.terminationData,
+                          terminationData2: e.target.value,
+                        })
+                      }
+                      readOnly={!isEditMode}
+                      className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <label className="w-1/2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      Rated Voltage (kV)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.terminationData?.ratedVoltage2 || ""}
+                      onChange={(e) =>
+                        handleChange("terminationData", {
+                          ...formData.terminationData,
+                          ratedVoltage2: e.target.value,
+                        })
+                      }
+                      readOnly={!isEditMode}
+                      className={`w-1/2 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-[#f26722] focus:ring-[#f26722] dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Print-only table */}
+            {/* Print-only cable data table + From/To termination tables */}
             <div className="hidden print:block">
               <table className="w-full border border-neutral-300 print:border-black cable-termination-print-table">
                 <colgroup>
@@ -2648,34 +2661,26 @@ const MediumVoltageCableVLFTest = () => {
                       <div>{formData.cableInfo?.manufacturer || ""}</div>
                     </td>
                     <td className="p-2 border border-neutral-300 print:border-black">
+                      <div className="font-semibold">Cable Operating Voltage (kV)</div>
+                      <div>{formData.cableInfo?.operatingVoltage || ""}</div>
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      <div className="font-semibold">Cable Rated Voltage (kV)</div>
+                      <div>{formData.cableInfo?.voltageRating || ""}</div>
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold">Cable Type</div>
                       <div>{formData.cableType || ""}</div>
-                    </td>
-                    <td className="p-2 border border-neutral-300 print:border-black">
-                      <div className="font-semibold">Conductor Size</div>
-                      <div>{formData.cableInfo?.size || ""}</div>
-                    </td>
-                    <td className="p-2 border border-neutral-300 print:border-black">
-                      <div className="font-semibold">From</div>
-                      <div>{formData.cableInfo?.from || ""}</div>
                     </td>
                   </tr>
                   <tr>
                     <td className="p-2 border border-neutral-300 print:border-black">
-                      <div className="font-semibold">
-                        Cable Operating Voltage (kV)
-                      </div>
-                      <div>{formData.cableInfo?.operatingVoltage || ""}</div>
-                    </td>
-                    <td className="p-2 border border-neutral-300 print:border-black">
-                      <div className="font-semibold">
-                        Cable Rated Voltage (kV)
-                      </div>
-                      <div>{formData.cableInfo?.voltageRating || ""}</div>
-                    </td>
-                    <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold">Length (ft)</div>
                       <div>{formData.cableLength || ""}</div>
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      <div className="font-semibold">Conductor Size</div>
+                      <div>{formData.cableInfo?.size || ""}</div>
                     </td>
                     <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold">Insulation Type</div>
@@ -2685,30 +2690,60 @@ const MediumVoltageCableVLFTest = () => {
                       <div className="font-semibold">Conductor Material</div>
                       <div>{formData.cableInfo?.conductorMaterial || ""}</div>
                     </td>
-                  </tr>
-                  <tr>
                     <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold">Insulation Thickness</div>
                       <div>{formData.cableInfo?.insulationThickness || ""}</div>
                     </td>
+                  </tr>
+                </tbody>
+              </table>
+              <h3 className="text-base font-semibold mt-3 mb-1 print:mt-2 print:mb-1 print:text-black print:font-bold">
+                From Termination
+              </h3>
+              <table className="w-full border border-neutral-300 print:border-black cable-termination-print-table">
+                <colgroup>
+                  <col style={{ width: "33.33%" }} />
+                  <col style={{ width: "33.33%" }} />
+                  <col style={{ width: "33.34%" }} />
+                </colgroup>
+                <tbody>
+                  <tr>
                     <td className="p-2 border border-neutral-300 print:border-black">
-                      <div className="font-semibold">Termination Data</div>
-                      <div>
-                        {formData.terminationData?.terminationData || ""}
-                      </div>
+                      <div className="font-semibold">Equipment ID</div>
+                      <div>{formData.cableInfo?.from || ""}</div>
                     </td>
                     <td className="p-2 border border-neutral-300 print:border-black">
-                      <div className="font-semibold">Termination Data 2</div>
-                      <div>
-                        {formData.terminationData?.terminationData2 || ""}
-                      </div>
+                      <div className="font-semibold">Termination Data</div>
+                      <div>{formData.terminationData?.terminationData || ""}</div>
                     </td>
                     <td className="p-2 border border-neutral-300 print:border-black">
                       <div className="font-semibold">Rated Voltage (kV)</div>
                       <div>{formData.terminationData?.ratedVoltage || ""}</div>
                     </td>
+                  </tr>
+                </tbody>
+              </table>
+              <h3 className="text-base font-semibold mt-3 mb-1 print:mt-2 print:mb-1 print:text-black print:font-bold">
+                To Termination
+              </h3>
+              <table className="w-full border border-neutral-300 print:border-black cable-termination-print-table">
+                <colgroup>
+                  <col style={{ width: "33.33%" }} />
+                  <col style={{ width: "33.33%" }} />
+                  <col style={{ width: "33.34%" }} />
+                </colgroup>
+                <tbody>
+                  <tr>
                     <td className="p-2 border border-neutral-300 print:border-black">
-                      <div className="font-semibold">Rated Voltage 2 (kV)</div>
+                      <div className="font-semibold">Equipment ID</div>
+                      <div>{formData.cableInfo?.to || ""}</div>
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      <div className="font-semibold">Termination Data</div>
+                      <div>{formData.terminationData?.terminationData2 || ""}</div>
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      <div className="font-semibold">Rated Voltage (kV)</div>
                       <div>{formData.terminationData?.ratedVoltage2 || ""}</div>
                     </td>
                   </tr>

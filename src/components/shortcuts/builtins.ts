@@ -31,7 +31,10 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
   {
     key: "portal",
     label: "Portal",
-    options: [{ label: "Home", path: "/portal" }],
+    options: [
+      { label: "Home", path: "/portal" },
+      { label: "Features & Fixes", path: "/features-fixes" },
+    ],
   },
   {
     key: "sales",

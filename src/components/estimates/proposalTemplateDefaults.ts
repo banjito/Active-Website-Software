@@ -453,13 +453,23 @@ export function resolveProposalTemplateSections(
  * Substitute {{token}} placeholders in a template section. Only tokens present
  * in `tokens` are replaced; unrecognized placeholders are left visible so a
  * typo shows up in the letter instead of silently vanishing.
+ *
+ * A token that resolves to an empty string also swallows a <br/> that
+ * immediately follows it, so an address block like "{{customerAddress}}<br/>"
+ * collapses instead of leaving a blank line when there is nothing on file.
  */
 export function renderTemplateSection(
   html: string,
   tokens: Record<string, string>,
 ): string {
-  return html.replace(/\{\{\s*([A-Za-z0-9_]+)\s*\}\}/g, (match, name) =>
-    Object.prototype.hasOwnProperty.call(tokens, name) ? tokens[name] : match,
+  return html.replace(
+    /\{\{\s*([A-Za-z0-9_]+)\s*\}\}([ \t]*<br\s*\/?>)?/g,
+    (match, name, trailingBreak) => {
+      if (!Object.prototype.hasOwnProperty.call(tokens, name)) return match;
+      const value = tokens[name];
+      if (!value) return "";
+      return value + (trailingBreak || "");
+    },
   );
 }
 

@@ -5115,9 +5115,11 @@ export default function EstimateSheet({
     };
   }, [isLetterProposalOpen]);
 
-  // Function to format address for letter proposal
+  // Function to format address for letter proposal. Returns "" when the
+  // customer has no address on file so the letter shows nothing rather than a
+  // placeholder (renderTemplateSection drops the trailing <br/> for us).
   function formatAddressForLetter(address: string): string {
-    if (!address) return "Address";
+    if (!address) return "";
 
     // Remove "United States" from the address
     const formattedAddress = address.replace(/,?\s*United States\s*$/i, "");
@@ -5128,7 +5130,7 @@ export default function EstimateSheet({
       .map((part) => part.trim())
       .filter((part) => part);
 
-    if (parts.length === 0) return "Address";
+    if (parts.length === 0) return "";
     if (parts.length === 1) return parts[0];
 
     // Format as: "Street Address," on first line, "City, State, Zip" on second line

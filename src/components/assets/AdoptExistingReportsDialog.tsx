@@ -34,6 +34,10 @@ export interface ExistingReportAsset {
   id: string;
   identifier: string;
   substation: string;
+  /** The report document's own name, for listing it back to the user. */
+  name?: string;
+  /** In-app path to open the report, with the "report:" prefix already stripped. */
+  url?: string;
   /** Already linked to an equipment asset — nothing to adopt. */
   equipmentAssetId?: string | null;
 }

@@ -25,6 +25,7 @@ import { toast } from "react-hot-toast";
 import {
   bulkInsertEquipmentAssets,
   createEquipmentType,
+  setAssetParent,
 } from "@/services/equipmentAssetsService";
 import {
   IMPORTABLE_ASSET_FIELDS,
@@ -38,6 +39,16 @@ const UNMAPPED = "__unmapped__";
 /** Header spellings we auto-match, so a normal spreadsheet needs no mapping at all. */
 const HEADER_HINTS: Record<ImportableAssetField, string[]> = {
   identifier: ["identifier", "id", "equipmentid", "tag", "assetid", "name", "equipment"],
+  // Deliberately narrow: "lineup" and "assembly" would fight the substation hints and
+  // silently steal that column from it.
+  parent_identifier: [
+    "partof",
+    "parent",
+    "parentidentifier",
+    "parentasset",
+    "belongsto",
+    "subassetof",
+  ],
   building_area: ["building", "area", "buildingarea", "datahall", "hall", "dc", "zone"],
   substation: ["substation", "sub", "switchgear", "lineup"],
   equipment_location: ["equipmentlocation", "location", "room", "eqptlocation", "place"],
@@ -94,6 +105,11 @@ interface BulkAssetImportDialogProps {
   siteName: string;
   /** Lowercased identifiers already at the site, for duplicate flagging. */
   existingIdentifiers: Set<string>;
+  /**
+   * Every asset at the site, so a "Part of" column can be resolved to real equipment.
+   * Omitted where sub-assets aren't available, which hides the field.
+   */
+  siteAssets?: EquipmentAsset[];
   knownEquipmentTypes: string[];
   userId?: string;
   onImported: (created: EquipmentAsset[]) => void;
@@ -113,6 +129,7 @@ export function BulkAssetImportDialog({
   siteId,
   siteName,
   existingIdentifiers,
+  siteAssets,
   knownEquipmentTypes,
   userId,
   onImported,
@@ -218,6 +235,38 @@ export function BulkAssetImportDialog({
   }, [columnCount, hasHeader, headerRow]);
 
   const identifierColumn = mapping.identifier;
+  /** "Part of" only makes sense where sub-assets exist on this database. */
+  const subAssetsAvailable = Boolean(siteAssets);
+  const parentColumnMapped =
+    subAssetsAvailable && mapping.parent_identifier !== undefined;
+
+  /** Site equipment by lowercased identifier, for resolving the "Part of" column. */
+  const siteAssetsByIdentifier = useMemo(() => {
+    const map = new Map<string, EquipmentAsset>();
+    for (const a of siteAssets ?? []) map.set(a.identifier.trim().toLowerCase(), a);
+    return map;
+  }, [siteAssets]);
+
+  /**
+   * What this file itself declares: each row's identifier mapped to the parent it names.
+   * A parent can therefore be created by the same import — and a row that points at one
+   * which is itself a sub-asset can be caught before the database rejects it.
+   */
+  const parentsInFile = useMemo(() => {
+    const idColumn = mapping.identifier;
+    const parentColumn = mapping.parent_identifier;
+    const map = new Map<string, string>();
+    if (idColumn === undefined) return map;
+    for (const row of dataRows) {
+      const identifier = (row[idColumn] ?? "").trim().toLowerCase();
+      if (!identifier || map.has(identifier)) continue;
+      map.set(
+        identifier,
+        parentColumn === undefined ? "" : (row[parentColumn] ?? "").trim(),
+      );
+    }
+    return map;
+  }, [dataRows, mapping]);
 
   /** Rows turned into asset inputs, each flagged with why it might not import. */
   const candidates = useMemo(() => {
@@ -241,13 +290,48 @@ export function BulkAssetImportDialog({
 
       if (identifier) seenInFile.add(key);
 
+      // ── Resolve "Part of" ──────────────────────────────────────────────────
+      // Three outcomes: an asset already at the site (linked immediately), another row
+      // of this same file (linked in a second pass, once it has an id), or nothing —
+      // which imports the row as top-level rather than guessing.
+      const parentIdentifier = subAssetsAvailable ? valueOf("parent_identifier") : "";
+      const parentKey = parentIdentifier.toLowerCase();
+      const existingParent = parentKey ? siteAssetsByIdentifier.get(parentKey) : undefined;
+      let parentAssetId: string | null = null;
+      let pendingParentIdentifier: string | null = null;
+      let warning: string | null = null;
+
+      if (parentIdentifier) {
+        if (parentKey === key) {
+          warning = "Listed as its own parent — imported as top-level";
+        } else if (existingParent) {
+          if (existingParent.parent_asset_id) {
+            warning = `"${parentIdentifier}" is itself a sub-asset — imported as top-level`;
+          } else {
+            parentAssetId = existingParent.id;
+          }
+        } else if (parentsInFile.has(parentKey)) {
+          if (parentsInFile.get(parentKey)) {
+            warning = `"${parentIdentifier}" is itself a sub-asset in this file — imported as top-level`;
+          } else {
+            pendingParentIdentifier = parentIdentifier;
+          }
+        } else {
+          warning = `No asset named "${parentIdentifier}" — imported as top-level`;
+        }
+      }
+
       return {
         issue,
+        warning,
+        parentIdentifier,
+        pendingParentIdentifier,
         // The row's line in the source spreadsheet, so a flagged row can be found there.
         rowNumber: index + (hasHeader ? 2 : 1),
         input: {
           site_id: siteId,
           identifier,
+          parent_asset_id: parentAssetId,
           building_area: valueOf("building_area") || null,
           substation: valueOf("substation") || null,
           equipment_location: valueOf("equipment_location") || null,
@@ -259,19 +343,39 @@ export function BulkAssetImportDialog({
         } as EquipmentAssetInput,
       };
     });
-  }, [dataRows, mapping, identifierColumn, existingIdentifiers, siteId, hasHeader]);
+  }, [
+    dataRows,
+    mapping,
+    identifierColumn,
+    existingIdentifiers,
+    siteId,
+    hasHeader,
+    subAssetsAvailable,
+    siteAssetsByIdentifier,
+    parentsInFile,
+  ]);
 
   const importable = useMemo(() => candidates.filter((c) => !c.issue), [candidates]);
   const skipped = candidates.length - importable.length;
+  const flagged = useMemo(
+    () => candidates.filter((c) => c.issue || c.warning).length,
+    [candidates],
+  );
+  const nestedCount = useMemo(
+    () =>
+      importable.filter((c) => c.input.parent_asset_id || c.pendingParentIdentifier)
+        .length,
+    [importable],
+  );
 
-  // Falls back to every row once a re-mapping clears the issues, so the toggle can't
+  // Falls back to every row once a re-mapping clears the flags, so the toggle can't
   // leave you staring at an empty list.
   const previewRows = useMemo(
     () =>
-      previewFilter === "skipped" && skipped > 0
-        ? candidates.filter((c) => c.issue)
+      previewFilter === "skipped" && flagged > 0
+        ? candidates.filter((c) => c.issue || c.warning)
         : candidates,
-    [candidates, previewFilter, skipped],
+    [candidates, previewFilter, flagged],
   );
 
   const runImport = async () => {
@@ -291,10 +395,44 @@ export function BulkAssetImportDialog({
       );
       for (const t of newTypes) void createEquipmentType(t);
 
+      // Second pass: rows whose parent was created by this same import only have an id to
+      // point at now that the insert has happened.
+      const createdByIdentifier = new Map(
+        result.inserted.map((a) => [a.identifier.trim().toLowerCase(), a]),
+      );
+      let nested = 0;
+      let failedToNest = 0;
+      for (const candidate of importable) {
+        if (!candidate.pendingParentIdentifier) continue;
+        const child = createdByIdentifier.get(
+          candidate.input.identifier.trim().toLowerCase(),
+        );
+        const parent = createdByIdentifier.get(
+          candidate.pendingParentIdentifier.trim().toLowerCase(),
+        );
+        if (!child || !parent) {
+          failedToNest++;
+          continue;
+        }
+        try {
+          await setAssetParent(child.id, parent.id, userId);
+          nested++;
+        } catch (e) {
+          console.error(e);
+          failedToNest++;
+        }
+      }
+
       const extra = result.skipped.length
         ? `, ${result.skipped.length} skipped as duplicates`
         : "";
-      toast.success(`Imported ${result.inserted.length} assets${extra}`);
+      const nestedNote = nested > 0 ? `, ${nested} nested under a parent` : "";
+      toast.success(`Imported ${result.inserted.length} assets${extra}${nestedNote}`);
+      if (failedToNest > 0) {
+        toast.error(
+          `${failedToNest} row${failedToNest === 1 ? "" : "s"} imported but could not be nested — set "Part of" on them by hand.`,
+        );
+      }
       onImported(result.inserted);
       close();
     } catch (e: any) {
@@ -422,8 +560,16 @@ export function BulkAssetImportDialog({
 
             <div>
               <p className="mb-2 text-sm font-medium">Match your columns</p>
+              {subAssetsAvailable && (
+                <p className="mb-2 text-xs text-neutral-500 dark:text-neutral-400">
+                  <strong>Part of</strong> takes the parent's identifier — either equipment
+                  already at this site or another row in this same file.
+                </p>
+              )}
               <div className="grid gap-3 sm:grid-cols-3">
-                {IMPORTABLE_ASSET_FIELDS.map((field) => (
+                {IMPORTABLE_ASSET_FIELDS.filter(
+                  (field) => field.key !== "parent_identifier" || subAssetsAvailable,
+                ).map((field) => (
                   <div key={field.key}>
                     <Label htmlFor={`map-${field.key}`}>
                       {field.label}
@@ -464,6 +610,12 @@ export function BulkAssetImportDialog({
                 <div className="mb-2 flex flex-wrap items-center gap-3">
                   <p className="text-sm">
                     <strong>{importable.length}</strong> ready to import
+                    {nestedCount > 0 && (
+                      <span className="text-neutral-500 dark:text-neutral-400">
+                        {" "}
+                        · {nestedCount} nested under a parent
+                      </span>
+                    )}
                     {skipped > 0 && (
                       <span className="text-amber-600 dark:text-amber-400">
                         {" "}
@@ -471,12 +623,12 @@ export function BulkAssetImportDialog({
                       </span>
                     )}
                   </p>
-                  {skipped > 0 && (
+                  {flagged > 0 && (
                     <div className="ml-auto flex border border-neutral-200 dark:border-neutral-600">
                       {(
                         [
                           { value: "all", label: `All ${candidates.length}` },
-                          { value: "skipped", label: `Skipped ${skipped}` },
+                          { value: "skipped", label: `Needs attention ${flagged}` },
                         ] as const
                       ).map((option) => (
                         <button
@@ -506,6 +658,7 @@ export function BulkAssetImportDialog({
                         <TableHead>Building / Area</TableHead>
                         <TableHead>Substation</TableHead>
                         <TableHead>Identifier</TableHead>
+                        {parentColumnMapped && <TableHead>Part of</TableHead>}
                         <TableHead>Location</TableHead>
                         <TableHead>Type</TableHead>
                         <TableHead>Status</TableHead>
@@ -516,7 +669,9 @@ export function BulkAssetImportDialog({
                         <TableRow
                           key={c.rowNumber}
                           className={
-                            c.issue ? "bg-amber-50/60 dark:bg-amber-950/30" : ""
+                            c.issue || c.warning
+                              ? "bg-amber-50/60 dark:bg-amber-950/30"
+                              : ""
                           }
                         >
                           <TableCell className="text-xs text-neutral-400">
@@ -527,12 +682,38 @@ export function BulkAssetImportDialog({
                           <TableCell className="font-medium">
                             {c.input.identifier || "—"}
                           </TableCell>
+                          {parentColumnMapped && (
+                            <TableCell>
+                              {c.parentIdentifier ? (
+                                <span
+                                  className={
+                                    c.warning
+                                      ? "text-amber-600 dark:text-amber-400"
+                                      : undefined
+                                  }
+                                >
+                                  {c.parentIdentifier}
+                                  {c.pendingParentIdentifier && (
+                                    <span className="ml-1 text-xs text-neutral-400">
+                                      (in this file)
+                                    </span>
+                                  )}
+                                </span>
+                              ) : (
+                                "—"
+                              )}
+                            </TableCell>
+                          )}
                           <TableCell>{c.input.equipment_location || "—"}</TableCell>
                           <TableCell>{c.input.equipment_type || "—"}</TableCell>
                           <TableCell>
                             {c.issue ? (
                               <span className="text-amber-600 dark:text-amber-400">
                                 {c.issue}
+                              </span>
+                            ) : c.warning ? (
+                              <span className="text-amber-600 dark:text-amber-400">
+                                {c.warning}
                               </span>
                             ) : (
                               <span className="text-green-600 dark:text-green-400">
@@ -548,8 +729,8 @@ export function BulkAssetImportDialog({
                 <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
                   Showing all {previewRows.length} row
                   {previewRows.length === 1 ? "" : "s"}
-                  {previewFilter === "skipped" ? " that will be skipped" : ""} — scroll
-                  the list to review them.
+                  {previewFilter === "skipped" ? " that need a look" : ""} — scroll the
+                  list to review them.
                 </p>
               </div>
             )}

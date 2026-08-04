@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -8,6 +8,8 @@ import {
   Copy,
   CornerDownRight,
   FilePlus2,
+  FileText,
+  Link2,
   Link2Off,
   Pencil,
   Trash2,
@@ -41,6 +43,13 @@ interface SortLevel {
   asc: boolean;
 }
 
+/** A report document linked to an asset. */
+export interface LinkedReport {
+  id: string;
+  name?: string;
+  url?: string;
+}
+
 const SORT_LABELS: Record<SortKey, string> = {
   identifier: "Identifier",
   building_area: "Building / Area",
@@ -64,6 +73,12 @@ interface EquipmentAssetsTableProps {
   onRemoveFromJob?: (asset: EquipmentAssetWithCounts) => void;
   /** Detach a sub-asset from its parent. Omitted where sub-assets aren't available. */
   onDetachFromParent?: (asset: EquipmentAssetWithCounts) => void;
+  /** Job context only — attach reports that already exist on the job to this asset. */
+  onAttachReports?: (asset: EquipmentAssetWithCounts) => void;
+  /** The reports pointing at each asset id, revealed by clicking its report count. */
+  reportsByAsset?: Map<string, LinkedReport[]>;
+  /** Open one of those reports. Without it, they're listed but not clickable. */
+  onOpenReport?: (report: LinkedReport) => void;
   /** Rendered above the table, right of the filters. */
   actions?: React.ReactNode;
   emptyMessage?: string;
@@ -112,10 +127,15 @@ export function EquipmentAssetsTable({
   onCreateReport,
   onRemoveFromJob,
   onDetachFromParent,
+  onAttachReports,
+  reportsByAsset,
+  onOpenReport,
   actions,
   emptyMessage = "No assets yet.",
   storageKey,
 }: EquipmentAssetsTableProps) {
+  /** Which rows have their linked reports expanded. Transient — not worth persisting. */
+  const [expandedReports, setExpandedReports] = useState<string[]>([]);
   const [search, setSearch] = usePersistentState(
     storageKey && `${storageKey}:search`,
     "",
@@ -303,7 +323,10 @@ export function EquipmentAssetsTable({
   };
 
   const showActions =
-    canEdit || Boolean(onCreateReport) || Boolean(onRemoveFromJob);
+    canEdit ||
+    Boolean(onCreateReport) ||
+    Boolean(onRemoveFromJob) ||
+    Boolean(onAttachReports);
   const columnCount = showActions ? 7 : 6;
   const totalAssets = assets.length;
   const hasSubAssets = assets.some((a) => a.parent_asset_id);
@@ -392,10 +415,12 @@ export function EquipmentAssetsTable({
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map(({ asset, depth, children, childReports }) => {
+              rows.flatMap(({ asset, depth, children, childReports }) => {
                 const isChild = depth === 1;
                 const isCollapsed = collapsedSet.has(asset.id);
-                return (
+                const linkedReports = reportsByAsset?.get(asset.id) ?? [];
+                const reportsExpanded = expandedReports.includes(asset.id);
+                return [
                   <TableRow
                     key={asset.id}
                     className={
@@ -440,7 +465,27 @@ export function EquipmentAssetsTable({
                     <TableCell>{asset.equipment_location || BLANK}</TableCell>
                     <TableCell>{asset.equipment_type || BLANK}</TableCell>
                     <TableCell>
-                      {asset.report_count > 0 ? (
+                      {asset.report_count > 0 && linkedReports.length > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setExpandedReports((current) =>
+                              current.includes(asset.id)
+                                ? current.filter((id) => id !== asset.id)
+                                : [...current, asset.id],
+                            )
+                          }
+                          className="font-medium text-brand hover:underline"
+                          aria-expanded={reportsExpanded}
+                          title={
+                            reportsExpanded
+                              ? "Hide linked reports"
+                              : "Show linked reports"
+                          }
+                        >
+                          {asset.report_count}
+                        </button>
+                      ) : asset.report_count > 0 ? (
                         <span className="font-medium text-brand">
                           {asset.report_count}
                         </span>
@@ -468,6 +513,17 @@ export function EquipmentAssetsTable({
                               title="Create report"
                             >
                               <FilePlus2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {onAttachReports && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => onAttachReports(asset)}
+                              aria-label={`Attach existing reports to ${asset.identifier}`}
+                              title="Attach an existing report"
+                            >
+                              <Link2 className="h-4 w-4" />
                             </Button>
                           )}
                           {canEdit && (
@@ -535,8 +591,47 @@ export function EquipmentAssetsTable({
                         </div>
                       </TableCell>
                     )}
-                  </TableRow>
-                );
+                  </TableRow>,
+
+                  reportsExpanded && linkedReports.length > 0 ? (
+                    <TableRow
+                      key={`${asset.id}-reports`}
+                      className="bg-neutral-50 dark:bg-dark-100/60"
+                    >
+                      <TableCell colSpan={columnCount} className="py-2">
+                        <div className="flex flex-col gap-1 pl-8">
+                          <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                            Reports on {asset.identifier}
+                          </span>
+                          {linkedReports.map((report) => (
+                            <div key={report.id} className="flex items-center gap-2">
+                              <FileText className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
+                              {onOpenReport && report.url ? (
+                                <button
+                                  type="button"
+                                  onClick={() => onOpenReport(report)}
+                                  className="text-left text-sm text-brand hover:underline"
+                                >
+                                  {report.name || "Untitled report"}
+                                </button>
+                              ) : (
+                                <span className="text-sm text-neutral-700 dark:text-neutral-200">
+                                  {report.name || "Untitled report"}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                          {asset.report_count > linkedReports.length && (
+                            <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                              {asset.report_count - linkedReports.length} more on other
+                              jobs at this site.
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : null,
+                ];
               })
             )}
           </TableBody>

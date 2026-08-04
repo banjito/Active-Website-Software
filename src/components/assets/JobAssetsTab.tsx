@@ -20,7 +20,7 @@ import {
   supportsSubAssets,
   unlinkAssetFromJob,
 } from "@/services/equipmentAssetsService";
-import EquipmentAssetsTable from "./EquipmentAssetsTable";
+import EquipmentAssetsTable, { type LinkedReport } from "./EquipmentAssetsTable";
 import EquipmentAssetDialog, {
   type AssetFieldSuggestions,
 } from "./EquipmentAssetDialog";
@@ -30,6 +30,7 @@ import AddAssetsFromSiteDialog from "./AddAssetsFromSiteDialog";
 import AdoptExistingReportsDialog, {
   type ExistingReportAsset,
 } from "./AdoptExistingReportsDialog";
+import AttachReportsDialog from "./AttachReportsDialog";
 import ReportTemplatePicker, {
   type ReportTemplateChoice,
 } from "./ReportTemplatePicker";
@@ -43,6 +44,11 @@ interface JobAssetsTabProps {
   customerName?: string;
   /** Report documents already on this job, with the identifiers the job page derived. */
   reportAssets: ExistingReportAsset[];
+  /**
+   * Called when this tab changes which equipment a report points at, so the job page can
+   * refresh the reports list it owns.
+   */
+  onReportLinksChanged?: () => void;
 }
 
 /**
@@ -56,6 +62,7 @@ export default function JobAssetsTab({
   jobId,
   customerName,
   reportAssets,
+  onReportLinksChanged,
 }: JobAssetsTabProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -92,6 +99,26 @@ export default function JobAssetsTab({
   const [adopting, setAdopting] = useState(false);
   const [reportForAsset, setReportForAsset] =
     useState<EquipmentAssetWithCounts | null>(null);
+  const [attachingTo, setAttachingTo] = useState<EquipmentAssetWithCounts | null>(null);
+
+  /** Identifier by asset id, so the attach dialog can name whoever owns a report today. */
+  const assetNamesById = useMemo(
+    () => new Map(siteAssets.map((a) => [a.id, a.identifier])),
+    [siteAssets],
+  );
+
+  /** The reports pointing at each asset, so a row can list them rather than just count them. */
+  const reportsByAsset = useMemo(() => {
+    const map = new Map<string, LinkedReport[]>();
+    for (const report of reportAssets) {
+      if (!report.equipmentAssetId) continue;
+      map.set(report.equipmentAssetId, [
+        ...(map.get(report.equipmentAssetId) ?? []),
+        { id: report.id, name: report.name, url: report.url },
+      ]);
+    }
+    return map;
+  }, [reportAssets]);
 
   const site = useMemo(() => sites.find((s) => s.id === siteId) ?? null, [sites, siteId]);
 
@@ -365,6 +392,9 @@ export default function JobAssetsTab({
         onDuplicate={setDuplicating}
         onDelete={handleDelete}
         onCreateReport={setReportForAsset}
+        onAttachReports={canEdit ? setAttachingTo : undefined}
+        reportsByAsset={reportsByAsset}
+        onOpenReport={(report) => report.url && navigate(report.url)}
         onRemoveFromJob={canEdit ? handleRemoveFromJob : undefined}
         onDetachFromParent={
           canEdit && supportsSubAssets() ? handleDetachFromParent : undefined
@@ -442,6 +472,7 @@ export default function JobAssetsTab({
         siteId={siteId}
         siteName={site?.name ?? ""}
         existingIdentifiers={siteIdentifiers}
+        siteAssets={supportsSubAssets() ? siteAssets : undefined}
         knownEquipmentTypes={suggestions.equipmentTypes}
         userId={user?.id}
         alsoLinksToJob
@@ -470,6 +501,19 @@ export default function JobAssetsTab({
         assetIdByIdentifier={siteAssetIds}
         userId={user?.id}
         onDone={() => void load({ silent: true })}
+      />
+
+      <AttachReportsDialog
+        open={!!attachingTo}
+        onClose={() => setAttachingTo(null)}
+        asset={attachingTo}
+        reportAssets={reportAssets}
+        assetNamesById={assetNamesById}
+        onDone={() => {
+          // The report list lives on the job page; the counts live here.
+          onReportLinksChanged?.();
+          void load({ silent: true });
+        }}
       />
 
       <ReportTemplatePicker

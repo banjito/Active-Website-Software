@@ -3,9 +3,9 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import Select from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { compareAlphanumericLabels } from "@/utils/sortUtils";
+import SearchableSelect from "./SearchableSelect";
 import {
   Dialog,
   DialogContent,
@@ -46,8 +46,6 @@ interface EquipmentAssetDialogProps {
   /** Saved asset is handed back so the caller can link it to a job. */
   onSaved: (asset: EquipmentAsset, wasCreated: boolean) => void;
 }
-
-const NO_PARENT = "";
 
 const emptyForm = {
   parent_asset_id: "",
@@ -91,21 +89,17 @@ export function EquipmentAssetDialog({
 
   const parentOptions = useMemo(() => {
     if (!siteAssets) return [];
-    return [
-      { value: NO_PARENT, label: "— none (top-level asset) —" },
-      ...siteAssets
-        .filter((a) => !a.parent_asset_id && a.id !== asset?.id)
-        .sort((a, b) => compareAlphanumericLabels(a.identifier, b.identifier))
-        .map((a) => {
-          const context = [a.building_area, a.substation, a.equipment_type]
+    return siteAssets
+      .filter((a) => !a.parent_asset_id && a.id !== asset?.id)
+      .sort((a, b) => compareAlphanumericLabels(a.identifier, b.identifier))
+      .map((a) => ({
+        value: a.id,
+        label: a.identifier,
+        hint:
+          [a.building_area, a.substation, a.equipment_type]
             .filter(Boolean)
-            .join(" · ");
-          return {
-            value: a.id,
-            label: context ? `${a.identifier} — ${context}` : a.identifier,
-          };
-        }),
-    ];
+            .join(" · ") || undefined,
+      }));
   }, [siteAssets, asset]);
 
   useEffect(() => {
@@ -219,11 +213,13 @@ export function EquipmentAssetDialog({
                 </p>
               ) : (
                 <>
-                  <Select
+                  <SearchableSelect
                     id="ea-parent"
                     value={form.parent_asset_id}
-                    onChange={(e) => set("parent_asset_id")(e.target.value)}
+                    onChange={set("parent_asset_id")}
                     options={parentOptions}
+                    emptyLabel="— none (top-level asset) —"
+                    placeholder="Type an identifier, e.g. MVG-C1"
                   />
                   <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                     Nest this under the equipment it belongs to — a switch, CT or relay

@@ -72,6 +72,9 @@ export type EquipmentAssetInput = Pick<
 /** Fields the bulk importer can map spreadsheet columns onto. */
 export const IMPORTABLE_ASSET_FIELDS = [
   { key: "identifier", label: "Identifier", required: true },
+  // The parent's *identifier*, not its id — a spreadsheet only ever knows the name. It's
+  // resolved against the site and against the other rows of the same file at import time.
+  { key: "parent_identifier", label: "Part of", required: false },
   { key: "building_area", label: "Building / Area", required: false },
   { key: "substation", label: "Substation", required: false },
   { key: "equipment_location", label: "Equipment Location", required: false },

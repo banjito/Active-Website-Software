@@ -2709,6 +2709,10 @@ export default function JobDetail() {
           id: asset.id,
           identifier: getAssetParts(asset).assetIdentifier,
           substation: assetSubstations[asset.id] || asset.substation || "",
+          name: asset.name,
+          url: asset.file_url?.startsWith("report:")
+            ? asset.file_url.slice("report:".length)
+            : undefined,
           equipmentAssetId: asset.equipment_asset_id ?? null,
         })),
     [jobAssets, getAssetParts, assetSubstations],
@@ -11848,6 +11852,7 @@ export default function JobDetail() {
                     jobId={job.id}
                     customerName={customer?.company_name || customer?.name}
                     reportAssets={equipmentReportAssets}
+                    onReportLinksChanged={() => void fetchJobAssets()}
                   />
                 )}
 

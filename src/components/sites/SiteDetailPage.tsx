@@ -245,6 +245,7 @@ export default function SiteDetailPage() {
         siteId={site.id}
         siteName={site.name}
         existingIdentifiers={existingIdentifiers}
+        siteAssets={supportsSubAssets() ? assets : undefined}
         knownEquipmentTypes={suggestions.equipmentTypes}
         userId={user?.id}
         onImported={() => void load({ silent: true })}

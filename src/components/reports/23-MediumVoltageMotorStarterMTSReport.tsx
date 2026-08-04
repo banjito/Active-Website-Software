@@ -20,6 +20,7 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { useSaveIndicator } from "./common/useSaveIndicator";
 import { ReportHeader } from "./common/ReportHeader";
 import { BRAND_COLOR } from "@/lib/companyConfig";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Temperature conversion and correction factor lookup tables (reuse from other reports)
 const tcfTable: { [key: string]: number } = {
@@ -717,6 +718,9 @@ const MediumVoltageMotorStarterMTSReport: React.FC = () => {
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, reportId, "userName");
 
   // Print Mode Detection
   const [searchParams] = useSearchParams();

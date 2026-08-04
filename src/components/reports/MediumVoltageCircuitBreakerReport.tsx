@@ -17,6 +17,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Temperature conversion and correction factor lookup tables (copied from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -474,6 +475,9 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, reportId, "user");
 
   // Force print styles for live-preview pages (?preview=true)
   useEffect(() => {

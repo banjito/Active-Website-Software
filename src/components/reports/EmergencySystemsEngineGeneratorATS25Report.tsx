@@ -17,6 +17,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Temperature correction factor lookup (same as other reports e.g. LV Circuit Breaker ATS 25)
 const tcfTable: { [key: string]: number } = {
@@ -497,6 +498,9 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
   );
 
   const [formData, setFormData] = useState<FormData>(defaultFormData);
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, initialReportId, "user");
   const [error, setError] = useState<string | null>(null);
 
   const loadJobInfo = async () => {

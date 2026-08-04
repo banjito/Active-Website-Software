@@ -18,6 +18,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { BRAND_COLOR } from "@/lib/companyConfig";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Types
 interface CableTestData {
@@ -515,6 +516,9 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
       comments: "",
     },
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, reportId, "user");
 
   // Initialize test sets when component mounts
   useEffect(() => {

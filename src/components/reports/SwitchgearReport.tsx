@@ -10,6 +10,8 @@ import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
+import { useEquipmentAssetPrefill } from "./useEquipmentAssetPrefill";
+import { createReportAsset } from "@/services/reportAssets";
 import { ReportWrapper } from "./ReportWrapper";
 import { ReportHeader } from "./common/ReportHeader";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
@@ -18,6 +20,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Add these constants at the top of the file, after the imports
 const visualInspectionOptions = [
@@ -337,6 +340,14 @@ const SwitchgearReport: React.FC = () => {
   const currentPath = location.pathname;
   const reportSlug = "switchgear-report"; // This component handles the switchgear-report route
   const reportName = getReportName(reportSlug);
+
+  // When this report was opened from an asset in the registry, carry the equipment
+  // identity in rather than making the tech retype it.
+  const {
+    equipmentAssetId,
+    prefill: assetPrefill,
+    shouldPrefill,
+  } = useEquipmentAssetPrefill(reportId);
   const [formData, setFormData] = useState<FormData>({
     // Initialize with default values
     customer: "",
@@ -746,6 +757,23 @@ const SwitchgearReport: React.FC = () => {
     status: "PASS",
   });
 
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, reportId, "userName");
+
+  // Seed a new report from the linked asset. Only fills blanks, so anything the tech has
+  // already typed wins.
+  useEffect(() => {
+    if (!shouldPrefill) return;
+    setFormData((prev) => ({
+      ...prev,
+      identifier: prev.identifier || assetPrefill.identifier,
+      substation: prev.substation || assetPrefill.substation,
+      eqptLocation: prev.eqptLocation || assetPrefill.eqptLocation,
+      manufacturer: prev.manufacturer || assetPrefill.manufacturer,
+      serialNumber: prev.serialNumber || assetPrefill.serialNumber,
+    }));
+  }, [shouldPrefill, assetPrefill]);
+
   useEffect(() => {
     if (isEditing && justSaved) {
       setJustSaved(false);
@@ -1066,31 +1094,16 @@ const SwitchgearReport: React.FC = () => {
           .select()
           .single();
 
-        // Create asset entry
+        // Create the report-document row and attach it to the job (and, when this report
+        // was started from an asset, to that piece of equipment).
         if (result.data) {
-          const assetData = {
-            name: getAssetName(
-              reportSlug,
-              formData.identifier || formData.eqptLocation || "",
-            ),
-            file_url: `report:/jobs/${jobId}/switchgear-report/${result.data.id}`,
-            user_id: user.id,
-          };
-
-          const { data: assetResult, error: assetError } = await supabase
-            .schema("neta_ops")
-            .from("assets")
-            .insert(assetData)
-            .select()
-            .single();
-
-          if (assetError) throw assetError;
-
-          // Link asset to job
-          await supabase.schema("neta_ops").from("job_assets").insert({
-            job_id: jobId,
-            asset_id: assetResult.id,
-            user_id: user.id,
+          await createReportAsset({
+            jobId: jobId!,
+            reportSlug,
+            reportId: result.data.id,
+            identifier: formData.identifier || formData.eqptLocation || "",
+            equipmentAssetId,
+            userId: user.id,
           });
         }
       }

@@ -14,6 +14,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import Button from "@/components/ui/Button";
 import { ArrowLeft } from "lucide-react";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 interface FormData {
   // Job Information
@@ -109,6 +110,9 @@ const GFITripTestReport: React.FC = () => {
     status: "PASS",
   });
 
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, reportId, "user");
+
   // Load job info
   const loadJobInfo = useCallback(async () => {
     if (!jobId) return;
@@ -141,16 +145,10 @@ const GFITripTestReport: React.FC = () => {
         }
       }
 
-      if (user) {
-        setFormData((prev) => ({
-          ...prev,
-          user: user.full_name || user.email || "",
-        }));
-      }
     } catch (error) {
       console.error("Error loading job info:", error);
     }
-  }, [jobId, user]);
+  }, [jobId]);
 
   // Load existing report
   const loadReport = useCallback(async () => {

@@ -10,6 +10,8 @@ import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
+import { useEquipmentAssetPrefill } from "./useEquipmentAssetPrefill";
+import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { ReportWrapper } from "./ReportWrapper";
 import { ReportHeader } from "./common/ReportHeader";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
@@ -17,6 +19,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { BRAND_COLOR } from "@/lib/companyConfig";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -426,6 +429,25 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
   const currentPath = location.pathname;
   const reportSlug = "low-voltage-circuit-breaker-electronic-trip-ats-report"; // This component handles the low-voltage-circuit-breaker-electronic-trip-ats-report route
   const reportName = getReportName(reportSlug);
+
+  // When this report was opened from an asset in the registry, carry the equipment
+  // identity in rather than making the tech retype it.
+  const {
+    equipmentAssetId,
+    prefill: assetPrefill,
+    shouldPrefill,
+  } = useEquipmentAssetPrefill(initialReportId);
+  useEffect(() => {
+    if (!shouldPrefill) return;
+    setFormData((prev) => ({
+      ...prev,
+      identifier: prev.identifier || assetPrefill.identifier,
+      substation: prev.substation || assetPrefill.substation,
+      eqptLocation: prev.eqptLocation || assetPrefill.eqptLocation,
+      manufacturer: prev.manufacturer || assetPrefill.manufacturer,
+      serialNumber: prev.serialNumber || assetPrefill.serialNumber,
+    }));
+  }, [shouldPrefill, assetPrefill]);
   // Update initial state to match the new FormData structure
   const [formData, setFormData] = useState<FormData>({
     // Initialize with default values based on FormData interface
@@ -655,6 +677,9 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
     comments: "",
     status: "PASS", // Default status
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, initialReportId, "user");
 
   // --- Load Job Info (from PanelboardReport) ---
   const loadJobInfo = async () => {
@@ -1961,6 +1986,12 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                 asset_id: assetResult.id,
                 user_id: user.id,
               });
+              if (equipmentAssetId) {
+                await setReportAssetEquipmentLink(
+                  assetResult.id,
+                  equipmentAssetId,
+                );
+              }
             }
 
             window.history.replaceState(
@@ -2139,6 +2170,12 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
                 asset_id: assetResult.id,
                 user_id: user.id,
               });
+              if (equipmentAssetId) {
+                await setReportAssetEquipmentLink(
+                  assetResult.id,
+                  equipmentAssetId,
+                );
+              }
             }
           }
         } catch (insertError) {

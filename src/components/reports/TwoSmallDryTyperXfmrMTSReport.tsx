@@ -18,6 +18,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { BRAND_COLOR, BRAND_COLOR_DARK } from "@/lib/companyConfig";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -495,6 +496,9 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
     comments: "",
     status: "PASS",
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, initialReportId, "user");
 
   const loadJobInfo = useCallback(async () => {
     if (!jobId) return;

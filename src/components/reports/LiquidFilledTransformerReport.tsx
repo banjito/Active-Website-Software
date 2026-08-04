@@ -18,6 +18,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -677,6 +678,9 @@ const LiquidFilledTransformerReport: React.FC = () => {
     comments: "",
     status: "PASS", // Default status
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, reportId, "userName");
 
   // Helper function to get visual inspection description based on screenshot
   const getVisualInspectionDescription = (id: string): string => {

@@ -17,6 +17,8 @@ import {
   useParams,
   useNavigationType,
 } from "react-router-dom";
+import SitesListPage from "./components/sites/SitesListPage";
+import SiteDetailPage from "./components/sites/SiteDetailPage";
 import CustomerList from "./components/customers/CustomerList";
 import ContactList from "./components/customers/ContactList";
 import JobList from "./components/jobs/JobList";
@@ -1876,6 +1878,48 @@ function App() {
                   />
 
                   {/* === Other Division-Specific Routes === */}
+                  {/* Sites & Facilities — assets are registered against a site, not a
+                      customer, so the same equipment list serves every job there. */}
+                  <Route
+                    path="/sites"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <SitesListPage />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/sites/:siteId"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <SiteDetailPage />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/:division/sites"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <SitesListPage />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/:division/sites/:siteId"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <SiteDetailPage />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
                   {/* Customers */}
                   <Route
                     path="/:division/customers"

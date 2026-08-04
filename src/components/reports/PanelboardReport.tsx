@@ -11,6 +11,8 @@ import { useDemoMode } from "@/lib/DemoModeContext";
 import _ from "lodash";
 import { useReportLocked } from "./useReportLocked";
 import { getReportName, getAssetName } from "./reportMappings";
+import { useEquipmentAssetPrefill } from "./useEquipmentAssetPrefill";
+import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { ReportWrapper } from "./ReportWrapper";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import NameplatePrintTable from "./common/NameplatePrintTable";
@@ -20,6 +22,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { BRAND_COLOR } from "@/lib/companyConfig";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -854,6 +857,23 @@ const PanelboardReport: React.FC = () => {
   const currentPath = location.pathname;
   const reportSlug = "panelboard-report"; // This component handles the panelboard-report route
   const reportName = getReportName(reportSlug);
+
+  // When this report was opened from an asset in the registry, carry the equipment
+  // identity in rather than making the tech retype it.
+  const {
+    equipmentAssetId,
+    prefill: assetPrefill,
+    shouldPrefill,
+  } = useEquipmentAssetPrefill(initialReportId);
+  useEffect(() => {
+    if (!shouldPrefill) return;
+    setFormData((prev) => ({
+      ...prev,
+      identifier: prev.identifier || assetPrefill.identifier,
+      substation: prev.substation || assetPrefill.substation,
+      eqptLocation: prev.eqptLocation || assetPrefill.eqptLocation,
+    }));
+  }, [shouldPrefill, assetPrefill]);
   const [formData, setFormData] = useState<FormData>({
     customerName: "",
     customerLocation: "",
@@ -1037,6 +1057,9 @@ const PanelboardReport: React.FC = () => {
     userName: "",
     testEquipmentLocation: "",
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, initialReportId, "userName");
 
   // Load job information
   const loadJobInfo = async () => {
@@ -1354,6 +1377,12 @@ const PanelboardReport: React.FC = () => {
                 asset_id: assetResult.id,
                 user_id: user.id,
               });
+              if (equipmentAssetId) {
+                await setReportAssetEquipmentLink(
+                  assetResult.id,
+                  equipmentAssetId,
+                );
+              }
             }
 
             setCurrentReportId(newReportId);
@@ -1488,6 +1517,12 @@ const PanelboardReport: React.FC = () => {
               asset_id: assetResult.id,
               user_id: user.id,
             });
+            if (equipmentAssetId) {
+              await setReportAssetEquipmentLink(
+                assetResult.id,
+                equipmentAssetId,
+              );
+            }
           } else {
             creatingRef.current = false;
           }

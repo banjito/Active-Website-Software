@@ -16,6 +16,7 @@ import { ReportWrapper } from "./ReportWrapper";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 interface FormData {
   // Job Information
@@ -465,6 +466,9 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
 
     comments: "",
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, initialReportId, "user");
 
   const loadJobInfo = useCallback(async () => {
     if (!jobId) return;

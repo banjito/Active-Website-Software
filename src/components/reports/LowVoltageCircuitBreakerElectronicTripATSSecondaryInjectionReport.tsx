@@ -18,6 +18,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import NameplatePrintTable from "./common/NameplatePrintTable";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -624,6 +625,9 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
       comments: "",
       status: "PASS", // Default status
     });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, reportId, "user");
 
     // --- Load Job Info (from PanelboardReport) ---
     const loadJobInfo = async () => {

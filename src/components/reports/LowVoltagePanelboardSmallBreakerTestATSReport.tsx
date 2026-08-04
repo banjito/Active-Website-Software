@@ -19,6 +19,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { BRAND_COLOR } from "@/lib/companyConfig";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 const REPORT_TABLE = "low_voltage_panelboard_small_breaker_reports";
 const LEGACY_NORMALIZED_TABLE = "low_voltage_cable_test_3sets";
@@ -455,6 +456,9 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
         .map((_, i) => initialBreakerData(i + 1)),
     };
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, reportId, "user");
 
   // Update TCF when temperature changes
   useEffect(() => {

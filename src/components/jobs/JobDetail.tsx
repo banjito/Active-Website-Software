@@ -92,6 +92,7 @@ import {
   type AssetNameParts,
 } from "../reports/reportMappings";
 import JobDeliverables from "./JobDeliverables";
+import JobAssetsTab from "@/components/assets/JobAssetsTab";
 import AfterActionReports from "./AfterActionReports";
 import { pdfExportService } from "../../services/pdfExportService";
 
@@ -246,6 +247,8 @@ interface Asset {
   reviewed_by?: string | null;
   reviewed_at?: string | null;
   review_comments?: string | null;
+  // The physical equipment this report describes, once the asset registry knows about it.
+  equipment_asset_id?: string | null;
 }
 
 type ReportAuditInfo = {
@@ -2679,6 +2682,22 @@ export default function JobDetail() {
     [dynamicAssetNames],
   );
 
+  // Feeds the Assets tab. This page already works out each report's equipment identifier
+  // and substation (they live in ~6 different key spellings across the report tables), so
+  // adopting old reports into the asset registry reuses that instead of re-deriving it.
+  const equipmentReportAssets = React.useMemo(
+    () =>
+      jobAssets
+        .filter((asset) => asset.file_url?.startsWith("report:"))
+        .map((asset) => ({
+          id: asset.id,
+          identifier: getAssetParts(asset).assetIdentifier,
+          substation: assetSubstations[asset.id] || asset.substation || "",
+          equipmentAssetId: asset.equipment_asset_id ?? null,
+        })),
+    [jobAssets, getAssetParts, assetSubstations],
+  );
+
   // Sort by identifier first so all the reports for one asset sit together,
   // then by report type. Assets without an identifier fall to the bottom.
   const compareAssetParts = React.useCallback(
@@ -3134,16 +3153,29 @@ export default function JobDetail() {
       fetchOpenReportFlagCount(allAssetIds);
 
       // 2. Fetch asset details in batches
+      const BASE_ASSET_COLUMNS =
+        "id, name, file_url, created_at, status, submitted_at, approved_at, sent_at, submitted_by, approved_by, sent_by, reviewed_by, reviewed_at, review_comments, substation, urgency, template_type";
       const allAssetsData: any[] = [];
       for (let i = 0; i < allAssetIds.length; i += JOB_ASSETS_BATCH_SIZE) {
         const chunk = allAssetIds.slice(i, i + JOB_ASSETS_BATCH_SIZE);
-        const { data: assetsData, error: assetsError } = await supabase
+        let {
+          data: assetsData,
+          error: assetsError,
+        }: { data: any[] | null; error: any } = await supabase
           .schema("neta_ops")
           .from("assets")
-          .select(
-            "id, name, file_url, created_at, status, submitted_at, approved_at, sent_at, submitted_by, approved_by, sent_by, reviewed_by, reviewed_at, review_comments, substation, urgency, template_type",
-          )
+          .select(`${BASE_ASSET_COLUMNS}, equipment_asset_id`)
           .in("id", chunk);
+
+        // 42703 = equipment_asset_id doesn't exist yet, i.e. the asset-tracking migration
+        // has not been applied. Fall back so the Reports tab keeps working regardless.
+        if (assetsError?.code === "42703") {
+          ({ data: assetsData, error: assetsError } = await supabase
+            .schema("neta_ops")
+            .from("assets")
+            .select(BASE_ASSET_COLUMNS)
+            .in("id", chunk));
+        }
 
         if (assetsError) throw assetsError;
         if (assetsData) allAssetsData.push(...assetsData);
@@ -8945,6 +8977,16 @@ export default function JobDetail() {
                     Reports
                   </button>
                   <button
+                    onClick={() => handleTabChange("equipment-assets")}
+                    className={`py-4 px-6 text-sm font-medium ${
+                      activeTab === "equipment-assets"
+                        ? "border-b-2 border-brand text-brand"
+                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
+                    }`}
+                  >
+                    Assets
+                  </button>
+                  <button
                     onClick={() => handleTabChange("reports")}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "reports"
@@ -11790,6 +11832,14 @@ export default function JobDetail() {
                       )}
                     </CardContent>
                   </div>
+                )}
+
+                {activeTab === "equipment-assets" && job && (
+                  <JobAssetsTab
+                    jobId={job.id}
+                    customerName={customer?.company_name || customer?.name}
+                    reportAssets={equipmentReportAssets}
+                  />
                 )}
 
                 {activeTab === "deliverables" && job && (

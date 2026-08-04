@@ -16,6 +16,7 @@ import { navigateAfterSave } from "./ReportUtils";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 type PassFail = "PASS" | "FAIL" | "LIMITED SERVICE";
 
@@ -432,6 +433,9 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
     comments: "",
     status: "PASS",
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setForm, initialReportId, "user");
 
   // Minimal print CSS parity with other reports (hide app chrome during print)
   useEffect(() => {

@@ -13,6 +13,7 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useSaveIndicator } from "./common/useSaveIndicator";
 import { ReportHeader } from "./common/ReportHeader";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 const VISUAL_INSPECTION_OPTIONS = [
   "Select One",
@@ -433,6 +434,9 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
     },
     comments: "",
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, initialReportId, "userName");
 
   const loadJobInfo = async () => {
     if (!jobId) return;

@@ -18,6 +18,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Dropdown options
 const VISUAL_INSPECTION_OPTIONS = [
@@ -537,6 +538,9 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
     },
     comments: "",
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, initialReportId, "userName");
 
   // Load job info
   const loadJobInfo = async () => {

@@ -17,6 +17,7 @@ import _ from "lodash";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ReportHeader } from "@/components/reports/common/ReportHeader";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Temperature conversion and TCF tables
 const tempConvTable = [
@@ -506,6 +507,9 @@ const DryTypeTransformerReport: React.FC = () => {
     comments: "",
     status: "PASS",
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, initialReportId, "userName");
 
   // Helper function to get visual inspection description
   const getVisualInspectionDescription = (id: string): string => {

@@ -10,6 +10,7 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { ReportHeader } from "./common/ReportHeader";
 import { getAssetName } from "./reportMappings";
 import { BRAND_COLOR } from "@/lib/companyConfig";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 type ResultOption =
   | "Select One"
@@ -716,6 +717,9 @@ const PotentialTransformerATSReport: React.FC = () => {
 
     comments: "",
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, initialReportId, "user");
 
   // Calculate temperature conversions and TCF
   // Handle both number and object formats for temperature (desktop app sends object, web app uses number)

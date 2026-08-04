@@ -19,6 +19,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { BRAND_COLOR } from "@/lib/companyConfig";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Temperature conversion and correction factor lookup tables
 const tcfData: Array<{ celsius: number; multiplier: number }> = [
@@ -502,6 +503,9 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
     comments: "",
     status: "PASS",
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, reportId, "userName");
 
   // Load job information
   const loadJobInfo = async () => {

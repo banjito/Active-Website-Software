@@ -19,6 +19,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -1078,6 +1079,9 @@ const OilInspectionReport: React.FC = () => {
       },
     },
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, initialReportId, "userName");
 
   // Helper function to get visual inspection description based on screenshot
   const getVisualInspectionDescription = (id: string): string => {

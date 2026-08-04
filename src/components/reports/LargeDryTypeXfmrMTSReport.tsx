@@ -18,6 +18,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -612,6 +613,9 @@ const LargeDryTypeXfmrMTSReport: React.FC = () => {
       status: "PASS",
     };
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, reportId, "userName");
   const getVisualInspectionDescription = (id: string): string => {
     const item = visualInspectionItemsConfig.find((item) => item.id === id);
     return item ? item.description : "Unknown Inspection Item";

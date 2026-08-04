@@ -10,6 +10,8 @@ import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
+import { useEquipmentAssetPrefill } from "./useEquipmentAssetPrefill";
+import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { ReportWrapper } from "./ReportWrapper";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import { ReportHeader } from "./common/ReportHeader";
@@ -17,6 +19,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -390,6 +393,23 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
   const reportSlug = "automatic-transfer-switch-ats-report"; // This component handles the automatic-transfer-switch-ats-report route
   const reportName = getReportName(reportSlug);
 
+  // When this report was opened from an asset in the registry, carry the equipment
+  // identity in rather than making the tech retype it.
+  const {
+    equipmentAssetId,
+    prefill: assetPrefill,
+    shouldPrefill,
+  } = useEquipmentAssetPrefill(initialReportId);
+  useEffect(() => {
+    if (!shouldPrefill) return;
+    setFormData((prev) => ({
+      ...prev,
+      identifier: prev.identifier || assetPrefill.identifier,
+      substation: prev.substation || assetPrefill.substation,
+      eqptLocation: prev.eqptLocation || assetPrefill.eqptLocation,
+    }));
+  }, [shouldPrefill, assetPrefill]);
+
   const initialInsulationRow: InsulationResistanceRow = {
     p1Reading: "",
     p1Corrected: "",
@@ -467,6 +487,9 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
     comments: "",
     status: "PASS",
   }));
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, initialReportId, "userName");
 
   const loadJobInfo = useCallback(async () => {
     if (!jobId) return;
@@ -835,6 +858,12 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 asset_id: assetResult.id,
                 user_id: user.id,
               });
+              if (equipmentAssetId) {
+                await setReportAssetEquipmentLink(
+                  assetResult.id,
+                  equipmentAssetId,
+                );
+              }
             }
 
             window.history.replaceState(
@@ -1027,6 +1056,12 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
               asset_id: assetResult.id,
               user_id: user.id,
             });
+            if (equipmentAssetId) {
+              await setReportAssetEquipmentLink(
+                assetResult.id,
+                equipmentAssetId,
+              );
+            }
           } else {
             creatingRef.current = false;
           }

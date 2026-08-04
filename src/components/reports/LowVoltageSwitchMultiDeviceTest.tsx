@@ -15,6 +15,7 @@ import { useDemoMode } from "@/lib/DemoModeContext";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Temperature Correction Factor (TCF) table and helper (copied from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -464,6 +465,9 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
     },
     comments: "",
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, reportId, "user");
 
   // Load job information when component mounts
   useEffect(() => {

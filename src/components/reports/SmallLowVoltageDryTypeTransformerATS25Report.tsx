@@ -17,6 +17,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 const VISUAL_INSPECTION_OPTIONS = [
   "Select One",
@@ -437,6 +438,9 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
     },
     comments: "",
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, initialReportId, "userName");
 
   const loadJobInfo = async () => {
     if (!jobId) return;

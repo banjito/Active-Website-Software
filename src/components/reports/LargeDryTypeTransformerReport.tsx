@@ -10,6 +10,8 @@ import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
+import { useEquipmentAssetPrefill } from "./useEquipmentAssetPrefill";
+import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { ReportWrapper } from "./ReportWrapper";
 import _ from "lodash";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
@@ -18,6 +20,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -507,6 +510,23 @@ const LargeDryTypeTransformerReport: React.FC = () => {
       : "large-dry-type-transformer-report"; // default fallback
   const reportName = getReportName(reportSlug);
 
+  // When this report was opened from an asset in the registry, carry the equipment
+  // identity in rather than making the tech retype it.
+  const {
+    equipmentAssetId,
+    prefill: assetPrefill,
+    shouldPrefill,
+  } = useEquipmentAssetPrefill(reportId);
+  useEffect(() => {
+    if (!shouldPrefill) return;
+    setFormData((prev) => ({
+      ...prev,
+      identifier: prev.identifier || assetPrefill.identifier,
+      substation: prev.substation || assetPrefill.substation,
+      eqptLocation: prev.eqptLocation || assetPrefill.eqptLocation,
+    }));
+  }, [shouldPrefill, assetPrefill]);
+
   // Initialize form data with default values
   const [formData, setFormData] = useState<FormData>({
     customer: "",
@@ -614,6 +634,9 @@ const LargeDryTypeTransformerReport: React.FC = () => {
     comments: "",
     status: "PASS", // Default status
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, reportId, "userName");
 
   // Helper function to get visual inspection description based on screenshot
   const getVisualInspectionDescription = (id: string): string => {
@@ -1206,6 +1229,10 @@ const LargeDryTypeTransformerReport: React.FC = () => {
             });
           if (linkError) throw linkError;
           console.log("Asset linked.");
+
+          if (equipmentAssetId) {
+            await setReportAssetEquipmentLink(assetResult.id, equipmentAssetId);
+          }
 
           // Optionally navigate to the new report URL after creation
           // navigate(`/jobs/${jobId}/large-dry-type-transformer/${currentReportId}`, { replace: true }); // <<< ADJUST ROUTE AS NEEDED

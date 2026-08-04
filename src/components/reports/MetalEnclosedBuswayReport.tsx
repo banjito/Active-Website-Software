@@ -18,6 +18,7 @@ import { EquipmentAutocomplete } from "../../components/equipment/EquipmentAutoc
 import { formatLocalDateShort } from "../../utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Add dropdown option constants
 const INSPECTION_OPTIONS = [
@@ -480,6 +481,9 @@ const MetalEnclosedBuswayReport: React.FC = () => {
     dielectricPhaseB: "",
     dielectricPhaseC: "",
   });
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, reportId, "user");
 
   // Temperature conversion functions
   const convertFtoC = (f: string): string => {

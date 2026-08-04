@@ -12,6 +12,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { BRAND_COLOR } from "@/lib/companyConfig";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -389,6 +390,9 @@ const CurrentTransformerTestATSReport: React.FC = () => {
   };
 
   const [formData, setFormData] = useState<FormData>(initialFormData);
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, reportId, "userName");
 
   const handleFahrenheitChange = (fahrenheit: number) => {
     setJustSaved(false);

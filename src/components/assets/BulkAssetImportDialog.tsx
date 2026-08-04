@@ -34,7 +34,6 @@ import {
 } from "@/lib/types/assetTracking";
 
 const UNMAPPED = "__unmapped__";
-const PREVIEW_ROWS = 8;
 
 /** Header spellings we auto-match, so a normal spreadsheet needs no mapping at all. */
 const HEADER_HINTS: Record<ImportableAssetField, string[]> = {
@@ -126,6 +125,7 @@ export function BulkAssetImportDialog({
   const [pasteText, setPasteText] = useState("");
   const [importing, setImporting] = useState(false);
   const [sourceLabel, setSourceLabel] = useState("");
+  const [previewFilter, setPreviewFilter] = useState<"all" | "skipped">("all");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const reset = () => {
@@ -135,6 +135,7 @@ export function BulkAssetImportDialog({
     setMapping({});
     setPasteText("");
     setSourceLabel("");
+    setPreviewFilter("all");
   };
 
   const close = () => {
@@ -223,7 +224,7 @@ export function BulkAssetImportDialog({
     if (identifierColumn === undefined) return [];
     const seenInFile = new Set<string>();
 
-    return dataRows.map((row) => {
+    return dataRows.map((row, index) => {
       const valueOf = (field: ImportableAssetField): string => {
         const col = mapping[field];
         if (col === undefined) return "";
@@ -242,6 +243,8 @@ export function BulkAssetImportDialog({
 
       return {
         issue,
+        // The row's line in the source spreadsheet, so a flagged row can be found there.
+        rowNumber: index + (hasHeader ? 2 : 1),
         input: {
           site_id: siteId,
           identifier,
@@ -256,10 +259,20 @@ export function BulkAssetImportDialog({
         } as EquipmentAssetInput,
       };
     });
-  }, [dataRows, mapping, identifierColumn, existingIdentifiers, siteId]);
+  }, [dataRows, mapping, identifierColumn, existingIdentifiers, siteId, hasHeader]);
 
   const importable = useMemo(() => candidates.filter((c) => !c.issue), [candidates]);
   const skipped = candidates.length - importable.length;
+
+  // Falls back to every row once a re-mapping clears the issues, so the toggle can't
+  // leave you staring at an empty list.
+  const previewRows = useMemo(
+    () =>
+      previewFilter === "skipped" && skipped > 0
+        ? candidates.filter((c) => c.issue)
+        : candidates,
+    [candidates, previewFilter, skipped],
+  );
 
   const runImport = async () => {
     if (importable.length === 0) return;
@@ -448,19 +461,48 @@ export function BulkAssetImportDialog({
               </div>
             ) : (
               <div>
-                <p className="mb-2 text-sm">
-                  <strong>{importable.length}</strong> ready to import
+                <div className="mb-2 flex flex-wrap items-center gap-3">
+                  <p className="text-sm">
+                    <strong>{importable.length}</strong> ready to import
+                    {skipped > 0 && (
+                      <span className="text-amber-600 dark:text-amber-400">
+                        {" "}
+                        · {skipped} will be skipped
+                      </span>
+                    )}
+                  </p>
                   {skipped > 0 && (
-                    <span className="text-amber-600 dark:text-amber-400">
-                      {" "}
-                      · {skipped} will be skipped
-                    </span>
+                    <div className="ml-auto flex border border-neutral-200 dark:border-neutral-600">
+                      {(
+                        [
+                          { value: "all", label: `All ${candidates.length}` },
+                          { value: "skipped", label: `Skipped ${skipped}` },
+                        ] as const
+                      ).map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setPreviewFilter(option.value)}
+                          aria-pressed={previewFilter === option.value}
+                          className={`px-3 py-1 text-xs font-medium ${
+                            previewFilter === option.value
+                              ? "bg-brand text-white"
+                              : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-dark-100"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
                   )}
-                </p>
-                <div className="max-h-64 overflow-auto rounded-none border">
+                </div>
+                {/* Every row is listed — a skipped row buried at line 400 is exactly the
+                    one you need to see before importing. */}
+                <div className="max-h-[24rem] overflow-auto rounded-none border">
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-12">Row</TableHead>
                         <TableHead>Building / Area</TableHead>
                         <TableHead>Substation</TableHead>
                         <TableHead>Identifier</TableHead>
@@ -470,8 +512,16 @@ export function BulkAssetImportDialog({
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {candidates.slice(0, PREVIEW_ROWS).map((c, i) => (
-                        <TableRow key={i} className={c.issue ? "opacity-60" : ""}>
+                      {previewRows.map((c) => (
+                        <TableRow
+                          key={c.rowNumber}
+                          className={
+                            c.issue ? "bg-amber-50/60 dark:bg-amber-950/30" : ""
+                          }
+                        >
+                          <TableCell className="text-xs text-neutral-400">
+                            {c.rowNumber}
+                          </TableCell>
                           <TableCell>{c.input.building_area || "—"}</TableCell>
                           <TableCell>{c.input.substation || "—"}</TableCell>
                           <TableCell className="font-medium">
@@ -495,11 +545,12 @@ export function BulkAssetImportDialog({
                     </TableBody>
                   </Table>
                 </div>
-                {candidates.length > PREVIEW_ROWS && (
-                  <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
-                    Showing the first {PREVIEW_ROWS} of {candidates.length} rows.
-                  </p>
-                )}
+                <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
+                  Showing all {previewRows.length} row
+                  {previewRows.length === 1 ? "" : "s"}
+                  {previewFilter === "skipped" ? " that will be skipped" : ""} — scroll
+                  the list to review them.
+                </p>
               </div>
             )}
           </div>

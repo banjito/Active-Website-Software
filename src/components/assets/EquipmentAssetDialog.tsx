@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import Select from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
+import { compareAlphanumericLabels } from "@/utils/sortUtils";
 import {
   Dialog,
   DialogContent,
@@ -35,12 +37,20 @@ interface EquipmentAssetDialogProps {
   /** Null when adding. */
   asset: EquipmentAsset | null;
   suggestions: AssetFieldSuggestions;
+  /**
+   * Every asset at the site, for the parent picker. Left out where sub-assets aren't
+   * available (the migration hasn't run), which hides the field entirely.
+   */
+  siteAssets?: EquipmentAsset[];
   userId?: string;
   /** Saved asset is handed back so the caller can link it to a job. */
   onSaved: (asset: EquipmentAsset, wasCreated: boolean) => void;
 }
 
+const NO_PARENT = "";
+
 const emptyForm = {
+  parent_asset_id: "",
   building_area: "",
   substation: "",
   identifier: "",
@@ -63,6 +73,7 @@ export function EquipmentAssetDialog({
   siteName,
   asset,
   suggestions,
+  siteAssets,
   userId,
   onSaved,
 }: EquipmentAssetDialogProps) {
@@ -70,10 +81,38 @@ export function EquipmentAssetDialog({
   const [saving, setSaving] = useState(false);
   const [showNameplate, setShowNameplate] = useState(false);
 
+  // One layer only: this asset can be nested under another unless it is already a parent
+  // itself, and only top-level assets are offered as the parent.
+  const ownSubAssetCount = useMemo(
+    () =>
+      asset ? (siteAssets ?? []).filter((a) => a.parent_asset_id === asset.id).length : 0,
+    [siteAssets, asset],
+  );
+
+  const parentOptions = useMemo(() => {
+    if (!siteAssets) return [];
+    return [
+      { value: NO_PARENT, label: "— none (top-level asset) —" },
+      ...siteAssets
+        .filter((a) => !a.parent_asset_id && a.id !== asset?.id)
+        .sort((a, b) => compareAlphanumericLabels(a.identifier, b.identifier))
+        .map((a) => {
+          const context = [a.building_area, a.substation, a.equipment_type]
+            .filter(Boolean)
+            .join(" · ");
+          return {
+            value: a.id,
+            label: context ? `${a.identifier} — ${context}` : a.identifier,
+          };
+        }),
+    ];
+  }, [siteAssets, asset]);
+
   useEffect(() => {
     if (!open) return;
     if (asset) {
       setForm({
+        parent_asset_id: asset.parent_asset_id ?? "",
         building_area: asset.building_area ?? "",
         substation: asset.substation ?? "",
         identifier: asset.identifier ?? "",
@@ -104,7 +143,12 @@ export function EquipmentAssetDialog({
     setSaving(true);
     try {
       const saved = await upsertEquipmentAsset(
-        { ...form, site_id: siteId, id: asset?.id },
+        {
+          ...form,
+          parent_asset_id: form.parent_asset_id || null,
+          site_id: siteId,
+          id: asset?.id,
+        },
         userId,
       );
 
@@ -163,6 +207,33 @@ export function EquipmentAssetDialog({
             placeholder="e.g. CB-101"
             hint="Must be unique within this building and substation."
           />
+
+          {siteAssets && (
+            <div>
+              <Label htmlFor="ea-parent">Part of</Label>
+              {ownSubAssetCount > 0 ? (
+                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                  This asset has {ownSubAssetCount} sub-asset
+                  {ownSubAssetCount === 1 ? "" : "s"} of its own, so it stays top-level —
+                  sub-assets are limited to one layer.
+                </p>
+              ) : (
+                <>
+                  <Select
+                    id="ea-parent"
+                    value={form.parent_asset_id}
+                    onChange={(e) => set("parent_asset_id")(e.target.value)}
+                    options={parentOptions}
+                  />
+                  <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                    Nest this under the equipment it belongs to — a switch, CT or relay
+                    inside a switchgear lineup. It keeps its own reports and stays grouped
+                    with its parent in the list.
+                  </p>
+                </>
+              )}
+            </div>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <SuggestInput

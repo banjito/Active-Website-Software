@@ -16,6 +16,8 @@ import {
   fetchEquipmentTypes,
   fetchSiteFieldSuggestions,
   linkAssetsToJob,
+  setAssetParent,
+  supportsSubAssets,
   unlinkAssetFromJob,
 } from "@/services/equipmentAssetsService";
 import EquipmentAssetsTable from "./EquipmentAssetsTable";
@@ -69,6 +71,8 @@ export default function JobAssetsTab({
   const [migrationMissing, setMigrationMissing] = useState(false);
   const [sites, setSites] = useState<SiteWithCounts[]>([]);
   const [assets, setAssets] = useState<EquipmentAssetWithCounts[]>([]);
+  /** The whole site's registry — backs duplicate checks and the parent-asset picker. */
+  const [siteAssets, setSiteAssets] = useState<EquipmentAssetWithCounts[]>([]);
   const [siteAssetIds, setSiteAssetIds] = useState<Map<string, string>>(new Map());
   const [siteIdentifiers, setSiteIdentifiers] = useState<Set<string>>(new Set());
   const [suggestions, setSuggestions] = useState<AssetFieldSuggestions>({
@@ -125,34 +129,52 @@ export default function JobAssetsTab({
     })();
   }, [jobId]);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const jobAssets = await fetchAssetsForJob(jobId);
-      setAssets(jobAssets);
+  /**
+   * `silent` refetches in the background: the table stays mounted, so the search box,
+   * sort and filters the user set up are still there afterwards. Only the first load of
+   * the tab is allowed to blank the page out with a spinner.
+   */
+  const load = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (!options?.silent) setLoading(true);
+      try {
+        const jobAssets = await fetchAssetsForJob(jobId);
+        setAssets(jobAssets);
 
-      if (siteId) {
-        // The whole site's assets back the duplicate/import duplicate checks — an
-        // identifier can clash with equipment that isn't on this job.
-        const [all, fieldSuggestions, types] = await Promise.all([
-          fetchAssetsForSite(siteId),
-          fetchSiteFieldSuggestions(siteId),
-          fetchEquipmentTypes(),
-        ]);
-        setSiteIdentifiers(new Set(all.map((a) => a.identifier.toLowerCase())));
-        setSiteAssetIds(new Map(all.map((a) => [a.identifier.toLowerCase(), a.id])));
-        setSuggestions({ ...fieldSuggestions, equipmentTypes: types });
-      } else {
-        setSiteIdentifiers(new Set());
-        setSiteAssetIds(new Map());
+        if (siteId) {
+          // The whole site's assets back the duplicate/import duplicate checks — an
+          // identifier can clash with equipment that isn't on this job.
+          const [all, fieldSuggestions, types] = await Promise.all([
+            fetchAssetsForSite(siteId),
+            fetchSiteFieldSuggestions(siteId),
+            fetchEquipmentTypes(),
+          ]);
+          setSiteAssets(all);
+          setSiteIdentifiers(new Set(all.map((a) => a.identifier.toLowerCase())));
+          setSiteAssetIds(new Map(all.map((a) => [a.identifier.toLowerCase(), a.id])));
+          setSuggestions({ ...fieldSuggestions, equipmentTypes: types });
+        } else {
+          setSiteAssets([]);
+          setSiteIdentifiers(new Set());
+          setSiteAssetIds(new Map());
+        }
+      } catch (e) {
+        console.error(e);
+        toast.error("Failed to load job assets");
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to load job assets");
-    } finally {
-      setLoading(false);
-    }
-  }, [jobId, siteId]);
+    },
+    [jobId, siteId],
+  );
+
+  /** Write an edited asset straight into the list — no refetch, no spinner, no scroll jump. */
+  const applyLocalEdit = useCallback((saved: EquipmentAsset) => {
+    const merge = (list: EquipmentAssetWithCounts[]): EquipmentAssetWithCounts[] =>
+      list.map((a) => (a.id === saved.id ? { ...a, ...saved } : a));
+    setAssets(merge);
+    setSiteAssets(merge);
+  }, []);
 
   useEffect(() => {
     void load();
@@ -188,7 +210,7 @@ export default function JobAssetsTab({
       console.error(e);
       toast.error("Assets were saved but could not be added to this job");
     } finally {
-      void load();
+      void load({ silent: true });
     }
   };
 
@@ -202,7 +224,9 @@ export default function JobAssetsTab({
     try {
       await deleteEquipmentAsset(asset.id);
       toast.success("Asset deleted");
-      void load();
+      // Drop the row now; the background refetch picks up any sub-assets it detached.
+      setAssets((current) => current.filter((a) => a.id !== asset.id));
+      void load({ silent: true });
     } catch (e: any) {
       toast.error(e?.message || "Failed to delete asset");
     }
@@ -212,9 +236,21 @@ export default function JobAssetsTab({
     try {
       await unlinkAssetFromJob(jobId, asset.id);
       toast.success(`${asset.identifier} removed from this job`);
-      void load();
+      setAssets((current) => current.filter((a) => a.id !== asset.id));
     } catch (e: any) {
       toast.error(e?.message || "Failed to remove asset");
+      void load({ silent: true });
+    }
+  };
+
+  const handleDetachFromParent = async (asset: EquipmentAssetWithCounts) => {
+    try {
+      const saved = await setAssetParent(asset.id, null, user?.id);
+      applyLocalEdit(saved);
+      toast.success(`${asset.identifier} is no longer a sub-asset`);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to detach sub-asset");
     }
   };
 
@@ -324,11 +360,15 @@ export default function JobAssetsTab({
       <EquipmentAssetsTable
         assets={assets}
         canEdit={canEdit}
+        storageKey={`job-assets:${jobId}`}
         onEdit={setEditingAsset}
         onDuplicate={setDuplicating}
         onDelete={handleDelete}
         onCreateReport={setReportForAsset}
         onRemoveFromJob={canEdit ? handleRemoveFromJob : undefined}
+        onDetachFromParent={
+          canEdit && supportsSubAssets() ? handleDetachFromParent : undefined
+        }
         emptyMessage="No assets on this job yet. Add them from the site's list, import a spreadsheet, or build them from the reports already here."
         actions={
           canEdit && (
@@ -377,10 +417,13 @@ export default function JobAssetsTab({
         siteName={site?.name ?? ""}
         asset={editingAsset}
         suggestions={suggestions}
+        siteAssets={supportsSubAssets() ? siteAssets : undefined}
         userId={user?.id}
         onSaved={(asset, wasCreated) => {
+          // An edit is patched straight into the list; only a brand-new asset needs the
+          // round trip, because it has to be linked to the job first.
           if (wasCreated) void linkAndReload([asset]);
-          else void load();
+          else applyLocalEdit(asset);
         }}
       />
 
@@ -413,7 +456,7 @@ export default function JobAssetsTab({
         siteName={site?.name ?? ""}
         alreadyOnJob={onJobIds}
         userId={user?.id}
-        onAdded={() => void load()}
+        onAdded={() => void load({ silent: true })}
       />
 
       <AdoptExistingReportsDialog
@@ -426,7 +469,7 @@ export default function JobAssetsTab({
         existingIdentifiers={siteIdentifiers}
         assetIdByIdentifier={siteAssetIds}
         userId={user?.id}
-        onDone={() => void load()}
+        onDone={() => void load({ silent: true })}
       />
 
       <ReportTemplatePicker

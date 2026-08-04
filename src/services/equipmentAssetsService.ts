@@ -8,8 +8,46 @@ import type {
 // The equipment registry. Assets belong to a site, never to a customer — see
 // src/lib/types/assetTracking.ts.
 
-const ASSET_COLUMNS =
+const BASE_ASSET_COLUMNS =
   "id, site_id, building_area, substation, identifier, equipment_location, equipment_type, manufacturer, model, serial_number, notes, status, created_by, updated_by, created_at, updated_at, deleted_at";
+
+/**
+ * Whether this database has neta_ops.equipment_assets.parent_asset_id, i.e. whether
+ * add_equipment_asset_parent.sql has been applied. Assumed yes until a query says
+ * otherwise, then remembered for the rest of the session so sub-asset support degrades
+ * to a flat list instead of breaking the page.
+ */
+let parentColumnSupported = true;
+
+export function supportsSubAssets(): boolean {
+  return parentColumnSupported;
+}
+
+function assetColumns(): string {
+  return parentColumnSupported
+    ? `${BASE_ASSET_COLUMNS}, parent_asset_id`
+    : BASE_ASSET_COLUMNS;
+}
+
+/** 42703 = column missing, i.e. a migration hasn't been applied on this instance. */
+function isMissingColumn(error: { code?: string } | null): boolean {
+  return error?.code === "42703";
+}
+
+/**
+ * Run a query built around the asset column list, retrying without parent_asset_id the
+ * first time an instance turns out not to have it.
+ */
+async function withParentFallback<T>(
+  run: (columns: string) => PromiseLike<{ data: T | null; error: any }>,
+): Promise<{ data: T | null; error: any }> {
+  const result = await run(assetColumns());
+  if (parentColumnSupported && isMissingColumn(result.error)) {
+    parentColumnSupported = false;
+    return run(assetColumns());
+  }
+  return result;
+}
 
 /** Supabase `.in()` gets unwieldy well before this; chunk any id list past it. */
 const IN_CHUNK_SIZE = 200;
@@ -32,13 +70,15 @@ function isMissingTable(error: { code?: string } | null): boolean {
 export async function fetchAssetsForSite(
   siteId: string,
 ): Promise<EquipmentAssetWithCounts[]> {
-  const { data, error } = await supabase
-    .schema("neta_ops")
-    .from("equipment_assets")
-    .select(ASSET_COLUMNS)
-    .eq("site_id", siteId)
-    .is("deleted_at", null)
-    .order("created_at", { ascending: true });
+  const { data, error } = await withParentFallback<EquipmentAsset[]>((columns) =>
+    supabase
+      .schema("neta_ops")
+      .from("equipment_assets")
+      .select(columns)
+      .eq("site_id", siteId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: true }),
+  );
 
   if (error) {
     if (isMissingTable(error)) return [];
@@ -68,12 +108,14 @@ export async function fetchAssetsForJob(
 
   const assets: EquipmentAsset[] = [];
   for (const ids of chunk(assetIds, IN_CHUNK_SIZE)) {
-    const { data, error } = await supabase
-      .schema("neta_ops")
-      .from("equipment_assets")
-      .select(ASSET_COLUMNS)
-      .in("id", ids)
-      .is("deleted_at", null);
+    const { data, error } = await withParentFallback<EquipmentAsset[]>((columns) =>
+      supabase
+        .schema("neta_ops")
+        .from("equipment_assets")
+        .select(columns)
+        .in("id", ids)
+        .is("deleted_at", null),
+    );
     if (error) throw error;
     assets.push(...((data ?? []) as EquipmentAsset[]));
   }
@@ -164,6 +206,10 @@ function normalizeInput(input: EquipmentAssetInput) {
   const text = (v: string | null | undefined) => v?.trim() || null;
   return {
     site_id: input.site_id,
+    // Omitted entirely where the sub-asset migration hasn't run, so the write still lands.
+    ...(parentColumnSupported
+      ? { parent_asset_id: input.parent_asset_id || null }
+      : {}),
     identifier: input.identifier.trim(),
     building_area: text(input.building_area),
     substation: text(input.substation),
@@ -188,28 +234,63 @@ export async function upsertEquipmentAsset(
 ): Promise<EquipmentAsset> {
   if (!input.identifier?.trim()) throw new Error("Identifier is required");
 
-  const payload = normalizeInput(input);
+  // Rebuilt per attempt: normalizeInput drops parent_asset_id once a retry establishes
+  // that this instance doesn't have the column.
+  const { data, error } = await withParentFallback<EquipmentAsset>((columns) => {
+    const payload = normalizeInput(input);
+    return input.id
+      ? supabase
+          .schema("neta_ops")
+          .from("equipment_assets")
+          .update({ ...payload, updated_by: userId ?? null })
+          .eq("id", input.id)
+          .select(columns)
+          .single()
+      : supabase
+          .schema("neta_ops")
+          .from("equipment_assets")
+          .insert({ ...payload, created_by: userId ?? null })
+          .select(columns)
+          .single();
+  });
 
-  const query = input.id
-    ? supabase
-        .schema("neta_ops")
-        .from("equipment_assets")
-        .update({ ...payload, updated_by: userId ?? null })
-        .eq("id", input.id)
-        .select(ASSET_COLUMNS)
-        .single()
-    : supabase
-        .schema("neta_ops")
-        .from("equipment_assets")
-        .insert({ ...payload, created_by: userId ?? null })
-        .select(ASSET_COLUMNS)
-        .single();
-
-  const { data, error } = await query;
   if (error) {
-    if (error.code === "23505") throw duplicateError(payload.identifier);
+    if (error.code === "23505") throw duplicateError(input.identifier.trim());
     throw error;
   }
+  return data as EquipmentAsset;
+}
+
+/**
+ * Attach an asset to a parent, or detach it with a null parent.
+ *
+ * Kept separate from the edit dialog so the list can re-parent a row directly. The
+ * one-layer rule is checked here for a readable message; the database trigger is the
+ * actual guarantee.
+ */
+export async function setAssetParent(
+  assetId: string,
+  parentAssetId: string | null,
+  userId?: string,
+): Promise<EquipmentAsset> {
+  if (!parentColumnSupported) {
+    throw new Error(
+      "Sub-assets aren't set up on this database yet. Run database/migrations/add_equipment_asset_parent.sql, then reload.",
+    );
+  }
+  if (parentAssetId && parentAssetId === assetId) {
+    throw new Error("An asset cannot be its own parent");
+  }
+
+  const { data, error } = await supabase
+    .schema("neta_ops")
+    .from("equipment_assets")
+    .update({ parent_asset_id: parentAssetId, updated_by: userId ?? null })
+    .eq("id", assetId)
+    .select(assetColumns())
+    .single();
+
+  if (error) throw error;
   return data as EquipmentAsset;
 }
 
@@ -232,14 +313,21 @@ export async function bulkInsertEquipmentAssets(
   const result: BulkInsertResult = { inserted: [], skipped: [] };
   if (inputs.length === 0) return result;
 
-  const rows = inputs.map((i) => ({ ...normalizeInput(i), created_by: userId ?? null }));
+  // Built per attempt rather than up front, so a retry that drops parent_asset_id sends a
+  // payload matching the columns it just learned about.
+  const buildRow = (input: EquipmentAssetInput) => ({
+    ...normalizeInput(input),
+    created_by: userId ?? null,
+  });
 
-  for (const batch of chunk(rows, INSERT_CHUNK_SIZE)) {
-    const { data, error } = await supabase
-      .schema("neta_ops")
-      .from("equipment_assets")
-      .insert(batch)
-      .select(ASSET_COLUMNS);
+  for (const batch of chunk(inputs, INSERT_CHUNK_SIZE)) {
+    const { data, error } = await withParentFallback<EquipmentAsset[]>((columns) =>
+      supabase
+        .schema("neta_ops")
+        .from("equipment_assets")
+        .insert(batch.map(buildRow))
+        .select(columns),
+    );
 
     if (!error) {
       result.inserted.push(...((data ?? []) as EquipmentAsset[]));
@@ -250,17 +338,20 @@ export async function bulkInsertEquipmentAssets(
 
     // A duplicate somewhere in the batch aborted all of it. Re-run one at a time so the
     // good rows still land and we can report exactly which ones didn't.
-    for (const row of batch) {
-      const { data: one, error: rowError } = await supabase
-        .schema("neta_ops")
-        .from("equipment_assets")
-        .insert(row)
-        .select(ASSET_COLUMNS)
-        .single();
+    for (const input of batch) {
+      const { data: one, error: rowError } = await withParentFallback<EquipmentAsset>(
+        (columns) =>
+          supabase
+            .schema("neta_ops")
+            .from("equipment_assets")
+            .insert(buildRow(input))
+            .select(columns)
+            .single(),
+      );
       if (rowError) {
         if (rowError.code === "23505") {
           result.skipped.push({
-            identifier: row.identifier,
+            identifier: input.identifier.trim(),
             reason: "already exists at this site",
           });
           continue;
@@ -294,6 +385,17 @@ export async function deleteEquipmentAsset(assetId: string): Promise<void> {
     .update({ deleted_at: new Date().toISOString() })
     .eq("id", assetId);
   if (error) throw error;
+
+  // The FK's ON DELETE SET NULL never fires for a soft delete, so detach any sub-assets
+  // by hand — otherwise they'd point at a parent that no longer appears in any list.
+  if (parentColumnSupported) {
+    const { error: detachError } = await supabase
+      .schema("neta_ops")
+      .from("equipment_assets")
+      .update({ parent_asset_id: null })
+      .eq("parent_asset_id", assetId);
+    if (detachError && !isMissingColumn(detachError)) throw detachError;
+  }
 }
 
 // ── Job linkage ───────────────────────────────────────────────────────────────

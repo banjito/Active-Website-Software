@@ -47,6 +47,7 @@ import { isSuperUser } from "../../lib/roles";
 import { useDemoMode } from "../../lib/DemoModeContext";
 import { useJobDetails } from "../../lib/hooks";
 import { formatStatusLabel } from "@/utils/formatters";
+import { usePersistentState } from "@/hooks/usePersistentState";
 import { format } from "date-fns";
 import { Button } from "../ui/Button";
 import ChangeOrdersSection from "./ChangeOrdersSection";
@@ -493,24 +494,36 @@ export default function JobDetail() {
   const [assetEvaluations, setAssetEvaluations] = useState<
     Record<string, EvaluationResult>
   >({});
-  const [searchQuery, setSearchQuery] = useState("");
-  // Date filter/sort for the linked reports list
-  const [assetDateField, setAssetDateField] = useState<
-    "created" | "submitted" | "approved" | null
-  >(null);
-  const [assetDateStart, setAssetDateStart] = useState("");
-  const [assetDateEnd, setAssetDateEnd] = useState("");
-  const [assetSortField, setAssetSortField] = useState<
-    "name" | "identifier" | "created" | "submitted" | "approved" | null
-  >(null);
-  const [assetSortDirection, setAssetSortDirection] = useState<"asc" | "desc">(
-    "desc",
+  // How the reports list is searched, filtered and sorted survives a reload — losing a
+  // carefully narrowed list to an accidental refresh is worse than the storage cost.
+  const reportsListKey = id ? `job-reports:${id}` : null;
+  const [searchQuery, setSearchQuery] = usePersistentState(
+    reportsListKey && `${reportsListKey}:search`,
+    "",
   );
+  // Date filter/sort for the linked reports list
+  const [assetDateField, setAssetDateField] = usePersistentState<
+    "created" | "submitted" | "approved" | null
+  >(reportsListKey && `${reportsListKey}:dateField`, null);
+  const [assetDateStart, setAssetDateStart] = usePersistentState(
+    reportsListKey && `${reportsListKey}:dateStart`,
+    "",
+  );
+  const [assetDateEnd, setAssetDateEnd] = usePersistentState(
+    reportsListKey && `${reportsListKey}:dateEnd`,
+    "",
+  );
+  const [assetSortField, setAssetSortField] = usePersistentState<
+    "name" | "identifier" | "created" | "submitted" | "approved" | null
+  >(reportsListKey && `${reportsListKey}:sortField`, null);
+  const [assetSortDirection, setAssetSortDirection] = usePersistentState<
+    "asc" | "desc"
+  >(reportsListKey && `${reportsListKey}:sortDir`, "desc");
   const [isAssetFilterMenuOpen, setIsAssetFilterMenuOpen] = useState(false);
   const [isAssetSortMenuOpen, setIsAssetSortMenuOpen] = useState(false);
   const assetFilterMenuRef = useRef<HTMLDivElement>(null);
   const assetSortMenuRef = useRef<HTMLDivElement>(null);
-  const [assetStatusFilter, setAssetStatusFilter] = useState<
+  const [assetStatusFilter, setAssetStatusFilter] = usePersistentState<
     | "all"
     | "not started"
     | "in_progress"
@@ -520,8 +533,11 @@ export default function JobDetail() {
     | "sent"
     | "issue"
     | "archived"
-  >("all");
+  >(reportsListKey && `${reportsListKey}:status`, "all");
   const [reportSearchQuery, setReportSearchQuery] = useState("");
+  const [reportTemplateType, setReportTemplateType] = useState<"ATS" | "MTS">(
+    "ATS",
+  );
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [newAssetName, setNewAssetName] = useState("");
   const [customFormTemplates, setCustomFormTemplates] = useState<
@@ -2809,9 +2825,12 @@ export default function JobDetail() {
         const bRaw = getAssetDate(b, assetSortField);
         const aTime = aRaw ? new Date(aRaw).getTime() : NaN;
         const bTime = bRaw ? new Date(bRaw).getTime() : NaN;
-        if (isNaN(aTime) && isNaN(bTime)) return 0;
+        // Same date (or none at all) falls back to the identifier, always ascending —
+        // otherwise same-day reports sit in whatever order they were fetched in.
+        if (isNaN(aTime) && isNaN(bTime)) return compareAssetParts(a, b);
         if (isNaN(aTime)) return 1;
         if (isNaN(bTime)) return -1;
+        if (aTime === bTime) return compareAssetParts(a, b);
         return (aTime - bTime) * direction;
       });
     }
@@ -2898,6 +2917,16 @@ export default function JobDetail() {
       : defaultAssets.filter((asset) =>
           asset.name.toLowerCase().includes(reportSearchQuery.toLowerCase()),
         );
+
+  // Reports matching the ATS/MTS toggle in the Add Asset dropdown
+  const toggledReportTemplates = filteredReportTemplates.filter(
+    (asset) => asset.template_type === reportTemplateType,
+  );
+
+  // Reports without an ATS/MTS designation stay visible under either toggle
+  const untypedReportTemplates = filteredReportTemplates.filter(
+    (asset) => !asset.template_type,
+  );
 
   const filteredCustomFormTemplates =
     reportSearchQuery.trim() === ""
@@ -10401,10 +10430,35 @@ export default function JobDetail() {
                                   className="w-full mb-2"
                                   onClick={(e) => e.stopPropagation()}
                                 />
+                                <div
+                                  className="grid grid-cols-2 gap-0 border border-neutral-200 dark:border-dark-300"
+                                  role="group"
+                                  aria-label="Report specification"
+                                >
+                                  {(["ATS", "MTS"] as const).map((type) => (
+                                    <button
+                                      key={type}
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setReportTemplateType(type);
+                                      }}
+                                      aria-pressed={reportTemplateType === type}
+                                      className={`px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+                                        reportTemplateType === type
+                                          ? "bg-brand text-white"
+                                          : "bg-white text-neutral-700 hover:bg-neutral-100 dark:bg-dark-150 dark:text-white dark:hover:bg-dark-100"
+                                      }`}
+                                    >
+                                      {type}
+                                    </button>
+                                  ))}
+                                </div>
                               </div>
 
                               <div className="max-h-60 overflow-y-auto">
-                                {filteredReportTemplates.length === 0 &&
+                                {toggledReportTemplates.length === 0 &&
+                                untypedReportTemplates.length === 0 &&
                                 filteredCustomFormTemplates.length === 0 &&
                                 filteredInternalFormTemplates.length === 0 ? (
                                   <div className="px-4 py-2 text-sm text-neutral-500">
@@ -10412,106 +10466,61 @@ export default function JobDetail() {
                                   </div>
                                 ) : (
                                   <>
-                                    {/* ATS Reports Section */}
-                                    {filteredReportTemplates.some(
-                                      (asset) => asset.template_type === "ATS",
-                                    ) && (
+                                    {/* Reports for the selected specification (ATS or MTS) */}
+                                    {toggledReportTemplates.length > 0 ? (
                                       <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
-                                        ATS Reports
+                                        {reportTemplateType} Reports
+                                      </div>
+                                    ) : (
+                                      <div className="px-4 py-2 text-sm text-neutral-500">
+                                        No {reportTemplateType} reports match
                                       </div>
                                     )}
-                                    {filteredReportTemplates
-                                      .filter(
-                                        (asset) =>
-                                          asset.template_type === "ATS",
-                                      )
-                                      .map((asset) => (
-                                        <Link
-                                          key={asset.id}
-                                          to={getReportEditPath(asset)}
-                                          className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                          onClick={() =>
-                                            setIsDropdownOpen(false)
-                                          }
-                                        >
-                                          <div className="flex items-center">
-                                            <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                            <span className="truncate">
-                                              {asset.id ===
-                                              "low-voltage-cable-test-12sets"
-                                                ? "3-Low Voltage Cable Test ATS"
-                                                : asset.name}
-                                            </span>
-                                          </div>
-                                        </Link>
-                                      ))}
-
-                                    {/* MTS Reports Section */}
-                                    {filteredReportTemplates.some(
-                                      (asset) => asset.template_type === "MTS",
-                                    ) && (
-                                      <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
-                                        MTS Reports
-                                      </div>
-                                    )}
-                                    {filteredReportTemplates
-                                      .filter(
-                                        (asset) =>
-                                          asset.template_type === "MTS",
-                                      )
-                                      .map((asset) => (
-                                        <Link
-                                          key={asset.id}
-                                          to={getReportEditPath(asset)}
-                                          className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                          onClick={() =>
-                                            setIsDropdownOpen(false)
-                                          }
-                                        >
-                                          <div className="flex items-center">
-                                            <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                            <span className="truncate">
-                                              {asset.id ===
-                                              "low-voltage-cable-test-12sets"
-                                                ? "3-Low Voltage Cable Test ATS"
-                                                : asset.name}
-                                            </span>
-                                          </div>
-                                        </Link>
-                                      ))}
+                                    {toggledReportTemplates.map((asset) => (
+                                      <Link
+                                        key={asset.id}
+                                        to={getReportEditPath(asset)}
+                                        className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                      >
+                                        <div className="flex items-center">
+                                          <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                          <span className="truncate">
+                                            {asset.id ===
+                                            "low-voltage-cable-test-12sets"
+                                              ? "3-Low Voltage Cable Test ATS"
+                                              : asset.name}
+                                          </span>
+                                        </div>
+                                      </Link>
+                                    ))}
 
                                     {/* Other Reports (if any without specific template_type) */}
-                                    {filteredReportTemplates.some(
-                                      (asset) => !asset.template_type,
-                                    ) && (
+                                    {untypedReportTemplates.length > 0 && (
                                       <>
                                         <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
                                           Other Reports
                                         </div>
-                                        {filteredReportTemplates
-                                          .filter(
-                                            (asset) => !asset.template_type,
-                                          )
-                                          .map((asset) => (
-                                            <Link
-                                              key={asset.id}
-                                              to={getReportEditPath(asset)}
-                                              className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                              onClick={() =>
-                                                setIsDropdownOpen(false)
-                                              }
-                                            >
-                                              <div className="flex items-center">
-                                                <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                                <span className="truncate">
-                                                  {asset.id ===
-                                                  "low-voltage-cable-test-12sets"
-                                                    ? "3-Low Voltage Cable Test ATS"
-                                                    : asset.name}
-                                                </span>
-                                              </div>
-                                            </Link>
-                                          ))}
+                                        {untypedReportTemplates.map((asset) => (
+                                          <Link
+                                            key={asset.id}
+                                            to={getReportEditPath(asset)}
+                                            className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                                            onClick={() =>
+                                              setIsDropdownOpen(false)
+                                            }
+                                          >
+                                            <div className="flex items-center">
+                                              <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                              <span className="truncate">
+                                                {asset.id ===
+                                                "low-voltage-cable-test-12sets"
+                                                  ? "3-Low Voltage Cable Test ATS"
+                                                  : asset.name}
+                                              </span>
+                                            </div>
+                                          </Link>
+                                        ))}
                                       </>
                                     )}
 

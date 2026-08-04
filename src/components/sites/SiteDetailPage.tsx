@@ -18,6 +18,8 @@ import {
   fetchAssetsForSite,
   fetchEquipmentTypes,
   fetchSiteFieldSuggestions,
+  setAssetParent,
+  supportsSubAssets,
 } from "@/services/equipmentAssetsService";
 import EquipmentAssetsTable from "@/components/assets/EquipmentAssetsTable";
 import EquipmentAssetDialog, {
@@ -62,26 +64,48 @@ export default function SiteDetailPage() {
   const [duplicating, setDuplicating] = useState<EquipmentAsset | null>(null);
   const [importing, setImporting] = useState(false);
 
-  const load = useCallback(async () => {
-    if (!siteId) return;
-    setLoading(true);
+  /** Silent refetches leave the table mounted, so its search/sort/filters survive. */
+  const load = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (!siteId) return;
+      if (!options?.silent) setLoading(true);
+      try {
+        const [siteRow, assetRows, fieldSuggestions, types] = await Promise.all([
+          fetchSite(siteId),
+          fetchAssetsForSite(siteId),
+          fetchSiteFieldSuggestions(siteId),
+          fetchEquipmentTypes(),
+        ]);
+        setSite(siteRow);
+        setAssets(assetRows);
+        setSuggestions({ ...fieldSuggestions, equipmentTypes: types });
+      } catch (e) {
+        console.error(e);
+        toast.error("Failed to load site");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [siteId],
+  );
+
+  /** Edited asset written straight into the list — no refetch, no spinner. */
+  const applyLocalEdit = useCallback((saved: EquipmentAsset) => {
+    setAssets((current) =>
+      current.map((a) => (a.id === saved.id ? { ...a, ...saved } : a)),
+    );
+  }, []);
+
+  const handleDetachFromParent = async (asset: EquipmentAssetWithCounts) => {
     try {
-      const [siteRow, assetRows, fieldSuggestions, types] = await Promise.all([
-        fetchSite(siteId),
-        fetchAssetsForSite(siteId),
-        fetchSiteFieldSuggestions(siteId),
-        fetchEquipmentTypes(),
-      ]);
-      setSite(siteRow);
-      setAssets(assetRows);
-      setSuggestions({ ...fieldSuggestions, equipmentTypes: types });
-    } catch (e) {
+      const saved = await setAssetParent(asset.id, null, user?.id);
+      applyLocalEdit(saved);
+      toast.success(`${asset.identifier} is no longer a sub-asset`);
+    } catch (e: any) {
       console.error(e);
-      toast.error("Failed to load site");
-    } finally {
-      setLoading(false);
+      toast.error(e?.message || "Failed to detach sub-asset");
     }
-  }, [siteId]);
+  };
 
   useEffect(() => {
     void load();
@@ -97,7 +121,9 @@ export default function SiteDetailPage() {
     try {
       await deleteEquipmentAsset(asset.id);
       toast.success("Asset deleted");
-      void load();
+      setAssets((current) => current.filter((a) => a.id !== asset.id));
+      // Background refresh: deleting a parent detaches its sub-assets.
+      void load({ silent: true });
     } catch (e: any) {
       toast.error(e?.message || "Failed to delete asset");
     }
@@ -155,9 +181,13 @@ export default function SiteDetailPage() {
           <EquipmentAssetsTable
             assets={assets}
             canEdit={canEdit}
+            storageKey={`site-assets:${siteId}`}
             onEdit={setEditingAsset}
             onDuplicate={setDuplicating}
             onDelete={handleDelete}
+            onDetachFromParent={
+              canEdit && supportsSubAssets() ? handleDetachFromParent : undefined
+            }
             emptyMessage="No equipment registered at this site yet. Import a spreadsheet to load it in one go."
             actions={
               canEdit && (
@@ -192,8 +222,12 @@ export default function SiteDetailPage() {
         siteName={site.name}
         asset={editingAsset}
         suggestions={suggestions}
+        siteAssets={supportsSubAssets() ? assets : undefined}
         userId={user?.id}
-        onSaved={() => void load()}
+        onSaved={(saved, wasCreated) => {
+          if (wasCreated) void load({ silent: true });
+          else applyLocalEdit(saved);
+        }}
       />
 
       <DuplicateAssetDialog
@@ -202,7 +236,7 @@ export default function SiteDetailPage() {
         asset={duplicating}
         existingIdentifiers={existingIdentifiers}
         userId={user?.id}
-        onDone={() => void load()}
+        onDone={() => void load({ silent: true })}
       />
 
       <BulkAssetImportDialog
@@ -213,7 +247,7 @@ export default function SiteDetailPage() {
         existingIdentifiers={existingIdentifiers}
         knownEquipmentTypes={suggestions.equipmentTypes}
         userId={user?.id}
-        onImported={() => void load()}
+        onImported={() => void load({ silent: true })}
       />
     </div>
   );

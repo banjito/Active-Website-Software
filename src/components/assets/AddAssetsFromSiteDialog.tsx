@@ -110,6 +110,26 @@ export function AddAssetsFromSiteDialog({
       .sort((a, b) => compareAlphanumericLabels(a.identifier, b.identifier));
   }, [available, search, buildingFilter, substationFilter]);
 
+  /** Sub-assets ride along with their parent — a switchgear without its switches, CTs and
+   *  relays isn't a useful thing to put on a job. */
+  const childrenOf = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const a of available) {
+      if (!a.parent_asset_id) continue;
+      map.set(a.parent_asset_id, [...(map.get(a.parent_asset_id) ?? []), a.id]);
+    }
+    return map;
+  }, [available]);
+
+  const toggleAsset = (assetId: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      const family = [assetId, ...(childrenOf.get(assetId) ?? [])];
+      if (next.has(assetId)) for (const id of family) next.delete(id);
+      else for (const id of family) next.add(id);
+      return next;
+    });
+
   const allVisibleSelected =
     visible.length > 0 && visible.every((a) => selected.has(a.id));
 
@@ -208,16 +228,15 @@ export function AddAssetsFromSiteDialog({
                     <input
                       type="checkbox"
                       checked={selected.has(a.id)}
-                      onChange={() =>
-                        setSelected((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(a.id)) next.delete(a.id);
-                          else next.add(a.id);
-                          return next;
-                        })
-                      }
+                      onChange={() => toggleAsset(a.id)}
                     />
                     <span className="font-medium">{a.identifier}</span>
+                    {(childrenOf.get(a.id)?.length ?? 0) > 0 && (
+                      <span className="text-xs text-neutral-400">
+                        +{childrenOf.get(a.id)!.length} sub-asset
+                        {childrenOf.get(a.id)!.length === 1 ? "" : "s"}
+                      </span>
+                    )}
                     <span className="text-neutral-500 dark:text-neutral-400">
                       {[a.building_area, a.substation, a.equipment_location]
                         .filter(Boolean)

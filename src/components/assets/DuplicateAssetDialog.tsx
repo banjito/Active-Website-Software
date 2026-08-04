@@ -101,6 +101,9 @@ export function DuplicateAssetDialog({
       const inputs: EquipmentAssetInput[] = toCreate.map((identifier) => ({
         site_id: asset.site_id,
         identifier,
+        // Copies of a sub-asset stay under the same parent — duplicating CT-1 inside a
+        // switchgear is exactly how you lay in CT-2 … CT-12.
+        parent_asset_id: asset.parent_asset_id ?? null,
         building_area: asset.building_area ?? null,
         substation: asset.substation ?? null,
         equipment_location: asset.equipment_location ?? null,

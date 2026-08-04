@@ -25,6 +25,12 @@ export interface Site {
 export interface EquipmentAsset {
   id: string;
   site_id: string;
+  /**
+   * The equipment this asset is a component of — a switch/CT/relay inside a switchgear
+   * lineup. One layer only: an asset with a parent can never itself be a parent, which is
+   * enforced by a trigger in add_equipment_asset_parent.sql.
+   */
+  parent_asset_id?: string | null;
   building_area?: string | null;
   substation?: string | null;
   identifier: string;
@@ -51,6 +57,7 @@ export interface EquipmentAssetWithCounts extends EquipmentAsset {
 export type EquipmentAssetInput = Pick<
   EquipmentAsset,
   | "site_id"
+  | "parent_asset_id"
   | "building_area"
   | "substation"
   | "identifier"

@@ -78,6 +78,9 @@ export const companyConfig = {
   /** Logo/favicon paths (files live in /public; swap files per instance). */
   logoPath: str(env.VITE_COMPANY_LOGO, "/ampOS-logo.png"),
   faviconPath: str(env.VITE_COMPANY_FAVICON, "/ampOS-favicon.svg"),
+  /** Wordmark in the /docs header. Reads "<product> docs", so it replaces the
+   *  logo and the wordmark text together. Dark, so it is inverted in dark mode. */
+  docsLogoPath: str(env.VITE_COMPANY_DOCS_LOGO, "/ampOS_docs.svg"),
 
   /** Base URL for offline-app installer downloads (GitHub Releases). */
   offlineReleaseBase:

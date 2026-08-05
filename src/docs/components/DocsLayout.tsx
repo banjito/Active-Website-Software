@@ -10,7 +10,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { ArrowLeft, Menu, Search, X, LifeBuoy } from "lucide-react";
 import { companyConfig } from "@/lib/companyConfig";
-import { useSiteLogos } from "@/services/siteThemeService";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { DocsSidebar } from "./DocsSidebar";
 import { DocsSearch, DocsSearchProvider, useDocsSearch } from "./DocsSearch";
@@ -42,8 +41,6 @@ export function DocsLayout() {
   const { open: searchOpen, setOpen: setSearchOpen } = useDocsSearch();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const shortcutLabel = useShortcutLabel();
-  // Same source the portal uses, so an instance's themed logo shows up here too.
-  const { logoUrl, hideLogo } = useSiteLogos();
 
   // New page: start at the top, unless the URL points at an anchor.
   useEffect(() => {
@@ -89,13 +86,14 @@ export function DocsLayout() {
             <Menu className="h-5 w-5" />
           </button>
 
-          <Link to="/docs" className="flex items-center gap-2.5">
-            {!hideLogo && (
-              <img src={logoUrl} alt="ampOS" className="h-7 w-auto dark:invert" />
-            )}
-            <span className="text-[15px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-              Docs
-            </span>
+          {/* The wordmark already reads "<product> docs", so it stands alone
+              rather than sitting next to a separate "Docs" label. */}
+          <Link to="/docs" className="flex items-center">
+            <img
+              src={companyConfig.docsLogoPath}
+              alt={`${companyConfig.name} documentation`}
+              className="h-6 w-auto dark:invert sm:h-8 translate-y-1"
+            />
           </Link>
 
           <div className="ml-auto flex items-center gap-2">

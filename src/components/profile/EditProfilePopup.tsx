@@ -10,6 +10,9 @@ import {
   Target,
   FileText,
   ClipboardCheck,
+  Lock,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { supabase } from "@/lib/supabase";
@@ -25,7 +28,15 @@ import ReactCrop, {
 import "react-image-crop/dist/ReactCrop.css";
 import { formatDivisionDisplay } from "@/lib/utils/divisionDisplay";
 
-type EditSection = "basic" | "details" | "review";
+type EditSection = "basic" | "details" | "security" | "review";
+
+type NavSection = {
+  key: EditSection;
+  label: string;
+  icon: React.ReactNode;
+};
+
+const MIN_PASSWORD_LENGTH = 6;
 
 interface EditProfilePopupProps {
   isOpen: boolean;
@@ -218,6 +229,16 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  // Password change (own profile only). Saves on its own button rather than
+  // with "Save Changes" so a rejected password never blocks a profile edit.
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [showPasswords, setShowPasswords] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSaved, setPasswordSaved] = useState(false);
+
   // Cropping state
   const [isCropping, setIsCropping] = useState(false);
   const [crop, setCrop] = useState<Crop>();
@@ -243,6 +264,13 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       metaHydratedRef.current = false;
       profilesHydratedRef.current = false;
       setActiveSection("basic");
+      // Never leave typed passwords sitting in state between opens.
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+      setShowPasswords(false);
+      setPasswordError(null);
+      setPasswordSaved(false);
       return;
     }
     if (metaHydratedRef.current) return;
@@ -831,6 +859,65 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
     }
   };
 
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isEditingOwnProfile || !user?.email) return;
+    setPasswordError(null);
+    setPasswordSaved(false);
+
+    if (!currentPassword) {
+      setPasswordError("Enter your current password.");
+      return;
+    }
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      setPasswordError(
+        `New password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
+      );
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setPasswordError("New passwords do not match.");
+      return;
+    }
+    if (newPassword === currentPassword) {
+      setPasswordError("New password must be different from your current one.");
+      return;
+    }
+
+    setPasswordSaving(true);
+    try {
+      // Re-authenticate before changing the password so an unattended, already
+      // signed-in browser can't be used to take over the account. A failed
+      // sign-in leaves the existing session untouched, so a wrong entry here
+      // never logs the user out.
+      const { error: reauthError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+      if (reauthError) {
+        setPasswordError("Current password is incorrect.");
+        return;
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (updateError) throw updateError;
+
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+      setShowPasswords(false);
+      setPasswordSaved(true);
+    } catch (err) {
+      setPasswordError(
+        err instanceof Error ? err.message : "Could not update password.",
+      );
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !editingUserId) return;
@@ -991,11 +1078,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
 
   if (!isOpen) return null;
 
-  const navSections: {
-    key: EditSection;
-    label: string;
-    icon: React.ReactNode;
-  }[] = [
+  const allNavSections: NavSection[] = [
     {
       key: "basic",
       label: "Basic Information",
@@ -1007,11 +1090,21 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       icon: <FileText className="h-4 w-4" />,
     },
     {
+      key: "security",
+      label: "Security",
+      icon: <Lock className="h-4 w-4" />,
+    },
+    {
       key: "review",
       label: "Review",
       icon: <ClipboardCheck className="h-4 w-4" />,
     },
   ];
+  // Only the account owner can set their own password here; admins changing
+  // someone else's go through AdminUserManagement.
+  const navSections = allNavSections.filter(
+    (s) => s.key !== "security" || isEditingOwnProfile,
+  );
 
   const modalContent = (
     <>
@@ -1412,6 +1505,144 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                           />
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  {activeSection === "security" && isEditingOwnProfile && (
+                    <div className="space-y-6">
+                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                        Security
+                      </h3>
+                      <form onSubmit={handlePasswordUpdate} className="space-y-4">
+                        <div>
+                          <h4 className="text-sm font-medium text-neutral-900 dark:text-white">
+                            Change password
+                          </h4>
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                            Enter your current password to confirm it's you.
+                            Updating takes effect immediately and this button
+                            saves on its own — separate from Save Changes.
+                          </p>
+                        </div>
+
+                        {/* Hidden username field so password managers know which
+                            account these credentials belong to. */}
+                        <input
+                          type="text"
+                          name="username"
+                          autoComplete="username"
+                          value={user?.email || ""}
+                          readOnly
+                          hidden
+                        />
+
+                        <div>
+                          <label
+                            htmlFor="current-password"
+                            className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
+                          >
+                            Current Password
+                          </label>
+                          <input
+                            id="current-password"
+                            type={showPasswords ? "text" : "password"}
+                            autoComplete="current-password"
+                            value={currentPassword}
+                            onChange={(e) => {
+                              setCurrentPassword(e.target.value);
+                              setPasswordError(null);
+                              setPasswordSaved(false);
+                            }}
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
+                            placeholder="Current password"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label
+                              htmlFor="new-password"
+                              className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
+                            >
+                              New Password
+                            </label>
+                            <input
+                              id="new-password"
+                              type={showPasswords ? "text" : "password"}
+                              autoComplete="new-password"
+                              value={newPassword}
+                              onChange={(e) => {
+                                setNewPassword(e.target.value);
+                                setPasswordError(null);
+                                setPasswordSaved(false);
+                              }}
+                              className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
+                              placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
+                            />
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="confirm-new-password"
+                              className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
+                            >
+                              Confirm New Password
+                            </label>
+                            <input
+                              id="confirm-new-password"
+                              type={showPasswords ? "text" : "password"}
+                              autoComplete="new-password"
+                              value={confirmNewPassword}
+                              onChange={(e) => {
+                                setConfirmNewPassword(e.target.value);
+                                setPasswordError(null);
+                                setPasswordSaved(false);
+                              }}
+                              className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
+                              placeholder="Re-enter new password"
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setShowPasswords((v) => !v)}
+                          className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+                        >
+                          {showPasswords ? (
+                            <EyeOff className="h-3.5 w-3.5" />
+                          ) : (
+                            <Eye className="h-3.5 w-3.5" />
+                          )}
+                          {showPasswords ? "Hide passwords" : "Show passwords"}
+                        </button>
+
+                        {passwordError && (
+                          <p className="text-sm text-red-600 dark:text-red-400">
+                            {passwordError}
+                          </p>
+                        )}
+                        {passwordSaved && (
+                          <p className="flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400">
+                            <Check className="h-4 w-4" />
+                            Password updated. Use it the next time you sign in.
+                          </p>
+                        )}
+
+                        <Button
+                          type="submit"
+                          disabled={passwordSaving}
+                          className="bg-brand hover:bg-brand/90 text-white"
+                        >
+                          {passwordSaving ? (
+                            <div className="flex items-center justify-center">
+                              <div className="h-4 w-4 border-2 border-t-transparent border-white rounded-none animate-spin mr-2" />
+                              Updating...
+                            </div>
+                          ) : (
+                            "Update Password"
+                          )}
+                        </Button>
+                      </form>
                     </div>
                   )}
 

@@ -83,7 +83,14 @@ user in their instance), `STAFF_APP_URL` (their deployed staff-app URL)
 **URLs** — `APP_URL`, `SITE_URL`, `CUSTOMER_PORTAL_URL`
 
 **Optional** — `DEEPSEEK_API_KEY` (form AI), `GOOGLE_SERVICE_ACCOUNT_KEY` +
-`AMP_CONTACTS_SHEET_ID` (contacts sheet sync)
+`AMP_CONTACTS_SHEET_ID` (contacts sheet sync). The sync is two-way:
+`sync-amp-contacts` pulls the sheet into `common.amp_contacts`, and
+`push-amp-contacts` writes ampOS back out. Pulling works with a read-only
+share; **pushing needs the sheet shared as Editor with the service account**,
+and the service account's key must be allowed the `drive` +
+`spreadsheets` scopes. Prefer a native Google Sheet over an uploaded `.xlsx`:
+the Sheets API preserves all cell formatting, whereas an `.xlsx` is rewritten
+with SheetJS, which keeps every value but flattens fonts/fills/borders.
 
 ## 4. Staff web app (Netlify)
 

@@ -72,6 +72,32 @@ export async function syncAmpContactsFromSheet(): Promise<AmpContactsSyncResult>
   return data as AmpContactsSyncResult;
 }
 
+export type AmpContactsPushResult = {
+  success: boolean;
+  total: number;
+  inserted: number;
+  updated: number;
+  removed: number;
+  unchanged: number;
+  target: 'google-sheet' | 'xlsx';
+  /** false for .xlsx files: SheetJS keeps every value but flattens cell styling. */
+  formattingPreserved: boolean;
+};
+
+/** Push the ampOS list back into the Google Drive phone list (ampOS wins). */
+export async function pushAmpContactsToSheet(force = false): Promise<AmpContactsPushResult> {
+  const { data, error } = await supabase.functions.invoke('push-amp-contacts', {
+    body: force ? { force: true } : {},
+  });
+  if (error) {
+    // Edge function errors carry the useful message in the response body.
+    const detail = await (error as { context?: Response }).context?.json?.().catch(() => null);
+    throw new Error(detail?.error || error.message || 'Push failed');
+  }
+  if (!data?.success) throw new Error(data?.error || 'Push failed');
+  return data as AmpContactsPushResult;
+}
+
 export async function deleteAmpContact(id: string): Promise<void> {
   const { error } = await supabase
     .schema('common')

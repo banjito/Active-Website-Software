@@ -1097,8 +1097,8 @@ export default function PortalLanding() {
       case "Features & Fixes":
         navigate("/features-fixes");
         break;
-      case "Help Center":
-        navigate("/help-center");
+      case "ampOS Docs":
+        navigate("/docs");
         break;
       case "Calibration Division":
         handleDivisionClick("calibration");
@@ -2473,7 +2473,7 @@ export default function PortalLanding() {
           </PortalCardWrapper>
 
           {/* Help Center */}
-          <PortalCardWrapper portalName="Help Center">
+          <PortalCardWrapper portalName="ampOS Docs">
             <Card
               tabIndex={0}
               role="button"
@@ -2492,7 +2492,7 @@ export default function PortalLanding() {
                   </div>
                   <div>
                     <CardTitle className="text-2xl font-medium text-neutral-900 dark:text-white">
-                      Help Center
+                      ampOS Docs
                     </CardTitle>
                   </div>
                 </div>

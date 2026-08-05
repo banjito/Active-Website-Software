@@ -73,7 +73,8 @@ export { UploadPdfModal } from './UploadPdfModal';
 
 ### 2. File Path Duplication
 
-**Issue:** PDF uploads were creating paths like `help-center-documents/help-center-documents/file.pdf` causing 400 errors.
+**Issue:** PDF uploads were creating paths like `help-center-documents
+-documents/file.pdf` causing 400 errors.
 
 **Fix:** Removed bucket name from file path (bucket is already specified in `.from()` call).
 

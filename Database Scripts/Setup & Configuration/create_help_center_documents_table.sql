@@ -1,5 +1,6 @@
 -- ============================================================================
--- Help Center Documents Table Migration
+--
+Documents Table Migration
 -- ============================================================================
 -- This script creates the help_center_documents table for storing PDF documents
 -- in the Help Center. This allows uploading existing SOPs without recreating them.
@@ -49,8 +50,8 @@ CREATE POLICY "Authenticated users can create documents" ON common.help_center_d
 CREATE POLICY "Users can update own documents" ON common.help_center_documents
     FOR UPDATE
     USING (auth.uid() = created_by OR EXISTS (
-        SELECT 1 FROM common.profiles 
-        WHERE id = auth.uid() 
+        SELECT 1 FROM common.profiles
+        WHERE id = auth.uid()
         AND (role = 'Admin' OR role = 'Super Admin')
     ));
 
@@ -58,8 +59,8 @@ CREATE POLICY "Users can update own documents" ON common.help_center_documents
 CREATE POLICY "Users can delete own documents" ON common.help_center_documents
     FOR DELETE
     USING (auth.uid() = created_by OR EXISTS (
-        SELECT 1 FROM common.profiles 
-        WHERE id = auth.uid() 
+        SELECT 1 FROM common.profiles
+        WHERE id = auth.uid()
         AND (role = 'Admin' OR role = 'Super Admin')
     ));
 
@@ -87,6 +88,6 @@ GRANT INSERT, UPDATE, DELETE ON common.help_center_documents TO authenticated;
 -- Verification Query
 -- ============================================================================
 -- Run this to verify the table was created correctly:
--- SELECT column_name, data_type, is_nullable 
--- FROM information_schema.columns 
+-- SELECT column_name, data_type, is_nullable
+-- FROM information_schema.columns
 -- WHERE table_schema = 'common' AND table_name = 'help_center_documents';

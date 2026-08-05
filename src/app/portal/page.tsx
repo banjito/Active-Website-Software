@@ -67,6 +67,34 @@ import { HeaderBar } from "@/components/ui/HeaderBar";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useSiteLogos } from "@/services/siteThemeService";
 
+/**
+ * CSS-mask style for painting an SVG in the current text color.
+ *
+ * The division logos ship with their brand color baked into the paths, so an
+ * <img> cannot be recolored for dark mode (`invert` turns Scavenger's rust into
+ * cyan, not white). Masking the shape and filling with `bg-current` lets the
+ * wrapper's `text-*` classes drive the color in both themes.
+ *
+ * `size` defaults to "contain", which fits the art inside the box and is what
+ * the square icons need. Pass "100% 100%" when the box already matches the
+ * SVG's ratio: the wordmark files declare large intrinsic pixel sizes
+ * (Armadillo is 29148px wide), and "contain" re-derives the scale from those
+ * whenever the card's hover transform forces a repaint, which visibly resizes
+ * the art inside an otherwise fixed box.
+ */
+function maskStyle(url: string, size = "contain"): React.CSSProperties {
+  return {
+    maskImage: `url(${url})`,
+    WebkitMaskImage: `url(${url})`,
+    maskSize: size,
+    WebkitMaskSize: size,
+    maskRepeat: "no-repeat",
+    WebkitMaskRepeat: "no-repeat",
+    maskPosition: "center",
+    WebkitMaskPosition: "center",
+  };
+}
+
 export default function PortalLanding() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -1048,7 +1076,10 @@ export default function PortalLanding() {
   };
 
   const handlePortalCardAction = (card: HTMLElement) => {
-    const title = card.querySelector("h3")?.textContent?.trim();
+    // Cards are routed by their title text. Ones whose title renders as a logo
+    // have no text to read, so they carry the name in data-portal-title.
+    const title =
+      card.dataset.portalTitle || card.querySelector("h3")?.textContent?.trim();
 
     switch (title) {
       case "Decatur":
@@ -2209,6 +2240,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
+              data-portal-title="Armadillo Division"
               className="portal-click-card portal-armadillo border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
@@ -2216,21 +2248,22 @@ export default function PortalLanding() {
                   <div className="portal-icon-bg p-2.5 rounded-none text-[#181818] dark:text-white">
                     <div
                       className="h-5 w-5 bg-current"
-                      style={{
-                        maskImage: "url(/Armadillo_Icon_Black.svg)",
-                        WebkitMaskImage: "url(/Armadillo_Icon_Black.svg)",
-                        maskSize: "contain",
-                        WebkitMaskSize: "contain",
-                        maskRepeat: "no-repeat",
-                        WebkitMaskRepeat: "no-repeat",
-                        maskPosition: "center",
-                        WebkitMaskPosition: "center",
-                      }}
+                      style={maskStyle("/Armadillo_Icon_Black.svg")}
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-neutral-900 dark:text-white">
-                      Armadillo Division
+                    <CardTitle className="leading-none">
+                      {/* 29148:9080 at 40px tall. See the ampOS Docs card for
+                          why the width is pinned. */}
+                      <div
+                        role="img"
+                        aria-label="Armadillo Division"
+                        className="block h-10 w-[128px] shrink-0 bg-current text-[#181818] dark:text-white"
+                        style={maskStyle(
+                          "/Armadillo_TextLogo_Black.svg",
+                          "100% 100%",
+                        )}
+                      />
                     </CardTitle>
                   </div>
                 </div>
@@ -2247,6 +2280,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
+              data-portal-title="Scavenger Portal"
               className="portal-click-card portal-scavenger border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
@@ -2254,21 +2288,22 @@ export default function PortalLanding() {
                   <div className="portal-icon-bg p-2.5 rounded-none text-[#993809] dark:text-white">
                     <div
                       className="h-5 w-5 bg-current"
-                      style={{
-                        maskImage: "url(/Scavenger_ICON.svg)",
-                        WebkitMaskImage: "url(/Scavenger_ICON.svg)",
-                        maskSize: "contain",
-                        WebkitMaskSize: "contain",
-                        maskRepeat: "no-repeat",
-                        WebkitMaskRepeat: "no-repeat",
-                        maskPosition: "center",
-                        WebkitMaskPosition: "center",
-                      }}
+                      style={maskStyle("/Scavenger_ICON.svg")}
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-neutral-900 dark:text-white">
-                      Scavenger Portal
+                    <CardTitle className="leading-none">
+                      {/* 2762:378 at 24px tall. See the ampOS Docs card for
+                          why the width is pinned. */}
+                      <div
+                        role="img"
+                        aria-label="Scavenger Portal"
+                        className="block h-6 w-[175px] shrink-0 bg-current text-[#993809] dark:text-white"
+                        style={maskStyle(
+                          "/Scavenger_LOGO_OnlyText.svg",
+                          "100% 100%",
+                        )}
+                      />
                     </CardTitle>
                   </div>
                 </div>
@@ -2480,6 +2515,7 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
+              data-portal-title="ampOS Docs"
               className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
               <CardHeader className="flex flex-row items-start justify-between p-6">
@@ -2494,8 +2530,19 @@ export default function PortalLanding() {
                     />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-medium text-neutral-900 dark:text-white">
-                      ampOS Docs
+                    {/* Wordmark stands in for the card title. Masked rather
+                        than <img> so the card's hover rule can whiten it. */}
+                    <CardTitle className="leading-none">
+                      {/* Width is pinned rather than derived from
+                          aspect-ratio: an auto width resolves against
+                          available space, which made the logo resize as the
+                          card changed on hover. 16234:2378 at 24px tall. */}
+                      <div
+                        role="img"
+                        aria-label="ampOS Docs"
+                        className="block h-6 w-[164px] shrink-0 bg-current text-[#155e75] dark:text-white"
+                        style={maskStyle("/ampOS_docs.svg", "100% 100%")}
+                      />
                     </CardTitle>
                   </div>
                 </div>

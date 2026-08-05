@@ -1646,34 +1646,54 @@ CREATE FUNCTION common.is_employee_user() RETURNS boolean
   SELECT
     auth.role() = 'authenticated'
     AND (
-      lower(coalesce(auth.jwt() ->> 'email', '')) LIKE '%@ampqes.com'
+      -- Employee email domains for this instance. New white-label instances:
+      -- replace this list (see database/bootstrap/README.md).
+      lower(coalesce(auth.jwt() ->> 'email', '')) LIKE ANY (
+        ARRAY['%@ampqes.com', '%@cedsi.com']
+      )
       OR lower(coalesce(auth.jwt() -> 'app_metadata' ->> 'account_type', '')) = 'employee'
       OR lower(coalesce(auth.jwt() -> 'user_metadata' ->> 'account_type', '')) = 'employee'
       OR lower(coalesce(auth.jwt() -> 'app_metadata' ->> 'user_type', '')) = 'employee'
       OR lower(coalesce(auth.jwt() -> 'user_metadata' ->> 'user_type', '')) = 'employee'
       OR lower(coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '')) IN (
+        -- canonical roles (src/lib/roles.ts) — keep in sync
         'admin',
+        'super admin',
+        'neta technician',
+        'lab technician',
+        'office admin',
+        'sales representative',
+        'engineer',
+        'operations manager',
+        'hr rep',
+        'scav',
+        -- legacy / alternate spellings kept for existing accounts
         'manager',
         'supervisor',
-        'neta technician',
         'technician',
         'sales',
         'estimator',
         'engineering',
-        'office admin',
         'hr_manager',
         'hr_personnel'
       )
       OR lower(coalesce(auth.jwt() -> 'user_metadata' ->> 'role', '')) IN (
         'admin',
+        'super admin',
+        'neta technician',
+        'lab technician',
+        'office admin',
+        'sales representative',
+        'engineer',
+        'operations manager',
+        'hr rep',
+        'scav',
         'manager',
         'supervisor',
-        'neta technician',
         'technician',
         'sales',
         'estimator',
         'engineering',
-        'office admin',
         'hr_manager',
         'hr_personnel'
       )

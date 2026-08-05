@@ -376,6 +376,16 @@ export const HelpCenterDashboard: React.FC = () => {
                 </p>
               </div>
             </div>
+            <div className="flex items-center gap-3">
+              {/* Entry point to the full product documentation at /docs. */}
+              <button
+                onClick={() => navigate("/docs")}
+                className="inline-flex items-center gap-2 px-5 py-2.5 border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 font-semibold rounded-none transition-all"
+              >
+                <BookOpen className="w-5 h-5" />
+                Documentation
+              </button>
+            </div>
             {isAdmin && (
               <div className="flex items-center gap-3">
                 <button

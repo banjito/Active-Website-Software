@@ -1,14 +1,41 @@
 # Asset Tracking in ampOS — Phase 1
 
-## Status: built, awaiting migration
+## Status: built, awaiting migrations
 
-Everything below is implemented. **One manual step remains:** paste
-`database/migrations/create_asset_tracking_tables.sql` into the Supabase SQL editor. Until
-you do, the app behaves exactly as it did before — the Assets tab shows a "not set up yet"
-notice and every other page is unaffected (each new query degrades on `42P01`/`42703`
-instead of throwing).
+Everything below is implemented. **Manual step:** run these in the Supabase SQL editor, in
+order:
 
-Report prefill + equipment linking is wired into 6 report types so far:
+1. `database/migrations/create_asset_tracking_tables.sql`
+2. `database/migrations/add_equipment_asset_parent.sql` (sub-assets)
+3. `database/migrations/add_equipment_asset_nameplate_data.sql` (nameplate fields)
+
+Each is independent and degrades on its own: an instance missing #3 shows no nameplate
+fields, one missing #2 shows a flat asset list, and one missing all three shows a "not set
+up yet" notice on the Assets tab while every other page is unaffected. Queries degrade on
+`42P01`/`42703` rather than throwing.
+
+### Nameplate data on the asset
+
+Nameplate values are the same for ATS, MTS and a plain visual inspection, so they belong to
+the equipment, not to each report. `equipment_assets.nameplate_data` (JSONB) holds them,
+and which fields appear is driven by the asset's equipment type via
+`src/lib/assetNameplateSchema.ts`. Every field list in that catalog was lifted from the
+matching report form, so what you record is what the report asks for.
+
+Equipment type stays free text: a type with no entry in the catalog simply shows no extra
+fields, and nothing is locked to a report template. 16 types have schemas today (breakers,
+transformers, switchgear, panelboards, ATS, switches, CT/PT, cable, busway, generator,
+motor starter).
+
+Changing an asset's equipment type keeps values the new type also has a field for and warns
+before dropping the rest, naming each one.
+
+Reports can be unlinked from an asset: expand a row's report count and hit the unlink icon
+next to the report. The report itself is kept and stays on the job; it just stops claiming
+to describe that piece of equipment. Use it to move a report attached to the wrong asset.
+
+Report prefill (identifier, substation, location **and** the type-specific nameplate
+values) plus equipment linking is wired into 6 report types so far:
 Switchgear ATS, LV Breaker Electronic Trip ATS, LV Breaker Thermal-Magnetic ATS,
 Large Dry Type Transformer, Automatic Transfer Switch ATS, Panelboard ATS.
 The remaining ~62 keep working untouched; each is the same three-part edit

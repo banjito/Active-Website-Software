@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
-import { isEmployeeEmailDomain } from '../_shared/companyConfig.ts'
+import { isEmployeeEmailDomain, isEmployeeRole } from '../_shared/companyConfig.ts'
 
 // Renders an approved/sent report to a REAL, print-styled PDF and publishes it
 // to the private customer-reports bucket (ampOS ACCESS).
@@ -33,23 +33,10 @@ const corsHeaders = {
 const BUCKET = 'customer-reports'
 const TOKEN_TTL_SECONDS = 600
 
-// Staff gate — copied from customer-portal-invite so the two agree. This is a
+// Staff gate — shares _shared/companyConfig.ts so every function agrees. This is a
 // POSITIVE check: a single auth account can be flagged account_type=customer
 // (e.g. staff who invited their own email to test the portal) yet still be an
 // employee, so we must not reject on "is a customer" alone.
-const EMPLOYEE_ROLES = new Set([
-  'admin',
-  'manager',
-  'supervisor',
-  'neta technician',
-  'technician',
-  'sales',
-  'estimator',
-  'engineering',
-  'office admin',
-  'hr_manager',
-  'hr_personnel',
-])
 
 // deno-lint-ignore no-explicit-any
 function isEmployee(user: any): boolean {
@@ -63,7 +50,7 @@ function isEmployee(user: any): boolean {
     isEmployeeEmailDomain(email) ||
     accountType === 'employee' ||
     userType === 'employee' ||
-    EMPLOYEE_ROLES.has(role)
+    isEmployeeRole(role)
   )
 }
 

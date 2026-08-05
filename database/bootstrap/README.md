@@ -15,9 +15,16 @@ policies. In each file, find-and-replace **before** running:
 | `john.chambers@ampqes.com` | buyer's first superuser email |
 | `jack.lyons@ampqes.com` | buyer's second superuser email |
 | `@ampqes.com` | buyer's email domain (catches the employee-domain checks) |
+| `@cedsi.com` | drop it, or the buyer's second email domain |
 
-Do the replaces in that order (the domain replace last, so it doesn't
+Do the replaces in that order (the domain replaces last, so they don't
 mangle the full addresses first).
+
+`common.is_employee_user()` in `02_schema.sql` is the gate for ~66 RLS
+policies. It matches on employee **email domain** *or* **role**, so also check
+its role list against the buyer's roles — a staff role missing from that list
+is denied everything the moment their email domain doesn't match. Keep it in
+sync with `src/lib/roles.ts` and `supabase/functions/_shared/companyConfig.ts`.
 
 ## Run order
 

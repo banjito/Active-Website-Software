@@ -439,13 +439,23 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
   } = useEquipmentAssetPrefill(initialReportId);
   useEffect(() => {
     if (!shouldPrefill) return;
+    const np = assetPrefill.nameplate;
     setFormData((prev) => ({
       ...prev,
       identifier: prev.identifier || assetPrefill.identifier,
       substation: prev.substation || assetPrefill.substation,
       eqptLocation: prev.eqptLocation || assetPrefill.eqptLocation,
       manufacturer: prev.manufacturer || assetPrefill.manufacturer,
+      catalogNumber: prev.catalogNumber || assetPrefill.model,
       serialNumber: prev.serialNumber || assetPrefill.serialNumber,
+      type: prev.type || np.type || "",
+      frameSize: prev.frameSize || np.frameSize || "",
+      icRating: prev.icRating || np.icRating || "",
+      tripUnitType: prev.tripUnitType || np.tripUnitType || "",
+      ratingPlug: prev.ratingPlug || np.ratingPlug || "",
+      curveNo: prev.curveNo || np.curveNo || "",
+      operation: prev.operation || np.operation || "",
+      mounting: prev.mounting || np.mounting || "",
     }));
   }, [shouldPrefill, assetPrefill]);
   // Update initial state to match the new FormData structure

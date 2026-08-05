@@ -374,13 +374,22 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
   } = useEquipmentAssetPrefill(reportId);
   useEffect(() => {
     if (!shouldPrefill) return;
+    const np = assetPrefill.nameplate;
     setFormData((prev) => ({
       ...prev,
       identifier: prev.identifier || assetPrefill.identifier,
       substation: prev.substation || assetPrefill.substation,
       eqptLocation: prev.eqptLocation || assetPrefill.eqptLocation,
       manufacturer: prev.manufacturer || assetPrefill.manufacturer,
+      catalogNumber: prev.catalogNumber || assetPrefill.model,
       serialNumber: prev.serialNumber || assetPrefill.serialNumber,
+      type: prev.type || np.type || "",
+      frameSize: prev.frameSize || np.frameSize || "",
+      ratingPlug: prev.ratingPlug || np.ratingPlug || "",
+      icRating: prev.icRating || np.icRating || "",
+      curveNo: prev.curveNo || np.curveNo || "",
+      operation: prev.operation || np.operation || "",
+      mounting: prev.mounting || np.mounting || "",
     }));
   }, [shouldPrefill, assetPrefill]);
 

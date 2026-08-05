@@ -3,7 +3,13 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import Select from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
+import {
+  getNameplateSchema,
+  reconcileNameplateData,
+  type NameplateData,
+} from "@/lib/assetNameplateSchema";
 import { compareAlphanumericLabels } from "@/utils/sortUtils";
 import SearchableSelect from "./SearchableSelect";
 import {
@@ -76,8 +82,37 @@ export function EquipmentAssetDialog({
   onSaved,
 }: EquipmentAssetDialogProps) {
   const [form, setForm] = useState(emptyForm);
+  const [nameplate, setNameplate] = useState<NameplateData>({});
   const [saving, setSaving] = useState(false);
   const [showNameplate, setShowNameplate] = useState(false);
+
+  /** Which type-specific fields to show. Null for a type we have no field list for. */
+  const nameplateSchema = useMemo(
+    () => getNameplateSchema(form.equipment_type),
+    [form.equipment_type],
+  );
+
+  const setNameplateValue = (key: string, value: string) =>
+    setNameplate((prev) => ({ ...prev, [key]: value }));
+
+  /**
+   * Changing the equipment type changes which nameplate fields exist. Values shared by
+   * both types carry over (a rated voltage is a rated voltage); anything the new type
+   * has no home for would be silently dropped, so confirm it first and name exactly what
+   * is going to be lost.
+   */
+  const changeEquipmentType = (nextType: string) => {
+    const { kept, cleared } = reconcileNameplateData(nameplate, nextType);
+    if (cleared.length > 0) {
+      const lost = cleared.map((c) => `  • ${c.label}: ${c.value}`).join("\n");
+      const confirmed = window.confirm(
+        `Changing the equipment type to "${nextType || "(none)"}" will clear ${cleared.length} value${cleared.length === 1 ? "" : "s"} that the new type has no field for:\n\n${lost}\n\nContinue?`,
+      );
+      if (!confirmed) return;
+    }
+    setNameplate(kept);
+    setForm((f) => ({ ...f, equipment_type: nextType }));
+  };
 
   // One layer only: this asset can be nested under another unless it is already a parent
   // itself, and only top-level assets are offered as the parent.
@@ -117,11 +152,13 @@ export function EquipmentAssetDialog({
         serial_number: asset.serial_number ?? "",
         notes: asset.notes ?? "",
       });
+      setNameplate((asset.nameplate_data as NameplateData) ?? {});
       setShowNameplate(
         Boolean(asset.manufacturer || asset.model || asset.serial_number),
       );
     } else {
       setForm(emptyForm);
+      setNameplate({});
       setShowNameplate(false);
     }
   }, [open, asset]);
@@ -140,6 +177,9 @@ export function EquipmentAssetDialog({
         {
           ...form,
           parent_asset_id: form.parent_asset_id || null,
+          // Only keys the current type actually has a field for, so a value left over
+          // from an earlier type can't linger invisibly on the record.
+          nameplate_data: reconcileNameplateData(nameplate, form.equipment_type).kept,
           site_id: siteId,
           id: asset?.id,
         },
@@ -242,12 +282,60 @@ export function EquipmentAssetDialog({
             <SuggestInput
               label="Equipment Type"
               value={form.equipment_type}
-              onChange={set("equipment_type")}
+              onChange={changeEquipmentType}
               suggestions={suggestions.equipmentTypes}
               placeholder="e.g. Low Voltage Circuit Breaker"
               hint="Type anything — it does not lock in a report form."
             />
           </div>
+
+          {nameplateSchema && (
+            <div className="border border-neutral-200 p-3 dark:border-neutral-700">
+              <div className="mb-3 flex items-baseline justify-between gap-2">
+                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                  {nameplateSchema.type} data
+                </p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  Entered once here, reused by every report
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {nameplateSchema.fields.map((field) => (
+                  <div key={field.key}>
+                    <Label htmlFor={`np-${field.key}`}>
+                      {field.label}
+                      {field.unit && (
+                        <span className="ml-1 font-normal text-neutral-400">
+                          ({field.unit})
+                        </span>
+                      )}
+                    </Label>
+                    {field.options ? (
+                      <Select
+                        id={`np-${field.key}`}
+                        value={nameplate[field.key] ?? ""}
+                        onChange={(e) => setNameplateValue(field.key, e.target.value)}
+                        options={[
+                          { value: "", label: "—" },
+                          ...field.options.map((o) => ({ value: o, label: o })),
+                        ]}
+                      />
+                    ) : (
+                      <Input
+                        id={`np-${field.key}`}
+                        value={nameplate[field.key] ?? ""}
+                        placeholder={field.placeholder}
+                        onChange={(e) => setNameplateValue(field.key, e.target.value)}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
+                Fields taken from {nameplateSchema.source}.
+              </p>
+            </div>
+          )}
 
           <div>
             <button

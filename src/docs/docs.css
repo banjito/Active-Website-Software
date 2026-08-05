@@ -1,0 +1,582 @@
+/**
+ * ampOS documentation styles.
+ *
+ * Everything here is scoped under .docs-root or a docs- prefixed class so it
+ * can never leak into the rest of the app. Colors are driven by CSS variables
+ * so the brand accent follows --brand (per-instance white-labeling).
+ */
+
+.docs-root {
+  --docs-fg: 23 23 23; /* neutral-900 */
+  --docs-fg-muted: 82 82 82; /* neutral-600 */
+  --docs-fg-subtle: 115 115 115; /* neutral-500 */
+  --docs-bg: 255 255 255;
+  --docs-bg-subtle: 250 250 250; /* neutral-50 */
+  --docs-border: 229 229 229; /* neutral-200 */
+  --docs-border-strong: 212 212 212; /* neutral-300 */
+  --docs-code-bg: 24 24 27;
+  --docs-code-fg: 228 228 231;
+
+  color: rgb(var(--docs-fg));
+  background-color: rgb(var(--docs-bg));
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+.dark .docs-root {
+  --docs-fg: 245 245 245; /* neutral-100 */
+  --docs-fg-muted: 163 163 163; /* neutral-400 */
+  --docs-fg-subtle: 115 115 115; /* neutral-500 */
+  --docs-bg: 10 10 10; /* neutral-950 */
+  --docs-bg-subtle: 23 23 23; /* neutral-900 */
+  --docs-border: 38 38 38; /* neutral-800 */
+  --docs-border-strong: 64 64 64; /* neutral-700 */
+  --docs-code-bg: 18 18 20;
+  --docs-code-fg: 228 228 231;
+}
+
+/* ------------------------------------------------------------------ *
+ * Prose
+ * ------------------------------------------------------------------ */
+
+.docs-prose {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: rgb(var(--docs-fg-muted));
+  max-width: 46rem;
+}
+
+.docs-prose > *:first-child {
+  margin-top: 0;
+}
+
+.docs-p {
+  margin: 1.15rem 0;
+}
+
+.docs-h2,
+.docs-h3,
+.docs-h4,
+.docs-h5,
+.docs-h6 {
+  position: relative;
+  color: rgb(var(--docs-fg));
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  scroll-margin-top: 6rem;
+}
+
+.docs-h2 {
+  margin: 3rem 0 1rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid rgb(var(--docs-border));
+  font-size: 1.5rem;
+  line-height: 1.3;
+}
+
+.docs-prose > .docs-h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.docs-h3 {
+  margin: 2.25rem 0 0.75rem;
+  font-size: 1.175rem;
+  line-height: 1.4;
+}
+
+.docs-h4,
+.docs-h5,
+.docs-h6 {
+  margin: 1.75rem 0 0.5rem;
+  font-size: 1rem;
+}
+
+/* Hover-revealed "#" permalink, Stripe/Vercel style. */
+.docs-anchor {
+  position: absolute;
+  left: -1.15rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgb(var(--docs-fg-subtle));
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  font-weight: 400;
+}
+
+.docs-h2 .docs-anchor {
+  top: auto;
+  bottom: 0.1rem;
+  transform: none;
+}
+
+.docs-h2:hover .docs-anchor,
+.docs-h3:hover .docs-anchor,
+.docs-h4:hover .docs-anchor {
+  opacity: 1;
+}
+
+.docs-anchor:hover {
+  color: var(--brand);
+}
+
+.docs-link {
+  color: var(--brand);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+  transition:
+    border-color 0.12s ease,
+    opacity 0.12s ease;
+}
+
+.docs-link:hover {
+  border-bottom-color: var(--brand);
+}
+
+.docs-prose strong {
+  color: rgb(var(--docs-fg));
+  font-weight: 600;
+}
+
+.docs-hr {
+  margin: 2.5rem 0;
+  border: 0;
+  border-top: 1px solid rgb(var(--docs-border));
+}
+
+/* ------------------------------------------------------------------ *
+ * Lists
+ * ------------------------------------------------------------------ */
+
+.docs-list {
+  margin: 1.15rem 0;
+  padding-left: 1.15rem;
+  list-style: none;
+}
+
+.docs-list > li {
+  position: relative;
+  margin: 0.5rem 0;
+  padding-left: 0.35rem;
+}
+
+.docs-list > li::before {
+  content: "";
+  position: absolute;
+  left: -0.85rem;
+  top: 0.7rem;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background-color: rgb(var(--docs-border-strong));
+}
+
+.docs-list-nested {
+  margin: 0.4rem 0 0.6rem;
+}
+
+/* Ordered lists render as numbered steps with a connecting rail. */
+.docs-steps {
+  margin: 1.5rem 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: docs-step;
+}
+
+.docs-steps > li {
+  position: relative;
+  counter-increment: docs-step;
+  margin: 0;
+  padding: 0 0 1.35rem 2.5rem;
+  border-left: 1px solid rgb(var(--docs-border));
+  margin-left: 0.85rem;
+}
+
+.docs-steps > li:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+
+.docs-steps > li::before {
+  content: counter(docs-step);
+  position: absolute;
+  left: -0.85rem;
+  top: -0.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 999px;
+  background-color: rgb(var(--docs-bg-subtle));
+  border: 1px solid rgb(var(--docs-border));
+  color: rgb(var(--docs-fg));
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.docs-steps > li > span {
+  display: block;
+  padding-top: 0.1rem;
+}
+
+/* ------------------------------------------------------------------ *
+ * Code
+ * ------------------------------------------------------------------ */
+
+.docs-code-inline {
+  padding: 0.15em 0.4em;
+  border-radius: 5px;
+  background-color: rgb(var(--docs-bg-subtle));
+  border: 1px solid rgb(var(--docs-border));
+  color: rgb(var(--docs-fg));
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.docs-codeblock {
+  margin: 1.5rem 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: rgb(var(--docs-code-bg));
+  border: 1px solid rgb(var(--docs-border));
+}
+
+.docs-codeblock-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem 0.5rem 1rem;
+  background-color: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.docs-codeblock-lang {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.docs-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.docs-copy-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.docs-codeblock pre {
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.docs-codeblock code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  font-size: 0.825rem;
+  line-height: 1.65;
+  color: rgb(var(--docs-code-fg));
+  white-space: pre;
+}
+
+/* ------------------------------------------------------------------ *
+ * Tables
+ * ------------------------------------------------------------------ */
+
+.docs-table-wrap {
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  border: 1px solid rgb(var(--docs-border));
+  border-radius: 10px;
+}
+
+.docs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.docs-table th {
+  padding: 0.7rem 1rem;
+  text-align: left;
+  background-color: rgb(var(--docs-bg-subtle));
+  border-bottom: 1px solid rgb(var(--docs-border));
+  color: rgb(var(--docs-fg));
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.docs-table td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid rgb(var(--docs-border));
+  vertical-align: top;
+}
+
+.docs-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ------------------------------------------------------------------ *
+ * Callouts + quotes
+ * ------------------------------------------------------------------ */
+
+.docs-callout {
+  display: flex;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+  padding: 0.9rem 1.1rem;
+  border-radius: 10px;
+  border: 1px solid;
+  font-size: 0.925rem;
+}
+
+.docs-callout .docs-p {
+  margin: 0.35rem 0 0;
+}
+
+.docs-callout .docs-p:first-of-type {
+  margin-top: 0;
+}
+
+.docs-callout-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.docs-callout-label {
+  margin: 0 0 0.15rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+}
+
+.docs-callout-icon {
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+}
+
+.docs-callout-note {
+  background-color: rgb(239 246 255);
+  border-color: rgb(191 219 254);
+  color: rgb(30 58 138);
+}
+.dark .docs-callout-note {
+  background-color: rgb(30 58 138 / 0.15);
+  border-color: rgb(30 64 175 / 0.5);
+  color: rgb(191 219 254);
+}
+
+.docs-callout-tip {
+  background-color: rgb(240 253 244);
+  border-color: rgb(187 247 208);
+  color: rgb(22 101 52);
+}
+.dark .docs-callout-tip {
+  background-color: rgb(22 101 52 / 0.15);
+  border-color: rgb(21 128 61 / 0.5);
+  color: rgb(187 247 208);
+}
+
+.docs-callout-warning {
+  background-color: rgb(255 251 235);
+  border-color: rgb(253 230 138);
+  color: rgb(146 64 14);
+}
+.dark .docs-callout-warning {
+  background-color: rgb(146 64 14 / 0.18);
+  border-color: rgb(180 83 9 / 0.5);
+  color: rgb(253 230 138);
+}
+
+.docs-callout-danger {
+  background-color: rgb(254 242 242);
+  border-color: rgb(254 202 202);
+  color: rgb(153 27 27);
+}
+.dark .docs-callout-danger {
+  background-color: rgb(153 27 27 / 0.18);
+  border-color: rgb(185 28 28 / 0.5);
+  color: rgb(254 202 202);
+}
+
+.docs-quote {
+  margin: 1.5rem 0;
+  padding: 0.25rem 0 0.25rem 1.1rem;
+  border-left: 3px solid rgb(var(--docs-border-strong));
+  color: rgb(var(--docs-fg-subtle));
+  font-style: italic;
+}
+
+.docs-quote .docs-p {
+  margin: 0.35rem 0;
+}
+
+/* ------------------------------------------------------------------ *
+ * Figures
+ * ------------------------------------------------------------------ */
+
+.docs-figure {
+  margin: 1.75rem 0;
+}
+
+.docs-figure img {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgb(var(--docs-border));
+}
+
+.docs-figure figcaption {
+  margin-top: 0.6rem;
+  text-align: center;
+  font-size: 0.825rem;
+  color: rgb(var(--docs-fg-subtle));
+}
+
+.docs-inline-img {
+  display: inline;
+  vertical-align: middle;
+  max-height: 1.4em;
+}
+
+/* ------------------------------------------------------------------ *
+ * Sidebar
+ * ------------------------------------------------------------------ */
+
+.docs-sidebar-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  margin-left: -0.6rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: rgb(var(--docs-fg-muted));
+  text-decoration: none;
+  transition:
+    color 0.1s ease,
+    background-color 0.1s ease;
+}
+
+.docs-sidebar-link:hover {
+  color: rgb(var(--docs-fg));
+  background-color: rgb(var(--docs-bg-subtle));
+}
+
+.docs-sidebar-link[data-active="true"] {
+  color: var(--brand);
+  font-weight: 500;
+  background-color: rgb(var(--docs-bg-subtle));
+}
+
+/* Thin scrollbars for the two rails. */
+.docs-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--docs-border-strong)) transparent;
+}
+
+.docs-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.docs-scroll::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--docs-border-strong));
+  border-radius: 999px;
+}
+
+.docs-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ------------------------------------------------------------------ *
+ * On-this-page rail
+ * ------------------------------------------------------------------ */
+
+.docs-toc-link {
+  display: block;
+  padding: 0.25rem 0 0.25rem 0.85rem;
+  margin-left: -1px;
+  border-left: 2px solid rgb(var(--docs-border));
+  font-size: 0.825rem;
+  line-height: 1.45;
+  color: rgb(var(--docs-fg-subtle));
+  text-decoration: none;
+  transition:
+    color 0.1s ease,
+    border-color 0.1s ease;
+}
+
+.docs-toc-link:hover {
+  color: rgb(var(--docs-fg));
+}
+
+.docs-toc-link[data-active="true"] {
+  color: var(--brand);
+  border-left-color: var(--brand);
+}
+
+.docs-toc-link[data-level="3"] {
+  padding-left: 1.6rem;
+}
+
+/* ------------------------------------------------------------------ *
+ * Search dialog
+ * ------------------------------------------------------------------ */
+
+.docs-search-hit[data-active="true"] {
+  background-color: rgb(var(--docs-bg-subtle));
+}
+
+.docs-search-hit mark {
+  background-color: rgb(var(--brand-rgb) / 0.18);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+/* ------------------------------------------------------------------ *
+ * Print: drop the chrome, keep the words
+ * ------------------------------------------------------------------ */
+
+@media print {
+  .docs-no-print {
+    display: none !important;
+  }
+
+  .docs-prose {
+    max-width: none;
+  }
+
+  .docs-codeblock {
+    background-color: #f5f5f5;
+    border-color: #d4d4d4;
+  }
+
+  .docs-codeblock code {
+    color: #171717;
+  }
+
+  .docs-codeblock-bar {
+    display: none;
+  }
+}

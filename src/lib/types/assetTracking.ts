@@ -39,6 +39,13 @@ export interface EquipmentAsset {
   manufacturer?: string | null;
   model?: string | null;
   serial_number?: string | null;
+  /**
+   * Equipment-type-specific nameplate values (kVA, frame size, CT ratio, ...), keyed by
+   * the field definitions in src/lib/assetNameplateSchema.ts. Held on the equipment rather
+   * than in each report because the same values serve ATS, MTS and visual inspections
+   * alike. Which keys apply is decided by equipment_type.
+   */
+  nameplate_data?: Record<string, string> | null;
   notes?: string | null;
   status: "active" | "removed";
   created_by?: string | null;
@@ -66,6 +73,7 @@ export type EquipmentAssetInput = Pick<
   | "manufacturer"
   | "model"
   | "serial_number"
+  | "nameplate_data"
   | "notes"
 >;
 
@@ -96,6 +104,12 @@ export interface EquipmentAssetPrefill {
   manufacturer: string;
   model: string;
   serialNumber: string;
+  /**
+   * Type-specific nameplate values keyed as in src/lib/assetNameplateSchema.ts. A report
+   * form picks out the keys it has fields for, which is what stops the same nameplate
+   * being retyped for every report written against this asset.
+   */
+  nameplate: Record<string, string>;
 }
 
 export function toPrefill(asset: EquipmentAsset): EquipmentAssetPrefill {
@@ -107,6 +121,7 @@ export function toPrefill(asset: EquipmentAsset): EquipmentAssetPrefill {
     manufacturer: asset.manufacturer ?? "",
     model: asset.model ?? "",
     serialNumber: asset.serial_number ?? "",
+    nameplate: (asset.nameplate_data as Record<string, string>) ?? {},
   };
 }
 

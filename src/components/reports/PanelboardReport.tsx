@@ -867,11 +867,20 @@ const PanelboardReport: React.FC = () => {
   } = useEquipmentAssetPrefill(initialReportId);
   useEffect(() => {
     if (!shouldPrefill) return;
+    const np = assetPrefill.nameplate;
     setFormData((prev) => ({
       ...prev,
       identifier: prev.identifier || assetPrefill.identifier,
       substation: prev.substation || assetPrefill.substation,
       eqptLocation: prev.eqptLocation || assetPrefill.eqptLocation,
+      manufacturer: prev.manufacturer || assetPrefill.manufacturer,
+      catalogNumber: prev.catalogNumber || assetPrefill.model,
+      serialNumber: prev.serialNumber || assetPrefill.serialNumber,
+      type: prev.type || np.type || "",
+      systemVoltage: prev.systemVoltage || np.systemVoltage || "",
+      ratedVoltage: prev.ratedVoltage || np.ratedVoltage || "",
+      ratedCurrent: prev.ratedCurrent || np.ratedCurrent || "",
+      phaseConfiguration: prev.phaseConfiguration || np.phaseConfiguration || "",
     }));
   }, [shouldPrefill, assetPrefill]);
   const [formData, setFormData] = useState<FormData>({

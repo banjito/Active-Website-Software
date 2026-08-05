@@ -16,6 +16,7 @@ import {
   fetchEquipmentTypes,
   fetchSiteFieldSuggestions,
   linkAssetsToJob,
+  linkReportDocumentToAsset,
   setAssetParent,
   supportsSubAssets,
   unlinkAssetFromJob,
@@ -270,6 +271,32 @@ export default function JobAssetsTab({
     }
   };
 
+  /**
+   * Break the link between a report and the equipment it claims to describe. The report
+   * itself is untouched and stays on the job, so this is the fix for a report attached to
+   * the wrong asset: unlink here, then attach it to the right one.
+   */
+  const handleDetachReport = async (
+    asset: EquipmentAssetWithCounts,
+    report: LinkedReport,
+  ) => {
+    if (
+      !window.confirm(
+        `Unlink "${report.name || "this report"}" from ${asset.identifier}?\n\nThe report is kept and stays on this job. It just stops being attached to this asset.`,
+      )
+    )
+      return;
+    try {
+      await linkReportDocumentToAsset(report.id, null);
+      toast.success(`Unlinked from ${asset.identifier}`);
+      onReportLinksChanged?.();
+      void load({ silent: true });
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to unlink report");
+    }
+  };
+
   const handleDetachFromParent = async (asset: EquipmentAssetWithCounts) => {
     try {
       const saved = await setAssetParent(asset.id, null, user?.id);
@@ -395,6 +422,7 @@ export default function JobAssetsTab({
         onAttachReports={canEdit ? setAttachingTo : undefined}
         reportsByAsset={reportsByAsset}
         onOpenReport={(report) => report.url && navigate(report.url)}
+        onDetachReport={canEdit ? handleDetachReport : undefined}
         onRemoveFromJob={canEdit ? handleRemoveFromJob : undefined}
         onDetachFromParent={
           canEdit && supportsSubAssets() ? handleDetachFromParent : undefined

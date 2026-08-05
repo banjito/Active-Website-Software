@@ -12,21 +12,36 @@ const BASE_ASSET_COLUMNS =
   "id, site_id, building_area, substation, identifier, equipment_location, equipment_type, manufacturer, model, serial_number, notes, status, created_by, updated_by, created_at, updated_at, deleted_at";
 
 /**
- * Whether this database has neta_ops.equipment_assets.parent_asset_id, i.e. whether
- * add_equipment_asset_parent.sql has been applied. Assumed yes until a query says
- * otherwise, then remembered for the rest of the session so sub-asset support degrades
- * to a flat list instead of breaking the page.
+ * Columns added by later migrations, newest first.
+ *
+ * Each is assumed present until a query says otherwise, then remembered for the rest of
+ * the session. An instance that has only run some of the migrations degrades feature by
+ * feature (a flat asset list, no nameplate fields) instead of breaking the page. Newest
+ * first so the most likely missing column is dropped on the first retry.
  */
-let parentColumnSupported = true;
+const OPTIONAL_ASSET_COLUMNS = [
+  { name: "nameplate_data", migration: "add_equipment_asset_nameplate_data.sql" },
+  { name: "parent_asset_id", migration: "add_equipment_asset_parent.sql" },
+];
+
+const columnSupported: Record<string, boolean> = {
+  nameplate_data: true,
+  parent_asset_id: true,
+};
 
 export function supportsSubAssets(): boolean {
-  return parentColumnSupported;
+  return columnSupported.parent_asset_id;
+}
+
+export function supportsNameplateData(): boolean {
+  return columnSupported.nameplate_data;
 }
 
 function assetColumns(): string {
-  return parentColumnSupported
-    ? `${BASE_ASSET_COLUMNS}, parent_asset_id`
-    : BASE_ASSET_COLUMNS;
+  const optional = OPTIONAL_ASSET_COLUMNS.filter((c) => columnSupported[c.name]).map(
+    (c) => c.name,
+  );
+  return [BASE_ASSET_COLUMNS, ...optional].join(", ");
 }
 
 /** 42703 = column missing, i.e. a migration hasn't been applied on this instance. */
@@ -35,18 +50,32 @@ function isMissingColumn(error: { code?: string } | null): boolean {
 }
 
 /**
- * Run a query built around the asset column list, retrying without parent_asset_id the
- * first time an instance turns out not to have it.
+ * Run a query built around the asset column list, dropping one optional column per retry
+ * until it succeeds. Postgres names only the first missing column, so this walks the list
+ * newest-first rather than trying to parse the message.
  */
+// `run` is loosely typed because the column list is built at runtime: Supabase can only
+// infer a row shape from a literal select string, so the caller asserts T instead.
 async function withParentFallback<T>(
-  run: (columns: string) => PromiseLike<{ data: T | null; error: any }>,
+  run: (columns: string) => PromiseLike<{ data: any; error: any }>,
 ): Promise<{ data: T | null; error: any }> {
-  const result = await run(assetColumns());
-  if (parentColumnSupported && isMissingColumn(result.error)) {
-    parentColumnSupported = false;
-    return run(assetColumns());
+  let result = await run(assetColumns());
+  while (isMissingColumn(result.error)) {
+    const next = OPTIONAL_ASSET_COLUMNS.find((c) => columnSupported[c.name]);
+    if (!next) break;
+    columnSupported[next.name] = false;
+    result = await run(assetColumns());
   }
   return result;
+}
+
+/** Strip columns this instance doesn't have from an insert/update payload. */
+function dropUnsupportedColumns<T extends Record<string, unknown>>(payload: T): T {
+  const cleaned = { ...payload };
+  for (const column of OPTIONAL_ASSET_COLUMNS) {
+    if (!columnSupported[column.name]) delete cleaned[column.name];
+  }
+  return cleaned;
 }
 
 /** Supabase `.in()` gets unwieldy well before this; chunk any id list past it. */
@@ -202,14 +231,25 @@ export async function fetchSiteFieldSuggestions(siteId: string): Promise<{
 
 // ── Writes ────────────────────────────────────────────────────────────────────
 
+/** Blank values are dropped so nameplate_data never fills up with empty strings. */
+function cleanNameplate(
+  data: Record<string, string> | null | undefined,
+): Record<string, string> {
+  const cleaned: Record<string, string> = {};
+  for (const [key, value] of Object.entries(data ?? {})) {
+    const trimmed = String(value ?? "").trim();
+    if (trimmed) cleaned[key] = trimmed;
+  }
+  return cleaned;
+}
+
 function normalizeInput(input: EquipmentAssetInput) {
   const text = (v: string | null | undefined) => v?.trim() || null;
-  return {
+  // Columns from migrations this instance hasn't run are dropped, so the write still lands.
+  return dropUnsupportedColumns({
     site_id: input.site_id,
-    // Omitted entirely where the sub-asset migration hasn't run, so the write still lands.
-    ...(parentColumnSupported
-      ? { parent_asset_id: input.parent_asset_id || null }
-      : {}),
+    parent_asset_id: input.parent_asset_id || null,
+    nameplate_data: cleanNameplate(input.nameplate_data),
     identifier: input.identifier.trim(),
     building_area: text(input.building_area),
     substation: text(input.substation),
@@ -219,7 +259,7 @@ function normalizeInput(input: EquipmentAssetInput) {
     model: text(input.model),
     serial_number: text(input.serial_number),
     notes: text(input.notes),
-  };
+  });
 }
 
 function duplicateError(identifier: string): Error {
@@ -273,7 +313,7 @@ export async function setAssetParent(
   parentAssetId: string | null,
   userId?: string,
 ): Promise<EquipmentAsset> {
-  if (!parentColumnSupported) {
+  if (!columnSupported.parent_asset_id) {
     throw new Error(
       "Sub-assets aren't set up on this database yet. Run database/migrations/add_equipment_asset_parent.sql, then reload.",
     );
@@ -291,7 +331,7 @@ export async function setAssetParent(
     .single();
 
   if (error) throw error;
-  return data as EquipmentAsset;
+  return data as unknown as EquipmentAsset;
 }
 
 export interface BulkInsertResult {
@@ -388,7 +428,7 @@ export async function deleteEquipmentAsset(assetId: string): Promise<void> {
 
   // The FK's ON DELETE SET NULL never fires for a soft delete, so detach any sub-assets
   // by hand — otherwise they'd point at a parent that no longer appears in any list.
-  if (parentColumnSupported) {
+  if (columnSupported.parent_asset_id) {
     const { error: detachError } = await supabase
       .schema("neta_ops")
       .from("equipment_assets")

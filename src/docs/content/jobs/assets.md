@@ -1,0 +1,73 @@
+---
+title: Assets
+description: The equipment list on a job. Adding it, importing it, and hanging reports off it.
+keywords: [asset, equipment, transformer, breaker, bulk import, sub-asset]
+---
+
+An asset is one piece of equipment you tested. The **Assets** tab on a job is the list of them, and each one carries the report written against it.
+
+If you are looking for a report, find its asset first.
+
+## Adding assets one at a time
+
+1. Open the job and go to **Assets**.
+2. Click **Add asset**.
+3. Enter the **name**, matching the nameplate or the one-line drawing. `Transformer T-1`, not `the big one by the door`.
+4. Enter the **identifier** if there is one: a tag number, a serial, an asset tag.
+5. Pick the **report type**. See the [report catalog](/docs/reports/catalog) if you are not sure which form applies.
+6. Save.
+
+The asset appears in the list with its report in `In progress`.
+
+## Bulk import
+
+For a job with forty panels, do not type forty rows.
+
+1. Click **Bulk import**.
+2. Paste your list, or upload a spreadsheet.
+3. The preview shows every row it parsed, full height, before anything is created. Check it.
+4. Fix anything wrong in the preview, then confirm.
+
+::: tip
+The preview is there so you can catch a column misalignment before it becomes forty badly-named assets. Read it. It takes ten seconds and saves an hour.
+:::
+
+## Sub-assets
+
+Real equipment nests. A switchgear lineup contains breakers. A substation contains transformers and relays.
+
+Link a sub-asset to its parent and the list groups them together instead of scattering fifteen breakers alphabetically through the job. The deliverable follows the same grouping, so the customer's PDF reads in the order the equipment is actually laid out.
+
+To link one, set the parent on the sub-asset when you create or edit it.
+
+## Asset status
+
+Each asset shows the status of its report:
+
+| Status | Means |
+|---|---|
+| **In progress** | Being written. Editable. |
+| **Ready for review** | Submitted. Waiting on a reviewer. |
+| **Approved** | Signed off. Can go into a deliverable. |
+
+Filter by status using the chips above the list. `Ready for review` is the reviewer's queue for this job.
+
+## Sorting the list
+
+Click a column header to sort. Hold **Shift** and click a second header to sort by two columns, for example parent asset first, then name.
+
+The sort and filter you pick are remembered when you leave and come back.
+
+## Editing assets
+
+Click into an asset to change its name, identifier, or parent. Edits save as you make them and persist across page loads, so a half-finished rename is not lost if you get pulled away.
+
+Changing an asset's **report type** after the report has data in it is not something you want to do; the fields do not map across form types. Delete and recreate instead, or ask an administrator.
+
+## Deleting an asset
+
+Deleting an asset deletes its report. There is no undo.
+
+::: danger
+Do not delete an asset to "clean up" a job with an approved report on it. That report may already be in a delivered package. If a piece of equipment turned out not to exist, mark it in the notes instead.
+:::

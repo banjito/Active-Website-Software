@@ -519,11 +519,46 @@ const LargeDryTypeTransformerReport: React.FC = () => {
   } = useEquipmentAssetPrefill(reportId);
   useEffect(() => {
     if (!shouldPrefill) return;
+    const np = assetPrefill.nameplate;
     setFormData((prev) => ({
       ...prev,
       identifier: prev.identifier || assetPrefill.identifier,
       substation: prev.substation || assetPrefill.substation,
       eqptLocation: prev.eqptLocation || assetPrefill.eqptLocation,
+      // The report nests primary/secondary; the asset stores them flat, so map across.
+      nameplateData: {
+        ...prev.nameplateData,
+        manufacturer: prev.nameplateData.manufacturer || assetPrefill.manufacturer,
+        catalogNumber: prev.nameplateData.catalogNumber || assetPrefill.model,
+        serialNumber: prev.nameplateData.serialNumber || assetPrefill.serialNumber,
+        kva: prev.nameplateData.kva || np.kva || "",
+        tempRise: prev.nameplateData.tempRise || np.tempRise || "",
+        impedance: prev.nameplateData.impedance || np.impedance || "",
+        primary: {
+          ...prev.nameplateData.primary,
+          volts: prev.nameplateData.primary.volts || np.primaryVolts || "",
+          voltsSecondary:
+            prev.nameplateData.primary.voltsSecondary ||
+            np.primaryVoltsSecondary ||
+            "",
+          connection:
+            prev.nameplateData.primary.connection || np.primaryConnection || "",
+          material:
+            prev.nameplateData.primary.material || np.primaryMaterial || "",
+        },
+        secondary: {
+          ...prev.nameplateData.secondary,
+          volts: prev.nameplateData.secondary.volts || np.secondaryVolts || "",
+          voltsSecondary:
+            prev.nameplateData.secondary.voltsSecondary ||
+            np.secondaryVoltsSecondary ||
+            "",
+          connection:
+            prev.nameplateData.secondary.connection || np.secondaryConnection || "",
+          material:
+            prev.nameplateData.secondary.material || np.secondaryMaterial || "",
+        },
+      },
     }));
   }, [shouldPrefill, assetPrefill]);
 

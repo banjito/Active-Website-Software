@@ -79,6 +79,11 @@ interface EquipmentAssetsTableProps {
   reportsByAsset?: Map<string, LinkedReport[]>;
   /** Open one of those reports. Without it, they're listed but not clickable. */
   onOpenReport?: (report: LinkedReport) => void;
+  /**
+   * Detach a report from this asset. The report itself is untouched and stays on the job;
+   * it just stops claiming to describe this piece of equipment.
+   */
+  onDetachReport?: (asset: EquipmentAssetWithCounts, report: LinkedReport) => void;
   /** Rendered above the table, right of the filters. */
   actions?: React.ReactNode;
   emptyMessage?: string;
@@ -130,6 +135,7 @@ export function EquipmentAssetsTable({
   onAttachReports,
   reportsByAsset,
   onOpenReport,
+  onDetachReport,
   actions,
   emptyMessage = "No assets yet.",
   storageKey,
@@ -618,6 +624,17 @@ export function EquipmentAssetsTable({
                                 <span className="text-sm text-neutral-700 dark:text-neutral-200">
                                   {report.name || "Untitled report"}
                                 </span>
+                              )}
+                              {onDetachReport && (
+                                <button
+                                  type="button"
+                                  onClick={() => onDetachReport(asset, report)}
+                                  aria-label={`Unlink ${report.name || "this report"} from ${asset.identifier}`}
+                                  title="Unlink this report from the asset (the report itself is kept)"
+                                  className="ml-1 text-neutral-400 hover:text-destructive"
+                                >
+                                  <Unlink className="h-3.5 w-3.5" />
+                                </button>
                               )}
                             </div>
                           ))}

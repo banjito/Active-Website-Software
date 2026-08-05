@@ -67,11 +67,52 @@ export const COMPANY_SUPERUSER_EMAILS = env(
  */
 export const COMPANY_EMPLOYEE_DOMAINS = env(
   "COMPANY_EMPLOYEE_DOMAINS",
-  "@ampqes.com"
+  "@ampqes.com,@cedsi.com"
 )
   .split(",")
   .map((d) => d.trim().toLowerCase())
   .filter(Boolean);
+
+/**
+ * Staff roles, mirroring common.is_employee_user() in the database and the
+ * canonical Role union in src/lib/roles.ts. Keep all three in sync — a role
+ * missing here silently denies those users on every check that consults it.
+ * "Lab Customer" is deliberately absent: that is a customer, not staff.
+ */
+export const COMPANY_EMPLOYEE_ROLES = new Set(
+  env(
+    "COMPANY_EMPLOYEE_ROLES",
+    [
+      // canonical roles (src/lib/roles.ts)
+      "admin",
+      "super admin",
+      "neta technician",
+      "lab technician",
+      "office admin",
+      "sales representative",
+      "engineer",
+      "operations manager",
+      "hr rep",
+      "scav",
+      // legacy / alternate spellings kept for existing accounts
+      "manager",
+      "supervisor",
+      "technician",
+      "sales",
+      "estimator",
+      "engineering",
+      "hr_manager",
+      "hr_personnel",
+    ].join(",")
+  )
+    .split(",")
+    .map((r) => r.trim().toLowerCase())
+    .filter(Boolean)
+);
+
+/** True if the role names a staff role. */
+export const isEmployeeRole = (role: string): boolean =>
+  COMPANY_EMPLOYEE_ROLES.has((role || "").toLowerCase());
 
 /** Brand color for email HTML headers/buttons. */
 export const BRAND_COLOR = env("COMPANY_BRAND_COLOR", "#f26722");

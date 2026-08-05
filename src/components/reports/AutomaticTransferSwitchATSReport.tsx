@@ -402,11 +402,23 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
   } = useEquipmentAssetPrefill(initialReportId);
   useEffect(() => {
     if (!shouldPrefill) return;
+    const np = assetPrefill.nameplate;
     setFormData((prev) => ({
       ...prev,
       identifier: prev.identifier || assetPrefill.identifier,
       substation: prev.substation || assetPrefill.substation,
       eqptLocation: prev.eqptLocation || assetPrefill.eqptLocation,
+      nameplateManufacturer:
+        prev.nameplateManufacturer || assetPrefill.manufacturer,
+      nameplateCatalogNo: prev.nameplateCatalogNo || assetPrefill.model,
+      nameplateSerialNumber:
+        prev.nameplateSerialNumber || assetPrefill.serialNumber,
+      nameplateModelType: prev.nameplateModelType || np.modelType || "",
+      nameplateSystemVoltage:
+        prev.nameplateSystemVoltage || np.systemVoltage || "",
+      nameplateRatedVoltage: prev.nameplateRatedVoltage || np.ratedVoltage || "",
+      nameplateRatedCurrent: prev.nameplateRatedCurrent || np.ratedCurrent || "",
+      nameplateSCCR: prev.nameplateSCCR || np.sccr || "",
     }));
   }, [shouldPrefill, assetPrefill]);
 

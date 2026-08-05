@@ -157,6 +157,22 @@ import {
   GuideViewer,
 } from "./components/helpCenter";
 
+// Documentation site.
+//
+// Loaded lazily: the docs inline ~260kb of Markdown at build time, and nobody
+// on the login screen needs it. `docsRoutePaths` comes straight from nav.ts so
+// the route table can be built without pulling the content in with it.
+// All three components share one import() call, so they land in a single chunk
+// and navigating between docs pages never re-suspends.
+import { docsRoutePaths } from "./docs/nav";
+
+const loadDocs = () => import("./docs");
+const DocsLayout = lazy(() =>
+  loadDocs().then((m) => ({ default: m.DocsLayout })),
+);
+const DocsHome = lazy(() => loadDocs().then((m) => ({ default: m.DocsHome })));
+const DocsPage = lazy(() => loadDocs().then((m) => ({ default: m.DocsPage })));
+
 // MUI X Date Pickers setup
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -785,6 +801,37 @@ function App() {
                       </RequireAuth>
                     }
                   />
+
+                  {/* === Documentation Routes === */}
+                  <Route
+                    path="/docs"
+                    element={
+                      <RequireAuth>
+                        {/* Covers the whole docs subtree: nested pages render
+                            through this layout's <Outlet />, so they suspend
+                            against this boundary too. */}
+                        <Suspense
+                          fallback={
+                            <div className="flex min-h-screen items-center justify-center">
+                              <LoadingSpinner size="md" />
+                            </div>
+                          }
+                        >
+                          <DocsLayout />
+                        </Suspense>
+                      </RequireAuth>
+                    }
+                  >
+                    <Route index element={<DocsHome />} />
+                    {/* One route per docs section, so the section slug is a
+                        static segment. A bare "*" splat here loses the
+                        specificity ranking to /:division/jobs/:id and friends,
+                        which hijacked every /docs/jobs/... page. */}
+                    {docsRoutePaths.map((routePath) => (
+                      <Route key={routePath} path={routePath} element={<DocsPage />} />
+                    ))}
+                    <Route path="*" element={<DocsPage />} />
+                  </Route>
 
                   {/* === Help Center Routes === */}
                   <Route

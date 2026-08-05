@@ -15,6 +15,7 @@ const EMPTY_PREFILL: EquipmentAssetPrefill = {
   manufacturer: "",
   model: "",
   serialNumber: "",
+  nameplate: {},
 };
 
 interface UseEquipmentAssetPrefillResult {

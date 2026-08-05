@@ -346,6 +346,45 @@ async function extractQuotedAmountFromLetterProposal(
   }
 }
 
+const JOB_DIVISION_ALIASES: Record<string, string> = {
+  alabama: "north_alabama",
+  decatur: "north_alabama",
+  north_alabama: "north_alabama",
+  north_alabama_division: "north_alabama",
+  nashville: "tennessee",
+  tennessee: "tennessee",
+  tennessee_division: "tennessee",
+  atlanta: "georgia",
+  georgia: "georgia",
+  georgia_division: "georgia",
+  international: "international",
+  government_international: "international",
+  government_and_international: "international",
+  engineering: "engineering",
+  engineering_division: "engineering",
+  calibration: "calibration",
+  armadillo: "armadillo",
+  scavenger: "scavenger",
+  lab: "lab",
+  field_tech: "field_tech",
+  field_technician: "field_tech",
+  field_technician_portal: "field_tech",
+  hr: "hr",
+  human_resources: "hr",
+};
+
+function normalizeJobDivision(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  return JOB_DIVISION_ALIASES[normalized] || null;
+}
+
 async function createJobManually(
   opportunity: any,
   supabase: SupabaseClient<any, "common" | "public", any>,
@@ -394,6 +433,19 @@ async function createJobManually(
       console.error("Error updating opportunity with existing job:", e);
     }
     return existingJob.id;
+  }
+
+  const division = normalizeJobDivision(opportunity.amp_division);
+  if (!division) {
+    const currentDivision =
+      typeof opportunity.amp_division === "string"
+        ? opportunity.amp_division.trim()
+        : "";
+    throw new Error(
+      currentDivision
+        ? `Opportunity AMP division "${currentDivision}" is not supported. Edit the opportunity and select a valid AMP division before converting it.`
+        : "Opportunity is missing an AMP division. Edit the opportunity and select one before converting it.",
+    );
   }
 
   // Determine next job number: try DB RPC first, then fall back to client scan
@@ -521,10 +573,7 @@ async function createJobManually(
       "\n\nConverted from opportunity: " +
       opportunity.quote_number,
     priority: "medium",
-    division:
-      opportunity.amp_division === "Decatur"
-        ? "north_alabama"
-        : opportunity.amp_division,
+    division,
     job_number: nextJobNumberString,
     opportunity_id: opportunity.id, // Add the opportunity link
   };
@@ -592,10 +641,6 @@ async function createJobManually(
 
   // Add default files to the newly created job
   try {
-    const division =
-      opportunity.amp_division === "Decatur"
-        ? "north_alabama"
-        : opportunity.amp_division;
     await addDefaultFilesToJob(newJob.id, userId, division);
     console.log("Default files added successfully to job:", newJob.id);
   } catch (fileError) {

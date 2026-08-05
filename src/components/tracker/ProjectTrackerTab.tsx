@@ -31,13 +31,16 @@ import {
   TableRow,
 } from "@/components/ui/Table";
 import { toast } from "react-hot-toast";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { compareAlphanumericLabels } from "@/utils/sortUtils";
 import { fetchAssetsForSite } from "@/services/equipmentAssetsService";
 import {
   bulkDelete,
   bulkSetStatus,
-  fetchScheduledTestsForSite,
+  fetchScheduledTestsForJob,
   joinAssets,
   supportsScheduling,
   undoBatch,
@@ -81,9 +84,14 @@ import {
 } from "./trackerViews";
 
 interface ProjectTrackerTabProps {
-  siteId: string;
-  canEdit: boolean;
-  userId?: string;
+  /**
+   * The project whose schedule this is.
+   *
+   * A schedule is project-specific: start and finish dates belong to a job, not to a
+   * facility. The equipment registry is the part that outlives the project. So the
+   * tracker always runs inside a job and only ever shows that job's rows.
+   */
+  jobId: string;
   /** Opens a linked report document. Omitted where there's nowhere to navigate to. */
   onOpenReport?: (reportAssetId: string) => void;
 }
@@ -104,19 +112,32 @@ const STATE_STRIPE: Record<ScheduleState, string> = {
 const BLANK = "—";
 
 /**
- * The Project Tracker: every scheduled test at a site, with status and result.
+ * The Project Tracker: this project's scheduled tests, with status and result.
  *
- * The asset list answers "what equipment is here". This answers the question a PM
- * actually asks on a Monday morning — what are we testing this week, what's late, and
- * what isn't even scheduled.
+ * The Assets tab answers "what equipment is here", which is a fact about the facility and
+ * outlives any one job. This answers the question a PM asks on a Monday morning — what
+ * are we testing this week, what's late, what isn't even scheduled — and those are dates
+ * belonging to a project, so the tracker lives on the job.
  */
-export function ProjectTrackerTab({
-  siteId,
-  canEdit,
-  userId,
-  onOpenReport,
-}: ProjectTrackerTabProps) {
+export function ProjectTrackerTab({ jobId, onOpenReport }: ProjectTrackerTabProps) {
+  const { user } = useAuth();
+  const { getUserRole, isAdmin } = usePermissions();
+  const userId = user?.id;
+  // Same role list the Assets tab uses. Bulk date tools arguably want a narrower set
+  // (a tech shifting 47 items by accident is worse than a tech having to ask), but
+  // splitting that is a permissions decision, not a guess to make here.
+  const canEdit =
+    isAdmin ||
+    ["Admin", "Super Admin", "Office Admin", "Manager", "NETA Technician"].includes(
+      getUserRole() as string,
+    );
+
   const [rows, setRows] = useState<ScheduledTestRow[]>([]);
+  /**
+   * Read off the job rather than passed in, so this tab doesn't depend on the job page
+   * happening to select site_id — the same reason the Assets tab resolves it itself.
+   */
+  const [siteId, setSiteId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [migrationMissing, setMigrationMissing] = useState(false);
   const [openRowId, setOpenRowId] = useState<string | null>(null);
@@ -127,55 +148,55 @@ export function ProjectTrackerTab({
 
   const { choices } = useReportTemplateChoices(true);
 
-  const [search, setSearch] = usePersistentState(`tracker:${siteId}:search`, "");
+  const [search, setSearch] = usePersistentState(`tracker:${jobId}:search`, "");
   const [substationFilter, setSubstationFilter] = usePersistentState(
-    `tracker:${siteId}:substation`,
+    `tracker:${jobId}:substation`,
     "all",
   );
   const [testingFilter, setTestingFilter] = usePersistentState(
-    `tracker:${siteId}:testing`,
+    `tracker:${jobId}:testing`,
     "all",
   );
   const [equipmentFilter, setEquipmentFilter] = usePersistentState(
-    `tracker:${siteId}:equipment`,
+    `tracker:${jobId}:equipment`,
     "all",
   );
   const [resultFilter, setResultFilter] = usePersistentState(
-    `tracker:${siteId}:result`,
+    `tracker:${jobId}:result`,
     "all",
   );
   const [showCompleted, setShowCompleted] = usePersistentState(
-    `tracker:${siteId}:completed`,
+    `tracker:${jobId}:completed`,
     false,
   );
   const [sortKey, setSortKey] = usePersistentState<SortKey>(
-    `tracker:${siteId}:sortKey`,
+    `tracker:${jobId}:sortKey`,
     "finish_date",
   );
-  const [sortAsc, setSortAsc] = usePersistentState(`tracker:${siteId}:sortAsc`, true);
+  const [sortAsc, setSortAsc] = usePersistentState(`tracker:${jobId}:sortAsc`, true);
 
   // ── Views ──────────────────────────────────────────────────────────────────
   // Due & Past Due is the default because it's the Monday-morning question. Anything
   // else landing first means filtering your way to it every time.
   const [stateScope, setStateScope] = usePersistentState<StateScope>(
-    `tracker:${siteId}:scope`,
+    `tracker:${jobId}:scope`,
     "due_and_late",
   );
   const [groupBy, setGroupBy] = usePersistentState<GroupBy>(
-    `tracker:${siteId}:groupBy`,
+    `tracker:${jobId}:groupBy`,
     "due_bucket",
   );
-  const [viewId, setViewId] = usePersistentState(`tracker:${siteId}:view`, "due");
+  const [viewId, setViewId] = usePersistentState(`tracker:${jobId}:view`, "due");
   const [customViews, setCustomViews] = useState<TrackerView[]>([]);
   /** Collapsed group headers. Survives a reload so a collapsed hall stays collapsed. */
   const [collapsedGroups, setCollapsedGroups] = usePersistentState<string[]>(
-    `tracker:${siteId}:collapsedGroups`,
+    `tracker:${jobId}:collapsedGroups`,
     [],
   );
 
   useEffect(() => {
-    setCustomViews(loadCustomViews(siteId));
-  }, [siteId]);
+    setCustomViews(loadCustomViews(jobId));
+  }, [jobId]);
 
   const allViews = useMemo(
     () => [...PRESET_VIEWS, ...customViews],
@@ -216,7 +237,7 @@ export function ProjectTrackerTab({
     };
     const next = [...customViews, view];
     setCustomViews(next);
-    saveCustomViews(siteId, next);
+    saveCustomViews(jobId, next);
     setViewId(view.id);
     toast.success(`Saved "${label}"`);
   };
@@ -224,7 +245,7 @@ export function ProjectTrackerTab({
   const deleteCustomView = (id: string) => {
     const next = customViews.filter((v) => v.id !== id);
     setCustomViews(next);
-    saveCustomViews(siteId, next);
+    saveCustomViews(jobId, next);
     if (viewId === id) applyView(PRESET_VIEWS[0]);
   };
 
@@ -236,9 +257,31 @@ export function ProjectTrackerTab({
   const load = useCallback(async () => {
     setLoading(true);
     try {
+      const { data: jobRow, error } = await supabase
+        .schema("neta_ops")
+        .from("jobs")
+        .select("site_id")
+        .eq("id", jobId)
+        .maybeSingle();
+
+      // 42703/42P01 = the asset-tracking migration hasn't been applied here.
+      if (error?.code === "42703" || error?.code === "42P01") {
+        setMigrationMissing(true);
+        return;
+      }
+
+      const jobSiteId = (jobRow as { site_id?: string } | null)?.site_id ?? null;
+      setSiteId(jobSiteId);
+      if (!jobSiteId) {
+        setRows([]);
+        return;
+      }
+
+      // Assets come from the site because that's where equipment lives; the schedule
+      // comes from the job because that's whose dates these are.
       const [tests, assets] = await Promise.all([
-        fetchScheduledTestsForSite(siteId),
-        fetchAssetsForSite(siteId),
+        fetchScheduledTestsForJob(jobId),
+        fetchAssetsForSite(jobSiteId),
       ]);
       if (!supportsScheduling()) {
         setMigrationMissing(true);
@@ -251,7 +294,7 @@ export function ProjectTrackerTab({
     } finally {
       setLoading(false);
     }
-  }, [siteId]);
+  }, [jobId]);
 
   useEffect(() => {
     void load();
@@ -493,6 +536,7 @@ export function ProjectTrackerTab({
     equipmentStatus?: EquipmentStatus | null;
     testingStatus?: TestingStatus;
   }) => {
+    if (!siteId) return;
     try {
       const { batchId, affected } = await bulkSetStatus({
         siteId,
@@ -508,6 +552,7 @@ export function ProjectTrackerTab({
   };
 
   const handleBulkDelete = async () => {
+    if (!siteId) return;
     if (
       !window.confirm(
         `Delete ${selectedRows.length} scheduled test${selectedRows.length === 1 ? "" : "s"}? The equipment and any reports are kept — only the schedule rows go.`,
@@ -577,15 +622,32 @@ export function ProjectTrackerTab({
     );
   }
 
+  // The schedule hangs off the site's equipment, so there's nothing to show until the
+  // job knows which facility it's at. The Assets tab is where that gets set.
+  if (!siteId) {
+    return (
+      <div className="p-6">
+        <div className="mx-auto max-w-lg border border-neutral-200 p-8 text-center dark:border-neutral-700">
+          <CalendarClock className="mx-auto mb-3 h-8 w-8 text-neutral-400" />
+          <h3 className="mb-1 text-lg font-medium">No site set for this job</h3>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            Pick the facility on the Assets tab first. The schedule is built from that
+            site's equipment list.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (rows.length === 0) {
     return (
       <div className="p-6">
         <div className="mx-auto max-w-lg border border-neutral-200 p-8 text-center dark:border-neutral-700">
           <CalendarClock className="mx-auto mb-3 h-8 w-8 text-neutral-400" />
-          <h3 className="mb-1 text-lg font-medium">Nothing scheduled yet</h3>
+          <h3 className="mb-1 text-lg font-medium">Nothing scheduled on this job yet</h3>
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Head to the Assets tab, tick the equipment you're testing and use Schedule
-            test. Everything you schedule shows up here.
+            Go to the Assets tab, tick the equipment this project covers and use Schedule
+            test. Everything you schedule for this job shows up here.
           </p>
         </div>
       </div>
@@ -1027,9 +1089,9 @@ export function ProjectTrackerTab({
       />
 
       <BulkDateDialog
-        open={dateOp !== null}
+        open={dateOp !== null && !!siteId}
         onClose={() => setDateOp(null)}
-        siteId={siteId}
+        siteId={siteId ?? ""}
         op={dateOp ?? "shift"}
         rows={selectedRows}
         userId={userId}

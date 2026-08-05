@@ -94,6 +94,7 @@ import {
 } from "../reports/reportMappings";
 import JobDeliverables from "./JobDeliverables";
 import JobAssetsTab from "@/components/assets/JobAssetsTab";
+import ProjectTrackerTab from "@/components/tracker/ProjectTrackerTab";
 import AfterActionReports from "./AfterActionReports";
 import { pdfExportService } from "../../services/pdfExportService";
 
@@ -9020,6 +9021,16 @@ export default function JobDetail() {
                     Assets
                   </button>
                   <button
+                    onClick={() => handleTabChange("project-tracker")}
+                    className={`py-4 px-6 text-sm font-medium ${
+                      activeTab === "project-tracker"
+                        ? "border-b-2 border-brand text-brand"
+                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
+                    }`}
+                  >
+                    Project Tracker
+                  </button>
+                  <button
                     onClick={() => handleTabChange("reports")}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "reports"
@@ -11854,6 +11865,20 @@ export default function JobDetail() {
                     reportAssets={equipmentReportAssets}
                     onReportLinksChanged={() => void fetchJobAssets()}
                   />
+                )}
+
+                {activeTab === "project-tracker" && job && (
+                  <div className="p-4">
+                    <ProjectTrackerTab
+                      jobId={job.id}
+                      onOpenReport={(reportAssetId) => {
+                        const report = jobAssets.find((a) => a.id === reportAssetId);
+                        if (report?.file_url?.startsWith("report:")) {
+                          navigate(report.file_url.replace("report:", ""));
+                        }
+                      }}
+                    />
+                  </div>
                 )}
 
                 {activeTab === "deliverables" && job && (

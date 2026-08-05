@@ -1,4 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
+// Must be imported before createClient() runs: it snapshots the auth params in
+// the URL before detectSessionInUrl strips them. See authUrlSnapshot.ts.
+import './authUrlSnapshot';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;

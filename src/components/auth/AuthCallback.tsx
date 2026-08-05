@@ -1,150 +1,237 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
-import { processAuthToken } from "../../lib/utils";
-import { User } from "@supabase/supabase-js";
+import { readAuthUrlParams, AuthUrlParams } from "../../lib/authUrlSnapshot";
+import type { EmailOtpType, Session } from "@supabase/supabase-js";
+
+/**
+ * How long to give the Supabase client to finish the session exchange it starts
+ * on its own (detectSessionInUrl) before we step in and try it ourselves.
+ */
+const SDK_WAIT_MS = 4000;
+const POLL_INTERVAL_MS = 250;
+
+/** Link types that land on the password form instead of profile setup. */
+const PASSWORD_TYPES = new Set(["recovery", "invite"]);
+
+function toOtpType(type: string | null): EmailOtpType {
+  switch (type) {
+    case "recovery":
+    case "invite":
+    case "magiclink":
+    case "email":
+    case "email_change":
+      return type;
+    default:
+      return "signup";
+  }
+}
+
+/**
+ * Resolves as soon as a session exists, or with null after `timeoutMs`.
+ * Listens for auth events *and* polls, because the session can land either way
+ * depending on whether the client or this component performed the exchange.
+ */
+function waitForSession(timeoutMs: number): Promise<Session | null> {
+  return new Promise((resolve) => {
+    // Held in an object so `finish` can reference the unsubscribe handle that is
+    // only available after the listener below is registered.
+    const listener = { settled: false, unsubscribe: () => {} };
+
+    const finish = (session: Session | null) => {
+      if (listener.settled) return;
+      listener.settled = true;
+      clearInterval(poll);
+      clearTimeout(timer);
+      listener.unsubscribe();
+      resolve(session);
+    };
+
+    const check = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) finish(data.session);
+    };
+
+    const poll = setInterval(() => void check(), POLL_INTERVAL_MS);
+    const timer = setTimeout(() => finish(null), timeoutMs);
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) finish(session);
+    });
+    listener.unsubscribe = () => data.subscription.unsubscribe();
+    if (listener.settled) listener.unsubscribe();
+
+    void check();
+  });
+}
+
+/** Human-readable text for a failure Supabase reported in the URL itself. */
+function describeUrlError(params: AuthUrlParams): string {
+  const code = params.errorCode ?? "";
+
+  if (code.includes("expired")) {
+    return "This link has expired. Request a new one from the login page.";
+  }
+  if (code === "access_denied") {
+    return "This link is no longer valid. It may have already been used. Try signing in, or request a new link.";
+  }
+  return (
+    params.errorDescription?.replace(/\+/g, " ") ||
+    "This link could not be verified. Request a new one from the login page."
+  );
+}
 
 export default function AuthCallback() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [detail, setDetail] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
+  const started = useRef(false);
 
   useEffect(() => {
-    // Process the auth callback
+    // One-time tokens can only be redeemed once, so this must never run twice
+    // (React StrictMode mounts effects twice in development).
+    if (started.current) return;
+    started.current = true;
+
+    let cancelled = false;
+
+    const fail = (message: string, underlying?: unknown) => {
+      if (cancelled) return;
+      console.error("Auth callback failed:", message, underlying);
+      setError(message);
+      if (underlying instanceof Error) setDetail(underlying.message);
+      setLoading(false);
+    };
+
+    const succeed = (needsPassword: boolean) => {
+      if (cancelled) return;
+      setSuccess(true);
+      setLoading(false);
+      setTimeout(() => {
+        if (cancelled) return;
+        navigate(needsPassword ? "/reset-password" : "/profile-setup", {
+          replace: true,
+        });
+      }, 1200);
+    };
+
     const handleAuthCallback = async () => {
-      setLoading(true);
       try {
-        // Get the full URL including the hash fragment
-        const fullUrl = window.location.href;
-        console.log("Processing auth callback from URL:", fullUrl);
+        const params = readAuthUrlParams();
+        const needsPassword = PASSWORD_TYPES.has(params.type ?? "");
 
-        // Check if the URL contains an access token from Supabase (hash fragment)
-        if (window.location.hash.includes("access_token=")) {
-          console.log("Detected access_token in URL hash, extracting token...");
-          const hashParams = new URLSearchParams(
-            window.location.hash.substring(1),
-          );
-          const accessToken = hashParams.get("access_token");
-          const refreshToken = hashParams.get("refresh_token");
-          const authType = hashParams.get("type");
+        console.log("Processing auth callback:", {
+          type: params.type,
+          hasCode: !!params.code,
+          hasTokenHash: !!params.tokenHash,
+          hasAccessToken: !!params.accessToken,
+          errorCode: params.errorCode,
+        });
 
-          if (accessToken) {
-            console.log("Found access token, setting session...");
-
-            const { error: sessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken || "",
-            });
-
-            if (sessionError) {
-              console.error("Error setting session:", sessionError);
-              throw sessionError;
-            }
-
-            if (authType === "recovery") {
-              setSuccess(true);
-              setTimeout(() => {
-                navigate("/reset-password", { replace: true });
-              }, 1000);
-              return;
-            }
-
-            setSuccess(true);
-            setTimeout(() => {
-              navigate("/profile-setup", { replace: true });
-            }, 2000);
-            return;
-          }
+        // 1. Supabase already told us it rejected the link.
+        if (params.errorCode || params.errorDescription) {
+          fail(describeUrlError(params));
+          return;
         }
 
-        // Standard token processing
-        const {
-          success,
-          data,
-          error: authError,
-        } = await processAuthToken(fullUrl);
+        // 2. A one-time token (?token_hash=). The client never touches these,
+        //    so there is no race - redeem it directly. This flow works even when
+        //    the link is opened in a different browser than it was requested in.
+        if (params.tokenHash) {
+          const { data, error: otpError } = await supabase.auth.verifyOtp({
+            token_hash: params.tokenHash,
+            type: toOtpType(params.type),
+          });
 
-        if (!success || authError) {
-          console.error("Error during auth verification:", authError);
-          setError(
-            "There was a problem verifying your email. Please try again or request a new verification link.",
-          );
-        } else {
-          console.log("Auth verification successful:", data);
-
-          const isRecoveryFlow =
-            !!data &&
-            typeof data === "object" &&
-            "type" in data &&
-            data.type === "recovery";
-
-          if (isRecoveryFlow) {
-            setSuccess(true);
-            setTimeout(() => {
-              navigate("/reset-password", { replace: true });
-            }, 1000);
+          if (otpError || !data.session) {
+            fail(
+              "This link could not be verified. It may have expired or already been used. Try signing in, or request a new link.",
+              otpError,
+            );
             return;
           }
 
-          // Extract user ID safely with type checking
-          let userId: string | null = null;
-
-          // Handle different response formats
-          if (data && typeof data === "object") {
-            if (
-              "session" in data &&
-              data.session &&
-              typeof data.session === "object" &&
-              "user" in data.session &&
-              data.session.user &&
-              "id" in data.session.user
-            ) {
-              userId = data.session.user.id;
-            } else if ("user" in data && data.user && "id" in data.user) {
-              userId = (data.user as User).id;
-            }
-          }
-
-          if (userId) {
-            try {
-              // Example of how to safely check if the user exists in the profiles table
-              // Note: We use text casting and proper comparison to avoid numeric literal errors
-              const { data: profileData, error: profileError } = await supabase
-                .schema("common")
-                .from("profiles")
-                .select("id")
-                .filter("id::text", "eq", userId);
-
-              if (profileError) {
-                console.error("Error checking user profile:", profileError);
-              } else {
-                console.log("Profile check result:", profileData);
-              }
-            } catch (err) {
-              console.error("Error verifying user data:", err);
-            }
-          }
-
-          setSuccess(true);
-          // Redirect to profile setup after a short delay to show success message
-          setTimeout(() => {
-            navigate("/profile-setup", { replace: true });
-          }, 2000);
+          succeed(needsPassword);
+          return;
         }
+
+        // 3. Otherwise the client is mid-exchange on the ?code= or #access_token
+        //    in the URL. Wait for it rather than racing it - redeeming the code
+        //    twice fails.
+        const session = await waitForSession(SDK_WAIT_MS);
+        if (cancelled) return;
+        if (session) {
+          succeed(needsPassword);
+          return;
+        }
+
+        // 4. The client did not get there. Try the exchange ourselves.
+        if (params.code) {
+          const { data, error: exchangeError } =
+            await supabase.auth.exchangeCodeForSession(params.code);
+          if (cancelled) return;
+
+          if (!exchangeError && data.session) {
+            succeed(needsPassword);
+            return;
+          }
+
+          // The client may have consumed the code first and still be finishing,
+          // which surfaces here as a spurious error - give it a last chance.
+          const late = await waitForSession(SDK_WAIT_MS);
+          if (cancelled) return;
+          if (late) {
+            succeed(needsPassword);
+            return;
+          }
+
+          // Genuine PKCE failure: the code verifier lives in the browser that
+          // requested the link, so opening it elsewhere (a mail app's built-in
+          // browser, another device) can never complete. The email itself is
+          // already verified at this point, so signing in works.
+          fail(
+            "Your email is verified, but we could not sign you in automatically because this link was opened in a different browser than the one you signed up in. Please sign in with your password.",
+            exchangeError,
+          );
+          return;
+        }
+
+        if (params.accessToken) {
+          const { data, error: sessionError } = await supabase.auth.setSession({
+            access_token: params.accessToken,
+            refresh_token: params.refreshToken || "",
+          });
+          if (cancelled) return;
+
+          if (sessionError || !data.session) {
+            fail(
+              "This link could not be verified. It may have expired. Request a new one from the login page.",
+              sessionError,
+            );
+            return;
+          }
+
+          succeed(needsPassword);
+          return;
+        }
+
+        fail(
+          "This link is missing its verification details. Request a new one from the login page.",
+        );
       } catch (err) {
-        console.error("Unexpected error during auth callback:", err);
-        setError("An unexpected error occurred. Please try again later.");
-      } finally {
-        setLoading(false);
+        fail("An unexpected error occurred. Please try again later.", err);
       }
     };
 
-    handleAuthCallback();
-  }, [location, navigate]);
+    void handleAuthCallback();
 
-  // Show appropriate UI based on the state
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -160,15 +247,20 @@ export default function AuthCallback() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          <h2 className="text-xl font-semibold mb-2">Verification Failed</h2>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 max-w-lg">
+          <h2 className="text-xl font-semibold mb-2">
+            Could not complete sign-in
+          </h2>
           <p>{error}</p>
+          {detail && (
+            <p className="mt-2 text-xs text-red-600 opacity-75">{detail}</p>
+          )}
         </div>
         <button
           onClick={() => navigate("/login", { replace: true })}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
-          Return to Login
+          Continue to Sign In
         </button>
       </div>
     );
@@ -185,7 +277,6 @@ export default function AuthCallback() {
     );
   }
 
-  // Fallback UI (should not typically be seen)
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <p>Processing your verification...</p>

@@ -10788,7 +10788,7 @@ export default function JobDetail() {
 
                       {/* Status filter tabs */}
                       <div className="pt-4">
-                        <div className="flex space-x-1 bg-neutral-100 dark:bg-dark-150 p-1 rounded-none">
+                        <div className="inline-flex space-x-1 bg-neutral-100 dark:bg-dark-150 p-1 rounded-none">
                           <button
                             onClick={() => setAssetStatusFilter("all")}
                             className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${

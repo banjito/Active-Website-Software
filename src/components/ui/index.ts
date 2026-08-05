@@ -28,4 +28,5 @@ export { ScrollArea } from './ScrollArea';
 export { Switch } from './Switch';
 export { Slider } from './Slider';
 export { LoadingSpinner } from './LoadingSpinner';
-export type { LoadingSpinnerProps, LoadingSpinnerSize, LoadingSpinnerVariant } from './LoadingSpinner'; 
+export type { LoadingSpinnerProps, LoadingSpinnerSize, LoadingSpinnerVariant } from './LoadingSpinner';
+export { RichTextEditor } from './RichTextEditor'; 

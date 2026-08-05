@@ -36,7 +36,7 @@ import {
   Clock,
   RefreshCw,
 } from "lucide-react";
-import { RichTextEditor } from "@/components/helpCenter/RichTextEditor";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import {
   offersService,
   OfferTemplate,

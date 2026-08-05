@@ -11,7 +11,6 @@ Database migration instructions and system fix documentation.
 ### Fixes
 - `REPORT_SAVING_FIX_INSTRUCTIONS.md` - Report saving issue fixes
 - `PDF_PRINTING_SPACING_FIX.md` - PDF printing spacing and page break fixes for Medium Voltage Cable reports
-- `HELP_CENTER_UPDATES_JAN_2025.md` - Help Center updates, fixes, and PDF upload feature (January 2025)
 
 ## ⚠️ Important
 

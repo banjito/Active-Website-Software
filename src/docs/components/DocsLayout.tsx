@@ -8,7 +8,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { ArrowLeft, Menu, Search, X, LifeBuoy } from "lucide-react";
+import { ArrowLeft, Menu, Search, X } from "lucide-react";
 import { companyConfig } from "@/lib/companyConfig";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { DocsSidebar } from "./DocsSidebar";
@@ -108,14 +108,6 @@ export function DocsLayout() {
                 {shortcutLabel}
               </kbd>
             </button>
-
-            <Link
-              to="/help-center"
-              className="hidden items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-neutral-600 transition-colors hover:bg-neutral-100 md:flex dark:text-neutral-400 dark:hover:bg-neutral-800"
-            >
-              <LifeBuoy className="h-4 w-4" />
-              Help Center
-            </Link>
 
             <ThemeToggle />
 

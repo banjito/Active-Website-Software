@@ -21,6 +21,10 @@ import {
   supportsSubAssets,
   unlinkAssetFromJob,
 } from "@/services/equipmentAssetsService";
+import {
+  fetchScheduledTestsForSite,
+  supportsScheduling,
+} from "@/services/scheduledTestsService";
 import EquipmentAssetsTable, { type LinkedReport } from "./EquipmentAssetsTable";
 import EquipmentAssetDialog, {
   type AssetFieldSuggestions,
@@ -31,10 +35,10 @@ import AddAssetsFromSiteDialog from "./AddAssetsFromSiteDialog";
 import AdoptExistingReportsDialog, {
   type ExistingReportAsset,
 } from "./AdoptExistingReportsDialog";
-import AttachReportsDialog from "./AttachReportsDialog";
-import ReportTemplatePicker, {
-  type ReportTemplateChoice,
-} from "./ReportTemplatePicker";
+import AddReportDialog from "./AddReportDialog";
+import ScheduleTestDialog from "./ScheduleTestDialog";
+import type { ReportTemplateChoice } from "./useReportTemplateChoices";
+import type { ScheduledTest } from "@/lib/types/testScheduling";
 import type {
   EquipmentAsset,
   EquipmentAssetWithCounts,
@@ -100,7 +104,10 @@ export default function JobAssetsTab({
   const [adopting, setAdopting] = useState(false);
   const [reportForAsset, setReportForAsset] =
     useState<EquipmentAssetWithCounts | null>(null);
-  const [attachingTo, setAttachingTo] = useState<EquipmentAssetWithCounts | null>(null);
+  /** Assets the Schedule test modal is open for — one row, or a whole ticked selection. */
+  const [schedulingFor, setSchedulingFor] = useState<EquipmentAssetWithCounts[]>([]);
+  /** The site's existing schedule, so the modal can warn about scheduling a scope twice. */
+  const [scheduledTests, setScheduledTests] = useState<ScheduledTest[]>([]);
 
   /** Identifier by asset id, so the attach dialog can name whoever owns a report today. */
   const assetNamesById = useMemo(
@@ -172,19 +179,22 @@ export default function JobAssetsTab({
         if (siteId) {
           // The whole site's assets back the duplicate/import duplicate checks — an
           // identifier can clash with equipment that isn't on this job.
-          const [all, fieldSuggestions, types] = await Promise.all([
+          const [all, fieldSuggestions, types, tests] = await Promise.all([
             fetchAssetsForSite(siteId),
             fetchSiteFieldSuggestions(siteId),
             fetchEquipmentTypes(),
+            fetchScheduledTestsForSite(siteId),
           ]);
           setSiteAssets(all);
           setSiteIdentifiers(new Set(all.map((a) => a.identifier.toLowerCase())));
           setSiteAssetIds(new Map(all.map((a) => [a.identifier.toLowerCase(), a.id])));
           setSuggestions({ ...fieldSuggestions, equipmentTypes: types });
+          setScheduledTests(tests);
         } else {
           setSiteAssets([]);
           setSiteIdentifiers(new Set());
           setSiteAssetIds(new Map());
+          setScheduledTests([]);
         }
       } catch (e) {
         console.error(e);
@@ -418,8 +428,15 @@ export default function JobAssetsTab({
         onEdit={setEditingAsset}
         onDuplicate={setDuplicating}
         onDelete={handleDelete}
-        onCreateReport={setReportForAsset}
-        onAttachReports={canEdit ? setAttachingTo : undefined}
+        onAddReport={setReportForAsset}
+        onScheduleTest={
+          canEdit && supportsScheduling()
+            ? (asset) => setSchedulingFor([asset])
+            : undefined
+        }
+        onBatchSchedule={
+          canEdit && supportsScheduling() ? (picked) => setSchedulingFor(picked) : undefined
+        }
         reportsByAsset={reportsByAsset}
         onOpenReport={(report) => report.url && navigate(report.url)}
         onDetachReport={canEdit ? handleDetachReport : undefined}
@@ -531,24 +548,33 @@ export default function JobAssetsTab({
         onDone={() => void load({ silent: true })}
       />
 
-      <AttachReportsDialog
-        open={!!attachingTo}
-        onClose={() => setAttachingTo(null)}
-        asset={attachingTo}
-        reportAssets={reportAssets}
+      <AddReportDialog
+        open={!!reportForAsset}
+        onClose={() => setReportForAsset(null)}
+        asset={reportForAsset}
+        onPickTemplate={openReport}
+        reportAssets={canEdit ? reportAssets : undefined}
         assetNamesById={assetNamesById}
-        onDone={() => {
+        onLinksChanged={() => {
           // The report list lives on the job page; the counts live here.
           onReportLinksChanged?.();
           void load({ silent: true });
         }}
       />
 
-      <ReportTemplatePicker
-        open={!!reportForAsset}
-        onClose={() => setReportForAsset(null)}
-        assetLabel={reportForAsset?.identifier ?? ""}
-        onPick={openReport}
+      <ScheduleTestDialog
+        open={schedulingFor.length > 0}
+        onClose={() => setSchedulingFor([])}
+        siteId={siteId}
+        jobId={jobId}
+        assets={schedulingFor}
+        siteAssets={supportsSubAssets() ? siteAssets : undefined}
+        existingTests={scheduledTests}
+        userId={user?.id}
+        onScheduled={(created) => {
+          setScheduledTests((current) => [...current, ...created]);
+          setSchedulingFor([]);
+        }}
       />
     </div>
   );

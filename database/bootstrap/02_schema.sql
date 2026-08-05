@@ -2325,34 +2325,6 @@ $$;
 
 
 --
--- Name: update_help_center_documents_updated_at(); Type: FUNCTION; Schema: common; Owner: -
---
-
-CREATE FUNCTION common.update_help_center_documents_updated_at() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$;
-
-
---
--- Name: update_help_guides_updated_at(); Type: FUNCTION; Schema: common; Owner: -
---
-
-CREATE FUNCTION common.update_help_guides_updated_at() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$;
-
-
---
 -- Name: update_quickbooks_integrations_updated_at(); Type: FUNCTION; Schema: common; Owner: -
 --
 
@@ -5149,101 +5121,6 @@ CREATE TABLE common.feature_requests (
     CONSTRAINT feature_requests_status_check CHECK ((status = ANY (ARRAY['open'::text, 'in_progress'::text, 'completed'::text, 'rejected'::text]))),
     CONSTRAINT feature_requests_type_check CHECK ((type = ANY (ARRAY['feature'::text, 'bug'::text])))
 );
-
-
---
--- Name: help_center_documents; Type: TABLE; Schema: common; Owner: -
---
-
-CREATE TABLE common.help_center_documents (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    name character varying(255) NOT NULL,
-    category character varying(50) DEFAULT 'general'::character varying NOT NULL,
-    file_path text NOT NULL,
-    file_url text NOT NULL,
-    file_size bigint NOT NULL,
-    file_type character varying(50) DEFAULT 'application/pdf'::character varying,
-    created_by uuid,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now(),
-    view_count integer DEFAULT 0
-);
-
-
---
--- Name: TABLE help_center_documents; Type: COMMENT; Schema: common; Owner: -
---
-
-COMMENT ON TABLE common.help_center_documents IS 'Stores PDF documents uploaded to the Help Center';
-
-
---
--- Name: COLUMN help_center_documents.category; Type: COMMENT; Schema: common; Owner: -
---
-
-COMMENT ON COLUMN common.help_center_documents.category IS 'Portal category: operations, sales, office-admin, engineering, hr, lab, field-tech, general';
-
-
---
--- Name: COLUMN help_center_documents.file_path; Type: COMMENT; Schema: common; Owner: -
---
-
-COMMENT ON COLUMN common.help_center_documents.file_path IS 'Storage path to the PDF file';
-
-
---
--- Name: COLUMN help_center_documents.file_url; Type: COMMENT; Schema: common; Owner: -
---
-
-COMMENT ON COLUMN common.help_center_documents.file_url IS 'Public URL to access the PDF file';
-
-
---
--- Name: help_guides; Type: TABLE; Schema: common; Owner: -
---
-
-CREATE TABLE common.help_guides (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    title character varying(255) NOT NULL,
-    description text,
-    category character varying(50) DEFAULT 'general'::character varying NOT NULL,
-    tags text[] DEFAULT '{}'::text[],
-    content jsonb DEFAULT '{"blocks": [], "settings": {"allowComments": false, "showLastUpdated": true, "showTableOfContents": true}}'::jsonb NOT NULL,
-    created_by uuid,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now(),
-    is_published boolean DEFAULT false,
-    view_count integer DEFAULT 0,
-    allowed_roles text[] DEFAULT '{}'::text[]
-);
-
-
---
--- Name: TABLE help_guides; Type: COMMENT; Schema: common; Owner: -
---
-
-COMMENT ON TABLE common.help_guides IS 'Stores help center guides and documentation';
-
-
---
--- Name: COLUMN help_guides.category; Type: COMMENT; Schema: common; Owner: -
---
-
-COMMENT ON COLUMN common.help_guides.category IS 'Portal category: operations, sales, office-admin, engineering, hr, lab, field-tech, general';
-
-
---
--- Name: COLUMN help_guides.content; Type: COMMENT; Schema: common; Owner: -
---
-
-COMMENT ON COLUMN common.help_guides.content IS 'JSON structure containing blocks and settings for the guide content';
-
-
---
--- Name: COLUMN help_guides.allowed_roles; Type: COMMENT; Schema: common; Owner: -
---
-
-COMMENT ON COLUMN common.help_guides.allowed_roles IS 'Role names that can see this guide. Empty array = all roles.';
 
 
 --
@@ -11599,22 +11476,6 @@ ALTER TABLE ONLY common.feature_requests
 
 
 --
--- Name: help_center_documents help_center_documents_pkey; Type: CONSTRAINT; Schema: common; Owner: -
---
-
-ALTER TABLE ONLY common.help_center_documents
-    ADD CONSTRAINT help_center_documents_pkey PRIMARY KEY (id);
-
-
---
--- Name: help_guides help_guides_pkey; Type: CONSTRAINT; Schema: common; Owner: -
---
-
-ALTER TABLE ONLY common.help_guides
-    ADD CONSTRAINT help_guides_pkey PRIMARY KEY (id);
-
-
---
 -- Name: hr_tasks hr_tasks_pkey; Type: CONSTRAINT; Schema: common; Owner: -
 --
 
@@ -14369,55 +14230,6 @@ CREATE INDEX idx_feature_requests_status ON common.feature_requests USING btree 
 --
 
 CREATE INDEX idx_feature_requests_type ON common.feature_requests USING btree (type);
-
-
---
--- Name: idx_help_center_documents_category; Type: INDEX; Schema: common; Owner: -
---
-
-CREATE INDEX idx_help_center_documents_category ON common.help_center_documents USING btree (category);
-
-
---
--- Name: idx_help_center_documents_created_at; Type: INDEX; Schema: common; Owner: -
---
-
-CREATE INDEX idx_help_center_documents_created_at ON common.help_center_documents USING btree (created_at DESC);
-
-
---
--- Name: idx_help_center_documents_created_by; Type: INDEX; Schema: common; Owner: -
---
-
-CREATE INDEX idx_help_center_documents_created_by ON common.help_center_documents USING btree (created_by);
-
-
---
--- Name: idx_help_guides_category; Type: INDEX; Schema: common; Owner: -
---
-
-CREATE INDEX idx_help_guides_category ON common.help_guides USING btree (category);
-
-
---
--- Name: idx_help_guides_created_by; Type: INDEX; Schema: common; Owner: -
---
-
-CREATE INDEX idx_help_guides_created_by ON common.help_guides USING btree (created_by);
-
-
---
--- Name: idx_help_guides_is_published; Type: INDEX; Schema: common; Owner: -
---
-
-CREATE INDEX idx_help_guides_is_published ON common.help_guides USING btree (is_published);
-
-
---
--- Name: idx_help_guides_tags; Type: INDEX; Schema: common; Owner: -
---
-
-CREATE INDEX idx_help_guides_tags ON common.help_guides USING gin (tags);
 
 
 --
@@ -17501,20 +17313,6 @@ CREATE TRIGGER handle_job_requisition_status_change BEFORE UPDATE ON common.job_
 
 
 --
--- Name: help_center_documents help_center_documents_updated_at; Type: TRIGGER; Schema: common; Owner: -
---
-
-CREATE TRIGGER help_center_documents_updated_at BEFORE UPDATE ON common.help_center_documents FOR EACH ROW EXECUTE FUNCTION common.update_help_center_documents_updated_at();
-
-
---
--- Name: help_guides help_guides_updated_at; Type: TRIGGER; Schema: common; Owner: -
---
-
-CREATE TRIGGER help_guides_updated_at BEFORE UPDATE ON common.help_guides FOR EACH ROW EXECUTE FUNCTION common.update_help_guides_updated_at();
-
-
---
 -- Name: issue_notes issue_notes_updated_at; Type: TRIGGER; Schema: common; Owner: -
 --
 
@@ -20391,22 +20189,6 @@ ALTER TABLE ONLY common.employee_documents
 
 ALTER TABLE ONLY common.user_shortcuts
     ADD CONSTRAINT fk_user_shortcuts_user FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-
---
--- Name: help_center_documents help_center_documents_created_by_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
---
-
-ALTER TABLE ONLY common.help_center_documents
-    ADD CONSTRAINT help_center_documents_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id);
-
-
---
--- Name: help_guides help_guides_created_by_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
---
-
-ALTER TABLE ONLY common.help_guides
-    ADD CONSTRAINT help_guides_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id);
 
 
 --
@@ -23717,13 +23499,6 @@ CREATE POLICY "Anyone can view all exceptions" ON common.technician_exceptions F
 
 
 --
--- Name: help_center_documents Anyone can view help center documents; Type: POLICY; Schema: common; Owner: -
---
-
-CREATE POLICY "Anyone can view help center documents" ON common.help_center_documents FOR SELECT USING ((auth.uid() IS NOT NULL));
-
-
---
 -- Name: job_skill_requirements Anyone can view job skill requirements; Type: POLICY; Schema: common; Owner: -
 --
 
@@ -23735,13 +23510,6 @@ CREATE POLICY "Anyone can view job skill requirements" ON common.job_skill_requi
 --
 
 CREATE POLICY "Anyone can view published announcements" ON common.announcements FOR SELECT USING ((is_published = true));
-
-
---
--- Name: help_guides Anyone can view published guides; Type: POLICY; Schema: common; Owner: -
---
-
-CREATE POLICY "Anyone can view published guides" ON common.help_guides FOR SELECT USING (((is_published = true) OR (auth.uid() = created_by)));
 
 
 --
@@ -23773,13 +23541,6 @@ CREATE POLICY "Authenticated full access to announcements" ON common.announcemen
 
 
 --
--- Name: help_center_documents Authenticated users can create documents; Type: POLICY; Schema: common; Owner: -
---
-
-CREATE POLICY "Authenticated users can create documents" ON common.help_center_documents FOR INSERT WITH CHECK ((auth.uid() IS NOT NULL));
-
-
---
 -- Name: employee_certifications Authenticated users can create employee certifications; Type: POLICY; Schema: common; Owner: -
 --
 
@@ -23798,13 +23559,6 @@ CREATE POLICY "Authenticated users can create employee document folders" ON comm
 --
 
 CREATE POLICY "Authenticated users can create employee documents" ON common.employee_documents FOR INSERT WITH CHECK ((auth.uid() IS NOT NULL));
-
-
---
--- Name: help_guides Authenticated users can create guides; Type: POLICY; Schema: common; Owner: -
---
-
-CREATE POLICY "Authenticated users can create guides" ON common.help_guides FOR INSERT WITH CHECK ((auth.uid() IS NOT NULL));
 
 
 --
@@ -24059,24 +23813,6 @@ CREATE POLICY "Users can delete employee documents" ON common.employee_documents
 
 
 --
--- Name: help_center_documents Users can delete own documents; Type: POLICY; Schema: common; Owner: -
---
-
-CREATE POLICY "Users can delete own documents" ON common.help_center_documents FOR DELETE USING (((auth.uid() = created_by) OR (EXISTS ( SELECT 1
-   FROM common.profiles
-  WHERE ((profiles.id = auth.uid()) AND ((profiles.role = 'Admin'::text) OR (profiles.role = 'Super Admin'::text)))))));
-
-
---
--- Name: help_guides Users can delete own guides; Type: POLICY; Schema: common; Owner: -
---
-
-CREATE POLICY "Users can delete own guides" ON common.help_guides FOR DELETE USING (((auth.uid() = created_by) OR (EXISTS ( SELECT 1
-   FROM common.profiles
-  WHERE ((profiles.id = auth.uid()) AND ((profiles.role = 'Admin'::text) OR (profiles.role = 'Super Admin'::text)))))));
-
-
---
 -- Name: survey_questions Users can delete survey questions; Type: POLICY; Schema: common; Owner: -
 --
 
@@ -24258,24 +23994,6 @@ CREATE POLICY "Users can update customer surveys" ON common.customer_surveys FOR
 CREATE POLICY "Users can update employee documents" ON common.employee_documents FOR UPDATE USING (((auth.uid() = uploaded_by) OR (((auth.jwt() -> 'user_metadata'::text) ->> 'role'::text) = ANY (ARRAY['Admin'::text, 'Super Admin'::text])) OR (EXISTS ( SELECT 1
    FROM common.profiles
   WHERE ((profiles.id = auth.uid()) AND ((profiles.role = 'Admin'::text) OR (profiles.role = 'Super Admin'::text) OR (profiles.role = 'HR'::text)))))));
-
-
---
--- Name: help_center_documents Users can update own documents; Type: POLICY; Schema: common; Owner: -
---
-
-CREATE POLICY "Users can update own documents" ON common.help_center_documents FOR UPDATE USING (((auth.uid() = created_by) OR (EXISTS ( SELECT 1
-   FROM common.profiles
-  WHERE ((profiles.id = auth.uid()) AND ((profiles.role = 'Admin'::text) OR (profiles.role = 'Super Admin'::text)))))));
-
-
---
--- Name: help_guides Users can update own guides; Type: POLICY; Schema: common; Owner: -
---
-
-CREATE POLICY "Users can update own guides" ON common.help_guides FOR UPDATE USING (((auth.uid() = created_by) OR (EXISTS ( SELECT 1
-   FROM common.profiles
-  WHERE ((profiles.id = auth.uid()) AND ((profiles.role = 'Admin'::text) OR (profiles.role = 'Super Admin'::text)))))));
 
 
 --
@@ -24756,18 +24474,6 @@ ALTER TABLE common.feature_requests ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY feature_requests_all_access ON common.feature_requests TO authenticated USING (true);
 
-
---
--- Name: help_center_documents; Type: ROW SECURITY; Schema: common; Owner: -
---
-
-ALTER TABLE common.help_center_documents ENABLE ROW LEVEL SECURITY;
-
---
--- Name: help_guides; Type: ROW SECURITY; Schema: common; Owner: -
---
-
-ALTER TABLE common.help_guides ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: contacts import_contacts_insert; Type: POLICY; Schema: common; Owner: -
@@ -28507,20 +28213,6 @@ GRANT SELECT ON TABLE common.encryption_status TO service_role;
 --
 
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE common.feature_requests TO authenticated;
-
-
---
--- Name: TABLE help_center_documents; Type: ACL; Schema: common; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.help_center_documents TO authenticated;
-
-
---
--- Name: TABLE help_guides; Type: ACL; Schema: common; Owner: -
---
-
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.help_guides TO authenticated;
 
 
 --

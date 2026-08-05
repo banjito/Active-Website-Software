@@ -150,13 +150,6 @@ import { ManagerPortal } from "./pages/hr/self-service/ManagerPortal";
 import { TaskWorkflows } from "./pages/hr/self-service/TaskWorkflows";
 import { Announcements as HrAnnouncements } from "./pages/hr/announcements/Announcements";
 
-// Import Help Center components
-import {
-  HelpCenterDashboard,
-  GuideBuilder,
-  GuideViewer,
-} from "./components/helpCenter";
-
 // Documentation site.
 //
 // Loaded lazily: the docs inline ~260kb of Markdown at build time, and nobody
@@ -833,39 +826,10 @@ function App() {
                     <Route path="*" element={<DocsPage />} />
                   </Route>
 
-                  {/* === Help Center Routes === */}
-                  <Route
-                    path="/help-center"
-                    element={
-                      <RequireAuth>
-                        <HelpCenterDashboard />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/help-center/builder"
-                    element={
-                      <RequireAuth>
-                        <GuideBuilder />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/help-center/builder/:guideId"
-                    element={
-                      <RequireAuth>
-                        <GuideBuilder />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/help-center/guide/:guideId"
-                    element={
-                      <RequireAuth>
-                        <GuideViewer />
-                      </RequireAuth>
-                    }
-                  />
+                  {/* The Help Center was replaced by the docs site above.
+                      /help-center/* is redirected so links saved in older
+                      announcements and bookmarks still land somewhere useful. */}
+                  <Route path="/help-center/*" element={<Navigate to="/docs" replace />} />
 
                   {/* === Office Administration Portal Routes === */}
                   <Route

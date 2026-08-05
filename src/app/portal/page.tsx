@@ -189,7 +189,7 @@ export default function PortalLanding() {
 
   const stripAnnouncementSystemLinks = useCallback((content: string) => {
     return content
-      .replace(/\n\n---\n📘 \[View Help Guide\]\([^)]+\)/g, "")
+      .replace(/\n\n---\n📘 \[View (?:Docs Page|Help Guide)\]\([^)]+\)/g, "")
       .replace(/\n\n---\n📄 \[View & Acknowledge Document\]\([^)]+\)/g, "")
       .replace(/\n\n---\n📎 \[Attachment\]\([^)]+\)/g, "");
   }, []);
@@ -1577,18 +1577,21 @@ export default function PortalLanding() {
                             </span>
                           </div>
                           {(() => {
-                            const guideMatch = a.content.match(
-                              /📘 \[View Help Guide\]\(([^)]+)\)/,
+                            // "Help Guide" is the marker the retired Help
+                            // Center wrote; still matched so older
+                            // announcements keep their link.
+                            const docsMatch = a.content.match(
+                              /📘 \[View (?:Docs Page|Help Guide)\]\(([^)]+)\)/,
                             );
                             const docMatch = a.content.match(
                               /📄 \[View & Acknowledge Document\]\(([^)]+)\)/,
                             );
                             const attachmentUrls =
                               extractAnnouncementAttachments(a.content);
-                            const guidePath = guideMatch ? guideMatch[1] : null;
+                            const docsPath = docsMatch ? docsMatch[1] : null;
                             const docUrl = docMatch ? docMatch[1] : null;
                             if (
-                              !guidePath &&
+                              !docsPath &&
                               !docUrl &&
                               attachmentUrls.length === 0
                             )
@@ -1598,18 +1601,18 @@ export default function PortalLanding() {
                                 className="flex flex-wrap items-center gap-2 mt-3"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                {guidePath && (
+                                {docsPath && (
                                   <Link
                                     to={
-                                      guidePath.startsWith("/")
-                                        ? guidePath
-                                        : `/${guidePath}`
+                                      docsPath.startsWith("/")
+                                        ? docsPath
+                                        : `/${docsPath}`
                                     }
                                     className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-brand hover:bg-brand/90 rounded-none transition-colors shadow-sm"
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     <BookOpen className="h-4 w-4" />
-                                    View Help Guide
+                                    View Docs Page
                                   </Link>
                                 )}
                                 {docUrl && (
@@ -2472,7 +2475,7 @@ export default function PortalLanding() {
             </Card>
           </PortalCardWrapper>
 
-          {/* Help Center */}
+          {/* ampOS Docs */}
           <PortalCardWrapper portalName="ampOS Docs">
             <Card
               tabIndex={0}

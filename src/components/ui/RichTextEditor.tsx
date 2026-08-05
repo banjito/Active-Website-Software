@@ -1,7 +1,8 @@
 /**
  * Rich Text Editor Component
  *
- * A comprehensive text editor with formatting options for the Help Center.
+ * A comprehensive text editor with formatting options. Used by the HR offer
+ * letter and job requisition builders.
  * Features:
  * - Bold, italic, underline, strikethrough
  * - Text size changing

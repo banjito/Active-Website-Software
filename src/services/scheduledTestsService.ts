@@ -1,8 +1,16 @@
 import { supabase } from "@/lib/supabase";
-import type {
-  ScheduledTest,
-  ScheduledTestInput,
-  ScheduledTestRow,
+import {
+  TERMINAL_TESTING_STATUSES,
+  addCalendarDays,
+  addWorkingDays,
+  isWeekend,
+  snapToWorkingDay,
+  workingDaysBetween,
+  type EquipmentStatus,
+  type ScheduledTest,
+  type ScheduledTestInput,
+  type ScheduledTestRow,
+  type TestingStatus,
 } from "@/lib/types/testScheduling";
 import type { EquipmentAsset } from "@/lib/types/assetTracking";
 
@@ -363,9 +371,13 @@ export async function linkReportToScheduledTest(
 
 interface BatchItem {
   scheduledTestId: string;
-  /** Null when the batch created the row — undoing it deletes rather than restores. */
-  before: Record<string, unknown> | null;
-  after: Record<string, unknown> | null;
+  /**
+   * Null when the batch created the row — undoing it deletes rather than restores.
+   * Typed loosely because these land straight in a JSONB column: a batch snapshots only
+   * the columns it touched, so the shape differs per action.
+   */
+  before: object | null;
+  after: object | null;
 }
 
 /**
@@ -472,4 +484,307 @@ export async function undoBatch(batchId: string, userId?: string): Promise<numbe
     .eq("id", batchId);
 
   return rows.length;
+}
+
+// ── Bulk date operations ──────────────────────────────────────────────────────
+//
+// The most operationally valuable thing in this phase. One delay at a data center
+// cascades through dozens of downstream items, and the alternative to this is re-keying
+// forty rows by hand.
+
+export type BulkDateOp = "set_start" | "set_finish" | "shift";
+export type ShiftUnit = "working" | "calendar";
+
+export interface BulkDateRequest {
+  siteId: string;
+  /** The selected rows. The caller already has them, so nothing is re-fetched. */
+  rows: ScheduledTestRow[];
+  op: BulkDateOp;
+  /** For set_start / set_finish. */
+  date?: string;
+  /** For shift. Always positive; `direction` carries the sign. */
+  days?: number;
+  unit?: ShiftUnit;
+  direction?: "later" | "earlier";
+  /** Completed items are left alone unless the user explicitly opts in. */
+  skipComplete?: boolean;
+  userId?: string;
+}
+
+export interface BulkDateChange {
+  id: string;
+  identifier: string;
+  fromStart: string | null;
+  fromFinish: string | null;
+  toStart: string | null;
+  toFinish: string | null;
+}
+
+export interface BulkDatePlan {
+  changes: BulkDateChange[];
+  skipped: { identifier: string; reason: string }[];
+  /** Things worth reading before committing: weekend snaps, customer-fixed dates. */
+  warnings: string[];
+}
+
+/**
+ * Work out what a bulk date operation would do, without doing it.
+ *
+ * The preview and the commit run this exact function, so what a user approves is what
+ * gets written. Any drift between the two would show up as dates that don't match the
+ * screen someone just clicked OK on.
+ */
+export function planBulkDates(request: BulkDateRequest): BulkDatePlan {
+  const { rows, op, date, unit = "working", direction = "later" } = request;
+  const skipComplete = request.skipComplete ?? true;
+  const signedDays = (request.days ?? 0) * (direction === "earlier" ? -1 : 1);
+  const step: 1 | -1 = signedDays < 0 ? -1 : 1;
+
+  const changes: BulkDateChange[] = [];
+  const skipped: { identifier: string; reason: string }[] = [];
+  let weekendSnaps = 0;
+  let constrained = 0;
+
+  const move = (iso: string): string =>
+    unit === "working"
+      ? addWorkingDays(iso, signedDays)
+      : snapToWorkingDay(addCalendarDays(iso, signedDays), step);
+
+  for (const row of rows) {
+    if (skipComplete && TERMINAL_TESTING_STATUSES.includes(row.testing_status)) {
+      skipped.push({ identifier: row.identifier, reason: "already complete" });
+      continue;
+    }
+
+    const start = row.start_date || null;
+    const finish = row.finish_date || null;
+    let toStart = start;
+    let toFinish = finish;
+
+    if (op === "shift") {
+      if (!start && !finish) {
+        skipped.push({ identifier: row.identifier, reason: "no dates to shift" });
+        continue;
+      }
+      if (start && finish) {
+        toStart = move(start);
+        // Duration is preserved per item rather than applied as a blanket window: a
+        // 1-day inspection and a 3-week outage both keep their own length.
+        if (unit === "working") {
+          toFinish = addWorkingDays(toStart, workingDaysBetween(start, finish) - 1);
+        } else {
+          const span = Math.round(
+            (new Date(finish).getTime() - new Date(start).getTime()) / 86_400_000,
+          );
+          toFinish = snapToWorkingDay(addCalendarDays(toStart, span), step);
+        }
+      } else if (start) {
+        toStart = move(start);
+      } else if (finish) {
+        toFinish = move(finish);
+      }
+    } else if (op === "set_start") {
+      if (!date) continue;
+      toStart = date;
+      // Pushing a start past its own finish would break the date order, so the finish
+      // moves with it and keeps the item's original length.
+      if (finish && finish < toStart) {
+        toFinish =
+          start && finish
+            ? addWorkingDays(toStart, workingDaysBetween(start, finish) - 1)
+            : toStart;
+      }
+    } else {
+      if (!date) continue;
+      toFinish = date;
+      if (start && start > toFinish) {
+        toStart =
+          start && finish
+            ? addWorkingDays(toFinish, -(workingDaysBetween(start, finish) - 1))
+            : toFinish;
+      }
+    }
+
+    if (toStart === start && toFinish === finish) continue;
+    if ((toStart && isWeekend(toStart)) || (toFinish && isWeekend(toFinish)))
+      weekendSnaps += 1;
+    if (row.has_date_constraint) constrained += 1;
+
+    changes.push({
+      id: row.id,
+      identifier: row.identifier,
+      fromStart: start,
+      fromFinish: finish,
+      toStart,
+      toFinish,
+    });
+  }
+
+  const warnings: string[] = [];
+  const noDates = skipped.filter((s) => s.reason === "no dates to shift").length;
+  const complete = skipped.filter((s) => s.reason === "already complete").length;
+  if (weekendSnaps > 0) {
+    warnings.push(
+      `${weekendSnaps} item${weekendSnaps === 1 ? "" : "s"} would land on a weekend and will snap to the nearest working day.`,
+    );
+  }
+  if (noDates > 0) {
+    warnings.push(
+      `${noDates} item${noDates === 1 ? " has" : "s have"} no dates and will be skipped.`,
+    );
+  }
+  if (complete > 0) {
+    warnings.push(
+      `${complete} completed item${complete === 1 ? " is" : "s are"} being skipped.`,
+    );
+  }
+  if (constrained > 0) {
+    warnings.push(
+      `${constrained} item${constrained === 1 ? " has" : "s have"} a date the customer fixed in their schedule. Moving it means diverging from what they published.`,
+    );
+  }
+
+  return { changes, skipped, warnings };
+}
+
+/**
+ * Apply a plan. Rows are written one at a time because each gets its own dates — there is
+ * no single UPDATE that sets forty different values. The before-state of every row is
+ * recorded first, so Undo has something to put back.
+ */
+export async function applyBulkDates(
+  request: BulkDateRequest,
+  plan: BulkDatePlan,
+): Promise<{ batchId: string | null; affected: number }> {
+  if (plan.changes.length === 0) return { batchId: null, affected: 0 };
+
+  const applied: BatchItem[] = [];
+  for (const change of plan.changes) {
+    const { error } = await table()
+      .update({
+        start_date: change.toStart,
+        finish_date: change.toFinish,
+        updated_by: request.userId ?? null,
+      })
+      .eq("id", change.id);
+
+    if (error) {
+      if (isMissingTable(error)) throw migrationError();
+      throw error;
+    }
+    applied.push({
+      scheduledTestId: change.id,
+      before: { start_date: change.fromStart, finish_date: change.fromFinish },
+      after: { start_date: change.toStart, finish_date: change.toFinish },
+    });
+  }
+
+  const batchId = await recordBatch({
+    siteId: request.siteId,
+    action: request.op,
+    description: describeDateOp(request, applied.length),
+    items: applied,
+    userId: request.userId,
+  });
+
+  return { batchId, affected: applied.length };
+}
+
+function describeDateOp(request: BulkDateRequest, count: number): string {
+  const items = `${count} item${count === 1 ? "" : "s"}`;
+  if (request.op === "shift") {
+    const unit = request.unit === "calendar" ? "calendar" : "working";
+    return `Shifted ${items} ${request.days} ${unit} day${request.days === 1 ? "" : "s"} ${request.direction ?? "later"}`;
+  }
+  const field = request.op === "set_start" ? "start" : "finish";
+  return `Set ${field} date to ${request.date} on ${items}`;
+}
+
+/** Bulk status change. One UPDATE, because every row gets the same value. */
+export async function bulkSetStatus(args: {
+  siteId: string;
+  rows: ScheduledTestRow[];
+  equipmentStatus?: EquipmentStatus | null;
+  testingStatus?: TestingStatus;
+  userId?: string;
+}): Promise<{ batchId: string | null; affected: number }> {
+  const setsEquipment = args.equipmentStatus !== undefined;
+  const setsTesting = args.testingStatus !== undefined;
+  if (args.rows.length === 0 || (!setsEquipment && !setsTesting)) {
+    return { batchId: null, affected: 0 };
+  }
+
+  const payload: Record<string, unknown> = { updated_by: args.userId ?? null };
+  if (setsEquipment) payload.equipment_status = args.equipmentStatus || null;
+  if (setsTesting) payload.testing_status = args.testingStatus;
+
+  const ids = args.rows.map((r) => r.id);
+  for (const chunkIds of chunk(ids, IN_CHUNK_SIZE)) {
+    const { error } = await table().update(payload).in("id", chunkIds);
+    if (error) {
+      if (isMissingTable(error)) throw migrationError();
+      throw error;
+    }
+  }
+
+  // Only the columns this batch touched are snapshotted — undoing a status change must
+  // not also revert a date somebody edited in between.
+  const items: BatchItem[] = args.rows.map((row) => ({
+    scheduledTestId: row.id,
+    before: {
+      ...(setsEquipment ? { equipment_status: row.equipment_status ?? null } : {}),
+      ...(setsTesting ? { testing_status: row.testing_status } : {}),
+    },
+    after: { ...payload },
+  }));
+
+  const parts = [
+    setsEquipment && "equipment status",
+    setsTesting && "testing status",
+  ].filter(Boolean);
+  const batchId = await recordBatch({
+    siteId: args.siteId,
+    action: "set_status",
+    description: `Set ${parts.join(" and ")} on ${args.rows.length} item${args.rows.length === 1 ? "" : "s"}`,
+    items,
+    userId: args.userId,
+  });
+
+  return { batchId, affected: args.rows.length };
+}
+
+/**
+ * Soft-delete a selection. Recorded as a batch whose before-state is the deleted_at it
+ * had (null), so Undo simply clears it again.
+ */
+export async function bulkDelete(args: {
+  siteId: string;
+  rows: ScheduledTestRow[];
+  userId?: string;
+}): Promise<{ batchId: string | null; affected: number }> {
+  if (args.rows.length === 0) return { batchId: null, affected: 0 };
+
+  const deletedAt = new Date().toISOString();
+  const ids = args.rows.map((r) => r.id);
+  for (const chunkIds of chunk(ids, IN_CHUNK_SIZE)) {
+    const { error } = await table().update({ deleted_at: deletedAt }).in("id", chunkIds);
+    if (error) {
+      if (isMissingTable(error)) throw migrationError();
+      throw error;
+    }
+  }
+
+  const batchId = await recordBatch({
+    siteId: args.siteId,
+    action: "delete",
+    description: `Deleted ${args.rows.length} scheduled test${args.rows.length === 1 ? "" : "s"}`,
+    items: args.rows.map((row) => ({
+      scheduledTestId: row.id,
+      before: { deleted_at: null },
+      after: { deleted_at: deletedAt },
+    })),
+    userId: args.userId,
+  });
+
+  return { batchId, affected: args.rows.length };
 }

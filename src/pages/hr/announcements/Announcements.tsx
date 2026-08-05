@@ -34,6 +34,7 @@ import {
   fetchEmployeeRoster,
   RosterEmployee,
 } from "../../../lib/utils/employeeRoster";
+import { docsSections } from "@/docs/nav";
 
 interface AudienceEmployee {
   id: string;
@@ -100,11 +101,36 @@ interface DocOption {
   form_type: string;
 }
 
-interface HelpGuideOption {
-  id: string;
+interface DocsPageOption {
+  /** Route path, e.g. "/docs/jobs/creating-a-job". */
+  path: string;
   title: string;
-  description?: string | null;
+  /** Breadcrumb shown under the title, e.g. "Jobs / Day to day". */
+  breadcrumb: string;
 }
+
+/**
+ * Every page in the docs site, flattened for the announcement link picker.
+ *
+ * Built from nav.ts, which carries only titles and slugs, so this does not drag
+ * the Markdown content into the HR bundle.
+ */
+const DOCS_PAGES: DocsPageOption[] = docsSections.flatMap((section) =>
+  section.groups.flatMap((group) =>
+    group.items.map((item) => ({
+      path: `/docs/${item.slug}`,
+      title: item.title,
+      breadcrumb: `${section.title} / ${group.title}`,
+    })),
+  ),
+);
+
+/**
+ * Matches the docs link appended to an announcement's body. The "Help Guide"
+ * alternative is the marker the retired Help Center wrote, kept so
+ * announcements saved before the swap still render their link button.
+ */
+const DOCS_LINK_RE = /📘 \[View (?:Docs Page|Help Guide)\]\(([^)]+)\)/;
 
 const CATEGORIES = [
   { value: "general", label: "General" },
@@ -155,9 +181,9 @@ export function Announcements() {
   >("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [availableDocs, setAvailableDocs] = useState<DocOption[]>([]);
-  const [availableGuides, setAvailableGuides] = useState<HelpGuideOption[]>([]);
   const [showDocPicker, setShowDocPicker] = useState(false);
-  const [linkType, setLinkType] = useState<"document" | "guide">("document");
+  const [linkType, setLinkType] = useState<"document" | "docs">("document");
+  const [docsSearch, setDocsSearch] = useState("");
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [documentViewerOpen, setDocumentViewerOpen] = useState(false);
@@ -186,7 +212,7 @@ export function Announcements() {
   const hideTooltip = () => setTooltip(null);
 
   const ATTACHMENT_MARKER = "📎 [Attachment](";
-  const HELP_GUIDE_MARKER = "📘 [View Help Guide](";
+  const DOCS_MARKER = "📘 [View Docs Page](";
   const DOC_MARKER = "📄 [View & Acknowledge Document](";
 
   function extractAttachmentUrls(content: string): string[] {
@@ -198,7 +224,7 @@ export function Announcements() {
 
   function stripSystemLinks(content: string): string {
     return content
-      .replace(/\n\n---\n📘 \[View Help Guide\]\([^)]+\)/g, "")
+      .replace(/\n\n---\n📘 \[View (?:Docs Page|Help Guide)\]\([^)]+\)/g, "")
       .replace(/\n\n---\n📄 \[View & Acknowledge Document\]\([^)]+\)/g, "")
       .replace(/\n\n---\n📎 \[Attachment\]\([^)]+\)/g, "");
   }
@@ -206,17 +232,17 @@ export function Announcements() {
   function appendSystemLinks(
     baseContent: string,
     linkedUrl: string,
-    currentLinkType: "document" | "guide",
+    currentLinkType: "document" | "docs",
     attachmentUrls: string[],
   ): string {
     let finalContent = stripSystemLinks(baseContent);
     if (linkedUrl) {
-      if (currentLinkType === "guide") {
-        const guidePath = linkedUrl.startsWith("/")
+      if (currentLinkType === "docs") {
+        const docsPath = linkedUrl.startsWith("/")
           ? linkedUrl
           : `/${linkedUrl.replace(/^\//, "")}`;
-        if (!finalContent.includes(guidePath)) {
-          finalContent += `\n\n---\n${HELP_GUIDE_MARKER}${guidePath})`;
+        if (!finalContent.includes(docsPath)) {
+          finalContent += `\n\n---\n${DOCS_MARKER}${docsPath})`;
         }
       } else if (!finalContent.includes(linkedUrl)) {
         finalContent += `\n\n---\n${DOC_MARKER}${linkedUrl})`;
@@ -234,7 +260,6 @@ export function Announcements() {
     if (user) {
       fetchAnnouncements();
       fetchAvailableDocs();
-      fetchHelpGuides();
       loadEmployeeRoster();
     }
   }, [user]);
@@ -279,40 +304,21 @@ export function Announcements() {
     });
   };
 
+  const filteredDocsPages = (() => {
+    const q = docsSearch.trim().toLowerCase();
+    if (!q) return DOCS_PAGES;
+    return DOCS_PAGES.filter(
+      (page) =>
+        page.title.toLowerCase().includes(q) ||
+        page.breadcrumb.toLowerCase().includes(q),
+    );
+  })();
+
   const divisions = Array.from(
     new Set(employees.map((e) => e.division).filter(Boolean)),
   ).sort((a, b) =>
     formatDivisionShort(a).localeCompare(formatDivisionShort(b)),
   );
-
-  async function fetchHelpGuides() {
-    try {
-      const { data, error } = await supabase
-        .schema("common")
-        .from("help_guides")
-        .select("id, title, description")
-        .order("title");
-      if (error) {
-        if (error.code === "42P01") {
-          setAvailableGuides([]);
-          return;
-        }
-        throw error;
-      }
-      setAvailableGuides(
-        (data || []).map(
-          (g: { id: string; title: string; description?: string | null }) => ({
-            id: g.id,
-            title: g.title,
-            description: g.description ?? undefined,
-          }),
-        ),
-      );
-    } catch (err) {
-      console.error("Error fetching help guides:", err);
-      setAvailableGuides([]);
-    }
-  }
 
   async function fetchAvailableDocs() {
     try {
@@ -410,6 +416,7 @@ export function Announcements() {
     setEditingId(null);
     setShowDocPicker(false);
     setLinkType("document");
+    setDocsSearch("");
     setAttachments([]);
     setAudienceType("all");
     setSelectedEmployeeIds(new Set());
@@ -418,13 +425,13 @@ export function Announcements() {
   }
 
   function openEditForm(a: Announcement) {
-    // Extract linked help guide path if present
-    const guideMatch = a.content.match(/📘 \[View Help Guide\]\(([^)]+)\)/);
+    // Extract linked docs page path if present
+    const docsMatch = a.content.match(DOCS_LINK_RE);
     const docMatch = a.content.match(
       /📄 \[View & Acknowledge Document\]\(([^)]+)\)/,
     );
-    const linkedUrl = guideMatch ? guideMatch[1] : docMatch ? docMatch[1] : "";
-    const isGuide = !!guideMatch;
+    const linkedUrl = docsMatch ? docsMatch[1] : docMatch ? docMatch[1] : "";
+    const isDocsPage = !!docsMatch;
     const attachmentUrls = extractAttachmentUrls(a.content);
     const cleanContent = stripSystemLinks(a.content);
     setFormData({
@@ -442,7 +449,8 @@ export function Announcements() {
         : "",
       linked_document_url: linkedUrl,
     });
-    setLinkType(isGuide ? "guide" : "document");
+    setLinkType(isDocsPage ? "docs" : "document");
+    setDocsSearch("");
     setShowDocPicker(!!linkedUrl);
     setAttachments(
       attachmentUrls.map((url) => ({
@@ -770,14 +778,12 @@ export function Announcements() {
               <div
                 key={a.id}
                 onClick={() => {
-                  const guideMatch = a.content.match(
-                    /📘 \[View Help Guide\]\(([^)]+)\)/,
-                  );
+                  const docsMatch = a.content.match(DOCS_LINK_RE);
                   const docMatch = a.content.match(
                     /📄 \[View & Acknowledge Document\]\(([^)]+)\)/,
                   );
-                  if (guideMatch) {
-                    const path = guideMatch[1];
+                  if (docsMatch) {
+                    const path = docsMatch[1];
                     window.open(
                       path.startsWith("/") ? path : `/${path}`,
                       "_blank",
@@ -823,10 +829,10 @@ export function Announcements() {
                     <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 mt-1">
                       {a.excerpt || stripSystemLinks(a.content)}
                     </p>
-                    {a.content.includes("📘 [View Help Guide]") && (
+                    {DOCS_LINK_RE.test(a.content) && (
                       <span className="inline-flex items-center gap-1 mt-1 text-xs text-brand font-medium">
                         <BookOpen className="h-3 w-3" />
-                        Linked help guide
+                        Linked docs page
                       </span>
                     )}
                     {a.content.includes("📄 [View & Acknowledge Document]") && (
@@ -911,14 +917,12 @@ export function Announcements() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          const guideMatch = a.content.match(
-                            /📘 \[View Help Guide\]\(([^)]+)\)/,
-                          );
+                          const docsMatch = a.content.match(DOCS_LINK_RE);
                           const docMatch = a.content.match(
                             /📄 \[View & Acknowledge Document\]\(([^)]+)\)/,
                           );
-                          if (guideMatch) {
-                            const path = guideMatch[1];
+                          if (docsMatch) {
+                            const path = docsMatch[1];
                             window.open(
                               path.startsWith("/") ? path : `/${path}`,
                               "_blank",
@@ -1338,7 +1342,7 @@ export function Announcements() {
                 )}
               </div>
 
-              {/* Link Document or Help Guide */}
+              {/* Link Document or Docs Page */}
               <div className="border-t border-neutral-200 dark:border-neutral-700 pt-4">
                 <div className="flex items-center gap-3 mb-3">
                   <button
@@ -1373,7 +1377,7 @@ export function Announcements() {
                     }}
                   >
                     <Link2 className="h-4 w-4 text-brand" />
-                    Link a document or help guide
+                    Link a document or docs page
                   </label>
                 </div>
 
@@ -1401,20 +1405,20 @@ export function Announcements() {
                       <button
                         type="button"
                         onClick={() => {
-                          setLinkType("guide");
+                          setLinkType("docs");
                           setFormData((prev) => ({
                             ...prev,
                             linked_document_url: "",
                           }));
                         }}
                         className={`px-3 py-1.5 text-sm font-medium rounded-none transition-colors ${
-                          linkType === "guide"
+                          linkType === "docs"
                             ? "bg-brand text-white"
                             : "bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600"
                         }`}
                       >
                         <BookOpen className="h-3.5 w-3.5 inline mr-1.5 align-middle" />
-                        Help Guide
+                        ampOS Docs
                       </button>
                     </div>
 
@@ -1474,25 +1478,30 @@ export function Announcements() {
                       </>
                     ) : (
                       <>
-                        {availableGuides.length === 0 ? (
+                        <input
+                          type="text"
+                          value={docsSearch}
+                          onChange={(e) => setDocsSearch(e.target.value)}
+                          placeholder="Search docs pages..."
+                          className="w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand"
+                        />
+                        {filteredDocsPages.length === 0 ? (
                           <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                            No help guides available. Create one in the Help
-                            Center first.
+                            No docs pages match &quot;{docsSearch}&quot;.
                           </p>
                         ) : (
                           <div className="space-y-1 max-h-40 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-none p-2">
-                            {availableGuides.map((guide) => {
-                              const guidePath = `/help-center/guide/${guide.id}`;
+                            {filteredDocsPages.map((page) => {
                               const isSelected =
-                                formData.linked_document_url === guidePath;
+                                formData.linked_document_url === page.path;
                               return (
                                 <button
-                                  key={guide.id}
+                                  key={page.path}
                                   type="button"
                                   onClick={() =>
                                     setFormData((prev) => ({
                                       ...prev,
-                                      linked_document_url: guidePath,
+                                      linked_document_url: page.path,
                                     }))
                                   }
                                   className={`w-full text-left px-3 py-2 rounded-none text-sm flex items-center gap-2 transition-colors ${
@@ -1504,13 +1513,11 @@ export function Announcements() {
                                   <BookOpen className="h-4 w-4 flex-shrink-0" />
                                   <div className="flex-1 min-w-0">
                                     <p className="font-medium truncate">
-                                      {guide.title}
+                                      {page.title}
                                     </p>
-                                    {guide.description && (
-                                      <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1">
-                                        {guide.description}
-                                      </p>
-                                    )}
+                                    <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1">
+                                      {page.breadcrumb}
+                                    </p>
                                   </div>
                                   {isSelected && (
                                     <span className="text-xs bg-brand text-white px-2 py-0.5 rounded-none">
@@ -1522,14 +1529,13 @@ export function Announcements() {
                             })}
                           </div>
                         )}
-                        {formData.linked_document_url &&
-                          linkType === "guide" && (
-                            <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-                              <BookOpen className="h-3 w-3" />
-                              Help guide linked. Employees will see a &quot;View
-                              Help Guide&quot; link on this announcement.
-                            </p>
-                          )}
+                        {formData.linked_document_url && linkType === "docs" && (
+                          <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                            <BookOpen className="h-3 w-3" />
+                            Docs page linked. Employees will see a &quot;View
+                            Docs Page&quot; link on this announcement.
+                          </p>
+                        )}
                       </>
                     )}
                   </div>

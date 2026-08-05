@@ -22,7 +22,6 @@ Documentation for major application features.
 | [`/src/components/reports/README.md`](../../src/components/reports/README.md) | Report Approval Workflow | ✅ Active |
 | [HR_DEVELOPMENT.md](./HR_DEVELOPMENT.md) | HR Portal | ✅ Active |
 | [HR_SUMMARY.md](./HR_SUMMARY.md) | HR Portal (Summary) | ✅ Active |
-| [HELP_CENTER_PDF_UPLOAD.md](./HELP_CENTER_PDF_UPLOAD.md) | Help Center PDF Upload | ✅ Active |
 
 ---
 
@@ -169,31 +168,6 @@ Comprehensive human resources management system with recruiting, hiring, and off
 
 ---
 
-### Help Center PDF Upload
-Upload and manage PDF documents in the Help Center alongside guides.
-
-**Key Capabilities:**
-- Upload PDF documents with custom names
-- Assign Portal categories
-- Full-screen PDF viewer
-- Download and view options
-- View count tracking
-- Admin-only upload/delete permissions
-- Search and filter by category
-
-**Components:**
-- `UploadPdfModal.tsx` - PDF upload interface
-- `PdfViewerModal.tsx` - Full-screen PDF viewer
-- `HelpCenterDashboard.tsx` - Main dashboard (updated)
-
-**Database:**
-- `common.help_center_documents` - Document storage
-- Storage bucket: `help-center-documents`
-
-**[Full Documentation →](./HELP_CENTER_PDF_UPLOAD.md)**
-
----
-
 ## 📊 Feature Matrix
 
 | Feature | Database | Components | Services | Tests |
@@ -204,15 +178,12 @@ Upload and manage PDF documents in the Help Center alongside guides.
 | Meetings | ✅ neta_ops.meetings_* | ✅ | ✅ | Manual |
 | Report Approval | ✅ neta_ops.technical_reports | ✅ | ✅ | Manual |
 | HR Portal | ✅ common.job_requisitions, common.candidates, etc. | ✅ | ✅ | Manual |
-| Help Center PDF Upload | ✅ common.help_center_documents | ✅ | ✅ | Manual |
 
 ---
 
 ## 🔄 Recent Feature Updates
 
 ### January 2025
-- **Help Center PDF Upload** - Upload and manage PDF documents in Help Center
-- **Full-Screen PDF Viewer** - Enhanced PDF viewing experience
 - **HR Portal** - Complete recruiting and hiring system
 - **Job Requisitions** - Full approval workflow
 - **Candidate Tracking (ATS)** - Applicant management

@@ -10,8 +10,6 @@ All project documentation organized by category.
 
 | Document | Description |
 |----------|-------------|
-| [HELP_CENTER_PDF_UPLOAD.md](./Feature%20Documentation/HELP_CENTER_PDF_UPLOAD.md) | **NEW** - Help Center PDF upload feature documentation |
-| [HELP_CENTER_UPDATES_JAN_2025.md](./Migration%20&%20Fixes/HELP_CENTER_UPDATES_JAN_2025.md) | **NEW** - Help Center updates and fixes summary |
 | [RESOLVED_FEATURES_FIXES.md](./RESOLVED_FEATURES_FIXES.md) | Complete list of 50+ resolved features and fixes |
 | [jan3log.md](./devlogs/jan3log.md) | Latest devlog (Week of Jan 3, 2025) |
 | [CHANGELOG.md](../CHANGELOG.md) | Project changelog with all notable changes |
@@ -48,7 +46,6 @@ Documentation for major application features.
 | `RUNWAY_MEETING_GUIDE.md` | EOS Level 10 meeting system |
 | `BACK_TO_JOB_BUTTON.md` | Navigation enhancement |
 | `README-task-master.md` | Task master documentation |
-| `HELP_CENTER_PDF_UPLOAD.md` | **NEW** - Help Center PDF upload feature documentation |
 | `SIGNATURE_PROFILES.md` | Signature profiles system for executive summaries |
 | `EQUIPMENT_TABLES.md` | Equipment tables and categories system |
 | `REPORT_EQUIPMENT.md` | Report equipment table integration |

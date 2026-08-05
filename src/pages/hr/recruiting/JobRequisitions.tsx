@@ -8,7 +8,7 @@ import Card, {
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
 import { Select } from "../../../components/ui/Select";
-import { RichTextEditor } from "@/components/helpCenter/RichTextEditor";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import {
   Dialog,
   DialogContent,

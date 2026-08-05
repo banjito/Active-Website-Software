@@ -1,23 +1,31 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
+  CalendarPlus,
   ChevronDown,
   ChevronRight,
   Copy,
   CornerDownRight,
   FilePlus2,
   FileText,
-  Link2,
   Link2Off,
   Pencil,
   Trash2,
   Unlink,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/DropdownMenu";
 import {
   Table,
   TableBody,
@@ -67,14 +75,19 @@ interface EquipmentAssetsTableProps {
   onEdit: (asset: EquipmentAssetWithCounts) => void;
   onDuplicate: (asset: EquipmentAssetWithCounts) => void;
   onDelete: (asset: EquipmentAssetWithCounts) => void;
-  /** Job context only — opens the report template picker for this asset. */
-  onCreateReport?: (asset: EquipmentAssetWithCounts) => void;
+  /** Opens the Add report modal — new from template, or link a report that already exists. */
+  onAddReport?: (asset: EquipmentAssetWithCounts) => void;
+  /** Opens the Schedule test modal for this asset. */
+  onScheduleTest?: (asset: EquipmentAssetWithCounts) => void;
+  /**
+   * Schedule everything currently ticked. Its presence is what turns on the checkbox
+   * column and the bulk bar — a list with nothing to do in bulk doesn't grow a column.
+   */
+  onBatchSchedule?: (assets: EquipmentAssetWithCounts[]) => void;
   /** Job context only — removes from the job's scope, leaving the asset at the site. */
   onRemoveFromJob?: (asset: EquipmentAssetWithCounts) => void;
   /** Detach a sub-asset from its parent. Omitted where sub-assets aren't available. */
   onDetachFromParent?: (asset: EquipmentAssetWithCounts) => void;
-  /** Job context only — attach reports that already exist on the job to this asset. */
-  onAttachReports?: (asset: EquipmentAssetWithCounts) => void;
   /** The reports pointing at each asset id, revealed by clicking its report count. */
   reportsByAsset?: Map<string, LinkedReport[]>;
   /** Open one of those reports. Without it, they're listed but not clickable. */
@@ -122,6 +135,10 @@ function compareValues(
  *    is always the last level, and shift-clicking adds levels in between.
  *  - Sub-assets are pinned to their parent under every sort. A switchgear lineup and its
  *    switches/CTs/relays are one thing to walk up to, so they stay one block in the list.
+ *
+ * The row actions are deliberately four, not six. Two hundred rows of six icons put a
+ * destructive delete a pixel from a copy button; Unlink and Delete now live behind the
+ * Edit caret, so both irreversible actions take a second, deliberate click.
  */
 export function EquipmentAssetsTable({
   assets,
@@ -129,10 +146,11 @@ export function EquipmentAssetsTable({
   onEdit,
   onDuplicate,
   onDelete,
-  onCreateReport,
+  onAddReport,
+  onScheduleTest,
+  onBatchSchedule,
   onRemoveFromJob,
   onDetachFromParent,
-  onAttachReports,
   reportsByAsset,
   onOpenReport,
   onDetachReport,
@@ -142,6 +160,13 @@ export function EquipmentAssetsTable({
 }: EquipmentAssetsTableProps) {
   /** Which rows have their linked reports expanded. Transient — not worth persisting. */
   const [expandedReports, setExpandedReports] = useState<string[]>([]);
+  /**
+   * Ticked rows. Deliberately not persisted: coming back to a page and finding 47 items
+   * still selected is how the wrong 47 items get acted on.
+   */
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  /** Anchor for shift-click range select. */
+  const [lastClickedId, setLastClickedId] = useState<string | null>(null);
   const [search, setSearch] = usePersistentState(
     storageKey && `${storageKey}:search`,
     "",
@@ -306,6 +331,47 @@ export function EquipmentAssetsTable({
         : [...current, parentId],
     );
 
+  // ── Selection ──────────────────────────────────────────────────────────────
+  const selectable = Boolean(onBatchSchedule) && canEdit;
+  /** Ids in the order they're on screen — what a shift-click range walks over. */
+  const visibleIds = useMemo(() => rows.map((r) => r.asset.id), [rows]);
+  const visibleIdSet = useMemo(() => new Set(visibleIds), [visibleIds]);
+
+  // Anything filtered out of view is dropped from the selection. Acting on rows the user
+  // can no longer see is the failure mode this whole feature has to avoid.
+  useEffect(() => {
+    setSelectedIds((current) => {
+      const kept = current.filter((id) => visibleIdSet.has(id));
+      return kept.length === current.length ? current : kept;
+    });
+  }, [visibleIdSet]);
+
+  const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+  const selectedAssets = useMemo(
+    () => rows.filter((r) => selectedSet.has(r.asset.id)).map((r) => r.asset),
+    [rows, selectedSet],
+  );
+  const allVisibleSelected =
+    visibleIds.length > 0 && visibleIds.every((id) => selectedSet.has(id));
+
+  /** Shift-click ticks everything between the last click and this one. */
+  const toggleRow = (assetId: string, withShift: boolean) => {
+    setSelectedIds((current) => {
+      if (withShift && lastClickedId) {
+        const from = visibleIds.indexOf(lastClickedId);
+        const to = visibleIds.indexOf(assetId);
+        if (from >= 0 && to >= 0) {
+          const range = visibleIds.slice(Math.min(from, to), Math.max(from, to) + 1);
+          return Array.from(new Set([...current, ...range]));
+        }
+      }
+      return current.includes(assetId)
+        ? current.filter((id) => id !== assetId)
+        : [...current, assetId];
+    });
+    setLastClickedId(assetId);
+  };
+
   const sortableHead = (key: SortKey, label: string) => {
     const level = sorts.findIndex((l) => l.key === key);
     const active = level >= 0;
@@ -330,22 +396,25 @@ export function EquipmentAssetsTable({
 
   const showActions =
     canEdit ||
-    Boolean(onCreateReport) ||
-    Boolean(onRemoveFromJob) ||
-    Boolean(onAttachReports);
-  const columnCount = showActions ? 7 : 6;
+    Boolean(onAddReport) ||
+    Boolean(onScheduleTest) ||
+    Boolean(onRemoveFromJob);
+  const columnCount = 6 + (showActions ? 1 : 0) + (selectable ? 1 : 0);
   const totalAssets = assets.length;
   const hasSubAssets = assets.some((a) => a.parent_asset_id);
 
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search identifier, location, type…"
-          className="w-full sm:w-64"
-        />
+        {/* Wrapped rather than sized directly: Input puts className on the <input>, so
+            an unwrapped one keeps its w-full wrapper and takes the whole row. */}
+        <div className="w-full sm:w-64">
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search identifier, location, type…"
+          />
+        </div>
         <div className="w-full sm:w-52">
           <Select
             value={buildingFilter}
@@ -363,44 +432,92 @@ export function EquipmentAssetsTable({
         <div className="ml-auto flex flex-wrap gap-2">{actions}</div>
       </div>
 
-      <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500 dark:text-neutral-400">
-        <span>
-          {matchCount === totalAssets
-            ? `${totalAssets} asset${totalAssets === 1 ? "" : "s"}`
-            : `${matchCount} of ${totalAssets} assets`}
-        </span>
-        <span className="text-neutral-300 dark:text-neutral-600">·</span>
-        <span>
-          Sorted by{" "}
-          {(sorts.length > 0 ? sorts : DEFAULT_SORT).map((level, i) => (
-            <span key={level.key}>
-              {i > 0 && ", then "}
-              <span className="text-neutral-700 dark:text-neutral-200">
-                {SORT_LABELS[level.key]}
-              </span>{" "}
-              {level.asc ? "↑" : "↓"}
-            </span>
-          ))}
-          {!sorts.some((l) => l.key === "identifier") && ", then Identifier ↑"}
-        </span>
-        {sorts.length > 1 && (
+      {/* One strip, two states. The bulk bar replaces the count line rather than
+          appearing above it, so ticking a row doesn't shove the table down the page. */}
+      {selectable && selectedAssets.length > 0 ? (
+        <div className="mb-2 flex min-h-[2.5rem] flex-wrap items-center gap-2 border border-brand/40 bg-brand/10 px-3 text-sm">
+          <span className="font-medium">
+            {selectedAssets.length} selected
+            {!allVisibleSelected && visibleIds.length > selectedAssets.length && (
+              <button
+                type="button"
+                onClick={() => setSelectedIds(visibleIds)}
+                className="ml-2 font-normal text-brand hover:underline"
+              >
+                Select all {visibleIds.length} in this view
+              </button>
+            )}
+          </span>
+          <span className="text-neutral-300 dark:text-neutral-600">·</span>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => onBatchSchedule?.(selectedAssets)}
+            leftIcon={<CalendarPlus className="h-4 w-4" />}
+          >
+            Schedule test
+          </Button>
           <button
             type="button"
-            onClick={() => setSorts(DEFAULT_SORT)}
-            className="text-brand hover:underline"
+            onClick={() => setSelectedIds([])}
+            className="ml-auto flex items-center gap-1 text-neutral-500 hover:text-brand"
           >
-            Reset sort
+            <X className="h-3.5 w-3.5" />
+            Clear
           </button>
-        )}
-        <span className="text-neutral-400 dark:text-neutral-500">
-          Shift-click a column to sort by it as well.
-        </span>
-      </div>
+        </div>
+      ) : (
+        <div className="mb-2 flex min-h-[2.5rem] flex-wrap items-center gap-x-3 gap-y-1 px-3 text-sm text-neutral-500 dark:text-neutral-400">
+          <span>
+            {matchCount === totalAssets
+              ? `${totalAssets} asset${totalAssets === 1 ? "" : "s"}`
+              : `${matchCount} of ${totalAssets} assets`}
+          </span>
+          <span className="text-neutral-300 dark:text-neutral-600">·</span>
+          <span>
+            Sorted by{" "}
+            {(sorts.length > 0 ? sorts : DEFAULT_SORT).map((level, i) => (
+              <span key={level.key}>
+                {i > 0 && ", then "}
+                <span className="text-neutral-700 dark:text-neutral-200">
+                  {SORT_LABELS[level.key]}
+                </span>{" "}
+                {level.asc ? "↑" : "↓"}
+              </span>
+            ))}
+            {!sorts.some((l) => l.key === "identifier") && ", then Identifier ↑"}
+          </span>
+          {sorts.length > 1 && (
+            <button
+              type="button"
+              onClick={() => setSorts(DEFAULT_SORT)}
+              className="text-brand hover:underline"
+            >
+              Reset sort
+            </button>
+          )}
+          <span className="text-neutral-400 dark:text-neutral-500">
+            Shift-click a column to sort by it as well.
+          </span>
+        </div>
+      )}
 
       <div className="rounded-none border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
+              {selectable && (
+                <TableHead className="w-[40px]">
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={() =>
+                      setSelectedIds(allVisibleSelected ? [] : visibleIds)
+                    }
+                    aria-label="Select all rows in this view"
+                  />
+                </TableHead>
+              )}
               {sortableHead("building_area", "Building / Area")}
               {sortableHead("substation", "Substation")}
               {sortableHead("identifier", "Identifier")}
@@ -433,6 +550,23 @@ export function EquipmentAssetsTable({
                       isChild ? "bg-neutral-50/60 dark:bg-dark-100/40" : undefined
                     }
                   >
+                    {selectable && (
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          checked={selectedSet.has(asset.id)}
+                          onChange={(e) =>
+                            // Shift state rides on the click that produced the change;
+                            // a keyboard toggle has no MouseEvent, so it reads false.
+                            toggleRow(
+                              asset.id,
+                              (e.nativeEvent as MouseEvent).shiftKey === true,
+                            )
+                          }
+                          aria-label={`Select ${asset.identifier}`}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell>{asset.building_area || BLANK}</TableCell>
                     <TableCell>{asset.substation || BLANK}</TableCell>
                     <TableCell className="font-medium">
@@ -509,40 +643,102 @@ export function EquipmentAssetsTable({
                     </TableCell>
                     {showActions && (
                       <TableCell>
-                        <div className="flex items-center gap-1">
-                          {onCreateReport && (
+                        <div className="flex items-center gap-0.5">
+                          {onAddReport && (
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => onCreateReport(asset)}
-                              aria-label={`Create report for ${asset.identifier}`}
-                              title="Create report"
+                              onClick={() => onAddReport(asset)}
+                              aria-label={`Add report to ${asset.identifier}`}
+                              title="Add report — new from a template, or link one that already exists"
                             >
                               <FilePlus2 className="h-4 w-4" />
                             </Button>
                           )}
-                          {onAttachReports && (
+                          {onScheduleTest && (
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => onAttachReports(asset)}
-                              aria-label={`Attach existing reports to ${asset.identifier}`}
-                              title="Attach an existing report"
+                              onClick={() => onScheduleTest(asset)}
+                              aria-label={`Schedule a test for ${asset.identifier}`}
+                              title="Schedule test"
                             >
-                              <Link2 className="h-4 w-4" />
+                              <CalendarPlus className="h-4 w-4" />
                             </Button>
                           )}
                           {canEdit && (
                             <>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => onEdit(asset)}
-                                aria-label={`Edit ${asset.identifier}`}
-                                title="Edit"
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
+                              {/* Split button: the icon edits, the caret opens the
+                                  menu holding everything you can't take back. */}
+                              <div className="flex items-center">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => onEdit(asset)}
+                                  aria-label={`Edit ${asset.identifier}`}
+                                  title="Edit"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <button
+                                      type="button"
+                                      className="-ml-1 px-0.5 py-1 text-neutral-500 hover:text-brand"
+                                      aria-label={`More actions for ${asset.identifier}`}
+                                      title="More actions"
+                                    >
+                                      <ChevronDown className="h-3.5 w-3.5" />
+                                    </button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => onEdit(asset)}>
+                                      <Pencil className="mr-2 h-4 w-4" />
+                                      Edit asset…
+                                    </DropdownMenuItem>
+
+                                    {isChild && onDetachFromParent && (
+                                      <>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                          onClick={() => onDetachFromParent(asset)}
+                                        >
+                                          <Unlink className="mr-2 h-4 w-4" />
+                                          Unlink from parent
+                                        </DropdownMenuItem>
+                                      </>
+                                    )}
+
+                                    {onRemoveFromJob && (
+                                      <DropdownMenuItem
+                                        onClick={() => onRemoveFromJob(asset)}
+                                      >
+                                        <Link2Off className="mr-2 h-4 w-4" />
+                                        Remove from this job
+                                      </DropdownMenuItem>
+                                    )}
+
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      disabled={asset.report_count > 0}
+                                      onClick={() => {
+                                        if (asset.report_count === 0) onDelete(asset);
+                                      }}
+                                      className={
+                                        asset.report_count > 0
+                                          ? undefined
+                                          : "text-destructive focus:text-destructive"
+                                      }
+                                    >
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      {asset.report_count > 0
+                                        ? "Delete — has linked reports"
+                                        : "Delete asset"}
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -553,46 +749,6 @@ export function EquipmentAssetsTable({
                                 <Copy className="h-4 w-4" />
                               </Button>
                             </>
-                          )}
-                          {canEdit && isChild && onDetachFromParent && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => onDetachFromParent(asset)}
-                              aria-label={`Detach ${asset.identifier} from its parent`}
-                              title="Detach from parent asset"
-                            >
-                              <Unlink className="h-4 w-4" />
-                            </Button>
-                          )}
-                          {onRemoveFromJob && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => onRemoveFromJob(asset)}
-                              aria-label={`Remove ${asset.identifier} from this job`}
-                              title="Remove from this job (keeps the asset at the site)"
-                            >
-                              <Link2Off className="h-4 w-4" />
-                            </Button>
-                          )}
-                          {canEdit && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => onDelete(asset)}
-                              disabled={asset.report_count > 0}
-                              aria-label={`Delete ${asset.identifier}`}
-                              title={
-                                asset.report_count > 0
-                                  ? "Has linked reports — cannot be deleted"
-                                  : "Delete asset"
-                              }
-                            >
-                              <Trash2
-                                className={`h-4 w-4 ${asset.report_count > 0 ? "opacity-30" : "text-destructive"}`}
-                              />
-                            </Button>
                           )}
                         </div>
                       </TableCell>

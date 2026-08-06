@@ -196,6 +196,13 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   const [jobTitle, setJobTitle] = useState(
     currentUser?.job_title || user?.user_metadata?.job_title || "",
   );
+  // Employee ID (badge number). Assigned by HR, so employees see it read-only.
+  const [employeeNumber, setEmployeeNumber] = useState("");
+  const viewerRole = user?.user_metadata?.role || "";
+  const canEditEmployeeNumber =
+    viewerRole === "Admin" ||
+    viewerRole === "Super Admin" ||
+    isSuperUser(user?.email);
   const [department, setDepartment] = useState(
     currentUser?.department || user?.user_metadata?.department || "",
   );
@@ -329,7 +336,10 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       const { data } = await supabase
         .schema("common")
         .from("profiles")
-        .select("job_title, department, avatar_url, profile_image, cover_image")
+        // Only real columns. common.profiles has avatar_url but no
+        // profile_image / cover_image; asking for those made the whole request
+        // fail with a 400, which silently skipped the hydration below.
+        .select("job_title, department, employee_number, avatar_url")
         .eq("id", editingUserId)
         .single();
       // Only hydrate job_title/department from profiles once per open, and only
@@ -338,32 +348,22 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       if (data && !profilesHydratedRef.current) {
         if (data.job_title) setJobTitle(data.job_title);
         if (data.department) setDepartment(data.department);
+        // profiles is the only home for employee_number, so hydrate it even
+        // when empty. There is no metadata copy to fall back on.
+        setEmployeeNumber(data.employee_number || "");
         profilesHydratedRef.current = true;
       }
       // Backfill: if user has profile/cover in metadata but profiles doesn't, sync so others can see
       const metaImg = isEditingOwnProfile
         ? user?.user_metadata?.profileImage || user?.user_metadata?.avatar_url
         : profileImage;
-      const metaCover = isEditingOwnProfile
-        ? user?.user_metadata?.coverImage
-        : coverImage;
-      const hasInProfiles = data?.avatar_url || data?.profile_image;
-      const hasCoverInProfiles = data?.cover_image;
-      if (metaImg && !hasInProfiles) {
+      // Cover images live only in user_metadata; there is no column to mirror
+      // them into, so only the avatar is backfilled here.
+      if (metaImg && !data?.avatar_url) {
         await supabase.schema("common").from("profiles").upsert(
           {
             id: editingUserId,
             avatar_url: metaImg,
-            profile_image: metaImg,
-          },
-          { onConflict: "id" },
-        );
-      }
-      if (metaCover && !hasCoverInProfiles) {
-        await supabase.schema("common").from("profiles").upsert(
-          {
-            id: editingUserId,
-            cover_image: metaCover,
           },
           { onConflict: "id" },
         );
@@ -509,7 +509,6 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         {
           id: editingUserId,
           avatar_url: publicUrl,
-          profile_image: publicUrl,
         },
         { onConflict: "id" },
       );
@@ -613,13 +612,8 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         }
       }
 
-      await supabase.schema("common").from("profiles").upsert(
-        {
-          id: editingUserId,
-          cover_image: publicUrl,
-        },
-        { onConflict: "id" },
-      );
+      // No cover_image column on common.profiles, so the cover lives in user
+      // metadata only. This upsert used to 400 on every upload.
 
       console.log("Cover image update completed successfully");
       return publicUrl;
@@ -1036,18 +1030,32 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         job_title: jobTitle || null,
         department: department || null,
       };
+      // Only admins may write this. Leaving it out entirely for everyone else
+      // means a normal profile save can never blank someone's assigned ID.
+      if (canEditEmployeeNumber) {
+        profilesRow.employee_number = employeeNumber.trim() || null;
+      }
+      // avatar_url is the only image column that exists here. Writing
+      // profile_image / cover_image rejected the whole row with a 400, which
+      // meant job title, department and employee ID silently never saved.
       if (profileImage) {
         profilesRow.avatar_url = profileImage;
-        profilesRow.profile_image = profileImage;
-      }
-      if (coverImage) {
-        profilesRow.cover_image = coverImage;
       }
       const { error: profilesError } = await supabase
         .schema("common")
         .from("profiles")
         .upsert(profilesRow, { onConflict: "id" });
       if (profilesError) {
+        // A clashing employee ID is a real, fixable mistake, so surface it
+        // rather than letting it fall through as a silent warning.
+        const isDuplicateId =
+          (profilesError as any)?.code === "23505" ||
+          (profilesError.message || "").includes("profiles_employee_number_key");
+        if (isDuplicateId) {
+          throw new Error(
+            `Employee ID "${employeeNumber.trim()}" is already assigned to someone else. Everything else was saved.`,
+          );
+        }
         console.warn(
           "common.profiles mirror upsert failed (non-fatal):",
           profilesError,
@@ -1061,7 +1069,9 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       }, 2000);
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Failed to update profile. Please try again.");
+      alert(
+        (error as any)?.message || "Failed to update profile. Please try again.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -1290,8 +1300,40 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                               {user?.user_metadata?.role || "Not Assigned"}
                             </p>
                             <p className="text-xs text-neutral-500 dark:text-white mt-1">
-                              Your role is assigned by an administrator.
+                              Assigned by an administrator.
                             </p>
+                          </div>
+                        </div>
+
+                        {/* Employee ID */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
+                              Employee ID
+                            </label>
+                            {canEditEmployeeNumber ? (
+                              <>
+                                <input
+                                  type="text"
+                                  value={employeeNumber}
+                                  onChange={(e) =>
+                                    setEmployeeNumber(e.target.value)
+                                  }
+                                  placeholder="e.g. 1001, 0034, S0002"
+                                  className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white font-mono"
+                                />
+                              </>
+                            ) : (
+                              <>
+                                <p className="w-full px-3 py-2 border border-neutral-200 dark:border-dark-600 bg-neutral-100 dark:bg-dark-800 rounded-none text-neutral-700 dark:text-white font-mono">
+                                  {employeeNumber || "Not Assigned"}
+                                </p>
+                                <p className="text-xs text-neutral-500 dark:text-white mt-1">
+                                  Your employee ID is assigned by an
+                                  administrator.
+                                </p>
+                              </>
+                            )}
                           </div>
                         </div>
 
@@ -1311,13 +1353,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                                 : "bg-neutral-50 dark:bg-dark-150 text-neutral-500 dark:text-white cursor-not-allowed"
                             }`}
                           />
-                          {canEditEmail && (
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                              This is your login email. Changing it takes effect
-                              immediately — use the exact address you'll sign in
-                              with. Your reports and history stay linked.
-                            </p>
-                          )}
+                          {canEditEmail}
                         </div>
 
                         {/* Phone Numbers */}
@@ -1671,6 +1707,14 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                               </dt>
                               <dd className="text-neutral-900 dark:text-white">
                                 {user?.user_metadata?.role || "Not Assigned"}
+                              </dd>
+                            </div>
+                            <div className="flex justify-between">
+                              <dt className="text-neutral-500 dark:text-white">
+                                Employee ID:
+                              </dt>
+                              <dd className="text-neutral-900 dark:text-white font-mono">
+                                {employeeNumber || "Not Assigned"}
                               </dd>
                             </div>
                             <div className="flex justify-between">

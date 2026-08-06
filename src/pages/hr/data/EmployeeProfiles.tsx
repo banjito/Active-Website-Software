@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import Card, { CardContent } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
-import { Select } from "../../../components/ui/Select";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +23,10 @@ import {
   IdCard,
   Upload,
   Download,
+  Filter,
+  ArrowDownWideNarrow,
+  Check,
+  X,
 } from "lucide-react";
 import {
   buildImportRows,
@@ -98,6 +101,12 @@ export const EmployeeProfiles: React.FC = () => {
   const [importError, setImportError] = useState("");
   const [importApplying, setImportApplying] = useState(false);
   const importFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Icon-button filter/sort menus, matching the opportunities list toolbar.
+  const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
+  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+  const statusMenuRef = useRef<HTMLDivElement>(null);
+  const sortMenuRef = useRef<HTMLDivElement>(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -394,6 +403,58 @@ export const EmployeeProfiles: React.FC = () => {
     setIsProfileViewOpen(true);
   };
 
+  // Close either popover on an outside click.
+  useEffect(() => {
+    if (!isStatusMenuOpen && !isSortMenuOpen) return;
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (statusMenuRef.current && !statusMenuRef.current.contains(target)) {
+        setIsStatusMenuOpen(false);
+      }
+      if (sortMenuRef.current && !sortMenuRef.current.contains(target)) {
+        setIsSortMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [isStatusMenuOpen, isSortMenuOpen]);
+
+  /** Single-choice popover options, mirroring the opportunities list. */
+  const renderChoices = <T extends string>(
+    options: ReadonlyArray<{ value: T; label: string }>,
+    selectedValue: T,
+    setValue: (next: T) => void,
+  ) => (
+    <div className="space-y-0.5">
+      {options.map((option) => {
+        const checked = selectedValue === option.value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => {
+              setValue(option.value);
+              setCurrentPage(1);
+            }}
+            className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-sm leading-tight focus:outline-none focus:ring-2 focus:ring-brand ${
+              checked
+                ? "bg-orange-50 text-brand dark:bg-orange-900/20"
+                : "text-neutral-700 hover:bg-neutral-50 dark:text-white dark:hover:bg-dark-100"
+            }`}
+            aria-pressed={checked}
+          >
+            <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+              {checked && <Check className="h-4 w-4" />}
+            </span>
+            <span>{option.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+
   const downloadExampleCsv = () => {
     const blob = new Blob([EXAMPLE_EMPLOYEE_ID_CSV], {
       type: "text/csv;charset=utf-8",
@@ -629,78 +690,120 @@ export const EmployeeProfiles: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold">Employee Profiles</h1>
         </div>
+      </div>
+
+      {/* Search, filter, sort, import - one aligned row */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative min-w-[16rem] flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") fetchProfiles();
+            }}
+            placeholder="Search by employee ID, name, email, role, or department..."
+            className={`h-9 w-full rounded-none border py-2 pl-9 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-brand ${
+              searchQuery
+                ? "border-brand bg-orange-50 dark:bg-orange-900/20"
+                : "border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150"
+            } text-neutral-900 dark:text-white`}
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-none p-0.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-dark-100 dark:hover:text-neutral-300"
+              aria-label="Clear search"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Status filter */}
+        <div className="relative" ref={statusMenuRef}>
+          <button
+            type="button"
+            onClick={() => setIsStatusMenuOpen((prev) => !prev)}
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-none focus:outline-none focus:ring-2 focus:ring-brand ${
+              statusFilter !== "active"
+                ? "text-brand"
+                : "text-neutral-700 hover:text-brand dark:text-white dark:hover:text-brand"
+            }`}
+            aria-expanded={isStatusMenuOpen}
+            aria-label="Filter by status"
+            title="Filter"
+          >
+            <Filter className="h-5 w-5" />
+          </button>
+          {isStatusMenuOpen && (
+            <div className="absolute right-0 z-20 mt-2 w-56 rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+              <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
+                Status
+              </div>
+              {renderChoices(
+                [
+                  { value: "active", label: "Active" },
+                  { value: "inactive", label: "Inactive" },
+                  { value: "all", label: "All" },
+                ] as const,
+                statusFilter,
+                (next) => setStatusFilter(next),
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Sort */}
+        <div className="relative" ref={sortMenuRef}>
+          <button
+            type="button"
+            onClick={() => setIsSortMenuOpen((prev) => !prev)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-none text-neutral-700 hover:text-brand focus:outline-none focus:ring-2 focus:ring-brand dark:text-white dark:hover:text-brand"
+            aria-expanded={isSortMenuOpen}
+            aria-label="Sort employees"
+            title="Sort"
+          >
+            <ArrowDownWideNarrow className="h-5 w-5" />
+          </button>
+          {isSortMenuOpen && (
+            <div className="absolute right-0 z-20 mt-2 w-56 rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+              <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
+                Sort by
+              </div>
+              {renderChoices(
+                [
+                  { value: "name_asc", label: "Name A-Z" },
+                  { value: "name_desc", label: "Name Z-A" },
+                  { value: "department_asc", label: "Department A-Z" },
+                  { value: "job_title_asc", label: "Job title A-Z" },
+                  { value: "employee_number_asc", label: "Employee ID" },
+                ] as const,
+                sortOption,
+                (next) => setSortOption(next),
+              )}
+            </div>
+          )}
+        </div>
+
         {isHrFullAccess && (
-          <Button
-            variant="outline"
-            leftIcon={<Upload className="h-4 w-4" />}
+          <button
+            type="button"
             onClick={() => {
               setImportRows([]);
               setImportError("");
               setImportFileName("");
               setImportOpen(true);
             }}
+            className="inline-flex h-9 items-center gap-2 rounded-none border border-neutral-300 bg-white px-3 text-sm font-medium text-neutral-700 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-brand dark:border-dark-300 dark:bg-dark-150 dark:text-white dark:hover:bg-dark-100"
           >
+            <Upload className="h-4 w-4 text-brand" />
             Import employee IDs
-          </Button>
+          </button>
         )}
       </div>
-
-      {/* Search and filters */}
-      <Card className="w-full max-w-2xl border-none">
-        <CardContent className="pt-6">
-          <div className="space-y-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by employee ID, name, email, role, or department..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  // Trigger fetch when search changes (useEffect will handle it)
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    fetchProfiles();
-                  }
-                }}
-                className="pl-9"
-              />
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Select
-                label="Status"
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value as StatusFilter);
-                  setCurrentPage(1);
-                }}
-                options={[
-                  { value: "active", label: "Active" },
-                  { value: "inactive", label: "Inactive" },
-                  { value: "all", label: "All" },
-                ]}
-                className="mb-0"
-              />
-              <Select
-                label="Sort"
-                value={sortOption}
-                onChange={(e) => {
-                  setSortOption(e.target.value as SortOption);
-                  setCurrentPage(1);
-                }}
-                options={[
-                  { value: "name_asc", label: "Name A-Z" },
-                  { value: "name_desc", label: "Name Z-A" },
-                  { value: "department_asc", label: "Department A-Z" },
-                  { value: "job_title_asc", label: "Job title A-Z" },
-                  { value: "employee_number_asc", label: "Employee ID" },
-                ]}
-                className="mb-0"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Profiles Grid */}
       {loading ? (
@@ -1122,10 +1225,6 @@ export const EmployeeProfiles: React.FC = () => {
               placeholder="e.g. 1001, 0034, S0002"
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground">
-              Letters and leading zeros are kept exactly as typed. Must be
-              unique. Leave blank to remove the ID.
-            </p>
           </div>
 
           <DialogFooter>

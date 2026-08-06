@@ -11,6 +11,7 @@ import { useDemoMode } from "@/lib/DemoModeContext";
 import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
 import { useEquipmentAssetPrefill } from "./useEquipmentAssetPrefill";
+import SaveToAssetButton from "./SaveToAssetButton";
 import { createReportAsset } from "@/services/reportAssets";
 import { ReportWrapper } from "./ReportWrapper";
 import { ReportHeader } from "./common/ReportHeader";
@@ -345,6 +346,7 @@ const SwitchgearReport: React.FC = () => {
   // identity in rather than making the tech retype it.
   const {
     equipmentAssetId,
+    asset: linkedAsset,
     prefill: assetPrefill,
     shouldPrefill,
   } = useEquipmentAssetPrefill(reportId);
@@ -1369,6 +1371,24 @@ const SwitchgearReport: React.FC = () => {
         <div className="max-w-7xl w-full space-y-6">
           <div className={`${isPrintMode ? "hidden" : ""} print:hidden`}>
             <ReportHeader
+          extraActions={
+            <SaveToAssetButton
+              asset={linkedAsset}
+              userId={user?.id}
+              values={{
+              manufacturer: formData.manufacturer,
+              model: formData.catalogNumber,
+              serialNumber: formData.serialNumber,
+              nameplate: {
+                type: formData.type,
+                systemVoltage: formData.systemVoltage,
+                ratedVoltage: formData.ratedVoltage,
+                ratedCurrent: formData.ratedCurrent,
+                phaseConfiguration: formData.phaseConfiguration,
+              },
+            }}
+            />
+          }
               title={reportName}
               isAutoSaving={false}
               isEditing={isEditing}

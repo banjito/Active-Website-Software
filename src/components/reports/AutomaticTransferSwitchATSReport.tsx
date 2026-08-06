@@ -11,6 +11,7 @@ import { useDemoMode } from "@/lib/DemoModeContext";
 import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
 import { useEquipmentAssetPrefill } from "./useEquipmentAssetPrefill";
+import SaveToAssetButton from "./SaveToAssetButton";
 import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { ReportWrapper } from "./ReportWrapper";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
@@ -397,6 +398,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
   // identity in rather than making the tech retype it.
   const {
     equipmentAssetId,
+    asset: linkedAsset,
     prefill: assetPrefill,
     shouldPrefill,
   } = useEquipmentAssetPrefill(initialReportId);
@@ -1438,6 +1440,24 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
 
   const renderHeader = () => (
     <ReportHeader
+      extraActions={
+        <SaveToAssetButton
+          asset={linkedAsset}
+          userId={user?.id}
+          values={{
+            manufacturer: formData.nameplateManufacturer,
+            model: formData.nameplateCatalogNo,
+            serialNumber: formData.nameplateSerialNumber,
+            nameplate: {
+              modelType: formData.nameplateModelType,
+              systemVoltage: formData.nameplateSystemVoltage,
+              ratedVoltage: formData.nameplateRatedVoltage,
+              ratedCurrent: formData.nameplateRatedCurrent,
+              sccr: formData.nameplateSCCR,
+            },
+          }}
+        />
+      }
       title={reportName}
       isAutoSaving={isAutoSaving}
       isEditing={isEditing}

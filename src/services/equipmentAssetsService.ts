@@ -499,6 +499,118 @@ export async function linkReportDocumentToAsset(
   if (error) throw error;
 }
 
+// ── Report -> asset (the reverse of prefill) ──────────────────────────────────
+//
+// Prefill pushes what we already know down into a report. This is the other direction,
+// and it is the one that actually matters in the field: a serial number is not knowable
+// from the office, so the tech reads it off the device, types it into the report, and it
+// belongs on the equipment record from that moment on.
+//
+// Without this, the only honest options were to make techs register the asset before
+// writing the report, or to have them type the same serial twice. Both are worse.
+
+/** One value a report is offering to write onto its asset. */
+export interface AssetFieldUpdate {
+  /** Column name, or `nameplate:<key>` for a type-specific value. */
+  field: string;
+  label: string;
+  /** What the asset holds today. Empty string when it holds nothing. */
+  current: string;
+  /** What the report says. */
+  incoming: string;
+  /** True when the asset already has a different value — overwriting needs a decision. */
+  conflicts: boolean;
+}
+
+/**
+ * Compare a report's values against the asset and return only what's worth writing.
+ *
+ * Blank incoming values are ignored — a report that simply didn't fill in the model must
+ * never wipe a model somebody already recorded. Identical values are ignored too, so a
+ * report opened from an asset (and therefore prefilled from it) offers nothing back and
+ * the button stays quiet.
+ */
+export function diffReportAgainstAsset(
+  asset: EquipmentAsset,
+  incoming: {
+    manufacturer?: string;
+    model?: string;
+    serialNumber?: string;
+    nameplate?: Record<string, string>;
+  },
+  nameplateLabels: Record<string, string> = {},
+): AssetFieldUpdate[] {
+  const updates: AssetFieldUpdate[] = [];
+
+  const consider = (
+    field: string,
+    label: string,
+    current: string | null | undefined,
+    value: string | undefined,
+  ) => {
+    const next = String(value ?? "").trim();
+    if (!next) return;
+    const now = String(current ?? "").trim();
+    if (now === next) return;
+    updates.push({ field, label, current: now, incoming: next, conflicts: now !== "" });
+  };
+
+  consider("manufacturer", "Manufacturer", asset.manufacturer, incoming.manufacturer);
+  consider("model", "Model", asset.model, incoming.model);
+  consider("serial_number", "Serial number", asset.serial_number, incoming.serialNumber);
+
+  const existing = (asset.nameplate_data as Record<string, string>) ?? {};
+  for (const [key, value] of Object.entries(incoming.nameplate ?? {})) {
+    consider(`nameplate:${key}`, nameplateLabels[key] ?? key, existing[key], value);
+  }
+
+  return updates;
+}
+
+/**
+ * Write the chosen updates onto the asset.
+ *
+ * Nameplate values are merged into the existing JSONB rather than replacing it, so a
+ * report that knows three fields doesn't erase the other seven.
+ */
+export async function applyReportDataToAsset(
+  asset: EquipmentAsset,
+  updates: AssetFieldUpdate[],
+  userId?: string,
+): Promise<EquipmentAsset> {
+  if (updates.length === 0) return asset;
+
+  const payload: Record<string, unknown> = { updated_by: userId ?? null };
+  const nameplate: Record<string, string> = {
+    ...((asset.nameplate_data as Record<string, string>) ?? {}),
+  };
+  let touchedNameplate = false;
+
+  for (const update of updates) {
+    if (update.field.startsWith("nameplate:")) {
+      nameplate[update.field.slice("nameplate:".length)] = update.incoming;
+      touchedNameplate = true;
+    } else {
+      payload[update.field] = update.incoming;
+    }
+  }
+
+  if (touchedNameplate && columnSupported.nameplate_data) {
+    payload.nameplate_data = nameplate;
+  }
+
+  const { data, error } = await supabase
+    .schema("neta_ops")
+    .from("equipment_assets")
+    .update(dropUnsupportedColumns(payload as Record<string, unknown>))
+    .eq("id", asset.id)
+    .select(assetColumns())
+    .single();
+
+  if (error) throw error;
+  return data as unknown as EquipmentAsset;
+}
+
 // ── Equipment types (free text with saved suggestions) ────────────────────────
 // Same pattern as neta_ops.neta_sections in the custom form builder: the user can type
 // anything, and new values get saved so the next person picks the same wording.

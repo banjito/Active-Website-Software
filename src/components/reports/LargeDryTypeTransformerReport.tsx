@@ -11,6 +11,7 @@ import { useDemoMode } from "@/lib/DemoModeContext";
 import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
 import { useEquipmentAssetPrefill } from "./useEquipmentAssetPrefill";
+import SaveToAssetButton from "./SaveToAssetButton";
 import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { ReportWrapper } from "./ReportWrapper";
 import _ from "lodash";
@@ -514,6 +515,7 @@ const LargeDryTypeTransformerReport: React.FC = () => {
   // identity in rather than making the tech retype it.
   const {
     equipmentAssetId,
+    asset: linkedAsset,
     prefill: assetPrefill,
     shouldPrefill,
   } = useEquipmentAssetPrefill(reportId);
@@ -1416,6 +1418,30 @@ const LargeDryTypeTransformerReport: React.FC = () => {
       <div className="p-6 flex justify-center pb-20">
         <div className="max-w-7xl w-full space-y-6">
           <ReportHeader
+          extraActions={
+            <SaveToAssetButton
+              asset={linkedAsset}
+              userId={user?.id}
+              values={{
+              manufacturer: formData.nameplateData.manufacturer,
+              model: formData.nameplateData.catalogNumber,
+              serialNumber: formData.nameplateData.serialNumber,
+              nameplate: {
+                kva: formData.nameplateData.kva,
+                tempRise: formData.nameplateData.tempRise,
+                impedance: formData.nameplateData.impedance,
+                primaryVolts: formData.nameplateData.primary.volts,
+                primaryVoltsSecondary: formData.nameplateData.primary.voltsSecondary,
+                primaryConnection: formData.nameplateData.primary.connection,
+                primaryMaterial: formData.nameplateData.primary.material,
+                secondaryVolts: formData.nameplateData.secondary.volts,
+                secondaryVoltsSecondary: formData.nameplateData.secondary.voltsSecondary,
+                secondaryConnection: formData.nameplateData.secondary.connection,
+                secondaryMaterial: formData.nameplateData.secondary.material,
+              },
+            }}
+            />
+          }
             title={reportName}
             isAutoSaving={false}
             isEditing={isEditing}

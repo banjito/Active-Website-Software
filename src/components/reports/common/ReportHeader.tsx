@@ -39,6 +39,11 @@ interface ReportHeaderProps {
   onBack?: () => void;
   /** Label for the back button. Defaults to "Back to Job". */
   backLabel?: string;
+  /**
+   * Extra controls rendered just before Save — currently the "Save to asset" button,
+   * which pushes what the tech recorded here onto the equipment record.
+   */
+  extraActions?: React.ReactNode;
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -65,6 +70,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
   backLabel = "Back",
   isPrintMode = false,
   loading = false,
+  extraActions,
 }) => {
   const [tooltip, setTooltip] = useState<{
     text: string;
@@ -133,6 +139,10 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
                 {status}
               </button>
             </div>
+
+            {/* Pushes report values onto the equipment record. Renders nothing when the
+                report isn't linked to an asset or has nothing new to offer. */}
+            {extraActions}
 
             {/* Report Photos (renders nothing on unsaved reports) */}
             <ReportPhotosButton

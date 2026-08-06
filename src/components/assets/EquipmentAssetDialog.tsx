@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
@@ -84,7 +84,6 @@ export function EquipmentAssetDialog({
   const [form, setForm] = useState(emptyForm);
   const [nameplate, setNameplate] = useState<NameplateData>({});
   const [saving, setSaving] = useState(false);
-  const [showNameplate, setShowNameplate] = useState(false);
 
   /** Which type-specific fields to show. Null for a type we have no field list for. */
   const nameplateSchema = useMemo(
@@ -153,13 +152,9 @@ export function EquipmentAssetDialog({
         notes: asset.notes ?? "",
       });
       setNameplate((asset.nameplate_data as NameplateData) ?? {});
-      setShowNameplate(
-        Boolean(asset.manufacturer || asset.model || asset.serial_number),
-      );
     } else {
       setForm(emptyForm);
       setNameplate({});
-      setShowNameplate(false);
     }
   }, [open, asset]);
 
@@ -337,48 +332,50 @@ export function EquipmentAssetDialog({
             </div>
           )}
 
-          <div>
-            <button
-              type="button"
-              onClick={() => setShowNameplate((s) => !s)}
-              className="flex items-center gap-1 text-sm font-medium text-neutral-600 hover:text-brand dark:text-neutral-300"
-            >
-              {showNameplate ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-              Nameplate (optional)
-            </button>
-            {showNameplate && (
-              <div className="mt-3 grid gap-4 sm:grid-cols-3">
-                <div>
-                  <Label htmlFor="ea-manufacturer">Manufacturer</Label>
-                  <Input
-                    id="ea-manufacturer"
-                    value={form.manufacturer}
-                    onChange={(e) => set("manufacturer")(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="ea-model">Model</Label>
-                  <Input
-                    id="ea-model"
-                    value={form.model}
-                    onChange={(e) => set("model")(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="ea-serial">Serial number</Label>
-                  <Input
-                    id="ea-serial"
-                    value={form.serial_number}
-                    onChange={(e) => set("serial_number")(e.target.value)}
-                  />
-                </div>
+          {/*
+            Manufacturer / model / serial are no longer typed here.
+            Nobody knows a serial number until they're standing in front of the device, so
+            asking for it at registration time invited either blank fields or the same
+            value being keyed twice — once in the report, once here. They come off the
+            report now, via "Save to asset". The columns still exist and are still written;
+            this dialog just doesn't pretend the office knows them in advance.
+          */}
+          {(form.manufacturer || form.model || form.serial_number) && (
+            <div className="border border-neutral-200 px-3 py-2 text-sm dark:border-neutral-700">
+              <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                <FileText className="h-3.5 w-3.5" />
+                From the field
               </div>
-            )}
-          </div>
+              <div className="flex flex-wrap gap-x-6 gap-y-1">
+                {form.manufacturer && (
+                  <span>
+                    <span className="text-neutral-500 dark:text-neutral-400">
+                      Manufacturer:{" "}
+                    </span>
+                    {form.manufacturer}
+                  </span>
+                )}
+                {form.model && (
+                  <span>
+                    <span className="text-neutral-500 dark:text-neutral-400">Model: </span>
+                    {form.model}
+                  </span>
+                )}
+                {form.serial_number && (
+                  <span>
+                    <span className="text-neutral-500 dark:text-neutral-400">
+                      Serial:{" "}
+                    </span>
+                    {form.serial_number}
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-neutral-400">
+                Captured from a report. Correct it in the report and save to the asset
+                again.
+              </p>
+            </div>
+          )}
 
           <div>
             <Label htmlFor="ea-notes">Notes</Label>

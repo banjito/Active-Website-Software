@@ -9853,85 +9853,6 @@ export default function EstimateSheet({
                           </span>
                         </span>
                       </label>
-                      {/* Manual price override: force the FINAL (M-F) value to an
-                          exact dollar amount (e.g. a $1,950 minimum call-out fee) */}
-                      <div
-                        style={{
-                          marginTop: "12px",
-                          padding: "10px 12px",
-                          border: "1px solid var(--border, #e5e5e5)",
-                          borderRadius: "6px",
-                          fontSize: "13px",
-                          lineHeight: 1.4,
-                        }}
-                      >
-                        <label
-                          style={{
-                            display: "flex",
-                            alignItems: "flex-start",
-                            gap: "8px",
-                            cursor: isViewMode ? "default" : "pointer",
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={manualPriceOverride}
-                            onChange={(e) => {
-                              if (isViewMode) return;
-                              setManualPriceOverride(e.target.checked);
-                              // Seed the box with the current calculated price the
-                              // first time it's turned on, so the user tweaks from
-                              // a sensible starting number instead of $0.
-                              if (
-                                e.target.checked &&
-                                toNum(manualPriceValue) <= 0
-                              ) {
-                                setManualPriceValue(getFinalValue());
-                              }
-                              setIsDirty(true);
-                            }}
-                            disabled={isViewMode}
-                            style={{ marginTop: "2px" }}
-                          />
-                          <span>
-                            <strong>Manual price override</strong>
-                            <br />
-                            <span style={{ color: "var(--muted, #737373)" }}>
-                              Type an exact FINAL price and everything (NET terms,
-                              mobilization, SOV item prices) is calculated from it.
-                            </span>
-                          </span>
-                        </label>
-                        {manualPriceOverride && (
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                              marginTop: "10px",
-                            }}
-                          >
-                            <span style={{ fontWeight: "bold" }}>FINAL $</span>
-                            <input
-                              type="number"
-                              min={0}
-                              step="0.01"
-                              value={
-                                manualPriceValue === 0 ? "" : manualPriceValue
-                              }
-                              placeholder="0.00"
-                              onChange={(e) => {
-                                if (isViewMode) return;
-                                setManualPriceValue(toNum(e.target.value));
-                                setIsDirty(true);
-                              }}
-                              disabled={isViewMode}
-                              className="form-input"
-                              style={{ width: "140px", textAlign: "right" }}
-                            />
-                          </div>
-                        )}
-                      </div>
                           </div>
                         )}
                         {activeSummarySection === "hoursLabor" && (
@@ -13033,62 +12954,163 @@ export default function EstimateSheet({
                               style={{
                                 width: "60%",
                                 color: "var(--text-color)",
+                                display: "flex",
+                                alignItems: "flex-start",
+                                gap: "24px",
+                                flexWrap: "wrap",
                               }}
                             >
-                              <div style={{ marginBottom: "15px" }}>
-                                <div
-                                  style={{
-                                    fontWeight: "bold",
-                                    marginBottom: "5px",
-                                  }}
-                                >
-                                  SUB TOTAL (M-F)
+                              <div>
+                                <div style={{ marginBottom: "15px" }}>
+                                  <div
+                                    style={{
+                                      fontWeight: "bold",
+                                      marginBottom: "5px",
+                                    }}
+                                  >
+                                    SUB TOTAL (M-F)
+                                  </div>
+                                  <div
+                                    style={{
+                                      fontSize: "16px",
+                                      fontWeight: "bold",
+                                    }}
+                                  >
+                                    {formatCurrency(
+                                      getMaterialExpenseBase() +
+                                        getWorkLaborCost() +
+                                        getTravelLaborCost() +
+                                        getTravelNonLaborCost(),
+                                    )}
+                                  </div>
+                                  <div
+                                    style={{
+                                      fontSize: "12px",
+                                      color: "var(--text-color)",
+                                      opacity: 0.8,
+                                    }}
+                                  >
+                                    (before final mark-up)
+                                  </div>
                                 </div>
-                                <div
-                                  style={{
-                                    fontSize: "16px",
-                                    fontWeight: "bold",
-                                  }}
-                                >
-                                  {formatCurrency(
-                                    getMaterialExpenseBase() +
-                                      getWorkLaborCost() +
-                                      getTravelLaborCost() +
-                                      getTravelNonLaborCost(),
-                                  )}
-                                </div>
-                                <div
-                                  style={{
-                                    fontSize: "12px",
-                                    color: "var(--text-color)",
-                                    opacity: 0.8,
-                                  }}
-                                >
-                                  (before final mark-up)
+                                <div>
+                                  <div
+                                    style={{
+                                      fontWeight: "bold",
+                                      marginBottom: "5px",
+                                    }}
+                                  >
+                                    FINAL (M-F)
+                                  </div>
+                                  <div style={{ marginBottom: "5px" }}>
+                                    {formatCurrency(getFinalValue())}
+                                  </div>
+                                  <div style={{ marginBottom: "5px" }}>
+                                    Mobilization:{" "}
+                                    {(() => {
+                                      const final = getFinalValue();
+                                      const factor = getMobilizationFactor(final);
+                                      return formatCurrency(
+                                        Math.ceil(final * factor),
+                                      );
+                                    })()}
+                                  </div>
                                 </div>
                               </div>
-                              <div>
-                                <div
+
+                              {/* Manual price override: force the FINAL (M-F) value to an
+                                  exact dollar amount (e.g. a $1,950 minimum call-out fee).
+                                  Lives next to the totals it controls. */}
+                              <div
+                                style={{
+                                  flex: "1 1 320px",
+                                  minWidth: "280px",
+                                  maxWidth: "460px",
+                                  padding: "10px 12px",
+                                  border: "1px solid var(--border, #e5e5e5)",
+                                  borderRadius: "6px",
+                                  fontSize: "13px",
+                                  lineHeight: 1.4,
+                                }}
+                              >
+                                <label
                                   style={{
-                                    fontWeight: "bold",
-                                    marginBottom: "5px",
+                                    display: "flex",
+                                    alignItems: "flex-start",
+                                    gap: "8px",
+                                    cursor: isViewMode ? "default" : "pointer",
                                   }}
                                 >
-                                  FINAL (M-F)
-                                </div>
-                                <div style={{ marginBottom: "5px" }}>
-                                  {formatCurrency(getFinalValue())}
-                                </div>
-                                <div style={{ marginBottom: "5px" }}>
-                                  Mobilization:{" "}
-                                  {(() => {
-                                    const final = getFinalValue();
-                                    const factor = getMobilizationFactor(final);
-                                    return formatCurrency(
-                                      Math.ceil(final * factor),
-                                    );
-                                  })()}
-                                </div>
+                                  <input
+                                    type="checkbox"
+                                    checked={manualPriceOverride}
+                                    onChange={(e) => {
+                                      if (isViewMode) return;
+                                      setManualPriceOverride(e.target.checked);
+                                      // Seed the box with the current calculated price the
+                                      // first time it's turned on, so the user tweaks from
+                                      // a sensible starting number instead of $0.
+                                      if (
+                                        e.target.checked &&
+                                        toNum(manualPriceValue) <= 0
+                                      ) {
+                                        setManualPriceValue(getFinalValue());
+                                      }
+                                      setIsDirty(true);
+                                    }}
+                                    disabled={isViewMode}
+                                    style={{ marginTop: "2px" }}
+                                  />
+                                  <span>
+                                    <strong>Manual price override</strong>
+                                    <br />
+                                    <span
+                                      style={{ color: "var(--muted, #737373)" }}
+                                    >
+                                      Type an exact FINAL price and everything
+                                      (NET terms, mobilization, SOV item prices)
+                                      is calculated from it.
+                                    </span>
+                                  </span>
+                                </label>
+                                {manualPriceOverride && (
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "8px",
+                                      marginTop: "10px",
+                                    }}
+                                  >
+                                    <span style={{ fontWeight: "bold" }}>
+                                      FINAL $
+                                    </span>
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      step="0.01"
+                                      value={
+                                        manualPriceValue === 0
+                                          ? ""
+                                          : manualPriceValue
+                                      }
+                                      placeholder="0.00"
+                                      onChange={(e) => {
+                                        if (isViewMode) return;
+                                        setManualPriceValue(
+                                          toNum(e.target.value),
+                                        );
+                                        setIsDirty(true);
+                                      }}
+                                      disabled={isViewMode}
+                                      className="form-input"
+                                      style={{
+                                        width: "140px",
+                                        textAlign: "right",
+                                      }}
+                                    />
+                                  </div>
+                                )}
                               </div>
                             </div>
 

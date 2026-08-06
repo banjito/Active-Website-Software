@@ -11,6 +11,7 @@ import { useDemoMode } from "@/lib/DemoModeContext";
 import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
 import { useEquipmentAssetPrefill } from "./useEquipmentAssetPrefill";
+import SaveToAssetButton from "./SaveToAssetButton";
 import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { ReportWrapper } from "./ReportWrapper";
 import { ReportHeader } from "./common/ReportHeader";
@@ -369,6 +370,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
   // identity in rather than making the tech retype it.
   const {
     equipmentAssetId,
+    asset: linkedAsset,
     prefill: assetPrefill,
     shouldPrefill,
   } = useEquipmentAssetPrefill(reportId);
@@ -1283,6 +1285,26 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
       <div className="p-6 flex justify-center bg-neutral-50 dark:bg-dark-150">
         <div className="max-w-7xl w-full space-y-6">
           <ReportHeader
+          extraActions={
+            <SaveToAssetButton
+              asset={linkedAsset}
+              userId={user?.id}
+              values={{
+              manufacturer: formData.manufacturer,
+              model: formData.catalogNumber,
+              serialNumber: formData.serialNumber,
+              nameplate: {
+                type: formData.type,
+                frameSize: formData.frameSize,
+                ratingPlug: formData.ratingPlug,
+                icRating: formData.icRating,
+                curveNo: formData.curveNo,
+                operation: formData.operation,
+                mounting: formData.mounting,
+              },
+            }}
+            />
+          }
             title={reportName}
             isAutoSaving={false}
             isEditing={isEditing}

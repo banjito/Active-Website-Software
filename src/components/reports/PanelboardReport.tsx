@@ -12,6 +12,7 @@ import _ from "lodash";
 import { useReportLocked } from "./useReportLocked";
 import { getReportName, getAssetName } from "./reportMappings";
 import { useEquipmentAssetPrefill } from "./useEquipmentAssetPrefill";
+import SaveToAssetButton from "./SaveToAssetButton";
 import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { ReportWrapper } from "./ReportWrapper";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
@@ -862,6 +863,7 @@ const PanelboardReport: React.FC = () => {
   // identity in rather than making the tech retype it.
   const {
     equipmentAssetId,
+    asset: linkedAsset,
     prefill: assetPrefill,
     shouldPrefill,
   } = useEquipmentAssetPrefill(initialReportId);
@@ -1919,6 +1921,24 @@ const PanelboardReport: React.FC = () => {
           </div>
         </div>
         <ReportHeader
+          extraActions={
+            <SaveToAssetButton
+              asset={linkedAsset}
+              userId={user?.id}
+              values={{
+              manufacturer: formData.manufacturer,
+              model: formData.catalogNumber,
+              serialNumber: formData.serialNumber,
+              nameplate: {
+                type: formData.type,
+                systemVoltage: formData.systemVoltage,
+                ratedVoltage: formData.ratedVoltage,
+                ratedCurrent: formData.ratedCurrent,
+                phaseConfiguration: formData.phaseConfiguration,
+              },
+            }}
+            />
+          }
           title={reportName}
           isAutoSaving={isAutoSaving}
           isEditing={isEditing}

@@ -11,6 +11,7 @@ import { useDemoMode } from "@/lib/DemoModeContext";
 import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
 import { useEquipmentAssetPrefill } from "./useEquipmentAssetPrefill";
+import SaveToAssetButton from "./SaveToAssetButton";
 import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { ReportWrapper } from "./ReportWrapper";
 import { ReportHeader } from "./common/ReportHeader";
@@ -434,6 +435,7 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
   // identity in rather than making the tech retype it.
   const {
     equipmentAssetId,
+    asset: linkedAsset,
     prefill: assetPrefill,
     shouldPrefill,
   } = useEquipmentAssetPrefill(initialReportId);
@@ -2806,6 +2808,27 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
       {/* End Print Header */}
       <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
         <ReportHeader
+          extraActions={
+            <SaveToAssetButton
+              asset={linkedAsset}
+              userId={user?.id}
+              values={{
+              manufacturer: formData.manufacturer,
+              model: formData.catalogNumber,
+              serialNumber: formData.serialNumber,
+              nameplate: {
+                type: formData.type,
+                frameSize: formData.frameSize,
+                icRating: formData.icRating,
+                tripUnitType: formData.tripUnitType,
+                ratingPlug: formData.ratingPlug,
+                curveNo: formData.curveNo,
+                operation: formData.operation,
+                mounting: formData.mounting,
+              },
+            }}
+            />
+          }
           title={reportName}
           isAutoSaving={isAutoSaving}
           isEditing={isEditing}

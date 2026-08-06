@@ -1370,6 +1370,17 @@ export default function PortalLanding() {
               >
                 Learn More
               </Button>
+              <Link
+                to="/docs"
+                aria-label="ampOS Docs"
+                className="group inline-flex h-11 items-center px-5 rounded-none border-none bg-neutral-200 transition-colors hover:bg-brand dark:bg-dark-700 dark:hover:bg-brand focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
+              >
+                <img
+                  src="/ampOS_docs.svg"
+                  alt="ampOS Docs"
+                  className="h-5 w-auto transition-[filter] dark:invert group-hover:invert dark:group-hover:invert-0 translate-y-1"
+                />
+              </Link>
               <div className="relative">
                 <button
                   ref={offlineBtnRef}

@@ -8,6 +8,7 @@ import {
   X,
   User,
   Building2,
+  IdCard,
   FileText,
   Award,
   History,
@@ -66,6 +67,7 @@ interface UserData extends SupabaseUser {
     birthday?: string;
     job_title?: string;
     department?: string;
+    employee_number?: string;
     current_compensation_amount?: number | null;
     current_pay_type?: string | null;
     current_pay_frequency?: string | null;
@@ -331,6 +333,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 birthday: profileData.birthday || userMetadata.birthday,
                 job_title: profileData.job_title || userMetadata.job_title,
                 department: profileData.department || userMetadata.department,
+                employee_number: profileData.employee_number,
                 current_compensation_amount:
                   profileData.current_compensation_amount ??
                   userMetadata.current_compensation_amount,
@@ -464,6 +467,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       birthday: profileData.birthday,
                       job_title: profileData.job_title,
                       department: profileData.department,
+                      employee_number: profileData.employee_number,
                       current_compensation_amount:
                         profileData.current_compensation_amount,
                       current_pay_type: profileData.current_pay_type,
@@ -1266,6 +1270,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             birthday: profileData.birthday,
             job_title: profileData.job_title,
             department: profileData.department,
+            employee_number: profileData.employee_number,
             current_compensation_amount:
               profileData.current_compensation_amount,
             current_pay_type: profileData.current_pay_type,
@@ -1374,6 +1379,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     birthday,
     job_title: jobTitle,
     department,
+    employee_number: employeeNumber,
     current_compensation_amount: compensationAmount,
     current_pay_type: payType,
     current_pay_frequency: payFrequency,
@@ -1706,6 +1712,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       </h2>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {employeeNumber && (
+                          <div className="flex items-center text-neutral-700 dark:text-white">
+                            <IdCard className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
+                            <div>
+                              <p className="text-sm text-neutral-500 dark:text-white">
+                                Employee ID
+                              </p>
+                              <p className="font-mono">{employeeNumber}</p>
+                            </div>
+                          </div>
+                        )}
                         {jobTitle && (
                           <div className="flex items-center text-neutral-700 dark:text-white">
                             <Briefcase className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />

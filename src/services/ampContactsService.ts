@@ -134,6 +134,9 @@ export async function fetchContactProfileIds(
   return map;
 }
 
+const NO_WRITE_ACCESS =
+  'The database rejected the change: your account does not have permission to edit the phone list.';
+
 export async function upsertAmpContact(contact: Omit<AmpContact, 'created_at' | 'updated_at'>): Promise<AmpContact> {
   const payload: Record<string, unknown> = {
     work_phone: contact.work_phone,
@@ -153,10 +156,11 @@ export async function upsertAmpContact(contact: Omit<AmpContact, 'created_at' | 
       .from('amp_contacts')
       .update(payload)
       .eq('id', contact.id)
-      .select()
-      .single();
+      .select();
     if (error) throw error;
-    return data as AmpContact;
+    // RLS does not error on a denied write, it just matches no rows.
+    if (!data?.length) throw new Error(NO_WRITE_ACCESS);
+    return data[0] as AmpContact;
   }
   const { data, error } = await supabase
     .schema('common')
@@ -211,10 +215,13 @@ export async function pushAmpContactsToSheet(force = false): Promise<AmpContacts
 }
 
 export async function deleteAmpContact(id: string): Promise<void> {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .schema('common')
     .from('amp_contacts')
     .delete()
-    .eq('id', id);
+    .eq('id', id)
+    .select('id');
   if (error) throw error;
+  // Same as the update path: a denied delete removes nothing and reports success.
+  if (!data?.length) throw new Error(NO_WRITE_ACCESS);
 }

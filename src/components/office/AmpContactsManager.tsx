@@ -26,8 +26,10 @@ import {
   deleteAmpContact,
   syncAmpContactsFromSheet,
   pushAmpContactsToSheet,
+  fetchContactProfileIds,
+  fetchLinkableProfiles,
 } from '@/services/ampContactsService';
-import type { AmpContact } from '@/services/ampContactsService';
+import type { AmpContact, LinkableProfile } from '@/services/ampContactsService';
 import { usePermissions } from '@/hooks/usePermissions';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { toast } from 'react-hot-toast';
@@ -69,7 +71,10 @@ export default function AmpContactsManager() {
   const [pushing, setPushing] = useState(false);
   // Edits live in ampOS until someone pushes them; a later pull would overwrite them.
   const [unpushedEdits, setUnpushedEdits] = useState(false);
-  const [form, setForm] = useState({ work_phone: '', name: '', email: '', role: '' });
+  const [form, setForm] = useState({ work_phone: '', name: '', email: '', role: '', profile_id: '' });
+  // Accounts to pin to, and what each contact currently resolves to (pin or auto-match).
+  const [profiles, setProfiles] = useState<LinkableProfile[]>([]);
+  const [resolvedProfileIds, setResolvedProfileIds] = useState<Record<string, string>>({});
   const { getUserRole } = usePermissions();
   const role = getUserRole();
   const canEdit = role === 'Office Admin' || role === 'HR Rep' || role === 'Admin' || role === 'Super Admin';
@@ -79,6 +84,10 @@ export default function AmpContactsManager() {
     try {
       const list = await fetchAmpContacts();
       setContacts(list);
+      // Non-blocking: the list is useful without the account column.
+      void fetchContactProfileIds(list)
+        .then(setResolvedProfileIds)
+        .catch(() => setResolvedProfileIds({}));
     } catch (e) {
       console.error(e);
       toast.error('Failed to load AMP contacts');
@@ -90,7 +99,31 @@ export default function AmpContactsManager() {
 
   useEffect(() => {
     void load();
+    void fetchLinkableProfiles()
+      .then(setProfiles)
+      .catch(() => setProfiles([]));
   }, []);
+
+  const profilesById = useMemo(
+    () => new Map(profiles.map((p) => [p.id, p])),
+    [profiles],
+  );
+
+  const profileLabel = (id: string) => {
+    const p = profilesById.get(id);
+    if (!p) return 'Linked account';
+    return p.full_name?.trim() || p.email || 'Linked account';
+  };
+
+  const sortedProfiles = useMemo(
+    () =>
+      [...profiles].sort((a, b) =>
+        (a.full_name || a.email || '').localeCompare(b.full_name || b.email || '', undefined, {
+          sensitivity: 'base',
+        }),
+      ),
+    [profiles],
+  );
 
   // Pull the sheet in the background once the role is known. The list renders from
   // the DB immediately; if the pull changes anything it reloads underneath.
@@ -161,7 +194,7 @@ export default function AmpContactsManager() {
   }, [contacts, sortField, sortDirection]);
 
   const openCreate = () => {
-    setForm({ work_phone: '', name: '', email: '', role: '' });
+    setForm({ work_phone: '', name: '', email: '', role: '', profile_id: '' });
     setCreating(true);
     setEditing(null);
   };
@@ -172,6 +205,7 @@ export default function AmpContactsManager() {
       name: c.name,
       email: c.email,
       role: c.role,
+      profile_id: c.profile_id || '',
     });
     setEditing(c);
     setCreating(false);
@@ -180,7 +214,7 @@ export default function AmpContactsManager() {
   const closeForm = () => {
     setCreating(false);
     setEditing(null);
-    setForm({ work_phone: '', name: '', email: '', role: '' });
+    setForm({ work_phone: '', name: '', email: '', role: '', profile_id: '' });
   };
 
   const save = async () => {
@@ -197,6 +231,7 @@ export default function AmpContactsManager() {
           email: form.email.trim(),
           role: form.role.trim(),
           display_order: editing.display_order,
+          profile_id: form.profile_id || null,
         });
         toast.success('Contact updated');
       } else {
@@ -207,6 +242,7 @@ export default function AmpContactsManager() {
           email: form.email.trim(),
           role: form.role.trim(),
           display_order: contacts.length,
+          profile_id: form.profile_id || null,
         });
         toast.success('Contact added');
       }
@@ -373,6 +409,7 @@ export default function AmpContactsManager() {
                       {renderSortIcon(field)}
                     </TableHead>
                   ))}
+                  <TableHead>Linked account</TableHead>
                   {canEdit && <TableHead className="w-[80px]">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
@@ -389,6 +426,18 @@ export default function AmpContactsManager() {
                       <a href={`mailto:${c.email}`} className="hover:underline">{c.email || '—'}</a>
                     </TableCell>
                     <TableCell className="text-muted-foreground">{c.role || '—'}</TableCell>
+                    <TableCell>
+                      {resolvedProfileIds[c.id] ? (
+                        <span className="flex items-center gap-2">
+                          {profileLabel(resolvedProfileIds[c.id])}
+                          <span className="text-xs uppercase tracking-wide text-neutral-400">
+                            {c.profile_id ? 'pinned' : 'auto'}
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">No account</span>
+                      )}
+                    </TableCell>
                     {canEdit && (
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -458,6 +507,28 @@ export default function AmpContactsManager() {
                 onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
                 placeholder="e.g. Project Manager"
               />
+            </div>
+            <div>
+              <Label htmlFor="ac-profile">Linked account</Label>
+              <select
+                id="ac-profile"
+                value={form.profile_id}
+                onChange={(e) => setForm((f) => ({ ...f, profile_id: e.target.value }))}
+                className="mt-1 w-full rounded-none border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-brand focus:outline-none dark:border-dark-200 dark:bg-dark-100 dark:text-neutral-100"
+              >
+                <option value="">Automatic (match by email, then name)</option>
+                {sortedProfiles.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.full_name?.trim() || p.email || p.id}
+                    {p.full_name?.trim() && p.email ? ` (${p.email})` : ''}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                Whose profile opens when their name is clicked in the header contacts list.
+                Pick someone only when the automatic match is wrong or missing. Nicknames
+                like Liam/William are the usual reason.
+              </p>
             </div>
           </div>
           <DialogFooter>

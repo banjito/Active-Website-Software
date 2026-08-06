@@ -37,7 +37,11 @@ import {
   fetchJobAssetLinksByAssetIds,
 } from "@/lib/reviewShortcuts";
 import { supabase } from "@/lib/supabase";
-import { fetchAmpContacts } from "@/services/ampContactsService";
+import {
+  fetchAmpContacts,
+  fetchContactProfileIds,
+} from "@/services/ampContactsService";
+import { toast } from "@/components/ui/toast";
 import type { AmpContact } from "@/services/ampContactsService";
 import { CommunityBoardPopover } from "@/components/community/CommunityBoardPopover";
 import { QuickLogInteraction } from "@/components/sales/QuickLogInteraction";
@@ -171,6 +175,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isSettingsSubmenuOpen, setIsSettingsSubmenuOpen] = useState(false);
   const [isProfileViewOpen, setIsProfileViewOpen] = useState(false);
+  const [contactProfileUserId, setContactProfileUserId] = useState<
+    string | null
+  >(null);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [headerShortcuts, setHeaderShortcuts] = useState<Shortcut[]>([]);
   const [isShortcutMenuOpen, setIsShortcutMenuOpen] = useState(false);
@@ -186,6 +193,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const contactsRef = useRef<HTMLDivElement>(null);
   const [isContactsOpen, setIsContactsOpen] = useState(false);
   const [ampContacts, setAmpContacts] = useState<AmpContact[]>([]);
+  const [contactProfileIds, setContactProfileIds] = useState<
+    Record<string, string>
+  >({});
   const [contactsLoading, setContactsLoading] = useState(false);
   const [contactsSearch, setContactsSearch] = useState("");
   const contactsQuery = contactsSearch.trim().toLowerCase();
@@ -331,6 +341,27 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const handleViewProfile = () => {
     setIsProfileMenuOpen(false);
     setIsProfileViewOpen(true);
+  };
+
+  // Contacts with no linked ampOS account copy their email instead of opening
+  // a profile.
+  const copyContactEmail = async (email: string) => {
+    if (!email) return;
+    try {
+      await navigator.clipboard.writeText(email);
+      toast({
+        title: "Email copied.",
+        description: email,
+        variant: "success",
+        duration: 2000,
+      });
+    } catch {
+      toast({
+        title: "Could not copy email.",
+        description: email,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSettingsToggle = (e: React.MouseEvent) => {
@@ -1114,9 +1145,16 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                     setIsNotificationsOpen(false);
                     setContactsLoading(true);
                     setAmpContacts([]);
+                    setContactProfileIds({});
                     setContactsSearch("");
                     fetchAmpContacts()
-                      .then(setAmpContacts)
+                      .then((contacts) => {
+                        setAmpContacts(contacts);
+                        // Link names to ampOS profiles where one exists.
+                        fetchContactProfileIds(contacts)
+                          .then(setContactProfileIds)
+                          .catch(() => setContactProfileIds({}));
+                      })
                       .catch(() => setAmpContacts([]))
                       .finally(() => setContactsLoading(false));
                   }
@@ -1184,12 +1222,35 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                               className="hover:bg-neutral-50 dark:hover:bg-dark-200/50"
                             >
                               <td className="py-2 px-3 whitespace-nowrap text-neutral-900 dark:text-white">
-                                <a
-                                  href={`mailto:${c.email}`}
-                                  className="hover:underline"
-                                >
-                                  {c.name}
-                                </a>
+                                {contactProfileIds[c.id] ? (
+                                  <button
+                                    type="button"
+                                    title="View profile"
+                                    className="hover:underline"
+                                    onClick={() => {
+                                      setContactProfileUserId(
+                                        contactProfileIds[c.id],
+                                      );
+                                      setIsContactsOpen(false);
+                                    }}
+                                  >
+                                    {c.name}
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    title={
+                                      c.email
+                                        ? `Copy ${c.email}`
+                                        : "No email on file"
+                                    }
+                                    disabled={!c.email}
+                                    className="hover:underline disabled:cursor-default disabled:no-underline"
+                                    onClick={() => copyContactEmail(c.email)}
+                                  >
+                                    {c.name}
+                                  </button>
+                                )}
                               </td>
                               <td className="py-2 px-3 whitespace-nowrap">
                                 <a
@@ -1688,6 +1749,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
       <ProfileView
         isOpen={isProfileViewOpen}
         onClose={() => setIsProfileViewOpen(false)}
+      />
+
+      <ProfileView
+        isOpen={!!contactProfileUserId}
+        onClose={() => setContactProfileUserId(null)}
+        userId={contactProfileUserId ?? undefined}
       />
 
       <AboutPopup isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />

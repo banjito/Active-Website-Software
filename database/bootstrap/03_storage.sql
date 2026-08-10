@@ -1,7 +1,6 @@
 -- Storage buckets and their security policies, exported from the AMP
 -- production instance on 2026-07-14. Idempotent bucket creation.
 
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES ('community-media', 'community-media', true, NULL, NULL) ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES ('customer-assets', 'customer-assets', true, NULL, NULL) ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES ('customer-brand-assets', 'customer-brand-assets', true, NULL, NULL) ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES ('customer-reports', 'customer-reports', false, NULL, NULL) ON CONFLICT (id) DO NOTHING;

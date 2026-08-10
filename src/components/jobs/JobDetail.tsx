@@ -120,7 +120,7 @@ import {
   getQuickBooksProjectById,
 } from "../../services/quickbooksService";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { loadAuthorsForUserIds } from "@/lib/communityProfiles";
+import { loadAuthorsForUserIds } from "@/lib/userProfiles";
 import { companyConfig, employeeEmailRegex, BRAND_COLOR } from "@/lib/companyConfig";
 // TrackingSection is defined locally below
 

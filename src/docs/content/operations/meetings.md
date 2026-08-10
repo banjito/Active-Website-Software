@@ -58,5 +58,5 @@ The test: at the end of the discussion, is there something someone will do, by a
 
 ## Related
 
-- [Community board](/docs/operations/community-board): for announcements that do not need a meeting
+- [Announcements](/docs/hr/announcements): for notices that do not need a meeting
 - [Operations overview](/docs/operations/overview): the weekly rhythm

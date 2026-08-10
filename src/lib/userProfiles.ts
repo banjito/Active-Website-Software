@@ -1,5 +1,10 @@
 import { supabase } from '@/lib/supabase';
-import type { CommunityAuthor } from '@/lib/communityTypes';
+
+export interface ProfileAuthor {
+  id: string;
+  displayName: string;
+  avatarUrl?: string | null;
+}
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -10,9 +15,9 @@ export function isUuid(s: string): boolean {
 /**
  * Resolve display name + avatar for a set of auth user ids (profiles + RPC fallback).
  */
-export async function loadAuthorsForUserIds(userIds: string[]): Promise<Map<string, CommunityAuthor>> {
+export async function loadAuthorsForUserIds(userIds: string[]): Promise<Map<string, ProfileAuthor>> {
   const unique = [...new Set(userIds)].filter(isUuid);
-  const map = new Map<string, CommunityAuthor>();
+  const map = new Map<string, ProfileAuthor>();
 
   if (unique.length === 0) return map;
 
@@ -24,7 +29,7 @@ export async function loadAuthorsForUserIds(userIds: string[]): Promise<Map<stri
       .in('id', unique);
 
     if (profilesError) {
-      console.warn('community: profiles batch skipped', profilesError.message);
+      console.warn('profiles: batch skipped', profilesError.message);
     } else {
       for (const row of profiles || []) {
         const r = row as {
@@ -42,7 +47,7 @@ export async function loadAuthorsForUserIds(userIds: string[]): Promise<Map<stri
       }
     }
   } catch (e) {
-    console.warn('community: profiles batch error', e);
+    console.warn('profiles: batch error', e);
   }
 
   const missing = unique.filter((id) => !map.has(id));

@@ -20,6 +20,7 @@ import {
   BookOpen,
   BookMarked,
   Search,
+  Truck,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { useTheme } from "@/components/theme/theme-provider";
@@ -43,11 +44,11 @@ import {
 } from "@/services/ampContactsService";
 import { toast } from "@/components/ui/toast";
 import type { AmpContact } from "@/services/ampContactsService";
-import { CommunityBoardPopover } from "@/components/community/CommunityBoardPopover";
 import { QuickLogInteraction } from "@/components/sales/QuickLogInteraction";
 import { canLogInteractions } from "@/lib/roles";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { navigateFromShortcut } from "@/lib/shortcutNavigation";
+import { companyConfig } from "@/lib/companyConfig";
 import { cn } from "@/lib/utils";
 import { useSiteLogos } from "@/services/siteThemeService";
 
@@ -1123,12 +1124,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             )}
             <div
               className="relative flex h-10 w-10 items-center justify-center"
-              {...tooltipHandlers("Community Board")}
-            >
-              <CommunityBoardPopover />
-            </div>
-            <div
-              className="relative flex h-10 w-10 items-center justify-center"
               ref={contactsRef}
             >
               <button
@@ -1681,6 +1676,23 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                           <BookOpen className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                           Employee Handbook
                         </button>
+                        {companyConfig.vehicleAccidentFormUrl && (
+                          <button
+                            onClick={() => {
+                              setIsProfileMenuOpen(false);
+                              window.open(
+                                companyConfig.vehicleAccidentFormUrl,
+                                "_blank",
+                                "noopener,noreferrer",
+                              );
+                            }}
+                            className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50"
+                          >
+                            <Truck className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
+                            Report Vehicle Accident
+                          </button>
+                        )}
+                        <div className="border-t border-neutral-200 dark:border-dark-200" />
                         {canSeeDemoMode && (
                           <button
                             onClick={toggleDemoMode}

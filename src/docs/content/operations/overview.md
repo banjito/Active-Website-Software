@@ -15,7 +15,6 @@ Operations is what it takes to keep crews supplied and moving: buying things, tr
 | **Field equipment** | Test gear and the vehicles it lives in |
 | **Maintenance** | Service due, service done, service overdue |
 | **Meetings** | The weekly rhythm |
-| **Community board** | Internal notices |
 
 ## Why it connects to job profitability
 

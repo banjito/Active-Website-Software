@@ -27,7 +27,6 @@ import { SettingsSubmenu } from "./SettingsSubmenu";
 import { ProfileView } from "../profile/ProfileView";
 import { AboutPopup } from "./AboutPopup";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
-import { CommunityBoardPopover } from "@/components/community/CommunityBoardPopover";
 import { HeaderBar } from "./HeaderBar";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
@@ -842,7 +841,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2 print:hidden">
-            <CommunityBoardPopover triggerClassName="w-9 h-9 lg:w-10 lg:h-10" />
             <div className="relative" ref={profileMenuRef}>
               <Button
                 variant="ghost"

@@ -730,14 +730,6 @@ function App() {
                       </RequireAuth>
                     }
                   />
-                  <Route
-                    path="/community"
-                    element={
-                      <RequireAuth>
-                        <Navigate to="/portal" replace />
-                      </RequireAuth>
-                    }
-                  />
 
                   {/* === Custom Forms === */}
                   <Route

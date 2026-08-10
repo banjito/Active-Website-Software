@@ -38,7 +38,7 @@ Editor) and run, in this order:
    `psql -f 02_schema.sql "<connection-string>"`)
 4. `03_storage.sql` — storage buckets + file-access policies
 5. `04_cron.sql` — scheduled jobs (hourly chat cleanup, 6 PM daily review
-   email) + live-update subscriptions for the community board
+   email) + live-update subscriptions for report status badges
 
 ## After running
 

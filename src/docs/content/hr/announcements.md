@@ -40,7 +40,6 @@ The same targeting model is used for e-sign form assignment, so the mental model
 | Instead of an announcement | Use |
 |---|---|
 | Something needing signed acknowledgment | [Compliance](/docs/hr/compliance) |
-| Company news, recognition, general notices | [Community board](/docs/operations/community-board) |
 | Something about one job | [Job notes](/docs/jobs/files-and-documents) |
 | Something urgent and safety-critical | A phone call. Then announce it. |
 
@@ -70,4 +69,3 @@ If you are correcting something material, post a correction rather than quietly 
 ## Related
 
 - [Compliance](/docs/hr/compliance): when you need proof of receipt
-- [Community board](/docs/operations/community-board): the lighter-weight alternative

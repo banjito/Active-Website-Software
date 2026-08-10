@@ -92,6 +92,16 @@ export const companyConfig = {
    * supply their own.
    */
   showHrHandbook: env.VITE_COMPANY_SHOW_HR_HANDBOOK !== "false",
+
+  /**
+   * Form employees open after a vehicle accident, linked from the profile
+   * menu. AMP's is a Google Form; buyer instances must point this at their
+   * own, or set it empty to hide the menu item entirely.
+   */
+  vehicleAccidentFormUrl: str(
+    env.VITE_COMPANY_VEHICLE_ACCIDENT_FORM_URL,
+    "https://docs.google.com/forms/d/e/1FAIpQLSeOJiwR6ePdA73w8vt1R-jzARoBo-6Qf4H7XWb05p_hEiz43A/viewform?usp=dialog",
+  ),
 } as const;
 
 /** Brand hex values for JS contexts where CSS variables can't be used

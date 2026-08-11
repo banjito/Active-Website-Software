@@ -1,4 +1,11 @@
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+  lazy,
+  Suspense,
+} from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
@@ -40,6 +47,7 @@ import {
   Filter,
   Check,
   ArrowDownWideNarrow,
+  LifeBuoy,
 } from "lucide-react";
 import { supabase, isConnectionError } from "../../lib/supabase";
 import { useAuth } from "../../lib/AuthContext";
@@ -97,6 +105,14 @@ import JobAssetsTab from "@/components/assets/JobAssetsTab";
 import ProjectTrackerTab from "@/components/tracker/ProjectTrackerTab";
 import AfterActionReports from "./AfterActionReports";
 import { pdfExportService } from "../../services/pdfExportService";
+
+// The MOP panel carries the procedure Markdown and the docs stylesheet with it.
+// Lazy so none of that lands in the main bundle for the crews who never open it.
+const ProcedureDrawer = lazy(() =>
+  import("@/docs/components/ProcedureDrawer").then((m) => ({
+    default: m.ProcedureDrawer,
+  })),
+);
 
 import { JobNotifications } from "./JobNotifications";
 import { AssetCommentsDialog } from "@/components/ui/AssetCommentsDialog";
@@ -522,6 +538,8 @@ export default function JobDetail() {
   >(reportsListKey && `${reportsListKey}:sortDir`, "desc");
   const [isAssetFilterMenuOpen, setIsAssetFilterMenuOpen] = useState(false);
   const [isAssetSortMenuOpen, setIsAssetSortMenuOpen] = useState(false);
+  // MOP library panel, opened from the life ring in the Reports toolbar.
+  const [isMopDrawerOpen, setIsMopDrawerOpen] = useState(false);
   const assetFilterMenuRef = useRef<HTMLDivElement>(null);
   const assetSortMenuRef = useRef<HTMLDivElement>(null);
   const [assetStatusFilter, setAssetStatusFilter] = usePersistentState<
@@ -10606,6 +10624,15 @@ export default function JobDetail() {
                           </div>
                         )}
                           </div>
+                          <button
+                            type="button"
+                            onClick={() => setIsMopDrawerOpen(true)}
+                            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-none text-neutral-700 hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:text-white dark:hover:text-brand"
+                            aria-label="Open the MOP library"
+                            title="Methods of Procedure"
+                          >
+                            <LifeBuoy className="h-5 w-5" />
+                          </button>
                           <div className="relative shrink-0" ref={assetSortMenuRef}>
                             <button
                               type="button"
@@ -13094,6 +13121,16 @@ export default function JobDetail() {
         assetId={selectedAssetForComments?.id || ""}
         assetName={selectedAssetForComments?.name || ""}
       />
+
+      {/* MOP library. Mounted only once opened so the chunk is fetched on demand. */}
+      {isMopDrawerOpen && (
+        <Suspense fallback={null}>
+          <ProcedureDrawer
+            open={isMopDrawerOpen}
+            onClose={() => setIsMopDrawerOpen(false)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

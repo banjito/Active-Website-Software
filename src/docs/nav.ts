@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   Plug,
   BookMarked,
+  LifeBuoy,
   type LucideIcon,
 } from "lucide-react";
 
@@ -144,6 +145,44 @@ export const docsSections: DocsSection[] = [
       {
         title: "Reference",
         items: [{ title: "Report catalog", slug: "reports/catalog" }],
+      },
+    ],
+  },
+  {
+    slug: "procedures",
+    title: "Methods of Procedure",
+    description:
+      "Method of Procedure documents for NETA acceptance testing, written for the crew in the field.",
+    icon: LifeBuoy,
+    groups: [
+      {
+        title: "Using MOPs",
+        items: [{ title: "MOP library", slug: "procedures/overview" }],
+      },
+      {
+        title: "Switching and protection",
+        items: [
+          { title: "Transfer switch", slug: "procedures/transfer-switch" },
+          { title: "Transfer control panel", slug: "procedures/transfer-control-panel" },
+          {
+            title: "Low-voltage circuit breaker",
+            slug: "procedures/low-voltage-circuit-breaker",
+          },
+          { title: "Low-voltage switch", slug: "procedures/low-voltage-switch" },
+          { title: "Switchboard", slug: "procedures/switchboard" },
+        ],
+      },
+      {
+        title: "Power equipment",
+        items: [
+          { title: "Transformer", slug: "procedures/transformer" },
+          { title: "Medium-voltage cable", slug: "procedures/medium-voltage-cable" },
+          {
+            title: "Uninterruptible power supply",
+            slug: "procedures/uninterruptible-power-supply",
+          },
+          { title: "Generator", slug: "procedures/generator" },
+        ],
       },
     ],
   },

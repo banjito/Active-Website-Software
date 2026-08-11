@@ -7,15 +7,9 @@
  */
 
 import { extractHeadings, toPlainText, type DocsHeading } from "./markdown";
+import { parseFrontmatter, type DocsFrontmatter } from "./frontmatter";
 
-export interface DocsFrontmatter {
-  title: string;
-  description: string;
-  /** Optional "Draft" / "Beta" style pill shown next to the sidebar entry. */
-  badge?: string;
-  /** Extra search terms that don't appear in the prose. */
-  keywords?: string[];
-}
+export type { DocsFrontmatter };
 
 export interface DocsPage extends DocsFrontmatter {
   /** "jobs/creating-a-job" */
@@ -27,45 +21,6 @@ export interface DocsPage extends DocsFrontmatter {
   headings: DocsHeading[];
   /** Flattened prose, used by the search index. */
   plainText: string;
-}
-
-/**
- * Parse a `---` delimited YAML-ish frontmatter block.
- * Only the handful of scalar/list keys we actually use are supported.
- */
-function parseFrontmatter(raw: string): { data: Partial<DocsFrontmatter>; body: string } {
-  const match = /^---\s*\n([\s\S]*?)\n---\s*\n?/.exec(raw);
-  if (!match) return { data: {}, body: raw };
-
-  const data: Record<string, unknown> = {};
-  for (const line of match[1].split("\n")) {
-    const pair = /^(\w+):\s*(.*)$/.exec(line.trim());
-    if (!pair) continue;
-
-    const key = pair[1];
-    let value: string | string[] = pair[2].trim();
-
-    // Strip matching surrounding quotes.
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-
-    // Inline list: keywords: [a, b, c]
-    if (typeof value === "string" && value.startsWith("[") && value.endsWith("]")) {
-      value = value
-        .slice(1, -1)
-        .split(",")
-        .map((entry) => entry.trim().replace(/^["']|["']$/g, ""))
-        .filter(Boolean);
-    }
-
-    data[key] = value;
-  }
-
-  return { data: data as Partial<DocsFrontmatter>, body: raw.slice(match[0].length) };
 }
 
 const modules = import.meta.glob<string>("../content/**/*.md", {

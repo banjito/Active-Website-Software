@@ -117,6 +117,15 @@ New Netlify site from this repo, build command `npm run build`, publish
 - `VITE_COMPANY_SHOW_HR_HANDBOOK=false` (handbook text is AMP's)
 - `VITE_COMPANY_OFFLINE_RELEASE_BASE` (only if they get the offline app)
 
+**Employee Links** (profile menu → Employee Links; defaults are AMP's vendor
+accounts. Set each to their own, or to an empty string to hide that row.)
+- `VITE_COMPANY_HR_SUPPORT_EMAIL` (copied to the clipboard, not a link)
+- `VITE_COMPANY_PAYCHECK_URL`, `VITE_COMPANY_TRAVEL_URL`,
+  `VITE_COMPANY_BENEFITS_URL`, `VITE_COMPANY_FLEET_URL`
+- `VITE_COMPANY_EMPLOYEE_ASSISTANCE_FORM_URL` and
+  `VITE_COMPANY_EMPLOYEE_ASSISTANCE_LABEL` (AMP's is "Hope AMPlified")
+- `VITE_COMPANY_VEHICLE_ACCIDENT_FORM_URL`
+
 Swap the logo files in `public/` (or skip — admins can upload logos on the
 Website Theme page after launch; the favicon still comes from `public/`).
 

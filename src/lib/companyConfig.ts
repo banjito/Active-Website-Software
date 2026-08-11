@@ -15,6 +15,14 @@ const env = import.meta.env;
 const str = (value: unknown, fallback: string): string =>
   typeof value === "string" && value ? value : fallback;
 
+/**
+ * Like `str`, but for values whose UI hides itself when blank: an env var set
+ * to an empty string means "hide", while an unset one (undefined) still falls
+ * back to our default.
+ */
+const optionalStr = (value: unknown, fallback: string): string =>
+  typeof value === "string" ? value : fallback;
+
 /** Split a comma-separated env var into a trimmed string array. */
 const list = (value: unknown, fallback: string[]): string[] =>
   typeof value === "string" && value
@@ -94,13 +102,49 @@ export const companyConfig = {
   showHrHandbook: env.VITE_COMPANY_SHOW_HR_HANDBOOK !== "false",
 
   /**
-   * Form employees open after a vehicle accident, linked from the profile
-   * menu. AMP's is a Google Form; buyer instances must point this at their
-   * own, or set it empty to hide the menu item entirely.
+   * Form employees open after a vehicle accident, listed under Employee Links.
+   * AMP's is a Google Form; buyer instances must point this at their own, or
+   * set it empty to hide the menu item entirely.
    */
-  vehicleAccidentFormUrl: str(
+  vehicleAccidentFormUrl: optionalStr(
     env.VITE_COMPANY_VEHICLE_ACCIDENT_FORM_URL,
     "https://docs.google.com/forms/d/e/1FAIpQLSeOJiwR6ePdA73w8vt1R-jzARoBo-6Qf4H7XWb05p_hEiz43A/viewform?usp=dialog",
+  ),
+
+  /**
+   * Employee-portal destinations listed under "Employee Links" in the profile
+   * menu. Each is AMP's vendor/tenant URL; buyer instances point these at their
+   * own, or set one empty to hide that item. HR support copies an address to
+   * the clipboard instead of opening a link.
+   */
+  hrSupportEmail: optionalStr(
+    env.VITE_COMPANY_HR_SUPPORT_EMAIL,
+    "dionne.tubby@ampqes.com",
+  ),
+  paycheckUrl: optionalStr(
+    env.VITE_COMPANY_PAYCHECK_URL,
+    "https://workforce.intuit.com/app/payroll-employee-portal-ui/portal/paychecks",
+  ),
+  travelUrl: optionalStr(
+    env.VITE_COMPANY_TRAVEL_URL,
+    "https://members.engine.com/",
+  ),
+  benefitsUrl: optionalStr(
+    env.VITE_COMPANY_BENEFITS_URL,
+    "https://www.employeenavigator.com/employee/Home",
+  ),
+  fleetUrl: optionalStr(
+    env.VITE_COMPANY_FLEET_URL,
+    "https://secure.fleetio.com/login",
+  ),
+  /** Anonymous employee-assistance form ("Hope AMPlified" at AMP). */
+  employeeAssistanceFormUrl: optionalStr(
+    env.VITE_COMPANY_EMPLOYEE_ASSISTANCE_FORM_URL,
+    "https://docs.google.com/forms/d/e/1FAIpQLSeefBx22PdWpqz6iCYjlC6K8bZwoRpiwSJfwo2WxNvrYC-iCw/viewform?usp=header",
+  ),
+  employeeAssistanceLabel: str(
+    env.VITE_COMPANY_EMPLOYEE_ASSISTANCE_LABEL,
+    "Hope AMPlified",
   ),
 } as const;
 

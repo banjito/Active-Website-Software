@@ -20,13 +20,14 @@ import {
   BookOpen,
   BookMarked,
   Search,
-  Truck,
+  Link2,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { useTheme } from "@/components/theme/theme-provider";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { useDivision } from "@/App";
 import { SettingsSubmenu } from "@/components/ui/SettingsSubmenu";
+import { EmployeeLinksSubmenu } from "@/components/ui/EmployeeLinksSubmenu";
 import { ProfileView } from "@/components/profile/ProfileView";
 import { AboutPopup } from "@/components/ui/AboutPopup";
 import { ShortcutService, Shortcut } from "@/services/ShortcutService";
@@ -48,7 +49,6 @@ import { QuickLogInteraction } from "@/components/sales/QuickLogInteraction";
 import { canLogInteractions } from "@/lib/roles";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { navigateFromShortcut } from "@/lib/shortcutNavigation";
-import { companyConfig } from "@/lib/companyConfig";
 import { cn } from "@/lib/utils";
 import { useSiteLogos } from "@/services/siteThemeService";
 
@@ -175,6 +175,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   >([]);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isSettingsSubmenuOpen, setIsSettingsSubmenuOpen] = useState(false);
+  const [isEmployeeLinksSubmenuOpen, setIsEmployeeLinksSubmenuOpen] =
+    useState(false);
   const [isProfileViewOpen, setIsProfileViewOpen] = useState(false);
   const [contactProfileUserId, setContactProfileUserId] = useState<
     string | null
@@ -294,6 +296,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
       ) {
         setIsProfileMenuOpen(false);
         setIsSettingsSubmenuOpen(false);
+        setIsEmployeeLinksSubmenuOpen(false);
       }
       if (
         notificationsRef.current &&
@@ -367,12 +370,21 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
 
   const handleSettingsToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
+    setIsEmployeeLinksSubmenuOpen(false);
     setIsSettingsSubmenuOpen((open) => !open);
+  };
+
+  // Both side panels anchor to the same spot, so opening one closes the other.
+  const handleEmployeeLinksToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsSettingsSubmenuOpen(false);
+    setIsEmployeeLinksSubmenuOpen((open) => !open);
   };
 
   const handleAbout = () => {
     setIsProfileMenuOpen(false);
     setIsSettingsSubmenuOpen(false);
+    setIsEmployeeLinksSubmenuOpen(false);
     setIsAboutOpen(true);
   };
 
@@ -1594,7 +1606,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 onClick={() => {
                   const next = !isProfileMenuOpen;
                   setIsProfileMenuOpen(next);
-                  if (!next) setIsSettingsSubmenuOpen(false);
+                  if (!next) {
+                    setIsSettingsSubmenuOpen(false);
+                    setIsEmployeeLinksSubmenuOpen(false);
+                  }
                 }}
               >
                 {user?.user_metadata?.profileImage ? (
@@ -1620,6 +1635,16 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                             id: user?.id,
                             email: user?.email,
                             user_metadata: user?.user_metadata,
+                          }}
+                        />
+                      </div>
+                    )}
+                    {isEmployeeLinksSubmenuOpen && (
+                      <div className="absolute right-full top-0 mr-2">
+                        <EmployeeLinksSubmenu
+                          onClose={() => {
+                            setIsEmployeeLinksSubmenuOpen(false);
+                            setIsProfileMenuOpen(false);
                           }}
                         />
                       </div>
@@ -1676,22 +1701,19 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                           <BookOpen className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                           Employee Handbook
                         </button>
-                        {companyConfig.vehicleAccidentFormUrl && (
-                          <button
-                            onClick={() => {
-                              setIsProfileMenuOpen(false);
-                              window.open(
-                                companyConfig.vehicleAccidentFormUrl,
-                                "_blank",
-                                "noopener,noreferrer",
-                              );
-                            }}
-                            className="flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50"
-                          >
-                            <Truck className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
-                            Report Vehicle Accident
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={handleEmployeeLinksToggle}
+                          className={`flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50 ${
+                            isEmployeeLinksSubmenuOpen
+                              ? "bg-neutral-100 dark:bg-dark-50"
+                              : ""
+                          }`}
+                        >
+                          <Link2 className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
+                          Employee Links
+                          <ChevronLeft className="ml-auto h-4 w-4 shrink-0 text-neutral-400" />
+                        </button>
                         <div className="border-t border-neutral-200 dark:border-dark-200" />
                         {canSeeDemoMode && (
                           <button

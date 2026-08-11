@@ -20,10 +20,12 @@ import {
   CalendarDays,
   Wrench,
   Building2,
+  Link2,
 } from "lucide-react";
 import { Button } from "./Button";
 import { ThemeToggle } from "../theme/theme-toggle";
 import { SettingsSubmenu } from "./SettingsSubmenu";
+import { EmployeeLinksSubmenu } from "./EmployeeLinksSubmenu";
 import { ProfileView } from "../profile/ProfileView";
 import { AboutPopup } from "./AboutPopup";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
@@ -61,6 +63,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isSettingsSubmenuOpen, setIsSettingsSubmenuOpen] = useState(false);
+  const [isEmployeeLinksSubmenuOpen, setIsEmployeeLinksSubmenuOpen] =
+    useState(false);
   const [isProfileViewOpen, setIsProfileViewOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -422,6 +426,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       ) {
         setIsProfileMenuOpen(false);
         setIsSettingsSubmenuOpen(false);
+        setIsEmployeeLinksSubmenuOpen(false);
       }
       // Close mobile sidebar when clicking outside
       if (
@@ -464,12 +469,21 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const handleSettingsToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
+    setIsEmployeeLinksSubmenuOpen(false);
     setIsSettingsSubmenuOpen((open) => !open);
+  };
+
+  // Both side panels anchor to the same spot, so opening one closes the other.
+  const handleEmployeeLinksToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsSettingsSubmenuOpen(false);
+    setIsEmployeeLinksSubmenuOpen((open) => !open);
   };
 
   const handleAbout = () => {
     setIsProfileMenuOpen(false);
     setIsSettingsSubmenuOpen(false);
+    setIsEmployeeLinksSubmenuOpen(false);
     setIsAboutOpen(true);
   };
 
@@ -879,6 +893,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                         />
                       </div>
                     )}
+                    {isEmployeeLinksSubmenuOpen && (
+                      <div className="absolute right-full top-0 mr-2">
+                        <EmployeeLinksSubmenu
+                          onClose={() => {
+                            setIsEmployeeLinksSubmenuOpen(false);
+                            setIsProfileMenuOpen(false);
+                          }}
+                        />
+                      </div>
+                    )}
                     <div className="rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="py-1">
                         <div className="px-4 py-2 border-b border-neutral-200 dark:border-dark-200">
@@ -917,6 +941,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                         >
                           <Settings className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
                           Settings
+                          <ChevronLeft className="ml-auto h-4 w-4 text-neutral-400 shrink-0" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleEmployeeLinksToggle}
+                          className={`flex items-center w-full px-4 py-2 text-sm text-neutral-700 dark:text-brand hover:bg-neutral-100 dark:hover:bg-dark-50 ${
+                            isEmployeeLinksSubmenuOpen
+                              ? "bg-neutral-100 dark:bg-dark-50"
+                              : ""
+                          }`}
+                        >
+                          <Link2 className="mr-3 h-5 w-5 text-neutral-400 dark:text-brand" />
+                          Employee Links
                           <ChevronLeft className="ml-auto h-4 w-4 text-neutral-400 shrink-0" />
                         </button>
                         <button

@@ -100,6 +100,8 @@ import CustomFormTemplates from "./pages/CustomFormTemplates";
 import CustomFormPreview from "./pages/CustomFormPreview";
 import EULA from "./pages/EULA";
 import Privacy from "./pages/Privacy";
+import OilResults from "./pages/OilResults";
+import OilReportView from "./pages/OilReportView";
 import EstimatingPresetsPage from "./pages/EstimatingPresetsPage";
 import { HrDashboard } from "./pages/HrDashboard";
 import { JobRequisitions } from "./pages/hr/recruiting/JobRequisitions";
@@ -840,6 +842,28 @@ function App() {
                       <RequireAuth>
                         <Layout>
                           <Vendors />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+
+                  {/* === Oil Analysis Conversion === */}
+                  <Route
+                    path="/oil-results"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <OilResults />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/oil-results/:id"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <OilReportView />
                         </Layout>
                       </RequireAuth>
                     }

@@ -43,10 +43,18 @@ export default defineConfig(({ mode }) => {
     exclude: ['lucide-react'],
   },
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "pdfjs-dist": path.resolve(__dirname, "./node_modules/pdfjs-dist/legacy/build/pdf.mjs")
-    }
+    alias: [
+      { find: "@", replacement: path.resolve(__dirname, "./src") },
+      // Anchored so it matches ONLY the bare specifier. A plain string alias
+      // matches by prefix, which rewrote subpath imports like
+      // "pdfjs-dist/legacy/build/pdf.worker.min.mjs" into a bogus
+      // ".../pdf.mjs/legacy/build/pdf.worker.min.mjs" and failed to resolve.
+      // Bare imports still get the legacy build; subpaths resolve in-package.
+      {
+        find: /^pdfjs-dist$/,
+        replacement: path.resolve(__dirname, "./node_modules/pdfjs-dist/legacy/build/pdf.mjs")
+      }
+    ]
   },
   build: {
     rollupOptions: {

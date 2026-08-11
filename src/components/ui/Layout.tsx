@@ -21,6 +21,7 @@ import {
   Wrench,
   Building2,
   Link2,
+  Droplet,
 } from "lucide-react";
 import { Button } from "./Button";
 import { ThemeToggle } from "../theme/theme-toggle";
@@ -707,6 +708,24 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </Button>
               </Link>
             )}
+            {/* Oil Reports - shown wherever Scheduling is, not gated to the
+                field divisions: the converter writes to one shared table. */}
+            <Link
+              to="/oil-results"
+              onClick={() => setIsMobileSidebarOpen(false)}
+            >
+                <Button
+                  variant="ghost"
+                  leftIcon={<Droplet className="h-4 w-4" />}
+                  className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                    location.pathname.startsWith("/oil-results")
+                      ? "bg-black/5 dark:bg-dark-50"
+                      : ""
+                  }`}
+                >
+                Oil Reports
+              </Button>
+            </Link>
           </>
         )}
         {/* Custom Report Builder - Engineering portal only */}

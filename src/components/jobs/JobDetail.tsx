@@ -48,6 +48,9 @@ import {
   Check,
   ArrowDownWideNarrow,
   LifeBuoy,
+  FileUp,
+  CloudUpload,
+  Layers,
 } from "lucide-react";
 import { supabase, isConnectionError } from "../../lib/supabase";
 import { useAuth } from "../../lib/AuthContext";
@@ -3795,7 +3798,7 @@ export default function JobDetail() {
     if (!pdfReportFile || !pdfReportName.trim()) {
       toast({
         title: "Error",
-        description: "Please provide a PDF file and asset name",
+        description: "Please provide a file and a name",
         variant: "destructive",
       });
       return;
@@ -10398,12 +10401,15 @@ export default function JobDetail() {
                               <button
                                 className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                                 onClick={() => {
-                                  setShowUploadDialog(true);
+                                  // Single upload path: the former "Upload PDF
+                                  // Report" dialog, which also captures a name
+                                  // and substation.
+                                  setShowPdfReportUploadDialog(true);
                                   setIsDropdownOpen(false);
                                 }}
                               >
                                 <div className="flex items-center">
-                                  <Upload className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                  <FileUp className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
                                   Upload File
                                 </div>
                               </button>
@@ -10416,8 +10422,8 @@ export default function JobDetail() {
                                 }}
                               >
                                 <div className="flex items-center">
-                                  <Download className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                  Upload Report
+                                  <CloudUpload className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                  Upload Offline Report
                                 </div>
                               </button>
 
@@ -10429,21 +10435,8 @@ export default function JobDetail() {
                                 }}
                               >
                                 <div className="flex items-center">
-                                  <Upload className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                  Batch Upload Reports
-                                </div>
-                              </button>
-
-                              <button
-                                className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                onClick={() => {
-                                  setShowPdfReportUploadDialog(true);
-                                  setIsDropdownOpen(false);
-                                }}
-                              >
-                                <div className="flex items-center">
-                                  <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                  Upload PDF Report
+                                  <Layers className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
+                                  Batch Upload Offline Reports
                                 </div>
                               </button>
 
@@ -12175,17 +12168,17 @@ export default function JobDetail() {
       >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Upload PDF Report</DialogTitle>
+            <DialogTitle>Upload File</DialogTitle>
             <DialogDescription>
-              Upload a PDF report from test set / manufacturer's software to be
-              reviewed and approved.
+              Attach a file to this job — a PDF report from a test set or
+              manufacturer's software, or any supporting document.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <label htmlFor="pdf-report-name" className="text-sm font-medium">
-                Report Name / Identifier *
+                Name / Identifier *
               </label>
               <Input
                 id="pdf-report-name"
@@ -12215,12 +12208,13 @@ export default function JobDetail() {
 
             <div className="space-y-2">
               <label htmlFor="pdf-report-file" className="text-sm font-medium">
-                PDF File *
+                File *
               </label>
+              {/* No accept filter: this replaced the old generic "Upload File"
+                  item, which took any document type. */}
               <Input
                 id="pdf-report-file"
                 type="file"
-                accept=".pdf,application/pdf"
                 onChange={handlePdfReportFileChange}
               />
               {pdfReportFile && (
@@ -12266,7 +12260,7 @@ export default function JobDetail() {
                 isUploadingPdfReport || !pdfReportFile || !pdfReportName.trim()
               }
             >
-              {isUploadingPdfReport ? "Uploading..." : "Upload Report"}
+              {isUploadingPdfReport ? "Uploading..." : "Upload File"}
             </Button>
           </DialogFooter>
         </DialogContent>

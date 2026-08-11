@@ -84,7 +84,10 @@ export const companyConfig = {
   brandColorDark: str(env.VITE_COMPANY_BRAND_COLOR_DARK, "#e55611"),
 
   /** Logo/favicon paths (files live in /public; swap files per instance). */
-  logoPath: str(env.VITE_COMPANY_LOGO, "/ampOS-logo.png"),
+  logoPath: str(env.VITE_COMPANY_LOGO, "/ampOS_full_logo.svg"),
+  /** Logo printed on customer-facing documents. The in-app logo is the ampOS
+   *  product mark; deliverables carry the company mark instead. */
+  reportLogoPath: str(env.VITE_COMPANY_REPORT_LOGO, "/AMP-vector-filled.svg"),
   faviconPath: str(env.VITE_COMPANY_FAVICON, "/ampOS-favicon.svg"),
   /** Wordmark in the /docs header. Reads "<product> docs", so it replaces the
    *  logo and the wordmark text together. Dark, so it is inverted in dark mode. */

@@ -165,10 +165,47 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: 0 },
         },
+        // Oil report conversion wireframe (src/components/oil/ConversionProgress)
+        "wire-draw": {
+          from: { strokeDashoffset: "var(--wire-len)" },
+          to: { strokeDashoffset: "0" },
+        },
+        "wire-scan": {
+          "0%": { transform: "translateY(-8%)", opacity: "0" },
+          "15%": { opacity: "1" },
+          "85%": { opacity: "1" },
+          "100%": { transform: "translateY(108%)", opacity: "0" },
+        },
+        "wire-fill": {
+          "0%, 100%": { opacity: "0.25" },
+          "50%": { opacity: "0.7" },
+        },
+        // Oil drop zone surface (src/pages/OilResults). The wave SVGs are
+        // twice as wide as the zone and tile every half-width, so sliding
+        // one half-width loops seamlessly.
+        "oil-drift": {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(-50%)" },
+        },
+        "oil-swell": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(0.375rem)" },
+        },
+        "oil-bubble": {
+          "0%": { transform: "translateY(0) scale(0.5)", opacity: "0" },
+          "25%": { opacity: "0.8" },
+          "100%": { transform: "translateY(-3.5rem) scale(1)", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "wire-draw": "wire-draw 1.1s ease-out forwards",
+        "wire-scan": "wire-scan 2.4s ease-in-out infinite",
+        "wire-fill": "wire-fill 1.8s ease-in-out infinite",
+        "oil-drift": "oil-drift 3.2s linear infinite",
+        "oil-swell": "oil-swell 3.6s ease-in-out infinite",
+        "oil-bubble": "oil-bubble 2.6s ease-in infinite",
       },
     },
   },

@@ -64,6 +64,20 @@ The system enforces this. If you wrote the report, the approve button will not w
 On a small crew this can mean waiting for someone. That wait is the feature. The alternative is a report going to a customer that exactly one person ever looked at.
 :::
 
+## Moving a report to a different job
+
+When a site runs two projects at once, reports get filed under the wrong one. Reviewers can move them instead of retyping them.
+
+On the job's Reports tab, tick the reports, then click **Move to Job** and pick the destination. Jobs at the same site are marked `Same site`, since those are almost always the ones involved.
+
+Nothing is copied. The same report moves across with every reading, photo, comment, approval and equipment link intact, and its substation stays what it was.
+
+Each move is logged with who did it and the reason you type, so the question "why is this on the other project now?" has an answer later.
+
+::: note
+Only report reviewers see this button. It is the same authority as approving, because moving a report changes which customer's package it lands in.
+:::
+
 ## The daily review email
 
 Every afternoon a summary goes out listing reports sitting in `Ready for review`. It keeps reports from aging quietly while a deliverable deadline approaches.

@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/lib/AuthContext";
+import { useSubstationFolders } from "@/hooks/useSubstationFolders";
+import { AddFolderButton } from "@/components/folders/FolderControls";
 import { usePermissions } from "@/hooks/usePermissions";
 import { fetchSite } from "@/services/sitesService";
 import {
@@ -48,6 +50,9 @@ export default function SiteDetailPage() {
     ["Admin", "Super Admin", "Office Admin", "Manager", "NETA Technician"].includes(
       role as string,
     );
+
+  // Folders made here belong to the facility and are inherited by every job at it.
+  const substationFolders = useSubstationFolders({ siteId });
 
   const [site, setSite] = useState<Site | null>(null);
   const [assets, setAssets] = useState<EquipmentAssetWithCounts[]>([]);
@@ -183,6 +188,7 @@ export default function SiteDetailPage() {
           <EquipmentAssetsTable
             assets={assets}
             canEdit={canEdit}
+            foldersApi={substationFolders}
             storageKey={`site-assets:${siteId}`}
             onEdit={setEditingAsset}
             onDuplicate={setDuplicating}
@@ -194,6 +200,13 @@ export default function SiteDetailPage() {
             actions={
               canEdit && (
                 <>
+                  {substationFolders.available && (
+                    <AddFolderButton
+                      // Worth being explicit: this one shows up on every job here.
+                      scopeLabel="this site, so every job at it will see the folder"
+                      onCreate={(name) => substationFolders.addFolder(name)}
+                    />
+                  )}
                   <Button
                     variant="outline"
                     onClick={() => setImporting(true)}

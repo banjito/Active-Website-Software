@@ -43,6 +43,23 @@ export interface ReportAsset {
 }
 
 /**
+ * One substation's folder placement on one job. Keyed by the normalised substation name,
+ * because a substation isn't an entity in ampOS — it's a label on the report.
+ */
+export interface SubstationFolderRow {
+  job_id: string;
+  substation_key: string;
+  folder_id: string;
+  folder_name: string;
+  folder_sort: number;
+}
+
+/** Must match substationKey() in the staff app (src/utils/substationFolders.ts). */
+export function substationKey(label: string): string {
+  return label.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+/**
  * A "Report Packet" — the customer-facing view of a delivered neta_ops.deliverables
  * row. `report_asset_ids` are the asset ids bundled into the packet; the portal
  * resolves each one against the customer's own report-assets, so a packet never
@@ -276,6 +293,25 @@ export async function getReportAssetsForJob(
 ): Promise<ReportAsset[]> {
   const all = await getReportAssets();
   return all.filter((r) => r.job_id === jobId);
+}
+
+/**
+ * Which folder each substation sits in, mirroring the staff app's grouping.
+ * Backed by the common.customer_substation_folders() SECURITY DEFINER function.
+ *
+ * Returns an empty list when the instance hasn't run create_substation_folders.sql, so a
+ * portal deployed ahead of the migration just keeps grouping by substation alone.
+ */
+export async function getSubstationFolders(): Promise<SubstationFolderRow[]> {
+  const { data, error } = await supabase
+    .schema("common")
+    .rpc("customer_substation_folders");
+  // 42883 = function doesn't exist on this instance yet. Not worth an error screen over.
+  if (error) {
+    if (error.code === "42883" || error.code === "PGRST202") return [];
+    throw error;
+  }
+  return (data ?? []) as SubstationFolderRow[];
 }
 
 /**

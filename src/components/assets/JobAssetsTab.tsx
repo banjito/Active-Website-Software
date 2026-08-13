@@ -7,6 +7,8 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { toast } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
+import { useSubstationFolders } from "@/hooks/useSubstationFolders";
+import { AddFolderButton } from "@/components/folders/FolderControls";
 import { usePermissions } from "@/hooks/usePermissions";
 import { fetchSites, type SiteWithCounts } from "@/services/sitesService";
 import {
@@ -129,6 +131,10 @@ export default function JobAssetsTab({
   }, [reportAssets]);
 
   const site = useMemo(() => sites.find((s) => s.id === siteId) ?? null, [sites, siteId]);
+
+  // Folders are the job's, but a site's folders are inherited on top — same resolution the
+  // Reports tab uses, so a substation filed on one tab is filed on the other.
+  const substationFolders = useSubstationFolders({ jobId, siteId });
 
   useEffect(() => {
     fetchSites()
@@ -424,6 +430,7 @@ export default function JobAssetsTab({
       <EquipmentAssetsTable
         assets={assets}
         canEdit={canEdit}
+        foldersApi={substationFolders}
         storageKey={`job-assets:${jobId}`}
         onEdit={setEditingAsset}
         onDuplicate={setDuplicating}
@@ -448,6 +455,12 @@ export default function JobAssetsTab({
         actions={
           canEdit && (
             <>
+              {substationFolders.available && (
+                <AddFolderButton
+                  scopeLabel="this job"
+                  onCreate={(name) => substationFolders.addFolder(name)}
+                />
+              )}
               {adoptable > 0 && (
                 <Button
                   variant="outline"

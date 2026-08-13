@@ -2,6 +2,7 @@ import React, {
   useEffect,
   useState,
   useMemo,
+  useCallback,
   useRef,
   lazy,
   Suspense,
@@ -51,10 +52,13 @@ import {
   FileUp,
   CloudUpload,
   Layers,
+  ArrowRightLeft,
+  FolderPlus,
 } from "lucide-react";
+import { createPortal } from "react-dom";
 import { supabase, isConnectionError } from "../../lib/supabase";
 import { useAuth } from "../../lib/AuthContext";
-import { isSuperUser } from "../../lib/roles";
+import { isSuperUser, canReviewReports } from "../../lib/roles";
 import { useDemoMode } from "../../lib/DemoModeContext";
 import { useJobDetails } from "../../lib/hooks";
 import { formatStatusLabel } from "@/utils/formatters";
@@ -62,6 +66,8 @@ import { usePersistentState } from "@/hooks/usePersistentState";
 import { format } from "date-fns";
 import { Button } from "../ui/Button";
 import ChangeOrdersSection from "./ChangeOrdersSection";
+import MoveReportsDialog from "./MoveReportsDialog";
+import type { MovedReport, MoveTargetJob } from "../../services/reportMoveService";
 import type { ChangeOrderSummary } from "../../services/changeOrderService";
 import { reportImportService } from "../../services/reportImport";
 import { ShortcutService } from "../../services/ShortcutService";
@@ -129,6 +135,25 @@ import {
   compareAlphanumericLabels,
   compareLinkedAssetFolderLabels,
 } from "../../utils/sortUtils";
+import {
+  packUnitsIntoPages,
+  flattenFolderRows,
+  flattenFolderTree,
+} from "@/utils/substationFolders";
+import { InnerFolderRow } from "@/components/folders/InnerFolderRow";
+import { useSubstationFolders } from "@/hooks/useSubstationFolders";
+import {
+  SubstationFolderBoard,
+  SubstationDragHandle,
+  ReportDragHandle,
+  DroppableInnerFolderRow,
+} from "@/components/folders/SubstationFolderBoard";
+import {
+  AddFolderButton,
+  MoveToInnerFolderMenu,
+  NameFolderDialog,
+  SubstationHeaderMenu,
+} from "@/components/folders/FolderControls";
 import { SignatureProfileSelector } from "./SignatureProfileSelector";
 import {
   getQuickBooksStatus,
@@ -569,6 +594,32 @@ export default function JobDetail() {
   // Client-side folder-aware pagination for linked assets
   const [folderPage, setFolderPage] = useState(1);
   const [totalAssetCount, setTotalAssetCount] = useState(0);
+
+  // The folder level above substation. Empty (and invisible) until someone creates one,
+  // and on instances that haven't run create_substation_folders.sql.
+  const substationFolders = useSubstationFolders({ jobId: id });
+  /**
+   * Only the *closed* folders are stored, so a folder is open unless it was deliberately
+   * shut — including folders created after this list was written.
+   */
+  const [closedFolders, setClosedFolders] = usePersistentState<string[]>(
+    id ? `job-report-folders:${id}:closed` : null,
+    [],
+  );
+  const toggleFolderOpen = useCallback(
+    (folderId: string) =>
+      setClosedFolders((current) =>
+        current.includes(folderId)
+          ? current.filter((f) => f !== folderId)
+          : [...current, folderId],
+      ),
+    [setClosedFolders],
+  );
+  /** Which substation (and optionally which parent folder) a new subfolder is going into. */
+  const [newSubfolder, setNewSubfolder] = useState<{
+    substation: string;
+    parentId: string | null;
+  } | null>(null);
 
   // Generated document (cover letter / executive summary) state
   const [isDocDialogOpen, setIsDocDialogOpen] = useState(false);
@@ -1581,6 +1632,7 @@ export default function JobDetail() {
     new Set(),
   );
   const [isArchiving, setIsArchiving] = useState(false);
+  const [showMoveReportsDialog, setShowMoveReportsDialog] = useState(false);
   const [isBatchUploading, setIsBatchUploading] = useState(false);
 
   const [batchUploadProgress, setBatchUploadProgress] = useState(0);
@@ -6353,6 +6405,56 @@ export default function JobDetail() {
     }
   };
 
+  /**
+   * Moving a report between jobs rewrites where it lives, so it is held to the same bar
+   * as approving one: report reviewers only.
+   */
+  const canMoveReports = canReviewReports(
+    user?.user_metadata?.role,
+    user?.email,
+  );
+
+  /** The selected reports, named the way the Reports tab names them. */
+  const selectedAssetsForMove = React.useMemo(
+    () =>
+      jobAssets
+        .filter((asset) => selectedAssetIds.has(asset.id))
+        .map((asset) => ({
+          id: asset.id,
+          name: dynamicAssetNames[asset.id] || asset.name || "",
+        })),
+    [jobAssets, selectedAssetIds, dynamicAssetNames],
+  );
+
+  const handleReportsMoved = (moved: MovedReport[], targetJob: MoveTargetJob) => {
+    setSelectedAssetIds(new Set());
+    fetchJobAssets();
+
+    const targetLabel =
+      [targetJob.jobNumber, targetJob.title].filter(Boolean).join(" — ") ||
+      "the selected job";
+
+    // A report whose own row did not move is a report whose RLS kept the reviewer out of
+    // its table. The link and the route moved, so it lists under the new job either way,
+    // but its stored job_id still says the old one — worth saying out loud rather than
+    // reporting a clean success.
+    const partial = moved.filter(
+      (item) =>
+        !item.reportRowUpdated &&
+        (item.newFileUrl?.startsWith("report:") ||
+          item.newFileUrl?.startsWith("custom-form:")),
+    );
+
+    toast({
+      title: `Moved ${moved.length} report${moved.length === 1 ? "" : "s"}`,
+      description:
+        partial.length > 0
+          ? `Now filed under ${targetLabel}. ${partial.length} report${partial.length === 1 ? "'s" : "s'"} stored job reference could not be updated — check with an admin.`
+          : `Now filed under ${targetLabel}.`,
+      variant: partial.length > 0 ? "destructive" : "success",
+    });
+  };
+
   const handlePrintSelectedApprovedReports = async () => {
     if (isPrinting) return;
     setIsPrinting(true);
@@ -10375,6 +10477,15 @@ export default function JobDetail() {
                           <CardTitle>Reports</CardTitle>
                         </div>
                         <div className="flex w-2/3 items-center justify-end gap-1">
+                          {/* Hidden until this instance has run the folders migration. */}
+                          {substationFolders.available && (
+                            <div className="shrink-0 order-last">
+                              <AddFolderButton
+                                scopeLabel="this job"
+                                onCreate={(name) => substationFolders.addFolder(name)}
+                              />
+                            </div>
+                          )}
                           {/* order-last keeps Add Asset visually after the search box */}
                           <div
                             className="relative shrink-0 order-last ml-1"
@@ -11118,43 +11229,119 @@ export default function JobDetail() {
                             </div>
                           )}
 
-                        {/* Batch archive controls - appear once at least one report is selected */}
-                        {selectedAssetIds.size > 0 && (
-                          <div className="mt-4 flex items-center gap-2 flex-wrap">
-                            <Button
-                              variant="secondary"
-                              onClick={() => setSelectedAssetIds(new Set())}
+                        {/* Batch controls for the current selection.
+                            Floated over the page rather than placed in the header: ticking
+                            the first checkbox used to insert a row of buttons here and
+                            shove the whole list down, which moves the next checkbox out
+                            from under the cursor mid-selection. Fixed to the viewport it
+                            costs no layout at all, and it stays reachable while scrolling
+                            a long list. Portalled to <body> because an ancestor of the
+                            page content creates a containing block for position:fixed. */}
+                        {selectedAssetIds.size > 0 &&
+                          createPortal(
+                            <div
+                              role="toolbar"
+                              aria-label="Actions for the selected reports"
+                              className="fixed inset-x-0 bottom-6 z-40 flex justify-center px-4 pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-150"
                             >
-                              Cancel Selection
-                            </Button>
-                            <Button
-                              variant="secondary"
-                              onClick={handleSelectAllVisibleAssets}
-                            >
-                              {filteredJobAssets.length > 0 &&
-                              filteredJobAssets.every((a) =>
-                                selectedAssetIds.has(a.id),
-                              )
-                                ? "Deselect All"
-                                : "Select All"}
-                            </Button>
-                            <Button
-                              onClick={handleArchiveSelected}
-                              disabled={isArchiving}
-                              className={
-                                assetStatusFilter === "archived"
-                                  ? "bg-green-600 hover:bg-green-700 text-white"
-                                  : "bg-red-600 hover:bg-red-700 text-white"
-                              }
-                            >
-                              {isArchiving
-                                ? "Working..."
-                                : assetStatusFilter === "archived"
-                                  ? `Restore Selected (${selectedAssetIds.size})`
-                                  : `Archive Selected (${selectedAssetIds.size})`}
-                            </Button>
-                          </div>
-                        )}
+                              <div className="pointer-events-auto flex max-w-full flex-wrap items-center gap-2 border border-neutral-200 bg-white px-3 py-2 shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
+                                <span className="px-1 text-sm font-medium text-neutral-600 dark:text-neutral-300">
+                                  {selectedAssetIds.size} selected
+                                </span>
+                                <Button
+                                  variant="secondary"
+                                  onClick={() => setSelectedAssetIds(new Set())}
+                                >
+                                  Cancel Selection
+                                </Button>
+                                <Button
+                                  variant="secondary"
+                                  onClick={handleSelectAllVisibleAssets}
+                                >
+                                  {filteredJobAssets.length > 0 &&
+                                  filteredJobAssets.every((a) =>
+                                    selectedAssetIds.has(a.id),
+                                  )
+                                    ? "Deselect All"
+                                    : "Select All"}
+                                </Button>
+                                {canMoveReports && (
+                                  <Button
+                                    variant="secondary"
+                                    onClick={() => setShowMoveReportsDialog(true)}
+                                    disabled={isArchiving}
+                                    leftIcon={
+                                      <ArrowRightLeft className="h-4 w-4 mr-1.5" />
+                                    }
+                                    title="Move these reports to a different job, keeping all of their data"
+                                  >
+                                    {`Move to Job (${selectedAssetIds.size})`}
+                                  </Button>
+                                )}
+                                {/* File the whole selection at once. Folders belong to a
+                                    substation, so this only makes sense when everything
+                                    ticked is in the same one — otherwise there is no
+                                    single folder list to choose from. */}
+                                {(() => {
+                                  if (!substationFolders.available) return null;
+                                  const ticked = [...selectedAssetIds];
+                                  const subs = new Set(
+                                    ticked.map((id) =>
+                                      (assetSubstations[id] || "").trim(),
+                                    ),
+                                  );
+                                  if (subs.size !== 1) return null;
+                                  const substation = [...subs][0];
+                                  if (!substation) return null;
+                                  const { roots } = substationFolders.treeFor(
+                                    substation,
+                                    [],
+                                  );
+                                  const options = flattenFolderTree(roots);
+                                  if (options.length === 0) return null;
+                                  return (
+                                    <MoveToInnerFolderMenu
+                                      folders={options}
+                                      currentFolderId={null}
+                                      align="start"
+                                      onMove={(folderId) => {
+                                        void substationFolders.moveItems(
+                                          ticked,
+                                          folderId,
+                                          "report",
+                                        );
+                                        setSelectedAssetIds(new Set());
+                                      }}
+                                      trigger={
+                                        <Button
+                                          variant="secondary"
+                                          disabled={isArchiving}
+                                        >
+                                          {`Move to Folder (${selectedAssetIds.size})`}
+                                        </Button>
+                                      }
+                                    />
+                                  );
+                                })()}
+                                <Button
+                                  onClick={handleArchiveSelected}
+                                  disabled={isArchiving}
+                                  className={
+                                    assetStatusFilter === "archived"
+                                      ? "bg-green-600 hover:bg-green-700 text-white"
+                                      : "bg-red-600 hover:bg-red-700 text-white"
+                                  }
+                                >
+                                  {isArchiving
+                                    ? "Working..."
+                                    : assetStatusFilter === "archived"
+                                      ? `Restore Selected (${selectedAssetIds.size})`
+                                      : `Archive Selected (${selectedAssetIds.size})`}
+                                </Button>
+                              </div>
+                            </div>,
+                            document.body,
+                          )}
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -11198,81 +11385,124 @@ export default function JobDetail() {
                               assetStatusFilter === "in_progress" ||
                               assetStatusFilter === "sent";
 
-                            // Compute folder-aware pages: group folders into pages without splitting any folder
-                            let folderPages: string[][] = [orderKeys];
-                            if (isPaginatedTab && orderKeys.length > 0) {
-                              folderPages = [];
-                              let currentPageKeys: string[] = [];
-                              let currentCount = 0;
-                              for (const key of orderKeys) {
-                                const folderSize = groups[key].length;
-                                if (
-                                  currentCount > 0 &&
-                                  currentCount + folderSize > FOLDER_PAGE_TARGET
-                                ) {
-                                  folderPages.push(currentPageKeys);
-                                  currentPageKeys = [key];
-                                  currentCount = folderSize;
-                                } else {
-                                  currentPageKeys.push(key);
-                                  currentCount += folderSize;
-                                }
-                              }
-                              if (currentPageKeys.length > 0) {
-                                folderPages.push(currentPageKeys);
-                              }
-                            }
+                            // Lay the substation groups out as folders plus whatever is
+                            // still loose. With no folders this returns the substations in
+                            // exactly the order above — Imported first, Other last — so the
+                            // page is unchanged until someone actually files something.
+                            const units = substationFolders.unitsFor(
+                              orderKeys.map((label) => ({
+                                label,
+                                count: groups[label].length,
+                              })),
+                            );
 
-                            const totalFolderPages = folderPages.length;
+                            // Pages are packed by unit, so a folder is never split across
+                            // two pages. Same rule as before, one level up.
+                            const unitPages =
+                              isPaginatedTab && units.length > 0
+                                ? packUnitsIntoPages(units, FOLDER_PAGE_TARGET)
+                                : [units];
+
+                            const totalFolderPages = unitPages.length;
                             const safePage =
                               Math.min(folderPage, totalFolderPages) || 1;
-                            const visibleKeys =
-                              folderPages[safePage - 1] || orderKeys;
+                            const visibleUnits = unitPages[safePage - 1] || units;
 
-                            const renderFolderTable = (folderKey: string) => (
+                            const renderSubstationTable = (folderKey: string) => {
+                              const sortedAssets = groups[folderKey]
+                                .slice()
+                                // Keep the order chosen in the sort menu when there is
+                                // one; otherwise group the reports of each asset together.
+                                .sort((a, b) =>
+                                  assetSortField ? 0 : compareAssetParts(a, b),
+                                );
+                              const assetById = new Map(
+                                sortedAssets.map((a) => [a.id, a]),
+                              );
+                              // Folders live inside a substation, so 'Imported' and
+                              // 'Other' — which aren't substations — never get one.
+                              const canFold =
+                                substationFolders.available &&
+                                folderKey !== "Imported" &&
+                                folderKey !== "Other";
+                              const { roots, loose } = canFold
+                                ? substationFolders.treeFor(
+                                    folderKey,
+                                    sortedAssets.map((a) => a.id),
+                                  )
+                                : { roots: [], loose: sortedAssets.map((a) => a.id) };
+                              const treeRows = flattenFolderRows(roots, loose, (fid) =>
+                                closedFolders.includes(fid),
+                              );
+
+                              return (
                               <details
                                 key={folderKey}
-                                className="group border rounded-none overflow-hidden"
+                                className="group/sub rounded-none border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-dark-150"
                               >
-                                <summary className="cursor-pointer select-none bg-neutral-50 dark:bg-dark-150 px-3 py-2 flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-neutral-800 dark:text-white">
-                                      {folderKey === "Imported"
-                                        ? "Imported"
-                                        : folderKey === "Other"
-                                          ? "Other"
-                                          : `${folderKey}`}
-                                    </span>
-                                    <span className="text-xs text-neutral-500">
-                                      ({groups[folderKey].length})
-                                    </span>
-                                  </div>
-                                  <svg
-                                    className="w-4 h-4 text-neutral-500 transform group-open:rotate-180 transition-transform"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M19 9l-7 7-7-7"
-                                    />
-                                  </svg>
+                                {/* The disclosure chevron leads, so every heading on the
+                                    page — folder, substation, inner folder — starts on the
+                                    same vertical line and the nesting reads down the left
+                                    edge instead of having to be inferred. */}
+                                <summary className="flex cursor-pointer select-none list-none items-center gap-2.5 px-3 py-2.5 transition-colors hover:bg-neutral-50 dark:hover:bg-dark-200">
+                                  <ChevronRight className="h-4 w-4 shrink-0 text-neutral-400 transition-transform group-open/sub:rotate-90" />
+
+                                  <span className="truncate text-[15px] font-semibold tracking-tight text-neutral-900 dark:text-white">
+                                    {folderKey}
+                                  </span>
+                                  <span className="shrink-0 text-xs tabular-nums text-neutral-400">
+                                    {groups[folderKey].length}
+                                  </span>
+
+                                  {/* Controls stay out of the way until you go looking for
+                                      them. Twenty substations means twenty rows of icons
+                                      otherwise, and none of them are the point. */}
+                                  <span className="ml-auto flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover/sub:opacity-100">
+                                    {substationFolders.folders.length > 0 &&
+                                      canFold && (
+                                        <SubstationDragHandle label={folderKey} />
+                                      )}
+                                    {/* Imported and Other aren't substations, they're
+                                        "we couldn't tell" — filing them would be a lie,
+                                        so they get no controls at all. */}
+                                    {canFold && (
+                                      <SubstationHeaderMenu
+                                        folders={substationFolders.folders}
+                                        currentFolderId={
+                                          substationFolders.folderFor(folderKey)?.id ??
+                                          null
+                                        }
+                                        onMove={(folderId) =>
+                                          void substationFolders.moveSubstation(
+                                            folderKey,
+                                            folderId,
+                                          )
+                                        }
+                                        onNewFolder={() =>
+                                          setNewSubfolder({
+                                            substation: folderKey,
+                                            parentId: null,
+                                          })
+                                        }
+                                      />
+                                    )}
+                                  </span>
                                 </summary>
-                                <div className="bg-white dark:bg-dark-150">
+                                <div className="border-t border-neutral-200 dark:border-neutral-800">
                                   <Table>
+                                    {/* Column labels repeat once per substation, so they
+                                        have to whisper. At body-text weight they were the
+                                        loudest thing on a page of twenty. */}
                                     <TableHeader>
-                                      <TableRow>
+                                      <TableRow className="border-b border-neutral-100 hover:bg-transparent dark:border-neutral-800 dark:hover:bg-transparent [&>th]:h-auto [&>th]:px-3 [&>th]:py-2 [&>th]:text-[10px] [&>th]:font-medium [&>th]:uppercase [&>th]:tracking-wider [&>th]:text-neutral-400 dark:[&>th]:text-neutral-500">
                                         <TableHead>Report Type</TableHead>
-                                        <TableHead>Asset Identifier</TableHead>
+                                        <TableHead>Identifier</TableHead>
                                         <TableHead>Urgency</TableHead>
                                         <TableHead>Status</TableHead>
                                         <TableHead>Result</TableHead>
                                         <TableHead>Date Added</TableHead>
                                         <TableHead>Submitted</TableHead>
-                                        <TableHead>Approved/Issued</TableHead>
+                                        <TableHead>Approved</TableHead>
                                         <TableHead>Sent</TableHead>
                                         <TableHead className="text-right">
                                           Open
@@ -11280,19 +11510,75 @@ export default function JobDetail() {
                                       </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                      {groups[folderKey]
-                                        .slice()
-                                        // Keep the order chosen in the sort menu
-                                        // when there is one; otherwise group the
-                                        // reports of each asset together.
-                                        .sort((a, b) =>
-                                          assetSortField
-                                            ? 0
-                                            : compareAssetParts(a, b),
-                                        )
-                                        .map((asset) => (
-                                          <TableRow key={asset.id}>
-                                            <TableCell>
+                                      {treeRows.map((row) => {
+                                        if (row.kind === "folder") {
+                                          return (
+                                            <DroppableInnerFolderRow
+                                              key={row.node.folder.id}
+                                              folderId={row.node.folder.id}
+                                              node={row.node}
+                                              depth={row.depth}
+                                              columnCount={10}
+                                              collapsed={closedFolders.includes(
+                                                row.node.folder.id,
+                                              )}
+                                              onToggle={() =>
+                                                toggleFolderOpen(row.node.folder.id)
+                                              }
+                                              onRename={(name) =>
+                                                void substationFolders.renameInnerFolder(
+                                                  row.node.folder.id,
+                                                  name,
+                                                )
+                                              }
+                                              onDelete={() =>
+                                                void substationFolders.deleteInnerFolder(
+                                                  row.node.folder.id,
+                                                )
+                                              }
+                                              onAddSubfolder={() =>
+                                                setNewSubfolder({
+                                                  substation: folderKey,
+                                                  parentId: row.node.folder.id,
+                                                })
+                                              }
+                                              canEdit
+                                            />
+                                          );
+                                        }
+                                        const asset = assetById.get(row.id);
+                                        if (!asset) return null;
+                                        return (
+                                          <TableRow
+                                            key={asset.id}
+                                            // Tighter than the shared default (p-4 in
+                                            // every cell), because these rows come in
+                                            // fifties and the density is the readability.
+                                            className="group/row border-neutral-100 dark:border-neutral-800 [&>td]:px-3 [&>td]:py-2.5"
+                                          >
+                                            <TableCell
+                                              // Indented to line up under its folder
+                                              // heading — without it there's no telling
+                                              // which folder a row belongs to. The rail
+                                              // draws the connection the indent implies.
+                                              style={{
+                                                paddingLeft: `${0.75 + row.depth * 1.25}rem`,
+                                              }}
+                                              className={
+                                                row.depth > 0
+                                                  ? "border-l-2 border-l-neutral-100 dark:border-l-neutral-800"
+                                                  : undefined
+                                              }
+                                            >
+                                              {/* No grip until this substation has a
+                                                  folder to drag the report into. */}
+                                              {canFold && roots.length > 0 && (
+                                                <span className="mr-1 inline-flex align-middle opacity-0 transition-opacity group-hover/row:opacity-100">
+                                                  <ReportDragHandle
+                                                    assetId={asset.id}
+                                                  />
+                                                </span>
+                                              )}
                                               <input
                                                 type="checkbox"
                                                 className="mr-2"
@@ -11605,6 +11891,29 @@ export default function JobDetail() {
                                             </TableCell>
                                             <TableCell className="text-right">
                                               <div className="flex items-center justify-end space-x-2">
+                                                {/* File this report into one of this
+                                                    substation's folders. Hidden until
+                                                    hover: it's a housekeeping action, not
+                                                    something you do to fifty rows a day. */}
+                                                {canFold && roots.length > 0 && (
+                                                  <span className="opacity-0 transition-opacity focus-within:opacity-100 group-hover/row:opacity-100">
+                                                    <MoveToInnerFolderMenu
+                                                      folders={flattenFolderTree(roots)}
+                                                      currentFolderId={
+                                                        substationFolders.itemFolder(
+                                                          asset.id,
+                                                        )
+                                                      }
+                                                      onMove={(folderId) =>
+                                                        void substationFolders.moveItems(
+                                                          [asset.id],
+                                                          folderId,
+                                                          "report",
+                                                        )
+                                                      }
+                                                    />
+                                                  </span>
+                                                )}
                                                 {asset.file_url.startsWith(
                                                   "custom-form:",
                                                 ) ? (
@@ -11681,19 +11990,42 @@ export default function JobDetail() {
                                               </div>
                                             </TableCell>
                                           </TableRow>
-                                        ))}
+                                        );
+                                      })}
                                     </TableBody>
                                   </Table>
                                 </div>
                               </details>
-                            );
+                              );
+                            };
 
                             return (
                               <>
-                                {visibleKeys.map((folderKey) =>
-                                  renderFolderTable(folderKey),
-                                )}
-                                {isPaginatedTab && totalFolderPages > 1 && (
+                                <SubstationFolderBoard
+                                  units={visibleUnits}
+                                  api={substationFolders}
+                                  closedFolders={closedFolders}
+                                  onToggleFolder={toggleFolderOpen}
+                                  renderSubstation={renderSubstationTable}
+                                />
+                                {newSubfolder && (
+                              <NameFolderDialog
+                                open
+                                onOpenChange={(open) =>
+                                  !open && setNewSubfolder(null)
+                                }
+                                title={`New folder in ${newSubfolder.substation}`}
+                                description="Holds reports inside this substation. Folders can be nested as deep as you like."
+                                onSubmit={(name) =>
+                                  substationFolders.addInnerFolder(
+                                    newSubfolder.substation,
+                                    name,
+                                    newSubfolder.parentId,
+                                  )
+                                }
+                              />
+                            )}
+                            {isPaginatedTab && totalFolderPages > 1 && (
                                   <div className="flex items-center justify-center gap-2 pt-4 pb-2">
                                     <Button
                                       variant="outline"
@@ -12388,6 +12720,21 @@ export default function JobDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Move selected reports to another job (report reviewers only) */}
+      {id && (
+        <MoveReportsDialog
+          open={showMoveReportsDialog}
+          onClose={() => setShowMoveReportsDialog(false)}
+          sourceJobId={id}
+          sourceJobLabel={
+            [job?.job_number, job?.title].filter(Boolean).join(" — ") ||
+            "this job"
+          }
+          reports={selectedAssetsForMove}
+          onMoved={handleReportsMoved}
+        />
+      )}
 
       {/* Delete Job Confirmation Dialog */}
       <Dialog

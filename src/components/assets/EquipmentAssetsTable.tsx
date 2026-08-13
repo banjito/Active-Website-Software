@@ -10,6 +10,8 @@ import {
   CornerDownRight,
   FilePlus2,
   FileText,
+  FolderInput,
+  FolderPlus,
   Link2Off,
   Pencil,
   Trash2,
@@ -36,7 +38,16 @@ import {
 } from "@/components/ui/Table";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { compareAlphanumericLabels } from "@/utils/sortUtils";
+import { flattenFolderRows, flattenFolderTree } from "@/utils/substationFolders";
+import {
+  MoveToInnerFolderMenu,
+  NameFolderDialog,
+  SubstationHeaderMenu,
+} from "@/components/folders/FolderControls";
+import { InnerFolderRow } from "@/components/folders/InnerFolderRow";
 import type { EquipmentAssetWithCounts } from "@/lib/types/assetTracking";
+import type { FolderNode, SubstationFolder } from "@/lib/types/substationFolders";
+import type { SubstationFoldersApi } from "@/hooks/useSubstationFolders";
 
 type SortKey =
   | "identifier"
@@ -105,7 +116,53 @@ interface EquipmentAssetsTableProps {
    * (per job, per site) so one list's filters never show up on another's.
    */
   storageKey?: string;
+  /**
+   * The folder level above substation. Omitted, or present with no folders, and this is
+   * the flat table it has always been — grouping only appears once someone has somewhere
+   * to group things into.
+   */
+  foldersApi?: SubstationFoldersApi;
 }
+
+/** A row of the table: an asset, or a heading standing above a run of them. */
+type DisplayRow =
+  | {
+      kind: "asset";
+      asset: EquipmentAssetWithCounts;
+      depth: 0 | 1;
+      children: EquipmentAssetWithCounts[];
+      childReports: number;
+      /** How deep in the folder tree this row's block sits. Purely visual. */
+      indent?: number;
+    }
+  | {
+      kind: "inner-folder-header";
+      id: string;
+      node: FolderNode;
+      depth: number;
+      substation: string;
+    }
+  | {
+      kind: "folder-header";
+      id: string;
+      folder: SubstationFolder;
+      substationCount: number;
+      assetCount: number;
+    }
+  | {
+      kind: "substation-header";
+      id: string;
+      label: string;
+      folder: SubstationFolder | null;
+      assetCount: number;
+      indented: boolean;
+    };
+
+/** Assets with no substation recorded group together, and sort last. */
+const NO_SUBSTATION = "No substation";
+
+/** Shared empty array so "no folders" stays referentially stable across renders. */
+const NO_FOLDERS: SubstationFolder[] = [];
 
 const BLANK = "—";
 
@@ -157,6 +214,7 @@ export function EquipmentAssetsTable({
   actions,
   emptyMessage = "No assets yet.",
   storageKey,
+  foldersApi,
 }: EquipmentAssetsTableProps) {
   /** Which rows have their linked reports expanded. Transient — not worth persisting. */
   const [expandedReports, setExpandedReports] = useState<string[]>([]);
@@ -187,8 +245,31 @@ export function EquipmentAssetsTable({
     storageKey && `${storageKey}:collapsed`,
     [],
   );
+  const [grouped, setGrouped] = usePersistentState<boolean>(
+    storageKey && `${storageKey}:grouped`,
+    true,
+  );
 
   const collapsedSet = useMemo(() => new Set(collapsed), [collapsed]);
+
+  /**
+   * Grouping only switches on once folders exist. Until then this is the flat table it
+   * has always been, headings and all.
+   *
+   * Both of these are pulled out by reference rather than through `foldersApi`, which is a
+   * fresh object every render — depending on it would rebuild every row of a 200-row table
+   * on every keystroke in the search box.
+   */
+  const folders = foldersApi?.folders ?? NO_FOLDERS;
+  const folderFor = foldersApi?.folderFor;
+  const treeFor = foldersApi?.treeFor;
+  const showGroups = grouped && folders.length > 0;
+
+  /** Which substation (and parent folder) a new subfolder is going into. */
+  const [newSubfolder, setNewSubfolder] = useState<{
+    substation: string;
+    parentId: string | null;
+  } | null>(null);
 
   const substationOptions = useMemo(() => {
     const set = new Set<string>();
@@ -234,7 +315,7 @@ export function EquipmentAssetsTable({
    * whose parent isn't in this list (linked to the site but not to this job, say) is
    * promoted to top level rather than vanishing.
    */
-  const { rows, matchCount } = useMemo(() => {
+  const { displayRows, matchCount } = useMemo(() => {
     const term = search.trim().toLowerCase();
 
     const matches = (a: EquipmentAssetWithCounts) => {
@@ -275,12 +356,12 @@ export function EquipmentAssetsTable({
     // A group survives filtering if the parent matches or any of its children do, so a
     // search for a switchgear still shows what's inside it, and a search for a CT still
     // shows which switchgear it belongs to.
-    const visibleRows: {
-      asset: EquipmentAssetWithCounts;
-      depth: 0 | 1;
-      children: EquipmentAssetWithCounts[];
-      childReports: number;
-    }[] = [];
+    //
+    // Assembled as blocks — a parent plus the sub-assets pinned under it — because that
+    // block is the unit grouping moves around. Breaking it apart to file a CT under a
+    // different substation than its switchgear would defeat the point of the pinning.
+    type Block = { parent: EquipmentAssetWithCounts; rows: Extract<DisplayRow, { kind: "asset" }>[] };
+    const blocks: Block[] = [];
     let matched = 0;
 
     for (const parent of [...topLevel].sort(comparator)) {
@@ -292,21 +373,156 @@ export function EquipmentAssetsTable({
       const shownChildren = parentMatches ? children : matchingChildren;
       matched += (parentMatches ? 1 : 0) + matchingChildren.length;
 
-      visibleRows.push({
-        asset: parent,
-        depth: 0,
-        children: shownChildren,
-        childReports: children.reduce((sum, c) => sum + c.report_count, 0),
-      });
+      const block: Block = {
+        parent,
+        rows: [
+          {
+            kind: "asset",
+            asset: parent,
+            depth: 0,
+            children: shownChildren,
+            childReports: children.reduce((sum, c) => sum + c.report_count, 0),
+          },
+        ],
+      };
 
-      if (collapsedSet.has(parent.id)) continue;
-      for (const child of shownChildren) {
-        visibleRows.push({ asset: child, depth: 1, children: [], childReports: 0 });
+      if (!collapsedSet.has(parent.id)) {
+        for (const child of shownChildren) {
+          block.rows.push({
+            kind: "asset",
+            asset: child,
+            depth: 1,
+            children: [],
+            childReports: 0,
+          });
+        }
       }
+      blocks.push(block);
     }
 
-    return { rows: visibleRows, matchCount: matched };
-  }, [assets, search, substationFilter, buildingFilter, comparator, collapsedSet]);
+    if (!showGroups) {
+      return { displayRows: blocks.flatMap((b) => b.rows), matchCount: matched };
+    }
+
+    // Bucket the blocks by the *parent's* substation, then hang those buckets off folders.
+    const bySubstation = new Map<string, Block[]>();
+    for (const block of blocks) {
+      const label = block.parent.substation?.trim() || NO_SUBSTATION;
+      const bucket = bySubstation.get(label) ?? [];
+      bucket.push(block);
+      bySubstation.set(label, bucket);
+    }
+
+    const assetsIn = (list: Block[]) => list.reduce((sum, b) => sum + b.rows.length, 0);
+
+    const inFolder = new Map<string, string[]>();
+    const loose: string[] = [];
+    for (const label of bySubstation.keys()) {
+      const folder = label === NO_SUBSTATION ? null : (folderFor?.(label) ?? null);
+      if (!folder) {
+        loose.push(label);
+        continue;
+      }
+      inFolder.set(folder.id, [...(inFolder.get(folder.id) ?? []), label]);
+    }
+
+    const displayRows: DisplayRow[] = [];
+
+    const emitSubstation = (label: string, folder: SubstationFolder | null) => {
+      const bucket = bySubstation.get(label) ?? [];
+      const headerId = `sub:${label}`;
+      displayRows.push({
+        kind: "substation-header",
+        id: headerId,
+        label,
+        folder,
+        assetCount: assetsIn(bucket),
+        indented: Boolean(folder),
+      });
+      if (collapsedSet.has(headerId)) return;
+
+      // Each substation has its own folder tree underneath. Blocks are filed by their
+      // parent asset, so a switchgear and its sub-assets land in one folder together.
+      const blockByParent = new Map(bucket.map((b) => [b.parent.id, b]));
+      const { roots, loose } = treeFor
+        ? treeFor(label, [...blockByParent.keys()])
+        : { roots: [], loose: [...blockByParent.keys()] };
+
+      if (roots.length === 0) {
+        for (const block of bucket) displayRows.push(...block.rows);
+        return;
+      }
+
+      for (const row of flattenFolderRows(roots, loose, (id) => collapsedSet.has(id))) {
+        if (row.kind === "folder") {
+          displayRows.push({
+            kind: "inner-folder-header",
+            id: row.node.folder.id,
+            node: row.node,
+            depth: row.depth,
+            substation: label,
+          });
+          continue;
+        }
+        const block = blockByParent.get(row.id);
+        if (block) displayRows.push(...block.rows.map((r) => ({ ...r, indent: row.depth })));
+      }
+    };
+
+    for (const folder of folders) {
+      const labels = (inFolder.get(folder.id) ?? []).sort(compareAlphanumericLabels);
+      // An empty folder is still worth showing so it can be dropped into — but not in the
+      // middle of a filtered result set, where it is just noise.
+      const unfiltered =
+        !search.trim() && substationFilter === "all" && buildingFilter === "all";
+      if (labels.length === 0 && !unfiltered) continue;
+
+      const headerId = `folder:${folder.id}`;
+      displayRows.push({
+        kind: "folder-header",
+        id: headerId,
+        folder,
+        substationCount: labels.length,
+        assetCount: labels.reduce((sum, l) => sum + assetsIn(bySubstation.get(l) ?? []), 0),
+      });
+      if (collapsedSet.has(headerId)) continue;
+      for (const label of labels) emitSubstation(label, folder);
+    }
+
+    // Blanks last, matching how every other list in the app orders a missing value.
+    const orderedLoose = loose.sort((a, b) => {
+      if (a === NO_SUBSTATION) return 1;
+      if (b === NO_SUBSTATION) return -1;
+      return compareAlphanumericLabels(a, b);
+    });
+    for (const label of orderedLoose) emitSubstation(label, null);
+
+    return { displayRows, matchCount: matched };
+  }, [
+    assets,
+    search,
+    substationFilter,
+    buildingFilter,
+    comparator,
+    collapsedSet,
+    showGroups,
+    folders,
+    folderFor,
+    treeFor,
+  ]);
+
+  /**
+   * Asset rows only. Headings must stay out of this: it backs the shift-click range walk
+   * and the select-all checkbox, and a heading caught in a range would tick rows the user
+   * never dragged across.
+   */
+  const rows = useMemo(
+    () =>
+      displayRows.filter(
+        (r): r is Extract<DisplayRow, { kind: "asset" }> => r.kind === "asset",
+      ),
+    [displayRows],
+  );
 
   const toggleSort = (key: SortKey, additive: boolean) => {
     setSorts((current) => {
@@ -324,11 +540,14 @@ export function EquipmentAssetsTable({
     });
   };
 
-  const toggleGroup = (parentId: string) =>
+  /**
+   * Collapse a parent asset, a substation heading or a folder heading. One list for all
+   * three: asset rows key on a bare uuid, headings on `folder:`/`sub:` prefixes, so they
+   * can't collide.
+   */
+  const toggleGroup = (key: string) =>
     setCollapsed((current) =>
-      current.includes(parentId)
-        ? current.filter((id) => id !== parentId)
-        : [...current, parentId],
+      current.includes(key) ? current.filter((id) => id !== key) : [...current, key],
     );
 
   // ── Selection ──────────────────────────────────────────────────────────────
@@ -400,6 +619,85 @@ export function EquipmentAssetsTable({
     Boolean(onScheduleTest) ||
     Boolean(onRemoveFromJob);
   const columnCount = 6 + (showActions ? 1 : 0) + (selectable ? 1 : 0);
+
+  /**
+   * Folder and substation headings. Full-width rows in the same table rather than nested
+   * tables, so every column stays aligned down the whole list.
+   */
+  const renderGroupHeader = (
+    row: Extract<DisplayRow, { kind: "folder-header" | "substation-header" }>,
+  ) => {
+    const isFolder = row.kind === "folder-header";
+    const isCollapsed = collapsedSet.has(row.id);
+    return (
+      <TableRow
+        key={row.id}
+        className={`group/head border-neutral-100 dark:border-neutral-800 ${
+          isFolder
+            ? "bg-neutral-100/80 hover:bg-neutral-100/80 dark:bg-neutral-900 dark:hover:bg-neutral-900"
+            : "bg-neutral-50/60 hover:bg-neutral-50/60 dark:bg-dark-100/40 dark:hover:bg-dark-100/40"
+        }`}
+      >
+        <TableCell colSpan={columnCount} className="px-3 py-2">
+          <div className={`flex items-center gap-2 ${!isFolder && row.indented ? "pl-5" : ""}`}>
+            <button
+              type="button"
+              onClick={() => toggleGroup(row.id)}
+              aria-expanded={!isCollapsed}
+              className="flex min-w-0 flex-1 items-center gap-2 text-left"
+            >
+              {/* One chevron that rotates, not two glyphs — the rotation reads as the
+                  same control changing state rather than a different icon appearing. */}
+              <ChevronRight
+                className={`h-4 w-4 shrink-0 text-neutral-400 transition-transform ${
+                  isCollapsed ? "" : "rotate-90"
+                }`}
+              />
+              {/* Same three-step scale as the Reports tab: folder 17, substation 15. */}
+              <span
+                className={`truncate tracking-tight ${
+                  isFolder
+                    ? "text-[17px] font-semibold text-neutral-900 dark:text-white"
+                    : "text-[15px] font-semibold text-neutral-800 dark:text-neutral-100"
+                }`}
+              >
+                {isFolder ? row.folder.name : row.label}
+              </span>
+              <span className="shrink-0 text-xs tabular-nums text-neutral-400">
+                {isFolder
+                  ? `${row.substationCount} · ${row.assetCount}`
+                  : row.assetCount}
+              </span>
+              {isFolder && foldersApi && !foldersApi.isOwnScope(row.folder) && (
+                <span
+                  title="Defined on the site. Edit it there to change it everywhere."
+                  className="shrink-0 rounded-none bg-neutral-200 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
+                >
+                  Site
+                </span>
+              )}
+            </button>
+
+            {/* No drag here — a table row is a poor drop target. The menu is the whole
+                interaction on this screen, and it's the same write the Reports tab does.
+                Hidden until hover: twenty substations is twenty rows of icons otherwise. */}
+            {!isFolder && canEdit && foldersApi && row.label !== NO_SUBSTATION && (
+              <span className="opacity-0 transition-opacity focus-within:opacity-100 group-hover/head:opacity-100">
+                <SubstationHeaderMenu
+                  folders={foldersApi.folders}
+                  currentFolderId={row.folder?.id ?? null}
+                  onMove={(folderId) => void foldersApi.moveSubstation(row.label, folderId)}
+                  onNewFolder={() =>
+                    setNewSubfolder({ substation: row.label, parentId: null })
+                  }
+                />
+              </span>
+            )}
+          </div>
+        </TableCell>
+      </TableRow>
+    );
+  };
   const totalAssets = assets.length;
   const hasSubAssets = assets.some((a) => a.parent_asset_id);
 
@@ -429,6 +727,17 @@ export function EquipmentAssetsTable({
             options={substationOptions}
           />
         </div>
+        {/* Only offered once there's something to group by. */}
+        {folders.length > 0 && (
+          <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300">
+            <input
+              type="checkbox"
+              checked={grouped}
+              onChange={(e) => setGrouped(e.target.checked)}
+            />
+            Group by folder
+          </label>
+        )}
         <div className="ml-auto flex flex-wrap gap-2">{actions}</div>
       </div>
 
@@ -457,6 +766,37 @@ export function EquipmentAssetsTable({
           >
             Schedule test
           </Button>
+          {/* File the whole selection at once. Folders belong to one substation, so this
+              only appears when everything ticked is in the same one. */}
+          {(() => {
+            if (!canEdit || !foldersApi || !treeFor) return null;
+            const subs = new Set(selectedAssets.map((a) => a.substation?.trim() || ""));
+            if (subs.size !== 1) return null;
+            const substation = [...subs][0];
+            if (!substation) return null;
+            const options = flattenFolderTree(treeFor(substation, []).roots);
+            if (options.length === 0) return null;
+            return (
+              <MoveToInnerFolderMenu
+                folders={options}
+                currentFolderId={null}
+                align="start"
+                onMove={(folderId) => {
+                  void foldersApi.moveItems(
+                    selectedAssets.map((a) => a.id),
+                    folderId,
+                    "equipment",
+                  );
+                  setSelectedIds([]);
+                }}
+                trigger={
+                  <Button size="sm" variant="ghost" leftIcon={<FolderInput className="h-4 w-4" />}>
+                    Move to folder
+                  </Button>
+                }
+              />
+            );
+          })()}
           <button
             type="button"
             onClick={() => setSelectedIds([])}
@@ -538,7 +878,27 @@ export function EquipmentAssetsTable({
                 </TableCell>
               </TableRow>
             ) : (
-              rows.flatMap(({ asset, depth, children, childReports }) => {
+              displayRows.flatMap((row) => {
+                if (row.kind === "inner-folder-header") {
+                  return [
+                    <InnerFolderRow
+                      key={row.id}
+                      node={row.node}
+                      depth={row.depth}
+                      columnCount={columnCount}
+                      collapsed={collapsedSet.has(row.id)}
+                      onToggle={() => toggleGroup(row.id)}
+                      onRename={(name) => void foldersApi?.renameInnerFolder(row.id, name)}
+                      onDelete={() => void foldersApi?.deleteInnerFolder(row.id)}
+                      onAddSubfolder={() =>
+                        setNewSubfolder({ substation: row.substation, parentId: row.id })
+                      }
+                      canEdit={canEdit}
+                    />,
+                  ];
+                }
+                if (row.kind !== "asset") return [renderGroupHeader(row)];
+                const { asset, depth, children, childReports } = row;
                 const isChild = depth === 1;
                 const isCollapsed = collapsedSet.has(asset.id);
                 const linkedReports = reportsByAsset?.get(asset.id) ?? [];
@@ -567,7 +927,14 @@ export function EquipmentAssetsTable({
                         />
                       </TableCell>
                     )}
-                    <TableCell>{asset.building_area || BLANK}</TableCell>
+                    {/* Indented to line up under its folder heading. */}
+                    <TableCell
+                      style={
+                        row.indent ? { paddingLeft: `${row.indent * 1.25}rem` } : undefined
+                      }
+                    >
+                      {asset.building_area || BLANK}
+                    </TableCell>
                     <TableCell>{asset.substation || BLANK}</TableCell>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-1">
@@ -644,6 +1011,20 @@ export function EquipmentAssetsTable({
                     {showActions && (
                       <TableCell>
                         <div className="flex items-center gap-0.5">
+                          {/* File this asset into one of its substation's folders.
+                              Sub-assets ride with their parent, so only the parent of a
+                              block offers it. */}
+                          {!isChild && canEdit && foldersApi && treeFor && asset.substation?.trim() && (
+                            <MoveToInnerFolderMenu
+                              folders={flattenFolderTree(
+                                treeFor(asset.substation.trim(), []).roots,
+                              )}
+                              currentFolderId={foldersApi.itemFolder(asset.id)}
+                              onMove={(folderId) =>
+                                void foldersApi.moveItems([asset.id], folderId, "equipment")
+                              }
+                            />
+                          )}
                           {onAddReport && (
                             <Button
                               variant="ghost"
@@ -810,6 +1191,22 @@ export function EquipmentAssetsTable({
           </TableBody>
         </Table>
       </div>
+
+      {newSubfolder && (
+        <NameFolderDialog
+          open
+          onOpenChange={(open) => !open && setNewSubfolder(null)}
+          title={`New folder in ${newSubfolder.substation}`}
+          description="Holds equipment inside this substation. Folders can be nested as deep as you like."
+          onSubmit={(name) =>
+            foldersApi?.addInnerFolder(
+              newSubfolder.substation,
+              name,
+              newSubfolder.parentId,
+            )
+          }
+        />
+      )}
     </div>
   );
 }

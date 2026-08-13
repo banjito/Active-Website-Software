@@ -5,9 +5,12 @@ import {
   getJob,
   getReportAssetsForJob,
   getDeliverablesForJob,
+  getSubstationFolders,
+  substationKey,
   type Job,
   type ReportAsset,
   type Deliverable,
+  type SubstationFolderRow,
 } from '@/services/portalData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +25,7 @@ export function JobDetail() {
   const [job, setJob] = useState<Job | null>(null);
   const [reports, setReports] = useState<ReportAsset[]>([]);
   const [packets, setPackets] = useState<Deliverable[]>([]);
+  const [folderRows, setFolderRows] = useState<SubstationFolderRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,14 +33,16 @@ export function JobDetail() {
     if (!jobId) return;
     (async () => {
       try {
-        const [jobData, reportsData, packetsData] = await Promise.all([
+        const [jobData, reportsData, packetsData, folderData] = await Promise.all([
           getJob(jobId),
           getReportAssetsForJob(jobId),
           getDeliverablesForJob(jobId),
+          getSubstationFolders(),
         ]);
         setJob(jobData);
         setReports(reportsData);
         setPackets(packetsData);
+        setFolderRows(folderData.filter((f) => f.job_id === jobId));
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load job.');
       } finally {
@@ -56,6 +62,48 @@ export function JobDetail() {
     }
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
   }, [reports]);
+
+  /**
+   * Hang those substation groups off their folders, again mirroring the staff app:
+   * folders in their chosen order first, then anything ungrouped, then 'Other' last.
+   * With no folders this is one untitled section holding exactly today's list.
+   */
+  const sections = useMemo(() => {
+    const folderOf = new Map(folderRows.map((f) => [f.substation_key, f]));
+    const order: SubstationFolderRow[] = [];
+    for (const row of folderRows) {
+      if (!order.some((f) => f.folder_id === row.folder_id)) order.push(row);
+    }
+    order.sort((a, b) => a.folder_sort - b.folder_sort || a.folder_name.localeCompare(b.folder_name));
+
+    type Group = [string, ReportAsset[]];
+    const inFolder = new Map<string, Group[]>();
+    const loose: Group[] = [];
+
+    for (const group of groups) {
+      const [substation] = group;
+      const folder = substation === 'Other' ? undefined : folderOf.get(substationKey(substation));
+      if (!folder) {
+        loose.push(group);
+        continue;
+      }
+      inFolder.set(folder.folder_id, [...(inFolder.get(folder.folder_id) ?? []), group]);
+    }
+
+    const out: { folderName: string | null; groups: Group[] }[] = [];
+    for (const folder of order) {
+      const inner = inFolder.get(folder.folder_id) ?? [];
+      if (inner.length > 0) out.push({ folderName: folder.folder_name, groups: inner });
+    }
+    // 'Other' is "no substation recorded", so it sorts to the end rather than alphabetically.
+    const orderedLoose = loose.sort((a, b) => {
+      if (a[0] === 'Other') return 1;
+      if (b[0] === 'Other') return -1;
+      return a[0].localeCompare(b[0]);
+    });
+    if (orderedLoose.length > 0) out.push({ folderName: null, groups: orderedLoose });
+    return out;
+  }, [groups, folderRows]);
 
   // Resolve each packet's bundled asset ids to the customer's accessible reports,
   // preserving the order the staff app chose. Ids the customer can't open are
@@ -172,22 +220,39 @@ export function JobDetail() {
               All reports
             </h2>
           )}
-          {groups.map(([substation, items], i) => (
-            <Card key={substation} className="enter" style={{ animationDelay: `${i * 70}ms` }}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  {substation}
-                  <span className="text-sm font-normal text-muted-foreground">({items.length})</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {items.map((r) => (
-                    <ReportRow key={r.asset_id} report={r} />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          {sections.map((section, s) => (
+            <div key={section.folderName ?? '__loose'} className="space-y-3">
+              {/* Only a heading — an untitled section is just the ungrouped substations,
+                  which need no label to explain themselves. */}
+              {section.folderName && (
+                <h3 className="pt-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  {section.folderName}
+                </h3>
+              )}
+              {section.groups.map(([substation, items], i) => (
+                <Card
+                  key={substation}
+                  className="enter"
+                  style={{ animationDelay: `${(s * 3 + i) * 70}ms` }}
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      {substation}
+                      <span className="text-sm font-normal text-muted-foreground">
+                        ({items.length})
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {items.map((r) => (
+                        <ReportRow key={r.asset_id} report={r} />
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           ))}
         </section>
       )}

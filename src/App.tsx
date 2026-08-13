@@ -403,13 +403,13 @@ function ArmadilloRedirect() {
 // Redirect Meetings to Runway until the internal page is ready
 function RunwayRedirect() {
   useEffect(() => {
-    window.open("https://www.app.runwayos.io/", "_blank", "noopener,noreferrer");
+    window.open("https://app.runwayos.io/", "_blank", "noopener,noreferrer");
   }, []);
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-neutral-600 dark:text-neutral-400">
       <p>Opening Runway in a new tab…</p>
       <a
-        href="https://www.app.runwayos.io/"
+        href="https://app.runwayos.io/"
         target="_blank"
         rel="noopener noreferrer"
         className="text-brand underline"

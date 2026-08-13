@@ -53,9 +53,6 @@ const HEADER_HINTS: Record<ImportableAssetField, string[]> = {
   substation: ["substation", "sub", "switchgear", "lineup"],
   equipment_location: ["equipmentlocation", "location", "room", "eqptlocation", "place"],
   equipment_type: ["equipmenttype", "type", "devicetype", "category", "equipclass"],
-  manufacturer: ["manufacturer", "mfr", "make", "vendor", "brand"],
-  model: ["model", "catalog", "catalognumber", "modelnumber", "partnumber"],
-  serial_number: ["serial", "serialnumber", "sn", "serialno"],
   notes: ["notes", "comment", "comments", "remarks", "description"],
 };
 
@@ -336,9 +333,6 @@ export function BulkAssetImportDialog({
           substation: valueOf("substation") || null,
           equipment_location: valueOf("equipment_location") || null,
           equipment_type: valueOf("equipment_type") || null,
-          manufacturer: valueOf("manufacturer") || null,
-          model: valueOf("model") || null,
-          serial_number: valueOf("serial_number") || null,
           notes: valueOf("notes") || null,
         } as EquipmentAssetInput,
       };

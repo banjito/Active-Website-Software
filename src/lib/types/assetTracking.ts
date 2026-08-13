@@ -87,9 +87,8 @@ export const IMPORTABLE_ASSET_FIELDS = [
   { key: "substation", label: "Substation", required: false },
   { key: "equipment_location", label: "Equipment Location", required: false },
   { key: "equipment_type", label: "Equipment Type", required: false },
-  { key: "manufacturer", label: "Manufacturer", required: false },
-  { key: "model", label: "Model", required: false },
-  { key: "serial_number", label: "Serial Number", required: false },
+  // Nameplate details (manufacturer, model, serial) are deliberately not importable —
+  // they're captured on the asset itself, not from the equipment-list spreadsheet.
   { key: "notes", label: "Notes", required: false },
 ] as const;
 

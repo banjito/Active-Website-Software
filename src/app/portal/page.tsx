@@ -1120,7 +1120,7 @@ export default function PortalLanding() {
         break;
       case "Meetings":
         window.open(
-          "https://www.app.runwayos.io/",
+          "https://app.runwayos.io/",
           "_blank",
           "noopener,noreferrer",
         );

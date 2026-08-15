@@ -18,6 +18,7 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import { useReportUserAutofill } from "./useReportUserAutofill";
+import { ensureReportAssetLink } from "./linkReportAsset";
 
 // Types
 interface CableTestData {
@@ -1722,25 +1723,10 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
               user_id: user.id,
               created_at: new Date().toISOString(),
             };
-            const { data: assetResult, error: assetError } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert(assetData)
-              .select("id")
-              .single();
-            if (assetError) {
-              console.error("Auto-save asset insert failed:", assetError);
-            } else if (assetResult) {
-              const { error: linkError } = await supabase
-                .schema("neta_ops")
-                .from("job_assets")
-                .insert({
-                  job_id: jobId,
-                  asset_id: assetResult.id,
-                  user_id: user.id,
-                });
-              if (linkError)
-                console.error("Auto-save job_assets link failed:", linkError);
+            try {
+              await ensureReportAssetLink(jobId, assetData, user.id);
+            } catch (assetError) {
+              console.error("Auto-save asset link failed:", assetError);
             }
 
             window.history.replaceState(

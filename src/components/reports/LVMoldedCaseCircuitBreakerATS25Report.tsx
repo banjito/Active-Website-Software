@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
+import { ensureReportAssetLink } from "./linkReportAsset";
 import { ReportWrapper } from "./ReportWrapper";
 import { ReportHeader } from "./common/ReportHeader";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
@@ -1340,25 +1341,16 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
             reportIdRef.current = newReport.id;
             isAutoSaveCreatedRef.current = true;
             setCurrentReportId(newReport.id);
-            const { data: assetResult } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert({
+            await ensureReportAssetLink(
+              jobId,
+              {
                 name: assetName,
                 file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
                 template_type: "ATS",
                 status: "in_progress",
-              })
-              .select()
-              .single();
-
-            if (assetResult) {
-              await supabase.schema("neta_ops").from("job_assets").insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user?.id,
-              });
-            }
+              },
+              user?.id,
+            );
 
             window.history.replaceState(
               null,
@@ -1431,11 +1423,18 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
         if (error) throw error;
 
-        await supabase
-          .schema("neta_ops")
-          .from("assets")
-          .update({ name: assetName })
-          .ilike("file_url", `%${reportSlug}/${existingId}%`);
+        // Idempotent: renames the asset, and re-creates it if a past save lost
+        // it, so a report can never stay stranded off the job.
+        await ensureReportAssetLink(
+          jobId,
+          {
+            name: assetName,
+            file_url: `report:/jobs/${jobId}/${reportSlug}/${existingId}`,
+            template_type: "ATS",
+            status: "in_progress",
+          },
+          user?.id,
+        );
       } else if (creatingRef.current) {
         // Autosave is already creating this report — let it finish (and pick up
         // the latest data) instead of inserting a duplicate.
@@ -1463,26 +1462,16 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
             // Set the ref immediately so a pending autosave routes to UPDATE.
             reportIdRef.current = newReport.id;
             setCurrentReportId(newReport.id);
-            const { data: assetResult } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert({
+            await ensureReportAssetLink(
+              jobId,
+              {
                 name: assetName,
                 file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
                 template_type: "ATS",
                 status: "in_progress",
-              })
-              .select()
-              .single();
-
-            // Link asset to job
-            if (assetResult) {
-              await supabase.schema("neta_ops").from("job_assets").insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user?.id,
-              });
-            }
+              },
+              user?.id,
+            );
           } else {
             creatingRef.current = false;
           }
@@ -1537,6 +1526,19 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           .from("lv_molded_case_circuit_breaker_ats25")
           .update(currentDataToSave)
           .eq("id", currentReportId);
+
+        // This flow navigates away next, so make sure the report we are leaving
+        // is attached to the job before we go.
+        await ensureReportAssetLink(
+          jobId,
+          {
+            name: getAssetName(reportSlug, formData.breakerIdentifier),
+            file_url: `report:/jobs/${jobId}/${reportSlug}/${currentReportId}`,
+            template_type: "ATS",
+            status: "in_progress",
+          },
+          user.id,
+        );
       } else {
         // If current report doesn't exist, create it first
         const { data: currentReport } = await supabase
@@ -1550,31 +1552,19 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           .single();
 
         if (currentReport) {
-          // Create asset for current report if needed
-          const assetName = getAssetName(
-            reportSlug,
-            formData.breakerIdentifier,
-          );
-          await supabase
-            .schema("neta_ops")
-            .from("assets")
-            .insert({
-              name: assetName,
+          // Must be awaited: this flow navigates to the new report immediately
+          // afterwards, and an un-awaited link insert is cancelled in flight,
+          // which is what stranded reports saved through "Save & New".
+          await ensureReportAssetLink(
+            jobId,
+            {
+              name: getAssetName(reportSlug, formData.breakerIdentifier),
               file_url: `report:/jobs/${jobId}/${reportSlug}/${currentReport.id}`,
               template_type: "ATS",
               status: "in_progress",
-            })
-            .select()
-            .single()
-            .then(({ data: assetResult }) => {
-              if (assetResult) {
-                supabase.schema("neta_ops").from("job_assets").insert({
-                  job_id: jobId,
-                  asset_id: assetResult.id,
-                  user_id: user.id,
-                });
-              }
-            });
+            },
+            user.id,
+          );
         }
       }
 
@@ -1846,28 +1836,20 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
       if (newReportError) throw newReportError;
       if (!newReport) throw new Error("Failed to create new report");
 
-      // Create asset for the new report (best-effort; don't block opening the report)
-      const newAssetName = getAssetName(reportSlug, "");
-      const { data: newAsset, error: assetError } = await supabase
-        .schema("neta_ops")
-        .from("assets")
-        .insert({
-          name: newAssetName,
-          file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
-          template_type: "ATS",
-          status: "in_progress",
-        })
-        .select()
-        .single();
-
-      if (!assetError && newAsset) {
-        await supabase.schema("neta_ops").from("job_assets").insert({
-          job_id: jobId,
-          asset_id: newAsset.id,
-          user_id: user.id,
-        });
-      }
-      if (assetError) {
+      // Attach the new report to the job before opening it. If this fails the
+      // next save repairs it, so warn rather than block the technician.
+      try {
+        await ensureReportAssetLink(
+          jobId,
+          {
+            name: getAssetName(reportSlug, ""),
+            file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
+            template_type: "ATS",
+            status: "in_progress",
+          },
+          user.id,
+        );
+      } catch (assetError) {
         console.warn(
           "Asset creation failed for new report (report was created):",
           assetError,

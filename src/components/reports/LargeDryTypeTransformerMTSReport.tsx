@@ -19,6 +19,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useReportUserAutofill } from "./useReportUserAutofill";
+import { ensureReportAssetLink } from "./linkReportAsset";
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -1101,18 +1102,7 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
             user_id: user.id,
             template_type: "MTS",
           }; // Add template_type
-          const { data: assetResult, error: assetError } = await supabase
-            .schema("neta_ops")
-            .from("assets")
-            .insert(assetData)
-            .select("id")
-            .single();
-          if (assetError) throw assetError;
-          await supabase.schema("neta_ops").from("job_assets").insert({
-            job_id: jobId,
-            asset_id: assetResult.id,
-            user_id: user.id,
-          });
+          await ensureReportAssetLink(jobId, assetData, user.id);
         }
       }
       if (result.error) throw result.error;

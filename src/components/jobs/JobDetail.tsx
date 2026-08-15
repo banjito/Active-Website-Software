@@ -417,6 +417,70 @@ function isInternalFormAsset(
   }
 }
 
+// Nameplate serial numbers are scattered through the report JSON under a handful of
+// key spellings and no consistent nesting (report_info.serialNumber on one report,
+// report_info.nameplateData.serialNumber on the next), so they are collected with a
+// recursive walk rather than a per-report field map.
+
+/** Sub-objects holding the serials of the *instruments* used, not the equipment tested. */
+const TEST_EQUIPMENT_CONTAINER_KEYS = new Set([
+  "testequipment",
+  "test_equipment",
+  "equipmentused",
+]);
+
+// A few reports keep instrument serials in flat keys outside the containers above
+// (megohmmeterSerial, vlfSerialNumber, …). They all name the instrument, so the
+// instrument name is what disqualifies them.
+const TEST_INSTRUMENT_KEY_PATTERN =
+  /(megohm|megger|ohmmeter|lowres|hipot|vlf|primaryinjection|secondaryinjection|testset|ctratio|amprobe|multimeter|testequipment)/i;
+
+/**
+ * Collect every nameplate/equipment serial number found in a saved report row.
+ *
+ * Skips the serials of the test instruments, which would otherwise match on every
+ * report on a job that shared a megger.
+ */
+function collectEquipmentSerials(source: unknown): string[] {
+  const found: string[] = [];
+  const seen = new Set<string>();
+  const visited = new WeakSet<object>();
+
+  const walk = (value: unknown, depth: number) => {
+    if (depth > 8 || value == null || typeof value !== "object") return;
+    if (visited.has(value as object)) return;
+    visited.add(value as object);
+
+    if (Array.isArray(value)) {
+      value.forEach((entry) => walk(entry, depth + 1));
+      return;
+    }
+
+    for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+      if (TEST_EQUIPMENT_CONTAINER_KEYS.has(key.toLowerCase())) continue;
+
+      if (typeof entry === "string") {
+        // Covers serialNumber / serial / serialNo / nameplateSerialNumber and the
+        // per-phase CT serials (phase1Serial, neutralSerial, …).
+        if (!/serial/i.test(key)) continue;
+        if (TEST_INSTRUMENT_KEY_PATTERN.test(key)) continue;
+        const trimmed = entry.trim();
+        if (!trimmed) continue;
+        const dedupeKey = trimmed.toLowerCase();
+        if (seen.has(dedupeKey)) continue;
+        seen.add(dedupeKey);
+        found.push(trimmed);
+        continue;
+      }
+
+      walk(entry, depth + 1);
+    }
+  };
+
+  walk(source, 0);
+  return found;
+}
+
 /** Report date fields — skip placeholders so we can fall back to created_at. */
 function parseReportDateField(raw: unknown): Date | null {
   if (raw == null) return null;
@@ -1704,6 +1768,12 @@ export default function JobDetail() {
   const [assetSubstations, setAssetSubstations] = useState<
     Record<string, string>
   >({});
+  // Nameplate serial numbers pulled out of each report, so the Reports search can
+  // find a report by the serial of the equipment it covers. One report can carry
+  // several (per-phase CTs, contactor plus starting reactor).
+  const [assetSerialNumbers, setAssetSerialNumbers] = useState<
+    Record<string, string[]>
+  >({});
   const [reportAuditUsers, setReportAuditUsers] = useState<
     Record<string, string>
   >({});
@@ -2848,7 +2918,16 @@ export default function JobDetail() {
         const matchesSubstation = substationName
           .toLowerCase()
           .includes(searchLower);
-        return matchesName || matchesDynamicName || matchesSubstation;
+        // Also search the nameplate serial numbers of the equipment tested
+        const matchesSerial = (assetSerialNumbers[asset.id] || []).some(
+          (serial) => serial.toLowerCase().includes(searchLower),
+        );
+        return (
+          matchesName ||
+          matchesDynamicName ||
+          matchesSubstation ||
+          matchesSerial
+        );
       });
     }
 
@@ -2920,6 +2999,7 @@ export default function JobDetail() {
     assetStatusFilter,
     dynamicAssetNames,
     assetSubstations,
+    assetSerialNumbers,
     assetDateFilterActive,
     assetDateField,
     assetDateStart,
@@ -3300,6 +3380,7 @@ export default function JobDetail() {
       );
       setFilteredJobAssets(orderedAssets);
       setDynamicAssetNames({});
+      setAssetSerialNumbers({});
 
       // 3. For report assets, fetch linked report timestamps
       const reportAssetIds = orderedAssets
@@ -4957,6 +5038,7 @@ export default function JobDetail() {
       const nameUpdates: Record<string, string> = {};
       const substationUpdates: Record<string, string> = {};
       const evaluationUpdates: Record<string, EvaluationResult> = {};
+      const serialUpdates: Record<string, string[]> = {};
 
       // First, load substations from database for PDF reports and other assets that have it stored
       jobAssets.forEach((asset) => {
@@ -5118,6 +5200,10 @@ export default function JobDetail() {
                 : (inst as any)?.data;
             const sections = instData?.sections;
             if (!sections || typeof sections !== "object") return;
+            const formSerials = collectEquipmentSerials(sections);
+            if (formSerials.length > 0) {
+              serialUpdates[asset.id] = formSerials;
+            }
             let substation = "";
             let identifier = "";
             for (const sec of Object.values(sections)) {
@@ -5201,6 +5287,12 @@ export default function JobDetail() {
           const evaluation = extractEvaluationResult(data);
           if (evaluation) {
             evaluationUpdates[asset.id] = evaluation;
+          }
+
+          // Nameplate serial numbers, for the Reports search box
+          const serials = collectEquipmentSerials(data);
+          if (serials.length > 0) {
+            serialUpdates[asset.id] = serials;
           }
 
           // Heuristics to find the current asset identifier. Reports store it
@@ -5319,6 +5411,9 @@ export default function JobDetail() {
       }
       if (Object.keys(substationUpdates).length > 0) {
         setAssetSubstations((prev) => ({ ...prev, ...substationUpdates }));
+      }
+      if (Object.keys(serialUpdates).length > 0) {
+        setAssetSerialNumbers((prev) => ({ ...prev, ...serialUpdates }));
       }
       setAssetEvaluations(evaluationUpdates);
     })();
@@ -10892,7 +10987,7 @@ export default function JobDetail() {
                           </div>
                           <input
                             type="text"
-                            placeholder="Search assets..."
+                            placeholder="Search by name, substation, or serial number..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="h-10 w-full px-4 bg-white dark:bg-dark-150 text-dark-primary dark:text-dark-secondary border-2 border-dark-accent/30 dark:border-dark-300 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-dark-accent dark:focus:ring-dark-accent placeholder:text-dark-primary/40 dark:placeholder:text-dark-secondary/40 transition-colors"

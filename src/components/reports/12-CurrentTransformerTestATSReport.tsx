@@ -22,6 +22,7 @@ import { useSaveIndicator } from "./common/useSaveIndicator";
 import { ReportHeader } from "./common/ReportHeader";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import { useReportUserAutofill } from "./useReportUserAutofill";
+import { ensureReportAssetLink } from "./linkReportAsset";
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -1219,20 +1220,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
               user_id: user.id,
             };
 
-            const { data: assetResult } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert(assetData)
-              .select()
-              .single();
-
-            if (assetResult) {
-              await supabase.schema("neta_ops").from("job_assets").insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user.id,
-              });
-            }
+            await ensureReportAssetLink(jobId, assetData, user.id);
 
             setCurrentReportId(newReportId);
             creatingRef.current = false;
@@ -1361,18 +1349,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
               user_id: user.id,
               template_type: "ATS",
             };
-            const { data: assetResult, error: assetError } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert(assetData)
-              .select()
-              .single();
-            if (assetError) throw assetError;
-            await supabase.schema("neta_ops").from("job_assets").insert({
-              job_id: jobId,
-              asset_id: assetResult.id,
-              user_id: user.id,
-            });
+            await ensureReportAssetLink(jobId, assetData, user.id);
           } else {
             creatingRef.current = false;
           }

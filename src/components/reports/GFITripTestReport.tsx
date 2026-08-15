@@ -15,6 +15,7 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import Button from "@/components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 import { useReportUserAutofill } from "./useReportUserAutofill";
+import { ensureReportAssetLink } from "./linkReportAsset";
 
 interface FormData {
   // Job Information
@@ -324,20 +325,7 @@ const GFITripTestReport: React.FC = () => {
             user_id: user.id,
           };
 
-          const { data: assetResult, error: assetError } = await supabase
-            .schema("neta_ops")
-            .from("assets")
-            .insert(assetData)
-            .select()
-            .single();
-
-          if (assetError) throw assetError;
-
-          await supabase.schema("neta_ops").from("job_assets").insert({
-            job_id: jobId,
-            asset_id: assetResult.id,
-            user_id: user.id,
-          });
+          await ensureReportAssetLink(jobId, assetData, user.id);
         }
       }
 

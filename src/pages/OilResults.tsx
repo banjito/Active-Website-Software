@@ -10,7 +10,7 @@ import {
   saveConversion,
   type SavedConversion,
 } from "@/lib/oilReportStore";
-import { Trash2 } from "lucide-react";
+import { FlaskConical, Trash2 } from "lucide-react";
 import ConversionProgress, {
   type ConversionState,
 } from "@/components/oil/ConversionProgress";
@@ -241,21 +241,15 @@ const OilResults: React.FC = () => {
               </div>
             </div>
 
-            <svg
-              viewBox="0 0 48 48"
+            <FlaskConical
               className={`mx-auto h-12 w-12 transition-colors ${
                 dragOver
                   ? "stroke-brand"
                   : "stroke-neutral-400 dark:stroke-neutral-600"
               }`}
-              fill="none"
               strokeWidth={1.5}
               aria-hidden="true"
-            >
-              <path d="M14 6h14l8 8v28H14z" />
-              <path d="M28 6v8h8" />
-              <path d="M20 26h12M20 32h12" />
-            </svg>
+            />
             <p className="mt-4 text-lg font-bold text-neutral-900 dark:text-white">
               Drop a lab PDF to convert
             </p>

@@ -19,6 +19,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { BRAND_COLOR, BRAND_COLOR_DARK } from "@/lib/companyConfig";
 import { useReportUserAutofill } from "./useReportUserAutofill";
+import { ensureReportAssetLink } from "./linkReportAsset";
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -1069,20 +1070,7 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
               user_id: user.id,
             };
 
-            const { data: assetResult } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert(assetData)
-              .select()
-              .single();
-
-            if (assetResult) {
-              await supabase.schema("neta_ops").from("job_assets").insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user.id,
-              });
-            }
+            await ensureReportAssetLink(jobId, assetData, user.id);
 
             setCurrentReportId(newReportId);
             creatingRef.current = false;

@@ -24,6 +24,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import { useReportUserAutofill } from "./useReportUserAutofill";
+import { ensureReportAssetLink } from "./linkReportAsset";
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -1375,25 +1376,13 @@ const PanelboardReport: React.FC = () => {
               user_id: user.id,
             };
 
-            const { data: assetResult } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert(assetData)
-              .select()
-              .single();
-
-            if (assetResult) {
-              await supabase.schema("neta_ops").from("job_assets").insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user.id,
-              });
-              if (equipmentAssetId) {
-                await setReportAssetEquipmentLink(
-                  assetResult.id,
-                  equipmentAssetId,
-                );
-              }
+            const assetId = await ensureReportAssetLink(
+              jobId,
+              assetData,
+              user.id,
+            );
+            if (equipmentAssetId) {
+              await setReportAssetEquipmentLink(assetId, equipmentAssetId);
             }
 
             setCurrentReportId(newReportId);
@@ -1513,26 +1502,13 @@ const PanelboardReport: React.FC = () => {
               user_id: user.id,
             };
 
-            const { data: assetResult, error: assetError } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert(assetData)
-              .select()
-              .single();
-
-            if (assetError) throw assetError;
-
-            // Link asset to job
-            await supabase.schema("neta_ops").from("job_assets").insert({
-              job_id: jobId,
-              asset_id: assetResult.id,
-              user_id: user.id,
-            });
+            const assetId = await ensureReportAssetLink(
+              jobId,
+              assetData,
+              user.id,
+            );
             if (equipmentAssetId) {
-              await setReportAssetEquipmentLink(
-                assetResult.id,
-                equipmentAssetId,
-              );
+              await setReportAssetEquipmentLink(assetId, equipmentAssetId);
             }
           } else {
             creatingRef.current = false;

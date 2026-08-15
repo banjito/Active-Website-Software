@@ -18,6 +18,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { useReportUserAutofill } from "./useReportUserAutofill";
+import { ensureReportAssetLink } from "./linkReportAsset";
 
 // Temperature correction factor lookup table
 const tcfTable: { [key: string]: number } = {
@@ -676,18 +677,7 @@ const AppliedVoltageTestATSReport: React.FC = () => {
               file_url: `report:/jobs/${jobId}/${reportSlug}/${result.data.id}`,
               user_id: user.id,
             };
-            const { data: assetResult, error: assetError } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert(assetData)
-              .select()
-              .single();
-            if (assetError) throw assetError;
-            await supabase.schema("neta_ops").from("job_assets").insert({
-              job_id: jobId,
-              asset_id: assetResult.id,
-              user_id: user.id,
-            });
+            await ensureReportAssetLink(jobId, assetData, user.id);
           } else {
             creatingRef.current = false;
           }

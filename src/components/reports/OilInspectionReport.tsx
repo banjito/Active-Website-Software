@@ -20,6 +20,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { useReportUserAutofill } from "./useReportUserAutofill";
+import { ensureReportAssetLink } from "./linkReportAsset";
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -1611,20 +1612,11 @@ const OilInspectionReport: React.FC = () => {
             );
             const assetUrl = `report:/jobs/${jobId}/oil-inspection/${newReportId}`;
 
-            const { data: assetResult } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert({ name: assetName, file_url: assetUrl, user_id: user.id })
-              .select()
-              .single();
-
-            if (assetResult) {
-              await supabase.schema("neta_ops").from("job_assets").insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user.id,
-              });
-            }
+            await ensureReportAssetLink(
+              jobId,
+              { name: assetName, file_url: assetUrl, user_id: user.id },
+              user.id,
+            );
 
             setCurrentReportId(newReportId);
             isAutoSaveCreatedRef.current = true;

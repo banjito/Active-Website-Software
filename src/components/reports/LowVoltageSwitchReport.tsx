@@ -18,6 +18,7 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { ensureReportAssetLink } from "./linkReportAsset";
 
 const getVisualInspectionDescription = (section: string): string => {
   const descriptions: Record<string, string> = {
@@ -1142,21 +1143,7 @@ export default function LowVoltageSwitchReport() {
               user_id: user.id,
             };
 
-            const { data: assetResult, error: assetError } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert(assetData)
-              .select()
-              .single();
-
-            if (assetError) throw assetError;
-
-            // Link asset to job
-            await supabase.schema("neta_ops").from("job_assets").insert({
-              job_id: jobId,
-              asset_id: assetResult.id,
-              user_id: user.id,
-            });
+            await ensureReportAssetLink(jobId, assetData, user.id);
           }
         }
 

@@ -18,6 +18,7 @@ import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { useReportUserAutofill } from "./useReportUserAutofill";
+import { ensureReportAssetLink } from "./linkReportAsset";
 
 // Temperature correction factor lookup (same as other reports e.g. LV Circuit Breaker ATS 25)
 const tcfTable: { [key: string]: number } = {
@@ -638,31 +639,19 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
             reportIdRef.current = newReport.id;
             isAutoSaveCreatedRef.current = true;
             setCurrentReportId(newReport.id);
-            const { data: assetResult, error: assetErr } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert({
-                name: assetName,
-                file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
-                template_type: "ATS",
-                status: "in_progress",
-              })
-              .select()
-              .single();
-            if (assetErr) {
-              console.error("Auto-save asset insert failed:", assetErr);
-            } else if (assetResult) {
-              const { error: linkErr } = await supabase
-                .schema("neta_ops")
-                .from("job_assets")
-                .insert({
-                  job_id: jobId,
-                  asset_id: assetResult.id,
-                  user_id: user?.id,
-                });
-              if (linkErr) {
-                console.error("Auto-save job_assets link failed:", linkErr);
-              }
+            try {
+              await ensureReportAssetLink(
+                jobId,
+                {
+                  name: assetName,
+                  file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
+                  template_type: "ATS",
+                  status: "in_progress",
+                },
+                user?.id,
+              );
+            } catch (assetErr) {
+              console.error("Auto-save asset link failed:", assetErr);
             }
             window.history.replaceState(
               null,

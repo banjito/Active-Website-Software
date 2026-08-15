@@ -19,6 +19,7 @@ import {
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { ensureReportAssetLink } from "./linkReportAsset";
 
 const REPORT_SLUG = "grounding-fall-of-potential-slope-method-test";
 const TABLE_NAME = "grounding_fall_of_potential_slope_method_test_reports";
@@ -452,19 +453,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
             file_url: `report:/jobs/${jobId}/${REPORT_SLUG}/${substationFolder}/${result.data.id}`,
             user_id: user.id,
           };
-          const { data: assetResult } = await supabase
-            .schema("neta_ops")
-            .from("assets")
-            .insert(assetData)
-            .select()
-            .single();
-          if (assetResult?.id) {
-            await supabase.schema("neta_ops").from("job_assets").insert({
-              job_id: jobId,
-              asset_id: assetResult.id,
-              user_id: user.id,
-            });
-          }
+          await ensureReportAssetLink(jobId, assetData, user.id);
         }
       }
       if (result?.error) throw result.error;

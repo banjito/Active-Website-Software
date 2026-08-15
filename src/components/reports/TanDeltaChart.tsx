@@ -14,6 +14,7 @@ import { useReportLocked } from "./useReportLocked";
 import { ReportHeader } from "./common/ReportHeader";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { ensureReportAssetLink } from "./linkReportAsset";
 import {
   LineChart,
   Line,
@@ -277,21 +278,7 @@ const TanDeltaChart: React.FC = () => {
             user_id: user.id,
           };
 
-          const { data: assetResult, error: assetError } = await supabase
-            .schema("neta_ops")
-            .from("assets")
-            .insert(assetData)
-            .select()
-            .single();
-
-          if (assetError) throw assetError;
-
-          // Link asset to job
-          await supabase.schema("neta_ops").from("job_assets").insert({
-            job_id: jobId,
-            asset_id: assetResult.id,
-            user_id: user.id,
-          });
+          await ensureReportAssetLink(jobId, assetData, user.id);
         }
       }
 

@@ -11,6 +11,7 @@ import { EquipmentAutocomplete } from "@/components/equipment/EquipmentAutocompl
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { BRAND_COLOR } from "@/lib/companyConfig";
+import { ensureReportAssetLink } from "./linkReportAsset";
 
 // Temperature Correction Factor (TCF) lookup table – maps Celsius to correction factor
 const TCF_TABLE: Record<string, number> = {
@@ -513,19 +514,7 @@ const GroundingSystemMaster: React.FC = () => {
             file_url: `report:/jobs/${jobId}/${REPORT_SLUG}/${substationFolder}/${result.data.id}`,
             user_id: user.id,
           };
-          const { data: assetResult } = await supabase
-            .schema("neta_ops")
-            .from("assets")
-            .insert(assetData)
-            .select()
-            .single();
-          if (assetResult?.id) {
-            await supabase.schema("neta_ops").from("job_assets").insert({
-              job_id: jobId,
-              asset_id: assetResult.id,
-              user_id: user.id,
-            });
-          }
+          await ensureReportAssetLink(jobId, assetData, user.id);
         }
       }
 

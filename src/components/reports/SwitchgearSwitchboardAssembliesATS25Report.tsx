@@ -19,6 +19,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useReportUserAutofill } from "./useReportUserAutofill";
+import { ensureReportAssetLink } from "./linkReportAsset";
 
 // Dropdown options
 const VISUAL_INSPECTION_OPTIONS = [
@@ -1116,20 +1117,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
               user_id: user.id,
             };
 
-            const { data: assetResult } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert(assetData)
-              .select()
-              .single();
-
-            if (assetResult) {
-              await supabase.schema("neta_ops").from("job_assets").insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user.id,
-              });
-            }
+            await ensureReportAssetLink(jobId, assetData, user.id);
 
             setCurrentReportId(newReportId);
             creatingRef.current = false;
@@ -1272,19 +1260,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
               file_url: `report:/jobs/${jobId}/${reportSlug}/${result.data.id}`,
               user_id: user.id,
             };
-            const { data: assetResult } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert(assetData)
-              .select()
-              .single();
-            if (assetResult) {
-              await supabase.schema("neta_ops").from("job_assets").insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user.id,
-              });
-            }
+            await ensureReportAssetLink(jobId, assetData, user.id);
           } else {
             creatingRef.current = false;
           }

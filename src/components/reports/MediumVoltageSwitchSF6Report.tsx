@@ -8,6 +8,11 @@ import { useDemoMode } from "@/lib/DemoModeContext";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { SaveStatusBanner } from "./common/SaveStatusBanner";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 type ResultOption =
   | "Select One"
@@ -929,8 +934,10 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
           throw insertError;
         }
       }
+      reportSaveSucceeded();
     } catch (error) {
       console.error("Auto-save error:", error);
+      reportSaveFailed(error);
     } finally {
       setIsAutoSaving(false);
       if (pendingSaveRef.current) {
@@ -1411,6 +1418,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
 
   return (
     <div id="report-container" className="w-full overflow-visible">
+      <SaveStatusBanner />
       <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
         <ReportHeader
           title="Medium Voltage Way Switch (SF6)"

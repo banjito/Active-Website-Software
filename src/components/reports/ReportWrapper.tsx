@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import { ReportPhotosPrintSection } from "./common/ReportPhotos";
+import { SaveStatusBanner } from "./common/SaveStatusBanner";
 
 interface ReportWrapperProps {
   children: React.ReactNode;
@@ -2119,6 +2120,9 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
       className={`w-full max-w-4xl mx-auto p-6 pb-20 ${isPrintMode ? "print-mode" : ""} ${isReportLocked ? "report-locked" : ""} overflow-x-auto screen-min-height`}
     >
       {/* Locked banner is shown once by Layout.tsx for all report pages */}
+      {/* Warns the technician when auto-save stops reaching the server, which
+          used to happen silently and cost completed reports. */}
+      <SaveStatusBanner />
       {children}
       {/* Attached photos print after the report body, below the Comments
           section (the last printed section in the standard layout). */}

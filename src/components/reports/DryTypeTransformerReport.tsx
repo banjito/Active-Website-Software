@@ -18,6 +18,10 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ReportHeader } from "@/components/reports/common/ReportHeader";
 import { useReportUserAutofill } from "./useReportUserAutofill";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 // Temperature conversion and TCF tables
 const tempConvTable = [
@@ -1020,8 +1024,10 @@ const DryTypeTransformerReport: React.FC = () => {
           throw insertError;
         }
       }
+      reportSaveSucceeded();
     } catch (error: any) {
-      console.error("Autosave error:", error);
+      console.error("Auto-save error:", error);
+      reportSaveFailed(error);
     } finally {
       setIsAutoSaving(false);
       if (manualSavePendingRef.current) {

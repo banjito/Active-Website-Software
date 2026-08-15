@@ -19,6 +19,10 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 // Temperature correction factor lookup (same as other reports e.g. LV Circuit Breaker ATS 25)
 const tcfTable: { [key: string]: number } = {
@@ -666,8 +670,10 @@ const EmergencySystemsEngineGeneratorATS25Report: React.FC = () => {
           throw insertError;
         }
       }
+      reportSaveSucceeded();
     } catch (err) {
       console.error("Auto-save error:", err);
+      reportSaveFailed(err);
     } finally {
       savingInFlightRef.current = false;
       setIsAutoSaving(false);

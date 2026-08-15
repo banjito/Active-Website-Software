@@ -20,6 +20,10 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { BRAND_COLOR, BRAND_COLOR_DARK } from "@/lib/companyConfig";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -1088,8 +1092,10 @@ const TwoSmallDryTyperXfmrMTSReport: React.FC = () => {
           throw insertError;
         }
       }
+      reportSaveSucceeded();
     } catch (error) {
       console.error("Auto-save error:", error);
+      reportSaveFailed(error);
     } finally {
       setIsAutoSaving(false);
       if (pendingSaveRef.current) {

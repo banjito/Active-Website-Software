@@ -19,6 +19,10 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 const VISUAL_INSPECTION_OPTIONS = [
   "Select One",
@@ -850,8 +854,10 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
           throw insertError;
         }
       }
+      reportSaveSucceeded();
     } catch (error) {
       console.error("Auto-save error:", error);
+      reportSaveFailed(error);
     } finally {
       setIsAutoSaving(false);
       if (pendingSaveRef.current) {

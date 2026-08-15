@@ -19,6 +19,10 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 // Temperature correction factor lookup table
 const tcfTable: { [key: string]: number } = {
@@ -559,8 +563,10 @@ const AppliedVoltageTestATSReport: React.FC = () => {
           throw insertError;
         }
       }
+      reportSaveSucceeded();
     } catch (error) {
-      console.error("Autosave error:", error);
+      console.error("Auto-save error:", error);
+      reportSaveFailed(error);
     } finally {
       setIsAutoSaving(false);
       if (pendingSaveRef.current) {

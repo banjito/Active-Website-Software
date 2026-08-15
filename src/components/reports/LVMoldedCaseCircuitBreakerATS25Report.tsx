@@ -18,6 +18,10 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useReportUserAutofill } from "./useReportUserAutofill";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -1365,8 +1369,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           throw insertError;
         }
       }
+      reportSaveSucceeded();
     } catch (err) {
       console.error("Auto-save error:", err);
+      reportSaveFailed(err);
     } finally {
       setIsAutoSaving(false);
       if (pendingSaveRef.current) {

@@ -20,6 +20,10 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 // Dropdown options
 const VISUAL_INSPECTION_OPTIONS = [
@@ -1135,8 +1139,10 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
           throw insertError;
         }
       }
+      reportSaveSucceeded();
     } catch (error) {
       console.error("Auto-save error:", error);
+      reportSaveFailed(error);
     } finally {
       setIsAutoSaving(false);
       if (pendingSaveRef.current) {

@@ -19,6 +19,11 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import { SaveStatusBanner } from "./common/SaveStatusBanner";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 // Types
 interface CableTestData {
@@ -1742,8 +1747,10 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
           throw insertError;
         }
       }
+      reportSaveSucceeded();
     } catch (err) {
       console.error("Auto-save error:", err);
+      reportSaveFailed(err);
     } finally {
       savingInFlightRef.current = false;
       setIsAutoSaving(false);
@@ -2121,6 +2128,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
       className="w-full overflow-visible"
       style={{ minHeight: "calc(100vh + 300px)", paddingBottom: "200px" }}
     >
+      <SaveStatusBanner />
       {/* Print Header - Only visible when printing */}
       <div className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6">
         <img

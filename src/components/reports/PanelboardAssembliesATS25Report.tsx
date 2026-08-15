@@ -15,6 +15,10 @@ import { useSaveIndicator } from "./common/useSaveIndicator";
 import { ReportHeader } from "./common/ReportHeader";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 const VISUAL_INSPECTION_OPTIONS = [
   "Select One",
@@ -990,8 +994,10 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
           throw insertError;
         }
       }
+      reportSaveSucceeded();
     } catch (error) {
       console.error("Auto-save error:", error);
+      reportSaveFailed(error);
     } finally {
       setIsAutoSaving(false);
       if (pendingSaveRef.current) {

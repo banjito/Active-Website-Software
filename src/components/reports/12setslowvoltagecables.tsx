@@ -20,6 +20,10 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 // Types
 interface CableTestData {
@@ -2404,8 +2408,10 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
           throw insertError;
         }
       }
+      reportSaveSucceeded();
     } catch (err) {
       console.error("Auto-save error:", err);
+      reportSaveFailed(err);
     } finally {
       savingInFlightRef.current = false;
       setIsAutoSaving(false);

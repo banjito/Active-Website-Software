@@ -42,6 +42,21 @@ const args = process.argv.slice(2);
 const APPLY = args.includes("--apply");
 const JOB_ID = args[args.indexOf("--job") + 1] && args.includes("--job") ? args[args.indexOf("--job") + 1] : null;
 const CSV_PATH = args.includes("--csv") ? args[args.indexOf("--csv") + 1] : null;
+const numArg = (flag, fallback) => {
+  const i = args.indexOf(flag);
+  return i === -1 ? fallback : Number(args[i + 1]);
+};
+
+// Guards that make this safe to run unattended.
+//
+// A report still being edited is left alone: the app is creating its asset at
+// that moment, and racing it would produce two assets for one report.
+const SETTLE_MINUTES = numArg("--settle-minutes", 30);
+// A report with no equipment name on it cannot be filed against anything, and
+// in practice these are forms someone opened and walked away from. Real lost
+// work has an identifier and a full set of readings. Anything below the bar is
+// reported for a human to look at rather than pushed onto the job.
+const MIN_FIELDS = numArg("--min-fields", 100);
 
 // Report tables this script knows how to repair. `identifiers` are the
 // report_data fields that hold the equipment name, best first.
@@ -109,7 +124,19 @@ for (const spec of TABLES) {
 
     const d = r[spec.dataColumn] || {};
     const identifier = spec.identifiers.map((k) => d[k]).find((v) => typeof v === "string" && v.trim())?.trim() || "";
+    const touchedAt = new Date(r.updated_at || r.created_at).getTime();
+    const ageMinutes = (Date.now() - touchedAt) / 60000;
+    const fields = filledFields(d);
+    const skipReason =
+      ageMinutes < SETTLE_MINUTES
+        ? `still being edited (${Math.round(ageMinutes)} min ago)`
+        : !identifier
+          ? "no equipment name on the report"
+          : fields < MIN_FIELDS
+            ? `looks like an abandoned draft (${fields} filled fields)`
+            : null;
     rows.push({
+      skipReason,
       spec,
       report: r,
       url,
@@ -122,21 +149,30 @@ for (const spec of TABLES) {
       testDate: d.date || "",
       status: d.status || "",
       serial: d.serialNumber || "",
-      fields: filledFields(d),
+      fields,
       link: `${APP_URL}/jobs/${r.job_id}/${spec.slug}/${r.id}`,
     });
   }
 }
 
 rows.sort((a, b) => b.fields - a.fields);
+const repairable = rows.filter((r) => !r.skipReason);
+const skipped = rows.filter((r) => r.skipReason);
+
 console.log(`\nOrphans found: ${rows.length}${JOB_ID ? ` (job ${JOB_ID})` : ""}`);
-rows.forEach((r) =>
+repairable.forEach((r) =>
   console.log(`  ${String(r.fields).padStart(3)} fields | ${r.identifier || "(no equipment name)"} | ${r.substation} | ${r.testDate} | ${r.problem}`),
 );
+if (skipped.length) {
+  console.log(`\nHeld back (${skipped.length}), reported but not touched:`);
+  skipped.forEach((r) =>
+    console.log(`  ${r.identifier || "(no equipment name)"} | ${r.skipReason}`),
+  );
+}
 
 if (APPLY) {
   let repaired = 0;
-  for (const r of rows) {
+  for (const r of repairable) {
     let assetId = r.asset?.id;
     if (!assetId) {
       const { data, error } = await write
@@ -168,24 +204,24 @@ if (APPLY) {
     r.restoredAssetId = assetId;
     repaired++;
   }
-  console.log(`\nRestored ${repaired}/${rows.length}`);
+  console.log(`\nRestored ${repaired}/${repairable.length}${skipped.length ? ` (${skipped.length} held back)` : ""}`);
 } else {
-  console.log("\nDry run. Nothing written. Re-run with --apply to restore these.");
+  console.log(`\nDry run. Nothing written. Re-run with --apply to restore ${repairable.length}.`);
 }
 
 if (CSV_PATH) {
   const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const header = [
     "equipment", "substation", "test_date", "technicians", "result", "serial_number",
-    "filled_fields", "likely_blank_draft", "problem", "restored", "report_id", "job_id", "link",
+    "filled_fields", "held_back_reason", "problem", "restored", "report_id", "job_id", "link",
   ];
   const lines = [header.join(",")];
   rows.forEach((r) =>
     lines.push(
       [
         r.identifier || "(no equipment name)", r.substation, r.testDate, r.technicians, r.status, r.serial,
-        r.fields, r.fields < 100 && !r.serial ? "yes" : "no", r.problem,
-        APPLY ? (r.restoredAssetId ? "yes" : "failed") : "dry-run",
+        r.fields, r.skipReason || "", r.problem,
+        r.skipReason ? "held back" : APPLY ? (r.restoredAssetId ? "yes" : "failed") : "dry-run",
         r.report.id, r.report.job_id, r.link,
       ].map(esc).join(","),
     ),

@@ -12,6 +12,11 @@ import { getAssetName } from "./reportMappings";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import { SaveStatusBanner } from "./common/SaveStatusBanner";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 type ResultOption =
   | "Select One"
@@ -1700,8 +1705,10 @@ const PotentialTransformerATSReport: React.FC = () => {
           throw insertError;
         }
       }
+      reportSaveSucceeded();
     } catch (error) {
       console.error("Auto-save error:", error);
+      reportSaveFailed(error);
     } finally {
       setIsAutoSaving(false);
       if (pendingSaveRef.current) {
@@ -1865,6 +1872,7 @@ const PotentialTransformerATSReport: React.FC = () => {
 
   return (
     <div className="p-6 flex justify-center" id="report-container">
+      <SaveStatusBanner />
       <div className="max-w-7xl w-full space-y-6">
         {/* Print-only Header */}
         <div className="hidden print:flex justify-between items-center mb-6 pb-4 border-b-2 border-black">

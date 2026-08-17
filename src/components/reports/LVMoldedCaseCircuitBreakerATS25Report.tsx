@@ -11,6 +11,7 @@ import { useDemoMode } from "@/lib/DemoModeContext";
 import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
 import { ReportWrapper } from "./ReportWrapper";
 import { ReportHeader } from "./common/ReportHeader";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
@@ -658,30 +659,45 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
   const { maskCustomerName, maskCustomerAddress } = useDemoMode();
+  // Auto-save rewrites the URL with history.replaceState once it has created the
+  // report, and react-router's params never see that. Fall back to the address
+  // bar so a re-render or re-mount recognises the report already on screen
+  // instead of deciding there isn't one yet and creating a second copy.
+  const openReportId = initialReportId ?? reportIdFromUrl();
+
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(!initialReportId);
+  const [isEditing, setIsEditing] = useState(!openReportId);
   const [justSaved, setJustSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [currentReportId, setCurrentReportId] = useState<string | undefined>(
-    initialReportId,
+    openReportId,
   );
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
-  const reportIdRef = React.useRef<string | undefined>(initialReportId);
-  const creatingRef = React.useRef(false);
-  const pendingSaveRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(openReportId);
+  /** A save is in flight; a second one must not start alongside it. */
+  const savingRef = React.useRef(false);
+  /** Something changed mid-save; run once more when the current save lands. */
+  const saveAgainRef = React.useRef(false);
+  /** The asset row + job link have been confirmed for this report. */
+  const assetLinkedRef = React.useRef(false);
+  /** An existing report failed to load; the form on screen is not its data. */
+  const loadFailedRef = React.useRef(false);
 
   // When the reportId in the URL changes (e.g. after "Copy nameplate to new report" navigates),
   // sync state so we load and show the new report instead of keeping the old one
   useEffect(() => {
-    setCurrentReportId(initialReportId);
+    const routeReportId = initialReportId ?? reportIdFromUrl();
+    setCurrentReportId(routeReportId);
     // Keep the ref in sync too — autosave writes to reportIdRef.current, so a
     // stale ref after navigation overwrites the previous report's data
-    reportIdRef.current = initialReportId;
-    setIsEditing(!initialReportId);
+    reportIdRef.current = routeReportId;
+    setIsEditing(!routeReportId);
     isAutoSaveCreatedRef.current = false;
-    if (initialReportId) {
+    // A different report is on screen now; its asset link is unverified again.
+    assetLinkedRef.current = false;
+    if (routeReportId) {
       setLoading(true);
     }
   }, [initialReportId]);
@@ -1278,8 +1294,12 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
         });
         setIsEditing(false);
       }
+      loadFailedRef.current = false;
     } catch (err) {
       console.error("Error loading report:", err);
+      // The form is showing defaults, not this report. Auto-save must not push
+      // those defaults over readings that are still in the database.
+      loadFailedRef.current = true;
       setError("Failed to load report");
     } finally {
       setLoading(false);
@@ -1294,93 +1314,113 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
     init();
   }, [jobId, currentReportId]);
 
+  // Saves must send what is on screen *now*, not what was on screen when the
+  // save was queued. A queued save carrying an older snapshot used to land after
+  // a newer one and put a half-typed breaker identifier back on the report.
+  const formDataRef = React.useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+
+  /**
+   * Writes the report. Every save -- auto-save, the Save button, the copy
+   * button -- goes through here, and they all write to one row.
+   *
+   * The row's id is decided *before* the request leaves the browser and kept in
+   * `reportIdRef`, so a save that starts while another is still in flight, or
+   * one queued from an earlier keystroke, upserts over the same row. This used
+   * to be an insert guarded by a "am I already creating?" flag, and every way
+   * that flag could be lost -- a failed request, a re-mount, a stale closure --
+   * put another copy of the same breaker on the job.
+   *
+   * Returns the report id.
+   */
+  const persistReport = React.useCallback(async () => {
+    if (!jobId) return undefined;
+    if (loadFailedRef.current) {
+      throw new Error(
+        "This report could not be loaded, so it was not saved. Reload the page and try again.",
+      );
+    }
+
+    const isNewReport = !reportIdRef.current;
+    if (isNewReport) {
+      // Claimed synchronously: nothing else can now decide to create a row.
+      reportIdRef.current = newReportId();
+    }
+    const reportId = reportIdRef.current as string;
+    const currentFormData = formDataRef.current;
+
+    const { error } = await supabase
+      .schema("neta_ops")
+      .from("lv_molded_case_circuit_breaker_ats25")
+      .upsert(
+        {
+          id: reportId,
+          job_id: jobId,
+          user_id: user?.id,
+          report_data: currentFormData,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" },
+      );
+    if (error) throw error;
+
+    if (!assetLinkedRef.current) {
+      await ensureReportAssetLink(
+        jobId,
+        {
+          name: getAssetName(reportSlug, currentFormData.breakerIdentifier),
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${reportId}`,
+          template_type: "ATS",
+          status: "in_progress",
+        },
+        user?.id,
+      );
+      assetLinkedRef.current = true;
+    }
+
+    if (isNewReport) {
+      setCurrentReportId(reportId);
+      isAutoSaveCreatedRef.current = true;
+      window.history.replaceState(
+        null,
+        "",
+        `/jobs/${jobId}/${reportSlug}/${reportId}`,
+      );
+    }
+
+    return reportId;
+  }, [jobId, user?.id, reportSlug]);
+
   // Auto-save functionality
   const autoSave = React.useCallback(async () => {
     if (!jobId || !isEditing) return;
 
-    setIsAutoSaving(true);
+    // One save at a time. Anything typed while this one is in flight is picked
+    // up by the follow-up pass below, which reads the form fresh.
+    if (savingRef.current) {
+      saveAgainRef.current = true;
+      return;
+    }
+    savingRef.current = true;
 
     try {
-      const dataToSave = {
-        job_id: jobId,
-        user_id: user?.id,
-        report_data: formData,
-        updated_at: new Date().toISOString(),
-      };
-
-      if (reportIdRef.current) {
-        const { error } = await supabase
-          .schema("neta_ops")
-          .from("lv_molded_case_circuit_breaker_ats25")
-          .update(dataToSave)
-          .eq("id", reportIdRef.current);
-
-        if (error) throw error;
-      } else if (creatingRef.current) {
-        pendingSaveRef.current = true;
-      } else {
-        creatingRef.current = true;
-        try {
-          const assetName = getAssetName(
-            reportSlug,
-            formData.breakerIdentifier,
-          );
-
-          const { data: newReport, error } = await supabase
-            .schema("neta_ops")
-            .from("lv_molded_case_circuit_breaker_ats25")
-            .insert({
-              ...dataToSave,
-              created_at: new Date().toISOString(),
-            })
-            .select()
-            .single();
-
-          if (error) {
-            creatingRef.current = false;
-            throw error;
-          }
-
-          if (newReport) {
-            reportIdRef.current = newReport.id;
-            isAutoSaveCreatedRef.current = true;
-            setCurrentReportId(newReport.id);
-            await ensureReportAssetLink(
-              jobId,
-              {
-                name: assetName,
-                file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
-                template_type: "ATS",
-                status: "in_progress",
-              },
-              user?.id,
-            );
-
-            window.history.replaceState(
-              null,
-              "",
-              `/jobs/${jobId}/${reportSlug}/${newReport.id}`,
-            );
-          } else {
-            creatingRef.current = false;
-          }
-        } catch (insertError) {
-          creatingRef.current = false;
-          throw insertError;
-        }
-      }
+      setIsAutoSaving(true);
+      do {
+        saveAgainRef.current = false;
+        await persistReport();
+      } while (saveAgainRef.current);
       reportSaveSucceeded();
     } catch (err) {
       console.error("Auto-save error:", err);
       reportSaveFailed(err);
     } finally {
+      savingRef.current = false;
+      saveAgainRef.current = false;
       setIsAutoSaving(false);
-      if (pendingSaveRef.current) {
-        pendingSaveRef.current = false;
-        setTimeout(() => autoSave(), 0);
-      }
     }
-  }, [formData, jobId, isEditing, user]);
+  }, [jobId, isEditing, persistReport]);
 
   // Debounce auto-save
   useEffect(() => {
@@ -1405,91 +1445,15 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
     if (!jobId) return;
     setIsSaving(true);
 
+    // Only a report this save had to create navigates / leaves edit mode.
+    const wasExistingReport = Boolean(reportIdRef.current);
+
     try {
-      const assetName = getAssetName(reportSlug, formData.breakerIdentifier);
-
-      const dataToSave = {
-        job_id: jobId,
-        user_id: user?.id,
-        report_data: formData,
-        updated_at: new Date().toISOString(),
-      };
-
-      let savedReportId: string | undefined;
-      // Use the ref as the source of truth for the report's identity so a manual
-      // save and an in-flight autosave can't each insert a separate row. (state
-      // `currentReportId` updates a render late, which is what duplicated reports.)
-      const existingId = reportIdRef.current || currentReportId;
-      if (existingId) {
-        const { error } = await supabase
-          .schema("neta_ops")
-          .from("lv_molded_case_circuit_breaker_ats25")
-          .update(dataToSave)
-          .eq("id", existingId);
-
-        if (error) throw error;
-
-        // Idempotent: renames the asset, and re-creates it if a past save lost
-        // it, so a report can never stay stranded off the job.
-        await ensureReportAssetLink(
-          jobId,
-          {
-            name: assetName,
-            file_url: `report:/jobs/${jobId}/${reportSlug}/${existingId}`,
-            template_type: "ATS",
-            status: "in_progress",
-          },
-          user?.id,
-        );
-      } else if (creatingRef.current) {
-        // Autosave is already creating this report — let it finish (and pick up
-        // the latest data) instead of inserting a duplicate.
-        pendingSaveRef.current = true;
-      } else {
-        creatingRef.current = true;
-        try {
-          const { data: newReport, error } = await supabase
-            .schema("neta_ops")
-            .from("lv_molded_case_circuit_breaker_ats25")
-            .insert({
-              ...dataToSave,
-              created_at: new Date().toISOString(),
-            })
-            .select()
-            .single();
-
-          if (error) {
-            creatingRef.current = false;
-            throw error;
-          }
-
-          if (newReport) {
-            savedReportId = newReport.id;
-            // Set the ref immediately so a pending autosave routes to UPDATE.
-            reportIdRef.current = newReport.id;
-            setCurrentReportId(newReport.id);
-            await ensureReportAssetLink(
-              jobId,
-              {
-                name: assetName,
-                file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
-                template_type: "ATS",
-                status: "in_progress",
-              },
-              user?.id,
-            );
-          } else {
-            creatingRef.current = false;
-          }
-        } catch (insertError) {
-          creatingRef.current = false;
-          throw insertError;
-        }
-      }
-
+      const savedReportId = await persistReport();
+      reportSaveSucceeded();
       setJustSaved(true);
-      // Only a genuine new insert navigates / leaves edit mode.
-      if (savedReportId) {
+
+      if (!wasExistingReport && savedReportId) {
         setIsEditing(false);
         navigate(`/jobs/${jobId}/${reportSlug}/${savedReportId}`, {
           replace: true,
@@ -1497,6 +1461,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
       }
     } catch (err) {
       console.error("Save error:", err);
+      reportSaveFailed(err);
       setError("Failed to save report");
     } finally {
       setIsSaving(false);
@@ -1518,60 +1483,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
     }
 
     try {
-      // First, save the current report
-      const currentDataToSave = {
-        job_id: jobId,
-        user_id: user.id,
-        report_data: formData,
-        updated_at: new Date().toISOString(),
-      };
-
-      if (currentReportId) {
-        await supabase
-          .schema("neta_ops")
-          .from("lv_molded_case_circuit_breaker_ats25")
-          .update(currentDataToSave)
-          .eq("id", currentReportId);
-
-        // This flow navigates away next, so make sure the report we are leaving
-        // is attached to the job before we go.
-        await ensureReportAssetLink(
-          jobId,
-          {
-            name: getAssetName(reportSlug, formData.breakerIdentifier),
-            file_url: `report:/jobs/${jobId}/${reportSlug}/${currentReportId}`,
-            template_type: "ATS",
-            status: "in_progress",
-          },
-          user.id,
-        );
-      } else {
-        // If current report doesn't exist, create it first
-        const { data: currentReport } = await supabase
-          .schema("neta_ops")
-          .from("lv_molded_case_circuit_breaker_ats25")
-          .insert({
-            ...currentDataToSave,
-            created_at: new Date().toISOString(),
-          })
-          .select()
-          .single();
-
-        if (currentReport) {
-          // Must be awaited: this flow navigates to the new report immediately
-          // afterwards, and an un-awaited link insert is cancelled in flight,
-          // which is what stranded reports saved through "Save & New".
-          await ensureReportAssetLink(
-            jobId,
-            {
-              name: getAssetName(reportSlug, formData.breakerIdentifier),
-              file_url: `report:/jobs/${jobId}/${reportSlug}/${currentReport.id}`,
-              template_type: "ATS",
-              status: "in_progress",
-            },
-            user.id,
-          );
-        }
+      // Finish the report on screen first, through the same one-row-per-report
+      // save the rest of the form uses. It also attaches the report we are
+      // leaving to the job, which matters because we navigate away next.
+      if (!(await persistReport())) {
+        throw new Error("Failed to save current report.");
       }
 
       // Create new report data with ONLY nameplate data copied (excluding serial number)
@@ -1825,22 +1741,24 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
         irDlroOnly: false,
       };
 
-      // Create the new report
-      const { data: newReport, error: newReportError } = await supabase
+      // Create the new report on an id claimed up front, so a retry or a double
+      // click lands on the same row rather than making a second blank breaker.
+      const copyReportId = newReportId();
+      const { error: newReportError } = await supabase
         .schema("neta_ops")
         .from("lv_molded_case_circuit_breaker_ats25")
-        .insert({
-          job_id: jobId,
-          user_id: user.id,
-          report_data: newReportData,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
+        .upsert(
+          {
+            id: copyReportId,
+            job_id: jobId,
+            user_id: user.id,
+            report_data: newReportData,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "id" },
+        );
 
       if (newReportError) throw newReportError;
-      if (!newReport) throw new Error("Failed to create new report");
 
       // Attach the new report to the job before opening it. If this fails the
       // next save repairs it, so warn rather than block the technician.
@@ -1849,7 +1767,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           jobId,
           {
             name: getAssetName(reportSlug, ""),
-            file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
+            file_url: `report:/jobs/${jobId}/${reportSlug}/${copyReportId}`,
             template_type: "ATS",
             status: "in_progress",
           },
@@ -1862,8 +1780,16 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
         );
       }
 
+      // Switch the form over to the copy. The refs move in the same breath as
+      // the id, so an auto-save landing right now cannot write the finished
+      // breaker's readings into the blank one.
+      reportIdRef.current = copyReportId;
+      formDataRef.current = newReportData;
+      assetLinkedRef.current = true;
+      isAutoSaveCreatedRef.current = true;
+
       // Open the new report so user can start the next one immediately
-      navigate(`/jobs/${jobId}/${reportSlug}/${newReport.id}`, {
+      navigate(`/jobs/${jobId}/${reportSlug}/${copyReportId}`, {
         replace: true,
       });
     } catch (err) {
@@ -1872,7 +1798,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
         `Failed to create new report: ${err instanceof Error ? err.message : "Unknown error"}`,
       );
     }
-  }, [formData, jobId, isEditing, user, currentReportId, navigate, reportSlug]);
+  }, [formData, jobId, isEditing, user, navigate, persistReport, reportSlug]);
 
   // Handle form changes with nested path support
   const handleChange = (path: string, value: any) => {

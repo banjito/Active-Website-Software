@@ -21,6 +21,11 @@
  * Rule 3 is the one that matters: a row carrying any reading the keeper does not
  * have is never removed. Those are printed as "needs a look" and left alone.
  *
+ * On top of that, a pair where *neither* report names its equipment is held back
+ * unless you pass --include-unnamed. Identical readings prove nothing there:
+ * breakers on one panel genuinely test alike, so with no name on either report
+ * there is nothing saying they are the same device rather than two of them.
+ *
  * Removing means deleting the `job_assets` link, which is exactly what the app's
  * own delete-report button does: the report row and its asset stay in the
  * database, the report just stops appearing on the job. Every removal is written
@@ -33,10 +38,11 @@
  *   node scripts/dedupe-reports.mjs --apply                  # actually unlink
  *   node scripts/dedupe-reports.mjs --undo manifest.json     # put them back
  *
- * Reads of report tables need a staff login (service_role has no grant on them
- * and anon is filtered by RLS). Pass --email/--password, or set AMPOS_EMAIL and
- * AMPOS_PASSWORD in the environment. Assets and links use the service role key
- * from .env.
+ * Reading report tables needs a staff session: service_role has no grant on them
+ * and anon is filtered by RLS, so neither key in .env can see them. Easiest is
+ * to borrow the session out of your browser with --access-token (the error text
+ * tells you how); --email/--password and --use-renderer also work. Assets and
+ * job links use the service role key from .env.
  */
 import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
@@ -66,6 +72,12 @@ const UNDO_PATH = value("--undo");
 const WINDOW_MINUTES = num("--window", 60);
 /** Reports touched this recently are left alone; someone may be in them now. */
 const SETTLE_MINUTES = num("--settle-minutes", 30);
+/**
+ * Also sweep pairs where neither report names its equipment. Held back by
+ * default: identical readings are normal across breakers on one panel, so
+ * without a name there is nothing that says these are the same device.
+ */
+const INCLUDE_UNNAMED = flag("--include-unnamed");
 const MANIFEST_PATH = value(
   "--manifest",
   path.join(ROOT, "duplicate-reports-removed.json"),
@@ -101,34 +113,60 @@ if (UNDO_PATH) {
   process.exit(0);
 }
 
-// ---------------------------------------------------------------- staff login
+// ---------------------------------------------------------------- staff session
 
-// --use-renderer borrows the PDF renderer's service account out of .env. It is
-// there to answer "is my password wrong, or is sign-in broken?" without putting
-// a password on the command line. Prefer a real staff account for the real run:
-// the renderer only sees what it needs in order to render, so a run under it can
-// come back with less than the whole picture.
+// --use-renderer borrows the PDF renderer's service account out of .env, so a
+// password never has to go on the command line.
 const useRenderer = flag("--use-renderer");
+const accessToken = value("--access-token", process.env.AMPOS_ACCESS_TOKEN);
 const email = useRenderer
   ? process.env.RENDERER_EMAIL
   : value("--email", process.env.AMPOS_EMAIL);
 const password = useRenderer
   ? process.env.RENDERER_PASSWORD
   : value("--password", process.env.AMPOS_PASSWORD);
-if (!email || !password) {
+
+if (!accessToken && !(email && password)) {
   console.error(
-    useRenderer
-      ? "RENDERER_EMAIL / RENDERER_PASSWORD are not both set in .env."
-      : "A staff login is required to read report tables.\n" +
-          "  node scripts/dedupe-reports.mjs --email you@company.com --password '...'\n" +
-          "or set AMPOS_EMAIL / AMPOS_PASSWORD in the environment.\n" +
-          "  --use-renderer   sign in with the renderer account from .env instead",
+    "Reading report tables needs a staff session. Pick one:\n\n" +
+      "  --access-token <jwt>   borrow the session from your browser (see below)\n" +
+      "  --email / --password   sign in here (or AMPOS_EMAIL / AMPOS_PASSWORD)\n" +
+      "  --use-renderer         sign in as RENDERER_EMAIL from .env\n\n" +
+      "To get a token: sign in to the app, open DevTools > Console, and run\n\n" +
+      "  (() => { for (const [k, raw] of Object.entries(localStorage)) {\n" +
+      "      let v = raw; if (typeof v !== 'string') continue;\n" +
+      "      if (v.startsWith('base64-')) { try { v = atob(v.slice(7)); } catch { continue; } }\n" +
+      "      if (!v.includes('access_token')) continue;\n" +
+      "      try { const o = JSON.parse(v); const t = o.access_token || o.currentSession?.access_token;\n" +
+      "        if (t) return t; } catch {}\n" +
+      "    } return 'NO SESSION FOUND'; })()\n\n" +
+      "then  export AMPOS_ACCESS_TOKEN='<the long ey... string>'\n" +
+      "(the app keeps its session under a custom storage key, so scan rather than\n" +
+      " guess the key name -- see storageKey in src/lib/supabase.ts)",
   );
   process.exit(1);
 }
 
-const read = createClient(VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY);
-{
+// A token from the browser is handed to PostgREST as-is; signing in here gets
+// one the same way the app does. Either way `read` acts as that staff user.
+const read = accessToken
+  ? createClient(VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: `Bearer ${accessToken}` } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    })
+  : createClient(VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY);
+
+if (accessToken) {
+  const { data, error } = await read.auth.getUser(accessToken);
+  if (error || !data?.user) {
+    console.error(
+      `That access token was not accepted: ${error?.message || "no user on it"}.\n` +
+        "Tokens last about an hour; sign in to the app again and copy a fresh one.",
+    );
+    process.exit(1);
+  }
+  console.log(`Using the browser session of ${data.user.email}`);
+} else {
   const { error } = await read.auth.signInWithPassword({ email, password });
   if (error) {
     console.error(`Could not sign in as ${email}: ${error.message}`);
@@ -216,7 +254,14 @@ function findKey(value, key, depth = 0) {
  * compared leaf by leaf instead of by a whole-object equality that any stray
  * timestamp would break.
  */
-function leaves(value, prefix = "", out = new Map(), depth = 0) {
+function leaves(value, prefix = "", out = new Map(), depth = 0, key = "") {
+  // The equipment name is deliberately not compared. It is the field that
+  // differs by definition between a half-typed save and the finished one
+  // ("SWBD" vs "SWBD-RPP-9A-2"), so comparing it would veto every match it is
+  // supposed to prove. Whether two rows are the same equipment is decided by
+  // the prefix rule instead; this map answers the separate question of whether
+  // one row's *readings* are all present on the other.
+  if (IDENTIFIER_KEYS.includes(key)) return out;
   if (depth > 8 || value == null) return out;
   if (typeof value === "string") {
     const t = value.trim();
@@ -231,7 +276,7 @@ function leaves(value, prefix = "", out = new Map(), depth = 0) {
   if (typeof value === "object") {
     for (const [k, v] of Object.entries(value)) {
       if (depth === 0 && META_COLUMNS.has(k)) continue;
-      leaves(v, prefix ? `${prefix}.${k}` : k, out, depth + 1);
+      leaves(v, prefix ? `${prefix}.${k}` : k, out, depth + 1, k);
     }
   }
   return out;
@@ -319,6 +364,18 @@ for (const [slug, entries] of [...bySlug].sort()) {
     continue;
   }
 
+  // RLS hides rows by returning fewer of them, not by erroring. Without this a
+  // session that cannot see a report type would sail through and report "no
+  // duplicates found", which is the one wrong answer that matters here.
+  const missing = ids.filter((id) => !rowsById.has(id)).length;
+  if (missing) {
+    unreadable.push(
+      `${slug} (${table}): ${missing} of ${ids.length} report rows were not returned` +
+        `${missing === ids.length ? " (no access at all)" : " (partly hidden by row-level security)"}`,
+    );
+    if (missing === ids.length) continue;
+  }
+
   const rows = entries
     .map((e) => {
       const row = rowsById.get(e.reportId);
@@ -344,9 +401,14 @@ for (const [slug, entries] of [...bySlug].sort()) {
   for (const [jobId, jobRows] of byJob) {
     if (jobRows.length < 2) continue;
 
-    // Most complete first, so the fullest version of a panel becomes the keeper.
+    // Longest equipment name first. Within a chain of half-typed saves every
+    // name is a prefix of the finished one, so the longest name is the report
+    // the technician actually completed. Ranking by field count instead would
+    // crown a mid-typing snapshot ("SWBD") whenever it happened to carry more
+    // filled fields than the finished report, and then delete the real one.
     const ranked = [...jobRows].sort(
       (a, b) =>
+        b.name.length - a.name.length ||
         b.leaves.size - a.leaves.size ||
         new Date(b.touchedAt) - new Date(a.touchedAt),
     );
@@ -356,7 +418,6 @@ for (const [slug, entries] of [...bySlug].sort()) {
       if (claimed.has(keeper.reportId)) continue;
       for (const other of ranked) {
         if (other === keeper || claimed.has(other.reportId)) continue;
-        if (other.leaves.size > keeper.leaves.size) continue;
         if (!isPrefixName(other.name, keeper.name)) continue;
         if (minutesBetween(other.createdAt, keeper.createdAt) > WINDOW_MINUTES) continue;
 
@@ -369,8 +430,24 @@ for (const [slug, entries] of [...bySlug].sort()) {
           needsALook.push({ ...record, reason: "edited in the last 30 minutes" });
           continue;
         }
+
+        // How sure are we that these are the same piece of equipment?
+        //
+        //   high   both name the equipment, and the names agree
+        //   medium the keeper names the equipment, the duplicate never got one
+        //   low    neither names anything. Identical readings are not proof
+        //          here: breakers on one panel genuinely test alike, so this is
+        //          the one tier a human has to agree with first.
+        const confidence = other.name && keeper.name ? "high" : keeper.name ? "medium" : "low";
+        if (confidence === "low" && !INCLUDE_UNNAMED) {
+          needsALook.push({
+            ...record,
+            reason: "identical, but neither report names the equipment",
+          });
+          continue;
+        }
         claimed.add(other.reportId);
-        duplicates.push(record);
+        duplicates.push({ ...record, confidence });
       }
       claimed.add(keeper.reportId);
     }
@@ -381,17 +458,29 @@ for (const [slug, entries] of [...bySlug].sort()) {
 
 const byType = new Map();
 for (const d of duplicates) byType.set(d.slug, (byType.get(d.slug) || 0) + 1);
+const byConfidence = new Map();
+for (const d of duplicates) byConfidence.set(d.confidence, (byConfidence.get(d.confidence) || 0) + 1);
 
 console.log(`\nDuplicate reports found: ${duplicates.length}${JOB_ID ? ` (job ${JOB_ID})` : ""}`);
 for (const [slug, n] of [...byType].sort((a, b) => b[1] - a[1])) {
   console.log(`  ${String(n).padStart(5)}  ${slug}`);
+}
+const CONFIDENCE_NOTE = {
+  high: "both name the equipment and the names agree",
+  medium: "the keeper names the equipment, the duplicate never got a name",
+  low: "neither names the equipment (only with --include-unnamed)",
+};
+console.log("  how sure:");
+for (const level of ["high", "medium", "low"]) {
+  const n = byConfidence.get(level);
+  if (n) console.log(`  ${String(n).padStart(5)}  ${level} -- ${CONFIDENCE_NOTE[level]}`);
 }
 
 if (duplicates.length) {
   console.log("\nA sample of what would be removed (keeper -> duplicate):");
   for (const d of duplicates.slice(0, 25)) {
     console.log(
-      `  ${(d.keeper.name || "(no name)").padEnd(22)} ${String(d.keeper.leaves.size).padStart(4)} fields` +
+      `  ${d.confidence.padEnd(6)} ${(d.keeper.name || "(no name)").padEnd(22)} ${String(d.keeper.leaves.size).padStart(4)} fields` +
         `   <-  ${(d.other.name || "(no name)").padEnd(22)} ${String(d.other.leaves.size).padStart(4)} fields` +
         `   ${d.other.createdAt.slice(0, 16).replace("T", " ")}`,
     );
@@ -400,31 +489,47 @@ if (duplicates.length) {
 }
 
 if (needsALook.length) {
-  console.log(`\nLooks duplicated but NOT touched (${needsALook.length}) -- these need a human:`);
+  // Counted by report, not by pair: one report gets compared against every
+  // keeper in its job, so pair counts read far scarier than the truth.
+  const byReport = new Map();
+  for (const n of needsALook) {
+    if (!byReport.has(n.other.reportId)) byReport.set(n.other.reportId, n.reason);
+  }
+  console.log(`\nLeft alone for a human to judge: ${byReport.size} report(s)`);
   const reasons = new Map();
-  for (const n of needsALook) reasons.set(n.reason, (reasons.get(n.reason) || 0) + 1);
-  for (const [reason, n] of reasons) console.log(`  ${String(n).padStart(5)}  ${reason}`);
+  for (const reason of byReport.values()) reasons.set(reason, (reasons.get(reason) || 0) + 1);
+  for (const [reason, n] of [...reasons].sort((a, b) => b[1] - a[1])) {
+    console.log(`  ${String(n).padStart(5)}  ${reason}`);
+  }
 }
 
 if (unreadable.length) {
-  console.log(`\nReport types that could not be read (skipped entirely):`);
+  console.log(`\nNot fully checked -- this account could not read everything:`);
   unreadable.forEach((u) => console.log(`  ${u}`));
+  console.log(`  Duplicates in these report types were NOT looked for.`);
+} else {
+  console.log(`\nEvery report type was readable, so this pass covered all of them.`);
 }
 
 if (CSV_PATH) {
   const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const APP_URL = (process.env.VITE_COMPANY_PRODUCT_URL || "https://ampos.io").replace(/\/$/, "");
+  const link = (d, side) => `${APP_URL}/jobs/${d.jobId}/${d.slug}/${d[side].reportId}`;
   const lines = [
     [
-      "verdict", "report_type", "job_id", "duplicate_report_id", "duplicate_name",
-      "duplicate_fields", "duplicate_created", "keeper_report_id", "keeper_name",
-      "keeper_fields", "reason",
+      "verdict", "confidence", "report_type", "job_id",
+      "duplicate_name", "duplicate_fields", "duplicate_created", "duplicate_url",
+      "keeper_name", "keeper_fields", "keeper_url", "reason",
     ].join(","),
   ];
+  // The two URLs are the point of this file: open them side by side and you can
+  // see for yourself whether they are one panel or two before anything is run.
   const add = (verdict, d) =>
     lines.push(
       [
-        verdict, d.slug, d.jobId, d.other.reportId, d.other.name, d.other.leaves.size,
-        d.other.createdAt, d.keeper.reportId, d.keeper.name, d.keeper.leaves.size,
+        verdict, d.confidence ?? "", d.slug, d.jobId,
+        d.other.name, d.other.leaves.size, d.other.createdAt, link(d, "other"),
+        d.keeper.name, d.keeper.leaves.size, link(d, "keeper"),
         d.reason ?? "",
       ].map(esc).join(","),
     );
@@ -438,6 +543,10 @@ if (CSV_PATH) {
 
 if (!APPLY) {
   console.log(`\nDry run. Nothing was changed. Re-run with --apply to remove the ${duplicates.length} duplicate(s).`);
+  console.log(`Removing only deletes the job link; the report and its asset stay, and --undo puts it back.`);
+  if (!INCLUDE_UNNAMED) {
+    console.log(`Pairs where neither report names its equipment were held back. Add --include-unnamed to sweep those too.`);
+  }
   process.exit(0);
 }
 

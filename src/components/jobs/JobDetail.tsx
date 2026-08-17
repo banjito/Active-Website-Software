@@ -8630,49 +8630,49 @@ export default function JobDetail() {
                 <ChevronRight className="h-5 w-5" />
               </button>
             </div>
+            <div className="flex gap-2 items-center">
+              {/* Shortcut toggle */}
+              <Button
+                variant="outline"
+                onClick={toggleShortcut}
+                disabled={shortcutBusy}
+                className={`h-9 ${
+                  isShortcut
+                    ? "border-yellow-400 text-yellow-600 dark:text-yellow-400"
+                    : ""
+                }`}
+                title={
+                  isShortcut
+                    ? "Remove from My Shortcuts"
+                    : "Add to My Shortcuts"
+                }
+                leftIcon={
+                  <Bookmark
+                    className={`h-5 w-5 shrink-0 ${isShortcut ? "fill-current" : "fill-none"}`}
+                  />
+                }
+              >
+                {isShortcut ? "In Shortcuts" : "Add to Shortcuts"}
+              </Button>
+
+              {/* Edit job */}
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEditing(true);
+                  setEditFormData(job);
+                }}
+                leftIcon={<Pencil className="h-5 w-5 shrink-0" />}
+                className="h-9"
+              >
+                Edit Job
+              </Button>
+            </div>
           </div>
         )}
         <div className="flex gap-2 items-center">
           {/* Job notifications (bell icon) */}
           {!isEmbed && id && <JobNotifications jobId={id} />}
-
-          {/* Shortcut toggle */}
-          {!isEmbed && (
-            <Button
-              variant="outline"
-              onClick={toggleShortcut}
-              disabled={shortcutBusy}
-              className={
-                isShortcut
-                  ? "border-yellow-400 text-yellow-600 dark:text-yellow-400"
-                  : ""
-              }
-              title={
-                isShortcut ? "Remove from My Shortcuts" : "Add to My Shortcuts"
-              }
-              leftIcon={
-                <Bookmark
-                  className={`h-5 w-5 shrink-0 ${isShortcut ? "fill-current" : "fill-none"}`}
-                />
-              }
-            >
-              {isShortcut ? "In Shortcuts" : "Add to Shortcuts"}
-            </Button>
-          )}
-
-          {/* Edit job */}
-          {!isEmbed && (
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsEditing(true);
-                setEditFormData(job);
-              }}
-              leftIcon={<Pencil className="h-5 w-5 shrink-0" />}
-            >
-              Edit Job
-            </Button>
-          )}
         </div>
       </div>
 

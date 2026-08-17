@@ -25,6 +25,7 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
 import {
   reportSaveFailed,
   reportSaveSucceeded,
@@ -322,30 +323,30 @@ const PanelboardReport: React.FC = () => {
   const { user } = useAuth();
   const { maskCustomerName, maskCustomerAddress, maskJobTitle } = useDemoMode();
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(!initialReportId);
+  // Auto-save rewrites the URL with history.replaceState once it has created the
+  // report, and react-router's params never see that. Fall back to the address
+  // bar so a re-render or re-mount recognises the report already on screen
+  // instead of creating another one.
+  const openReportId = initialReportId ?? reportIdFromUrl();
+
+  const [isEditing, setIsEditing] = useState(!openReportId);
   const [currentReportId, setCurrentReportId] = useState<string | undefined>(
-    initialReportId,
+    openReportId,
   );
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
-  const reportIdRef = React.useRef<string | undefined>(initialReportId);
-  const creatingRef = React.useRef(false);
-  const pendingSaveRef = React.useRef(false);
-
-  const waitForCreatedReportId = React.useCallback(async () => {
-    if (reportIdRef.current) return reportIdRef.current;
-    if (!creatingRef.current) return undefined;
-
-    for (let attempt = 0; attempt < 100; attempt += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      if (reportIdRef.current) return reportIdRef.current;
-    }
-
-    return undefined;
-  }, []);
+  const reportIdRef = React.useRef<string | undefined>(openReportId);
+  /** A save is in flight; a second one must not start alongside it. */
+  const savingRef = React.useRef(false);
+  /** Something changed mid-save; run once more when the current save lands. */
+  const saveAgainRef = React.useRef(false);
+  /** The asset row + job link have been confirmed for this report. */
+  const assetLinkedRef = React.useRef(false);
+  /** An existing report failed to load; the form on screen is not its data. */
+  const loadFailedRef = React.useRef(false);
 
   const [searchParams] = useSearchParams();
   const isPrintMode = searchParams.get("print") === "true";
@@ -1294,7 +1295,11 @@ const PanelboardReport: React.FC = () => {
         }));
         setIsEditing(false);
       }
+      loadFailedRef.current = false;
     } catch (error) {
+      // The form is showing defaults, not this report. Auto-save must not push
+      // those defaults over the readings that are still in the database.
+      loadFailedRef.current = true;
       console.error("Error loading report:", error);
       alert(`Failed to load report: ${(error as Error).message}`);
       setIsEditing(true);
@@ -1304,241 +1309,169 @@ const PanelboardReport: React.FC = () => {
   };
 
   // Auto-save function
+  // Saves must send what is on screen *now*, not what was on screen when the
+  // save was queued. A queued save carrying an older snapshot used to land after
+  // a newer one and put a half-typed equipment name back on the report.
+  const formDataRef = React.useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+
+  /**
+   * Writes the report and returns its id. Every save -- auto-save and the Save
+   * button -- goes through here, and they all write to one row.
+   *
+   * The row's id is decided *before* the request leaves the browser and kept in
+   * `reportIdRef`, so a save that starts while another is still in flight, or
+   * one retried after a failure, upserts over the same row. This used to be an
+   * insert guarded by a "am I already creating?" flag, and every way that flag
+   * could be lost -- a failed request, a re-mount, a stale closure -- put
+   * another copy of the same panel on the job.
+   */
+  const persistReport = React.useCallback(async () => {
+    if (!jobId || !user?.id) return undefined;
+    if (loadFailedRef.current) {
+      throw new Error(
+        "This report could not be loaded, so it was not saved. Reload the page and try again.",
+      );
+    }
+
+    const formData = formDataRef.current;
+    const isNewReport = !reportIdRef.current;
+    if (isNewReport) {
+      // Claimed synchronously: nothing else can now decide to create a row.
+      reportIdRef.current = newReportId();
+    }
+    const reportId = reportIdRef.current as string;
+
+    const { error } = await supabase
+      .schema("neta_ops")
+      .from("panelboard_reports")
+      .upsert(
+        {
+          id: reportId,
+          job_id: jobId,
+          user_id: user.id,
+          report_info: {
+            customer: maskCustomerName(formData.customerName),
+            address: maskCustomerAddress(formData.customerLocation),
+            date: formData.date,
+            technicians: formData.technicians,
+            jobNumber: formData.jobNumber,
+            substation: formData.substation,
+            eqptLocation: formData.eqptLocation,
+            temperature: formData.temperature,
+            manufacturer: formData.manufacturer,
+            catalogNumber: formData.catalogNumber,
+            serialNumber: formData.serialNumber,
+            type: formData.type,
+            systemVoltage: formData.systemVoltage,
+            ratedVoltage: formData.ratedVoltage,
+            ratedCurrent: formData.ratedCurrent,
+            phaseConfiguration: formData.phaseConfiguration,
+            testEquipment: formData.testEquipment,
+            identifier: formData.identifier,
+            userName: formData.userName,
+            testEquipmentLocation: formData.testEquipmentLocation,
+            status: formData.status,
+          },
+          visual_mechanical: { items: formData.visualInspectionItems },
+          insulation_resistance: {
+            tests: formData.insulationResistanceTests,
+            correctedTests: formData.temperatureCorrectedTests,
+          },
+          contact_resistance: { tests: formData.contactResistanceTests },
+          comments: formData.comments,
+        },
+        { onConflict: "id" },
+      );
+    if (error) throw error;
+
+    if (!assetLinkedRef.current) {
+      const assetId = await ensureReportAssetLink(
+        jobId,
+        {
+          name: getAssetName(
+            reportSlug,
+            formData.identifier || formData.eqptLocation || "",
+          ),
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${reportId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+      if (equipmentAssetId) {
+        await setReportAssetEquipmentLink(assetId, equipmentAssetId);
+      }
+      assetLinkedRef.current = true;
+    }
+
+    if (isNewReport) {
+      setCurrentReportId(reportId);
+      isAutoSaveCreatedRef.current = true;
+      window.history.replaceState(
+        {},
+        "",
+        `/jobs/${jobId}/${reportSlug}/${reportId}`,
+      );
+    }
+
+    return reportId;
+  }, [
+    jobId,
+    user?.id,
+    maskCustomerName,
+    maskCustomerAddress,
+    equipmentAssetId,
+    reportSlug,
+  ]);
+
+  // Auto-save function
   const autoSave = React.useCallback(async () => {
     if (!jobId || !user?.id) return;
 
-    const reportData = {
-      job_id: jobId,
-      user_id: user.id,
-      report_info: {
-        customer: maskCustomerName(formData.customerName),
-        address: maskCustomerAddress(formData.customerLocation),
-        date: formData.date,
-        technicians: formData.technicians,
-        jobNumber: formData.jobNumber,
-        substation: formData.substation,
-        eqptLocation: formData.eqptLocation,
-        temperature: formData.temperature,
-        manufacturer: formData.manufacturer,
-        catalogNumber: formData.catalogNumber,
-        serialNumber: formData.serialNumber,
-        type: formData.type,
-        systemVoltage: formData.systemVoltage,
-        ratedVoltage: formData.ratedVoltage,
-        ratedCurrent: formData.ratedCurrent,
-        phaseConfiguration: formData.phaseConfiguration,
-        testEquipment: formData.testEquipment,
-        identifier: formData.identifier,
-        userName: formData.userName,
-        testEquipmentLocation: formData.testEquipmentLocation,
-        status: formData.status,
-      },
-      visual_mechanical: {
-        items: formData.visualInspectionItems,
-      },
-      insulation_resistance: {
-        tests: formData.insulationResistanceTests,
-        correctedTests: formData.temperatureCorrectedTests,
-      },
-      contact_resistance: {
-        tests: formData.contactResistanceTests,
-      },
-      comments: formData.comments,
-    };
+    // One save at a time. Anything typed while this one is in flight is picked
+    // up by the follow-up pass below, which reads the form fresh.
+    if (savingRef.current) {
+      saveAgainRef.current = true;
+      return;
+    }
+    savingRef.current = true;
 
     try {
       setIsAutoSaving(true);
-
-      if (reportIdRef.current) {
-        await supabase
-          .schema("neta_ops")
-          .from("panelboard_reports")
-          .update(reportData)
-          .eq("id", reportIdRef.current);
-      } else if (creatingRef.current) {
-        pendingSaveRef.current = true;
-      } else {
-        creatingRef.current = true;
-        try {
-          const result = await supabase
-            .schema("neta_ops")
-            .from("panelboard_reports")
-            .insert(reportData)
-            .select()
-            .single();
-
-          if (result.data) {
-            const newReportId = result.data.id;
-            reportIdRef.current = newReportId;
-
-            const assetData = {
-              name: getAssetName(
-                reportSlug,
-                formData.identifier || formData.eqptLocation || "",
-              ),
-              file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
-              user_id: user.id,
-            };
-
-            const assetId = await ensureReportAssetLink(
-              jobId,
-              assetData,
-              user.id,
-            );
-            if (equipmentAssetId) {
-              await setReportAssetEquipmentLink(assetId, equipmentAssetId);
-            }
-
-            setCurrentReportId(newReportId);
-            creatingRef.current = false;
-            isAutoSaveCreatedRef.current = true;
-            window.history.replaceState(
-              {},
-              "",
-              `/jobs/${jobId}/${reportSlug}/${newReportId}`,
-            );
-          } else {
-            creatingRef.current = false;
-          }
-        } catch (insertError) {
-          creatingRef.current = false;
-          throw insertError;
-        }
-      }
+      do {
+        saveAgainRef.current = false;
+        await persistReport();
+      } while (saveAgainRef.current);
       reportSaveSucceeded();
     } catch (error) {
       console.error("Auto-save error:", error);
       reportSaveFailed(error);
     } finally {
+      savingRef.current = false;
+      saveAgainRef.current = false;
       setIsAutoSaving(false);
-      if (pendingSaveRef.current) {
-        pendingSaveRef.current = false;
-        setTimeout(() => autoSave(), 0);
-      }
     }
-  }, [jobId, user?.id, formData]);
+  }, [jobId, user?.id, persistReport]);
 
   // Save report
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) return;
-    const wasExistingReport = Boolean(reportIdRef.current || currentReportId);
-
-    const reportData = {
-      job_id: jobId,
-      user_id: user.id,
-      report_info: {
-        customer: maskCustomerName(formData.customerName),
-        address: maskCustomerAddress(formData.customerLocation),
-        date: formData.date,
-        technicians: formData.technicians,
-        jobNumber: formData.jobNumber,
-        substation: formData.substation,
-        eqptLocation: formData.eqptLocation,
-        temperature: formData.temperature,
-        manufacturer: formData.manufacturer,
-        catalogNumber: formData.catalogNumber,
-        serialNumber: formData.serialNumber,
-        type: formData.type,
-        systemVoltage: formData.systemVoltage,
-        ratedVoltage: formData.ratedVoltage,
-        ratedCurrent: formData.ratedCurrent,
-        phaseConfiguration: formData.phaseConfiguration,
-        testEquipment: formData.testEquipment,
-        identifier: formData.identifier,
-        userName: formData.userName,
-        testEquipmentLocation: formData.testEquipmentLocation,
-        status: formData.status,
-      },
-      visual_mechanical: {
-        items: formData.visualInspectionItems,
-      },
-      insulation_resistance: {
-        tests: formData.insulationResistanceTests,
-        correctedTests: formData.temperatureCorrectedTests,
-      },
-      contact_resistance: {
-        tests: formData.contactResistanceTests,
-      },
-      comments: formData.comments,
-    };
+    const wasExistingReport = Boolean(reportIdRef.current);
 
     try {
       setIsSaving(true);
-      let result;
-      if (reportIdRef.current) {
-        result = await supabase
-          .schema("neta_ops")
-          .from("panelboard_reports")
-          .update(reportData)
-          .eq("id", reportIdRef.current)
-          .select()
-          .single();
-      } else if (creatingRef.current) {
-        const createdReportId = await waitForCreatedReportId();
-        if (!createdReportId) {
-          pendingSaveRef.current = true;
-          return;
-        }
-        result = await supabase
-          .schema("neta_ops")
-          .from("panelboard_reports")
-          .update(reportData)
-          .eq("id", createdReportId)
-          .select()
-          .single();
-      } else {
-        creatingRef.current = true;
-        try {
-          result = await supabase
-            .schema("neta_ops")
-            .from("panelboard_reports")
-            .insert(reportData)
-            .select()
-            .single();
-
-          if (result.data) {
-            reportIdRef.current = result.data.id;
-            setCurrentReportId(result.data.id);
-            const assetData = {
-              name: getAssetName(
-                reportSlug,
-                formData.identifier || formData.eqptLocation || "",
-              ),
-              file_url: `report:/jobs/${jobId}/panelboard-report/${result.data.id}`,
-              user_id: user.id,
-            };
-
-            const assetId = await ensureReportAssetLink(
-              jobId,
-              assetData,
-              user.id,
-            );
-            if (equipmentAssetId) {
-              await setReportAssetEquipmentLink(assetId, equipmentAssetId);
-            }
-          } else {
-            creatingRef.current = false;
-          }
-        } catch (saveError) {
-          creatingRef.current = false;
-          throw saveError;
-        }
-      }
-
-      if (result.error) throw result.error;
+      const savedId = await persistReport();
+      reportSaveSucceeded();
       setJustSaved(true);
 
-      if (!wasExistingReport) {
+      if (!wasExistingReport && savedId) {
         setIsEditing(false);
-        const newId =
-          reportIdRef.current ||
-          (result as any)?.data?.id ||
-          (result as any)?.id;
-        if (newId) {
-          navigate(`/jobs/${jobId}/${reportSlug}/${newId}`, { replace: true });
-        }
+        navigate(`/jobs/${jobId}/${reportSlug}/${savedId}`, { replace: true });
       }
     } catch (error: any) {
+      reportSaveFailed(error);
       console.error("Error saving report:", error);
       alert(`Failed to save report: ${error?.message || "Unknown error"}`);
     } finally {

@@ -18,6 +18,8 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ReportHeader } from "@/components/reports/common/ReportHeader";
 import { useReportUserAutofill } from "./useReportUserAutofill";
+import { ensureReportAssetLink } from "./linkReportAsset";
+import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
 import {
   reportSaveFailed,
   reportSaveSucceeded,
@@ -238,36 +240,31 @@ const DryTypeTransformerReport: React.FC = () => {
   const { user } = useAuth();
   const { maskCustomerName, maskCustomerAddress } = useDemoMode();
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(!initialReportId);
+
+  // Auto-save rewrites the URL with history.replaceState once it has created the
+  // report, and react-router's params never see that. Fall back to the address
+  // bar so a re-render or re-mount recognises the report already on screen
+  // instead of creating another one.
+  const openReportId = initialReportId ?? reportIdFromUrl();
+
+  const [isEditing, setIsEditing] = useState(!openReportId);
   const [currentReportId, setCurrentReportId] = useState<string | undefined>(
-    initialReportId,
+    openReportId,
   );
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
-  const manualSavePendingRef = React.useRef(false);
-  const reportIdRef = React.useRef<string | undefined>(initialReportId);
-  const creatingRef = React.useRef(false);
-  const pendingSaveRef = React.useRef(false);
-
-  const setActiveReportId = React.useCallback((newReportId: string) => {
-    reportIdRef.current = newReportId;
-    setCurrentReportId(newReportId);
-  }, []);
-
-  const waitForActiveReportId = React.useCallback(async () => {
-    if (reportIdRef.current) return reportIdRef.current;
-    if (!creatingRef.current) return undefined;
-
-    for (let attempt = 0; attempt < 20; attempt += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      if (reportIdRef.current) return reportIdRef.current;
-    }
-
-    return undefined;
-  }, []);
+  const reportIdRef = React.useRef<string | undefined>(openReportId);
+  /** A save is in flight; a second one must not start alongside it. */
+  const savingRef = React.useRef(false);
+  /** Something changed mid-save; run once more when the current save lands. */
+  const saveAgainRef = React.useRef(false);
+  /** The asset row + job link have been confirmed for this report. */
+  const assetLinkedRef = React.useRef(false);
+  /** An existing report failed to load; the form on screen is not its data. */
+  const loadFailedRef = React.useRef(false);
 
   // Print Mode Detection
   const [searchParams] = useSearchParams();
@@ -919,8 +916,17 @@ const DryTypeTransformerReport: React.FC = () => {
         });
         setIsEditing(false);
       }
+      loadFailedRef.current = false;
     } catch (error) {
+      // The form is showing defaults, not this report. Auto-save must not push
+      // those defaults over the readings that are still in the database.
+      loadFailedRef.current = true;
       console.error("Error loading transformer report:", error);
+      reportSaveFailed(
+        new Error(
+          "This report could not be loaded, so it is not being saved. Reload the page before entering results.",
+        ),
+      );
       setIsEditing(true);
     } finally {
       setLoading(false);
@@ -928,127 +934,135 @@ const DryTypeTransformerReport: React.FC = () => {
   };
 
   // Autosave function - saves silently without user feedback
+  // Saves must send what is on screen *now*, not what was on screen when the
+  // save was queued. A queued save carrying an older snapshot used to land after
+  // a newer one and put a half-typed equipment name back on the report.
+  const formDataRef = React.useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+
+  /**
+   * Writes the report and returns its id. Every save -- auto-save and the Save
+   * button -- goes through here, and they all write to one row.
+   *
+   * The row's id is decided *before* the request leaves the browser and kept in
+   * `reportIdRef`, so a save that starts while another is still in flight, or
+   * one retried after a failure, upserts over the same row. This used to be an
+   * insert guarded by a "am I already creating?" flag, and every way that flag
+   * could be lost -- a failed request, a re-mount, a stale closure -- put
+   * another copy of the same transformer on the job.
+   */
+  const persistReport = React.useCallback(async () => {
+    if (!jobId || !user?.id) return undefined;
+    if (loadFailedRef.current) {
+      throw new Error(
+        "This report could not be loaded, so it was not saved. Reload the page and try again.",
+      );
+    }
+
+    const formData = formDataRef.current;
+    const isNewReport = !reportIdRef.current;
+    if (isNewReport) {
+      // Claimed synchronously: nothing else can now decide to create a row.
+      reportIdRef.current = newReportId();
+    }
+    const reportId = reportIdRef.current as string;
+
+    const { error } = await supabase
+      .schema("neta_ops")
+      .from("transformer_reports")
+      .upsert(
+        {
+          id: reportId,
+          job_id: jobId,
+          user_id: user.id,
+          report_info: {
+            customer: maskCustomerName(formData.customer),
+            address: maskCustomerAddress(formData.address),
+            date: formData.date,
+            technicians: formData.technicians,
+            jobNumber: formData.jobNumber,
+            substation: formData.substation,
+            eqptLocation: formData.eqptLocation,
+            identifier: formData.identifier,
+            userName: formData.userName,
+            temperature: formData.temperature,
+            nameplateData: formData.nameplateData,
+            status: formData.status,
+            comments: formData.comments,
+          },
+          visual_inspection: { items: formData.visualInspectionItems },
+          insulation_resistance: { tests: formData.insulationResistance },
+          test_equipment: formData.testEquipment,
+        },
+        { onConflict: "id" },
+      );
+    if (error) throw error;
+
+    if (!assetLinkedRef.current) {
+      await ensureReportAssetLink(
+        jobId,
+        {
+          name: getAssetName(
+            reportSlug,
+            formData.identifier || formData.eqptLocation || "",
+          ),
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${reportId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+      assetLinkedRef.current = true;
+    }
+
+    if (isNewReport) {
+      setCurrentReportId(reportId);
+      isAutoSaveCreatedRef.current = true;
+      window.history.replaceState(
+        {},
+        "",
+        `/jobs/${jobId}/${reportSlug}/${reportId}`,
+      );
+    }
+
+    return reportId;
+  }, [
+    jobId,
+    user?.id,
+    maskCustomerName,
+    maskCustomerAddress,
+    reportSlug,
+  ]);
+
+  // Autosave function - saves silently without user feedback
   const autoSave = React.useCallback(async () => {
-    if (!jobId || !user?.id || !isEditing || isAutoSaving) return;
+    if (!jobId || !user?.id || !isEditing) return;
 
-    setIsAutoSaving(true);
-
-    const reportData = {
-      job_id: jobId,
-      user_id: user.id,
-      report_info: {
-        customer: maskCustomerName(formData.customer),
-        address: maskCustomerAddress(formData.address),
-        date: formData.date,
-        technicians: formData.technicians,
-        jobNumber: formData.jobNumber,
-        substation: formData.substation,
-        eqptLocation: formData.eqptLocation,
-        identifier: formData.identifier,
-        userName: formData.userName,
-        temperature: formData.temperature,
-        nameplateData: formData.nameplateData,
-        status: formData.status,
-        comments: formData.comments,
-      },
-      visual_inspection: {
-        items: formData.visualInspectionItems,
-      },
-      insulation_resistance: {
-        tests: formData.insulationResistance,
-      },
-      test_equipment: formData.testEquipment,
-    };
+    // One save at a time. Anything typed while this one is in flight is picked
+    // up by the follow-up pass below, which reads the form fresh.
+    if (savingRef.current) {
+      saveAgainRef.current = true;
+      return;
+    }
+    savingRef.current = true;
 
     try {
-      let result;
-      if (reportIdRef.current) {
-        result = await supabase
-          .schema("neta_ops")
-          .from("transformer_reports")
-          .update(reportData)
-          .eq("id", reportIdRef.current)
-          .select();
-      } else if (creatingRef.current) {
-        pendingSaveRef.current = true;
-      } else {
-        creatingRef.current = true;
-        try {
-          result = await supabase
-            .schema("neta_ops")
-            .from("transformer_reports")
-            .insert(reportData)
-            .select()
-            .maybeSingle();
-
-          if (result.data) {
-            const newReportId = result.data.id;
-            isAutoSaveCreatedRef.current = true;
-            setActiveReportId(newReportId);
-
-            const assetData = {
-              name: getAssetName(
-                reportSlug,
-                formData.identifier || formData.eqptLocation || "",
-              ),
-              file_url: `report:/jobs/${jobId}/dry-type-transformer/${newReportId}`,
-              user_id: user.id,
-            };
-
-            const { data: assetResult, error: assetError } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert(assetData)
-              .select()
-              .single();
-
-            if (!assetError && assetResult) {
-              await supabase.schema("neta_ops").from("job_assets").insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user.id,
-              });
-            }
-
-            window.history.replaceState(
-              {},
-              "",
-              `/jobs/${jobId}/dry-type-transformer/${newReportId}`,
-            );
-            creatingRef.current = false;
-          } else {
-            creatingRef.current = false;
-          }
-        } catch (insertError) {
-          creatingRef.current = false;
-          throw insertError;
-        }
-      }
+      setIsAutoSaving(true);
+      do {
+        saveAgainRef.current = false;
+        await persistReport();
+      } while (saveAgainRef.current);
       reportSaveSucceeded();
     } catch (error: any) {
       console.error("Auto-save error:", error);
       reportSaveFailed(error);
     } finally {
+      savingRef.current = false;
+      saveAgainRef.current = false;
       setIsAutoSaving(false);
-      if (manualSavePendingRef.current) {
-        manualSavePendingRef.current = false;
-        handleSave();
-        return;
-      }
-      if (pendingSaveRef.current) {
-        pendingSaveRef.current = false;
-        setTimeout(() => autoSave(), 0);
-      }
     }
-  }, [
-    jobId,
-    user?.id,
-    isEditing,
-    isAutoSaving,
-    formData,
-    reportSlug,
-    setActiveReportId,
-  ]);
+  }, [jobId, user?.id, isEditing, persistReport]);
 
   // Autosave effect - triggers after user stops typing
   React.useEffect(() => {
@@ -1073,6 +1087,7 @@ const DryTypeTransformerReport: React.FC = () => {
   }, [formData, isEditing, loading, autoSave]);
 
   // Save report
+  // Save report
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) return;
 
@@ -1081,134 +1096,23 @@ const DryTypeTransformerReport: React.FC = () => {
       autoSaveTimerRef.current = null;
     }
 
-    const activeReportId = await waitForActiveReportId();
-    if (creatingRef.current && !activeReportId) {
-      manualSavePendingRef.current = true;
-      return;
-    }
-    const wasExistingReport = Boolean(activeReportId);
-
-    const reportData = {
-      job_id: jobId,
-      user_id: user.id,
-      report_info: {
-        customer: maskCustomerName(formData.customer),
-        address: maskCustomerAddress(formData.address),
-        date: formData.date,
-        technicians: formData.technicians,
-        jobNumber: formData.jobNumber,
-        substation: formData.substation,
-        eqptLocation: formData.eqptLocation,
-        identifier: formData.identifier,
-        userName: formData.userName,
-        temperature: formData.temperature,
-        nameplateData: formData.nameplateData,
-        status: formData.status,
-        comments: formData.comments, // Move comments inside report_info
-      },
-      visual_inspection: {
-        items: formData.visualInspectionItems,
-      },
-      insulation_resistance: {
-        tests: formData.insulationResistance,
-      },
-      test_equipment: formData.testEquipment,
-    };
-    console.log("Saving transformer report data:", reportData);
-
-    let didStartCreate = false;
+    const wasExistingReport = Boolean(reportIdRef.current);
 
     try {
       setIsSaving(true);
-      let result;
-
-      if (activeReportId) {
-        // Update existing report
-        console.log(`Updating transformer_reports with ID: ${activeReportId}`);
-        result = await supabase
-          .schema("neta_ops")
-          .from("transformer_reports") // <--- Use correct table name
-          .update(reportData)
-          .eq("id", activeReportId)
-          .select()
-          .single();
-      } else {
-        // Create new report
-        creatingRef.current = true;
-        didStartCreate = true;
-        console.log(`Inserting into transformer_reports for job ID: ${jobId}`);
-        result = await supabase
-          .schema("neta_ops")
-          .from("transformer_reports") // <--- Use correct table name
-          .insert(reportData)
-          .select()
-          .single();
-
-        if (result.data) {
-          const newReportId = result.data.id;
-          setActiveReportId(newReportId);
-          console.log(`New report created with ID: ${newReportId}`);
-          // Create asset entry
-          const assetData = {
-            name: getAssetName(
-              reportSlug,
-              formData.identifier || formData.eqptLocation || "",
-            ),
-            file_url: `report:/jobs/${jobId}/dry-type-transformer/${newReportId}`,
-            user_id: user.id,
-          };
-          console.log("Creating asset:", assetData);
-
-          const { data: assetResult, error: assetError } = await supabase
-            .schema("neta_ops")
-            .from("assets")
-            .insert(assetData)
-            .select()
-            .single();
-
-          if (assetError) throw assetError;
-          console.log("Asset created:", assetResult);
-
-          // Link asset to job
-          console.log(`Linking asset ${assetResult.id} to job ${jobId}`);
-          await supabase.schema("neta_ops").from("job_assets").insert({
-            job_id: jobId,
-            asset_id: assetResult.id,
-            user_id: user.id,
-          });
-          console.log("Asset linked.");
-
-          // Optional: Navigate to the new report's URL if desired
-          // navigate(`/jobs/${jobId}/dry-type-transformer/${currentReportId}`, { replace: true });
-        }
-      }
-
-      if (result.error) throw result.error;
+      const savedId = await persistReport();
+      reportSaveSucceeded();
       setJustSaved(true);
 
-      console.log(
-        `transformer_reports saved/updated successfully. Result:`,
-        result.data,
-      );
-      if (!wasExistingReport) {
+      if (!wasExistingReport && savedId) {
         setIsEditing(false);
-        const newId = (result as any)?.data?.id || (result as any)?.id;
-        if (newId) {
-          navigate(`/jobs/${jobId}/${reportSlug}/${newId}`, { replace: true });
-        }
+        navigate(`/jobs/${jobId}/${reportSlug}/${savedId}`, { replace: true });
       }
-
-      // Remove or comment out the URL history update since we're navigating away
-      // if (!reportId && currentReportId) {
-      //   navigate(`/jobs/${jobId}/dry-type-transformer/${currentReportId}`, { replace: true });
-      // }
     } catch (error: any) {
+      reportSaveFailed(error);
       console.error("Error saving transformer report:", error);
       alert(`Failed to save report: ${error?.message || "Unknown error"}`);
     } finally {
-      if (didStartCreate || !reportIdRef.current) {
-        creatingRef.current = false;
-      }
       setIsSaving(false);
     }
   };

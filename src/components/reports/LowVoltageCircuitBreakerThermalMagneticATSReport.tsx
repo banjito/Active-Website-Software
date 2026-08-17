@@ -861,9 +861,16 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
             user_id: user.id,
           };
 
-          await ensureReportAssetLink(jobId, assetData, user.id);
+          // `assetResult` never existed in this scope, so linking a report that
+          // was opened from the equipment registry threw a ReferenceError and
+          // took the whole save down with it.
+          const assetId = await ensureReportAssetLink(
+            jobId,
+            assetData,
+            user.id,
+          );
           if (equipmentAssetId) {
-            await setReportAssetEquipmentLink(assetResult.id, equipmentAssetId);
+            await setReportAssetEquipmentLink(assetId, equipmentAssetId);
           }
         }
       }

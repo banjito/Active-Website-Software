@@ -30,6 +30,18 @@ export function reportIdFromUrl(): string | undefined {
   return UUID.test(last) ? last : undefined;
 }
 
+/**
+ * The report id in the address bar for the handful of report tables whose `id`
+ * is a database serial rather than a uuid (oil inspection). Those cannot mint an
+ * id client-side, but recovering the one already in the URL still stops a
+ * re-mount from inserting a second copy.
+ */
+export function numericReportIdFromUrl(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  const last = window.location.pathname.split("/").filter(Boolean).pop() || "";
+  return /^\d+$/.test(last) ? last : undefined;
+}
+
 /** A fresh report id, claimed client-side so a save can be idempotent. */
 export function newReportId(): string {
   const c = globalThis.crypto as Crypto | undefined;

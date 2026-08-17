@@ -9,6 +9,8 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { SaveStatusBanner } from "./common/SaveStatusBanner";
+import { ensureReportAssetLink } from "./linkReportAsset";
+import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
 import {
   reportSaveFailed,
   reportSaveSucceeded,
@@ -230,19 +232,35 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
   const { user } = useAuth();
   const { maskCustomerName, maskCustomerAddress } = useDemoMode();
 
+  // Auto-save rewrites the URL with history.replaceState once it has created the
+  // report, and react-router's params never see that. Fall back to the address
+  // bar so a re-render or re-mount recognises the report already on screen
+  // instead of creating another one.
+  const openReportId = initialReportId ?? reportIdFromUrl();
+
+  // The route registered in App.tsx. Auto-save used to rewrite the address bar
+  // with a shorter slug that matches no route, so a refresh landed nowhere.
+  const reportSlug = "medium-voltage-switch-sf6-report";
+
   const [currentReportId, setCurrentReportId] = useState<string | undefined>(
-    initialReportId,
+    openReportId,
   );
-  const [isEditMode, setIsEditMode] = useState<boolean>(!initialReportId);
+  const [isEditMode, setIsEditMode] = useState<boolean>(!openReportId);
   const [loading, setLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [justSaved, setJustSaved] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
-  const reportIdRef = React.useRef<string | undefined>(initialReportId);
-  const creatingRef = React.useRef(false);
-  const pendingSaveRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(openReportId);
+  /** A save is in flight; a second one must not start alongside it. */
+  const savingRef = React.useRef(false);
+  /** Something changed mid-save; run once more when the current save lands. */
+  const saveAgainRef = React.useRef(false);
+  /** The asset row + job link have been confirmed for this report. */
+  const assetLinkedRef = React.useRef(false);
+  /** An existing report failed to load; the form on screen is not its data. */
+  const loadFailedRef = React.useRef(false);
   const [status, setStatus] = useState<"PASS" | "FAIL" | "LIMITED SERVICE">("PASS");
 
   const [formData, setFormData] = useState<ReportData>({
@@ -807,7 +825,7 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
     }));
   const handleEquipmentChange = (
     group: keyof EquipmentInfo,
-    key: "model" | "serial" | "ampId",
+    key: "model" | "serial" | "ampId" | "calDate",
     value: string,
   ) =>
     setFormData((prev) => ({
@@ -819,133 +837,132 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
     }));
 
   // Auto-save function
+  // Saves must send what is on screen *now*, not what was on screen when the
+  // save was queued. A queued save carrying an older snapshot used to land after
+  // a newer one and put a half-typed equipment name back on the report.
+  const reportDataRef = React.useRef({ formData, status });
+  useEffect(() => {
+    reportDataRef.current = { formData, status };
+  }, [formData, status]);
+
+  /**
+   * Writes the report and returns its id. Every save -- auto-save and the Save
+   * button -- goes through here, and they all write to one row.
+   *
+   * The row's id is decided *before* the request leaves the browser and kept in
+   * `reportIdRef`, so a save that starts while another is still in flight, or
+   * one retried after a failure, upserts over the same row. This used to be an
+   * insert guarded by a "am I already creating?" flag, and every way that flag
+   * could be lost -- a failed request, a re-mount, a stale closure -- put
+   * another copy of the same switch on the job.
+   */
+  const persistReport = React.useCallback(async () => {
+    if (!jobId || !user?.id) return undefined;
+    if (loadFailedRef.current) {
+      throw new Error(
+        "This report could not be loaded, so it was not saved. Reload the page and try again.",
+      );
+    }
+
+    const { formData, status } = reportDataRef.current;
+    const isNewReport = !reportIdRef.current;
+    if (isNewReport) {
+      // Claimed synchronously: nothing else can now decide to create a row.
+      reportIdRef.current = newReportId();
+    }
+    const reportId = reportIdRef.current as string;
+
+    const { error } = await supabase
+      .schema("neta_ops")
+      .from("medium_voltage_switch_sf6_reports")
+      .upsert(
+        {
+          id: reportId,
+          job_id: jobId,
+          user_id: user.id,
+          status,
+          report_info: {
+            customer: formData.customer,
+            address: formData.address,
+            user: formData.user,
+            date: formData.date,
+            jobNumber: formData.jobNumber,
+            technicians: formData.technicians,
+            identifier: formData.identifier,
+            substation: formData.substation,
+            eqptLocation: formData.eqptLocation,
+            temperature: formData.temperature,
+            humidity: formData.humidity,
+          },
+          nameplate_data: formData.nameplate,
+          vfi_data: formData.vfi,
+          visual_mechanical: formData.visualInspection,
+          counter_readings: formData.counterReadings,
+          insulation_resistance_measured: formData.insulationMeasured,
+          insulation_resistance_corrected: formData.insulationCorrected,
+          contact_resistance: formData.contactResistance,
+          dielectric_withstand: formData.dielectricWithstand,
+          dielectric_vfi: formData.dielectricVFI,
+          test_equipment: formData.equipment,
+          comments: formData.comments,
+        },
+        { onConflict: "id" },
+      );
+    if (error) throw error;
+
+    if (!assetLinkedRef.current) {
+      await ensureReportAssetLink(
+        jobId,
+        {
+          name: `Medium Voltage Switch SF6 Report - ${formData.identifier || formData.eqptLocation || formData.substation || "Unnamed"}`,
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${reportId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+      assetLinkedRef.current = true;
+    }
+
+    if (isNewReport) {
+      setCurrentReportId(reportId);
+      isAutoSaveCreatedRef.current = true;
+      window.history.replaceState(
+        {},
+        "",
+        `/jobs/${jobId}/${reportSlug}/${reportId}`,
+      );
+    }
+
+    return reportId;
+  }, [jobId, user?.id, reportSlug]);
+
   const autoSave = React.useCallback(async () => {
     if (!jobId || !user?.id) return;
 
-    const payload = {
-      job_id: jobId,
-      user_id: user.id,
-      status,
-      report_info: {
-        customer: formData.customer,
-        address: formData.address,
-        user: formData.user,
-        date: formData.date,
-        jobNumber: formData.jobNumber,
-        technicians: formData.technicians,
-        identifier: formData.identifier,
-        substation: formData.substation,
-        eqptLocation: formData.eqptLocation,
-        temperature: formData.temperature,
-        humidity: formData.humidity,
-      },
-      nameplate_data: formData.nameplate,
-      vfi_data: formData.vfi,
-      visual_mechanical: formData.visualInspection,
-      counter_readings: formData.counterReadings,
-      insulation_resistance_measured: formData.insulationMeasured,
-      insulation_resistance_corrected: formData.insulationCorrected,
-      contact_resistance: formData.contactResistance,
-      dielectric_withstand: formData.dielectricWithstand,
-      dielectric_vfi: formData.dielectricVFI,
-      test_equipment: formData.equipment,
-      comments: formData.comments,
-    };
+    // One save at a time. Anything typed while this one is in flight is picked
+    // up by the follow-up pass below, which reads the form fresh.
+    if (savingRef.current) {
+      saveAgainRef.current = true;
+      return;
+    }
+    savingRef.current = true;
 
     try {
       setIsAutoSaving(true);
-
-      if (reportIdRef.current) {
-        const { error } = await supabase
-          .schema("neta_ops")
-          .from("medium_voltage_switch_sf6_reports")
-          .update(payload)
-          .eq("id", reportIdRef.current);
-
-        if (error) {
-          console.error("Auto-save update error:", error);
-          throw error;
-        }
-      } else if (creatingRef.current) {
-        pendingSaveRef.current = true;
-      } else {
-        creatingRef.current = true;
-        try {
-          const { data, error } = await supabase
-            .schema("neta_ops")
-            .from("medium_voltage_switch_sf6_reports")
-            .insert(payload)
-            .select("id")
-            .single();
-
-          if (error) {
-            console.error("Auto-save insert error:", error);
-            throw error;
-          }
-
-          if (data) {
-            const newReportId = data.id;
-            reportIdRef.current = newReportId;
-
-            const assetData = {
-              name: `Medium Voltage Switch SF6 - ${formData.identifier || formData.eqptLocation || ""}`,
-              file_url: `report:/jobs/${jobId}/medium-voltage-switch-sf6/${newReportId}`,
-              user_id: user.id,
-            };
-
-            const { data: assetResult, error: assetError } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert(assetData)
-              .select("id")
-              .single();
-
-            if (assetError) {
-              console.error("Auto-save asset error:", assetError);
-            }
-
-            if (assetResult) {
-              const { error: linkError } = await supabase
-                .schema("neta_ops")
-                .from("job_assets")
-                .insert({
-                  job_id: jobId,
-                  asset_id: assetResult.id,
-                  user_id: user.id,
-                });
-
-              if (linkError) {
-                console.error("Auto-save job_assets link error:", linkError);
-              }
-            }
-
-            setCurrentReportId(newReportId);
-            isAutoSaveCreatedRef.current = true;
-            window.history.replaceState(
-              {},
-              "",
-              `/jobs/${jobId}/medium-voltage-switch-sf6/${newReportId}`,
-            );
-          } else {
-            creatingRef.current = false;
-          }
-        } catch (insertError) {
-          creatingRef.current = false;
-          throw insertError;
-        }
-      }
+      do {
+        saveAgainRef.current = false;
+        await persistReport();
+      } while (saveAgainRef.current);
       reportSaveSucceeded();
     } catch (error) {
       console.error("Auto-save error:", error);
       reportSaveFailed(error);
     } finally {
+      savingRef.current = false;
+      saveAgainRef.current = false;
       setIsAutoSaving(false);
-      if (pendingSaveRef.current) {
-        pendingSaveRef.current = false;
-        setTimeout(() => autoSave(), 0);
-      }
     }
-  }, [jobId, user?.id, formData, status]);
+  }, [jobId, user?.id, persistReport]);
 
   // Auto-save effect with debounce
   useEffect(() => {
@@ -968,114 +985,20 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
 
   const handleSave = async () => {
     if (!jobId || !user?.id) return;
+    const wasExistingReport = Boolean(reportIdRef.current);
+
     setIsSaving(true);
     try {
-      const reportInfo = {
-        customer: formData.customer,
-        address: formData.address,
-        user: formData.user,
-        date: formData.date,
-        jobNumber: formData.jobNumber,
-        technicians: formData.technicians,
-        identifier: formData.identifier,
-        substation: formData.substation,
-        eqptLocation: formData.eqptLocation,
-        temperature: formData.temperature,
-        humidity: formData.humidity,
-      };
-
-      const payload = {
-        job_id: jobId,
-        user_id: user.id,
-        status,
-        report_info: reportInfo,
-        nameplate_data: formData.nameplate,
-        vfi_data: formData.vfi,
-        visual_mechanical: formData.visualInspection,
-        counter_readings: formData.counterReadings,
-        insulation_resistance_measured: formData.insulationMeasured,
-        insulation_resistance_corrected: formData.insulationCorrected,
-        contact_resistance: formData.contactResistance,
-        dielectric_withstand: formData.dielectricWithstand,
-        dielectric_vfi: formData.dielectricVFI,
-        test_equipment: formData.equipment,
-        comments: formData.comments,
-      } as any;
-
-      // Use the ref as the source of truth so a manual save and an in-flight
-      // autosave can't each insert a row (state `currentReportId` updates a
-      // render late, which duplicated reports).
-      const existingId = reportIdRef.current || currentReportId;
-      let savedId = existingId;
-      let didCreate = false;
-      if (existingId) {
-        const { data, error } = await supabase
-          .schema("neta_ops")
-          .from("medium_voltage_switch_sf6_reports")
-          .update(payload)
-          .eq("id", existingId)
-          .select("id")
-          .single();
-        if (error) throw error;
-        savedId = data?.id || existingId;
-      } else if (creatingRef.current) {
-        // Autosave is already creating this report — let it finish instead of
-        // inserting a duplicate.
-        pendingSaveRef.current = true;
-      } else {
-        creatingRef.current = true;
-        try {
-          const { data, error } = await supabase
-            .schema("neta_ops")
-            .from("medium_voltage_switch_sf6_reports")
-            .insert(payload)
-            .select("id")
-            .single();
-          if (error) {
-            creatingRef.current = false;
-            throw error;
-          }
-          savedId = data?.id;
-
-          // Create asset and link to job
-          if (savedId) {
-            // Set the ref immediately so a pending autosave routes to UPDATE.
-            reportIdRef.current = savedId;
-            didCreate = true;
-            const assetName = `Medium Voltage Switch SF6 Report - ${formData.identifier || formData.substation || "Unnamed"}`;
-            const fileUrl = `report:/jobs/${jobId}/medium-voltage-switch-sf6-report/${savedId}`;
-            const { data: asset, error: assetError } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert({ name: assetName, file_url: fileUrl, user_id: user.id })
-              .select("id")
-              .single();
-            if (assetError) throw assetError;
-
-            if (asset?.id) {
-              const { error: linkError } = await supabase
-                .schema("neta_ops")
-                .from("job_assets")
-                .insert({ job_id: jobId, asset_id: asset.id, user_id: user.id });
-              if (linkError) throw linkError;
-            }
-          }
-        } catch (insertError) {
-          creatingRef.current = false;
-          throw insertError;
-        }
-      }
-
-      if (savedId) {
-        setCurrentReportId(savedId);
-      }
+      const savedId = await persistReport();
+      reportSaveSucceeded();
       setJustSaved(true);
-      // Only a genuine new insert navigates / leaves edit mode.
-      if (didCreate) {
+
+      if (!wasExistingReport && savedId) {
         setIsEditMode(false);
-        navigate(`/jobs/${jobId}`);
+        navigate(`/jobs/${jobId}/${reportSlug}/${savedId}`, { replace: true });
       }
     } catch (e: any) {
+      reportSaveFailed(e);
       console.error("Error saving Medium Voltage Switch SF6 report:", e);
       alert(`Failed to save report: ${e?.message || "Unknown error"}`);
     } finally {
@@ -1198,8 +1121,17 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
           }));
           setIsEditMode(false);
         }
+        loadFailedRef.current = false;
       } catch (e) {
+        // The form is showing defaults, not this report. Auto-save must not
+        // push those defaults over the readings still in the database.
+        loadFailedRef.current = true;
         console.error("Failed to load existing SF6 report", e);
+        reportSaveFailed(
+          new Error(
+            "This report could not be loaded, so it is not being saved. Reload the page before entering results.",
+          ),
+        );
       } finally {
         setLoading(false);
       }

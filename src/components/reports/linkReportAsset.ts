@@ -93,7 +93,10 @@ async function linkOnce(
       .single();
 
     if (insertError) throw insertError;
-    assetId = created.id;
+    assetId = created?.id as string | undefined;
+    if (!assetId) {
+      throw new Error("The asset row was created but returned no id.");
+    }
   } else if (asset.name && existing?.name !== asset.name) {
     // Keep the asset name in step with the equipment identifier on the report,
     // so a report renamed after its first save is still findable by name.

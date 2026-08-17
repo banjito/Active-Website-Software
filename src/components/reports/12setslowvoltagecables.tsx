@@ -20,6 +20,7 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
 import {
   reportSaveFailed,
   reportSaveSucceeded,
@@ -409,32 +410,36 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
   const [status, setStatus] = useState<"PASS" | "FAIL" | "LIMITED SERVICE">(
     "PASS",
   );
-  const [isEditMode, setIsEditMode] = useState<boolean>(!reportId); // Edit mode enabled by default for new reports
+  const [isEditMode, setIsEditMode] = useState<boolean>(!(reportId ?? reportIdFromUrl())); // Edit mode enabled by default for new reports
+  // Auto-save rewrites the URL with history.replaceState once it has created
+  // the report, and react-router's params never see that. Fall back to the
+  // address bar so a re-render or re-mount recognises the report already on
+  // screen instead of creating another one.
+  const openReportId = reportId ?? reportIdFromUrl();
+
   const [currentReportId, setCurrentReportId] = useState<string | undefined>(
-    reportId,
+    openReportId,
   );
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
-  const reportIdRef = React.useRef<string | undefined>(reportId);
-  const creatingRef = React.useRef(false);
-  const pendingSaveRef = React.useRef(false);
-  // Mutex shared between autoSave and handleSave so they cannot both insert
-  // concurrently. Without this, a manual Save click during the auto-save
-  // debounce window can create a duplicate report row + orphaned asset.
-  const savingInFlightRef = React.useRef(false);
-
-  const waitForSaveSlot = React.useCallback(async () => {
-    for (let attempt = 0; attempt < 100; attempt += 1) {
-      if (!savingInFlightRef.current) return true;
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-    return false;
-  }, []);
+  const reportIdRef = React.useRef<string | undefined>(openReportId);
+  /** A save is in flight; a second one must not start alongside it. */
+  const savingRef = React.useRef(false);
+  /** Something changed mid-save; run once more when the current save lands. */
+  const saveAgainRef = React.useRef(false);
+  /** The asset row + job link have been confirmed for this report. */
+  const assetLinkedRef = React.useRef(false);
+  /** An existing report failed to load; the form on screen is not its data. */
+  const loadFailedRef = React.useRef(false);
 
   // Keep currentReportId in sync if URL param changes
   useEffect(() => {
-    setCurrentReportId(reportId);
-    reportIdRef.current = reportId;
+    // Recover from the address bar too: auto-save writes the new id there with
+    // history.replaceState, which useParams never sees. Without this the ref
+    // was wiped back to undefined and the next save inserted a second copy.
+    const routeReportId = reportId ?? reportIdFromUrl();
+    setCurrentReportId(routeReportId);
+    reportIdRef.current = routeReportId;
     isAutoSaveCreatedRef.current = false;
   }, [reportId]);
 
@@ -1678,7 +1683,11 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
         console.warn("No data found for report ID:", currentReportId);
         console.warn("Available columns:", Object.keys(reportData));
       }
+      loadFailedRef.current = false;
     } catch (error) {
+      // The form is showing defaults, not this report. Auto-save must not push
+      // those defaults over the readings that are still in the database.
+      loadFailedRef.current = true;
       console.error("Error in loadReport:", error);
       setError(`Failed to load report: ${(error as Error).message}`);
     } finally {
@@ -2314,6 +2323,15 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
   };
 
   // Build the normalized data payload (used by both autoSave and handleSave)
+  // Saves must send what is on screen *now*, not what was on screen when the
+  // save was queued. A queued save carrying an older snapshot used to land after
+  // a newer one and put a half-typed equipment name back on the report.
+  const formDataRef = React.useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+
+
   const buildSavePayload = React.useCallback(() => {
     const normalizedTestSets = formData.testSets.map((set) => ({
       ...set,
@@ -2335,99 +2353,102 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
 
   // Auto-save: silently persists in-progress data so users don't lose work
   // if they close the tab, lose connectivity, etc.
+  /**
+   * Writes the report and returns its id. Every save -- auto-save and the Save
+   * button -- goes through here, and they all write to one row.
+   *
+   * The row's id is decided *before* the request leaves the browser and kept in
+   * `reportIdRef`, so a save that starts while another is still in flight, or
+   * one retried after a failure, upserts over the same row. This used to be an
+   * insert guarded by a "am I already creating?" flag, and every way that flag
+   * could be lost -- a failed request, a re-mount, a stale closure -- put
+   * another copy of the same cable set on the job.
+   */
+  const persistReport = React.useCallback(async () => {
+    if (!jobId || !user?.id) return undefined;
+    if (loadFailedRef.current) {
+      throw new Error(
+        "This report could not be loaded, so it was not saved. Reload the page and try again.",
+      );
+    }
+
+    const isNewReport = !reportIdRef.current;
+    if (isNewReport) {
+      // Claimed synchronously: nothing else can now decide to create a row.
+      reportIdRef.current = newReportId();
+    }
+    const reportId = reportIdRef.current as string;
+
+    const { error } = await supabase
+      .schema("neta_ops")
+      .from("low_voltage_cable_test_12sets")
+      .upsert(
+        {
+          id: reportId,
+          job_id: jobId,
+          user_id: user.id,
+          data: buildSavePayload(),
+          // Only stamped when the row is created; an update must not rewrite it.
+          ...(isNewReport ? { created_at: new Date().toISOString() } : {}),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" },
+      );
+    if (error) throw error;
+
+    if (!assetLinkedRef.current) {
+      await ensureReportAssetLink(
+        jobId,
+        {
+          name: getAssetName(reportSlug, formDataRef.current.identifier || ""),
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${reportId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+      assetLinkedRef.current = true;
+    }
+
+    if (isNewReport) {
+      setCurrentReportId(reportId);
+      isAutoSaveCreatedRef.current = true;
+      window.history.replaceState(
+        null,
+        "",
+        `/jobs/${jobId}/${reportSlug}/${reportId}`,
+      );
+    }
+
+    return reportId;
+  }, [jobId, user?.id, buildSavePayload, reportSlug]);
+
   const autoSave = React.useCallback(async () => {
     if (!jobId || !user?.id || !isEditMode) return;
-    if (savingInFlightRef.current) return;
 
-    savingInFlightRef.current = true;
-    setIsAutoSaving(true);
+    // One save at a time. Anything typed while this one is in flight is picked
+    // up by the follow-up pass below, which reads the form fresh.
+    if (savingRef.current) {
+      saveAgainRef.current = true;
+      return;
+    }
+    savingRef.current = true;
 
     try {
-      const dataToSave = buildSavePayload();
-      const payload = {
-        job_id: jobId,
-        user_id: user.id,
-        data: dataToSave,
-        updated_at: new Date().toISOString(),
-      };
-
-      if (reportIdRef.current) {
-        const { error: updateError } = await supabase
-          .schema("neta_ops")
-          .from("low_voltage_cable_test_12sets")
-          .update(payload)
-          .eq("id", reportIdRef.current);
-        if (updateError) throw updateError;
-      } else if (creatingRef.current) {
-        pendingSaveRef.current = true;
-      } else {
-        creatingRef.current = true;
-        try {
-          const insertPayload = {
-            ...payload,
-            created_at: new Date().toISOString(),
-          };
-          const { data: insertData, error: insertError } = await supabase
-            .schema("neta_ops")
-            .from("low_voltage_cable_test_12sets")
-            .insert(insertPayload)
-            .select("id")
-            .single();
-          if (insertError) {
-            creatingRef.current = false;
-            throw insertError;
-          }
-          if (insertData) {
-            const newId = insertData.id as string;
-            reportIdRef.current = newId;
-            isAutoSaveCreatedRef.current = true;
-            setCurrentReportId(newId);
-
-            const assetData = {
-              name: getAssetName(reportSlug, formData.identifier || ""),
-              file_url: `report:/jobs/${jobId}/${reportSlug}/${newId}`,
-              user_id: user.id,
-              created_at: new Date().toISOString(),
-            };
-            try {
-              await ensureReportAssetLink(jobId, assetData, user.id);
-            } catch (assetError) {
-              console.error("Auto-save asset link failed:", assetError);
-            }
-
-            window.history.replaceState(
-              null,
-              "",
-              `/jobs/${jobId}/${reportSlug}/${newId}`,
-            );
-          } else {
-            creatingRef.current = false;
-          }
-        } catch (insertError) {
-          creatingRef.current = false;
-          throw insertError;
-        }
-      }
+      setIsAutoSaving(true);
+      do {
+        saveAgainRef.current = false;
+        await persistReport();
+      } while (saveAgainRef.current);
       reportSaveSucceeded();
     } catch (err) {
       console.error("Auto-save error:", err);
       reportSaveFailed(err);
     } finally {
-      savingInFlightRef.current = false;
+      savingRef.current = false;
+      saveAgainRef.current = false;
       setIsAutoSaving(false);
-      if (pendingSaveRef.current) {
-        pendingSaveRef.current = false;
-        setTimeout(() => autoSave(), 0);
-      }
     }
-  }, [
-    jobId,
-    user?.id,
-    isEditMode,
-    buildSavePayload,
-    formData.identifier,
-    reportSlug,
-  ]);
+  }, [jobId, user?.id, isEditMode, persistReport]);
 
   // Debounced auto-save trigger when form data, status, or edit mode changes
   useEffect(() => {
@@ -2441,250 +2462,33 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
 
   // Add Save/Update Handler
   const handleSave = async () => {
-    const wasExistingReport = Boolean(currentReportId || reportIdRef.current);
+    if (!jobId || !user?.id) return;
+    const wasExistingReport = Boolean(reportIdRef.current);
+
     setIsSaving(true);
     setError(null);
-    // Cancel any pending auto-save so it cannot fire mid-save and create a duplicate row
+
+    // Cancel any pending auto-save so it cannot fire mid-save.
     if (autoSaveTimerRef.current) {
       clearTimeout(autoSaveTimerRef.current);
       autoSaveTimerRef.current = null;
     }
 
-    const canSaveNow = await waitForSaveSlot();
-    if (!canSaveNow) {
-      pendingSaveRef.current = true;
-      setIsSaving(false);
-      return;
-    }
-
-    savingInFlightRef.current = true;
     try {
-      // Log the schema and table name for debugging
-      console.log(
-        "Attempting to save to schema: neta_ops, table: low_voltage_cable_test_12sets",
-      );
+      const savedId = await persistReport();
+      reportSaveSucceeded();
+      setJustSaved(true);
 
-      const dataToSave = buildSavePayload();
-
-      // Structure the data to be saved (assuming a 'data' column)
-      const reportPayload = {
-        job_id: jobId,
-        user_id: user?.id,
-        data: dataToSave,
-      };
-
-      // Log the payload for debugging
-      console.log("Payload:", reportPayload);
-
-      // Use the ref as the source of truth so a manual save and an in-flight
-      // autosave can't each insert a row (state `currentReportId` updates a
-      // render late, which duplicated reports).
-      const existingId = reportIdRef.current || currentReportId;
-      let savedReportId = existingId;
-
-      if (existingId) {
-        // Update existing report
-        console.log("Attempting to update report with ID:", existingId);
-        console.log("Update payload:", {
-          data: reportPayload.data,
-          updated_at: new Date(),
-        });
-
-        // First check if the report exists
-        const { data: existingReport, error: checkError } = await supabase
-          .schema("neta_ops")
-          .from("low_voltage_cable_test_12sets")
-          .select("id")
-          .eq("id", existingId)
-          .single();
-
-        if (checkError) {
-          console.error("Error checking if report exists:", checkError);
-          throw new Error(
-            `Report with ID ${existingId} not found: ${checkError.message}`,
-          );
-        }
-
-        if (!existingReport) {
-          throw new Error(
-            `Report with ID ${existingId} does not exist in the database.`,
-          );
-        }
-
-        console.log("Report exists, proceeding with update...");
-
-        const { data: updateData, error: updateError } = await supabase
-          .schema("neta_ops")
-          .from("low_voltage_cable_test_12sets")
-          .update({
-            data: reportPayload.data,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existingId)
-          .select();
-
-        if (updateError) {
-          console.error("Update error details:", updateError);
-          throw updateError;
-        }
-
-        console.log("Update response:", updateData);
-
-        if (!updateData || updateData.length === 0) {
-          console.error(
-            "No rows were updated. This could be an RLS policy issue.",
-          );
-          // Don't throw error - the update might have succeeded but select failed
-          console.warn("Update may have succeeded despite empty response");
-        }
-
-        console.log("Report updated successfully");
-
-        if (!wasExistingReport) {
-          setIsEditMode(false);
-        } else {
-          setJustSaved(true);
-        }
-        return;
-      } else {
-        // Create new report
-        // Try with direct SQL query if the regular way doesn't work
-        try {
-          console.log("Trying regular insert...");
-          const { data: insertData, error: insertError } = await supabase
-            .schema("neta_ops")
-            .from("low_voltage_cable_test_12sets")
-            .insert(reportPayload)
-            .select("id")
-            .single();
-          if (insertError) {
-            console.error("Insert error details:", insertError);
-            throw insertError;
-          }
-          savedReportId = insertData.id;
-          // Set the ref immediately so a pending autosave routes to UPDATE.
-          reportIdRef.current = savedReportId;
-          setCurrentReportId(savedReportId);
-          isAutoSaveCreatedRef.current = true;
-          console.log("Report created successfully with ID:", savedReportId);
-
-          // Create an asset entry for the saved report
-          const assetData = {
-            name: getAssetName(reportSlug, formData.identifier || ""),
-            file_url: `report:/jobs/${jobId}/low-voltage-cable-test-12sets/${savedReportId}`,
-            user_id: user?.id,
-            created_at: new Date().toISOString(),
-          };
-
-          console.log("Creating asset entry:", assetData);
-          const { data: assetResult, error: assetError } = await supabase
-            .schema("neta_ops")
-            .from("assets")
-            .insert(assetData)
-            .select("id")
-            .single();
-
-          if (assetError) {
-            console.error("Error creating asset record:", assetError);
-            // Continue even if asset creation fails
-          } else if (assetResult) {
-            console.log("Asset created with ID:", assetResult.id);
-
-            // Link the asset to the job
-            const jobAssetData = {
-              job_id: jobId,
-              asset_id: assetResult.id,
-              user_id: user?.id,
-            };
-
-            console.log("Linking asset to job:", jobAssetData);
-            const { error: jobAssetError } = await supabase
-              .schema("neta_ops")
-              .from("job_assets")
-              .insert(jobAssetData);
-
-            if (jobAssetError) {
-              console.error("Error linking asset to job:", jobAssetError);
-              // Continue even if linking fails
-            } else {
-              console.log("Asset successfully linked to job");
-            }
-          }
-
-          setIsEditMode(false);
-          if (savedReportId) {
-            navigate(`/jobs/${jobId}/${reportSlug}/${savedReportId}`, {
-              replace: true,
-            });
-          }
-          return;
-        } catch (regularInsertError) {
-          console.error("Regular insert failed, trying SQL query approach...");
-
-          // Try to check if we have SELECT access at least
-          const { data: checkData, error: checkError } = await supabase
-            .from("neta_ops.low_voltage_cable_test_12sets")
-            .select("id")
-            .limit(1);
-
-          console.log("Check access result:", {
-            data: checkData,
-            error: checkError,
-          });
-
-          // As a last resort, try saving to a table we know exists and we have access to
-          console.log("Attempting to save to fallback table...");
-          try {
-            // Try to save to a table that should exist and you have access to
-            const { data: fallbackData, error: fallbackError } = await supabase
-              .schema("neta_ops")
-              .from("transformer_reports") // Try a known working table
-              .insert({
-                job_id: jobId,
-                user_id: user?.id,
-                data: {
-                  test: "This is a fallback test",
-                  original_data: formData,
-                },
-                created_at: new Date(),
-                updated_at: new Date(),
-              })
-              .select("id")
-              .single();
-
-            console.log("Fallback save result:", {
-              data: fallbackData,
-              error: fallbackError,
-            });
-
-            if (!fallbackError) {
-              alert(
-                "Fallback save successful. This indicates the low_voltage_cable_test_12sets table has permission issues.",
-              );
-              savedReportId = fallbackData.id;
-
-              // Even with fallback, navigate back to job details
-              setIsEditMode(false);
-              if (savedReportId) {
-                navigate(`/jobs/${jobId}/${reportSlug}/${savedReportId}`, {
-                  replace: true,
-                });
-              }
-              return;
-            }
-          } catch (fallbackError) {
-            console.error("Even fallback save failed:", fallbackError);
-          }
-
-          throw regularInsertError; // Re-throw the original error
-        }
+      if (!wasExistingReport && savedId) {
+        setIsEditMode(false);
+        navigate(`/jobs/${jobId}/${reportSlug}/${savedId}`, { replace: true });
       }
     } catch (err: any) {
+      reportSaveFailed(err);
       console.error("Error saving report:", err);
       setError(`Failed to save report: ${err.message}`);
       alert(`Error saving report: ${err.message}`);
     } finally {
-      savingInFlightRef.current = false;
       setIsSaving(false);
     }
   };

@@ -13,6 +13,8 @@ import { getReportName, getAssetName } from "./reportMappings";
 import { useEquipmentAssetPrefill } from "./useEquipmentAssetPrefill";
 import SaveToAssetButton from "./SaveToAssetButton";
 import { setReportAssetEquipmentLink } from "@/services/reportAssets";
+import { ensureReportAssetLink } from "./linkReportAsset";
+import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
 import { ReportWrapper } from "./ReportWrapper";
 import { ReportHeader } from "./common/ReportHeader";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
@@ -413,18 +415,31 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
   const { user } = useAuth();
   const { maskCustomerName, maskCustomerAddress } = useDemoMode();
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(!initialReportId);
+
+  // Auto-save rewrites the URL with history.replaceState once it has created
+  // the report, and react-router's params never see that. Fall back to the
+  // address bar so a re-render or re-mount recognises the report already on
+  // screen instead of creating another one.
+  const openReportId = initialReportId ?? reportIdFromUrl();
+
+  const [isEditing, setIsEditing] = useState(!openReportId);
   const [justSaved, setJustSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [currentReportId, setCurrentReportId] = useState<string | undefined>(
-    initialReportId,
+    openReportId,
   );
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
-  const reportIdRef = React.useRef<string | undefined>(initialReportId);
-  const creatingRef = React.useRef(false);
-  const pendingSaveRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(openReportId);
+  /** A save is in flight; a second one must not start alongside it. */
+  const savingRef = React.useRef(false);
+  /** Something changed mid-save; run once more when the current save lands. */
+  const saveAgainRef = React.useRef(false);
+  /** The asset row + job link have been confirmed for this report. */
+  const assetLinkedRef = React.useRef(false);
+  /** An existing report failed to load; the form on screen is not its data. */
+  const loadFailedRef = React.useRef(false);
 
   // Print Mode Detection
   const [searchParams] = useSearchParams();
@@ -1895,7 +1910,11 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
         }
         console.log("=== BACKFILL DEBUG END ===");
       }
+      loadFailedRef.current = false;
     } catch (error) {
+      // The form is showing defaults, not this report. Auto-save must not push
+      // those defaults over the readings that are still in the database.
+      loadFailedRef.current = true;
       console.error("Error loading report:", error);
       alert(`Failed to load report: ${(error as Error).message}`);
       setIsEditing(true);
@@ -1905,136 +1924,157 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
   };
 
   // --- Autosave Function ---
+  // Saves must send what is on screen *now*, not what was on screen when the
+  // save was queued. A queued save carrying an older snapshot used to land after
+  // a newer one and put a half-typed equipment name back on the report.
+  const formDataRef = React.useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+
+  /**
+   * Writes the report and returns its id. Every save -- auto-save and the Save
+   * button -- goes through here, and they all write to one row.
+   *
+   * The row's id is decided *before* the request leaves the browser and kept in
+   * `reportIdRef`, so a save that starts while another is still in flight, or
+   * one retried after a failure, upserts over the same row. This used to be an
+   * insert guarded by a "am I already creating?" flag, and every way that flag
+   * could be lost -- a failed request, a re-mount, a stale closure -- put
+   * another copy of the same breaker on the job.
+   */
+  const persistReport = React.useCallback(async () => {
+    if (!jobId || !user?.id) return undefined;
+    if (loadFailedRef.current) {
+      throw new Error(
+        "This report could not be loaded, so it was not saved. Reload the page and try again.",
+      );
+    }
+
+    const formData = formDataRef.current;
+    const isNewReport = !reportIdRef.current;
+    if (isNewReport) {
+      // Claimed synchronously: nothing else can now decide to create a row.
+      reportIdRef.current = newReportId();
+    }
+    const reportId = reportIdRef.current as string;
+
+    const { error } = await supabase
+      .schema("neta_ops")
+      .from("low_voltage_circuit_breaker_electronic_trip_ats")
+      .upsert(
+        {
+          id: reportId,
+          job_id: jobId,
+          user_id: user.id,
+          report_info: {
+            customer: maskCustomerName(formData.customer),
+            address: maskCustomerAddress(formData.address),
+            user: formData.user,
+            date: formData.date,
+            identifier: formData.identifier,
+            jobNumber: formData.jobNumber,
+            technicians: formData.technicians,
+            temperature: formData.temperature,
+            substation: formData.substation,
+            eqptLocation: formData.eqptLocation,
+            status: formData.status,
+          },
+          nameplate_data: {
+            manufacturer: formData.manufacturer,
+            catalogNumber: formData.catalogNumber,
+            serialNumber: formData.serialNumber,
+            type: formData.type,
+            frameSize: formData.frameSize,
+            icRating: formData.icRating,
+            tripUnitType: formData.tripUnitType,
+            ratingPlug: formData.ratingPlug,
+            curveNo: formData.curveNo,
+            chargeMotorVoltage: formData.chargeMotorVoltage,
+            operation: formData.operation,
+            mounting: formData.mounting,
+            zoneInterlock: formData.zoneInterlock,
+            thermalMemory: formData.thermalMemory,
+          },
+          visual_mechanical: { items: formData.visualInspectionItems },
+          device_settings: formData.deviceSettings,
+          contact_resistance: formData.contactResistance,
+          insulation_resistance: formData.insulationResistance,
+          primary_injection: formData.primaryInjection,
+          test_equipment: formData.testEquipment,
+          comments: formData.comments,
+        },
+        { onConflict: "id" },
+      );
+    if (error) throw error;
+
+    if (!assetLinkedRef.current) {
+      const assetId = await ensureReportAssetLink(
+        jobId,
+        {
+          name: getAssetName(
+            reportSlug,
+            formData.identifier || formData.eqptLocation || "",
+          ),
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${reportId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+      if (equipmentAssetId) {
+        await setReportAssetEquipmentLink(assetId, equipmentAssetId);
+      }
+      assetLinkedRef.current = true;
+    }
+
+    if (isNewReport) {
+      isAutoSaveCreatedRef.current = true;
+      setCurrentReportId(reportId);
+      window.history.replaceState(
+        {},
+        "",
+        `/jobs/${jobId}/${reportSlug}/${reportId}`,
+      );
+    }
+
+    return reportId;
+  }, [
+    jobId,
+    user?.id,
+    maskCustomerName,
+    maskCustomerAddress,
+    equipmentAssetId,
+    reportSlug,
+  ]);
+
+  // --- Autosave Function ---
   const autoSave = React.useCallback(async () => {
-    if (!jobId || !user?.id || !isEditing || isAutoSaving) return;
+    if (!jobId || !user?.id || !isEditing) return;
 
-    setIsAutoSaving(true);
-
-    const reportPayload = {
-      job_id: jobId,
-      user_id: user.id,
-      report_info: {
-        customer: maskCustomerName(formData.customer),
-        address: maskCustomerAddress(formData.address),
-        user: formData.user,
-        date: formData.date,
-        identifier: formData.identifier,
-        jobNumber: formData.jobNumber,
-        technicians: formData.technicians,
-        temperature: formData.temperature,
-        substation: formData.substation,
-        eqptLocation: formData.eqptLocation,
-        status: formData.status,
-      },
-      nameplate_data: {
-        manufacturer: formData.manufacturer,
-        catalogNumber: formData.catalogNumber,
-        serialNumber: formData.serialNumber,
-        type: formData.type,
-        frameSize: formData.frameSize,
-        icRating: formData.icRating,
-        tripUnitType: formData.tripUnitType,
-        ratingPlug: formData.ratingPlug,
-        curveNo: formData.curveNo,
-        chargeMotorVoltage: formData.chargeMotorVoltage,
-        operation: formData.operation,
-        mounting: formData.mounting,
-        zoneInterlock: formData.zoneInterlock,
-        thermalMemory: formData.thermalMemory,
-      },
-      visual_mechanical: {
-        items: formData.visualInspectionItems,
-      },
-      device_settings: formData.deviceSettings,
-      contact_resistance: formData.contactResistance,
-      insulation_resistance: formData.insulationResistance,
-      primary_injection: formData.primaryInjection,
-      test_equipment: formData.testEquipment,
-      comments: formData.comments,
-    };
+    // One save at a time. Anything typed while this one is in flight is picked
+    // up by the follow-up pass below, which reads the form fresh.
+    if (savingRef.current) {
+      saveAgainRef.current = true;
+      return;
+    }
+    savingRef.current = true;
 
     try {
-      let result;
-      if (reportIdRef.current) {
-        result = await supabase
-          .schema("neta_ops")
-          .from("low_voltage_circuit_breaker_electronic_trip_ats")
-          .update(reportPayload)
-          .eq("id", reportIdRef.current)
-          .select();
-      } else if (creatingRef.current) {
-        pendingSaveRef.current = true;
-      } else {
-        creatingRef.current = true;
-        try {
-          result = await supabase
-            .schema("neta_ops")
-            .from("low_voltage_circuit_breaker_electronic_trip_ats")
-            .insert(reportPayload)
-            .select()
-            .maybeSingle();
-
-          if (result.data) {
-            const newReportId = result.data.id;
-            reportIdRef.current = newReportId;
-            isAutoSaveCreatedRef.current = true;
-            setCurrentReportId(newReportId);
-
-            const assetData = {
-              name: getAssetName(
-                reportSlug,
-                formData.identifier || formData.eqptLocation || "",
-              ),
-              file_url: `report:/jobs/${jobId}/low-voltage-circuit-breaker-electronic-trip-ats-report/${newReportId}`,
-              user_id: user.id,
-            };
-
-            const { data: assetResult, error: assetError } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert(assetData)
-              .select()
-              .single();
-
-            if (!assetError && assetResult) {
-              await supabase.schema("neta_ops").from("job_assets").insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user.id,
-              });
-              if (equipmentAssetId) {
-                await setReportAssetEquipmentLink(
-                  assetResult.id,
-                  equipmentAssetId,
-                );
-              }
-            }
-
-            window.history.replaceState(
-              {},
-              "",
-              `/jobs/${jobId}/low-voltage-circuit-breaker-electronic-trip-ats-report/${newReportId}`,
-            );
-          } else {
-            creatingRef.current = false;
-          }
-        } catch (insertError) {
-          creatingRef.current = false;
-          throw insertError;
-        }
-      }
+      setIsAutoSaving(true);
+      do {
+        saveAgainRef.current = false;
+        await persistReport();
+      } while (saveAgainRef.current);
       reportSaveSucceeded();
     } catch (error: any) {
       console.error("Auto-save error:", error);
       reportSaveFailed(error);
     } finally {
+      savingRef.current = false;
+      saveAgainRef.current = false;
       setIsAutoSaving(false);
-      if (pendingSaveRef.current) {
-        pendingSaveRef.current = false;
-        setTimeout(() => autoSave(), 0);
-      }
     }
-  }, [jobId, user?.id, isEditing, isAutoSaving, formData, reportSlug]);
+  }, [jobId, user?.id, isEditing, persistReport]);
 
   // Autosave effect - triggers after user stops typing for 2 seconds
   React.useEffect(() => {
@@ -2061,169 +2101,26 @@ const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
   // --- Save Report ---
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) return;
+    const wasExistingReport = Boolean(reportIdRef.current);
+
     setIsSaving(true);
-
-    // Structure data for Supabase JSONB columns
-    const reportPayload = {
-      job_id: jobId,
-      user_id: user.id,
-      report_info: {
-        customer: maskCustomerName(formData.customer),
-        address: maskCustomerAddress(formData.address),
-        user: formData.user,
-        date: formData.date,
-        identifier: formData.identifier,
-        jobNumber: formData.jobNumber,
-        technicians: formData.technicians,
-        temperature: formData.temperature,
-        substation: formData.substation,
-        eqptLocation: formData.eqptLocation,
-        status: formData.status,
-      },
-      nameplate_data: {
-        manufacturer: formData.manufacturer,
-        catalogNumber: formData.catalogNumber,
-        serialNumber: formData.serialNumber,
-        type: formData.type,
-        frameSize: formData.frameSize,
-        icRating: formData.icRating,
-        tripUnitType: formData.tripUnitType,
-        ratingPlug: formData.ratingPlug,
-        curveNo: formData.curveNo,
-        chargeMotorVoltage: formData.chargeMotorVoltage,
-        operation: formData.operation,
-        mounting: formData.mounting,
-        zoneInterlock: formData.zoneInterlock,
-        thermalMemory: formData.thermalMemory,
-      },
-      visual_mechanical: {
-        items: formData.visualInspectionItems,
-      },
-      device_settings: formData.deviceSettings,
-      contact_resistance: formData.contactResistance,
-      insulation_resistance: formData.insulationResistance,
-      primary_injection: formData.primaryInjection, // Changed from trip_testing
-      test_equipment: formData.testEquipment,
-      comments: formData.comments,
-    };
-
     try {
-      let result;
-      let savedReportId: string | undefined;
-      // Use the ref as the source of truth so a manual save and an in-flight
-      // autosave can't each insert a row (state `currentReportId` updates a
-      // render late, which duplicated reports).
-      const existingId = reportIdRef.current || currentReportId;
-      if (existingId) {
-        // Update existing report
-        result = await supabase
-          .schema("neta_ops")
-          .from("low_voltage_circuit_breaker_electronic_trip_ats") // Use new table name
-          .update(reportPayload)
-          .eq("id", existingId)
-          .select()
-          .maybeSingle();
-        if (result.error) throw result.error;
-      } else if (creatingRef.current) {
-        // Autosave is already creating this report — let it finish (and pick up
-        // the latest data) instead of inserting a duplicate.
-        pendingSaveRef.current = true;
-      } else {
-        // Create new report
-        creatingRef.current = true;
-        try {
-          result = await supabase
-            .schema("neta_ops")
-            .from("low_voltage_circuit_breaker_electronic_trip_ats") // Use new table name
-            .insert(reportPayload)
-            .select()
-            .maybeSingle();
-          if (result.error) {
-            creatingRef.current = false;
-            throw result.error;
-          }
-
-          // Create asset entry for the new report
-          let newReportId = result.data?.id;
-          if (!newReportId) {
-            // Fallback fetch if RLS prevents returning row on insert
-            const { data: fetched } = await supabase
-              .schema("neta_ops")
-              .from("low_voltage_circuit_breaker_electronic_trip_ats")
-              .select("id")
-              .eq("job_id", jobId)
-              .eq("user_id", user.id)
-              .order("created_at", { ascending: false })
-              .limit(1)
-              .maybeSingle();
-            newReportId = fetched?.id;
-          }
-          if (newReportId) {
-            // Set the ref immediately so a pending autosave routes to UPDATE.
-            reportIdRef.current = newReportId;
-            setCurrentReportId(newReportId);
-            savedReportId = newReportId;
-            const assetData = {
-              name: getAssetName(
-                reportSlug,
-                formData.identifier || formData.eqptLocation || "",
-              ), // Updated name
-              file_url: `report:/jobs/${jobId}/low-voltage-circuit-breaker-electronic-trip-ats-report/${newReportId}`, // Updated path
-              user_id: user.id,
-            };
-
-            const { data: assetResult, error: assetError } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert(assetData)
-              .select()
-              .maybeSingle();
-
-            if (assetError) throw assetError;
-
-            // Link asset to job
-            if (assetResult?.id) {
-              await supabase.schema("neta_ops").from("job_assets").insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user.id,
-              });
-              if (equipmentAssetId) {
-                await setReportAssetEquipmentLink(
-                  assetResult.id,
-                  equipmentAssetId,
-                );
-              }
-            }
-          }
-        } catch (insertError) {
-          creatingRef.current = false;
-          throw insertError;
-        }
-      }
-
+      const savedId = await persistReport();
+      reportSaveSucceeded();
       setJustSaved(true);
-      // Only a genuine new insert navigates / leaves edit mode.
-      if (savedReportId) {
+
+      if (!wasExistingReport && savedId) {
         setIsEditing(false);
-        navigate(`/jobs/${jobId}/${reportSlug}/${savedReportId}`, {
-          replace: true,
-        });
+        navigate(`/jobs/${jobId}/${reportSlug}/${savedId}`, { replace: true });
       }
     } catch (error: any) {
+      reportSaveFailed(error);
       console.error("Error saving report:", error);
-      // Provide more specific error details if available
       let errorMessage = "Unknown error";
       if (error) {
-        if (error.message) {
-          errorMessage = error.message;
-        }
-        if (error.details) {
-          errorMessage += ` Details: ${error.details}`;
-        }
-        if (error.hint) {
-          errorMessage += ` Hint: ${error.hint}`;
-        }
+        if (error.message) errorMessage = error.message;
+        if (error.details) errorMessage += ` Details: ${error.details}`;
+        if (error.hint) errorMessage += ` Hint: ${error.hint}`;
       }
       alert(`Failed to save report: ${errorMessage}`);
     } finally {

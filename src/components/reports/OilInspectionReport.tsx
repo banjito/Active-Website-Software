@@ -21,6 +21,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import { numericReportIdFromUrl } from "./common/reportIdentity";
 import {
   reportSaveFailed,
   reportSaveSucceeded,
@@ -795,18 +796,35 @@ const OilInspectionReport: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
   const { maskCustomerName, maskCustomerAddress } = useDemoMode();
+  // Auto-save rewrites the URL with history.replaceState once it has created the
+  // report, and react-router's params never see that. Fall back to the address
+  // bar so a re-render or re-mount recognises the report already on screen
+  // instead of creating another one. This table's ids are serial numbers, not
+  // uuids, so the numeric form is what appears in the URL.
+  const openReportId = initialReportId ?? numericReportIdFromUrl();
+
   const [currentReportId, setCurrentReportId] = useState<string | undefined>(
-    initialReportId,
+    openReportId,
   );
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(!initialReportId);
+  const [isEditing, setIsEditing] = useState(!openReportId);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
-  const reportIdRef = React.useRef<string | undefined>(initialReportId);
-  const creatingRef = React.useRef(false);
-  const pendingSaveRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(openReportId);
+  /** A save is in flight; a second one must not start alongside it. */
+  const savingRef = React.useRef(false);
+  /** Something changed mid-save; run once more when the current save lands. */
+  const saveAgainRef = React.useRef(false);
+  /** The row-creating insert, shared so only one save can ever run it. */
+  const createInFlightRef = React.useRef<Promise<string | undefined> | null>(
+    null,
+  );
+  /** The asset row + job link have been confirmed for this report. */
+  const assetLinkedRef = React.useRef(false);
+  /** An existing report failed to load; the form on screen is not its data. */
+  const loadFailedRef = React.useRef(false);
 
   // Report slug/name — declared before use (passing reportSlug into
   // useReportLocked before this line is a temporal-dead-zone crash).
@@ -1543,7 +1561,11 @@ const OilInspectionReport: React.FC = () => {
         setStatus(data.report_info?.status ?? "PASS"); // Set status state
         setIsEditing(false);
       }
+      loadFailedRef.current = false;
     } catch (error) {
+      // The form is showing defaults, not this report. Auto-save must not push
+      // those defaults over the readings that are still in the database.
+      loadFailedRef.current = true;
       const err = error as SupabaseError;
       console.error(`Error loading report from ${OIL_INSPECTION_TABLE}:`, err);
       alert(`Failed to load report: ${err.message}`);
@@ -1554,12 +1576,19 @@ const OilInspectionReport: React.FC = () => {
   };
 
   // Auto-save function
-  const autoSave = React.useCallback(async () => {
-    if (!jobId || !user?.id) return;
+  // Saves must send what is on screen *now*, not what was on screen when the
+  // save was queued. A queued save carrying an older snapshot used to land after
+  // a newer one and put a half-typed equipment name back on the report.
+  const saveStateRef = React.useRef({ formData, isOmicronMode });
+  useEffect(() => {
+    saveStateRef.current = { formData, isOmicronMode };
+  }, [formData, isOmicronMode]);
 
-    const reportData = {
+  const buildReportPayload = React.useCallback(() => {
+    const { formData, isOmicronMode } = saveStateRef.current;
+    return {
       job_id: jobId,
-      user_id: user.id,
+      user_id: user?.id,
       report_info: {
         customer: maskCustomerName(formData.customer),
         address: maskCustomerAddress(formData.address),
@@ -1584,71 +1613,124 @@ const OilInspectionReport: React.FC = () => {
       excitation: formData.excitation,
       power_factor: formData.powerFactor,
     };
+  }, [jobId, user?.id, maskCustomerName, maskCustomerAddress]);
+
+  /**
+   * Writes the report and returns its id. Every save -- auto-save and the Save
+   * button -- goes through here, and they all write to one row.
+   *
+   * This table's `id` is a database serial, not a uuid, so the id cannot be
+   * claimed on the client the way the other reports do. Instead the very first
+   * insert is shared: a save that arrives while the insert is still in flight
+   * awaits that same promise and then updates the row it created, instead of
+   * inserting a second copy. Combined with recovering the id from the address
+   * bar, that closes the ways a re-mount or a racing save used to make the same
+   * transformer appear on the job twice.
+   */
+  const persistReport = React.useCallback(async () => {
+    if (!jobId || !user?.id) return undefined;
+    if (loadFailedRef.current) {
+      throw new Error(
+        "This report could not be loaded, so it was not saved. Reload the page and try again.",
+      );
+    }
+
+    let reportId = reportIdRef.current;
+    let iCreatedTheRow = false;
+
+    if (!reportId) {
+      if (!createInFlightRef.current) {
+        createInFlightRef.current = (async () => {
+          const { data, error } = await supabase
+            .schema("neta_ops")
+            .from(OIL_INSPECTION_TABLE)
+            .insert(buildReportPayload())
+            .select("id")
+            .single();
+          if (error) throw error;
+          const created = String(data.id);
+          reportIdRef.current = created;
+          return created;
+        })();
+        // Let a later save retry if this insert fails.
+        createInFlightRef.current.catch(() => {
+          createInFlightRef.current = null;
+        });
+        iCreatedTheRow = true;
+      }
+      reportId = await createInFlightRef.current;
+    }
+    if (!reportId) return undefined;
+
+    // Someone else's insert created this row, so it does not hold what is on
+    // screen now -- write that over it.
+    if (!iCreatedTheRow) {
+      const { error } = await supabase
+        .schema("neta_ops")
+        .from(OIL_INSPECTION_TABLE)
+        .update(buildReportPayload())
+        .eq("id", Number(reportId));
+      if (error) throw error;
+    }
+
+    if (!assetLinkedRef.current) {
+      const { formData } = saveStateRef.current;
+      await ensureReportAssetLink(
+        jobId,
+        {
+          name: getAssetName(
+            reportSlug,
+            formData.identifier || formData.eqptLocation || "",
+          ),
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${reportId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+      assetLinkedRef.current = true;
+    }
+
+    if (iCreatedTheRow) {
+      setCurrentReportId(reportId);
+      isAutoSaveCreatedRef.current = true;
+      window.history.replaceState(
+        {},
+        "",
+        `/jobs/${jobId}/${reportSlug}/${reportId}`,
+      );
+    }
+
+    return reportId;
+  }, [jobId, user?.id, buildReportPayload, reportSlug]);
+
+  // Auto-save function
+  const autoSave = React.useCallback(async () => {
+    if (!jobId || !user?.id) return;
+
+    // One save at a time. Anything typed while this one is in flight is picked
+    // up by the follow-up pass below, which reads the form fresh.
+    if (savingRef.current) {
+      saveAgainRef.current = true;
+      return;
+    }
+    savingRef.current = true;
 
     try {
       setIsAutoSaving(true);
-
-      if (reportIdRef.current) {
-        await supabase
-          .schema("neta_ops")
-          .from(OIL_INSPECTION_TABLE)
-          .update(reportData)
-          .eq("id", parseInt(reportIdRef.current));
-      } else if (creatingRef.current) {
-        pendingSaveRef.current = true;
-      } else {
-        creatingRef.current = true;
-        try {
-          const result = await supabase
-            .schema("neta_ops")
-            .from(OIL_INSPECTION_TABLE)
-            .insert(reportData)
-            .select()
-            .single();
-
-          if (result.data) {
-            const newReportId = result.data.id.toString();
-            reportIdRef.current = newReportId;
-
-            const assetName = getAssetName(
-              reportSlug,
-              formData.identifier || formData.eqptLocation || "",
-            );
-            const assetUrl = `report:/jobs/${jobId}/oil-inspection/${newReportId}`;
-
-            await ensureReportAssetLink(
-              jobId,
-              { name: assetName, file_url: assetUrl, user_id: user.id },
-              user.id,
-            );
-
-            setCurrentReportId(newReportId);
-            isAutoSaveCreatedRef.current = true;
-            window.history.replaceState(
-              {},
-              "",
-              `/jobs/${jobId}/oil-inspection/${newReportId}`,
-            );
-          } else {
-            creatingRef.current = false;
-          }
-        } catch (insertError) {
-          creatingRef.current = false;
-          throw insertError;
-        }
-      }
+      do {
+        saveAgainRef.current = false;
+        await persistReport();
+      } while (saveAgainRef.current);
       reportSaveSucceeded();
     } catch (error) {
       console.error("Auto-save error:", error);
       reportSaveFailed(error);
     } finally {
+      savingRef.current = false;
+      saveAgainRef.current = false;
       setIsAutoSaving(false);
-      if (pendingSaveRef.current) {
-        pendingSaveRef.current = false;
-        setTimeout(() => autoSave(), 0);
-      }
     }
-  }, [jobId, user?.id, formData, isOmicronMode, reportSlug]);
+  }, [jobId, user?.id, persistReport]);
 
   // Auto-save effect with debounce (placed after autoSave function definition)
   useEffect(() => {
@@ -1670,6 +1752,7 @@ const OilInspectionReport: React.FC = () => {
   }, [formData, isEditing, loading, autoSave]);
 
   // Save report
+  // Save report
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) {
       console.warn("Save condition not met:", {
@@ -1679,138 +1762,21 @@ const OilInspectionReport: React.FC = () => {
       });
       return;
     }
-
-    const reportData = {
-      job_id: jobId,
-      user_id: user.id,
-      report_info: {
-        customer: formData.customer,
-        address: formData.address,
-        date: formData.date,
-        technicians: formData.technicians,
-        jobNumber: formData.jobNumber,
-        substation: formData.substation,
-        eqptLocation: formData.eqptLocation,
-        identifier: formData.identifier,
-        userName: formData.userName,
-        temperature: formData.temperature,
-        status: formData.status,
-        isOmicronMode: isOmicronMode, // <-- Add this line
-      },
-      nameplate_data: formData.nameplateData,
-      visual_inspection: formData.visualInspection,
-      insulation_resistance: formData.insulationResistance,
-      test_equipment: formData.testEquipment,
-      comments: formData.comments,
-      turns_ratio_tests: formData.turnsRatioTests,
-      winding_resistance: formData.windingResistance,
-      excitation: formData.excitation,
-      power_factor: formData.powerFactor,
-    };
-
-    console.log(`Saving data to ${OIL_INSPECTION_TABLE}:`, reportData);
+    const wasExistingReport = Boolean(reportIdRef.current);
 
     try {
-      setLoading(true); // Start loading indicator
-
-      let result;
-      let savedReport;
-      // Use the ref as the source of truth so a manual save and an in-flight
-      // autosave can't each insert a row (state `currentReportId` updates a
-      // render late, which duplicated reports).
-      const existingId = reportIdRef.current || currentReportId;
-      if (existingId) {
-        // Update existing report
-        console.log(`Updating ${OIL_INSPECTION_TABLE} with ID: ${existingId}`);
-        result = await supabase
-          .schema("neta_ops")
-          .from(OIL_INSPECTION_TABLE)
-          .update(reportData)
-          .eq("id", parseInt(existingId)) // Convert string ID to number
-          .select()
-          .single();
-
-        if (result.error) throw result.error;
-        savedReport = result.data;
-      } else if (creatingRef.current) {
-        // Autosave is already creating this report — let it finish (and pick up
-        // the latest data) instead of inserting a duplicate.
-        pendingSaveRef.current = true;
-      } else {
-        // Create new report
-        creatingRef.current = true;
-        try {
-          console.log(
-            `Inserting into ${OIL_INSPECTION_TABLE} for job ID: ${jobId}`,
-          );
-          result = await supabase
-            .schema("neta_ops")
-            .from(OIL_INSPECTION_TABLE)
-            .insert(reportData)
-            .select()
-            .single();
-
-          if (result.error) {
-            creatingRef.current = false;
-            throw result.error;
-          }
-          savedReport = result.data;
-          // Set the ref immediately so a pending autosave routes to UPDATE.
-          reportIdRef.current = savedReport.id.toString();
-          setCurrentReportId(savedReport.id.toString());
-          console.log(`Created new report with ID: ${savedReport.id}`);
-        } catch (insertError) {
-          creatingRef.current = false;
-          throw insertError;
-        }
-      }
-
-      // Use the savedReport variable already declared above
-      console.log(
-        `${OIL_INSPECTION_TABLE} saved/updated successfully. Result:`,
-        savedReport,
-      );
-
-      if (!existingId && savedReport) {
-        // Create asset entry for new reports
-        const assetName = getAssetName(
-          reportSlug,
-          formData.identifier || formData.eqptLocation || "",
-        );
-        const assetUrl = `report:/jobs/${jobId}/oil-inspection/${savedReport.id}`;
-
-        const { data: assetResult, error: assetError } = await supabase
-          .schema("neta_ops")
-          .from("assets")
-          .insert({
-            name: assetName,
-            file_url: assetUrl,
-            user_id: user.id,
-          })
-          .select()
-          .single();
-
-        if (assetError) throw assetError;
-
-        // Link asset to job
-        await supabase.schema("neta_ops").from("job_assets").insert({
-          job_id: jobId,
-          asset_id: assetResult.id,
-          user_id: user.id,
-        });
-
-        // Update URL for new reports
-        navigate(`/jobs/${jobId}/oil-inspection/${savedReport.id}`, {
-          replace: true,
-        });
-      }
-
+      const savedId = await persistReport();
+      reportSaveSucceeded();
       setJustSaved(true);
+
+      if (!wasExistingReport && savedId) {
+        setIsEditing(false);
+        navigate(`/jobs/${jobId}/${reportSlug}/${savedId}`, { replace: true });
+      }
     } catch (error: any) {
+      reportSaveFailed(error);
       console.error(`Error saving to ${OIL_INSPECTION_TABLE}:`, error);
       alert(`Failed to save report: ${error?.message || "Unknown error"}`);
-    } finally {
-      setLoading(false);
     }
   };
 

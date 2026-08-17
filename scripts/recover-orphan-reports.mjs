@@ -57,6 +57,20 @@ const SETTLE_MINUTES = numArg("--settle-minutes", 30);
 // work has an identifier and a full set of readings. Anything below the bar is
 // reported for a human to look at rather than pushed onto the job.
 const MIN_FIELDS = numArg("--min-fields", 100);
+// A report that dedupe-reports.mjs took off a job for being a duplicate is
+// unlinked on purpose. Without this it would look like lost work and get pushed
+// straight back onto the job, and the two scripts would undo each other forever.
+const REMOVED_MANIFEST = args.includes("--removed-manifest")
+  ? args[args.indexOf("--removed-manifest") + 1]
+  : path.join(ROOT, "duplicate-reports-removed.json");
+const deliberatelyRemoved = new Set();
+if (fs.existsSync(REMOVED_MANIFEST)) {
+  const manifest = JSON.parse(fs.readFileSync(REMOVED_MANIFEST, "utf8"));
+  manifest.removed?.forEach((r) => deliberatelyRemoved.add(r.report_id));
+  console.log(
+    `${deliberatelyRemoved.size} report(s) removed as duplicates will be left off their jobs (${path.basename(REMOVED_MANIFEST)}).`,
+  );
+}
 
 // Report tables this script knows how to repair. `identifiers` are the
 // report_data fields that hold the equipment name, best first.
@@ -127,8 +141,9 @@ for (const spec of TABLES) {
     const touchedAt = new Date(r.updated_at || r.created_at).getTime();
     const ageMinutes = (Date.now() - touchedAt) / 60000;
     const fields = filledFields(d);
-    const skipReason =
-      ageMinutes < SETTLE_MINUTES
+    const skipReason = deliberatelyRemoved.has(r.id)
+      ? "removed as a duplicate on purpose"
+      : ageMinutes < SETTLE_MINUTES
         ? `still being edited (${Math.round(ageMinutes)} min ago)`
         : !identifier
           ? "no equipment name on the report"

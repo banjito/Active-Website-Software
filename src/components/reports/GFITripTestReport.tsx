@@ -17,6 +17,15 @@ import { ArrowLeft } from "lucide-react";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
 
+/** I²t options, matching the LV breaker ATS/MTS reports. */
+const i2tOptions = ["", "On", "Off", "In", "Out", "N/A"];
+
+/** Per-phase ground fault readings: pick-up current and trip time. */
+interface PhaseReading {
+  pickup: string; // amperes
+  tripTime: string; // seconds
+}
+
 interface FormData {
   // Job Information
   customer: string;
@@ -29,6 +38,49 @@ interface FormData {
   eqptLocation: string;
   identifier: string;
 
+  // Nameplate Data (same set as the LV Breaker ATS/MTS reports)
+  manufacturer: string;
+  catalogNumber: string;
+  serialNumber: string;
+  type: string;
+  frameSize: string;
+  icRating: string;
+  tripUnitType: string;
+  ratingPlug: string;
+  curveNo: string;
+  chargeMotorVoltage: string;
+  operation: string;
+  mounting: string;
+  zoneInterlock: string;
+  thermalMemory: string;
+
+  // Electrical Tests - Primary Injection (ground fault functions only)
+  primaryInjection: {
+    testedSettings: {
+      groundFault: { setting: string; delay: string; i2t: string };
+    };
+    results: {
+      groundFault: {
+        ratedAmperes1: string;
+        multiplier: string;
+        testAmperes1: string;
+        toleranceMin1: string;
+        toleranceMax1: string;
+        toleranceMin: string;
+        toleranceMax: string;
+        testAmperes2: string;
+        toleranceMin2: string;
+        toleranceMax2: string;
+        phaseA: PhaseReading;
+        phaseB: PhaseReading;
+        phaseC: PhaseReading;
+      };
+    };
+  };
+
+  // Free-form narrative that lives inside the test results section
+  setupDescription: string;
+
   // Test Equipment
   testEquipment: {
     model: string;
@@ -37,14 +89,8 @@ interface FormData {
     calDate: string;
   };
 
-  // GFI Data
-  manufacturer: string;
-  ratedCurrent: string;
-  groundFaultSetting: string;
-  groundFaultTrip: string;
-
-  // Results
-  results: string;
+  // Comments
+  comments: string;
 
   // Pass/Fail Status
   status: "PASS" | "FAIL" | "LIMITED SERVICE";
@@ -52,6 +98,89 @@ interface FormData {
 
 const REPORT_SLUG = "gfi-trip-test-report";
 const TABLE_NAME = "gfi_trip_test_reports";
+
+const emptyPhaseReading = (): PhaseReading => ({ pickup: "", tripTime: "" });
+
+const emptyPrimaryInjection = (): FormData["primaryInjection"] => ({
+  testedSettings: {
+    groundFault: { setting: "", delay: "", i2t: "" },
+  },
+  results: {
+    groundFault: {
+      ratedAmperes1: "",
+      multiplier: "",
+      testAmperes1: "",
+      toleranceMin1: "",
+      toleranceMax1: "",
+      toleranceMin: "",
+      toleranceMax: "",
+      testAmperes2: "",
+      toleranceMin2: "",
+      toleranceMax2: "",
+      phaseA: emptyPhaseReading(),
+      phaseB: emptyPhaseReading(),
+      phaseC: emptyPhaseReading(),
+    },
+  },
+});
+
+/** Parse a percent string such as "-15%" or "15" into a decimal (-0.15, 0.15). */
+const parsePercent = (val?: string): number => {
+  if (!val) return 0;
+  const num = Number(`${val}`.replace(/%/g, "").trim());
+  return isFinite(num) ? num / 100 : 0;
+};
+
+/**
+ * Recompute the bottom-row tolerance min/max from the measured test amperes and
+ * the tolerance percentages. Mirrors the LV breaker ATS primary injection math
+ * (ground fault defaults to ±15%).
+ */
+const recomputeBottomTolerance = (gf: any) => {
+  if (!gf) return;
+  const test2 = Number(`${gf.testAmperes2 ?? ""}`.trim());
+  // A non-numeric override such as "N/A" is left exactly as the tech typed it.
+  if (!isFinite(test2) || `${gf.testAmperes2 ?? ""}`.trim() === "") return;
+  gf.toleranceMin2 = (test2 * (1 + parsePercent(gf.toleranceMin))).toFixed(1);
+  gf.toleranceMax2 = (test2 * (1 + parsePercent(gf.toleranceMax))).toFixed(1);
+};
+
+/**
+ * Seed the derived cells when a rated amperes value is entered, using the same
+ * ground fault defaults as the LV breaker ATS report: 110% test current, ±15%
+ * tolerance.
+ */
+const applyRatedAmperesDefaults = (gf: any) => {
+  const rated = Number(`${gf.ratedAmperes1 ?? ""}`.trim());
+  if (!isFinite(rated) || `${gf.ratedAmperes1 ?? ""}`.trim() === "") return;
+  gf.testAmperes1 = (rated * 1.1).toFixed(1);
+  gf.testAmperes2 = rated.toString();
+  gf.toleranceMin2 = (rated * 0.85).toFixed(1);
+  gf.toleranceMax2 = (rated * 1.15).toFixed(1);
+};
+
+/** Recompute the top-row test amperes from rated amperes and the multiplier. */
+const recomputeTopFromMultiplier = (gf: any) => {
+  if (!gf) return;
+  const ratedRaw = `${gf.ratedAmperes1 ?? ""}`.trim();
+  const rated = Number(ratedRaw);
+  if (ratedRaw !== "" && !isFinite(rated)) return;
+  const multPct = parsePercent(gf.multiplier);
+  if (!isFinite(rated) || multPct === 0) {
+    gf.testAmperes1 = "";
+    return;
+  }
+  gf.testAmperes1 = (rated * multPct).toFixed(1);
+};
+
+const sectionDividerStyle: React.CSSProperties = {
+  width: "100%",
+  height: "4px",
+  backgroundColor: "var(--brand)",
+  marginBottom: "1rem",
+  WebkitPrintColorAdjust: "exact",
+  printColorAdjust: "exact",
+};
 
 const GFITripTestReport: React.FC = () => {
   const {
@@ -97,17 +226,29 @@ const GFITripTestReport: React.FC = () => {
     substation: "",
     eqptLocation: "",
     identifier: "",
+    manufacturer: "",
+    catalogNumber: "",
+    serialNumber: "",
+    type: "",
+    frameSize: "",
+    icRating: "",
+    tripUnitType: "",
+    ratingPlug: "",
+    curveNo: "",
+    chargeMotorVoltage: "",
+    operation: "",
+    mounting: "",
+    zoneInterlock: "",
+    thermalMemory: "",
+    primaryInjection: emptyPrimaryInjection(),
+    setupDescription: "",
     testEquipment: {
       model: "",
       serialNumber: "",
       ampId: "",
       calDate: "",
     },
-    manufacturer: "",
-    ratedCurrent: "",
-    groundFaultSetting: "",
-    groundFaultTrip: "",
-    results: "",
+    comments: "",
     status: "PASS",
   });
 
@@ -185,6 +326,56 @@ const GFITripTestReport: React.FC = () => {
 
       if (data) {
         console.log("[GFIReport] Setting form data from loaded report");
+
+        const nameplate = data.nameplate_data || {};
+        const savedInjection = data.primary_injection || {};
+        const defaults = emptyPrimaryInjection();
+        const primaryInjection: FormData["primaryInjection"] = {
+          testedSettings: {
+            groundFault: {
+              ...defaults.testedSettings.groundFault,
+              ...(savedInjection.testedSettings?.groundFault || {}),
+            },
+          },
+          results: {
+            groundFault: {
+              ...defaults.results.groundFault,
+              ...(savedInjection.results?.groundFault || {}),
+              phaseA: {
+                ...emptyPhaseReading(),
+                ...(savedInjection.results?.groundFault?.phaseA || {}),
+              },
+              phaseB: {
+                ...emptyPhaseReading(),
+                ...(savedInjection.results?.groundFault?.phaseB || {}),
+              },
+              phaseC: {
+                ...emptyPhaseReading(),
+                ...(savedInjection.results?.groundFault?.phaseC || {}),
+              },
+            },
+          },
+        };
+
+        // Reports saved before the primary-injection rewrite kept these as flat
+        // columns; surface those values instead of showing empty fields.
+        if (!data.primary_injection) {
+          primaryInjection.results.groundFault.ratedAmperes1 =
+            data.rated_current || "";
+          primaryInjection.testedSettings.groundFault.setting =
+            data.ground_fault_setting || "";
+        }
+        recomputeBottomTolerance(primaryInjection.results.groundFault);
+
+        const legacyNarrative = [
+          data.results || "",
+          data.ground_fault_trip
+            ? `Ground Fault Trip (legacy field): ${data.ground_fault_trip}`
+            : "",
+        ]
+          .filter(Boolean)
+          .join("\n\n");
+
         setFormData({
           customer: data.customer || "",
           address: data.address || "",
@@ -195,17 +386,29 @@ const GFITripTestReport: React.FC = () => {
           substation: data.substation || "",
           eqptLocation: data.eqpt_location || "",
           identifier: data.identifier || "",
+          manufacturer: nameplate.manufacturer ?? data.manufacturer ?? "",
+          catalogNumber: nameplate.catalogNumber || "",
+          serialNumber: nameplate.serialNumber || "",
+          type: nameplate.type || "",
+          frameSize: nameplate.frameSize || "",
+          icRating: nameplate.icRating || "",
+          tripUnitType: nameplate.tripUnitType || "",
+          ratingPlug: nameplate.ratingPlug || "",
+          curveNo: nameplate.curveNo || "",
+          chargeMotorVoltage: nameplate.chargeMotorVoltage || "",
+          operation: nameplate.operation || "",
+          mounting: nameplate.mounting || "",
+          zoneInterlock: nameplate.zoneInterlock || "",
+          thermalMemory: nameplate.thermalMemory || "",
+          primaryInjection,
+          setupDescription: data.setup_description ?? legacyNarrative,
           testEquipment: data.test_equipment || {
             model: "",
             serialNumber: "",
             ampId: "",
             calDate: "",
           },
-          manufacturer: data.manufacturer || "",
-          ratedCurrent: data.rated_current || "",
-          groundFaultSetting: data.ground_fault_setting || "",
-          groundFaultTrip: data.ground_fault_trip || "",
-          results: data.results || "",
+          comments: data.comments || "",
           status: data.status || "PASS",
         });
         setIsEditing(false);
@@ -250,6 +453,61 @@ const GFITripTestReport: React.FC = () => {
     }));
   };
 
+  /** Update a nested ground-fault field and re-run the dependent calculations. */
+  const handleInjectionChange = (path: string, value: string) => {
+    setJustSaved(false);
+    setFormData((prev) => {
+      const next = {
+        ...prev,
+        primaryInjection: {
+          testedSettings: {
+            groundFault: { ...prev.primaryInjection.testedSettings.groundFault },
+          },
+          results: {
+            groundFault: {
+              ...prev.primaryInjection.results.groundFault,
+              phaseA: { ...prev.primaryInjection.results.groundFault.phaseA },
+              phaseB: { ...prev.primaryInjection.results.groundFault.phaseB },
+              phaseC: { ...prev.primaryInjection.results.groundFault.phaseC },
+            },
+          },
+        },
+      };
+
+      const keys = path.split(".");
+      let level: any = next.primaryInjection;
+      for (let i = 0; i < keys.length - 1; i++) {
+        level = level[keys[i]];
+      }
+      level[keys[keys.length - 1]] = value;
+
+      const gf = next.primaryInjection.results.groundFault;
+      if (path.endsWith("ratedAmperes1")) {
+        applyRatedAmperesDefaults(gf);
+        recomputeBottomTolerance(gf);
+        // Only let the multiplier override the 110% default once one is set,
+        // otherwise the default test amperes would be wiped straight away.
+        if (parsePercent(gf.multiplier) !== 0) recomputeTopFromMultiplier(gf);
+      } else if (path.endsWith("multiplier")) {
+        recomputeTopFromMultiplier(gf);
+      } else if (
+        path.endsWith("testAmperes2") ||
+        path.endsWith("toleranceMin") ||
+        path.endsWith("toleranceMax")
+      ) {
+        recomputeBottomTolerance(gf);
+      }
+
+      return next;
+    });
+  };
+
+  /** Strip everything but a number from a percent input, then store it with "%". */
+  const handlePercentChange = (path: string, raw: string) => {
+    const v = `${raw}`.replace(/[^0-9.-]/g, "");
+    handleInjectionChange(path, v ? `${v}%` : "");
+  };
+
   const handleTestEquipmentChange = (
     field: keyof FormData["testEquipment"],
     value: string,
@@ -282,12 +540,29 @@ const GFITripTestReport: React.FC = () => {
         substation: formData.substation,
         eqpt_location: formData.eqptLocation,
         identifier: formData.identifier,
-        test_equipment: formData.testEquipment,
+        nameplate_data: {
+          manufacturer: formData.manufacturer,
+          catalogNumber: formData.catalogNumber,
+          serialNumber: formData.serialNumber,
+          type: formData.type,
+          frameSize: formData.frameSize,
+          icRating: formData.icRating,
+          tripUnitType: formData.tripUnitType,
+          ratingPlug: formData.ratingPlug,
+          curveNo: formData.curveNo,
+          chargeMotorVoltage: formData.chargeMotorVoltage,
+          operation: formData.operation,
+          mounting: formData.mounting,
+          zoneInterlock: formData.zoneInterlock,
+          thermalMemory: formData.thermalMemory,
+        },
+        // Kept in sync so the long-standing flat column stays usable for any
+        // reporting/exports that already read it.
         manufacturer: formData.manufacturer,
-        rated_current: formData.ratedCurrent,
-        ground_fault_setting: formData.groundFaultSetting,
-        ground_fault_trip: formData.groundFaultTrip,
-        results: formData.results,
+        primary_injection: formData.primaryInjection,
+        setup_description: formData.setupDescription,
+        test_equipment: formData.testEquipment,
+        comments: formData.comments,
         status: formData.status,
       };
 
@@ -421,6 +696,302 @@ const GFITripTestReport: React.FC = () => {
     );
   }
 
+  const groundFault = formData.primaryInjection.results.groundFault;
+  const groundFaultSettings = formData.primaryInjection.testedSettings.groundFault;
+
+  const screenOnly = `${isPrintMode ? "hidden" : ""} print:hidden`;
+  const printOnly = isPrintMode ? "block" : "hidden print:block";
+
+  const cellClass =
+    "border border-neutral-300 dark:border-neutral-600 print:border-black px-2 py-2 text-sm text-neutral-900 dark:text-white";
+  const headerCellClass =
+    "border border-neutral-300 dark:border-neutral-600 print:border-black px-2 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white print:text-black bg-neutral-50 dark:bg-dark-150 print:bg-neutral-100";
+  const inputClass = `w-full p-1 text-sm text-center border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`;
+
+  /**
+   * A single editable/static value cell. The deliverable PDF pipeline
+   * serializes the report with innerHTML, which drops React-controlled input
+   * values, so every table is rendered twice: inputs on screen, plain text for
+   * print.
+   */
+  const valueCell = (
+    print: boolean,
+    path: string,
+    raw: string,
+    opts: { unit?: string; percent?: boolean; narrow?: boolean } = {},
+  ) => {
+    const { unit, percent, narrow } = opts;
+    const value = raw || "";
+
+    if (print) {
+      return (
+        <td className={`${cellClass} text-center`}>
+          <div className="text-center">
+            {value}
+            {value && unit && unit !== "%" ? ` ${unit}` : ""}
+          </div>
+        </td>
+      );
+    }
+
+    const input = (
+      <input
+        type="text"
+        value={percent ? value.replace(/%/g, "") : value}
+        onChange={(e) =>
+          percent
+            ? handlePercentChange(path, e.target.value)
+            : handleInjectionChange(path, e.target.value)
+        }
+        readOnly={!isEditing}
+        className={`${inputClass}${narrow || unit ? " w-20" : ""}`}
+      />
+    );
+
+    return (
+      <td className={`${cellClass} text-center`}>
+        {unit ? (
+          <div className="flex items-center justify-center">
+            {input}
+            <span className="ml-1 whitespace-nowrap">{unit}</span>
+          </div>
+        ) : (
+          input
+        )}
+      </td>
+    );
+  };
+
+  /** Tested Settings + primary injection results + per-phase readings. */
+  const renderInjectionTables = (print: boolean) => (
+    <>
+      {/* Tested Settings */}
+      <div className="mb-4">
+        <h3 className="text-lg font-medium mb-2 text-center text-neutral-900 dark:text-white print:text-black">
+          Tested Settings
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600 print:border-black">
+            <thead>
+              <tr>
+                <th className={`${headerCellClass} text-left`}></th>
+                <th className={headerCellClass}>Setting</th>
+                <th className={headerCellClass}>Delay</th>
+                <th className={headerCellClass}>I²t</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-dark-150">
+              <tr>
+                <td className={cellClass}>Ground Fault</td>
+                {valueCell(
+                  print,
+                  "testedSettings.groundFault.setting",
+                  groundFaultSettings.setting,
+                )}
+                {valueCell(
+                  print,
+                  "testedSettings.groundFault.delay",
+                  groundFaultSettings.delay,
+                )}
+                {print ? (
+                  <td className={`${cellClass} text-center`}>
+                    {groundFaultSettings.i2t || ""}
+                  </td>
+                ) : (
+                  <td className={`${cellClass} text-center`}>
+                    <select
+                      value={groundFaultSettings.i2t || ""}
+                      onChange={(e) =>
+                        handleInjectionChange(
+                          "testedSettings.groundFault.i2t",
+                          e.target.value,
+                        )
+                      }
+                      disabled={!isEditing}
+                      className={inputClass}
+                    >
+                      {i2tOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                )}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Primary injection - ground fault pick-up */}
+      <div className="overflow-x-auto">
+        <table className="w-full table-fixed border-collapse border border-neutral-300 dark:border-neutral-600 print:border-black">
+          <colgroup>
+            <col style={{ width: "12%" }} />
+            <col style={{ width: "13%" }} />
+            <col style={{ width: "10%" }} />
+            <col style={{ width: "10%" }} />
+            <col style={{ width: "15%" }} />
+            <col style={{ width: "20%" }} />
+            <col style={{ width: "20%" }} />
+          </colgroup>
+          <thead>
+            <tr>
+              <th className={headerCellClass} rowSpan={2}>
+                Function
+              </th>
+              <th className={headerCellClass} rowSpan={2}>
+                Rated Amperes
+              </th>
+              <th className={headerCellClass} colSpan={2} rowSpan={2}>
+                Multiplier %
+              </th>
+              <th className={headerCellClass} rowSpan={2}>
+                Test Amperes
+              </th>
+              <th className={headerCellClass} colSpan={2}>
+                Tolerance
+              </th>
+            </tr>
+            <tr>
+              <th className={headerCellClass}>Min</th>
+              <th className={headerCellClass}>Max</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white dark:bg-dark-150">
+            <tr>
+              <td className={cellClass} rowSpan={2}>
+                Ground Fault
+              </td>
+              {valueCell(
+                print,
+                "results.groundFault.ratedAmperes1",
+                groundFault.ratedAmperes1,
+              )}
+              {print ? (
+                <td className={`${cellClass} text-center`} colSpan={2}>
+                  {groundFault.multiplier || ""}
+                </td>
+              ) : (
+                <td className={`${cellClass} text-center`} colSpan={2}>
+                  <div className="flex items-center justify-center">
+                    <input
+                      type="text"
+                      value={(groundFault.multiplier || "").replace(/%/g, "")}
+                      onChange={(e) =>
+                        handlePercentChange(
+                          "results.groundFault.multiplier",
+                          e.target.value,
+                        )
+                      }
+                      readOnly={!isEditing}
+                      className={`${inputClass} w-20`}
+                    />
+                    <span className="ml-1">%</span>
+                  </div>
+                </td>
+              )}
+              {valueCell(
+                print,
+                "results.groundFault.testAmperes1",
+                groundFault.testAmperes1,
+              )}
+              {valueCell(
+                print,
+                "results.groundFault.toleranceMin1",
+                groundFault.toleranceMin1,
+              )}
+              {valueCell(
+                print,
+                "results.groundFault.toleranceMax1",
+                groundFault.toleranceMax1,
+              )}
+            </tr>
+            <tr>
+              <td className={cellClass}>GFPU</td>
+              {valueCell(
+                print,
+                "results.groundFault.toleranceMin",
+                groundFault.toleranceMin,
+                { unit: "%", percent: true },
+              )}
+              {valueCell(
+                print,
+                "results.groundFault.toleranceMax",
+                groundFault.toleranceMax,
+                { unit: "%", percent: true },
+              )}
+              {valueCell(
+                print,
+                "results.groundFault.testAmperes2",
+                groundFault.testAmperes2,
+              )}
+              {valueCell(
+                print,
+                "results.groundFault.toleranceMin2",
+                groundFault.toleranceMin2,
+              )}
+              {valueCell(
+                print,
+                "results.groundFault.toleranceMax2",
+                groundFault.toleranceMax2,
+              )}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Per-phase ground fault readings */}
+      <div className="mt-4 overflow-x-auto">
+        <h3 className="text-base font-semibold mb-2 text-neutral-900 dark:text-white print:text-black">
+          Ground fault readings by phase
+        </h3>
+        <table className="w-full table-fixed border-collapse border border-neutral-300 dark:border-neutral-600 print:border-black">
+          <colgroup>
+            <col style={{ width: "22%" }} />
+            <col style={{ width: "14%" }} />
+            <col style={{ width: "21.33%" }} />
+            <col style={{ width: "21.33%" }} />
+            <col style={{ width: "21.34%" }} />
+          </colgroup>
+          <thead>
+            <tr>
+              <th className={headerCellClass}>Function</th>
+              <th className={headerCellClass}>Row</th>
+              <th className={headerCellClass}>A Phase</th>
+              <th className={headerCellClass}>B Phase</th>
+              <th className={headerCellClass}>C Phase</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white dark:bg-dark-150">
+            {(
+              [
+                ["GFPU (Pick-Up)", "pickup", "A"],
+                ["GFD (Trip Time)", "tripTime", "sec."],
+              ] as [string, keyof PhaseReading, string][]
+            ).map(([label, key, unit]) => (
+              <tr key={key}>
+                <td className={cellClass}>Ground Fault</td>
+                <td className={`${cellClass} text-center`}>{label}</td>
+                {(["phaseA", "phaseB", "phaseC"] as const).map((phase) => (
+                  <React.Fragment key={phase}>
+                    {valueCell(
+                      print,
+                      `results.groundFault.${phase}.${key}`,
+                      groundFault[phase][key],
+                      { unit },
+                    )}
+                  </React.Fragment>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Data-loaded marker for deliverable viewer to detect when report is ready */}
@@ -520,22 +1091,12 @@ const GFITripTestReport: React.FC = () => {
 
           {/* Job Information */}
           <section className="mb-6">
-            <div
-              className="w-full h-1 bg-brand mb-4"
-              style={{
-                width: "100%",
-                height: "4px",
-                backgroundColor: "var(--brand)",
-                marginBottom: "1rem",
-                WebkitPrintColorAdjust: "exact",
-                printColorAdjust: "exact",
-              }}
-            ></div>
+            <div className="w-full h-1 bg-brand mb-4" style={sectionDividerStyle}></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
             <div
-              className={`grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 ${isPrintMode ? "hidden" : ""} print:hidden`}
+              className={`grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 ${screenOnly}`}
             >
               <div>
                 <label className="form-label inline-block w-32">
@@ -629,9 +1190,7 @@ const GFITripTestReport: React.FC = () => {
               </div>
             </div>
             {/* Custom Print-only Job Information table (8 fields: no Temp/TCF/Humidity/User) */}
-            <div
-              className={`${isPrintMode ? "block" : "hidden print:block"} job-info-print`}
-            >
+            <div className={`${printOnly} job-info-print`}>
               <table
                 className="w-full border-collapse border border-neutral-300 print:border-black print:border"
                 style={{ marginLeft: 0 }}
@@ -706,26 +1265,170 @@ const GFITripTestReport: React.FC = () => {
             </div>
           </section>
 
+          {/* Nameplate Data */}
+          <section className="mb-6">
+            {/* Screen view - editable grid */}
+            <div className={`nameplate-onscreen ${screenOnly}`}>
+              <div className="w-full h-1 bg-brand mb-4" style={sectionDividerStyle}></div>
+              <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
+                Nameplate Data
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {(
+                  [
+                    ["manufacturer", "Manufacturer:"],
+                    ["catalogNumber", "Catalog Number:"],
+                    ["serialNumber", "Serial Number:"],
+                    ["type", "Type:"],
+                    ["frameSize", "Frame Size (A):"],
+                    ["icRating", "I.C. Rating (kA):"],
+                    ["tripUnitType", "Trip Unit Type:"],
+                    ["ratingPlug", "Rating Plug (A):"],
+                    ["curveNo", "Curve No.:"],
+                    ["chargeMotorVoltage", "Charge Motor V:"],
+                    ["operation", "Operation:"],
+                    ["mounting", "Mounting:"],
+                    ["zoneInterlock", "Zone Interlock:"],
+                    ["thermalMemory", "Thermal Memory:"],
+                  ] as [keyof FormData, string][]
+                ).map(([field, label]) => (
+                  <div key={field as string}>
+                    <label htmlFor={field as string} className="form-label">
+                      {label}
+                    </label>
+                    <input
+                      id={field as string}
+                      type="text"
+                      value={(formData[field] as string) || ""}
+                      onChange={(e) =>
+                        handleChange(field as string, e.target.value)
+                      }
+                      readOnly={!isEditing}
+                      className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Print view - compact 7-column table */}
+            <div className={`${printOnly} nameplate-print`}>
+              <h2 className="text-xl font-semibold mb-2 text-black border-b border-black pb-2 font-bold">
+                Nameplate Data
+              </h2>
+              <table className="w-full table-fixed border-collapse border border-neutral-300 print:border-black print:border text-[0.85rem] nameplate-print-table">
+                <colgroup>
+                  {Array.from({ length: 7 }).map((_, i) => (
+                    <col key={i} style={{ width: "14.2857%" }} />
+                  ))}
+                </colgroup>
+                <tbody>
+                  {[
+                    [
+                      ["Manufacturer:", formData.manufacturer],
+                      ["Catalog No.:", formData.catalogNumber],
+                      ["Serial Number:", formData.serialNumber],
+                      ["Type:", formData.type],
+                      ["Frame Size (A):", formData.frameSize],
+                      ["I.C. Rating (kA):", formData.icRating],
+                      ["Trip Unit Type:", formData.tripUnitType],
+                    ],
+                    [
+                      ["Rating Plug (A):", formData.ratingPlug],
+                      ["Curve No.:", formData.curveNo],
+                      ["Charge Motor V:", formData.chargeMotorVoltage],
+                      ["Operation:", formData.operation],
+                      ["Mounting:", formData.mounting],
+                      ["Zone Interlock:", formData.zoneInterlock],
+                      ["Thermal Memory:", formData.thermalMemory],
+                    ],
+                  ].map((row, rowIndex) => (
+                    <tr key={rowIndex}>
+                      {row.map(([label, value]) => (
+                        <td
+                          key={label}
+                          className="p-2 align-top border border-neutral-300 print:border-black print:border"
+                        >
+                          <div className="font-semibold">{label}</div>
+                          <div className="mt-0 whitespace-pre-wrap break-words">
+                            {value || ""}
+                          </div>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* Electrical Tests - Primary Injection (ground fault functions only) */}
+          <section className="mb-6">
+            <div className="w-full h-1 bg-brand mb-4" style={sectionDividerStyle}></div>
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
+              Electrical Tests - Primary Injection
+            </h2>
+
+            {/* Screen view - editable tables */}
+            <div className={`injection-onscreen ${screenOnly}`}>
+              {renderInjectionTables(false)}
+            </div>
+
+            {/* Print view - static tables */}
+            <div className={`${printOnly} overview-print`}>
+              {renderInjectionTables(true)}
+            </div>
+
+            {/* Description of Set-up and Results */}
+            <div className="mt-6">
+              <h3 className="text-base font-semibold mb-2 text-neutral-900 dark:text-white print:text-black">
+                Description of Set-up and Results
+              </h3>
+              <div className={screenOnly}>
+                <textarea
+                  value={formData.setupDescription}
+                  onChange={(e) =>
+                    handleChange("setupDescription", e.target.value)
+                  }
+                  readOnly={!isEditing}
+                  rows={8}
+                  className={`form-textarea w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  placeholder="Describe the test set-up, how the recorded results were achieved, and any additional results..."
+                />
+              </div>
+              <div className={printOnly}>
+                <table className="w-full border-collapse border border-neutral-300 print:border-black">
+                  <tbody>
+                    <tr>
+                      <td
+                        className="border border-neutral-300 print:border-black px-4 py-8 text-sm align-top"
+                        style={{
+                          minHeight: "150px",
+                          height: "150px",
+                          whiteSpace: "pre-wrap",
+                          wordWrap: "break-word",
+                          overflowWrap: "break-word",
+                        }}
+                      >
+                        {formData.setupDescription || ""}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
           {/* Test Equipment */}
           <section className="mb-6">
-            <div
-              className="w-full h-1 bg-brand mb-4"
-              style={{
-                width: "100%",
-                height: "4px",
-                backgroundColor: "var(--brand)",
-                marginBottom: "1rem",
-                WebkitPrintColorAdjust: "exact",
-                printColorAdjust: "exact",
-              }}
-            ></div>
+            <div className="w-full h-1 bg-brand mb-4" style={sectionDividerStyle}></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
-              Test Equipment
+              Test Equipment Used
             </h2>
 
             {/* Screen view - form inputs */}
             <div
-              className={`grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-4 ${isPrintMode ? "hidden" : ""} print:hidden`}
+              className={`grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-4 test-eqpt-onscreen ${screenOnly}`}
             >
               <div>
                 <label className="form-label inline-block w-24">Model:</label>
@@ -735,19 +1438,6 @@ const GFITripTestReport: React.FC = () => {
                     handleTestEquipmentChange("model", value)
                   }
                   onSelect={(equipment) => {
-                    const formatDate = (dateString: string | null): string => {
-                      if (!dateString) return "";
-                      try {
-                        const date = new Date(dateString);
-                        return date.toLocaleDateString("en-US", {
-                          month: "2-digit",
-                          day: "2-digit",
-                          year: "numeric",
-                        });
-                      } catch {
-                        return dateString;
-                      }
-                    };
                     handleTestEquipmentChange(
                       "model",
                       equipment.equipment_name,
@@ -809,7 +1499,7 @@ const GFITripTestReport: React.FC = () => {
             </div>
 
             {/* Print view - table structure */}
-            <div className={`${isPrintMode ? "block" : "hidden print:block"}`}>
+            <div className={`${printOnly} test-eqpt-print`}>
               <table className="w-full border-collapse border border-neutral-300 print:border-black">
                 <thead>
                   <tr>
@@ -851,198 +1541,36 @@ const GFITripTestReport: React.FC = () => {
             </div>
           </section>
 
-          {/* GFI Trip Test Data - Overview Table */}
+          {/* Comments */}
           <section className="mb-6">
-            <div
-              className="w-full h-1 bg-brand mb-4"
-              style={{
-                width: "100%",
-                height: "4px",
-                backgroundColor: "var(--brand)",
-                marginBottom: "1rem",
-                WebkitPrintColorAdjust: "exact",
-                printColorAdjust: "exact",
-              }}
-            ></div>
+            <div className="w-full h-1 bg-brand mb-4" style={sectionDividerStyle}></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
-              Overview
+              Comments
             </h2>
-
-            {/* Screen view - with input fields */}
-            <div
-              className={`overflow-x-auto ${isPrintMode ? "hidden" : ""} print:hidden`}
-            >
-              <table className="min-w-full border-collapse border border-neutral-200 dark:border-neutral-700">
-                <thead>
-                  <tr>
-                    <th
-                      className="border border-neutral-200 dark:border-neutral-700 p-2 bg-neutral-50 dark:bg-dark-150 font-semibold text-left text-neutral-900 dark:text-white"
-                      colSpan={2}
-                    >
-                      Data
-                    </th>
-                    <th className="border border-neutral-200 dark:border-neutral-700 p-2 bg-neutral-50 dark:bg-dark-150 font-semibold text-left text-neutral-900 dark:text-white">
-                      Results
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2 font-medium text-neutral-700 dark:text-neutral-300 w-40">
-                      Manufacturer
-                    </td>
-                    <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2 w-48">
-                      <input
-                        type="text"
-                        value={formData.manufacturer}
-                        onChange={(e) =>
-                          handleChange("manufacturer", e.target.value)
-                        }
-                        readOnly={!isEditing}
-                        className="form-input w-full"
-                        placeholder="e.g., Eaton"
-                      />
-                    </td>
-                    <td
-                      className="border border-neutral-200 dark:border-neutral-700 px-4 py-2 align-top"
-                      rowSpan={4}
-                    >
-                      <textarea
-                        value={formData.results}
-                        onChange={(e) =>
-                          handleChange("results", e.target.value)
-                        }
-                        readOnly={!isEditing}
-                        rows={8}
-                        className="form-input w-full resize-none"
-                        placeholder="Enter test results and observations..."
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2 font-medium text-neutral-700 dark:text-neutral-300">
-                      Rated Current
-                    </td>
-                    <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
-                      <input
-                        type="text"
-                        value={formData.ratedCurrent}
-                        onChange={(e) =>
-                          handleChange("ratedCurrent", e.target.value)
-                        }
-                        readOnly={!isEditing}
-                        className="form-input w-full"
-                        placeholder="e.g., 3000 A"
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2 font-medium text-neutral-700 dark:text-neutral-300">
-                      Ground Fault Setting
-                    </td>
-                    <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
-                      <input
-                        type="text"
-                        value={formData.groundFaultSetting}
-                        onChange={(e) =>
-                          handleChange("groundFaultSetting", e.target.value)
-                        }
-                        readOnly={!isEditing}
-                        className="form-input w-full"
-                        placeholder="e.g., 750 A"
-                      />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2 font-medium text-neutral-700 dark:text-neutral-300">
-                      Ground Fault Trip
-                    </td>
-                    <td className="border border-neutral-200 dark:border-neutral-700 px-4 py-2">
-                      <input
-                        type="text"
-                        value={formData.groundFaultTrip}
-                        onChange={(e) =>
-                          handleChange("groundFaultTrip", e.target.value)
-                        }
-                        readOnly={!isEditing}
-                        className="form-input w-full"
-                        placeholder="e.g., 750 A"
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div className={screenOnly}>
+              <textarea
+                value={formData.comments}
+                onChange={(e) => handleChange("comments", e.target.value)}
+                readOnly={!isEditing}
+                rows={6}
+                className={`form-textarea w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+              />
             </div>
-
-            {/* Print view - static text output */}
-            <div
-              className={`${isPrintMode ? "block" : "hidden print:block"} overview-print`}
-            >
+            <div className={printOnly}>
               <table className="w-full border-collapse border border-neutral-300 print:border-black">
-                <colgroup>
-                  <col style={{ width: "22%" }} />
-                  <col style={{ width: "28%" }} />
-                  <col style={{ width: "50%" }} />
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th
-                      className="p-2 border border-neutral-300 print:border-black bg-neutral-50 print:bg-neutral-100 font-semibold text-left"
-                      colSpan={2}
-                    >
-                      Data
-                    </th>
-                    <th className="p-2 border border-neutral-300 print:border-black bg-neutral-50 print:bg-neutral-100 font-semibold text-left">
-                      Results
-                    </th>
-                  </tr>
-                </thead>
                 <tbody>
-                  <tr className="allow-row-break">
-                    <td className="p-2 border border-neutral-300 print:border-black font-medium w-40">
-                      Manufacturer
-                    </td>
-                    <td className="p-2 border border-neutral-300 print:border-black w-48">
-                      {formData.manufacturer || ""}
-                    </td>
+                  <tr>
                     <td
-                      className="p-2 border border-neutral-300 print:border-black align-top"
-                      rowSpan={4}
+                      className="border border-neutral-300 print:border-black px-4 py-8 text-sm align-top"
+                      style={{
+                        minHeight: "150px",
+                        height: "150px",
+                        whiteSpace: "pre-wrap",
+                        wordWrap: "break-word",
+                        overflowWrap: "break-word",
+                      }}
                     >
-                      <div
-                        className="whitespace-pre-wrap text-sm"
-                        style={{
-                          wordBreak: "break-word",
-                          overflowWrap: "break-word",
-                          maxWidth: "100%",
-                        }}
-                      >
-                        {formData.results || ""}
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="p-2 border border-neutral-300 print:border-black font-medium">
-                      Rated Current
-                    </td>
-                    <td className="p-2 border border-neutral-300 print:border-black">
-                      {formData.ratedCurrent || ""}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="p-2 border border-neutral-300 print:border-black font-medium">
-                      Ground Fault Setting
-                    </td>
-                    <td className="p-2 border border-neutral-300 print:border-black">
-                      {formData.groundFaultSetting || ""}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="p-2 border border-neutral-300 print:border-black font-medium">
-                      Ground Fault Trip
-                    </td>
-                    <td className="p-2 border border-neutral-300 print:border-black">
-                      {formData.groundFaultTrip || ""}
+                      {formData.comments || ""}
                     </td>
                   </tr>
                 </tbody>

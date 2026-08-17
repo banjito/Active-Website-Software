@@ -15,6 +15,7 @@ import { useSaveIndicator } from "./common/useSaveIndicator";
 import { ReportHeader } from "./common/ReportHeader";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
 import {
   reportSaveFailed,
   reportSaveSucceeded,
@@ -263,28 +264,43 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
   const reportSlug = "panelboard-assemblies-ats25";
   const reportName = getReportName(reportSlug);
 
+  // Auto-save rewrites the URL with history.replaceState once it has created
+  // the report, and react-router's params never see that. Fall back to the
+  // address bar so a re-render or re-mount recognises the report that is
+  // already on screen instead of creating another one.
+  const openReportId = initialReportId ?? reportIdFromUrl();
+
   const [currentReportId, setCurrentReportId] = useState<string | undefined>(
-    initialReportId,
+    openReportId,
   );
   const [loading, setLoading] = useState(true);
   const { justSaved, markSaved, markEdited } = useSaveIndicator();
-  const [isEditing, setIsEditing] = useState(!initialReportId);
+  const [isEditing, setIsEditing] = useState(!openReportId);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const isAutoSaveCreatedRef = React.useRef(false);
-  const reportIdRef = React.useRef<string | undefined>(initialReportId);
-  const creatingRef = React.useRef(false);
-  const pendingSaveRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(openReportId);
+  /** A save is in flight; a second one must not start alongside it. */
+  const savingRef = React.useRef(false);
+  /** Something changed mid-save; run once more when the current save lands. */
+  const saveAgainRef = React.useRef(false);
+  /** The asset row + job link have been confirmed for this report. */
+  const assetLinkedRef = React.useRef(false);
+  /** An existing report failed to load; the form on screen is not its data. */
+  const loadFailedRef = React.useRef(false);
 
   // Keep state aligned when the route changes. If the route changed because we just
   // created a copied report, preserve the local copied form state so the user can
   // continue editing immediately.
   useEffect(() => {
-    reportIdRef.current = initialReportId;
-    setCurrentReportId(initialReportId);
+    const routeReportId = initialReportId ?? reportIdFromUrl();
+    reportIdRef.current = routeReportId;
+    setCurrentReportId(routeReportId);
+    // A different report is on screen now; its asset link is unverified again.
+    assetLinkedRef.current = false;
 
-    if (!initialReportId) {
+    if (!routeReportId) {
       setIsEditing(true);
       isAutoSaveCreatedRef.current = false;
       return;
@@ -572,7 +588,16 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
         }));
         setIsEditing(false);
       }
+      loadFailedRef.current = false;
     } catch (e) {
+      // The form is showing defaults, not this report. Auto-save must not push
+      // those defaults over the readings that are still in the database.
+      loadFailedRef.current = true;
+      reportSaveFailed(
+        new Error(
+          "This report could not be loaded, so it is not being saved. Reload the page before entering results.",
+        ),
+      );
       setIsEditing(true);
     } finally {
       setLoading(false);
@@ -884,8 +909,18 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
     return allOk ? "PASS" : "FAIL";
   };
 
+  // Saves must send what is on screen *now*, not what was on screen when the
+  // save was queued. A queued save carrying an older snapshot used to land
+  // after a newer one and put a half-typed equipment name back on the report.
+  const formDataRef = React.useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+
   const buildReportPayload = React.useCallback(
-    () => ({
+    () => {
+      const formData = formDataRef.current;
+      return {
       job_id: jobId,
       user_id: user?.id,
       report_info: {
@@ -931,81 +966,103 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
         dielectricDuration: formData.dielectricTestDuration,
       },
       comments: formData.comments,
-    }),
-    [jobId, user?.id, formData, maskCustomerName, maskCustomerAddress],
+      };
+    },
+    [jobId, user?.id, maskCustomerName, maskCustomerAddress],
   );
+
+  /**
+   * Writes the report. Every save -- auto-save, the Save button, the copy
+   * button -- goes through here, and they all write to one row.
+   *
+   * The row's id is decided *before* the request leaves the browser and kept in
+   * `reportIdRef`, so a save that starts while another is still in flight, or
+   * one queued from an earlier keystroke, upserts over the same row. This used
+   * to be an insert guarded by a "am I already creating?" flag, and every way
+   * that flag could be lost -- a failed request, a re-mount, a stale closure --
+   * put another copy of the same panel on the job.
+   *
+   * Returns the report id.
+   */
+  const persistReport = React.useCallback(async () => {
+    if (!jobId || !user?.id) return undefined;
+    if (loadFailedRef.current) {
+      throw new Error(
+        "This report could not be loaded, so it was not saved. Reload the page and try again.",
+      );
+    }
+
+    const isNewReport = !reportIdRef.current;
+    if (isNewReport) {
+      // Claimed synchronously: nothing else can now decide to create a row.
+      reportIdRef.current = newReportId();
+    }
+    const reportId = reportIdRef.current as string;
+
+    const { error } = await supabase
+      .schema("neta_ops")
+      .from("panelboard_assemblies_ats25_reports")
+      .upsert({ id: reportId, ...buildReportPayload() }, { onConflict: "id" });
+    if (error) throw error;
+
+    if (!assetLinkedRef.current) {
+      const formData = formDataRef.current;
+      await ensureReportAssetLink(
+        jobId,
+        {
+          name: getAssetName(
+            reportSlug,
+            formData.identifier || formData.eqptLocation || "",
+          ),
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${reportId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+      assetLinkedRef.current = true;
+    }
+
+    if (isNewReport) {
+      setCurrentReportId(reportId);
+      isAutoSaveCreatedRef.current = true;
+      window.history.replaceState(
+        {},
+        "",
+        `/jobs/${jobId}/${reportSlug}/${reportId}`,
+      );
+    }
+
+    return reportId;
+  }, [jobId, user?.id, buildReportPayload, reportSlug]);
 
   // Auto-save function
   const autoSave = React.useCallback(async () => {
     if (!jobId || !user?.id) return;
 
-    const payload = buildReportPayload();
+    // One save at a time. Anything typed while this one is in flight is picked
+    // up by the follow-up pass below, which reads the form fresh.
+    if (savingRef.current) {
+      saveAgainRef.current = true;
+      return;
+    }
+    savingRef.current = true;
 
     try {
       setIsAutoSaving(true);
-
-      if (reportIdRef.current) {
-        const { error } = await supabase
-          .schema("neta_ops")
-          .from("panelboard_assemblies_ats25_reports")
-          .update(payload)
-          .eq("id", reportIdRef.current);
-        if (error) throw error;
-      } else if (creatingRef.current) {
-        pendingSaveRef.current = true;
-      } else {
-        creatingRef.current = true;
-        try {
-          const result = await supabase
-            .schema("neta_ops")
-            .from("panelboard_assemblies_ats25_reports")
-            .insert(payload)
-            .select()
-            .single();
-          if (result.error) throw result.error;
-
-          if (result.data) {
-            const newReportId = result.data.id;
-            reportIdRef.current = newReportId;
-
-            const assetData = {
-              name: getAssetName(
-                reportSlug,
-                formData.identifier || formData.eqptLocation || "",
-              ),
-              file_url: `report:/jobs/${jobId}/${reportSlug}/${newReportId}`,
-              user_id: user.id,
-            };
-
-            await ensureReportAssetLink(jobId, assetData, user.id);
-
-            setCurrentReportId(newReportId);
-            isAutoSaveCreatedRef.current = true;
-            window.history.replaceState(
-              {},
-              "",
-              `/jobs/${jobId}/${reportSlug}/${newReportId}`,
-            );
-          } else {
-            creatingRef.current = false;
-          }
-        } catch (insertError) {
-          creatingRef.current = false;
-          throw insertError;
-        }
-      }
+      do {
+        saveAgainRef.current = false;
+        await persistReport();
+      } while (saveAgainRef.current);
       reportSaveSucceeded();
     } catch (error) {
       console.error("Auto-save error:", error);
       reportSaveFailed(error);
     } finally {
+      savingRef.current = false;
+      saveAgainRef.current = false;
       setIsAutoSaving(false);
-      if (pendingSaveRef.current) {
-        pendingSaveRef.current = false;
-        setTimeout(() => autoSave(), 0);
-      }
     }
-  }, [jobId, user?.id, buildReportPayload, formData, reportSlug]);
+  }, [jobId, user?.id, persistReport]);
 
   // Auto-save effect with debounce (placed after autoSave function definition)
   useEffect(() => {
@@ -1028,86 +1085,21 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
 
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) return;
-    const wasExistingReport = Boolean(currentReportId || reportIdRef.current);
-    const payload = buildReportPayload();
+    const wasExistingReport = Boolean(reportIdRef.current);
 
     try {
       setIsSaving(true);
-      let result;
-      if (reportIdRef.current) {
-        result = await supabase
-          .schema("neta_ops")
-          .from("panelboard_assemblies_ats25_reports")
-          .update(payload)
-          .eq("id", reportIdRef.current)
-          .select()
-          .single();
-      } else if (creatingRef.current) {
-        const deadline = Date.now() + 5000;
-        while (
-          creatingRef.current &&
-          !reportIdRef.current &&
-          Date.now() < deadline
-        ) {
-          await new Promise((r) => setTimeout(r, 50));
-        }
-        if (reportIdRef.current) {
-          result = await supabase
-            .schema("neta_ops")
-            .from("panelboard_assemblies_ats25_reports")
-            .update(payload)
-            .eq("id", reportIdRef.current)
-            .select()
-            .single();
-        }
-        // If auto-save creation failed (no reportIdRef), fall through to insert below
-      }
-      if (!result && !reportIdRef.current) {
-        creatingRef.current = true;
-        try {
-          result = await supabase
-            .schema("neta_ops")
-            .from("panelboard_assemblies_ats25_reports")
-            .insert(payload)
-            .select()
-            .single();
+      const savedId = await persistReport();
+      reportSaveSucceeded();
 
-          if (result.data) {
-            reportIdRef.current = result.data.id;
-            setCurrentReportId(result.data.id);
-
-            const assetData = {
-              name: getAssetName(
-                reportSlug,
-                formData.identifier || formData.eqptLocation || "",
-              ),
-              file_url: `report:/jobs/${jobId}/${reportSlug}/${result.data.id}`,
-              user_id: user.id,
-            };
-            await ensureReportAssetLink(jobId, assetData, user.id);
-          } else {
-            creatingRef.current = false;
-          }
-        } catch (saveError) {
-          creatingRef.current = false;
-          throw saveError;
-        }
-      }
-
-      if ((result as any)?.error) throw (result as any).error;
-      if (!wasExistingReport) {
+      if (!wasExistingReport && savedId) {
         setIsEditing(false);
-        const newId =
-          reportIdRef.current ||
-          (result as any)?.data?.id ||
-          (result as any)?.id;
-        if (newId) {
-          navigate(`/jobs/${jobId}/${reportSlug}/${newId}`, { replace: true });
-        }
+        navigate(`/jobs/${jobId}/${reportSlug}/${savedId}`, { replace: true });
       } else {
         markSaved();
       }
     } catch (e: any) {
+      reportSaveFailed(e);
       console.error("Save error", e?.message || e, e);
       alert(`Failed to save report: ${e?.message || "Unknown error"}`);
     } finally {
@@ -1137,91 +1129,11 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
         autoSaveTimerRef.current = null;
       }
 
-      const currentPayload = buildReportPayload();
-      let savedCurrentReportId = reportIdRef.current || currentReportId;
-
-      if (creatingRef.current && !savedCurrentReportId) {
-        const deadline = Date.now() + 5000;
-        while (
-          creatingRef.current &&
-          !reportIdRef.current &&
-          Date.now() < deadline
-        ) {
-          await new Promise((resolve) => setTimeout(resolve, 50));
-        }
-        savedCurrentReportId = reportIdRef.current;
-
-        if (!savedCurrentReportId) {
-          throw new Error(
-            "Current report is still saving. Please try again in a moment.",
-          );
-        }
-      }
-
-      if (savedCurrentReportId) {
-        const { error } = await supabase
-          .schema("neta_ops")
-          .from("panelboard_assemblies_ats25_reports")
-          .update(currentPayload)
-          .eq("id", savedCurrentReportId);
-        if (error) throw error;
-      } else {
-        creatingRef.current = true;
-        try {
-          const { data: currentReport, error: currentReportError } =
-            await supabase
-              .schema("neta_ops")
-              .from("panelboard_assemblies_ats25_reports")
-              .insert(currentPayload)
-              .select()
-              .single();
-
-          if (currentReportError) throw currentReportError;
-          if (!currentReport) throw new Error("Failed to save current report.");
-
-          savedCurrentReportId = currentReport.id;
-          reportIdRef.current = savedCurrentReportId;
-          setCurrentReportId(savedCurrentReportId);
-
-          const { data: assetResult, error: assetError } = await supabase
-            .schema("neta_ops")
-            .from("assets")
-            .insert({
-              name: getAssetName(
-                reportSlug,
-                formData.identifier || formData.eqptLocation || "",
-              ),
-              file_url: `report:/jobs/${jobId}/${reportSlug}/${savedCurrentReportId}`,
-              user_id: user.id,
-            })
-            .select()
-            .single();
-
-          if (!assetError && assetResult) {
-            const { error: linkError } = await supabase
-              .schema("neta_ops")
-              .from("job_assets")
-              .insert({
-                job_id: jobId,
-                asset_id: assetResult.id,
-                user_id: user.id,
-              });
-            if (linkError) {
-              console.warn(
-                "Job asset link failed for current report (report was saved):",
-                linkError,
-              );
-            }
-          }
-          if (assetError) {
-            console.warn(
-              "Asset creation failed for current report (report was saved):",
-              assetError,
-            );
-          }
-        } finally {
-          creatingRef.current = false;
-        }
+      // Finish the report on screen first, through the same one-row-per-report
+      // save the rest of the form uses.
+      const savedCurrentReportId = await persistReport();
+      if (!savedCurrentReportId) {
+        throw new Error("Failed to save current report.");
       }
 
       const makeEmptyTestEquipment = () => ({
@@ -1360,57 +1272,38 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
         comments: newFormData.comments,
       };
 
-      const { data: newReport, error: newReportError } = await supabase
+      const copyReportId = newReportId();
+      const { error: newReportError } = await supabase
         .schema("neta_ops")
         .from("panelboard_assemblies_ats25_reports")
-        .insert(newReportPayload)
-        .select()
-        .single();
-
-      if (newReportError) throw newReportError;
-      if (!newReport) throw new Error("Failed to create new report.");
-
-      const { data: newAsset, error: newAssetError } = await supabase
-        .schema("neta_ops")
-        .from("assets")
-        .insert({
-          name: getAssetName(reportSlug, ""),
-          file_url: `report:/jobs/${jobId}/${reportSlug}/${newReport.id}`,
-          user_id: user.id,
-        })
-        .select()
-        .single();
-
-      if (!newAssetError && newAsset) {
-        const { error: linkError } = await supabase
-          .schema("neta_ops")
-          .from("job_assets")
-          .insert({
-            job_id: jobId,
-            asset_id: newAsset.id,
-            user_id: user.id,
-          });
-        if (linkError) {
-          console.warn(
-            "Job asset link failed for new report (report was created):",
-            linkError,
-          );
-        }
-      }
-      if (newAssetError) {
-        console.warn(
-          "Asset creation failed for new report (report was created):",
-          newAssetError,
+        .upsert(
+          { id: copyReportId, ...newReportPayload },
+          { onConflict: "id" },
         );
-      }
+      if (newReportError) throw newReportError;
 
-      reportIdRef.current = newReport.id;
+      await ensureReportAssetLink(
+        jobId,
+        {
+          name: getAssetName(reportSlug, ""),
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${copyReportId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+
+      // Switch the form over to the copy. The ref moves in the same breath as
+      // the id, so an auto-save landing right now cannot write the finished
+      // report's readings into the blank one.
+      reportIdRef.current = copyReportId;
+      formDataRef.current = newFormData;
+      assetLinkedRef.current = true;
       isAutoSaveCreatedRef.current = true;
-      setCurrentReportId(newReport.id);
+      setCurrentReportId(copyReportId);
       setFormData(newFormData);
       setIsEditing(true);
       markSaved();
-      navigate(`/jobs/${jobId}/${reportSlug}/${newReport.id}`, {
+      navigate(`/jobs/${jobId}/${reportSlug}/${copyReportId}`, {
         replace: true,
       });
     } catch (error: any) {
@@ -1422,14 +1315,13 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
       setIsSaving(false);
     }
   }, [
-    buildReportPayload,
-    currentReportId,
     formData,
     jobId,
     markSaved,
     maskCustomerAddress,
     maskCustomerName,
     navigate,
+    persistReport,
     reportSlug,
     user?.id,
   ]);

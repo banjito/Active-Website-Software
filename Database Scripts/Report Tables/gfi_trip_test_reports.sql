@@ -24,17 +24,28 @@ CREATE TABLE IF NOT EXISTS neta_ops.gfi_trip_test_reports (
     -- Test Equipment
     test_equipment JSONB DEFAULT '{}'::jsonb,
     
-    -- GFI Data
+    -- Nameplate Data (full LV breaker nameplate set)
+    nameplate_data JSONB DEFAULT '{}'::jsonb,
+
+    -- Electrical Tests - Primary Injection (ground fault functions only)
+    primary_injection JSONB DEFAULT '{}'::jsonb,
+
+    -- Description of Set-up and Results (free-form, inside the results section)
+    setup_description TEXT,
+
+    -- Comments
+    comments TEXT,
+
+    -- Legacy GFI Data (superseded by nameplate_data / primary_injection /
+    -- setup_description; retained so pre-existing reports keep their values)
     manufacturer TEXT,
     rated_current TEXT,
     ground_fault_setting TEXT,
     ground_fault_trip TEXT,
-    
-    -- Results
     results TEXT,
-    
+
     -- Status
-    status TEXT DEFAULT 'PASS' CHECK (status IN ('PASS', 'FAIL')),
+    status TEXT DEFAULT 'PASS' CHECK (status IN ('PASS', 'FAIL', 'LIMITED SERVICE')),
     
     -- Timestamps
     created_at TIMESTAMPTZ DEFAULT NOW(),

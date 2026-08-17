@@ -8866,10 +8866,14 @@ CREATE TABLE neta_ops.gfi_trip_test_reports (
     ground_fault_setting text,
     ground_fault_trip text,
     results text,
+    nameplate_data jsonb DEFAULT '{}'::jsonb,
+    primary_injection jsonb DEFAULT '{}'::jsonb,
+    setup_description text,
+    comments text,
     status text DEFAULT 'PASS'::text,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
-    CONSTRAINT gfi_trip_test_reports_status_check CHECK ((status = ANY (ARRAY['PASS'::text, 'FAIL'::text])))
+    CONSTRAINT gfi_trip_test_reports_status_check CHECK ((status = ANY (ARRAY['PASS'::text, 'FAIL'::text, 'LIMITED SERVICE'::text])))
 );
 
 

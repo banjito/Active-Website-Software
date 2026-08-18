@@ -101,6 +101,8 @@ import CustomFormPreview from "./pages/CustomFormPreview";
 import EULA from "./pages/EULA";
 import Privacy from "./pages/Privacy";
 import OilResults from "./pages/OilResults";
+import AmplifyResults from "./pages/AmplifyResults";
+import AmplifyReportPage from "./pages/AmplifyReportView";
 import OilReportView from "./pages/OilReportView";
 import EstimatingPresetsPage from "./pages/EstimatingPresetsPage";
 import { HrDashboard } from "./pages/HrDashboard";
@@ -864,6 +866,28 @@ function App() {
                       <RequireAuth>
                         <Layout>
                           <OilReportView />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+
+                  {/* === AMP-lify Report Conversion === */}
+                  <Route
+                    path="/amplify-reports"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <AmplifyResults />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/amplify-reports/:id"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <AmplifyReportPage />
                         </Layout>
                       </RequireAuth>
                     }

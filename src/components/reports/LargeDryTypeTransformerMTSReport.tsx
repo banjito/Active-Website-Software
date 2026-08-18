@@ -20,6 +20,7 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import { BRAND_COLOR } from "@/lib/companyConfig";
 
 // Add type definitions for error handling
 type SupabaseError = {
@@ -1181,7 +1182,7 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
       {/* Print Header - Only visible when printing */}
-      <div className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6 relative">
+      <div className="print:flex hidden items-center justify-between pb-4 mb-6 relative">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
           alt="AMP Logo"
@@ -3083,6 +3084,29 @@ if (typeof document !== "undefined") {
       ${scope} table.turns-ratio-table td:nth-child(10) { width: 10% !important; }
   `;
 
+  // Section separators print in the brand color only. index.css turns the
+  // on-screen brand dividers into solid black rules for print, and the section
+  // headings carry print:border-black; both are undone here so the printed
+  // report shows a single brand-colored rule per section.
+  const sectionDividerCss = (scope: string) => `
+      ${scope} .w-full.h-1,
+      ${scope} div[class*="w-full"][class*="h-1"] {
+        height: 3px !important;
+        border: 0 !important;
+        background: var(--brand, ${BRAND_COLOR}) !important;
+        background-color: var(--brand, ${BRAND_COLOR}) !important;
+        margin: 0 0 8px 0 !important;
+        display: block !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      ${scope} h2[class*="section-"] {
+        border-top: 0 !important;
+        border-bottom: 0 !important;
+        padding-bottom: 0 !important;
+      }
+  `;
+
   const style = document.createElement("style");
   style.textContent = `
     /* Hide navigation bar and scrollbar */
@@ -3181,10 +3205,14 @@ if (typeof document !== "undefined") {
 
       /* Turns Ratio table: pin column widths so all 10 columns fit the page */
 ${turnsRatioFitCss("#report-container")}
+
+      /* Brand-colored section separators, no black rules */
+${sectionDividerCss("#report-container")}
     }
 
     /* Same fit rules for the preview/PDF (force-print) rendering path */
 ${turnsRatioFitCss(".force-print #report-container")}
+${sectionDividerCss(".force-print #report-container")}
   `;
   document.head.appendChild(style);
 }

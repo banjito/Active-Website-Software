@@ -22,6 +22,7 @@ import {
   Building2,
   Link2,
   Droplet,
+  FileSpreadsheet,
 } from "lucide-react";
 import { Button } from "./Button";
 import { ThemeToggle } from "../theme/theme-toggle";
@@ -724,6 +725,24 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   }`}
                 >
                 Oil Reports
+              </Button>
+            </Link>
+            {/* AMP-lify Reports - the Excel sibling of the oil converter, and
+                shown on the same terms. */}
+            <Link
+              to="/amplify-reports"
+              onClick={() => setIsMobileSidebarOpen(false)}
+            >
+              <Button
+                variant="ghost"
+                leftIcon={<FileSpreadsheet className="h-4 w-4" />}
+                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                  location.pathname.startsWith("/amplify-reports")
+                    ? "bg-black/5 dark:bg-dark-50"
+                    : ""
+                }`}
+              >
+                AMP-lify Reports
               </Button>
             </Link>
           </>

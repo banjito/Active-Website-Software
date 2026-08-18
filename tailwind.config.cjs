@@ -165,7 +165,7 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: 0 },
         },
-        // Oil report conversion wireframe (src/components/oil/ConversionProgress)
+        // Report conversion wireframe (src/components/reports/common/ConversionProgress)
         "wire-draw": {
           from: { strokeDashoffset: "var(--wire-len)" },
           to: { strokeDashoffset: "0" },
@@ -196,6 +196,13 @@ module.exports = {
           "25%": { opacity: "0.8" },
           "100%": { transform: "translateY(-3.5rem) scale(1)", opacity: "0" },
         },
+        // AMP-lify drop zone (src/pages/AmplifyResults). Cells fill in behind
+        // the zone on drag, the way a sheet populates as it is read.
+        "cell-fill": {
+          "0%": { transform: "scale(0.6)", opacity: "0" },
+          "60%": { opacity: "1" },
+          "100%": { transform: "scale(1)", opacity: "0.55" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -206,6 +213,7 @@ module.exports = {
         "oil-drift": "oil-drift 3.2s linear infinite",
         "oil-swell": "oil-swell 3.6s ease-in-out infinite",
         "oil-bubble": "oil-bubble 2.6s ease-in infinite",
+        "cell-fill": "cell-fill 0.5s ease-out forwards",
       },
     },
   },

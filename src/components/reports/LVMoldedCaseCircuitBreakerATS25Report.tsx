@@ -18,7 +18,6 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { useReportUserAutofill } from "./useReportUserAutofill";
 import {
   reportSaveFailed,
   reportSaveSucceeded,
@@ -1111,9 +1110,6 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
     status: "PASS",
     irDlroOnly: false,
   });
-
-  // Autofill the "User" header field with the signed-in employee's name (new reports only).
-  useReportUserAutofill(setFormData, initialReportId, "user");
 
   const [error, setError] = useState<string | null>(null);
 

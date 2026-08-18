@@ -1358,6 +1358,7 @@ export default function JobDetail() {
           "low_voltage_circuit_breaker_thermal_magnetic_mts_reports",
         "lv-molded-case-circuit-breaker-ats25":
           "lv_molded_case_circuit_breaker_ats25",
+        "lv-circuit-breaker-mts25": "lv_circuit_breaker_mts25",
         "emergency-systems-engine-generator-ats25":
           "emergency_systems_engine_generator_ats25",
         "6-low-voltage-switch-maint-mts-report":
@@ -2112,6 +2113,13 @@ export default function JobDetail() {
       file_url: `report:/jobs/${id}/lv-molded-case-circuit-breaker-ats25?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: "ATS",
+    },
+    {
+      id: "lv-circuit-breaker-mts25",
+      name: "LV Circuit Breaker MTS 25",
+      file_url: `report:/jobs/${id}/lv-circuit-breaker-mts25?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: "MTS",
     },
     {
       id: "emergency-systems-engine-generator-ats25",
@@ -4950,6 +4958,7 @@ export default function JobDetail() {
         "low-voltage-circuit-breaker-thermal-magnetic-mts-report",
       "lv-molded-case-circuit-breaker-ats25":
         "lv-molded-case-circuit-breaker-ats25",
+      "lv-circuit-breaker-mts25": "lv-circuit-breaker-mts25",
       "emergency-systems-engine-generator-ats25":
         "emergency-systems-engine-generator-ats25",
       "6-low-voltage-switch-maint-mts-report":
@@ -5107,6 +5116,7 @@ export default function JobDetail() {
           "low_voltage_circuit_breaker_thermal_magnetic_mts_reports",
         "lv-molded-case-circuit-breaker-ats25":
           "lv_molded_case_circuit_breaker_ats25",
+        "lv-circuit-breaker-mts25": "lv_circuit_breaker_mts25",
         "emergency-systems-engine-generator-ats25":
           "emergency_systems_engine_generator_ats25",
         // ATS/Primary/Secondary injection variants

@@ -58,6 +58,7 @@ Reports for periodic maintenance testing.
 | Low Voltage Switch Maint (MTS) | `6-LowVoltageSwitchMaintMTSReport.tsx` | 7.5 |
 | LV CB Electronic Trip (MTS) | `LowVoltageCircuitBreakerElectronicTripMTSReport.tsx` | 7.6.1.1 |
 | LV CB Thermal-Magnetic (MTS) | `LowVoltageCircuitBreakerThermalMagneticMTSReport.tsx` | 7.6.1.2 |
+| LV Circuit Breaker (MTS 25) | `LVCircuitBreakerMTS25Report.tsx` | 7.6.1.2 |
 | Medium Voltage CB (MTS) | `MediumVoltageCircuitBreakerMTSReport.tsx` | 7.6.2 |
 | MV Motor Starter (MTS) | `23-MediumVoltageMotorStarterMTSReport.tsx` | 7.15 |
 | MV Switch (MTS) | `23-MediumVoltageSwitchMTSReport.tsx` | 7.6 |

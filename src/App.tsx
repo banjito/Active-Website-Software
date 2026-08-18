@@ -239,6 +239,7 @@ import LowVoltageCircuitBreakerElectronicTripMTSReport from "./components/report
 import LowVoltageCircuitBreakerThermalMagneticATSReport from "./components/reports/LowVoltageCircuitBreakerThermalMagneticATSReport";
 import LowVoltageCircuitBreakerThermalMagneticMTSReport from "./components/reports/LowVoltageCircuitBreakerThermalMagneticMTSReport";
 import LVMoldedCaseCircuitBreakerATS25Report from "./components/reports/LVMoldedCaseCircuitBreakerATS25Report";
+import LVCircuitBreakerMTS25Report from "./components/reports/LVCircuitBreakerMTS25Report";
 import EmergencySystemsEngineGeneratorATS25Report from "./components/reports/EmergencySystemsEngineGeneratorATS25Report";
 import LowVoltageSwitchMaintMTSReport from "./components/reports/6-LowVoltageSwitchMaintMTSReport";
 
@@ -2516,6 +2517,16 @@ function App() {
                       <RequireAuth>
                         <Layout>
                           <LVMoldedCaseCircuitBreakerATS25Report />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/jobs/:id/lv-circuit-breaker-mts25/:reportId?"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <LVCircuitBreakerMTS25Report />
                         </Layout>
                       </RequireAuth>
                     }

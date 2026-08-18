@@ -11,7 +11,7 @@ import {
   type SavedReport,
 } from "@/lib/oilReportStore";
 import ReportView from "@/components/oil/ReportView";
-import SendToJobDialog from "@/components/oil/SendToJobDialog";
+import SendToJobDialog from "@/components/reports/common/SendToJobDialog";
 
 /**
  * A saved oil analysis report.

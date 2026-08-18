@@ -13,7 +13,7 @@ import {
 import { FlaskConical, Trash2 } from "lucide-react";
 import ConversionProgress, {
   type ConversionState,
-} from "@/components/oil/ConversionProgress";
+} from "@/components/reports/common/ConversionProgress";
 
 /**
  * Entry point of the oil report workflow: drop a lab PDF, watch it convert,

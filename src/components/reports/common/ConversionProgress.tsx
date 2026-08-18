@@ -1,12 +1,16 @@
 import React from "react";
 
 /**
- * Wireframe build animation shown while a lab PDF is converted.
+ * Wireframe build animation shown while a source document is converted.
  *
- * A conversion takes 10s-2min depending on page count, so this has to do more
- * than spin: the wireframe assembles the same blocks the finished report uses
- * (header, two spec panels, results table), and every stage line reflects real
- * pipeline state rather than a timer.
+ * A conversion takes 10s-2min, so this has to do more than spin: the wireframe
+ * assembles the same blocks the finished report uses (header, two spec panels,
+ * results table), and every stage line reflects real pipeline state rather
+ * than a timer.
+ *
+ * Shared by the ingestion workflows. Each one passes its own `stages`, since a
+ * scanned PDF spends most of its time in OCR while a workbook is parsed
+ * instantly and waits on the model instead.
  */
 
 export type ConversionStage =
@@ -17,28 +21,38 @@ export type ConversionStage =
 
 export interface ConversionState {
   stage: ConversionStage;
+  /** Progress within a paged stage; 0 when the stage is not paged. */
   page: number;
   pageCount: number;
   fileName: string;
 }
 
-/** Ordered stages, with the share of the bar each one owns. */
-const STAGES: { key: ConversionStage; label: string; weight: number }[] = [
-  { key: "reading", label: "Rendering pages", weight: 0.15 },
-  { key: "recognizing", label: "Reading the tables", weight: 0.55 },
+export interface StageSpec {
+  key: ConversionStage;
+  label: string;
+  /** Share of the bar this stage owns. Weights should sum to 1. */
+  weight: number;
+  /** Whether `page`/`pageCount` fill this stage in, rather than a flat half. */
+  paged?: boolean;
+}
+
+/** Default stage set: an OCR'd PDF, where reading the pages dominates. */
+export const PDF_STAGES: StageSpec[] = [
+  { key: "reading", label: "Rendering pages", weight: 0.15, paged: true },
+  { key: "recognizing", label: "Reading the tables", weight: 0.55, paged: true },
   { key: "structuring", label: "Structuring results", weight: 0.22 },
   { key: "saving", label: "Saving report", weight: 0.08 },
 ];
 
-/** Overall 0..1, using page counts to fill in the long OCR stage. */
-function overallProgress({ stage, page, pageCount }: ConversionState): number {
+/** Overall 0..1, using page counts to fill in the long paged stages. */
+function overallProgress(
+  { stage, page, pageCount }: ConversionState,
+  stages: StageSpec[],
+): number {
   let done = 0;
-  for (const s of STAGES) {
+  for (const s of stages) {
     if (s.key === stage) {
-      const within =
-        (s.key === "recognizing" || s.key === "reading") && pageCount > 0
-          ? Math.min(page / pageCount, 1)
-          : 0.5;
+      const within = s.paged && pageCount > 0 ? Math.min(page / pageCount, 1) : 0.5;
       return done + s.weight * within;
     }
     done += s.weight;
@@ -65,18 +79,33 @@ const BLOCKS: { x: number; y: number; w: number; h: number; at: number }[] = [
   { x: 8, y: 164, w: 184, h: 26, at: 0.82 },
 ];
 
-const ConversionProgress: React.FC<{ state: ConversionState }> = ({ state }) => {
-  const progress = overallProgress(state);
-  const activeIndex = STAGES.findIndex((s) => s.key === state.stage);
+export interface ConversionProgressProps {
+  state: ConversionState;
+  /** Stage set for this pipeline. Defaults to the OCR'd-PDF weighting. */
+  stages?: StageSpec[];
+  /** Per-stage detail line, shown on the right of the active stage. */
+  detailFor?: (state: ConversionState) => string;
+}
 
-  const detail =
-    state.stage === "reading" || state.stage === "recognizing"
-      ? state.pageCount
-        ? `Page ${state.page} of ${state.pageCount}`
-        : "Opening file"
-      : state.stage === "structuring"
-        ? "Rebuilding the table from the scan"
-        : "Writing to the database";
+/** Detail line for the paged-PDF pipeline. */
+function pdfDetail(state: ConversionState): string {
+  if (state.stage === "reading" || state.stage === "recognizing") {
+    return state.pageCount
+      ? `Page ${state.page} of ${state.pageCount}`
+      : "Opening file";
+  }
+  if (state.stage === "structuring") return "Rebuilding the table from the scan";
+  return "Writing to the database";
+}
+
+const ConversionProgress: React.FC<ConversionProgressProps> = ({
+  state,
+  stages = PDF_STAGES,
+  detailFor = pdfDetail,
+}) => {
+  const progress = overallProgress(state, stages);
+  const activeIndex = stages.findIndex((s) => s.key === state.stage);
+  const detail = detailFor(state);
 
   return (
     <div className="rounded-none border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
@@ -162,7 +191,7 @@ const ConversionProgress: React.FC<{ state: ConversionState }> = ({ state }) => 
           </div>
 
           <ul className="mt-4 space-y-2">
-            {STAGES.map((s, i) => {
+            {stages.map((s, i) => {
               const done = i < activeIndex;
               const current = i === activeIndex;
               return (

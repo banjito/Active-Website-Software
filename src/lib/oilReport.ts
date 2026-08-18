@@ -6,6 +6,8 @@
  * transcribed rather than parsed. See /oil-results for the branded renderer.
  */
 
+import type { Severity } from "@/lib/reportSeverity";
+
 export interface Nameplate {
   serialNumber: string;
   unitId: string;
@@ -93,7 +95,8 @@ export interface OilReport {
 /* Condition severity                                                  */
 /* ------------------------------------------------------------------ */
 
-export type Severity = "good" | "caution" | "alert" | "unknown";
+export type { Severity } from "@/lib/reportSeverity";
+export { severityLabel, severityClasses } from "@/lib/reportSeverity";
 
 /**
  * IEEE C57.104 conditions and the newer "status" wording both run 1..4, low to
@@ -107,24 +110,6 @@ export function conditionSeverity(condition?: string): Severity {
   if (level >= 3) return "alert";
   return "unknown";
 }
-
-export const severityLabel: Record<Severity, string> = {
-  good: "Normal",
-  caution: "Monitor",
-  alert: "Investigate",
-  unknown: "Not rated",
-};
-
-/** Badge classes per severity. Kept here so the page and any future PDF agree. */
-export const severityClasses: Record<Severity, string> = {
-  good: "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/30",
-  caution:
-    "bg-amber-50 text-amber-800 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-400/30",
-  alert:
-    "bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-400/30",
-  unknown:
-    "bg-neutral-100 text-neutral-600 ring-neutral-500/20 dark:bg-neutral-800 dark:text-neutral-400 dark:ring-neutral-600/30",
-};
 
 /**
  * Trend of a numeric field between the newest sample and the one before it.

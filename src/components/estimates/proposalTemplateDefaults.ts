@@ -145,8 +145,24 @@ export const DEFAULT_PROPOSAL_LOGO_URL =
 /** Signer's signature image. Overridable per-instance via branding below. */
 export const DEFAULT_PROPOSAL_SIGNATURE_IMAGE = "/img/brian-signature.png";
 
+/**
+ * Strip a leading short-name prefix from the full company name. The banner
+ * prints the logo immediately before this text, and the logo mark already
+ * spells the short name, so "AMP" + "AMP Quality Energy Services" would read
+ * the name twice. Names that don't start with the short name are untouched.
+ */
+const withoutLogoNamePrefix = (fullName: string, shortName: string): string => {
+  if (!shortName || !fullName.toLowerCase().startsWith(shortName.toLowerCase()))
+    return fullName;
+  const rest = fullName.slice(shortName.length).trim();
+  return rest || fullName;
+};
+
 /** Company text shown next to the logo at the top of the letter. */
-export const DEFAULT_PROPOSAL_LETTER_BANNER_TEXT = companyConfig.fullName;
+export const DEFAULT_PROPOSAL_LETTER_BANNER_TEXT = withoutLogoNamePrefix(
+  companyConfig.fullName,
+  companyConfig.name,
+);
 
 /** Heading text on the safety policy page. */
 export const DEFAULT_PROPOSAL_SAFETY_TITLE = "Safety Policy on Jobsites";
@@ -187,10 +203,12 @@ export function resolveProposalBranding(value: unknown): ProposalBranding {
   };
   return {
     letterLogoUrl: str(o.letterLogoUrl, DEFAULT_PROPOSAL_BRANDING.letterLogoUrl),
-    letterBannerText: str(
-      o.letterBannerText,
-      DEFAULT_PROPOSAL_BRANDING.letterBannerText,
-    ),
+    // Presets saved before the banner dropped the duplicated short name still
+    // hold the old default verbatim; treat that exact value as "unset".
+    letterBannerText:
+      str(o.letterBannerText, "") === companyConfig.fullName
+        ? DEFAULT_PROPOSAL_BRANDING.letterBannerText
+        : str(o.letterBannerText, DEFAULT_PROPOSAL_BRANDING.letterBannerText),
     safetyLogoUrl: str(o.safetyLogoUrl, DEFAULT_PROPOSAL_BRANDING.safetyLogoUrl),
     safetyTitle: str(o.safetyTitle, DEFAULT_PROPOSAL_BRANDING.safetyTitle),
     signatureImage: str(

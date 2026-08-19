@@ -342,6 +342,14 @@ const mountingOptions = [
 const zoneInterlockOptions = ["", "Yes", "No", "Enabled", "Disabled", "N/A"];
 const thermalMemoryOptions = ["", "Yes", "No", "Simulated", "Unknown", "N/A"];
 const breakerTypeOptions = ["", "molded case", "insulated case", "power"];
+// Display labels for breaker type (stored values stay lowercase for section lookups)
+const breakerTypeLabels: Record<string, string> = {
+  "molded case": "Molded Case",
+  "insulated case": "Insulated Case",
+  power: "Power",
+};
+const getBreakerTypeLabel = (value: string): string =>
+  breakerTypeLabels[value] ?? value;
 
 interface FormData {
   // Job Information
@@ -2374,7 +2382,7 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
                   >
                     {breakerTypeOptions.map((opt) => (
                       <option key={opt} value={opt}>
-                        {opt || "Select..."}
+                        {opt ? getBreakerTypeLabel(opt) : "Select..."}
                       </option>
                     ))}
                   </select>
@@ -2549,7 +2557,7 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
                     </td>
                     <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Breaker Type:</div>
-                      <div>{formData.breakerType}</div>
+                      <div>{getBreakerTypeLabel(formData.breakerType)}</div>
                     </td>
                     <td className="p-2 align-top border border-neutral-300 print:border-black">
                       <div className="font-semibold">Trip Unit Type:</div>

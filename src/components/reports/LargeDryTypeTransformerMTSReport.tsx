@@ -1232,23 +1232,59 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
             Job Information
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 print:hidden">
-            <div>
-              <label className="form-label">Customer:</label>
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-4 print:hidden">
+            <div className="md:col-span-2">
+              <label htmlFor="customer" className="form-label">
+                Customer:
+              </label>
               <input
+                id="customer"
                 type="text"
                 value={maskCustomerName(formData.customer)}
                 readOnly
-                className="form-input bg-neutral-100 dark:bg-dark-150 w-full"
+                className="form-input w-full bg-neutral-100 dark:bg-dark-150"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label htmlFor="address" className="form-label">
+                Address:
+              </label>
+              <input
+                id="address"
+                type="text"
+                value={maskCustomerAddress(formData.address)}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, address: e.target.value }))
+                }
+                readOnly={!isEditing}
+                className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
-              <label className="form-label">Job #:</label>
+              <label htmlFor="jobNumber" className="form-label">
+                Job #:
+              </label>
               <input
+                id="jobNumber"
                 type="text"
                 value={formData.jobNumber}
                 readOnly
-                className="form-input bg-neutral-100 dark:bg-dark-150 w-full"
+                className="form-input w-full bg-neutral-100 dark:bg-dark-150"
+              />
+            </div>
+            <div>
+              <label htmlFor="identifier" className="form-label">
+                Identifier:
+              </label>
+              <input
+                id="identifier"
+                type="text"
+                value={formData.identifier}
+                onChange={(e) =>
+                  handleChange(null, "identifier", e.target.value)
+                }
+                readOnly={!isEditing}
+                className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             <div>
@@ -1280,67 +1316,16 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
               />
             </div>
             <div>
-              <label htmlFor="identifier" className="form-label">
-                Identifier:
+              <label htmlFor="user" className="form-label">
+                User:
               </label>
               <input
-                id="identifier"
+                id="user"
                 type="text"
-                value={formData.identifier}
-                onChange={(e) =>
-                  handleChange(null, "identifier", e.target.value)
-                }
+                value={formData.userName}
+                onChange={(e) => handleChange(null, "userName", e.target.value)}
                 readOnly={!isEditing}
                 className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-              />
-            </div>
-            <div className="flex items-center space-x-1">
-              <div>
-                <label htmlFor="temperature.ambient" className="form-label">
-                  Temp:
-                </label>
-                <input
-                  id="temperature.ambient"
-                  type="number"
-                  value={formData.temperature.ambient}
-                  onChange={(e) =>
-                    handleTemperatureChange(Number(e.target.value))
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-16 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-                <span className="ml-1 text-xs">°F</span>
-              </div>
-              <div>
-                <label
-                  htmlFor="temperature.celsius"
-                  className="form-label sr-only"
-                >
-                  Celsius
-                </label>
-                <input
-                  id="temperature.celsius"
-                  type="number"
-                  value={formData.temperature.celsius}
-                  readOnly
-                  className="form-input w-16 bg-neutral-100 dark:bg-dark-150"
-                />
-                <span className="ml-1 text-xs">°C</span>
-              </div>
-            </div>
-            <div>
-              <label
-                htmlFor="temperature.correctionFactor"
-                className="form-label"
-              >
-                TCF:
-              </label>
-              <input
-                id="temperature.correctionFactor"
-                type="number"
-                value={formData.temperature.correctionFactor}
-                readOnly
-                className="form-input bg-neutral-100 dark:bg-dark-150 w-16"
               />
             </div>
             <div>
@@ -1373,37 +1358,6 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
                 className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               />
             </div>
-            <div className="md:col-span-2">
-              <label htmlFor="user" className="form-label">
-                User:
-              </label>
-              <input
-                id="user"
-                type="text"
-                value={formData.userName}
-                onChange={(e) => handleChange(null, "userName", e.target.value)}
-                readOnly={!isEditing}
-                className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label htmlFor="address" className="form-label">
-                Address:
-              </label>
-              <input
-                id="address"
-                type="text"
-                value={maskCustomerAddress(formData.address)}
-                onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
-                readOnly={!isEditing}
-                className={`form-input dark:bg-dark-150 ${!isEditing ? "bg-neutral-100" : ""}`}
-                style={{
-                  width: `${Math.max(200, Math.min(500, maskCustomerAddress(formData.address).length * 10))}px`,
-                  minWidth: "200px",
-                  maxWidth: "500px",
-                }}
-              />
-            </div>
             <div>
               <label htmlFor="humidity" className="form-label">
                 Humidity %:
@@ -1422,6 +1376,63 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
                 readOnly={!isEditing}
                 className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 placeholder="Optional"
+              />
+            </div>
+            {/* Ambient temperature: °F is entered, °C is derived. Both inputs
+                share the cell evenly so the row keeps a single baseline. */}
+            <div className="md:col-span-2">
+              <label htmlFor="temperature.ambient" className="form-label">
+                Temp:
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1 min-w-0">
+                  <input
+                    id="temperature.ambient"
+                    type="number"
+                    value={formData.temperature.ambient}
+                    onChange={(e) =>
+                      handleTemperatureChange(Number(e.target.value))
+                    }
+                    readOnly={!isEditing}
+                    className={`form-input w-full pr-9 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                  <span className="pointer-events-none absolute inset-y-0 right-2 mt-1 flex items-center text-xs text-neutral-500 dark:text-neutral-400">
+                    °F
+                  </span>
+                </div>
+                <div className="relative flex-1 min-w-0">
+                  <label
+                    htmlFor="temperature.celsius"
+                    className="form-label sr-only"
+                  >
+                    Temperature in Celsius
+                  </label>
+                  <input
+                    id="temperature.celsius"
+                    type="number"
+                    value={formData.temperature.celsius}
+                    readOnly
+                    className="form-input w-full pr-9 bg-neutral-100 dark:bg-dark-150"
+                  />
+                  <span className="pointer-events-none absolute inset-y-0 right-2 mt-1 flex items-center text-xs text-neutral-500 dark:text-neutral-400">
+                    °C
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label
+                htmlFor="temperature.correctionFactor"
+                className="form-label"
+              >
+                TCF:
+              </label>
+              <input
+                id="temperature.correctionFactor"
+                type="number"
+                value={formData.temperature.correctionFactor}
+                readOnly
+                className="form-input w-full bg-neutral-100 dark:bg-dark-150"
               />
             </div>
           </div>

@@ -16,7 +16,9 @@ import {
   View,
   pdf,
 } from "@react-pdf/renderer";
-import { AMP_BRAND, AMP_FONT, AMP_PAPER, AMP_SEVERITY } from "@/lib/ampBrand";
+import { AMP_BRAND, AMP_PAPER, AMP_SEVERITY } from "@/lib/ampBrand";
+// Importing AMP_FONT is also what registers the embedded typeface.
+import { AMP_FONT } from "@/lib/ampPdfFont";
 import { rasterizeLogo, type PdfCompany } from "@/lib/pdfBranding";
 import {
   DGA_ROWS,

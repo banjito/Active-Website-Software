@@ -178,3 +178,48 @@ export async function parseAmplifyReport(
     return { ...report, id };
   });
 }
+
+/**
+ * Re-run a saved report through the model with one plain-language instruction
+ * ("On Rated Voltage, change the value to 15kV") and return the revision.
+ *
+ * The uploaded workbook is not kept after a conversion, so this revises the
+ * stored JSON rather than parsing the source again. The response is normalized
+ * through the same path as a fresh parse, since a revision is no more trusted
+ * to hold the shape than the original was.
+ *
+ * `note` is the model's explanation when it declined to change anything; it is
+ * "" on a normal revision.
+ */
+export async function reviseAmplifyReport(
+  report: AmplifyReport,
+  instruction: string,
+): Promise<{ report: AmplifyReport; note: string }> {
+  const { data, error } = await supabase.functions.invoke(
+    "revise-amplify-report",
+    { body: { report, instruction } },
+  );
+
+  if (error) {
+    throw new Error(`Could not reach the reviser: ${error.message}`);
+  }
+  if (data?.error) {
+    throw new Error(data.detail ? `${data.error}: ${data.detail}` : data.error);
+  }
+
+  const raw = (data?.report ?? {}) as Record<string, unknown>;
+  const revised = normalizeReport(raw, 0, report.sourceFile);
+
+  if (revised.sections.length === 0) {
+    throw new Error(
+      "The revision came back empty. The report was left as it was — try a more specific instruction.",
+    );
+  }
+
+  return {
+    // Identity stays with the saved row, not with whatever the model echoed:
+    // report.id keys the renderer and the source file never changes here.
+    report: { ...revised, id: report.id, sourceFile: report.sourceFile },
+    note: typeof data?.note === "string" ? data.note : "",
+  };
+}

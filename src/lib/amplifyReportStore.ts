@@ -136,6 +136,35 @@ export async function getAmplifyBatch(
   return (data as Row[]).map(toSaved);
 }
 
+/**
+ * Replace a saved report's payload with a revised one.
+ *
+ * The denormalized list columns are rewritten alongside it, so a revision that
+ * touches the label or the overall result does not leave the index showing the
+ * pre-revision values.
+ */
+export async function updateAmplifyConversionReport(
+  id: string,
+  report: AmplifyReport,
+): Promise<SavedAmplifyReport> {
+  const { data, error } = await supabase
+    .schema("neta_ops")
+    .from(TABLE)
+    .update({
+      label: report.label,
+      site_name: report.siteName || null,
+      report_date: report.reportDate || null,
+      status: report.status || null,
+      report,
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw new Error(`Could not save the revision: ${error.message}`);
+  return toSaved(data as Row);
+}
+
 /** Remove one saved report. */
 export async function deleteAmplifyConversion(id: string): Promise<void> {
   const { error } = await supabase

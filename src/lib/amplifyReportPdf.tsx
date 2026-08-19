@@ -1,5 +1,8 @@
 /**
- * Renders an AmplifyReport as an AMP-branded PDF.
+ * Renders an AmplifyReport as a company-branded PDF.
+ *
+ * The deliverable never names the AMP-lify tool: it goes to a customer as a
+ * test report, so the header, document title, and file name stay generic.
  *
  * Colors and type follow public/amp-brand-sheet.pdf via src/lib/ampBrand.ts.
  * @react-pdf/renderer resolves styles without a DOM, so nothing here can read
@@ -20,7 +23,9 @@ import {
   View,
   pdf,
 } from "@react-pdf/renderer";
-import { AMP_BRAND, AMP_FONT, AMP_PAPER, AMP_SEVERITY } from "@/lib/ampBrand";
+import { AMP_BRAND, AMP_PAPER, AMP_SEVERITY } from "@/lib/ampBrand";
+// Importing AMP_FONT is also what registers the embedded typeface.
+import { AMP_FONT } from "@/lib/ampPdfFont";
 import { rasterizeLogo, type PdfCompany } from "@/lib/pdfBranding";
 import {
   resultSeverity,
@@ -297,7 +302,7 @@ const AmplifyReportDocument: React.FC<{
   company: PdfCompany;
 }> = ({ reports, company }) => (
   <Document
-    title={`AMP-lify Report — ${reports.map((r) => r.label).join(", ")}`}
+    title={`Test Report — ${reports.map((r) => r.label).join(", ")}`}
     author={company.fullName}
   >
     {reports.map((report) => {
@@ -317,7 +322,7 @@ const AmplifyReportDocument: React.FC<{
               {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf Image has no alt */}
               <Image style={styles.logo} src={company.logoPath} />
               <View>
-                <Text style={styles.headerTitle}>AMP-LIFY REPORT</Text>
+                <Text style={styles.headerTitle}>TEST REPORT</Text>
                 <Text style={styles.headerSubtitle}>{company.fullName}</Text>
               </View>
             </View>

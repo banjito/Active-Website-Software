@@ -2,15 +2,21 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom";
 import { companyConfig } from "@/lib/companyConfig";
 import { readWorkbook } from "@/lib/amplifyWorkbook";
-import { parseAmplifyReport } from "@/lib/amplifyReportParse";
+import {
+  parseAmplifyReport,
+  reviseAmplifyReport,
+} from "@/lib/amplifyReportParse";
 import { resultSeverity, severityClasses } from "@/lib/amplifyReport";
 import {
   deleteAmplifyConversion,
+  getAmplifyConversion,
   listAmplifyConversions,
   saveAmplifyConversion,
+  updateAmplifyConversionReport,
   type SavedAmplifyConversion,
 } from "@/lib/amplifyReportStore";
-import { FileSpreadsheet, Trash2 } from "lucide-react";
+import { FileSpreadsheet, RefreshCw, Trash2 } from "lucide-react";
+import RegenerateDialog from "@/components/amplify/RegenerateDialog";
 import ConversionProgress, {
   type ConversionState,
   type StageSpec,
@@ -58,6 +64,15 @@ const AmplifyResults: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  /** Row being revised; also drives the dialog's open state. */
+  const [regenTarget, setRegenTarget] = useState<SavedAmplifyConversion | null>(
+    null,
+  );
+  const [notice, setNotice] = useState<{
+    text: string;
+    /** The model declined the instruction, so nothing changed. */
+    declined: boolean;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Nested dragenter/dragleave counter, so the sheet does not clear when the
   // cursor crosses onto a child of the drop zone.
@@ -122,6 +137,39 @@ const AmplifyResults: React.FC = () => {
       void ingest(file);
     },
     [ingest],
+  );
+
+  /**
+   * Revise one saved report from the list.
+   *
+   * The list query omits the payload, so the row is re-read in full first;
+   * fetching every report up front to support a control most rows never use
+   * would cost more than this does.
+   */
+  const regenerate = useCallback(
+    async (instruction: string) => {
+      if (!regenTarget) throw new Error("No report selected");
+
+      const full = await getAmplifyConversion(regenTarget.id);
+      const { report, note } = await reviseAmplifyReport(
+        full.report,
+        instruction,
+      );
+      const updated = await updateAmplifyConversionReport(full.id, report);
+
+      // Swap the row in place rather than refetching the list: the order is by
+      // created_at, which a revision does not move.
+      setConversions((prev) =>
+        prev.map((row) => (row.id === updated.id ? updated : row)),
+      );
+      setNotice(
+        note
+          ? { text: note, declined: true }
+          : { text: `Updated "${updated.label}".`, declined: false },
+      );
+      setError(null);
+    },
+    [regenTarget],
   );
 
   const remove = useCallback(async (c: SavedAmplifyConversion) => {
@@ -249,6 +297,25 @@ const AmplifyResults: React.FC = () => {
           </div>
         )}
 
+        {notice && (
+          <div
+            className={`mt-4 flex items-start justify-between gap-4 rounded-none border px-4 py-3 text-sm ${
+              notice.declined
+                ? "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
+                : "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+            }`}
+          >
+            <span>{notice.text}</span>
+            <button
+              type="button"
+              onClick={() => setNotice(null)}
+              className="shrink-0 font-medium underline underline-offset-2"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
         {error && (
           <div className="mt-4 rounded-none border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
             {error}
@@ -314,18 +381,44 @@ const AmplifyResults: React.FC = () => {
                       </span>
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={() => remove(c)}
-                      disabled={deletingId === c.id}
-                      title={`Delete ${c.label}`}
-                      aria-label={`Delete ${c.label}`}
-                      // Hidden until hover, but focus-visible keeps it
-                      // reachable by keyboard.
-                      className="mr-3 shrink-0 p-2 text-neutral-400 opacity-0 transition-opacity hover:text-red-600 focus-visible:opacity-100 group-hover:opacity-100 disabled:opacity-50 dark:hover:text-red-400"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    {/* Row controls, hidden until the row is hovered but kept
+                        reachable by keyboard via focus-visible. The tooltips
+                        use named groups so they answer to their own button
+                        rather than to the row's `group`. */}
+                    <div className="group/regen relative shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setRegenTarget(c)}
+                        aria-label={`Regenerate ${c.label}`}
+                        className="p-2 text-neutral-400 opacity-0 transition-opacity hover:text-brand focus-visible:opacity-100 group-hover:opacity-100"
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                      </button>
+                      <span
+                        role="tooltip"
+                        className="pointer-events-none absolute left-1/2 top-full z-10 mt-1 -translate-x-1/2 whitespace-nowrap bg-neutral-900 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity group-hover/regen:opacity-100 group-focus-within/regen:opacity-100 dark:bg-neutral-700"
+                      >
+                        Regenerate
+                      </span>
+                    </div>
+
+                    <div className="group/del relative mr-3 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => remove(c)}
+                        disabled={deletingId === c.id}
+                        aria-label={`Delete ${c.label}`}
+                        className="p-2 text-neutral-400 opacity-0 transition-opacity hover:text-red-600 focus-visible:opacity-100 group-hover:opacity-100 disabled:opacity-50 dark:hover:text-red-400"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                      <span
+                        role="tooltip"
+                        className="pointer-events-none absolute left-1/2 top-full z-10 mt-1 -translate-x-1/2 whitespace-nowrap bg-neutral-900 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity group-hover/del:opacity-100 group-focus-within/del:opacity-100 dark:bg-neutral-700"
+                      >
+                        Delete
+                      </span>
+                    </div>
                   </div>
                 );
               })}
@@ -333,6 +426,13 @@ const AmplifyResults: React.FC = () => {
           )}
         </div>
       </div>
+
+      <RegenerateDialog
+        open={regenTarget !== null}
+        onClose={() => setRegenTarget(null)}
+        label={regenTarget?.label ?? ""}
+        onSubmit={regenerate}
+      />
     </div>
   );
 };

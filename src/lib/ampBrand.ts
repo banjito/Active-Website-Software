@@ -42,15 +42,8 @@ export const AMP_SEVERITY = {
 } as const;
 
 /**
- * Typefaces.
- *
- * Helvetica is a standard PDF base-14 font, so @react-pdf/renderer has it
- * without registration. Futura is licensed and not bundled — drop a TTF at
- * public/fonts/Futura.ttf and register it in oilReportPdf.tsx to switch
- * headlines over; until then headlines use Helvetica-Bold.
+ * Typefaces live in src/lib/ampPdfFont.ts, not here: registering them is a
+ * side effect that has to run before a document renders, and pulling
+ * @react-pdf/renderer in through this module would drag the whole PDF stack
+ * into anything that only wanted a brand color.
  */
-export const AMP_FONT = {
-  body: "Helvetica",
-  bodyBold: "Helvetica-Bold",
-  display: "Helvetica-Bold",
-} as const;

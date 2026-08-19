@@ -1,16 +1,19 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Trash2 } from "lucide-react";
+import { RefreshCw, Trash2 } from "lucide-react";
 import { companyConfig } from "@/lib/companyConfig";
 import { resultSeverity, severityDot } from "@/lib/amplifyReport";
 import { buildAmplifyReportPdf } from "@/lib/amplifyReportPdf";
+import { reviseAmplifyReport } from "@/lib/amplifyReportParse";
 import {
   deleteAmplifyConversion,
   getAmplifyBatch,
   getAmplifyConversion,
+  updateAmplifyConversionReport,
   type SavedAmplifyReport,
 } from "@/lib/amplifyReportStore";
 import AmplifyReportView from "@/components/amplify/ReportView";
+import RegenerateDialog from "@/components/amplify/RegenerateDialog";
 import SendToJobDialog from "@/components/reports/common/SendToJobDialog";
 
 /**
@@ -18,7 +21,48 @@ import SendToJobDialog from "@/components/reports/common/SendToJobDialog";
  *
  * Reports converted from the same workbook share a batch, so this also offers
  * the siblings without sending the user back to the index.
+ *
+ * The conversion is a single model pass over a hand-maintained workbook, so it
+ * can land a value on the wrong row. "Regenerate" revises the saved report from
+ * a one-line instruction rather than making the engineer re-upload the file.
  */
+
+/**
+ * Icon-only header control with a tooltip, since the icon alone does not say
+ * what it does. `title` is deliberately not used: the native tooltip takes a
+ * second to appear and cannot be styled to match.
+ */
+const IconButton: React.FC<{
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  danger?: boolean;
+  children: React.ReactNode;
+}> = ({ label, onClick, disabled, danger, children }) => (
+  <div className="group relative">
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className={`inline-flex items-center gap-2 rounded-none border border-neutral-200 bg-white px-2.5 py-2.5 text-sm font-medium text-neutral-700 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 ${
+        danger
+          ? "hover:border-red-300 hover:text-red-600 dark:hover:border-red-500/40 dark:hover:text-red-400"
+          : "hover:border-brand hover:text-brand"
+      }`}
+    >
+      {children}
+    </button>
+    <span
+      role="tooltip"
+      // Shown on hover and on keyboard focus. pointer-events-none keeps it from
+      // swallowing the click it is sitting under.
+      className="pointer-events-none absolute left-1/2 top-full z-10 mt-1.5 -translate-x-1/2 whitespace-nowrap bg-neutral-900 px-2 py-1 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 dark:bg-neutral-700"
+    >
+      {label}
+    </span>
+  </div>
+);
 
 const AmplifyReportPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,6 +76,9 @@ const AmplifyReportPage: React.FC = () => {
   const [deleting, setDeleting] = useState(false);
   const [sendOpen, setSendOpen] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
+  const [regenOpen, setRegenOpen] = useState(false);
+  // Set when the model declined the instruction; cleared on the next run.
+  const [regenNote, setRegenNote] = useState<string | null>(null);
 
   /** Company block shared by the download and send-to-job paths. */
   const pdfCompany = {
@@ -93,7 +140,9 @@ const AmplifyReportPage: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `AMP-lify-${saved.label.replace(/\s+/g, "-")}.pdf`;
+      // The deliverable is a test report, not an AMP-lify artifact: nothing
+      // about the tool belongs in the file name a customer receives.
+      a.download = `${saved.label.replace(/\s+/g, "-")}-Test-Report.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -106,6 +155,28 @@ const AmplifyReportPage: React.FC = () => {
       setBuilding(false);
     }
   }, [saved]);
+
+  const onRegenerate = useCallback(
+    async (instruction: string) => {
+      if (!saved) throw new Error("Report is still loading");
+
+      const { report, note } = await reviseAmplifyReport(
+        saved.report,
+        instruction,
+      );
+      const updated = await updateAmplifyConversionReport(saved.id, report);
+
+      setSaved(updated);
+      // The switcher chips carry the label and status, so a revision that moved
+      // either has to reach them too.
+      setSiblings((prev) =>
+        prev.map((s) => (s.id === updated.id ? updated : s)),
+      );
+      setRegenNote(note || null);
+      setError(null);
+    },
+    [saved],
+  );
 
   const onDelete = useCallback(async () => {
     if (!saved) return;
@@ -146,15 +217,21 @@ const AmplifyReportPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 print:hidden">
-          <button
-            type="button"
+          <IconButton
+            label="Regenerate"
+            onClick={() => setRegenOpen(true)}
+            disabled={!saved || deleting}
+          >
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+          </IconButton>
+          <IconButton
+            label="Delete"
             onClick={onDelete}
             disabled={deleting || !saved}
-            title={saved ? `Delete ${saved.label}` : "Delete"}
-            className="inline-flex items-center gap-2 rounded-none border border-neutral-200 bg-white px-2.5 py-2.5 text-sm font-medium text-neutral-700 hover:border-red-300 hover:text-red-600 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-red-500/40 dark:hover:text-red-400"
+            danger
           >
             <Trash2 className="h-4 w-4" aria-hidden="true" />
-          </button>
+          </IconButton>
           <button
             type="button"
             onClick={() => navigate("/amplify-reports")}
@@ -191,6 +268,19 @@ const AmplifyReportPage: React.FC = () => {
               className="shrink-0 font-medium underline underline-offset-2"
             >
               Open job
+            </button>
+          </div>
+        )}
+
+        {regenNote && (
+          <div className="mb-4 flex items-start justify-between gap-4 rounded-none border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+            <span>{regenNote}</span>
+            <button
+              type="button"
+              onClick={() => setRegenNote(null)}
+              className="shrink-0 font-medium underline underline-offset-2"
+            >
+              Dismiss
             </button>
           </div>
         )}
@@ -262,10 +352,19 @@ const AmplifyReportPage: React.FC = () => {
       </div>
 
       {saved && (
+        <RegenerateDialog
+          open={regenOpen}
+          onClose={() => setRegenOpen(false)}
+          label={saved.label}
+          onSubmit={onRegenerate}
+        />
+      )}
+
+      {saved && (
         <SendToJobDialog
           open={sendOpen}
           onClose={() => setSendOpen(false)}
-          defaultName={`AMP-lify Report - ${saved.label}`}
+          defaultName={`${saved.label} - Test Report`}
           defaultSubstation={saved.report.siteName || saved.siteName || ""}
           buildFile={buildFile}
           onUploaded={(jobId) => setSentTo(jobId)}

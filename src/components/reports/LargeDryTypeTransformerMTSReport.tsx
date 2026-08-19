@@ -2455,7 +2455,9 @@ const LargeDryTypeTransformerMTSReport: React.FC = () => {
           </div>
 
           {/* Calculated Values */}
-          <div className="mb-6">
+          {/* Only two rows: keep the table whole so a page break cannot orphan
+              the Polarization Index row away from its header. */}
+          <div className="mb-6 print:break-inside-avoid">
             <h3 className="text-lg font-semibold mb-4 text-neutral-800 dark:text-white border-b dark:border-neutral-700 pb-2">
               Calculated Values
             </h3>
@@ -3104,6 +3106,12 @@ if (typeof document !== "undefined") {
         border-top: 0 !important;
         border-bottom: 0 !important;
         padding-bottom: 0 !important;
+      }
+      /* Other report modules inject an unscoped
+         .print\\:flex { border-bottom: 2px solid black } into document.head,
+         which draws a black rule under the print header once they have loaded. */
+      ${scope} .print\\:flex {
+        border-bottom: 0 !important;
       }
   `;
 

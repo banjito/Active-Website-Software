@@ -365,11 +365,14 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
           max-width: 100% !important;
         }
 
-        /* Remove min-height for embedded/print preview mode */
+        /* Remove min-height for embedded/print preview mode (screen only —
+           real printing is governed by the @media print rules below). */
+        @media screen {
         .force-print .screen-min-height,
         .force-print #report-container {
           min-height: 0 !important;
           height: auto !important;
+        }
         }
 
         @media print {
@@ -1587,10 +1590,8 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
         }
 
         /* Scale down content if needed to fit 8.5" width */
-        @media screen {
-          .force-print #report-container {
-            transform-origin: top center;
-          }
+        .force-print #report-container {
+          transform-origin: top center;
         }
 
         /* Ensure ALL content sections are visible in embedded mode - comprehensive */

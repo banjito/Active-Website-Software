@@ -16,19 +16,28 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
 }
 
-export const Button: React.FC<ButtonProps> = ({
-  children,
-  variant = "primary",
-  size = "md",
-  isLoading = false,
-  leftIcon,
-  rightIcon,
-  fullWidth,
-  className = "",
-  disabled,
-  type = "button",
-  ...props
-}) => {
+/**
+ * Forwards its ref on purpose: Radix triggers (`<DropdownMenuTrigger asChild>` and
+ * friends) hand the child a ref and use that element as the popup's anchor. A plain
+ * function component swallows the ref, the anchor stays null, and the menu renders
+ * off-screen — the button looks dead. Keep the forwardRef wrapper.
+ */
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  {
+    children,
+    variant = "primary",
+    size = "md",
+    isLoading = false,
+    leftIcon,
+    rightIcon,
+    fullWidth,
+    className = "",
+    disabled,
+    type = "button",
+    ...props
+  },
+  ref,
+) {
   const baseStyles =
     "inline-flex items-center justify-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed";
 
@@ -57,6 +66,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
+      ref={ref}
       type={type}
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthClass} ${className}`}
       disabled={disabled || isLoading}
@@ -79,6 +89,6 @@ export const Button: React.FC<ButtonProps> = ({
       {!isLoading && rightIcon && <span className="ml-2">{rightIcon}</span>}
     </button>
   );
-};
+});
 
 export default Button;

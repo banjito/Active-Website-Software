@@ -550,6 +550,26 @@ export function EquipmentAssetsTable({
       current.includes(key) ? current.filter((id) => id !== key) : [...current, key],
     );
 
+  /**
+   * Expand or collapse a whole branch at once — the "Expand all"/"Collapse all" pair.
+   *
+   * Keys outside `keys` are left alone, so acting on one substation never disturbs the
+   * folders open in the next one.
+   */
+  const setGroupsCollapsed = (keys: string[], isCollapsed: boolean) =>
+    setCollapsed((current) => {
+      const next = new Set(current);
+      for (const key of keys) {
+        if (isCollapsed) next.add(key);
+        else next.delete(key);
+      }
+      return Array.from(next);
+    });
+
+  /** Every folder inside a substation, at any depth — headings key on the bare folder id. */
+  const innerFolderIdsFor = (label: string) =>
+    treeFor ? flattenFolderTree(treeFor(label, []).roots).map((f) => f.folder.id) : [];
+
   // ── Selection ──────────────────────────────────────────────────────────────
   const selectable = Boolean(onBatchSchedule) && canEdit;
   /** Ids in the order they're on screen — what a shift-click range walks over. */
@@ -689,6 +709,16 @@ export function EquipmentAssetsTable({
                   onMove={(folderId) => void foldersApi.moveSubstation(row.label, folderId)}
                   onNewFolder={() =>
                     setNewSubfolder({ substation: row.label, parentId: null })
+                  }
+                  onExpandAll={
+                    innerFolderIdsFor(row.label).length > 0
+                      ? () => setGroupsCollapsed(innerFolderIdsFor(row.label), false)
+                      : undefined
+                  }
+                  onCollapseAll={
+                    innerFolderIdsFor(row.label).length > 0
+                      ? () => setGroupsCollapsed(innerFolderIdsFor(row.label), true)
+                      : undefined
                   }
                 />
               </span>
@@ -892,6 +922,18 @@ export function EquipmentAssetsTable({
                       onDelete={() => void foldersApi?.deleteInnerFolder(row.id)}
                       onAddSubfolder={() =>
                         setNewSubfolder({ substation: row.substation, parentId: row.id })
+                      }
+                      onExpandAll={() =>
+                        setGroupsCollapsed(
+                          flattenFolderTree([row.node]).map((f) => f.folder.id),
+                          false,
+                        )
+                      }
+                      onCollapseAll={() =>
+                        setGroupsCollapsed(
+                          flattenFolderTree([row.node]).map((f) => f.folder.id),
+                          true,
+                        )
                       }
                       canEdit={canEdit}
                     />,

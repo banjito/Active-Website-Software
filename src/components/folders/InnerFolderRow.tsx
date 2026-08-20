@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import {
   ChevronRight,
+  ChevronsDownUp,
+  ChevronsUpDown,
   Folder,
   FolderOpen,
   FolderPlus,
@@ -34,6 +36,8 @@ export function InnerFolderRow({
   onRename,
   onDelete,
   onAddSubfolder,
+  onExpandAll,
+  onCollapseAll,
   canEdit,
   isOver,
   dropRef,
@@ -47,6 +51,9 @@ export function InnerFolderRow({
   onRename: (name: string) => void;
   onDelete: () => void;
   onAddSubfolder: () => void;
+  /** This folder and everything under it. Only offered when it has subfolders. */
+  onExpandAll?: () => void;
+  onCollapseAll?: () => void;
   canEdit: boolean;
   isOver?: boolean;
   dropRef?: (node: HTMLElement | null) => void;
@@ -161,6 +168,22 @@ export function InnerFolderRow({
                 >
                   Rename
                 </DropdownMenuItem>
+                {/* A folder with nothing but items inside has one state, and the chevron
+                    already toggles it — the pair only earns its place once there is a
+                    subtree to open in one go. */}
+                {node.children.length > 0 && onExpandAll && onCollapseAll && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onSelect={onExpandAll}>
+                      <ChevronsUpDown className="mr-2 h-4 w-4" />
+                      Expand all
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={onCollapseAll}>
+                      <ChevronsDownUp className="mr-2 h-4 w-4" />
+                      Collapse all
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onSelect={onDelete}

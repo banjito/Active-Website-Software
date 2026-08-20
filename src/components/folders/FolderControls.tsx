@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { FolderPlus, FolderInput, Check, MoreHorizontal } from "lucide-react";
+import {
+  FolderPlus,
+  FolderInput,
+  Check,
+  ChevronsDownUp,
+  ChevronsUpDown,
+  MoreHorizontal,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import {
@@ -232,17 +239,24 @@ export function MoveToInnerFolderMenu({
  * Previously two loose icons sat next to the title competing with the name, the count and
  * the drag grip. Four affordances in a header that exists to say one word is three too
  * many — they live in here now and the header reads as a label again.
+ *
+ * `onExpandAll`/`onCollapseAll` are omitted when the substation has no folders inside it,
+ * which is what keeps the pair off the menus where there is nothing to expand.
  */
 export function SubstationHeaderMenu({
   folders,
   currentFolderId,
   onMove,
   onNewFolder,
+  onExpandAll,
+  onCollapseAll,
 }: {
   folders: SubstationFolder[];
   currentFolderId: string | null;
   onMove: (folderId: string | null) => void;
   onNewFolder: () => void;
+  onExpandAll?: () => void;
+  onCollapseAll?: () => void;
 }) {
   return (
     <DropdownMenu>
@@ -266,6 +280,20 @@ export function SubstationHeaderMenu({
           <FolderPlus className="mr-2 h-4 w-4" />
           New folder here
         </DropdownMenuItem>
+
+        {onExpandAll && onCollapseAll && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={onExpandAll}>
+              <ChevronsUpDown className="mr-2 h-4 w-4" />
+              Expand all
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={onCollapseAll}>
+              <ChevronsDownUp className="mr-2 h-4 w-4" />
+              Collapse all
+            </DropdownMenuItem>
+          </>
+        )}
 
         {folders.length > 0 && (
           <>

@@ -679,6 +679,24 @@ export default function JobDetail() {
       ),
     [setClosedFolders],
   );
+  /**
+   * Expand or collapse a whole branch at once — the "Expand all"/"Collapse all" pair.
+   *
+   * Folders outside `folderIds` are left exactly as they were, so collapsing one
+   * substation doesn't shut the folders open in the next one.
+   */
+  const setFoldersClosed = useCallback(
+    (folderIds: string[], closed: boolean) =>
+      setClosedFolders((current) => {
+        const next = new Set(current);
+        for (const id of folderIds) {
+          if (closed) next.add(id);
+          else next.delete(id);
+        }
+        return Array.from(next);
+      }),
+    [setClosedFolders],
+  );
   /** Which substation (and optionally which parent folder) a new subfolder is going into. */
   const [newSubfolder, setNewSubfolder] = useState<{
     substation: string;
@@ -11542,6 +11560,11 @@ export default function JobDetail() {
                               const treeRows = flattenFolderRows(roots, loose, (fid) =>
                                 closedFolders.includes(fid),
                               );
+                              // Every folder under this substation, at any depth — what
+                              // the header's Expand all / Collapse all acts on.
+                              const innerFolderIds = flattenFolderTree(roots).map(
+                                (f) => f.folder.id,
+                              );
 
                               return (
                               <details
@@ -11591,6 +11614,24 @@ export default function JobDetail() {
                                             substation: folderKey,
                                             parentId: null,
                                           })
+                                        }
+                                        onExpandAll={
+                                          innerFolderIds.length > 0
+                                            ? () =>
+                                                setFoldersClosed(
+                                                  innerFolderIds,
+                                                  false,
+                                                )
+                                            : undefined
+                                        }
+                                        onCollapseAll={
+                                          innerFolderIds.length > 0
+                                            ? () =>
+                                                setFoldersClosed(
+                                                  innerFolderIds,
+                                                  true,
+                                                )
+                                            : undefined
                                         }
                                       />
                                     )}
@@ -11649,6 +11690,22 @@ export default function JobDetail() {
                                                   substation: folderKey,
                                                   parentId: row.node.folder.id,
                                                 })
+                                              }
+                                              onExpandAll={() =>
+                                                setFoldersClosed(
+                                                  flattenFolderTree([
+                                                    row.node,
+                                                  ]).map((f) => f.folder.id),
+                                                  false,
+                                                )
+                                              }
+                                              onCollapseAll={() =>
+                                                setFoldersClosed(
+                                                  flattenFolderTree([
+                                                    row.node,
+                                                  ]).map((f) => f.folder.id),
+                                                  true,
+                                                )
                                               }
                                               canEdit
                                             />

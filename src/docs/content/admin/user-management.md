@@ -37,6 +37,16 @@ Open the user and change their role or division. It takes effect immediately, on
 Changing a role mid-shift can block someone in the middle of a job. If you are narrowing access rather than widening it, tell the person first.
 :::
 
+## Employee IDs
+
+Open the user, stay on the **Account** tab, and set their **Employee ID**. This is the badge number from the company roster (`1001`, `0034`, `S0002`), not their login.
+
+- It must be unique. If another employee already has that number, the save is rejected and nothing changes.
+- Leave the box blank and save to clear it.
+- It is the same field HR edits under **HR → Employee Profiles**, which also has a CSV import for assigning many at once.
+
+Assigned IDs show next to the person's email in the user list, and the search box matches on them.
+
 ## Division versus role
 
 Two separate fields, constantly confused.

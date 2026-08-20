@@ -15,6 +15,7 @@ import {
   Camera,
   Ban,
   UserCheck,
+  Hash,
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
@@ -25,6 +26,8 @@ interface UserData {
   email: string;
   created_at: string;
   is_active: boolean;
+  /** common.profiles.employee_number (badge number). Null when unassigned. */
+  employee_number: string | null;
   user_metadata: {
     name?: string;
     role?: Role | string; // Allow string for initial load, map to Role
@@ -43,6 +46,16 @@ export default function AdminUserManagement() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [newEmail, setNewEmail] = useState("");
+  const [newEmployeeId, setNewEmployeeId] = useState("");
+  const [employeeIdLoadingUserId, setEmployeeIdLoadingUserId] = useState<
+    string | null
+  >(null);
+  const [employeeIdSuccessUserId, setEmployeeIdSuccessUserId] = useState<
+    string | null
+  >(null);
+  const [employeeIdErrorUserId, setEmployeeIdErrorUserId] = useState<
+    string | null
+  >(null);
   const [emailLoadingUserId, setEmailLoadingUserId] = useState<string | null>(
     null,
   );
@@ -77,6 +90,10 @@ export default function AdminUserManagement() {
   const canEditProfileImages =
     ["Admin", "Super Admin"].includes(currentRole ?? "") ||
     isSuperUser(currentUser?.email);
+  // Employee IDs are roster data, not a login credential, so any admin may set
+  // them (same bar as profile photos). HR can also edit them from HR > Employee
+  // Profiles; both write common.profiles.employee_number.
+  const canEditEmployeeIds = canEditProfileImages;
 
   const avatarFileInputRef = useRef<HTMLInputElement>(null);
   const avatarTargetUserIdRef = useRef<string | null>(null);
@@ -142,8 +159,30 @@ export default function AdminUserManagement() {
           email: user.email,
           created_at: user.created_at,
           is_active: user.is_active !== false, // default active if missing
+          employee_number: null, // filled in from common.profiles below
           user_metadata: user.raw_user_meta_data || {},
         }));
+
+        // Employee IDs live on common.profiles, not on the auth user, so they
+        // come from a second read. A failure here shouldn't hide the user list.
+        const { data: profileRows, error: profilesError } = await supabase
+          .schema("common")
+          .from("profiles")
+          .select("id, employee_number");
+
+        if (profilesError) {
+          console.error(
+            "[fetchUsers] Could not load employee IDs:",
+            profilesError,
+          );
+        } else {
+          const numberById = new Map<string, string | null>(
+            (profileRows || []).map((row: any) => [row.id, row.employee_number]),
+          );
+          for (const user of mappedUsers) {
+            user.employee_number = numberById.get(user.id) ?? null;
+          }
+        }
         console.log(
           "[fetchUsers] Mapped data sample (first user):",
           JSON.stringify(mappedUsers[0], null, 2),
@@ -239,7 +278,12 @@ export default function AdminUserManagement() {
     setNewPassword("");
     setConfirmPassword("");
     setNewEmail(users.find((u) => u.id === userId)?.email || "");
+    setNewEmployeeId(
+      users.find((u) => u.id === userId)?.employee_number || "",
+    );
     setEmailErrorUserId(null);
+    setEmployeeIdErrorUserId(null);
+    setEmployeeIdSuccessUserId(null);
     // Ensure we set a valid Role type or null
     const validRole = Object.keys(ROLES).includes(currentRole as string)
       ? (currentRole as Role)
@@ -386,6 +430,76 @@ export default function AdminUserManagement() {
       setEmailErrorUserId(userId);
     } finally {
       setEmailLoadingUserId(null);
+    }
+  };
+
+  const handleChangeEmployeeId = async (userId: string) => {
+    setError(null);
+    setEmployeeIdSuccessUserId(null);
+    setEmployeeIdErrorUserId(null);
+
+    // Empty clears the ID. Store null rather than "" so the partial unique
+    // index (non-null values only) keeps ignoring unassigned profiles.
+    const nextValue = newEmployeeId.trim() || null;
+    const user = users.find((u) => u.id === userId);
+    const current = user?.employee_number || null;
+
+    if (nextValue === current) {
+      setError("That is already this user's employee ID.");
+      setEmployeeIdErrorUserId(userId);
+      return;
+    }
+
+    try {
+      setEmployeeIdLoadingUserId(userId);
+
+      // Update first so an existing profile keeps its HR-managed fields; only
+      // create a row when this user has no profile yet.
+      const { data: updated, error: updateError } = await supabase
+        .schema("common")
+        .from("profiles")
+        .update({ employee_number: nextValue })
+        .eq("id", userId)
+        .select("id");
+
+      if (updateError) throw updateError;
+
+      if (!updated || updated.length === 0) {
+        const { error: insertError } = await supabase
+          .schema("common")
+          .from("profiles")
+          .insert({
+            id: userId,
+            employee_number: nextValue,
+            email: user?.email || "",
+            full_name:
+              user?.user_metadata?.name || user?.email?.split("@")[0] || "",
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId ? { ...u, employee_number: nextValue } : u,
+        ),
+      );
+      setEmployeeIdSuccessUserId(userId);
+      setTimeout(() => setEmployeeIdSuccessUserId(null), 3000);
+    } catch (err: any) {
+      console.error("Error saving employee ID:", err);
+      // 23505 = unique violation, i.e. another employee already has this ID.
+      const isDuplicate =
+        err?.code === "23505" ||
+        (err?.message || "").includes("profiles_employee_number_key");
+      setError(
+        isDuplicate
+          ? `Employee ID "${nextValue}" is already assigned to someone else.`
+          : err?.message || "Could not save employee ID.",
+      );
+      setEmployeeIdErrorUserId(userId);
+    } finally {
+      setEmployeeIdLoadingUserId(null);
     }
   };
 
@@ -578,11 +692,13 @@ export default function AdminUserManagement() {
       const email = user.email?.toLowerCase() || "";
       const name = user.user_metadata?.name?.toLowerCase() || "";
       const role = (user.user_metadata?.role as string)?.toLowerCase() || ""; // Treat role as string for search
+      const employeeNumber = user.employee_number?.toLowerCase() || "";
 
       return (
         email.includes(searchLower) ||
         name.includes(searchLower) ||
-        role.includes(searchLower)
+        role.includes(searchLower) ||
+        employeeNumber.includes(searchLower)
       );
     })
     .sort((a, b) => firstNameKey(a).localeCompare(firstNameKey(b)));
@@ -641,7 +757,7 @@ export default function AdminUserManagement() {
       <div className="relative">
         <input
           type="text"
-          placeholder="Search users by name, email, or role..."
+          placeholder="Search users by name, email, role, or employee ID..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full px-4 py-2 border border-neutral-300 rounded-none focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
@@ -708,18 +824,25 @@ export default function AdminUserManagement() {
                           <CheckCircle className="inline-block h-4 w-4 ml-2 text-green-500 flex-shrink-0" />
                         )}
                         {(passwordSuccessUserId === user.id ||
-                          emailSuccessUserId === user.id) && (
+                          emailSuccessUserId === user.id ||
+                          employeeIdSuccessUserId === user.id) && (
                           <CheckCircle className="inline-block h-4 w-4 ml-2 text-green-500 flex-shrink-0" />
                         )}
                         {/* Error Indicator */}
                         {(updateErrorUserId === user.id ||
                           passwordErrorUserId === user.id ||
-                          emailErrorUserId === user.id) && (
+                          emailErrorUserId === user.id ||
+                          employeeIdErrorUserId === user.id) && (
                           <AlertCircle className="inline-block h-4 w-4 ml-2 text-red-500 flex-shrink-0" />
                         )}
                       </p>
                       <p className="text-xs text-neutral-500 dark:text-white truncate flex items-center gap-2">
                         <span className="truncate">{user.email}</span>
+                        {user.employee_number && (
+                          <span className="font-mono text-[10px] text-neutral-400 dark:text-neutral-500 flex-shrink-0">
+                            #{user.employee_number}
+                          </span>
+                        )}
                         {!user.is_active && (
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 flex-shrink-0">
                             Inactive
@@ -848,6 +971,46 @@ export default function AdminUserManagement() {
                                 Changes their login email immediately (no
                                 confirmation email). Reports and history stay
                                 linked — they key off the user ID, not the email.
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Employee ID */}
+                          {canEditEmployeeIds && (
+                            <div>
+                              <p className="mb-2 text-sm font-medium text-neutral-900 dark:text-white">
+                                Employee ID
+                              </p>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <input
+                                  type="text"
+                                  value={newEmployeeId}
+                                  onChange={(e) =>
+                                    setNewEmployeeId(e.target.value)
+                                  }
+                                  placeholder="e.g. 1001, 0034, S0002"
+                                  className="flex-1 min-w-[220px] px-3 py-2 font-mono border border-neutral-300 rounded-none focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() =>
+                                    handleChangeEmployeeId(user.id)
+                                  }
+                                  disabled={
+                                    employeeIdLoadingUserId === user.id
+                                  }
+                                  className="bg-brand hover:bg-brand-dark text-white"
+                                  leftIcon={<Hash className="h-4 w-4" />}
+                                >
+                                  {employeeIdLoadingUserId === user.id
+                                    ? "Saving..."
+                                    : "Save employee ID"}
+                                </Button>
+                              </div>
+                              <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                The badge number from the company roster. Must
+                                be unique; leave blank to clear it. Same field
+                                HR edits under Employee Profiles.
                               </p>
                             </div>
                           )}

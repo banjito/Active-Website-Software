@@ -13,6 +13,7 @@ import { getReportName, getAssetName } from "./reportMappings";
 import { ReportWrapper } from "./ReportWrapper";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import { ReportHeader } from "./common/ReportHeader";
+import { isPrintMediaEmulated } from "./common/printMediaEmulation";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -479,9 +480,11 @@ const MediumVoltageCircuitBreakerReport: React.FC = () => {
   // Autofill the "User" header field with the signed-in employee's name (new reports only).
   useReportUserAutofill(setFormData, reportId, "user");
 
-  // Force print styles for live-preview pages (?preview=true)
+  // Force print styles for live-preview pages (?preview=true).
+  // Skipped when ReportWrapper has the preview rendering the real @media print
+  // stylesheet — the mirror below only approximates it and would override it.
   useEffect(() => {
-    if (!isPreviewFlag) return;
+    if (!isPreviewFlag || isPrintMediaEmulated()) return;
     const root = document.documentElement;
     root.classList.add("force-print");
     // Global ReportWrapper already injects force-print mirror; avoid duplicates here
@@ -2598,6 +2601,10 @@ if (typeof document !== "undefined") {
     }
 
     /* ---- FORCE-PRINT MIRROR (for live preview) ---- */
+    /* Screen only: a real print run uses the @media print rules above,
+       so the review window's Print button and this report's own Print
+       button produce the same document. */
+    @media screen {
     .force-print body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
 
     /* Hide on-screen UI in preview like print would */
@@ -2724,6 +2731,7 @@ if (typeof document !== "undefined") {
     .force-print .section-dielectric-withstand td:nth-child(5) { width: 20% !important; }
 
     .force-print * { color: black !important; }
+    }
   `;
   document.head.appendChild(style);
 }

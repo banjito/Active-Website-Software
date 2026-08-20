@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import { ReportPhotosPrintSection } from "./common/ReportPhotos";
 import { SaveStatusBanner } from "./common/SaveStatusBanner";
+import { enablePrintMediaEmulation } from "./common/printMediaEmulation";
 
 interface ReportWrapperProps {
   children: React.ReactNode;
@@ -1059,7 +1060,16 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
 
         /* ============================================ */
         /* LIVE PREVIEW - Mirror print styles         */
+        /*                                            */
+        /* Screen only. The embedded review preview    */
+        /* approximates paper with these rules, but a  */
+        /* real print run must be driven by the        */
+        /* @media print rules above and nothing else,  */
+        /* so printing the preview iframe produces the */
+        /* same document as the report's own Print     */
+        /* button.                                     */
         /* ============================================ */
+        @media screen {
 
         /* Windows-specific font rendering fixes for preview */
         .force-print * {
@@ -1772,6 +1782,43 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
           vertical-align: top !important;
         }
 
+        /* Last word in the preview cascade: the editable on-screen
+           versions of a section never show up on paper, so they must not
+           show up in the preview either. Several rules above match broadly
+           on class-name fragments (e.g. [class*="data"] matches
+           "cable-data-onscreen"), so this repeats the intent at equal
+           specificity but later in the sheet. */
+        .force-print #report-container .print\\:hidden,
+        .force-print #report-container [class*="-onscreen"],
+        .force-print #report-container [class*="onscreen-"] {
+          display: none !important;
+        }
+        }
+
+        /* ============================================ */
+        /* PRINT-MEDIA EMULATION (embedded preview)     */
+        /* The real print stylesheet is doing the work  */
+        /* here; @page has no on-screen equivalent, so  */
+        /* stand in for its margins and paper colour.   */
+        /* ============================================ */
+        @media screen {
+          html.print-emulated,
+          .print-emulated body {
+            background: #ffffff !important;
+          }
+          .print-emulated #report-container {
+            padding: 0.25in !important;
+          }
+          /* The tall-page screen rule below has a print counterpart that zeroes
+             it; drop it here too so the preview ends where the paper does. */
+          .print-emulated .screen-min-height,
+          .print-emulated .min-h-screen,
+          .print-emulated #report-container {
+            min-height: 0 !important;
+            height: auto !important;
+          }
+        }
+
         /* --- Mobile responsiveness for common report headers and job info grids --- */
         @media (max-width: 640px) {
           /* Standard header container used across reports */
@@ -2103,15 +2150,28 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
     };
   }, [isReportLocked]);
 
-  // If a page is opened directly with ?preview=true or ?embedded=true, render in print-look mode and disable nested preview
+  // A page opened with ?preview=true or ?embedded=true (the review window's
+  // iframe) renders as paper. Preferred route: emulate print media so the
+  // real @media print stylesheet drives the preview — then the preview and
+  // every Print button produce the identical document. Only when the rules
+  // can't be reached do we fall back to the .force-print mirror above, which
+  // merely approximates them.
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const isPreviewQuery = params.get("preview") === "true";
     const isEmbeddedQuery = params.get("embedded") === "true";
-    if (isPreviewQuery || isEmbeddedQuery) {
+    if (!isPreviewQuery && !isEmbeddedQuery) return;
+
+    const emulation = enablePrintMediaEmulation();
+    if (!emulation.isActive()) {
       document.documentElement.classList.add("force-print");
     }
+
+    return () => {
+      emulation.stop();
+      document.documentElement.classList.remove("force-print");
+    };
   }, []);
 
   return (

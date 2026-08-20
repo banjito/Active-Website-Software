@@ -13,6 +13,7 @@ import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
 import { ReportWrapper } from "./ReportWrapper";
 import { useReportLocked } from "./useReportLocked";
+import { useCanEditLockedJobInfo } from "./jobInfoEditAccess";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
@@ -399,6 +400,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
     jobId,
     "two-small-dry-typer-xfmr-ats-report",
   );
+  const canEditLockedJobInfo = useCanEditLockedJobInfo();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -1390,7 +1392,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
       justSaved={justSaved}
       isSaving={loading}
       status={formData.status}
-      hasReport={!!currentReportId && !locked}
+      hasReport={!!currentReportId && (!locked || canEditLockedJobInfo)}
       onStatusToggle={() => {
         if (isEditing) {
           setFormData((prev) => ({

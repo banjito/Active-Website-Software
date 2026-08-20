@@ -1316,6 +1316,15 @@ export function ReportApprovalWorkflow({
     const canReview =
       report.status === "submitted" && userPermissions.canReview;
 
+    // Approved and sent reports stay locked, but an approver can still open
+    // them in edit mode; the report itself only releases its job information
+    // block (see jobInfoEditAccess).
+    const canEditLocked =
+      !canReview &&
+      userPermissions.canReview &&
+      (report.status === "approved" || report.status === "sent");
+    const showEditToggle = canReview || canEditLocked;
+
     // Resolve the human-readable Job # (e.g. 26015) so it can be appended to
     // the modal title: "LV Circuit Breaker ATS 25 - C/B#1 - #26015".
     let jobNumber = "";
@@ -1738,7 +1747,7 @@ export function ReportApprovalWorkflow({
                   ${PRINTER_ICON_SVG}
                 </button>
                 ${
-                  canReview
+                  showEditToggle
                     ? `
                 <button id="report-edit-btn" title="Edit report" style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:${BRAND_COLOR};">
                   ${PENCIL_ICON_SVG}
@@ -1772,7 +1781,7 @@ export function ReportApprovalWorkflow({
               </div>
               `
                   : `
-              <p style="font-size:0.8125rem;color:#6b7280;margin:0;">This is a read-only preview.</p>
+              ${showEditToggle ? "" : `<p style="font-size:0.8125rem;color:#6b7280;margin:0;">This is a read-only preview.</p>`}
               `
               }
             </div>
@@ -1809,6 +1818,7 @@ export function ReportApprovalWorkflow({
         ) {
           return;
         }
+        window.removeEventListener("message", messageHandler);
         const modal = document.getElementById("report-view-modal");
         if (modal) modal.remove();
       };
@@ -1833,6 +1843,76 @@ export function ReportApprovalWorkflow({
       };
     }
 
+    // Edit toggle: reload the preview iframe as the live (non-print) report
+    // with ?edit=true, which drops the reviewer straight into edit mode. On a
+    // report pending review that is then saved by "Save & Approve" (see
+    // requestSave below); on an approved one the report saves itself.
+    let onEditStateChange = () => {};
+
+    const editBtn = document.getElementById("report-edit-btn");
+    const editHint = document.getElementById("report-edit-hint");
+
+    const getPreviewIframe = () =>
+      document.querySelector(
+        'iframe[title="Report Preview"]',
+      ) as HTMLIFrameElement | null;
+
+    const applyEditModeChrome = () => {
+      if (editBtn) {
+        editBtn.setAttribute(
+          "title",
+          inEditMode ? "Back to preview" : "Edit report",
+        );
+        editBtn.style.background = inEditMode ? "#525252" : BRAND_COLOR;
+      }
+      if (editHint) {
+        editHint.style.display = inEditMode ? "block" : "none";
+      }
+    };
+
+    if (editBtn) {
+      editBtn.onclick = () => {
+        const iframe = getPreviewIframe();
+        if (!iframe) return;
+
+        if (inEditMode) {
+          if (
+            hasUnsavedChanges &&
+            !window.confirm(
+              "Leave edit mode? Any unsaved changes to this report will be lost.",
+            )
+          ) {
+            return;
+          }
+          inEditMode = false;
+          hasUnsavedChanges = false;
+          onEditStateChange();
+          iframe.src = fullReportUrl;
+        } else {
+          inEditMode = true;
+          iframe.src = `${openReportUrl}&edit=true`;
+        }
+        applyEditModeChrome();
+      };
+    }
+
+    const messageHandler = (e: MessageEvent) => {
+      if (e.data?.type === "reportEditState") {
+        hasUnsavedChanges = !!e.data.isEditing;
+        onEditStateChange();
+      }
+      if (e.data?.type === "saveComplete") {
+        const pa = (window as any).__pendingApprove;
+        if (pa) {
+          (window as any).__pendingApprove = null;
+          e.data.success
+            ? pa.resolve()
+            : pa.reject(new Error(e.data.reason || "Save failed."));
+        }
+      }
+    };
+    window.addEventListener("message", messageHandler);
+
     // Add review action handlers if canReview
     if (canReview) {
       const approveBtn = document.getElementById("review-approve-btn");
@@ -1849,73 +1929,7 @@ export function ReportApprovalWorkflow({
             : "✓ Save & Approve";
         }
       };
-
-      // Edit toggle: reload the preview iframe as the live (non-print) report
-      // with ?edit=true, which drops the reviewer straight into edit mode. The
-      // report is then saved by "Save & Approve" (see requestSave below).
-      const editBtn = document.getElementById("report-edit-btn");
-      const editHint = document.getElementById("report-edit-hint");
-
-      const getPreviewIframe = () =>
-        document.querySelector(
-          'iframe[title="Report Preview"]',
-        ) as HTMLIFrameElement | null;
-
-      const applyEditModeChrome = () => {
-        if (editBtn) {
-          editBtn.setAttribute(
-            "title",
-            inEditMode ? "Back to preview" : "Edit report",
-          );
-          editBtn.style.background = inEditMode ? "#525252" : BRAND_COLOR;
-        }
-        if (editHint) {
-          editHint.style.display = inEditMode ? "block" : "none";
-        }
-      };
-
-      if (editBtn) {
-        editBtn.onclick = () => {
-          const iframe = getPreviewIframe();
-          if (!iframe) return;
-
-          if (inEditMode) {
-            if (
-              hasUnsavedChanges &&
-              !window.confirm(
-                "Leave edit mode? Any unsaved changes to this report will be lost.",
-              )
-            ) {
-              return;
-            }
-            inEditMode = false;
-            hasUnsavedChanges = false;
-            updateApproveBtnText();
-            iframe.src = fullReportUrl;
-          } else {
-            inEditMode = true;
-            iframe.src = `${openReportUrl}&edit=true`;
-          }
-          applyEditModeChrome();
-        };
-      }
-
-      const messageHandler = (e: MessageEvent) => {
-        if (e.data?.type === "reportEditState") {
-          hasUnsavedChanges = !!e.data.isEditing;
-          updateApproveBtnText();
-        }
-        if (e.data?.type === "saveComplete") {
-          const pa = (window as any).__pendingApprove;
-          if (pa) {
-            (window as any).__pendingApprove = null;
-            e.data.success
-              ? pa.resolve()
-              : pa.reject(new Error(e.data.reason || "Save failed."));
-          }
-        }
-      };
-      window.addEventListener("message", messageHandler);
+      onEditStateChange = updateApproveBtnText;
 
       if (approveBtn) {
         approveBtn.onclick = async () => {

@@ -12,6 +12,7 @@ import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
 import { ReportWrapper } from "./ReportWrapper";
 import { useReportLocked } from "./useReportLocked";
+import { useCanEditLockedJobInfo } from "./jobInfoEditAccess";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import { ReportHeader } from "./common/ReportHeader";
 import { EquipmentAutocomplete } from "../../components/equipment/EquipmentAutocomplete";
@@ -375,6 +376,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
   // Print Mode Detection
   const isPrintMode = searchParams.get("print") === "true";
   const { locked } = useReportLocked(reportId, jobId, reportSlug);
+  const canEditLockedJobInfo = useCanEditLockedJobInfo();
 
   // Form state
   const [formData, setFormData] = useState<FormData>({
@@ -1360,7 +1362,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
       justSaved={justSaved}
       isSaving={isSaving}
       status={formData.status}
-      hasReport={!!currentReportId && !locked}
+      hasReport={!!currentReportId && (!locked || canEditLockedJobInfo)}
       onStatusToggle={() => {
         if (isEditing) {
           setFormData((prev) => ({

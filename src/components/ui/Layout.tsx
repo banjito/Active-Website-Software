@@ -33,6 +33,13 @@ import { AboutPopup } from "./AboutPopup";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
 import { HeaderBar } from "./HeaderBar";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import {
+  JOB_INFO_EDITABLE_CSS,
+  collectJobInfoFields,
+  isSaveOrEditButtonLabel,
+  releaseJobInfoField,
+  useCanEditLockedJobInfo,
+} from "@/components/reports/jobInfoEditAccess";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -139,6 +146,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   // Global report lock: prevent editing approved/sent reports across ALL report types
   const [isReportLocked, setIsReportLocked] = useState(false);
+  const canEditLockedJobInfo = useCanEditLockedJobInfo();
   // Track whether the "Mark Ready to Review" button should be hidden
   // (hidden when status is ready_for_review, approved, or sent)
   const [hideReadyToReview, setHideReadyToReview] = useState(false);
@@ -232,6 +240,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       ].filter(Boolean) as HTMLElement[];
 
       containers.forEach((container) => {
+        const jobInfoFields = canEditLockedJobInfo
+          ? new Set<Element>(collectJobInfoFields(container))
+          : null;
+
         // Disable all inputs, selects, textareas (only set if not already locked to avoid extra mutations)
         const formElements = container.querySelectorAll(
           "input, select, textarea",
@@ -241,6 +253,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             | HTMLInputElement
             | HTMLSelectElement
             | HTMLTextAreaElement;
+          if (jobInfoFields?.has(element)) {
+            releaseJobInfoField(element);
+            return;
+          }
           if (element.tagName === "SELECT") {
             if (!(element as HTMLSelectElement).disabled)
               (element as HTMLSelectElement).disabled = true;
@@ -259,6 +275,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         ) as HTMLButtonElement[];
         buttons.forEach((btn) => {
           const text = (btn.textContent || "").trim().toLowerCase();
+          if (canEditLockedJobInfo && isSaveOrEditButtonLabel(text)) return;
           if (
             text === "edit report" ||
             text === "save report" ||
@@ -295,6 +312,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     const delayTimer = setTimeout(lockAllFormElements, 500);
     const delayTimer2 = setTimeout(lockAllFormElements, 1500);
 
+    // Toggling edit mode only flips readOnly/disabled on fields that already
+    // exist, which the observer below deliberately ignores. Re-run after any
+    // click so the lock is back in place right after such a toggle.
+    let clickTimer: number | undefined;
+    const relockAfterClick = () => {
+      window.clearTimeout(clickTimer);
+      window.requestAnimationFrame(lockAllFormElements);
+      clickTimer = window.setTimeout(lockAllFormElements, 250);
+    };
+    document.addEventListener("click", relockAfterClick, true);
+
     // Use MutationObserver to re-enforce when new nodes are added (e.g. React re-renders).
     // Do NOT observe attributes (disabled/readOnly) — we set those ourselves, which would
     // retrigger the observer and cause an infinite loop that freezes the tab.
@@ -313,9 +341,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     return () => {
       clearTimeout(delayTimer);
       clearTimeout(delayTimer2);
+      window.clearTimeout(clickTimer);
+      document.removeEventListener("click", relockAfterClick, true);
       if (observer) observer.disconnect();
     };
-  }, [isReportLocked]);
+  }, [isReportLocked, canEditLockedJobInfo]);
 
   // Hide "Mark Ready to Review" button when status is ready_for_review, approved, or sent
   // This runs separately from the full lock since ready_for_review reports are still editable
@@ -392,13 +422,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         .report-locked-banner,
         main .report-locked-banner { display: none !important; visibility: hidden !important; }
       }
+      ${JOB_INFO_EDITABLE_CSS}
     `;
     document.head.appendChild(style);
     return () => {
       const el = document.getElementById(styleId);
       if (el) el.remove();
     };
-  }, [isReportLocked]);
+  }, [isReportLocked, canEditLockedJobInfo]);
 
   // Format division name for display (no dashboard label)
   function formatDivisionName(divisionValue: string | null): string {

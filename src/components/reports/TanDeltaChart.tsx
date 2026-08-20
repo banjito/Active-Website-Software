@@ -11,6 +11,7 @@ import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
 import { ReportWrapper } from "./ReportWrapper";
 import { useReportLocked } from "./useReportLocked";
+import { useCanEditLockedJobInfo } from "./jobInfoEditAccess";
 import { ReportHeader } from "./common/ReportHeader";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -108,6 +109,7 @@ const TanDeltaChart: React.FC = () => {
   const reportSlug = "medium-voltage-vlf-tan-delta";
   const reportName = getReportName(reportSlug);
   const { locked } = useReportLocked(reportId, jobId, reportSlug);
+  const canEditLockedJobInfo = useCanEditLockedJobInfo();
 
   const [data, setData] = useState<TanDeltaDataPoint[]>(initialData);
   const [editingData, setEditingData] = useState<boolean>(false);
@@ -351,7 +353,7 @@ const TanDeltaChart: React.FC = () => {
       justSaved={justSaved}
       isSaving={loading}
       status={status}
-      hasReport={!!currentReportId && !locked}
+      hasReport={!!currentReportId && (!locked || canEditLockedJobInfo)}
       onStatusToggle={() => {
         if (isEditing) {
           setStatus(status === "PASS" ? "FAIL" : "PASS");

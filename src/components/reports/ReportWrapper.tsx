@@ -4,6 +4,13 @@ import { BRAND_COLOR } from "@/lib/companyConfig";
 import { ReportPhotosPrintSection } from "./common/ReportPhotos";
 import { SaveStatusBanner } from "./common/SaveStatusBanner";
 import { enablePrintMediaEmulation } from "./common/printMediaEmulation";
+import {
+  JOB_INFO_EDITABLE_ATTR,
+  collectJobInfoFields,
+  isSaveOrEditButtonLabel,
+  releaseJobInfoField,
+  useCanEditLockedJobInfo,
+} from "./jobInfoEditAccess";
 
 interface ReportWrapperProps {
   children: React.ReactNode;
@@ -1874,6 +1881,11 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
           opacity: 0.85 !important;
           cursor: not-allowed !important;
         }
+        #report-container.report-locked [${JOB_INFO_EDITABLE_ATTR}="true"] {
+          pointer-events: auto !important;
+          opacity: 1 !important;
+          cursor: auto !important;
+        }
       `;
       document.head.appendChild(style);
     }
@@ -1983,6 +1995,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
 
   // Global lock state: track whether this report is approved/sent
   const [isReportLocked, setIsReportLocked] = React.useState(false);
+  const canEditLockedJobInfo = useCanEditLockedJobInfo();
 
   // Global lock check: fully lock reports that are approved or sent
   useEffect(() => {
@@ -2071,6 +2084,10 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
       const container = document.getElementById("report-container");
       if (!container) return;
 
+      const jobInfoFields = canEditLockedJobInfo
+        ? new Set<Element>(collectJobInfoFields(container))
+        : null;
+
       // Disable all inputs, selects, textareas (only set if not already locked to avoid extra mutations)
       const formElements = container.querySelectorAll(
         "input, select, textarea",
@@ -2080,6 +2097,10 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
           | HTMLInputElement
           | HTMLSelectElement
           | HTMLTextAreaElement;
+        if (jobInfoFields?.has(element)) {
+          releaseJobInfoField(element);
+          return;
+        }
         if (element.tagName === "SELECT") {
           if (!(element as HTMLSelectElement).disabled)
             (element as HTMLSelectElement).disabled = true;
@@ -2098,6 +2119,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
       ) as HTMLButtonElement[];
       buttons.forEach((btn) => {
         const text = (btn.textContent || "").trim().toLowerCase();
+        if (canEditLockedJobInfo && isSaveOrEditButtonLabel(text)) return;
         if (
           text === "edit report" ||
           text === "save report" ||
@@ -2130,6 +2152,17 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
     // Run immediately
     lockContainer();
 
+    // Toggling edit mode only flips readOnly/disabled on fields that already
+    // exist, which the observer below deliberately ignores. Re-run after any
+    // click so the lock is back in place right after such a toggle.
+    let clickTimer: number | undefined;
+    const relockAfterClick = () => {
+      window.clearTimeout(clickTimer);
+      window.requestAnimationFrame(lockContainer);
+      clickTimer = window.setTimeout(lockContainer, 250);
+    };
+    document.addEventListener("click", relockAfterClick, true);
+
     // Use MutationObserver to re-enforce when new nodes are added (e.g. React re-renders).
     // Do NOT observe attributes (disabled/readOnly) — we set those ourselves, which would
     // retrigger the observer and cause an infinite loop that freezes the tab.
@@ -2146,9 +2179,11 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
     }
 
     return () => {
+      window.clearTimeout(clickTimer);
+      document.removeEventListener("click", relockAfterClick, true);
       if (observer) observer.disconnect();
     };
-  }, [isReportLocked]);
+  }, [isReportLocked, canEditLockedJobInfo]);
 
   // A page opened with ?preview=true or ?embedded=true (the review window's
   // iframe) renders as paper. Preferred route: emulate print media so the

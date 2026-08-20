@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import _ from "lodash";
 import { useReportLocked } from "./useReportLocked";
+import { useCanEditLockedJobInfo } from "./jobInfoEditAccess";
 import { getReportName, getAssetName } from "./reportMappings";
 import { useEquipmentAssetPrefill } from "./useEquipmentAssetPrefill";
 import SaveToAssetButton from "./SaveToAssetButton";
@@ -355,6 +356,7 @@ const PanelboardReport: React.FC = () => {
     jobId,
     "panelboard-report",
   );
+  const canEditLockedJobInfo = useCanEditLockedJobInfo();
 
   // Add print styles and hide navigation/scrollbar
   React.useEffect(() => {
@@ -1860,7 +1862,7 @@ const PanelboardReport: React.FC = () => {
           justSaved={justSaved}
           isSaving={isSaving}
           status={formData.status || "PASS"}
-          hasReport={!!currentReportId && !locked}
+          hasReport={!!currentReportId && (!locked || canEditLockedJobInfo)}
           onStatusToggle={() => {
             if (isEditing) {
               setFormData((prev) => ({

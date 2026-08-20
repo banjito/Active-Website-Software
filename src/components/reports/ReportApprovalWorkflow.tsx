@@ -12,6 +12,14 @@ import Card, {
   CardDescription,
 } from "@/components/ui/Card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -54,7 +62,7 @@ import { supabase } from "@/lib/supabase";
 import { canApproveReports, canExportReports } from "@/lib/roles";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import {
-  fetchEvaluationResults,
+  fetchReportRowInfo,
   type EvaluationResult,
 } from "@/lib/reportEvaluations";
 import { EvaluationResultBadge } from "./EvaluationResultBadge";
@@ -164,6 +172,17 @@ export function ReportApprovalWorkflow({
     Record<string, EvaluationResult>
   >({});
 
+  // Equipment identifier read off the saved report row. The asset name carries
+  // it too, but only as of the last save — reports renamed (or saved before an
+  // identifier was entered) show nothing without this.
+  const [identifiersByReport, setIdentifiersByReport] = useState<
+    Record<string, string>
+  >({});
+
+  // Reports whose row has already been looked up, so paging in more reports
+  // doesn't re-query the ones resolved (including those with nothing to find).
+  const resolvedRowInfoRef = React.useRef<Set<string>>(new Set());
+
   // Role-based access control
   const [userRole, setUserRole] = useState<string>("");
   const [userPermissions, setUserPermissions] = useState<{
@@ -186,22 +205,36 @@ export function ReportApprovalWorkflow({
     }));
   }, [jobId]);
 
-  // Resolve PASS / FAIL / LIMITED SERVICE for the reports currently listed.
-  // Only reports whose evaluation isn't known yet are looked up, so paging in
-  // more reports doesn't re-query the ones already resolved.
+  // Resolve PASS / FAIL / LIMITED SERVICE and the equipment identifier for the
+  // reports currently listed. Only reports that haven't been looked up yet are
+  // queried, so paging in more reports doesn't re-read the resolved ones.
   useEffect(() => {
     let cancelled = false;
     const pending = reports
-      .filter((r) => !evaluationsByReport[r.id])
+      .filter((r) => !resolvedRowInfoRef.current.has(r.id))
       .map((r) => ({ id: r.id, file_url: r.report_data?.file_url }));
     if (pending.length === 0) return;
+    pending.forEach((r) => resolvedRowInfoRef.current.add(r.id));
     (async () => {
       try {
-        const results = await fetchEvaluationResults(pending);
-        if (cancelled || Object.keys(results).length === 0) return;
-        setEvaluationsByReport((prev) => ({ ...prev, ...results }));
+        const rows = await fetchReportRowInfo(pending);
+        if (cancelled) return;
+        const evaluations: Record<string, EvaluationResult> = {};
+        const identifiers: Record<string, string> = {};
+        for (const [reportId, row] of Object.entries(rows)) {
+          if (row.evaluation) evaluations[reportId] = row.evaluation;
+          if (row.identifier) identifiers[reportId] = row.identifier;
+        }
+        if (Object.keys(evaluations).length > 0) {
+          setEvaluationsByReport((prev) => ({ ...prev, ...evaluations }));
+        }
+        if (Object.keys(identifiers).length > 0) {
+          setIdentifiersByReport((prev) => ({ ...prev, ...identifiers }));
+        }
       } catch (e) {
-        console.warn("Failed to load report evaluations:", e);
+        // Let a failed lookup be retried on the next refresh.
+        pending.forEach((r) => resolvedRowInfoRef.current.delete(r.id));
+        console.warn("Failed to load report row details:", e);
       }
     })();
     return () => {
@@ -267,6 +300,13 @@ export function ReportApprovalWorkflow({
     };
   }, []);
 
+  // The identifier shown for a report: the one stored in its asset name, or the
+  // one read off the saved report row when the name doesn't carry it.
+  const getReportIdentifier = (report: TechnicalReport) =>
+    getReportNameParts(report).assetIdentifier ||
+    identifiersByReport[report.id] ||
+    "";
+
   // Compute sorted list on every render so sort changes always apply (avoids stale closure)
   const sortedReports = (() => {
     const list = [...reports];
@@ -286,8 +326,8 @@ export function ReportApprovalWorkflow({
         // the reports for one asset stay together.
         const pa = getReportNameParts(a);
         const pb = getReportNameParts(b);
-        const byIdentifier = (pa.assetIdentifier || "\uffff").localeCompare(
-          pb.assetIdentifier || "\uffff",
+        const byIdentifier = (getReportIdentifier(a) || "\uffff").localeCompare(
+          getReportIdentifier(b) || "\uffff",
           undefined,
           { sensitivity: "base" },
         );
@@ -525,6 +565,9 @@ export function ReportApprovalWorkflow({
     if (isLoadMore) {
       setLoadingMore(true);
     } else {
+      // A full reload re-reads every report row: an identifier or evaluation
+      // may have changed since it was last resolved.
+      resolvedRowInfoRef.current = new Set();
       setIsLoading(true);
     }
     try {
@@ -2433,6 +2476,182 @@ export function ReportApprovalWorkflow({
     });
   };
 
+  // Linked asset rows carry the urgency flag the approvals list shows.
+  type ReportLinkedAsset = {
+    name?: string;
+    file_url?: string;
+    urgency?: "normal" | "critical";
+  };
+
+  const isPdfReport = (report: TechnicalReport) => {
+    const url = report.report_data?.file_url;
+    return (
+      !!url &&
+      !url.startsWith("report:/") &&
+      url.toLowerCase().endsWith(".pdf")
+    );
+  };
+
+  // The approvals list is laid out like the job's Reports tab — same columns in
+  // the same order — so moving between the two tabs doesn't mean relearning the
+  // page. Approved/Sent columns only appear once a report in view has them, so
+  // the Pending tab stays narrow.
+  const renderReportTable = (
+    list: TechnicalReport[],
+    assetsMap: Record<string, ReportLinkedAsset[]>,
+  ) => {
+    const showApproved = list.some((r) => !!r.approved_at);
+    const showSent = list.some((r) => !!r.sent_at);
+    const columnCount = 7 + (showApproved ? 1 : 0) + (showSent ? 1 : 0);
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow className="border-b border-neutral-100 hover:bg-transparent dark:border-neutral-800 dark:hover:bg-transparent [&>th]:h-auto [&>th]:px-3 [&>th]:py-2 [&>th]:text-[10px] [&>th]:font-medium [&>th]:uppercase [&>th]:tracking-wider [&>th]:text-neutral-400 dark:[&>th]:text-neutral-500">
+            <TableHead>Report Type</TableHead>
+            <TableHead>Identifier</TableHead>
+            <TableHead>Urgency</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Result</TableHead>
+            <TableHead>Submitted</TableHead>
+            {showApproved && <TableHead>Approved</TableHead>}
+            {showSent && <TableHead>Sent</TableHead>}
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {list.map((report) => {
+            // Urgency lives on the asset. The linked-asset map is the richer
+            // source (a report can have more than one asset), but the report
+            // row carries its own asset's urgency when no link exists.
+            const linkedAssets = assetsMap[report.id] || [];
+            const isCritical =
+              linkedAssets.some((a) => a.urgency === "critical") ||
+              (report.report_data as any)?.urgency === "critical";
+            const identifier = getReportIdentifier(report);
+            const isApprovedTab =
+              activeTab === "approved" || activeTab === "accepted";
+            // A PDF report is marked sent by printing it, so it gets the print
+            // button instead of the status button.
+            const showStatusButton =
+              !isPdfReport(report) &&
+              ((isApprovedTab && report.status === "approved") ||
+                (activeTab === "sent" && report.status === "sent"));
+            return (
+              <React.Fragment key={report.id}>
+                <TableRow className="border-neutral-100 dark:border-neutral-800 [&>td]:px-3 [&>td]:py-2.5">
+                  <TableCell>
+                    {getReportNameParts(report).reportType ||
+                      "Untitled Report"}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {identifier || (
+                      <span className="text-neutral-400 dark:text-neutral-500">
+                        —
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {isCritical ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                        <AlertTriangle className="w-3 h-3" />
+                        Critical
+                      </span>
+                    ) : (
+                      <span className="inline-flex px-2 py-1 rounded text-xs font-medium bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300">
+                        Normal
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {getStatusBadge(report.status)}
+                      {renderFlaggedBadge(report.id)}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <EvaluationResultBadge
+                      result={evaluationsByReport[report.id]}
+                      fallback={<span className="text-neutral-400">-</span>}
+                    />
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {formatDate(report.submitted_at)}
+                  </TableCell>
+                  {showApproved && (
+                    <TableCell className="whitespace-nowrap">
+                      {report.approved_at ? formatDate(report.approved_at) : "-"}
+                    </TableCell>
+                  )}
+                  {showSent && (
+                    <TableCell className="whitespace-nowrap">
+                      {report.sent_at ? formatDate(report.sent_at) : "-"}
+                    </TableCell>
+                  )}
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewReport(report)}
+                        leftIcon={<Eye className="h-4 w-4" />}
+                        className="border-none"
+                      >
+                        View
+                      </Button>
+                      {isPdfReport(report) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownloadPdfReport(report)}
+                          title="Download/Print PDF"
+                          leftIcon={<Download className="h-4 w-4" />}
+                        >
+                          {isApprovedTab ? "Print" : "Download"}
+                        </Button>
+                      )}
+                      {showStatusButton && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            if (report.status === "approved") {
+                              handleMarkAsSent(report);
+                            } else if (report.status === "sent") {
+                              handleMarkAsApproved(report);
+                            }
+                          }}
+                          className={`border-none ${
+                            report.status === "approved"
+                              ? "text-blue-600 hover:text-blue-700"
+                              : "text-red-600 hover:text-red-700"
+                          }`}
+                          leftIcon={<Send className="h-4 w-4" />}
+                        >
+                          {report.status === "approved"
+                            ? "Mark as Sent"
+                            : "Unsend"}
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+                {report.review_comments && (
+                  <TableRow className="border-neutral-100 hover:bg-transparent dark:border-neutral-800 dark:hover:bg-transparent">
+                    <TableCell colSpan={columnCount} className="px-3 pb-2.5 pt-0">
+                      <div className="rounded border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs text-neutral-700 dark:border-neutral-700 dark:bg-dark-200 dark:text-neutral-300">
+                        {report.review_comments}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </TableBody>
+      </Table>
+    );
+  };
+
   const isManager =
     user?.user_metadata?.role === "Manager" ||
     user?.user_metadata?.role === "Admin";
@@ -2893,171 +3112,8 @@ export function ReportApprovalWorkflow({
                               />
                             </svg>
                           </summary>
-                          <div className="bg-white dark:bg-dark-150 p-3 space-y-2">
-                            {groups[folderKey].map((report) => (
-                              <div
-                                key={report.id}
-                                className="flex items-center justify-between border rounded-none px-3 py-2"
-                              >
-                                <div className="flex-1 min-w-0 pr-3">
-                                  <div className="flex items-center gap-3">
-                                    <h4 className="text-sm font-semibold truncate">
-                                      {getReportNameParts(report)
-                                        .assetIdentifier ||
-                                        getReportNameParts(report).reportType}
-                                    </h4>
-                                    {/* Urgency indicator */}
-                                    {(() => {
-                                      const linkedAssets =
-                                        assetsMap[report.id] || [];
-                                      const hasCritical = linkedAssets.some(
-                                        (a) => a.urgency === "critical",
-                                      );
-                                      return hasCritical ? (
-                                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300">
-                                          <AlertTriangle className="w-3 h-3" />
-                                          Critical
-                                        </span>
-                                      ) : null;
-                                    })()}
-                                    {getStatusBadge(report.status)}
-                                    <EvaluationResultBadge
-                                      result={evaluationsByReport[report.id]}
-                                    />
-                                    {renderFlaggedBadge(report.id)}
-                                  </div>
-                                  <div className="mt-1 text-xs text-neutral-500 flex items-center gap-4 flex-wrap">
-                                    {getReportNameParts(report)
-                                      .assetIdentifier && (
-                                      <span className="font-medium">
-                                        {getReportNameParts(report).reportType}
-                                      </span>
-                                    )}
-                                    <span>
-                                      Submitted:{" "}
-                                      {formatDate(report.submitted_at)}
-                                    </span>
-                                    {report.approved_at && (
-                                      <span>
-                                        Approved:{" "}
-                                        {formatDate(report.approved_at)}
-                                      </span>
-                                    )}
-                                    {report.sent_at && (
-                                      <span>
-                                        Sent: {formatDate(report.sent_at)}
-                                      </span>
-                                    )}
-                                  </div>
-                                  {report.review_comments && (
-                                    <div className="mt-1 text-xs text-neutral-700 bg-neutral-50 border border-neutral-200 rounded px-2 py-1">
-                                      {report.review_comments}
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleViewReport(report)}
-                                    leftIcon={<Eye className="h-4 w-4" />}
-                                    className="border-none"
-                                  >
-                                    View
-                                  </Button>
-                                  {/* Show download/print button for PDF reports on approved tab */}
-                                  {report.report_data?.file_url &&
-                                    !report.report_data.file_url.startsWith(
-                                      "report:/",
-                                    ) &&
-                                    report.report_data.file_url
-                                      .toLowerCase()
-                                      .endsWith(".pdf") && (
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() =>
-                                          handleDownloadPdfReport(report)
-                                        }
-                                        title="Download/Print PDF" leftIcon={<Download className="h-4 w-4" />}>
-                                        {activeTab === "approved" ||
-                                        activeTab === "accepted"
-                                          ? "Print"
-                                          : "Download"}
-                                      </Button>
-                                    )}
-                                  {(() => {
-                                    const isApprovedTab =
-                                      activeTab === "approved" ||
-                                      activeTab === "accepted";
-                                    const shouldShowSent =
-                                      isApprovedTab &&
-                                      report.status === "approved";
-                                    const shouldShowApproved =
-                                      activeTab === "sent" &&
-                                      report.status === "sent";
-                                    console.log("Button visibility check:", {
-                                      reportId: report.id,
-                                      activeTab,
-                                      reportStatus: report.status,
-                                      shouldShowSent,
-                                      shouldShowApproved,
-                                    });
-                                    // Don't show "Mark as Sent" button for PDF reports (they use the Print button instead)
-                                    const isPdfReport =
-                                      report.report_data?.file_url &&
-                                      !report.report_data.file_url.startsWith(
-                                        "report:/",
-                                      ) &&
-                                      report.report_data.file_url
-                                        .toLowerCase()
-                                        .endsWith(".pdf");
-                                    return (
-                                      (shouldShowSent || shouldShowApproved) &&
-                                      !isPdfReport
-                                    );
-                                  })() && (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => {
-                                        if (report.status === "approved") {
-                                          console.log(
-                                            "Mark as Sent clicked for report:",
-                                            report.id,
-                                            "status:",
-                                            report.status,
-                                            "activeTab:",
-                                            activeTab,
-                                          );
-                                          handleMarkAsSent(report);
-                                        } else if (report.status === "sent") {
-                                          console.log(
-                                            "Mark as Approved clicked for report:",
-                                            report.id,
-                                            "status:",
-                                            report.status,
-                                            "activeTab:",
-                                            activeTab,
-                                          );
-                                          handleMarkAsApproved(report);
-                                        }
-                                      }}
-                                      className={`border-none ${
-                                        report.status === "approved"
-                                          ? "text-blue-600 hover:text-blue-700 border-blue-300 hover:border-blue-400"
-                                          : "text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
-                                      }`}
-                                      leftIcon={<Send className="h-4 w-4" />}
-                                    >
-                                      {report.status === "approved"
-                                        ? "Mark as Sent"
-                                        : "Unsend"}
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
+                          <div className="bg-white dark:bg-dark-150">
+                            {renderReportTable(groups[folderKey], assetsMap)}
                           </div>
                         </details>
                       ))}
@@ -3116,150 +3172,9 @@ export function ReportApprovalWorkflow({
                         </Button>
                       </div>
                     )}
-                    {sortedReports.map((report) => (
-                      <div
-                        key={report.id}
-                        className="flex items-center justify-between border rounded-none px-3 py-2"
-                      >
-                        <div className="flex-1 min-w-0 pr-3">
-                          <div className="flex items-center gap-3">
-                            <h4 className="text-sm font-semibold truncate">
-                              {getReportNameParts(report).assetIdentifier ||
-                                getReportNameParts(report).reportType}
-                            </h4>
-                            {/* Urgency indicator */}
-                            {(() => {
-                              const linkedAssets =
-                                globalAssetsMap[report.id] || [];
-                              const hasCritical = linkedAssets.some(
-                                (a) => a.urgency === "critical",
-                              );
-                              return hasCritical ? (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300">
-                                  <AlertTriangle className="w-3 h-3" />
-                                  Critical
-                                </span>
-                              ) : null;
-                            })()}
-                            {getStatusBadge(report.status)}
-                            <EvaluationResultBadge
-                              result={evaluationsByReport[report.id]}
-                            />
-                            {renderFlaggedBadge(report.id)}
-                          </div>
-                          <div className="mt-1 text-xs text-neutral-500 flex items-center gap-4 flex-wrap">
-                            {getReportNameParts(report).assetIdentifier && (
-                              <span className="font-medium">
-                                {getReportNameParts(report).reportType}
-                              </span>
-                            )}
-                            <span>
-                              Submitted: {formatDate(report.submitted_at)}
-                            </span>
-                            {report.approved_at && (
-                              <span>
-                                Approved: {formatDate(report.approved_at)}
-                              </span>
-                            )}
-                            {report.sent_at && (
-                              <span>Sent: {formatDate(report.sent_at)}</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewReport(report)}
-                            leftIcon={<Eye className="h-4 w-4" />}
-                          >
-                            View
-                          </Button>
-                          {/* Show download/print button for PDF reports on approved tab */}
-                          {report.report_data?.file_url &&
-                            !report.report_data.file_url.startsWith(
-                              "report:/",
-                            ) &&
-                            report.report_data.file_url
-                              .toLowerCase()
-                              .endsWith(".pdf") && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDownloadPdfReport(report)}
-                                title="Download/Print PDF" leftIcon={<Download className="h-4 w-4" />}>
-                                {activeTab === "approved" ||
-                                activeTab === "accepted"
-                                  ? "Print"
-                                  : "Download"}
-                              </Button>
-                            )}
-                          {(() => {
-                            const shouldShowSent =
-                              activeTab === "approved" &&
-                              report.status === "approved";
-                            const shouldShowApproved =
-                              activeTab === "sent" && report.status === "sent";
-                            console.log("Button visibility check (global):", {
-                              reportId: report.id,
-                              activeTab,
-                              reportStatus: report.status,
-                              shouldShowSent,
-                              shouldShowApproved,
-                            });
-                            // Don't show "Mark as Sent" button for PDF reports (they use the Print button instead)
-                            const isPdfReport =
-                              report.report_data?.file_url &&
-                              !report.report_data.file_url.startsWith(
-                                "report:/",
-                              ) &&
-                              report.report_data.file_url
-                                .toLowerCase()
-                                .endsWith(".pdf");
-                            return (
-                              (shouldShowSent || shouldShowApproved) &&
-                              !isPdfReport
-                            );
-                          })() && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                if (report.status === "approved") {
-                                  console.log(
-                                    "Mark as Sent clicked for report (global):",
-                                    report.id,
-                                    "status:",
-                                    report.status,
-                                    "activeTab:",
-                                    activeTab,
-                                  );
-                                  handleMarkAsSent(report);
-                                } else if (report.status === "sent") {
-                                  console.log(
-                                    "Mark as Approved clicked for report (global):",
-                                    report.id,
-                                    "status:",
-                                    report.status,
-                                    "activeTab:",
-                                    activeTab,
-                                  );
-                                  handleMarkAsApproved(report);
-                                }
-                              }}
-                              className={`${
-                                report.status === "approved"
-                                  ? "text-blue-600 hover:text-blue-700 border-blue-300 hover:border-blue-400"
-                                  : "text-green-600 hover:text-green-700 border-green-300 hover:border-green-400"
-                              }`} leftIcon={<Download className="h-4 w-4" />}>
-                              {report.status === "approved"
-                                ? "Mark as Sent"
-                                : "Mark as Approved"}
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                    <div className="border bg-white dark:bg-dark-150">
+                      {renderReportTable(sortedReports, globalAssetsMap)}
+                    </div>
                     {hasMoreReports && (
                       <div className="flex justify-center pt-4 pb-2">
                         <Button

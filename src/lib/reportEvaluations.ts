@@ -168,22 +168,76 @@ export function extractEvaluationResult(row: any): EvaluationResult | null {
   }
   return null;
 }
+/**
+ * Keys a report row stores its equipment identifier under. Breaker reports also
+ * record the panelboard/switchboard they live in as the equipment identifier,
+ * so the breaker identifier — the value that makes the asset unique — is
+ * checked first. Mirrors the heuristics in JobDetail's Reports tab.
+ */
+const IDENTIFIER_COLUMN_KEYS = [
+  "breakerIdentifier",
+  "identifier",
+  "eqpt_location",
+  "eqptIdentifier",
+];
+
+const IDENTIFIER_FORM_KEYS = [
+  "breakerIdentifier",
+  "identifier",
+  "eqptLocation",
+  "location",
+  "equipment_location",
+  "eqptIdentifier",
+];
+
+const pickIdentifier = (source: any, keys: string[]): string => {
+  if (!source || typeof source !== "object") return "";
+  for (const key of keys) {
+    const value = source[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return "";
+};
+
+/**
+ * Pull the equipment identifier out of a report row. Assets store it in their
+ * name ("<report type> - <identifier>"), but that name is only written when the
+ * report is saved, so views that need the current identifier read the row.
+ */
+export function extractReportIdentifier(row: any): string {
+  return (
+    pickIdentifier(row, IDENTIFIER_COLUMN_KEYS) ||
+    pickIdentifier(row?.report_info, IDENTIFIER_FORM_KEYS) ||
+    pickIdentifier(row?.report_data, IDENTIFIER_FORM_KEYS) ||
+    pickIdentifier(row?.report_data?.reportInfo, IDENTIFIER_FORM_KEYS) ||
+    pickIdentifier(row?.data, IDENTIFIER_FORM_KEYS) ||
+    pickIdentifier(row?.data?.reportInfo, IDENTIFIER_FORM_KEYS) ||
+    ""
+  );
+}
 
 interface EvaluationAsset {
   id: string;
   file_url?: string | null;
 }
 
+/** What a report row tells the list views about the asset it belongs to. */
+export interface ReportRowInfo {
+  evaluation?: EvaluationResult;
+  identifier?: string;
+}
+
 const IN_CHUNK_SIZE = 200;
 
 /**
- * Resolve evaluation results for a set of report assets, keyed by asset id.
- * Queries are grouped by storage table so a folder of 200 reports costs one
- * round trip per report type rather than one per report.
+ * Resolve evaluation result and equipment identifier for a set of report
+ * assets, keyed by asset id. Queries are grouped by storage table so a folder
+ * of 200 reports costs one round trip per report type rather than one per
+ * report.
  */
-export async function fetchEvaluationResults(
+export async function fetchReportRowInfo(
   assets: EvaluationAsset[],
-): Promise<Record<string, EvaluationResult>> {
+): Promise<Record<string, ReportRowInfo>> {
   // table -> reportId -> assetIds sharing that report
   type TableIndex = Map<string, Map<string, string[]>>;
   const primaryIndex: TableIndex = new Map();
@@ -215,7 +269,7 @@ export async function fetchEvaluationResults(
     }
   }
 
-  const results: Record<string, EvaluationResult> = {};
+  const results: Record<string, ReportRowInfo> = {};
 
   const runIndex = async (index: TableIndex) => {
     await Promise.all(
@@ -231,10 +285,17 @@ export async function fetchEvaluationResults(
               .in("id", chunk);
             if (error || !data) continue;
             for (const row of data) {
-              const status = extractEvaluationResult(row);
-              if (!status) continue;
+              const evaluation = extractEvaluationResult(row);
+              const identifier = extractReportIdentifier(row);
+              if (!evaluation && !identifier) continue;
               for (const assetId of reports.get((row as any).id) || []) {
-                if (!results[assetId]) results[assetId] = status;
+                const existing = results[assetId] || (results[assetId] = {});
+                if (evaluation && !existing.evaluation) {
+                  existing.evaluation = evaluation;
+                }
+                if (identifier && !existing.identifier) {
+                  existing.identifier = identifier;
+                }
               }
             }
           } catch {
@@ -249,5 +310,17 @@ export async function fetchEvaluationResults(
   // Legacy tables only fill gaps left by the canonical ones.
   await runIndex(fallbackIndex);
 
+  return results;
+}
+
+/** Evaluation results only, keyed by asset id. */
+export async function fetchEvaluationResults(
+  assets: EvaluationAsset[],
+): Promise<Record<string, EvaluationResult>> {
+  const info = await fetchReportRowInfo(assets);
+  const results: Record<string, EvaluationResult> = {};
+  for (const [assetId, row] of Object.entries(info)) {
+    if (row.evaluation) results[assetId] = row.evaluation;
+  }
   return results;
 }

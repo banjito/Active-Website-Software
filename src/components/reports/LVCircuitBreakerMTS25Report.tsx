@@ -715,7 +715,7 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
   const [searchParams] = useSearchParams();
   const isPrintMode = searchParams.get("print") === "true";
 
-  const reportSlug = "lv-circuit-breaker-mts25";
+  const reportSlug = "lv-circuit-breaker-mts";
   const reportName = getReportName(reportSlug);
 
   const [formData, setFormData] = useState<FormData>({
@@ -1910,7 +1910,7 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
               width: "100%",
             }}
           >
-            LV Circuit Breaker MTS 25
+            LV Circuit Breaker MTS 23
           </h1>
         </div>
         <div
@@ -1962,7 +1962,7 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
         )}
 
         <ReportHeader
-          title={`${NETA_MTS_SECTION} LV Circuit Breaker MTS 25`}
+          title={`${NETA_MTS_SECTION} LV Circuit Breaker MTS 23`}
           isAutoSaving={isAutoSaving}
           isEditing={isEditing}
           justSaved={justSaved}

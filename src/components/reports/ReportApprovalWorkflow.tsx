@@ -839,6 +839,7 @@ export function ReportApprovalWorkflow({
             "lv-molded-case-circuit-breaker-ats25":
               "lv_molded_case_circuit_breaker_ats25",
             "lv-circuit-breaker-mts25": "lv_circuit_breaker_mts25",
+            "lv-circuit-breaker-mts": "lv_circuit_breaker_mts25",
             "emergency-systems-engine-generator-ats25":
               "emergency_systems_engine_generator_ats25",
             // Legacy reports

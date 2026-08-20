@@ -2522,6 +2522,17 @@ function App() {
                     }
                   />
                   <Route
+                    path="/jobs/:id/lv-circuit-breaker-mts/:reportId?"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <LVCircuitBreakerMTS25Report />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  {/* Legacy slug kept so previously saved reports keep resolving */}
+                  <Route
                     path="/jobs/:id/lv-circuit-breaker-mts25/:reportId?"
                     element={
                       <RequireAuth>

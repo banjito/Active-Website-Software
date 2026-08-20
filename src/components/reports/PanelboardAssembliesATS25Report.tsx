@@ -731,6 +731,19 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
     });
   }, [JSON.stringify(formData.contactResistance)]);
 
+  // Contact resistance is only applicable when torque verification is performed
+  // with a low-resistance ohmmeter. Answering "No" grays the whole section out.
+  const contactResistanceNA = formData.torqueVerificationUsingLROhm === "No";
+  const contactFieldsLocked = !isEditing || contactResistanceNA;
+  const contactFieldClass = contactResistanceNA
+    ? "!bg-neutral-100 dark:!bg-dark-200 !text-neutral-400 dark:!text-neutral-500 cursor-not-allowed"
+    : !isEditing
+      ? "bg-neutral-100 dark:bg-dark-150"
+      : "";
+  const contactPrintClass = contactResistanceNA
+    ? "!text-neutral-400 dark:!text-neutral-500"
+    : "";
+
   const neutralDeviation = computeDeviation(
     formData.contactResistance[0]?.neutral || "",
     formData.contactResistance[0]?.neutral || "",
@@ -2226,7 +2239,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                     </option>
                   ))}
                 </select>
-                {isEditing && (
+                {isEditing && !contactResistanceNA && (
                   <button
                     onClick={addContactResistanceRow}
                     className="px-3 py-1 text-sm text-white bg-green-600 hover:bg-green-700 rounded-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 print:hidden whitespace-nowrap flex-shrink-0"
@@ -2296,10 +2309,11 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                                   contactResistance: list,
                                 }));
                               }}
-                              readOnly={!isEditing}
-                              className={`block flex-1 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              readOnly={contactFieldsLocked}
+                              className={`block flex-1 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-sm ${contactFieldClass}`}
                             />
                             {isEditing &&
+                              !contactResistanceNA &&
                               formData.contactResistance.length > 1 && (
                                 <button
                                   onClick={() => removeContactResistanceRow(i)}
@@ -2311,7 +2325,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                                 </button>
                               )}
                           </div>
-                          <div className="hidden print:block text-center">
+                          <div className={`hidden print:block text-center ${contactPrintClass}`}>
                             {row.busSection}
                           </div>
                         </td>
@@ -2339,11 +2353,11 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                                     contactResistance: list,
                                   }));
                                 }}
-                                readOnly={!isEditing}
-                                className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                readOnly={contactFieldsLocked}
+                                className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${contactFieldClass}`}
                               />
                             </div>
-                            <div className="hidden print:block text-center">
+                            <div className={`hidden print:block text-center ${contactPrintClass}`}>
                               {row[key]}
                             </div>
                           </td>
@@ -2358,8 +2372,8 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                                   contactUnit: e.target.value,
                                 }))
                               }
-                              disabled={!isEditing}
-                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              disabled={contactFieldsLocked}
+                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${contactFieldClass}`}
                             >
                               {CONTACT_RESISTANCE_UNITS.map((u) => (
                                 <option key={u} value={u}>
@@ -2368,7 +2382,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                               ))}
                             </select>
                           </div>
-                          <div className="hidden print:block text-center">
+                          <div className={`hidden print:block text-center ${contactPrintClass}`}>
                             {formData.contactUnit}
                           </div>
                         </td>
@@ -2412,7 +2426,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                           <td className="p-2 align-top">
                             <div className="flex items-center justify-between">
                               <span className="text-xs">Measured</span>
-                              <span className="text-sm font-semibold">
+                              <span className={`text-sm font-semibold ${contactPrintClass}`}>
                                 {formData.contactEvaluation[i]?.deviation ||
                                   "-"}
                               </span>
@@ -2441,8 +2455,8 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                                     contactEvaluation: list,
                                   }));
                                 }}
-                                disabled={!isEditing}
-                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                disabled={contactFieldsLocked}
+                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${contactFieldClass}`}
                               >
                                 {(
                                   [
@@ -2458,7 +2472,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                                 ))}
                               </select>
                             </div>
-                            <div className="hidden print:block">
+                            <div className={`hidden print:block ${contactPrintClass}`}>
                               {formData.contactEvaluation[i]?.result || "-"}
                             </div>
                           </td>
@@ -2489,8 +2503,8 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                                       contactEvaluation: list,
                                     }));
                                   }}
-                                  disabled={!isEditing}
-                                  className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                                  disabled={contactFieldsLocked}
+                                  className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${contactFieldClass}`}
                                 >
                                   {[
                                     "<10%",
@@ -2505,7 +2519,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                                   ))}
                                 </select>
                               </div>
-                              <span className="hidden print:block">
+                              <span className={`hidden print:block ${contactPrintClass}`}>
                                 {formData.contactEvaluation[i]?.criteria ||
                                   "<50%"}
                               </span>

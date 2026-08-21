@@ -2095,6 +2095,14 @@ export default function JobDetail() {
   const [isDrawingUploading, setIsDrawingUploading] = useState(false);
   const [isMiscUploading, setIsMiscUploading] = useState(false);
 
+  // Retired report templates: kept in defaultAssets so existing reports still
+  // resolve their name/route, but hidden from the Add Asset menu so no one
+  // creates a new one.
+  const deprecatedReportTemplateIds = new Set([
+    "switchgear-inspection-report",
+    "panelboard-inspection-report",
+  ]);
+
   // Default assets that are always available
   const defaultAssets: Asset[] = [
     {
@@ -3101,11 +3109,14 @@ export default function JobDetail() {
     assetSortDirection,
   ]);
 
-  // Filter report templates based on search
+  // Filter report templates based on search (retired templates never show)
+  const selectableReportTemplates = defaultAssets.filter(
+    (asset) => !deprecatedReportTemplateIds.has(asset.id),
+  );
   const filteredReportTemplates =
     reportSearchQuery.trim() === ""
-      ? defaultAssets
-      : defaultAssets.filter((asset) =>
+      ? selectableReportTemplates
+      : selectableReportTemplates.filter((asset) =>
           asset.name.toLowerCase().includes(reportSearchQuery.toLowerCase()),
         );
 

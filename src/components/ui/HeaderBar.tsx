@@ -404,13 +404,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     }
   }, [user]);
 
-  const loadReviewJobCount = async () => {
+  const loadReviewJobCount = async (force = false) => {
     if (!user || !canAccessReportApprovals(user)) {
       setReviewJobCount(0);
       return;
     }
     try {
-      const jobs = await fetchJobsWithReportsForReview();
+      const jobs = await fetchJobsWithReportsForReview({ force });
       setReviewJobCount(jobs.length);
     } catch {
       setReviewJobCount(0);
@@ -455,7 +455,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           "archived",
         ].includes(newStatus)
       ) {
-        void loadReviewJobCount();
+        // A status just changed, so the shared queue has to be re-read rather
+        // than served from cache.
+        void loadReviewJobCount(true);
         void loadOpenReportFlagCount();
       }
     };

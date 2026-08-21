@@ -133,7 +133,114 @@ export function getJobReviewPath(jobId: string, user: User | null | undefined): 
   return `/jobs/${jobId}?tab=assets&filter=ready_for_review`;
 }
 
-export async function fetchJobsWithReportsForReview(): Promise<JobWithReportsReadyForReview[]> {
+/**
+ * Names for the jobs on the review queue, in one round trip per 100 customers.
+ * This used to be a query per job, which is dozens of requests for a panel that
+ * only needs a name. A missing customer is not worth failing the panel over, so
+ * lookups that error simply leave the job unnamed.
+ */
+async function fetchCustomersByIds(
+  ids: Array<string | null | undefined>,
+  chunkSize = 100
+): Promise<Map<string, { name?: string; company_name?: string }>> {
+  const customersById = new Map<string, { name?: string; company_name?: string }>();
+  const uniqueIds = Array.from(
+    new Set(ids.filter((id): id is string => typeof id === 'string' && id.length > 0))
+  );
+
+  for (let i = 0; i < uniqueIds.length; i += chunkSize) {
+    const chunk = uniqueIds.slice(i, i + chunkSize);
+    const { data, error } = await supabase
+      .schema('common')
+      .from('customers')
+      .select('id, name, company_name')
+      .in('id', chunk);
+
+    if (error) {
+      console.warn('Error fetching customers for the review queue:', extractErrorMessage(error));
+      continue;
+    }
+
+    for (const customer of data || []) {
+      customersById.set(customer.id, customer);
+    }
+  }
+
+  return customersById;
+}
+
+/**
+ * How long a resolved review queue may be reused before it is re-read.
+ */
+const REVIEW_JOBS_TTL_MS = 15000;
+let reviewJobsCache: { at: number; jobs: JobWithReportsReadyForReview[] } | null = null;
+let reviewJobsInFlight: Promise<JobWithReportsReadyForReview[]> | null = null;
+let queuedReviewJobsRefresh: Promise<JobWithReportsReadyForReview[]> | null = null;
+
+/**
+ * Jobs with reports waiting to be reviewed, shared across every caller.
+ *
+ * Resolving the queue is expensive: neta_ops.get_asset_test_dates probes every
+ * report table in the schema for each of the ~200 assets sitting in review and
+ * takes several seconds. Four different consumers ask for it (the header count,
+ * both review shortcut panels, the notification summary) and all of them ask
+ * again on every `assetStatusChanged` event, so a single status change used to
+ * kick off several ten-second query bursts at once. That starved the API of
+ * connections, which surfaces as sluggish reads and, because PostgREST retries
+ * GETs but never writes, as "Failed to fetch" on the next update.
+ *
+ * So: one in-flight request is shared by everyone, and its result is reused for
+ * REVIEW_JOBS_TTL_MS. Pass `force` right after writing a status so the read
+ * cannot serve a snapshot taken before that write landed.
+ */
+export async function fetchJobsWithReportsForReview(
+  options: { force?: boolean } = {}
+): Promise<JobWithReportsReadyForReview[]> {
+  if (
+    !options.force &&
+    reviewJobsCache &&
+    Date.now() - reviewJobsCache.at < REVIEW_JOBS_TTL_MS
+  ) {
+    return reviewJobsCache.jobs;
+  }
+
+  if (reviewJobsInFlight) {
+    if (!options.force) return reviewJobsInFlight;
+    // A read already running may have started before the write we are
+    // refreshing for, so queue exactly one re-read behind it and hand that same
+    // promise to every other forced caller.
+    if (!queuedReviewJobsRefresh) {
+      queuedReviewJobsRefresh = reviewJobsInFlight
+        .catch(() => undefined)
+        .then(() => {
+          queuedReviewJobsRefresh = null;
+          return startReviewJobsLoad();
+        });
+    }
+    return queuedReviewJobsRefresh;
+  }
+
+  return startReviewJobsLoad();
+}
+
+/** Drops the cached queue so the next read goes back to the database. */
+export function invalidateReviewJobsCache(): void {
+  reviewJobsCache = null;
+}
+
+function startReviewJobsLoad(): Promise<JobWithReportsReadyForReview[]> {
+  reviewJobsInFlight = loadJobsWithReportsForReview()
+    .then((jobs) => {
+      reviewJobsCache = { at: Date.now(), jobs };
+      return jobs;
+    })
+    .finally(() => {
+      reviewJobsInFlight = null;
+    });
+  return reviewJobsInFlight;
+}
+
+async function loadJobsWithReportsForReview(): Promise<JobWithReportsReadyForReview[]> {
   const { data: assetsData, error: assetsError } = await supabase
     .schema('neta_ops')
     .from('assets')
@@ -154,10 +261,14 @@ export async function fetchJobsWithReportsForReview(): Promise<JobWithReportsRea
   }
 
   const assetIds = assetsData.map((asset) => asset.id);
-  const jobAssetLinks = await fetchJobAssetLinksByAssetIds(assetIds);
+  // Neither lookup depends on the other and the test dates are the slow half,
+  // so don't make them queue behind the link query.
+  const [jobAssetLinks, testDatesByAsset] = await Promise.all([
+    fetchJobAssetLinksByAssetIds(assetIds),
+    fetchAssetTestDates(assetIds),
+  ]);
   if (jobAssetLinks.length === 0) return [];
 
-  const testDatesByAsset = await fetchAssetTestDates(assetIds);
   const reviewDateForAsset = (asset: { id: string; created_at: string; submitted_at?: string | null }) =>
     testDatesByAsset[asset.id] || asset.submitted_at || asset.created_at;
 
@@ -188,59 +299,44 @@ export async function fetchJobsWithReportsForReview(): Promise<JobWithReportsRea
   if (jobsError) throw jobsError;
   if (!jobsData) return [];
 
-  const jobsWithCustomers = await Promise.all(
-    jobsData.map(async (job) => {
-      let customerData: { name?: string; company_name?: string } | null = null;
-      if (job.customer_id) {
-        try {
-          const { data: customer, error: customerError } = await supabase
-            .schema('common')
-            .from('customers')
-            .select('name, company_name')
-            .eq('id', job.customer_id)
-            .single();
-
-          if (!customerError && customer) {
-            customerData = customer;
-          }
-        } catch (err) {
-          console.warn(`Error fetching customer for job ${job.id}:`, err);
-        }
-      }
-
-      const jobAssets = assetsByJob[job.id] || [];
-
-      const reportsForDisplay = jobAssets.map((asset) => ({
-        id: asset.id,
-        title: asset.name,
-        review_date: reviewDateForAsset(asset),
-        status: 'ready_for_review',
-      }));
-
-      const oldestAssetDate =
-        reportsForDisplay.length > 0
-          ? reportsForDisplay.reduce(
-              (oldest, report) =>
-                reviewDateSortKey(report.review_date) < reviewDateSortKey(oldest)
-                  ? report.review_date
-                  : oldest,
-              reportsForDisplay[0].review_date
-            )
-          : new Date().toISOString();
-
-      return {
-        id: job.id,
-        title: job.title,
-        job_number: job.job_number,
-        division: job.division,
-        customer_name: customerData?.name,
-        company_name: customerData?.company_name,
-        reports_count: jobAssets.length,
-        oldest_report_date: oldestAssetDate,
-        reports: reportsForDisplay,
-      };
-    })
+  const customersById = await fetchCustomersByIds(
+    jobsData.map((job) => job.customer_id)
   );
+
+  const jobsWithCustomers = jobsData.map((job) => {
+    const customerData = job.customer_id ? customersById.get(job.customer_id) : undefined;
+    const jobAssets = assetsByJob[job.id] || [];
+
+    const reportsForDisplay = jobAssets.map((asset) => ({
+      id: asset.id,
+      title: asset.name,
+      review_date: reviewDateForAsset(asset),
+      status: 'ready_for_review',
+    }));
+
+    const oldestAssetDate =
+      reportsForDisplay.length > 0
+        ? reportsForDisplay.reduce(
+            (oldest, report) =>
+              reviewDateSortKey(report.review_date) < reviewDateSortKey(oldest)
+                ? report.review_date
+                : oldest,
+            reportsForDisplay[0].review_date
+          )
+        : new Date().toISOString();
+
+    return {
+      id: job.id,
+      title: job.title,
+      job_number: job.job_number,
+      division: job.division,
+      customer_name: customerData?.name,
+      company_name: customerData?.company_name,
+      reports_count: jobAssets.length,
+      oldest_report_date: oldestAssetDate,
+      reports: reportsForDisplay,
+    };
+  });
 
   jobsWithCustomers.sort(
     (a, b) => reviewDateSortKey(a.oldest_report_date) - reviewDateSortKey(b.oldest_report_date)

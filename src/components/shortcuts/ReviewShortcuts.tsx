@@ -29,11 +29,11 @@ export const ReviewShortcuts: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadJobs = useCallback(async () => {
+  const loadJobs = useCallback(async (force = false) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchJobsWithReportsForReview();
+      const data = await fetchJobsWithReportsForReview({ force });
       setJobsWithReports(data);
     } catch (err: unknown) {
       const message = extractErrorMessage(err);
@@ -64,7 +64,9 @@ export const ReviewShortcuts: React.FC = () => {
           "archived",
         ].includes(newStatus)
       ) {
-        void loadJobs();
+        // A status just changed, so the shared queue has to be re-read rather
+        // than served from cache.
+        void loadJobs(true);
       }
     };
 

@@ -62,6 +62,12 @@ import { isSuperUser, canReviewReports } from "../../lib/roles";
 import { useDemoMode } from "../../lib/DemoModeContext";
 import { useJobDetails } from "../../lib/hooks";
 import { formatStatusLabel } from "@/utils/formatters";
+import {
+  AssetReportStatus,
+  notifyAssetStatusChanged,
+  updateAssetReportStatus,
+} from "@/lib/services/assetReportStatus";
+import { describeSupabaseError, withWriteRetry } from "@/lib/supabaseRetry";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { format } from "date-fns";
 import { Button } from "../ui/Button";
@@ -4482,10 +4488,6 @@ export default function JobDetail() {
       }
       const currentStatus = asset?.status;
 
-      console.log(
-        `[JobDetail] Status update: ${currentStatus} -> ${newStatus} for asset ${assetId}`,
-      );
-
       // If moving TO "ready_for_review" from Approved or Issue, confirm with the user
       if (
         newStatus === "ready_for_review" &&
@@ -4494,275 +4496,36 @@ export default function JobDetail() {
         const confirmed = confirm(
           'This will resubmit the report for approval. Are you sure you want to change the status to "Ready for Review"?',
         );
-        if (!confirmed) {
-          console.log("[JobDetail] User cancelled resubmission");
-          return;
-        }
+        if (!confirmed) return;
       }
 
-      // If moving FROM "ready_for_review" back to "in_progress", remove from approval workflow
+      // If moving FROM "ready_for_review" back to "in_progress", the report drops
+      // out of the approval workflow entirely.
       if (currentStatus === "ready_for_review" && newStatus === "in_progress") {
-        console.log("[JobDetail] Removing asset from approval workflow");
-
-        // Confirm with user before removing from approval workflow
         const confirmed = confirm(
           "This will remove the report from the approval workflow. " +
             'Are you sure you want to change the status back to "In Progress"?',
         );
-
-        if (!confirmed) {
-          console.log("[JobDetail] User cancelled status change");
-          return; // User cancelled, don't proceed with status change
-        }
-
-        // Import the report service functions
-        const { getReportByAssetId, deleteReport } =
-          await import("@/lib/services/reportService");
-
-        // Find the associated technical report
-        console.log("Looking for technical report for asset ID:", assetId);
-        const reportResult = await getReportByAssetId(assetId);
-        console.log("Report lookup result:", reportResult);
-
-        if (reportResult.data) {
-          console.log(
-            "Found technical report, attempting to delete:",
-            reportResult.data.id,
-          );
-          // Delete the technical report and its links
-          const deleteResult = await deleteReport(reportResult.data.id);
-          console.log("Delete result:", deleteResult);
-
-          if (deleteResult.error) {
-            console.error(
-              "Failed to remove report from approval workflow:",
-              deleteResult.error,
-            );
-            alert(
-              `Warning: Failed to remove report from approval workflow: ${deleteResult.error && typeof deleteResult.error === "object" && "message" in deleteResult.error ? (deleteResult.error as any).message : "Unknown error"}`,
-            );
-            // Don't throw error here - still allow status update to proceed
-          } else {
-            console.log("Successfully removed report from approval workflow");
-            alert("Report has been removed from the approval workflow.");
-          }
-        } else {
-          console.log("No technical report found for this asset");
-          if (reportResult.error) {
-            console.error(
-              "Error looking up technical report:",
-              reportResult.error,
-            );
-          }
-        }
+        if (!confirmed) return;
       }
 
-      // If moving to "ready_for_review", create or update technical report entry
-      if (newStatus === "ready_for_review") {
-        if (asset && asset.file_url.startsWith("report:")) {
-          // Import the report service functions
-          const {
-            getReportByAssetId,
-            createDraftReport,
-            submitReportForApproval,
-          } = await import("@/lib/services/reportService");
+      const { stamped, notices, warnings } = await updateAssetReportStatus({
+        asset,
+        jobId: id!,
+        newStatus: newStatus as AssetReportStatus,
+        currentStatus: currentStatus as AssetReportStatus | undefined,
+        userId: user?.id || "",
+      });
 
-          // Check if a technical report already exists for this asset
-          console.log(
-            "Checking for existing technical report for asset ID:",
-            assetId,
-          );
-          const existingReportResult = await getReportByAssetId(assetId);
-          console.log("Existing report lookup result:", existingReportResult);
+      notices.forEach((message) => alert(message));
+      warnings.forEach((message) => alert(`Warning: ${message}`));
 
-          if (existingReportResult.data) {
-            console.log(
-              "Found existing technical report:",
-              existingReportResult.data.id,
-            );
-
-            // If report exists but is not submitted, submit it
-            if (existingReportResult.data.status !== "submitted") {
-              console.log("Submitting existing report for approval");
-              const submitResult = await submitReportForApproval(
-                existingReportResult.data.id,
-                user?.id || "",
-                "Asset resubmitted for review",
-              );
-              if (submitResult.error) {
-                throw new Error(
-                  `Failed to submit existing report for approval: ${JSON.stringify(submitResult.error)}`,
-                );
-              }
-              console.log(
-                "Successfully resubmitted existing report for approval",
-              );
-            } else {
-              console.log("Report already submitted, no action needed");
-            }
-          } else {
-            console.log(
-              "No existing report found, creating new technical report entry",
-            );
-
-            // Create a new technical report entry for approval workflow
-            const reportData = {
-              job_id: id!,
-              title: asset.name,
-              report_type: asset.template_type || "Technical Report",
-              report_data: {
-                asset_id: assetId,
-                file_url: asset.file_url,
-                asset_name: asset.name,
-              },
-            };
-
-            // Create draft and immediately submit for approval
-            const draftResult = await createDraftReport(
-              reportData,
-              user?.id || "",
-            );
-            if (draftResult.error) {
-              throw new Error(
-                `Failed to create report entry: ${JSON.stringify(draftResult.error)}`,
-              );
-            }
-
-            // Submit for approval
-            const submitResult = await submitReportForApproval(
-              draftResult.data!.id,
-              user?.id || "",
-              "Asset submitted for review",
-            );
-            if (submitResult.error) {
-              throw new Error(
-                `Failed to submit for approval: ${JSON.stringify(submitResult.error)}`,
-              );
-            }
-
-            // Check for existing asset_report links and clean up duplicates
-            const { data: existingLinks, error: linksCheckError } =
-              await supabase
-                .schema("neta_ops")
-                .from("asset_reports")
-                .select("id")
-                .eq("asset_id", assetId);
-
-            if (!linksCheckError && existingLinks && existingLinks.length > 0) {
-              console.log(
-                "Found existing asset_report links, removing duplicates",
-              );
-              // Remove existing links to prevent duplicates
-              const { error: deleteLinksError } = await supabase
-                .schema("neta_ops")
-                .from("asset_reports")
-                .delete()
-                .eq("asset_id", assetId);
-
-              if (deleteLinksError) {
-                console.warn(
-                  "Warning: Failed to clean up existing asset_report links:",
-                  deleteLinksError,
-                );
-              }
-            }
-
-            // Link asset to technical report
-            const { error: linkError } = await supabase
-              .schema("neta_ops")
-              .from("asset_reports")
-              .insert({
-                asset_id: assetId,
-                report_id: draftResult.data!.id,
-              });
-
-            if (linkError) {
-              console.warn(
-                "Warning: Failed to link asset to report:",
-                linkError,
-              );
-            }
-
-            console.log(
-              "Successfully created and submitted new report for approval",
-            );
-          }
-        }
-      }
-
-      // If marking as "sent", update the linked technical report to status sent and stamp sent_at
-      if (newStatus === "sent") {
-        if (asset && asset.file_url.startsWith("report:")) {
-          const { getReportByAssetId, markReportAsSent } =
-            await import("@/lib/services/reportService");
-          const reportResult = await getReportByAssetId(assetId);
-          if (reportResult.data) {
-            try {
-              const res = await markReportAsSent(
-                reportResult.data.id,
-                user?.id || "",
-                "Report marked as sent from Linked Reports",
-              );
-              if (res.error) {
-                console.warn(
-                  "Failed to mark technical report as sent:",
-                  res.error,
-                );
-              } else {
-                // Optimistically update timestamp cache so UI reflects immediately
-                const nowIso = new Date().toISOString();
-                setReportTimestampsByAsset((prev) => ({
-                  ...prev,
-                  [assetId]: {
-                    ...(prev[assetId] || {}),
-                    sent_at: nowIso,
-                  },
-                }));
-              }
-            } catch (e) {
-              console.warn("Error marking technical report as sent:", e);
-            }
-          }
-        }
-      }
-
-      // Prepare update payload with timestamps
-      const updatePayload: any = { status: newStatus };
-      const now = new Date().toISOString();
-
-      // Stamp submitted_at when marking as ready_for_review
-      if (newStatus === "ready_for_review") {
-        updatePayload.submitted_at = now;
-        updatePayload.submitted_by = user?.id || null;
-      }
-
-      // Stamp approved_at when marking as approved
-      if (newStatus === "approved") {
-        updatePayload.approved_at = now;
-        updatePayload.approved_by = user?.id || null;
-        updatePayload.reviewed_by = user?.id || null;
-        updatePayload.reviewed_at = now;
-      }
-
-      // Stamp sent_at when marking as sent
-      if (newStatus === "sent") {
-        updatePayload.sent_at = now;
-        updatePayload.sent_by = user?.id || null;
-        // If no approved_at exists yet, stamp it now (assume approved at same time)
-        if (!asset?.approved_at) {
-          updatePayload.approved_at = now;
-        }
-      }
-
-      const { error } = await supabase
-        .schema("neta_ops")
-        .from("assets")
-        .update(updatePayload)
-        .eq("id", assetId);
-
-      if (error) {
-        console.error("Error updating asset status:", error);
-        throw new Error(`Failed to update status: ${error.message}`);
+      if (stamped.sent_at) {
+        // Keep the timestamp cache in step so the row updates without a refetch.
+        setReportTimestampsByAsset((prev) => ({
+          ...prev,
+          [assetId]: { ...(prev[assetId] || {}), sent_at: stamped.sent_at },
+        }));
       }
 
       // Publish the report to the customer portal as a real, print-styled PDF
@@ -4790,25 +4553,23 @@ export default function JobDetail() {
       const updatedAsset = {
         ...asset,
         status: newStatus,
-        submitted_at:
-          newStatus === "ready_for_review" ? now : asset.submitted_at,
-        approved_at:
-          newStatus === "approved"
-            ? now
-            : newStatus === "sent" && !asset.approved_at
-              ? now
-              : asset.approved_at,
-        sent_at: newStatus === "sent" ? now : asset.sent_at,
+        submitted_at: stamped.submitted_at ?? asset.submitted_at,
+        approved_at: stamped.approved_at ?? asset.approved_at,
+        sent_at: stamped.sent_at ?? asset.sent_at,
         submitted_by:
-          newStatus === "ready_for_review"
-            ? user?.id || null
+          stamped.submitted_by !== undefined
+            ? stamped.submitted_by
             : asset.submitted_by,
         approved_by:
-          newStatus === "approved" ? user?.id || null : asset.approved_by,
-        sent_by: newStatus === "sent" ? user?.id || null : asset.sent_by,
+          stamped.approved_by !== undefined
+            ? stamped.approved_by
+            : asset.approved_by,
+        sent_by: stamped.sent_by !== undefined ? stamped.sent_by : asset.sent_by,
         reviewed_by:
-          newStatus === "approved" ? user?.id || null : asset.reviewed_by,
-        reviewed_at: newStatus === "approved" ? now : asset.reviewed_at,
+          stamped.reviewed_by !== undefined
+            ? stamped.reviewed_by
+            : asset.reviewed_by,
+        reviewed_at: stamped.reviewed_at ?? asset.reviewed_at,
       };
 
       setJobAssets((prev) =>
@@ -4821,13 +4582,7 @@ export default function JobDetail() {
       // Refetch job assets to get the latest data from database
       await fetchJobAssets();
 
-      // Dispatch custom event to notify other components to refresh
-      console.log("[JobDetail] Dispatching assetStatusChanged event");
-      window.dispatchEvent(
-        new CustomEvent("assetStatusChanged", {
-          detail: { assetId, newStatus, jobId: id },
-        }),
-      );
+      notifyAssetStatusChanged(assetId, newStatus as AssetReportStatus, id);
     } catch (error) {
       console.error("Error in handleStatusUpdate:", error);
       alert(
@@ -6120,19 +5875,25 @@ export default function JobDetail() {
       const now = new Date().toISOString();
       const assetIds = approvedAssets.map((a) => a.id);
 
-      // Batch update all approved assets to 'sent' in one query
-      const { error } = await supabase
-        .schema("neta_ops")
-        .from("assets")
-        .update({
-          status: "sent",
-          sent_at: now,
-          sent_by: user?.id || null,
-        })
-        .in("id", assetIds);
+      // Batch update all approved assets to 'sent' in one query. Writing fixed
+      // values to a fixed id list is safe to repeat, and postgrest-js retries
+      // reads but never writes, so retry it here.
+      const { error, status } = await withWriteRetry(
+        () =>
+          supabase
+            .schema("neta_ops")
+            .from("assets")
+            .update({
+              status: "sent",
+              sent_at: now,
+              sent_by: user?.id || null,
+            })
+            .in("id", assetIds),
+        { label: "assets.status -> sent (bulk)" },
+      );
 
       if (error) {
-        throw new Error(`Failed to update statuses: ${error.message}`);
+        throw new Error(describeSupabaseError(error, status));
       }
 
       // Update local state
@@ -6243,19 +6004,24 @@ export default function JobDetail() {
       const now = new Date().toISOString();
       const assetIds = selectedApprovedAssets.map((a) => a.id);
 
-      // Batch update selected approved assets to 'sent' in one query
-      const { error } = await supabase
-        .schema("neta_ops")
-        .from("assets")
-        .update({
-          status: "sent",
-          sent_at: now,
-          sent_by: user?.id || null,
-        })
-        .in("id", assetIds);
+      // Batch update selected approved assets to 'sent' in one query, retried
+      // on a dropped connection for the same reason as the bulk action above.
+      const { error, status } = await withWriteRetry(
+        () =>
+          supabase
+            .schema("neta_ops")
+            .from("assets")
+            .update({
+              status: "sent",
+              sent_at: now,
+              sent_by: user?.id || null,
+            })
+            .in("id", assetIds),
+        { label: "assets.status -> sent (selected)" },
+      );
 
       if (error) {
-        throw new Error(`Failed to update statuses: ${error.message}`);
+        throw new Error(describeSupabaseError(error, status));
       }
 
       // Update local state

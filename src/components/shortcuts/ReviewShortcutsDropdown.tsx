@@ -124,11 +124,11 @@ export const ReviewShortcutsDropdown: React.FC<
     );
   };
 
-  const loadJobs = useCallback(async () => {
+  const loadJobs = useCallback(async (force = false) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchJobsWithReportsForReview();
+      const data = await fetchJobsWithReportsForReview({ force });
       const flagCountsByJob = await fetchOpenFlagCountsByJob();
       const reviewJobs: ReviewDropdownJob[] = data.map((job) => ({
         ...job,
@@ -175,7 +175,9 @@ export const ReviewShortcutsDropdown: React.FC<
           "archived",
         ].includes(newStatus)
       ) {
-        void loadJobs();
+        // A status just changed, so the shared queue has to be re-read rather
+        // than served from cache.
+        void loadJobs(true);
       }
     };
 

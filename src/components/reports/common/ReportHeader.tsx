@@ -123,7 +123,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
           <>
             <AutoSaveIndicator isSaving={isAutoSaving} />
 
-            {/* Status Toggle */}
+            {/* Pass / Fail Toggle */}
             <div
               onMouseEnter={showTooltip(status)}
               onMouseMove={moveTooltip}

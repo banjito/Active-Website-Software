@@ -15,6 +15,7 @@ import { ArrowLeft, Save, Printer, Plus, Minus, Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ReportWrapper } from "@/components/reports/ReportWrapper";
 import { ReportPhotosButton } from "@/components/reports/common/ReportPhotos";
+import { ReportStatusButton } from "@/components/reports/common/ReportStatusButton";
 import {
   CustomFormTemplate,
   SectionConfig,
@@ -1738,6 +1739,8 @@ export const CustomFormFiller: React.FC = () => {
                 >
                   Back to Job
                 </Button>
+                {/* Report status (renders nothing on unsaved instances) */}
+                <ReportStatusButton />
                 <div>
                   <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
                     {template.name}

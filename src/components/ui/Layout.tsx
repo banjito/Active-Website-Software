@@ -33,6 +33,7 @@ import { AboutPopup } from "./AboutPopup";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
 import { HeaderBar } from "./HeaderBar";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { ReportStatusButton } from "@/components/reports/common/ReportStatusButton";
 import {
   JOB_INFO_EDITABLE_CSS,
   collectJobInfoFields,
@@ -1110,6 +1111,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <span className="hidden sm:inline">Preview</span>
                 </Button>
               )}
+              {/* Where the report sits in its lifecycle, and how to move it
+                  along. Renders nothing until the report is saved and linked
+                  to an asset. */}
+              {isReportPage && !isPrintExport && <ReportStatusButton />}
             </div>
             {mainContent}
           </div>

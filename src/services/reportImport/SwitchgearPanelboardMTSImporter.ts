@@ -176,6 +176,10 @@ export class SwitchgearPanelboardMTSImporter extends BaseImporter implements Rep
               cg: row.cg || ''
             }));
             reportData.dielectricWithstandUnit = section.fields[0].value.rows[0]?.unit || 'µA';
+            // Test voltage is stored once on the table, not per row.
+            if (section.fields[0].value.testVoltage) {
+              reportData.dielectricWithstandTestVoltage = section.fields[0].value.testVoltage;
+            }
           }
         }
         
@@ -321,6 +325,9 @@ export class SwitchgearPanelboardMTSImporter extends BaseImporter implements Rep
           cg: row.cg || ''
         }));
         reportData.dielectricWithstandUnit = fields.switchgearDielectric.rows[0]?.unit || 'µA';
+        if (fields.switchgearDielectric.testVoltage) {
+          reportData.dielectricWithstandTestVoltage = fields.switchgearDielectric.testVoltage;
+        }
       }
       
       // Test equipment

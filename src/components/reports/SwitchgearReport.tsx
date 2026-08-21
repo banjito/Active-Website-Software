@@ -45,6 +45,26 @@ const contactResistanceUnits = [
   { symbol: "Ω", name: "Ohms" },
 ];
 
+const dielectricWithstandUnits = [
+  { symbol: "µA", name: "Micro-Amps" },
+  { symbol: "mA", name: "Milli-Amps" },
+];
+
+const dielectricWithstandTestVoltages = [
+  "1.6 kVAC",
+  "2.2 kVAC",
+  "14 kVAC",
+  "27 kVAC",
+  "37 kVAC",
+  "45 kVAC",
+  "60 kVAC",
+  "120 kVAC",
+  "2.3 kVDC",
+  "3.1 kVDC",
+  "20 kVDC",
+  "37.5 kVDC",
+];
+
 interface FormData {
   // Job Information
   customer: string;
@@ -2468,6 +2488,173 @@ const SwitchgearReport: React.FC = () => {
             </div>
           </div>
 
+          {/* Dielectric Withstand */}
+          <div className="mb-6 section-dielectric">
+            <div className="w-full h-1 bg-brand mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
+              Dielectric Withstand
+            </h2>
+            <div className="flex justify-end mb-2">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-neutral-700 dark:text-white">
+                  Test Voltage:
+                </span>
+                <select
+                  value={formData.dielectricWithstandTests[0]?.testVoltage || ""}
+                  onChange={(e) => {
+                    const newTests = formData.dielectricWithstandTests.map(
+                      (test) => ({ ...test, testVoltage: e.target.value }),
+                    );
+                    setFormData({
+                      ...formData,
+                      dielectricWithstandTests: newTests,
+                    });
+                  }}
+                  disabled={!isEditing}
+                  className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                >
+                  <option value="">Select...</option>
+                  {dielectricWithstandTestVoltages.map((voltage) => (
+                    <option
+                      key={voltage}
+                      value={voltage}
+                      className="dark:bg-dark-150 dark:text-white"
+                    >
+                      {voltage}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full table-fixed divide-y divide-neutral-200 dark:divide-neutral-700">
+                <colgroup>
+                  {/* Bus Section (left) */}
+                  <col style={{ width: "8%" }} />
+                  {/* Three phase-to-ground readings spread wide */}
+                  <col style={{ width: "28%" }} />
+                  <col style={{ width: "28%" }} />
+                  <col style={{ width: "28%" }} />
+                  {/* Units (right) */}
+                  <col style={{ width: "8%" }} />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                      Bus Section
+                    </th>
+                    <th
+                      className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
+                      colSpan={3}
+                    >
+                      Dielectric Withstand
+                    </th>
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                      Units
+                    </th>
+                  </tr>
+                  <tr>
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150"></th>
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
+                      A-G
+                    </th>
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
+                      B-G
+                    </th>
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
+                      C-G
+                    </th>
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase"></th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
+                  {formData.dielectricWithstandTests.map((test, index) => (
+                    <tr key={index}>
+                      <td className="px-3 py-2">
+                        <div className="print:hidden">
+                          <input
+                            type="text"
+                            value={test.busSection}
+                            readOnly
+                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                          />
+                        </div>
+                        <div className="hidden print:block text-center">
+                          {test.busSection}
+                        </div>
+                      </td>
+                      {["ag", "bg", "cg"].map((key) => (
+                        <td key={key} className="px-3 py-2">
+                          <div className="print:hidden">
+                            <input
+                              type="text"
+                              value={test.values?.[key] ?? ""}
+                              onChange={(e) => {
+                                const newTests = [
+                                  ...formData.dielectricWithstandTests,
+                                ];
+                                if (!newTests[index]) {
+                                  newTests[index] = {
+                                    busSection: "",
+                                    values: { ag: "", bg: "", cg: "" },
+                                    testVoltage: newTests[0]?.testVoltage || "",
+                                    unit: "µA",
+                                  };
+                                }
+                                newTests[index].values[key] = e.target.value;
+                                setFormData({
+                                  ...formData,
+                                  dielectricWithstandTests: newTests,
+                                });
+                              }}
+                              readOnly={!isEditing}
+                              className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            />
+                          </div>
+                          <div className="hidden print:block text-center">
+                            {test.values?.[key] ?? ""}
+                          </div>
+                        </td>
+                      ))}
+                      <td className="px-3 py-2">
+                        <div className="print:hidden">
+                          <select
+                            value={test.unit}
+                            onChange={(e) => {
+                              const newTests = [
+                                ...formData.dielectricWithstandTests,
+                              ];
+                              newTests[index].unit = e.target.value;
+                              setFormData((prev) => ({
+                                ...prev,
+                                dielectricWithstandTests: newTests,
+                              }));
+                            }}
+                            disabled={!isEditing}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          >
+                            {dielectricWithstandUnits.map((unit) => (
+                              <option
+                                key={unit.symbol}
+                                value={unit.symbol}
+                                className="dark:bg-dark-150 dark:text-white"
+                              >
+                                {unit.symbol}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="hidden print:block text-center">
+                          {test.unit}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           {/* Test Equipment Used */}
           <div className="mb-6">
             <div className="w-full h-1 bg-brand mb-4"></div>
@@ -2958,7 +3145,8 @@ if (typeof document !== "undefined") {
       /* Narrow Bus Section inputs so they don't collide with the first reading */
       .section-insulation-resistance td:first-child input,
       .section-temp-corrected td:first-child input,
-      .section-contact-resistance td:first-child input {
+      .section-contact-resistance td:first-child input,
+      .section-dielectric td:first-child input {
         width: 45px !important;
         max-width: 45px !important;
         box-sizing: border-box !important;
@@ -2969,7 +3157,8 @@ if (typeof document !== "undefined") {
       /* Narrow Units fields on the far right to avoid clipping against table edge */
       .section-insulation-resistance td:last-child select,
       .section-temp-corrected td:last-child input,
-      .section-contact-resistance td:last-child select {
+      .section-contact-resistance td:last-child select,
+      .section-dielectric td:last-child select {
         width: 45px !important;
         max-width: 45px !important;
         box-sizing: border-box !important;

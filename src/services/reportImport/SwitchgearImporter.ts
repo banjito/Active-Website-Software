@@ -202,6 +202,8 @@ export class SwitchgearImporter extends BaseImporter implements ReportImporter {
         
         if (section.title === 'Dielectric Withstand') {
           if (section.fields[0]?.value?.rows) {
+            // Test voltage is stored once on the table, not per row.
+            const tableVoltage = section.fields[0].value.testVoltage;
             reportData.dielectricWithstandTests = section.fields[0].value.rows.map((row: any) => ({
               busSection: row.bus,
               values: {
@@ -209,7 +211,7 @@ export class SwitchgearImporter extends BaseImporter implements ReportImporter {
                 bg: row.bg || '',
                 cg: row.cg || ''
               },
-              testVoltage: '2.2 kVAC', // Default value
+              testVoltage: row.testVoltage || tableVoltage || '2.2 kVAC',
               unit: row.unit || 'µA'
             }));
           }
@@ -352,6 +354,7 @@ export class SwitchgearImporter extends BaseImporter implements ReportImporter {
       
       // Dielectric withstand data
       if (!reportData.dielectricWithstandTests && fields.switchgearDielectric?.rows) {
+        const tableVoltage = fields.switchgearDielectric.testVoltage;
         reportData.dielectricWithstandTests = fields.switchgearDielectric.rows.map((row: any) => ({
           busSection: row.bus,
           values: {
@@ -359,7 +362,7 @@ export class SwitchgearImporter extends BaseImporter implements ReportImporter {
             bg: row.bg || '',
             cg: row.cg || ''
           },
-          testVoltage: '2.2 kVAC',
+          testVoltage: row.testVoltage || tableVoltage || '2.2 kVAC',
           unit: row.unit || 'µA'
         }));
       }

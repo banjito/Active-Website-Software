@@ -341,13 +341,26 @@ export const PublicCareerPage: React.FC = () => {
     new Set(approvedRequisitions.map((req) => req.department)),
   );
 
-  const formatSalaryRange = (min?: number, max?: number) => {
+  const formatPayRange = (
+    min?: number,
+    max?: number,
+    payType?: JobRequisition["pay_type"],
+  ) => {
+    const hourly = payType === "hourly";
+    const amount = (value: number) =>
+      hourly
+        ? `$${Number(value).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`
+        : `$${Number(value).toLocaleString(undefined, {
+            maximumFractionDigits: 0,
+          })}`;
+    const unit = hourly ? "/hr" : "/yr";
     if (!min && !max) return "Competitive";
-    if (min && max)
-      return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
-    if (min) return `$${min.toLocaleString()}+`;
-    if (max) return `Up to $${max.toLocaleString()}`;
-    return "Competitive";
+    if (min && max) return `${amount(min)} - ${amount(max)} ${unit}`;
+    if (min) return `${amount(min)}+ ${unit}`;
+    return `Up to ${amount(max!)} ${unit}`;
   };
 
   return (
@@ -449,9 +462,10 @@ export const PublicCareerPage: React.FC = () => {
                       </span>
                       <span className="flex items-center gap-1.5">
                         <DollarSign className="h-4 w-4" />
-                        {formatSalaryRange(
+                        {formatPayRange(
                           req.salary_range_min,
                           req.salary_range_max,
+                          req.pay_type,
                         )}
                       </span>
                       {req.employment_type && (

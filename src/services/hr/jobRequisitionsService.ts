@@ -62,10 +62,11 @@ export interface JobRequisition {
   department: string;
   location: string;
   employment_type: string;
+  pay_type?: 'salary' | 'hourly';
   salary_range_min?: number;
   salary_range_max?: number;
   status: 'draft' | 'pending_approval' | 'approved' | 'posted' | 'closed' | 'cancelled';
-  priority: 'low' | 'medium' | 'high';
+  priority?: 'low' | 'medium' | 'high';
   description?: string;
   requirements?: string;
   created_by: string;
@@ -88,10 +89,10 @@ export interface CreateJobRequisitionInput {
   department: string;
   location: string;
   employment_type: string;
+  pay_type?: 'salary' | 'hourly';
   salary_range_min?: number;
   salary_range_max?: number;
-  status?: 'draft' | 'pending_approval' | 'approved' | 'posted' | 'closed';
-  priority?: 'low' | 'medium' | 'high';
+  status?: JobRequisition['status'];
   description?: string;
   requirements?: string;
   notes?: string;
@@ -148,7 +149,7 @@ export const jobRequisitionsService = {
         ...input,
         created_by: userId,
         status: input.status || 'draft',
-        priority: input.priority || 'medium',
+        pay_type: input.pay_type || 'salary',
       })
       .select()
       .single();

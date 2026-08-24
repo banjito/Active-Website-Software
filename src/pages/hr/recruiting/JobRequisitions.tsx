@@ -45,6 +45,7 @@ import {
   X,
   ChevronUp,
   ChevronDown,
+  Copy,
 } from "lucide-react";
 import {
   jobRequisitionsService,
@@ -66,7 +67,7 @@ interface AppUser {
 }
 
 type ViewMode = "grid" | "list";
-type SortField = "created_at" | "title" | "department" | "status" | "priority";
+type SortField = "created_at" | "title" | "department" | "status";
 type SortDirection = "asc" | "desc";
 
 export const JobRequisitions: React.FC = () => {
@@ -74,13 +75,15 @@ export const JobRequisitions: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterDepartment, setFilterDepartment] = useState<string>("all");
-  const [filterPriority, setFilterPriority] = useState<string>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [requisitions, setRequisitions] = useState<JobRequisition[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [duplicateSourceTitle, setDuplicateSourceTitle] = useState<
+    string | null
+  >(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedRequisition, setSelectedRequisition] =
@@ -90,10 +93,10 @@ export const JobRequisitions: React.FC = () => {
     department: "",
     location: "",
     employment_type: "Full-time",
+    pay_type: "salary",
     salary_range_min: undefined,
     salary_range_max: undefined,
     status: "draft",
-    priority: "medium",
     description: "",
     requirements: "",
     notes: "",
@@ -211,18 +214,28 @@ export const JobRequisitions: React.FC = () => {
     }
   };
 
-  // Helper function to format number with commas
+  // Format a pay amount for display: thousands separators, and up to two
+  // decimals so hourly rates like 42.50 can be typed.
   const formatNumberWithCommas = (value: string): string => {
-    // Remove all non-digit characters
-    const numbers = value.replace(/\D/g, "");
-    // Add commas for thousands
-    return numbers.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    let cleaned = value.replace(/[^\d.]/g, "");
+    const firstDot = cleaned.indexOf(".");
+    if (firstDot !== -1) {
+      cleaned =
+        cleaned.slice(0, firstDot + 1) +
+        cleaned.slice(firstDot + 1).replace(/\./g, "");
+    }
+    const [intPart, decPart] = cleaned.split(".");
+    const withCommas = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    if (decPart === undefined) return withCommas;
+    return `${withCommas}.${decPart.slice(0, 2)}`;
   };
 
   // Helper function to parse formatted number (remove commas)
   const parseFormattedNumber = (value: string): number | undefined => {
-    const numbers = value.replace(/\D/g, "");
-    return numbers ? parseFloat(numbers) : undefined;
+    const cleaned = value.replace(/[^\d.]/g, "");
+    if (!cleaned) return undefined;
+    const parsed = parseFloat(cleaned);
+    return Number.isNaN(parsed) ? undefined : parsed;
   };
 
   const handleInputChange = (
@@ -287,7 +300,9 @@ export const JobRequisitions: React.FC = () => {
       formData.salary_range_min > formData.salary_range_max
     ) {
       errors.salary_range_max =
-        "Maximum salary must be greater than minimum salary";
+        formData.pay_type === "hourly"
+          ? "Maximum rate must be greater than minimum rate"
+          : "Maximum salary must be greater than minimum salary";
     }
 
     setFormErrors(errors);
@@ -528,10 +543,10 @@ export const JobRequisitions: React.FC = () => {
       department: "",
       location: "",
       employment_type: "Full-time",
+      pay_type: "salary",
       salary_range_min: undefined,
       salary_range_max: undefined,
       status: "draft",
-      priority: "medium",
       description: "",
       requirements: "",
       notes: "",
@@ -543,6 +558,45 @@ export const JobRequisitions: React.FC = () => {
     setFormErrors({});
     setSelectedApprovers([]);
     setApproverSearchTerm("");
+    setDuplicateSourceTitle(null);
+  };
+
+  // Opens the create modal prefilled from an existing requisition. Recruiting
+  // for the same roles repeatedly is the norm, so the copy carries everything
+  // except the approval history: it starts as a fresh draft.
+  const openDuplicateModal = (requisition: JobRequisition) => {
+    setFormData({
+      title: `${requisition.title} (Copy)`,
+      department: requisition.department,
+      location: requisition.location,
+      employment_type: requisition.employment_type,
+      pay_type: requisition.pay_type || "salary",
+      salary_range_min: requisition.salary_range_min,
+      salary_range_max: requisition.salary_range_max,
+      status: "draft",
+      description: getJobRequisitionDisplayHtml(requisition),
+      requirements: "",
+      notes: "",
+    });
+    setFormattedSalary({
+      min: requisition.salary_range_min
+        ? formatNumberWithCommas(String(requisition.salary_range_min))
+        : "",
+      max: requisition.salary_range_max
+        ? formatNumberWithCommas(String(requisition.salary_range_max))
+        : "",
+    });
+    // Carry the approval chain over: same role, same approvers.
+    const existing = approversMap[requisition.id] || [];
+    setSelectedApprovers(
+      existing
+        .sort((a, b) => a.step_order - b.step_order)
+        .map((a) => a.approver_user_id),
+    );
+    setFormErrors({});
+    setApproverSearchTerm("");
+    setDuplicateSourceTitle(requisition.title);
+    setIsCreateModalOpen(true);
   };
 
   const openEditModal = (requisition: JobRequisition) => {
@@ -552,20 +606,20 @@ export const JobRequisitions: React.FC = () => {
       department: requisition.department,
       location: requisition.location,
       employment_type: requisition.employment_type,
+      pay_type: requisition.pay_type || "salary",
       salary_range_min: requisition.salary_range_min,
       salary_range_max: requisition.salary_range_max,
       status: requisition.status,
-      priority: requisition.priority,
       description: getJobRequisitionDisplayHtml(requisition),
       requirements: "",
       notes: "",
     });
     setFormattedSalary({
       min: requisition.salary_range_min
-        ? requisition.salary_range_min.toLocaleString()
+        ? formatNumberWithCommas(String(requisition.salary_range_min))
         : "",
       max: requisition.salary_range_max
-        ? requisition.salary_range_max.toLocaleString()
+        ? formatNumberWithCommas(String(requisition.salary_range_max))
         : "",
     });
     // Load existing approvers
@@ -603,17 +657,13 @@ export const JobRequisitions: React.FC = () => {
         filterStatus === "all" || req.status === filterStatus;
       const matchesDepartment =
         filterDepartment === "all" || req.department === filterDepartment;
-      const matchesPriority =
-        filterPriority === "all" || req.priority === filterPriority;
-      return (
-        matchesSearch && matchesStatus && matchesDepartment && matchesPriority
-      );
+      return matchesSearch && matchesStatus && matchesDepartment;
     })
     .sort((a, b) => {
       let aValue: any = a[sortField];
       let bValue: any = b[sortField];
 
-      if (sortField === "created_at" || sortField === "updated_at") {
+      if (sortField === "created_at") {
         aValue = new Date(aValue).getTime();
         bValue = new Date(bValue).getTime();
       } else if (typeof aValue === "string") {
@@ -652,14 +702,36 @@ export const JobRequisitions: React.FC = () => {
       .join(" ");
   };
 
-  const formatSalaryRange = (min?: number, max?: number) => {
+  // Renders the min/max range as an annual salary or an hourly rate depending
+  // on the requisition's pay_type. Rows created before pay_type existed are
+  // annual salaries.
+  const formatPayRange = (
+    min?: number,
+    max?: number,
+    payType?: JobRequisition["pay_type"],
+  ) => {
+    const hourly = payType === "hourly";
+    const amount = (value: number) =>
+      hourly
+        ? `$${Number(value).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`
+        : `$${Number(value).toLocaleString(undefined, {
+            maximumFractionDigits: 0,
+          })}`;
+    const unit = hourly ? "/hr" : "/yr";
     if (!min && !max) return "Not specified";
-    if (min && max)
-      return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
-    if (min) return `$${min.toLocaleString()}+`;
-    if (max) return `Up to $${max.toLocaleString()}`;
-    return "Not specified";
+    if (min && max) return `${amount(min)} - ${amount(max)} ${unit}`;
+    if (min) return `${amount(min)}+ ${unit}`;
+    return `Up to ${amount(max!)} ${unit}`;
   };
+
+  // Labels for the pay inputs follow the selected pay type.
+  const payLabels = (payType?: JobRequisition["pay_type"]) =>
+    payType === "hourly"
+      ? { min: "Min Hourly Rate", max: "Max Hourly Rate", placeholderMin: "e.g., 42.00", placeholderMax: "e.g., 55.00" }
+      : { min: "Min Salary", max: "Max Salary", placeholderMin: "e.g., 40,000", placeholderMax: "e.g., 80,000" };
 
   // Statistics
   const stats = {
@@ -698,9 +770,9 @@ export const JobRequisitions: React.FC = () => {
       "Department",
       "Location",
       "Employment Type",
-      "Salary Range",
+      "Pay Type",
+      "Pay Range",
       "Status",
-      "Priority",
       "Created",
       "Updated",
     ];
@@ -709,9 +781,9 @@ export const JobRequisitions: React.FC = () => {
       req.department,
       req.location,
       req.employment_type,
-      formatSalaryRange(req.salary_range_min, req.salary_range_max),
+      req.pay_type === "hourly" ? "Hourly" : "Salary",
+      formatPayRange(req.salary_range_min, req.salary_range_max, req.pay_type),
       getStatusLabel(req.status),
-      req.priority.charAt(0).toUpperCase() + req.priority.slice(1),
       new Date(req.created_at).toLocaleDateString(),
       new Date(req.updated_at).toLocaleDateString(),
     ]);
@@ -875,16 +947,6 @@ export const JobRequisitions: React.FC = () => {
                   </option>
                 ))}
               </select>
-              <select
-                value={filterPriority}
-                onChange={(e) => setFilterPriority(e.target.value)}
-                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
-              >
-                <option value="all">All Priorities</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -933,8 +995,7 @@ export const JobRequisitions: React.FC = () => {
               <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
                 {searchTerm ||
                 filterStatus !== "all" ||
-                filterDepartment !== "all" ||
-                filterPriority !== "all"
+                filterDepartment !== "all"
                   ? "Try adjusting your search or filters"
                   : "Get started by creating a new job requisition"}
               </p>
@@ -970,7 +1031,7 @@ export const JobRequisitions: React.FC = () => {
                       Location
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                      Salary Range
+                      Pay Range
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       <button
@@ -978,15 +1039,6 @@ export const JobRequisitions: React.FC = () => {
                         className="flex items-center gap-1 hover:text-neutral-700 dark:hover:text-neutral-200"
                       >
                         Status
-                        <ArrowUpDown className="h-3 w-3" />
-                      </button>
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                      <button
-                        onClick={() => handleSort("priority")}
-                        className="flex items-center gap-1 hover:text-neutral-700 dark:hover:text-neutral-200"
-                      >
-                        Priority
                         <ArrowUpDown className="h-3 w-3" />
                       </button>
                     </th>
@@ -1025,9 +1077,10 @@ export const JobRequisitions: React.FC = () => {
                         {req.location}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-white">
-                        {formatSalaryRange(
+                        {formatPayRange(
                           req.salary_range_min,
                           req.salary_range_max,
+                          req.pay_type,
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -1035,20 +1088,6 @@ export const JobRequisitions: React.FC = () => {
                           className={`px-2 py-1 rounded-none text-xs font-medium ${getStatusColor(req.status)}`}
                         >
                           {getStatusLabel(req.status)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${
-                            req.priority === "high"
-                              ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                              : req.priority === "medium"
-                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                                : "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200"
-                          }`}
-                        >
-                          {req.priority.charAt(0).toUpperCase() +
-                            req.priority.slice(1)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
@@ -1069,6 +1108,14 @@ export const JobRequisitions: React.FC = () => {
                             onClick={() => openEditModal(req)}
                           >
                             <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            title="Duplicate"
+                            onClick={() => openDuplicateModal(req)}
+                          >
+                            <Copy className="h-4 w-4" />
                           </Button>
                           {req.status === "draft" && (
                             <Button
@@ -1119,9 +1166,10 @@ export const JobRequisitions: React.FC = () => {
                       </span>
                       <span className="flex items-center gap-1">
                         <DollarSign className="h-4 w-4" />
-                        {formatSalaryRange(
+                        {formatPayRange(
                           req.salary_range_min,
                           req.salary_range_max,
+                          req.pay_type,
                         )}
                       </span>
                     </CardDescription>
@@ -1129,19 +1177,6 @@ export const JobRequisitions: React.FC = () => {
                   <div className="flex flex-col items-end gap-2">
                     <span className="text-xs text-neutral-500 dark:text-neutral-400">
                       Created: {new Date(req.created_at).toLocaleDateString()}
-                    </span>
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${
-                        req.priority === "high"
-                          ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                          : req.priority === "medium"
-                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                            : "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200"
-                      }`}
-                    >
-                      {req.priority.charAt(0).toUpperCase() +
-                        req.priority.slice(1)}{" "}
-                      Priority
                     </span>
                   </div>
                 </div>
@@ -1236,6 +1271,12 @@ export const JobRequisitions: React.FC = () => {
                       onClick={() => openEditModal(req)} leftIcon={<Edit className="h-4 w-4" />}>
                       Edit
                     </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openDuplicateModal(req)} leftIcon={<Copy className="h-4 w-4" />}>
+                      Duplicate
+                    </Button>
                     {req.status === "draft" && (
                       <Button
                         variant="outline"
@@ -1257,9 +1298,15 @@ export const JobRequisitions: React.FC = () => {
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Job Requisition</DialogTitle>
+            <DialogTitle>
+              {duplicateSourceTitle
+                ? "Duplicate Job Requisition"
+                : "Create Job Requisition"}
+            </DialogTitle>
             <DialogDescription>
-              Fill in the details to create a new job requisition
+              {duplicateSourceTitle
+                ? `Copied from "${duplicateSourceTitle}". Adjust anything that changed, then save it as a new draft.`
+                : "Fill in the details to create a new job requisition"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -1323,33 +1370,32 @@ export const JobRequisitions: React.FC = () => {
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Select
+                label="Pay Type"
+                name="pay_type"
+                value={formData.pay_type || "salary"}
+                onChange={handleInputChange}
+                options={[
+                  { value: "salary", label: "Salary (annual)" },
+                  { value: "hourly", label: "Hourly" },
+                ]}
+              />
               <Input
-                label="Min Salary"
+                label={payLabels(formData.pay_type).min}
                 name="salary_range_min"
                 type="text"
                 value={formattedSalary.min}
                 onChange={handleInputChange}
-                placeholder="e.g., 40,000"
+                placeholder={payLabels(formData.pay_type).placeholderMin}
               />
               <Input
-                label="Max Salary"
+                label={payLabels(formData.pay_type).max}
                 name="salary_range_max"
                 type="text"
                 value={formattedSalary.max}
                 onChange={handleInputChange}
                 error={formErrors.salary_range_max}
-                placeholder="e.g., 80,000"
-              />
-              <Select
-                label="Priority"
-                name="priority"
-                value={formData.priority}
-                onChange={handleInputChange}
-                options={[
-                  { value: "low", label: "Low" },
-                  { value: "medium", label: "Medium" },
-                  { value: "high", label: "High" },
-                ]}
+                placeholder={payLabels(formData.pay_type).placeholderMax}
               />
             </div>
             <div>
@@ -1495,7 +1541,11 @@ export const JobRequisitions: React.FC = () => {
               disabled={saving}
               className="bg-brand hover:bg-brand/90 text-white"
             >
-              {saving ? "Creating..." : "Create Requisition"}
+              {saving
+                ? "Creating..."
+                : duplicateSourceTitle
+                  ? "Create Copy"
+                  : "Create Requisition"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1571,33 +1621,32 @@ export const JobRequisitions: React.FC = () => {
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Select
+                label="Pay Type"
+                name="pay_type"
+                value={formData.pay_type || "salary"}
+                onChange={handleInputChange}
+                options={[
+                  { value: "salary", label: "Salary (annual)" },
+                  { value: "hourly", label: "Hourly" },
+                ]}
+              />
               <Input
-                label="Min Salary"
+                label={payLabels(formData.pay_type).min}
                 name="salary_range_min"
                 type="text"
                 value={formattedSalary.min}
                 onChange={handleInputChange}
-                placeholder="e.g., 40,000"
+                placeholder={payLabels(formData.pay_type).placeholderMin}
               />
               <Input
-                label="Max Salary"
+                label={payLabels(formData.pay_type).max}
                 name="salary_range_max"
                 type="text"
                 value={formattedSalary.max}
                 onChange={handleInputChange}
                 error={formErrors.salary_range_max}
-                placeholder="e.g., 80,000"
-              />
-              <Select
-                label="Priority"
-                name="priority"
-                value={formData.priority}
-                onChange={handleInputChange}
-                options={[
-                  { value: "low", label: "Low" },
-                  { value: "medium", label: "Medium" },
-                  { value: "high", label: "High" },
-                ]}
+                placeholder={payLabels(formData.pay_type).placeholderMax}
               />
             </div>
             <div>
@@ -1841,12 +1890,15 @@ export const JobRequisitions: React.FC = () => {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                    Salary Range
+                    {selectedRequisition.pay_type === "hourly"
+                      ? "Hourly Rate"
+                      : "Salary Range"}
                   </label>
                   <p className="text-neutral-900 dark:text-white">
-                    {formatSalaryRange(
+                    {formatPayRange(
                       selectedRequisition.salary_range_min,
                       selectedRequisition.salary_range_max,
+                      selectedRequisition.pay_type,
                     )}
                   </p>
                 </div>
@@ -1856,14 +1908,6 @@ export const JobRequisitions: React.FC = () => {
                   </label>
                   <p className="text-neutral-900 dark:text-white">
                     {getStatusLabel(selectedRequisition.status)}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                    Priority
-                  </label>
-                  <p className="text-neutral-900 dark:text-white capitalize">
-                    {selectedRequisition.priority}
                   </p>
                 </div>
               </div>

@@ -630,8 +630,10 @@ function App() {
                       </RequireAuth>
                     }
                   />
+                  {/* AMPu owns everything under /ampu: catalog, transcript,
+                      syllabus, lecture. See src/app/ampu/AmpuPage.tsx. */}
                   <Route
-                    path="/ampu"
+                    path="/ampu/*"
                     element={
                       <RequireAuth>
                         <Layout>

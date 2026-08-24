@@ -107,13 +107,26 @@ export const CareerPage: React.FC = () => {
     new Set(postedRequisitions.map((req) => req.department)),
   );
 
-  const formatSalaryRange = (min?: number, max?: number) => {
+  const formatPayRange = (
+    min?: number,
+    max?: number,
+    payType?: JobRequisition["pay_type"],
+  ) => {
+    const hourly = payType === "hourly";
+    const amount = (value: number) =>
+      hourly
+        ? `$${Number(value).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`
+        : `$${Number(value).toLocaleString(undefined, {
+            maximumFractionDigits: 0,
+          })}`;
+    const unit = hourly ? "/hr" : "/yr";
     if (!min && !max) return "Competitive";
-    if (min && max)
-      return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
-    if (min) return `$${min.toLocaleString()}+`;
-    if (max) return `Up to $${max.toLocaleString()}`;
-    return "Competitive";
+    if (min && max) return `${amount(min)} - ${amount(max)} ${unit}`;
+    if (min) return `${amount(min)}+ ${unit}`;
+    return `Up to ${amount(max!)} ${unit}`;
   };
 
   return (
@@ -206,9 +219,10 @@ export const CareerPage: React.FC = () => {
                       </span>
                       <span className="flex items-center gap-1">
                         <DollarSign className="h-4 w-4" />
-                        {formatSalaryRange(
+                        {formatPayRange(
                           req.salary_range_min,
                           req.salary_range_max,
+                          req.pay_type,
                         )}
                       </span>
                     </CardDescription>
@@ -294,12 +308,15 @@ export const CareerPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                    Salary Range
+                    {selectedRequisition.pay_type === "hourly"
+                      ? "Hourly Rate"
+                      : "Salary Range"}
                   </label>
                   <p className="text-neutral-900 dark:text-white">
-                    {formatSalaryRange(
+                    {formatPayRange(
                       selectedRequisition.salary_range_min,
                       selectedRequisition.salary_range_max,
+                      selectedRequisition.pay_type,
                     )}
                   </p>
                 </div>

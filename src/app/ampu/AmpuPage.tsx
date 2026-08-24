@@ -1,20 +1,36 @@
 /**
- * AMPu — Employee / Technician Training Module (STANDALONE MOCK)
+ * AMPu — the AMP training college.
  *
- * This is a self-contained, front-end-only prototype of the AMPu training
- * module described in AMPu-build-prompt.md. It is intentionally DISCONNECTED
- * from ampOS data/auth/API: all state lives in component state and all content
- * is mock/seed data. It demonstrates the full "happy path" loop:
+ * The catalog lives in the database (common.ampu_courses /
+ * common.ampu_lessons, see src/lib/services/ampuService.ts): an admin publishes
+ * units with the New Unit button on the catalog and every employee sees them.
+ * When those tables don't exist yet the page falls back to the built-in seed
+ * catalog so /ampu still works on a fresh instance.
  *
- *   Catalog -> Course detail -> Video lesson -> Quiz -> Progress / completion
+ * Routes (mounted under /ampu/* in App.tsx):
+ *   /ampu                                        course catalog
+ *   /ampu/transcript                             the signed-in user's record
+ *   /ampu/course/:courseId                       syllabus
+ *   /ampu/course/:courseId/lesson/:lessonId      a lecture or an exam
+ *   /ampu/leaderboard                            company-wide standings
  *
- * When this graduates from prototype, the MOCK_COURSES seed + the in-memory
- * `progress` state should be swapped for the real ampOS data layer (Supabase),
- * and the internal view-state navigation should move to react-router routes
- * (/ampu, /ampu/:courseId, .../lesson/:lessonId, .../quiz/:quizId).
+ * Learner progress is persisted per user in common.ampu_progress. It is held in
+ * `progress` state here (loaded once, on the first catalog that arrives) and
+ * written through on change; a playing video's position is throttled to
+ * PROGRESS_WRITE_INTERVAL_MS. The leaderboard reads aggregates across users via
+ * the common.ampu_leaderboard() function — RLS keeps raw rows private to their
+ * owner.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import {
   Button,
   Card,
@@ -24,289 +40,231 @@ import {
   Badge,
 } from "../../components/ui";
 import { BRAND_COLOR } from "@/lib/companyConfig";
+import { useAuth } from "@/lib/AuthContext";
+import { isSuperUser } from "@/lib/roles";
+import {
+  archiveCourse,
+  fetchCatalog,
+  fetchLeaderboard,
+  fetchMyProgress,
+  publishSeedCatalog,
+  PROGRESS_UNAVAILABLE,
+  saveLessonProgress,
+  saveQuizAttempt,
+  type CatalogSource,
+  type LeaderboardRow,
+} from "@/lib/services/ampuService";
+import NewUnitDialog from "./NewUnitDialog";
+import { SEED_CATALOG } from "./seedCatalog";
+import { formatRuntime } from "./videoSource";
+import {
+  DEPARTMENT_LABEL,
+  DEPARTMENT_SHORT,
+  VIDEO_COMPLETE_THRESHOLD,
+  type Course,
+  type Department,
+  type Lesson,
+  type LessonStatus,
+  type ProgressState,
+  type Quiz,
+  type QuizAttemptRecord,
+} from "./types";
 
-
-/* ------------------------------------------------------------------ */
-/* Types                                                               */
-/* ------------------------------------------------------------------ */
-
-type Category = "NFPA_70E" | "NFPA_70B" | "ONBOARDING" | "OTHER";
-
-type QuestionType = "SINGLE_SELECT" | "MULTI_SELECT" | "TRUE_FALSE";
-
-interface Choice {
-  id: string;
-  text: string;
-}
-
-interface Question {
-  id: string;
-  type: QuestionType;
-  text: string;
-  choices: Choice[];
-  correctChoiceIds: string[];
-}
-
-interface Quiz {
-  id: string;
-  title: string;
-  passingScorePercent: number;
-  revealAnswersOnFail: boolean;
-  questions: Question[];
-}
-
-interface Lesson {
-  id: string;
-  title: string;
-  type: "VIDEO" | "QUIZ";
-  durationSeconds?: number;
-  videoUrl?: string; // direct file URL (HTML5 <video>)
-  youtubeId?: string; // YouTube video id (embedded via IFrame API)
-  quiz?: Quiz;
-}
-
-interface Course {
-  id: string;
-  title: string;
-  description: string;
-  category: Category;
-  thumbnail: string; // emoji stand-in for a thumbnail image
-  estimatedDurationMinutes: number;
-  isRequired: boolean;
-  sequentialUnlock: boolean;
-  lessons: Lesson[];
-}
-
-type LessonStatus = "not_started" | "in_progress" | "completed";
-
-interface LessonProgress {
-  status: LessonStatus;
-  lastWatchedSeconds?: number;
-}
-
-interface QuizAttemptRecord {
-  attemptCount: number;
-  bestScore: number;
-  lastScore: number;
-  passed: boolean;
-}
-
-/* Single source of truth for per-user progress (mock, in-memory). */
-interface ProgressState {
-  lessons: Record<string, LessonProgress>;
-  quizzes: Record<string, QuizAttemptRecord>;
-  courseCertifiedAt: Record<string, string>; // courseId -> ISO date
-}
+/** How often a playing video's position is written back, at most. */
+const PROGRESS_WRITE_INTERVAL_MS = 15_000;
 
 /* ------------------------------------------------------------------ */
-/* Mock / seed data                                                    */
+/* Academic helpers                                                    */
 /* ------------------------------------------------------------------ */
 
-// A small, freely-hostable sample clip so the player actually plays.
-const SAMPLE_VIDEO =
-  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
-
-const MOCK_COURSES: Course[] = [
-  {
-    id: "70e",
-    title: "NFPA 70E — Electrical Safety in the Workplace",
-    description:
-      "Arc-flash hazard analysis, the hierarchy of risk controls, PPE categories, and establishing an electrically safe work condition. Required annual safety certification.",
-    category: "NFPA_70E",
-    thumbnail: "⚡",
-    estimatedDurationMinutes: 45,
-    isRequired: true,
-    sequentialUnlock: true,
-    lessons: [
-      {
-        id: "70e-l1",
-        title: "NFPA 70E — Electrical Safety Training",
-        type: "VIDEO",
-        durationSeconds: 1800,
-        youtubeId: "PuQ5PO-Li-Y",
-      },
-      {
-        id: "70e-q1",
-        title: "70E Certification Exam",
-        type: "QUIZ",
-        quiz: {
-          id: "70e-quiz",
-          title: "NFPA 70E Certification Exam",
-          passingScorePercent: 80,
-          revealAnswersOnFail: false,
-          questions: [
-            {
-              id: "q1",
-              type: "SINGLE_SELECT",
-              text: "What is the FIRST step before working on electrical equipment?",
-              choices: [
-                { id: "a", text: "Put on arc-rated PPE" },
-                { id: "b", text: "Establish an electrically safe work condition" },
-                { id: "c", text: "Notify your supervisor" },
-                { id: "d", text: "Test the circuit with bare hands" },
-              ],
-              correctChoiceIds: ["b"],
-            },
-            {
-              id: "q2",
-              type: "MULTI_SELECT",
-              text: "Which of the following are part of the hierarchy of risk controls? (Select all that apply)",
-              choices: [
-                { id: "a", text: "Elimination" },
-                { id: "b", text: "Engineering controls" },
-                { id: "c", text: "Personal protective equipment" },
-                { id: "d", text: "Ignoring the hazard" },
-              ],
-              correctChoiceIds: ["a", "b", "c"],
-            },
-            {
-              id: "q3",
-              type: "TRUE_FALSE",
-              text: "An arc-flash boundary is the distance at which an incident energy of 1.2 cal/cm² is reached.",
-              choices: [
-                { id: "t", text: "True" },
-                { id: "f", text: "False" },
-              ],
-              correctChoiceIds: ["t"],
-            },
-            {
-              id: "q4",
-              type: "SINGLE_SELECT",
-              text: "Lockout/tagout exists primarily to:",
-              choices: [
-                { id: "a", text: "Speed up the job" },
-                { id: "b", text: "Prevent the unexpected energization of equipment" },
-                { id: "c", text: "Satisfy the customer" },
-                { id: "d", text: "Replace PPE" },
-              ],
-              correctChoiceIds: ["b"],
-            },
-          ],
-        },
-      },
-    ],
-  },
-  {
-    id: "70b",
-    title: "NFPA 70B — Electrical Equipment Maintenance",
-    description:
-      "Building and running an effective electrical preventive maintenance (EPM) program: inspection intervals, infrared thermography, and condition-based maintenance.",
-    category: "NFPA_70B",
-    thumbnail: "🔧",
-    estimatedDurationMinutes: 30,
-    isRequired: true,
-    sequentialUnlock: true,
-    lessons: [
-      {
-        id: "70b-l1",
-        title: "Why Electrical Maintenance Matters",
-        type: "VIDEO",
-        durationSeconds: 60,
-        videoUrl: SAMPLE_VIDEO,
-      },
-      {
-        id: "70b-q1",
-        title: "70B Knowledge Check",
-        type: "QUIZ",
-        quiz: {
-          id: "70b-quiz",
-          title: "NFPA 70B Knowledge Check",
-          passingScorePercent: 70,
-          revealAnswersOnFail: true,
-          questions: [
-            {
-              id: "q1",
-              type: "TRUE_FALSE",
-              text: "Infrared thermography can detect loose or corroded electrical connections.",
-              choices: [
-                { id: "t", text: "True" },
-                { id: "f", text: "False" },
-              ],
-              correctChoiceIds: ["t"],
-            },
-            {
-              id: "q2",
-              type: "SINGLE_SELECT",
-              text: "An effective EPM program is primarily:",
-              choices: [
-                { id: "a", text: "Reactive — fix things when they break" },
-                { id: "b", text: "Proactive — scheduled, condition-based maintenance" },
-                { id: "c", text: "Optional for most facilities" },
-                { id: "d", text: "Only required after a failure" },
-              ],
-              correctChoiceIds: ["b"],
-            },
-          ],
-        },
-      },
-    ],
-  },
-  {
-    id: "theory2",
-    title: "Electrical Theory II Training",
-    description:
-      "Electrical Theory II training session recorded 07/23/2026. Continues from Electrical Theory I with deeper coverage of core electrical concepts for field technicians.",
-    category: "OTHER",
-    thumbnail: "🔌",
-    estimatedDurationMinutes: 227,
-    isRequired: false,
-    sequentialUnlock: false,
-    lessons: [
-      {
-        id: "theory2-l1",
-        title: "Electrical Theory II Training",
-        type: "VIDEO",
-        durationSeconds: 13646,
-        youtubeId: "QrF8sVWhYrQ",
-      },
-    ],
-  },
-  {
-    id: "onboard",
-    title: "New Technician Onboarding",
-    description:
-      "Company policies, timekeeping, safety culture, and field reporting basics for new AMP field technicians.",
-    category: "ONBOARDING",
-    thumbnail: "🎓",
-    estimatedDurationMinutes: 20,
-    isRequired: false,
-    sequentialUnlock: false,
-    lessons: [
-      {
-        id: "ob-l1",
-        title: "Welcome to the Team",
-        type: "VIDEO",
-        durationSeconds: 60,
-        videoUrl: SAMPLE_VIDEO,
-      },
-      {
-        id: "ob-l2",
-        title: "Field Reporting Basics",
-        type: "VIDEO",
-        durationSeconds: 60,
-        videoUrl: SAMPLE_VIDEO,
-      },
-    ],
-  },
-];
-
-const CATEGORY_LABEL: Record<Category, string> = {
-  NFPA_70E: "NFPA 70E",
-  NFPA_70B: "NFPA 70B",
-  ONBOARDING: "Onboarding",
-  OTHER: "Other",
+const GRADE_POINTS: Record<string, number> = {
+  A: 4,
+  "A−": 3.7,
+  "B+": 3.3,
+  B: 3,
+  "B−": 2.7,
+  "C+": 2.3,
+  C: 2,
+  "C−": 1.7,
+  D: 1,
+  F: 0,
 };
 
-const VIDEO_COMPLETE_THRESHOLD = 0.9; // 90% watched marks a video lesson complete
+function letterFor(score: number): string {
+  if (score >= 93) return "A";
+  if (score >= 90) return "A−";
+  if (score >= 87) return "B+";
+  if (score >= 83) return "B";
+  if (score >= 80) return "B−";
+  if (score >= 77) return "C+";
+  if (score >= 73) return "C";
+  if (score >= 70) return "C−";
+  if (score >= 60) return "D";
+  return "F";
+}
+
+interface CourseGrade {
+  /** Letter for an examined unit, "P" for a pass/fail unit, "IP" in progress. */
+  mark: string;
+  /** Exam average, when the unit is examined and every exam has been sat. */
+  score?: number;
+  graded: boolean;
+}
+
+/**
+ * A unit's mark. Examined units average their exam best-scores into a letter;
+ * lecture-only units are pass/fail, which is how they're reported on the
+ * transcript.
+ */
+function courseGrade(progress: ProgressState, course: Course): CourseGrade {
+  const exams = course.lessons.filter((l) => l.type === "QUIZ" && l.quiz);
+  const sat = exams.filter((l) => progress.quizzes[l.quiz!.id]);
+  const pct = courseCompletion(progress, course);
+
+  if (exams.length > 0 && sat.length === exams.length) {
+    const avg =
+      sat.reduce((sum, l) => sum + progress.quizzes[l.quiz!.id].bestScore, 0) /
+      sat.length;
+    return { mark: letterFor(avg), score: Math.round(avg), graded: true };
+  }
+  if (pct >= 100) return { mark: "P", graded: false };
+  if (pct > 0) return { mark: "IP", graded: false };
+  return { mark: "—", graded: false };
+}
 
 /* ------------------------------------------------------------------ */
-/* Small presentational helpers                                        */
+/* Progress derivation                                                 */
 /* ------------------------------------------------------------------ */
 
-function CategoryTag({ category }: { category: Category }) {
+function lessonStatus(progress: ProgressState, lesson: Lesson): LessonStatus {
+  if (lesson.type === "QUIZ") {
+    const a = lesson.quiz ? progress.quizzes[lesson.quiz.id] : undefined;
+    if (a?.passed) return "completed";
+    if (a) return "in_progress";
+    return "not_started";
+  }
+  return progress.lessons[lesson.id]?.status ?? "not_started";
+}
+
+function courseCompletion(progress: ProgressState, course: Course): number {
+  const total = course.lessons.length;
+  const done = course.lessons.filter(
+    (l) => lessonStatus(progress, l) === "completed",
+  ).length;
+  return total === 0 ? 0 : (done / total) * 100;
+}
+
+/** A lesson is unlocked if the course allows free nav OR every prior one is done. */
+function lessonUnlocked(
+  progress: ProgressState,
+  course: Course,
+  index: number,
+): boolean {
+  if (!course.sequentialUnlock) return true;
+  for (let i = 0; i < index; i++) {
+    if (lessonStatus(progress, course.lessons[i]) !== "completed") return false;
+  }
+  return true;
+}
+
+function nextIncompleteIndex(progress: ProgressState, course: Course): number {
+  const i = course.lessons.findIndex(
+    (l) => lessonStatus(progress, l) !== "completed",
+  );
+  return i === -1 ? course.lessons.length - 1 : i;
+}
+
+/** Lectures are numbered; exams are named for what they are. */
+function lessonLabel(course: Course, index: number): string {
+  const lesson = course.lessons[index];
+  if (lesson.type === "QUIZ") {
+    return course.isRequired ? "Certification Exam" : "Final Examination";
+  }
+  const lectureNumber =
+    course.lessons.slice(0, index + 1).filter((l) => l.type === "VIDEO").length;
+  return `Lecture ${lectureNumber}`;
+}
+
+/* ------------------------------------------------------------------ */
+/* Collegiate chrome                                                   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The ampU emblem (public/img/ampU.svg) — a varsity U with the AMP banner
+ * across it.
+ *
+ * It stands free on a light page, but its brown fills go muddy against a dark
+ * one, so in dark mode it sits on a cream tile that keeps the ink readable.
+ * The file declares width/height as 100%, so the box is sized explicitly from
+ * its viewBox ratio rather than left to `w-auto`.
+ */
+const EMBLEM_RATIO = 2434.62 / 2013.85;
+
+function Emblem({
+  height = 44,
+  className = "",
+}: {
+  height?: number;
+  className?: string;
+}) {
   return (
-    <Badge variant="outline" className="border-neutral-300 dark:border-neutral-700">
-      {CATEGORY_LABEL[category]}
+    <span
+      className={`inline-flex items-center justify-center dark:bg-[#fbf7f0] dark:p-1.5 dark:ring-1 dark:ring-white/10 ${className}`}
+    >
+      <img
+        src="/img/ampU.svg"
+        alt="AMPu"
+        width={Math.round(height * EMBLEM_RATIO)}
+        height={height}
+      />
+    </span>
+  );
+}
+
+/** Small-caps section rule, the way a course bulletin sets headings. */
+function BulletinHeading({
+  children,
+  right,
+}: {
+  children: React.ReactNode;
+  right?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-4 flex items-end justify-between gap-4 border-b-4 border-double border-neutral-300 pb-2 dark:border-neutral-700">
+      <h2 className="font-serif text-lg font-semibold tracking-wide text-neutral-900 dark:text-white">
+        {children}
+      </h2>
+      {right}
+    </div>
+  );
+}
+
+function CourseNumber({ code, className = "" }: { code: string; className?: string }) {
+  return (
+    <span
+      className={`font-mono text-[11px] font-semibold uppercase tracking-[0.16em] ${className}`}
+      style={{ color: BRAND_COLOR }}
+    >
+      {code}
+    </span>
+  );
+}
+
+function DepartmentTag({ department }: { department: Department }) {
+  return (
+    <Badge
+      variant="outline"
+      className="border-neutral-300 font-normal uppercase tracking-[0.1em] dark:border-neutral-700"
+    >
+      {DEPARTMENT_SHORT[department]}
+    </Badge>
+  );
+}
+
+function RequiredSeal() {
+  return (
+    <Badge style={{ backgroundColor: BRAND_COLOR }} className="text-white uppercase tracking-[0.1em]">
+      Required
     </Badge>
   );
 }
@@ -364,93 +322,199 @@ function ProgressRing({ percent }: { percent: number }) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Progress derivation helpers                                         */
-/* ------------------------------------------------------------------ */
-
-function lessonStatus(progress: ProgressState, lesson: Lesson): LessonStatus {
-  if (lesson.type === "QUIZ") {
-    const a = lesson.quiz ? progress.quizzes[lesson.quiz.id] : undefined;
-    if (a?.passed) return "completed";
-    if (a) return "in_progress";
-    return "not_started";
-  }
-  return progress.lessons[lesson.id]?.status ?? "not_started";
-}
-
-function courseCompletion(progress: ProgressState, course: Course): number {
-  const total = course.lessons.length;
-  const done = course.lessons.filter(
-    (l) => lessonStatus(progress, l) === "completed"
-  ).length;
-  return total === 0 ? 0 : (done / total) * 100;
-}
-
-/** A lesson is unlocked if the course allows free nav OR every prior lesson is complete. */
-function lessonUnlocked(
-  progress: ProgressState,
-  course: Course,
-  index: number
-): boolean {
-  if (!course.sequentialUnlock) return true;
-  for (let i = 0; i < index; i++) {
-    if (lessonStatus(progress, course.lessons[i]) !== "completed") return false;
-  }
-  return true;
-}
-
-function nextIncompleteIndex(progress: ProgressState, course: Course): number {
-  const i = course.lessons.findIndex(
-    (l) => lessonStatus(progress, l) !== "completed"
+/** One figure from the bulletin's summary strip. */
+function Stat({ value, label }: { value: React.ReactNode; label: string }) {
+  return (
+    <div className="px-4 py-3 text-center">
+      <p className="font-serif text-2xl font-semibold text-neutral-900 dark:text-white">
+        {value}
+      </p>
+      <p className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-neutral-500 dark:text-neutral-400">
+        {label}
+      </p>
+    </div>
   );
-  return i === -1 ? course.lessons.length - 1 : i;
 }
-
-/* ------------------------------------------------------------------ */
-/* Navigation view-state (replaces router for this standalone build)   */
-/* ------------------------------------------------------------------ */
-
-type View =
-  | { name: "catalog" }
-  | { name: "myProgress" }
-  | { name: "course"; courseId: string }
-  | { name: "lesson"; courseId: string; lessonId: string };
 
 /* ================================================================== */
 /* Root page                                                           */
 /* ================================================================== */
 
 export default function AmpuPage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  /* Admins and super users may publish and withdraw units. RLS enforces the
+     same rule server-side, so hiding the controls is a courtesy, not the gate. */
+  const canManage =
+    user?.user_metadata?.role === "Admin" ||
+    user?.user_metadata?.role === "Super Admin" ||
+    isSuperUser(user?.email);
+
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [source, setSource] = useState<CatalogSource>("database");
+  const [notice, setNotice] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const [progress, setProgress] = useState<ProgressState>({
     lessons: {},
     quizzes: {},
     courseCertifiedAt: {},
   });
-  const [view, setView] = useState<View>({ name: "catalog" });
+  const [newUnitOpen, setNewUnitOpen] = useState(false);
+  const [progressLoaded, setProgressLoaded] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  /* Set false when the progress table is missing: keeps a playing video from
+     firing a doomed write every interval once we know it cannot land. */
+  const canPersistRef = useRef(true);
 
-  const findCourse = (id: string) => MOCK_COURSES.find((c) => c.id === id)!;
+  const loadCatalog = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const result = await fetchCatalog(SEED_CATALOG);
+      setCourses(result.courses);
+      setSource(result.source);
+      setNotice(result.reason ?? null);
+    } catch (e) {
+      setLoadError(e instanceof Error ? e.message : "Could not load the catalog.");
+      setCourses(SEED_CATALOG);
+      setSource("seed");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadCatalog();
+  }, [loadCatalog]);
+
+  /* Progress is loaded once, on the first catalog that comes back. Re-running it
+     whenever `courses` changes (a newly published unit, say) would let a stale
+     read overwrite progress the user has made since. */
+  const progressLoadedRef = useRef(false);
+  useEffect(() => {
+    if (progressLoadedRef.current || loading) return;
+    progressLoadedRef.current = true;
+
+    if (courses.length === 0) {
+      setProgressLoaded(true);
+      return;
+    }
+
+    /* Deliberately no cancel-on-cleanup flag. The ref guard above already means
+       this fetch happens once, and StrictMode runs the cleanup before re-running
+       the effect — a cancel flag would kill the only request in flight, and the
+       guard would stop a replacement from ever starting. */
+    fetchMyProgress(courses)
+      .then((saved) => {
+        setProgress(saved.progress);
+        canPersistRef.current = saved.available;
+        if (!saved.available) setSaveError(PROGRESS_UNAVAILABLE);
+      })
+      .catch((e) => {
+        console.warn("[ampu] could not load saved progress", e);
+        setSaveError(
+          e instanceof Error ? e.message : "Progress could not be loaded.",
+        );
+      })
+      .finally(() => setProgressLoaded(true));
+  }, [courses, loading]);
+
+  /* Which unit a lesson belongs to — the progress rows are keyed by both. */
+  const courseIdForLesson = useCallback(
+    (lessonId: string) =>
+      courses.find((c) => c.lessons.some((l) => l.id === lessonId))?.id,
+    [courses],
+  );
+  const lessonIdForQuiz = useCallback(
+    (quizId: string) =>
+      courses
+        .flatMap((c) => c.lessons)
+        .find((l) => l.quiz?.id === quizId)?.id,
+    [courses],
+  );
+
+  /* A playing video reports every second; only persist on completion or every
+     PROGRESS_WRITE_INTERVAL_MS, so resuming works without hammering the table. */
+  const lastWriteRef = useRef<Record<string, number>>({});
+
+  /* Mirrors `progress` so the write-through handlers below can read the current
+     value synchronously. Reading it inside a setProgress updater does not work:
+     React invokes the updater during the next render, long after the handler
+     has returned. */
+  const progressRef = useRef(progress);
+  progressRef.current = progress;
+
+  /**
+   * Fires a progress write and surfaces the first failure. Writes are
+   * fire-and-forget by design — a dropped save must never interrupt a lecture —
+   * but a silent one is worse, so the failure becomes a banner.
+   */
+  const persist = useCallback((write: Promise<void>) => {
+    if (!canPersistRef.current) return;
+    write.catch((e: unknown) => {
+      console.warn("[ampu] progress write failed", e);
+      const message =
+        e instanceof Error ? e.message : "Progress could not be saved.";
+      if (message === PROGRESS_UNAVAILABLE) canPersistRef.current = false;
+      setSaveError(message);
+    });
+  }, []);
 
   /* --- progress mutations ------------------------------------------ */
 
   const setVideoProgress = (lessonId: string, seconds: number, duration: number) => {
-    setProgress((prev) => {
-      const completedByWatch = duration > 0 && seconds / duration >= VIDEO_COMPLETE_THRESHOLD;
-      const prevLesson = prev.lessons[lessonId];
-      const status: LessonStatus =
-        prevLesson?.status === "completed" || completedByWatch
-          ? "completed"
-          : "in_progress";
-      return {
-        ...prev,
-        lessons: {
-          ...prev.lessons,
-          [lessonId]: { status, lastWatchedSeconds: seconds },
-        },
-      };
-    });
+    const prevLesson = progressRef.current.lessons[lessonId];
+    const completedByWatch =
+      duration > 0 && seconds / duration >= VIDEO_COMPLETE_THRESHOLD;
+    const status: LessonStatus =
+      prevLesson?.status === "completed" || completedByWatch
+        ? "completed"
+        : "in_progress";
+
+    setProgress((prev) => ({
+      ...prev,
+      lessons: {
+        ...prev.lessons,
+        [lessonId]: { status, lastWatchedSeconds: seconds },
+      },
+    }));
+
+    // Persist on completion, otherwise no more than once per interval.
+    const justCompleted =
+      status === "completed" && prevLesson?.status !== "completed";
+    const last = lastWriteRef.current[lessonId] ?? 0;
+    if (!justCompleted && Date.now() - last < PROGRESS_WRITE_INTERVAL_MS) return;
+
+    const courseId = courseIdForLesson(lessonId);
+    if (!courseId) return;
+    lastWriteRef.current[lessonId] = Date.now();
+    void persist(
+      saveLessonProgress({
+        lessonId,
+        courseId,
+        status,
+        lastWatchedSeconds: seconds,
+      }),
+    );
   };
 
   const markLessonComplete = (lessonId: string) => {
+    const courseId = courseIdForLesson(lessonId);
+    if (courseId) {
+      lastWriteRef.current[lessonId] = Date.now();
+      void persist(
+        saveLessonProgress({
+          lessonId,
+          courseId,
+          status: "completed",
+          lastWatchedSeconds:
+            progressRef.current.lessons[lessonId]?.lastWatchedSeconds ?? 0,
+        }),
+      );
+    }
     setProgress((prev) => ({
       ...prev,
       lessons: {
@@ -463,24 +527,31 @@ export default function AmpuPage() {
     }));
   };
 
-  const recordQuizAttempt = (quizId: string, courseId: string, score: number, passed: boolean) => {
+  const recordQuizAttempt = (
+    quizId: string,
+    courseId: string,
+    score: number,
+    passed: boolean,
+  ) => {
+    const prevA = progressRef.current.quizzes[quizId];
+    const next: QuizAttemptRecord = {
+      attemptCount: (prevA?.attemptCount ?? 0) + 1,
+      bestScore: Math.max(prevA?.bestScore ?? 0, score),
+      lastScore: score,
+      passed: prevA?.passed || passed,
+    };
+
     setProgress((prev) => {
-      const prevA = prev.quizzes[quizId];
-      const next: QuizAttemptRecord = {
-        attemptCount: (prevA?.attemptCount ?? 0) + 1,
-        bestScore: Math.max(prevA?.bestScore ?? 0, score),
-        lastScore: score,
-        passed: prevA?.passed || passed,
-      };
       const quizzes = { ...prev.quizzes, [quizId]: next };
 
-      // If this pass completes the course, stamp a certification date.
-      const course = MOCK_COURSES.find((c) => c.id === courseId)!;
+      // If this pass completes the unit, stamp a conferral date.
+      const course = courses.find((c) => c.id === courseId);
       const updated: ProgressState = { ...prev, quizzes };
+      if (!course) return updated;
       const nowComplete = course.lessons.every((l) =>
         l.type === "QUIZ"
           ? quizzes[l.quiz!.id]?.passed
-          : prev.lessons[l.id]?.status === "completed"
+          : prev.lessons[l.id]?.status === "completed",
       );
       if (nowComplete && !prev.courseCertifiedAt[courseId]) {
         updated.courseCertifiedAt = {
@@ -490,139 +561,319 @@ export default function AmpuPage() {
       }
       return updated;
     });
+
+    const lessonId = lessonIdForQuiz(quizId);
+    if (lessonId) {
+      void persist(
+        saveQuizAttempt({
+          lessonId,
+          courseId,
+          attemptCount: next.attemptCount,
+          bestScore: next.bestScore,
+          lastScore: next.lastScore,
+          passed: next.passed,
+        }),
+      );
+    }
+  };
+
+  /* --- catalog mutations (admin) ------------------------------------ */
+
+  const withdrawCourse = async (course: Course) => {
+    await archiveCourse(course.id);
+    setCourses((prev) => prev.filter((c) => c.id !== course.id));
+    navigate(CATALOG_PATH);
+  };
+
+  const seedTheCatalog = async () => {
+    await publishSeedCatalog(SEED_CATALOG);
+    await loadCatalog();
   };
 
   /* --- render ------------------------------------------------------- */
 
   return (
     <div className="min-h-full bg-neutral-50 dark:bg-neutral-950">
-      <AmpuHeader
-        onHome={() => setView({ name: "catalog" })}
-        onProgress={() => setView({ name: "myProgress" })}
-        active={view.name}
-      />
+      <Masthead pathname={location.pathname} />
 
       <div className="mx-auto max-w-6xl px-4 py-8">
-        {view.name === "catalog" && (
-          <Catalog
-            progress={progress}
-            onOpen={(courseId) => setView({ name: "course", courseId })}
-          />
+        {notice && canManage && (
+          <p
+            className="mb-6 border-l-4 bg-white px-4 py-3 text-sm text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300"
+            style={{ borderColor: BRAND_COLOR }}
+          >
+            {notice}
+          </p>
+        )}
+        {loadError && (
+          <p className="mb-6 border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+            {loadError} Showing the built-in catalog instead.
+          </p>
         )}
 
-        {view.name === "myProgress" && (
-          <MyProgress
-            progress={progress}
-            onOpen={(courseId) => setView({ name: "course", courseId })}
-          />
+        {saveError && (
+          <p className="mb-6 border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+            {saveError}
+          </p>
         )}
 
-        {view.name === "course" && (
-          <CourseDetail
-            course={findCourse(view.courseId)}
-            progress={progress}
-            onBack={() => setView({ name: "catalog" })}
-            onOpenLesson={(lessonId) =>
-              setView({ name: "lesson", courseId: view.courseId, lessonId })
-            }
-          />
-        )}
-
-        {view.name === "lesson" && (
-          <LessonView
-            course={findCourse(view.courseId)}
-            lessonId={view.lessonId}
-            progress={progress}
-            onBackToCourse={() =>
-              setView({ name: "course", courseId: view.courseId })
-            }
-            onOpenLesson={(lessonId) =>
-              setView({ name: "lesson", courseId: view.courseId, lessonId })
-            }
-            onVideoProgress={setVideoProgress}
-            onMarkComplete={markLessonComplete}
-            onQuizSubmit={recordQuizAttempt}
-          />
+        {loading ? (
+          <p className="py-16 text-center text-sm text-neutral-500">
+            Opening the bulletin…
+          </p>
+        ) : (
+          <Routes>
+            <Route
+              index
+              element={
+                <Catalog
+                  courses={courses}
+                  progress={progress}
+                  canManage={canManage}
+                  canPublish={source === "database"}
+                  onNewUnit={() => setNewUnitOpen(true)}
+                  onSeedCatalog={seedTheCatalog}
+                />
+              }
+            />
+            <Route
+              path="transcript"
+              element={<Transcript courses={courses} progress={progress} />}
+            />
+            <Route path="leaderboard" element={<Leaderboard />} />
+            <Route
+              path="course/:courseId"
+              element={
+                <CourseRoute
+                  courses={courses}
+                  progress={progress}
+                  canManage={canManage && source === "database"}
+                  onWithdraw={withdrawCourse}
+                />
+              }
+            />
+            <Route
+              path="course/:courseId/lesson/:lessonId"
+              element={
+                <LessonRoute
+                  courses={courses}
+                  progress={progress}
+                  progressLoaded={progressLoaded}
+                  onVideoProgress={setVideoProgress}
+                  onMarkComplete={markLessonComplete}
+                  onQuizSubmit={recordQuizAttempt}
+                />
+              }
+            />
+            <Route path="*" element={<Navigate to={CATALOG_PATH} replace />} />
+          </Routes>
         )}
       </div>
+
+      {canManage && (
+        <NewUnitDialog
+          isOpen={newUnitOpen}
+          onClose={() => setNewUnitOpen(false)}
+          existingCodes={courses.map((c) => c.code)}
+          onPublished={(course) =>
+            setCourses((prev) =>
+              [...prev, course].sort((a, b) => a.code.localeCompare(b.code)),
+            )
+          }
+        />
+      )}
     </div>
   );
 }
 
+/* ------------------------- Route wrappers ------------------------- */
+
+const CATALOG_PATH = "/ampu";
+const TRANSCRIPT_PATH = "/ampu/transcript";
+const LEADERBOARD_PATH = "/ampu/leaderboard";
+const coursePath = (courseId: string) => `/ampu/course/${courseId}`;
+const lessonPath = (courseId: string, lessonId: string) =>
+  `/ampu/course/${courseId}/lesson/${lessonId}`;
+
+function CourseRoute({
+  courses,
+  progress,
+  canManage,
+  onWithdraw,
+}: {
+  courses: Course[];
+  progress: ProgressState;
+  canManage: boolean;
+  onWithdraw: (course: Course) => Promise<void>;
+}) {
+  const { courseId } = useParams<{ courseId: string }>();
+  const navigate = useNavigate();
+  const course = courses.find((c) => c.id === courseId);
+
+  if (!course) return <MissingCourse onBack={() => navigate(CATALOG_PATH)} />;
+
+  return (
+    <CourseDetail
+      course={course}
+      progress={progress}
+      canManage={canManage}
+      onWithdraw={onWithdraw}
+      onBack={() => navigate(CATALOG_PATH)}
+      onOpenLesson={(lessonId) => navigate(lessonPath(course.id, lessonId))}
+    />
+  );
+}
+
+function LessonRoute({
+  courses,
+  progress,
+  progressLoaded,
+  onVideoProgress,
+  onMarkComplete,
+  onQuizSubmit,
+}: {
+  courses: Course[];
+  progress: ProgressState;
+  progressLoaded: boolean;
+  onVideoProgress: (lessonId: string, seconds: number, duration: number) => void;
+  onMarkComplete: (lessonId: string) => void;
+  onQuizSubmit: (quizId: string, courseId: string, score: number, passed: boolean) => void;
+}) {
+  const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>();
+  const navigate = useNavigate();
+  const course = courses.find((c) => c.id === courseId);
+
+  if (!course || !lessonId) {
+    return <MissingCourse onBack={() => navigate(CATALOG_PATH)} />;
+  }
+
+  /* The player reads its resume position once, when it mounts, so wait for
+     saved progress before building it. */
+  if (!progressLoaded) {
+    return (
+      <p className="py-16 text-center text-sm text-neutral-500">
+        Finding your place…
+      </p>
+    );
+  }
+
+  return (
+    <LessonView
+      course={course}
+      lessonId={lessonId}
+      progress={progress}
+      onBackToCourse={() => navigate(coursePath(course.id))}
+      onOpenLesson={(next) => navigate(lessonPath(course.id, next))}
+      onVideoProgress={onVideoProgress}
+      onMarkComplete={onMarkComplete}
+      onQuizSubmit={onQuizSubmit}
+    />
+  );
+}
+
+function MissingCourse({ onBack }: { onBack: () => void }) {
+  return (
+    <Card className="mx-auto max-w-md">
+      <CardContent className="pt-6 text-center">
+        <p className="mb-1 font-serif text-lg font-semibold text-neutral-900 dark:text-white">
+          Unit not in the catalog
+        </p>
+        <p className="mb-4 text-sm text-neutral-500">
+          It may have been withdrawn from the catalog.
+        </p>
+        <Button onClick={onBack}>Back to the catalog</Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 /* ================================================================== */
-/* Header                                                              */
+/* Masthead                                                            */
 /* ================================================================== */
 
-function AmpuHeader({
-  onHome,
-  onProgress,
-  active,
-}: {
-  onHome: () => void;
-  onProgress: () => void;
-  active: View["name"];
-}) {
+function Masthead({ pathname }: { pathname: string }) {
+  const navigate = useNavigate();
+  const inTranscript = pathname.startsWith(TRANSCRIPT_PATH);
+  const inLeaderboard = pathname.startsWith(LEADERBOARD_PATH);
+  const inCatalog = !inTranscript && !inLeaderboard;
   return (
     <div className="border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-        <button onClick={onHome} className="flex items-center gap-2 text-left">
-          <span
-            className="flex h-9 w-9 items-center justify-center rounded-none text-lg font-bold text-white"
-            style={{ backgroundColor: BRAND_COLOR }}
-          >
-            u
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4">
+        <button
+          onClick={() => navigate(CATALOG_PATH)}
+          className="group flex items-center gap-4 text-left"
+        >
+          <Emblem height={46} className="transition-transform group-hover:scale-105" />
+          <span className="hidden h-10 w-px bg-neutral-200 dark:bg-neutral-700 sm:block" />
+          <span className="hidden font-serif text-sm uppercase leading-tight tracking-[0.22em] text-neutral-600 dark:text-neutral-300 sm:block">
+            Six volts to
+            <br />
+            Lightning
           </span>
-          <div>
-            <div className="text-lg font-bold leading-none text-neutral-900 dark:text-white">
-              AMP<span style={{ color: BRAND_COLOR }}>u</span>
-            </div>
-            <div className="text-xs text-neutral-500 dark:text-neutral-400">
-              Technician Training
-            </div>
-          </div>
         </button>
-        <nav className="flex items-center gap-1">
+
+        <div className="flex items-center gap-1">
           <Button
-            variant={active === "catalog" || active === "course" || active === "lesson" ? "secondary" : "ghost"}
+            variant={inCatalog ? "secondary" : "ghost"}
             size="sm"
-            onClick={onHome}
+            onClick={() => navigate(CATALOG_PATH)}
           >
-            Catalog
+            Course Catalog
           </Button>
           <Button
-            variant={active === "myProgress" ? "secondary" : "ghost"}
+            variant={inTranscript ? "secondary" : "ghost"}
             size="sm"
-            onClick={onProgress}
+            onClick={() => navigate(TRANSCRIPT_PATH)}
           >
-            My Training
+            My Transcript
           </Button>
-        </nav>
+          <Button
+            variant={inLeaderboard ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => navigate(LEADERBOARD_PATH)}
+          >
+            Leaderboard
+          </Button>
+        </div>
       </div>
     </div>
   );
 }
 
 /* ================================================================== */
-/* Catalog                                                             */
+/* Course catalog (the bulletin)                                       */
 /* ================================================================== */
 
 function Catalog({
+  courses,
   progress,
-  onOpen,
+  canManage,
+  canPublish,
+  onNewUnit,
+  onSeedCatalog,
 }: {
+  courses: Course[];
   progress: ProgressState;
-  onOpen: (courseId: string) => void;
+  canManage: boolean;
+  canPublish: boolean;
+  onNewUnit: () => void;
+  onSeedCatalog: () => Promise<void>;
 }) {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<Category | "ALL">("ALL");
+  const [department, setDepartment] = useState<Department | "ALL">("ALL");
   const [statusFilter, setStatusFilter] = useState<
     "ALL" | "not_started" | "in_progress" | "completed"
   >("ALL");
 
   const filtered = useMemo(() => {
-    return MOCK_COURSES.filter((c) => {
-      if (category !== "ALL" && c.category !== category) return false;
-      if (search && !c.title.toLowerCase().includes(search.toLowerCase()))
+    const needle = search.trim().toLowerCase();
+    return courses.filter((c) => {
+      if (department !== "ALL" && c.department !== department) return false;
+      if (
+        needle &&
+        !`${c.code} ${c.title} ${c.description}`.toLowerCase().includes(needle)
+      )
         return false;
       const pct = courseCompletion(progress, c);
       const status =
@@ -630,45 +881,74 @@ function Catalog({
       if (statusFilter !== "ALL" && status !== statusFilter) return false;
       return true;
     });
-  }, [search, category, statusFilter, progress]);
+  }, [courses, search, department, statusFilter, progress]);
 
-  const categories: (Category | "ALL")[] = [
+  const departments: (Department | "ALL")[] = [
     "ALL",
     "NFPA_70E",
     "NFPA_70B",
     "ONBOARDING",
+    "OTHER",
   ];
+
+  const requiredOutstanding = courses.filter(
+    (c) => c.isRequired && courseCompletion(progress, c) < 100,
+  ).length;
 
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-bold text-neutral-900 dark:text-white">
-        Training Catalog
-      </h1>
-      <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">
-        Browse required and optional training courses.
-      </p>
+      {/* Bulletin masthead */}
+      <div className="mb-6 border-y-4 border-double border-neutral-300 py-5 text-center dark:border-neutral-700">
+        <h1 className="mt-2 font-serif text-3xl font-bold tracking-wide text-neutral-900 dark:text-white">
+          Course Catalog
+        </h1>
+      </div>
+
+      {/* Summary strip */}
+      <div className="mb-6 flex flex-wrap items-center justify-center divide-x divide-neutral-200 border border-neutral-200 bg-white dark:divide-neutral-800 dark:border-neutral-800 dark:bg-neutral-900">
+        <Stat value={courses.length} label="Units offered" />
+        <Stat value={requiredOutstanding} label="Required outstanding" />
+        <Stat
+          value={
+            courses.filter((c) => courseCompletion(progress, c) >= 100).length
+          }
+          label="Units completed" />
+      </div>
+
+      <BulletinHeading
+        right={
+          canManage && (
+            <Button size="sm" onClick={onNewUnit} disabled={!canPublish}
+              title={canPublish ? undefined : "Run the AMPu migration to publish units"}>
+              + New Unit
+            </Button>
+          )
+        }
+      >
+        Listings
+      </BulletinHeading>
 
       {/* Filter bar */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search courses…"
+          placeholder="Search by number or title…"
           className="w-full rounded-none border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-brand dark:border-neutral-700 dark:bg-neutral-900 dark:text-white sm:max-w-xs"
         />
         <div className="flex flex-wrap gap-1">
-          {categories.map((c) => (
+          {departments.map((d) => (
             <button
-              key={c}
-              onClick={() => setCategory(c)}
-              className={`rounded-none px-3 py-1 text-xs font-medium transition-colors ${
-                category === c
+              key={d}
+              onClick={() => setDepartment(d)}
+              className={`rounded-none px-3 py-1 text-xs font-medium uppercase tracking-[0.08em] transition-colors ${
+                department === d
                   ? "text-white"
                   : "bg-neutral-200 text-neutral-700 hover:bg-neutral-300 dark:bg-neutral-800 dark:text-neutral-300"
               }`}
-              style={category === c ? { backgroundColor: BRAND_COLOR } : undefined}
+              style={department === d ? { backgroundColor: BRAND_COLOR } : undefined}
             >
-              {c === "ALL" ? "All" : CATEGORY_LABEL[c]}
+              {d === "ALL" ? "All" : DEPARTMENT_SHORT[d]}
             </button>
           ))}
         </div>
@@ -677,197 +957,350 @@ function Catalog({
           onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
           className="rounded-none border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-700 outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
         >
-          <option value="ALL">All statuses</option>
+          <option value="ALL">Any progress</option>
           <option value="not_started">Not started</option>
           <option value="in_progress">In progress</option>
           <option value="completed">Completed</option>
         </select>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((course) => {
-          const pct = courseCompletion(progress, course);
-          return (
-            <Card
-              key={course.id}
-              className="flex cursor-pointer flex-col overflow-hidden transition-shadow hover:shadow-md"
-              onClick={() => onOpen(course.id)}
-            >
-              <div
-                className="flex h-28 items-center justify-center text-5xl"
-                style={{ backgroundColor: `${BRAND_COLOR}1a` }}
+      {courses.length === 0 ? (
+        <EmptyCatalog
+          canManage={canManage}
+          canPublish={canPublish}
+          onNewUnit={onNewUnit}
+          onSeedCatalog={onSeedCatalog}
+        />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((course) => {
+            const pct = courseCompletion(progress, course);
+            return (
+              <Card
+                key={course.id}
+                className="flex cursor-pointer flex-col overflow-hidden transition-shadow hover:shadow-md"
+                onClick={() => navigate(coursePath(course.id))}
               >
-                {course.thumbnail}
-              </div>
-              <CardContent className="flex flex-1 flex-col gap-3 pt-4">
-                <div className="flex items-center justify-between gap-2">
-                  <CategoryTag category={course.category} />
-                  {course.isRequired && (
-                    <Badge style={{ backgroundColor: BRAND_COLOR }} className="text-white">
-                      Required
-                    </Badge>
-                  )}
+                <div
+                  className="flex h-28 items-center justify-center border-b-4 border-double text-5xl"
+                  style={{
+                    backgroundColor: `${BRAND_COLOR}1a`,
+                    borderColor: `${BRAND_COLOR}59`,
+                  }}
+                >
+                  {course.thumbnail}
                 </div>
-                <h3 className="font-semibold leading-snug text-neutral-900 dark:text-white">
-                  {course.title}
-                </h3>
-                <p className="line-clamp-2 text-xs text-neutral-500 dark:text-neutral-400">
-                  {course.description}
-                </p>
-                <div className="mt-auto pt-2">
-                  <div className="mb-1 flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
-                    <span>{course.estimatedDurationMinutes} min</span>
-                    <span>{Math.round(pct)}%</span>
+                <CardContent className="flex flex-1 flex-col gap-2 pt-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <CourseNumber code={course.code} />
+                    {course.isRequired && <RequiredSeal />}
                   </div>
-                  <ProgressBar percent={pct} />
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-        {filtered.length === 0 && (
-          <p className="col-span-full py-12 text-center text-sm text-neutral-500">
-            No courses match your filters.
-          </p>
-        )}
-      </div>
+                  <h3 className="font-serif text-base font-semibold leading-snug text-neutral-900 dark:text-white">
+                    {course.title}
+                  </h3>
+                  <p className="line-clamp-2 text-xs text-neutral-500 dark:text-neutral-400">
+                    {course.description}
+                  </p>
+                  <div className="mt-auto pt-3">
+                    <div className="mb-1 flex items-center justify-between text-[11px] uppercase tracking-[0.08em] text-neutral-500 dark:text-neutral-400">
+                      <span>
+                        {course.estimatedDurationMinutes} min
+                      </span>
+                      <span>{Math.round(pct)}%</span>
+                    </div>
+                    <ProgressBar percent={pct} />
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+          {filtered.length === 0 && (
+            <p className="col-span-full py-12 text-center text-sm text-neutral-500">
+              No units match your filters.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
+function EmptyCatalog({
+  canManage,
+  canPublish,
+  onNewUnit,
+  onSeedCatalog,
+}: {
+  canManage: boolean;
+  canPublish: boolean;
+  onNewUnit: () => void;
+  onSeedCatalog: () => Promise<void>;
+}) {
+  const [seeding, setSeeding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const seed = async () => {
+    setError(null);
+    setSeeding(true);
+    try {
+      await onSeedCatalog();
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "Could not publish the starter catalog.",
+      );
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardContent className="py-16 text-center">
+        <div className="mb-6 flex justify-center">
+          <Emblem height={52} className="opacity-50" />
+        </div>
+        <p className="font-serif text-lg font-semibold text-neutral-900 dark:text-white">
+          Nothing published yet
+        </p>
+        <p className="mx-auto mt-2 max-w-sm text-sm text-neutral-500">
+          {canManage
+            ? "Publish the first unit, or start from the built-in catalog and edit from there."
+            : "No training units have been published yet."}
+        </p>
+        {canManage && canPublish && (
+          <div className="mt-4 flex justify-center gap-2">
+            <Button variant="outline" onClick={seed} isLoading={seeding}>
+              Publish starter catalog
+            </Button>
+            <Button onClick={onNewUnit}>+ New Unit</Button>
+          </div>
+        )}
+        {error && (
+          <p className="mx-auto mt-4 max-w-sm text-sm text-red-600 dark:text-red-400">
+            {error}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 /* ================================================================== */
-/* Course detail                                                       */
+/* Course detail (the syllabus)                                        */
 /* ================================================================== */
 
 function CourseDetail({
   course,
   progress,
+  canManage,
+  onWithdraw,
   onBack,
   onOpenLesson,
 }: {
   course: Course;
   progress: ProgressState;
+  canManage: boolean;
+  onWithdraw: (course: Course) => Promise<void>;
   onBack: () => void;
   onOpenLesson: (lessonId: string) => void;
 }) {
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawError, setWithdrawError] = useState<string | null>(null);
   const pct = courseCompletion(progress, course);
   const isComplete = pct >= 100;
   const certifiedAt = progress.courseCertifiedAt[course.id];
   const continueIndex = nextIncompleteIndex(progress, course);
+  const lectures = course.lessons.filter((l) => l.type === "VIDEO").length;
+  const exams = course.lessons.filter((l) => l.type === "QUIZ").length;
+
+  const withdraw = async () => {
+    if (
+      !window.confirm(
+        `Withdraw ${course.code} — ${course.title} from the catalog? Employees will no longer see it.`,
+      )
+    )
+      return;
+    setWithdrawError(null);
+    setWithdrawing(true);
+    try {
+      await onWithdraw(course);
+    } catch (e) {
+      setWithdrawError(
+        e instanceof Error ? e.message : "Could not withdraw the unit.",
+      );
+      setWithdrawing(false);
+    }
+  };
 
   return (
     <div>
-      <Button variant="ghost" size="sm" onClick={onBack} className="mb-4">
-        ← Back to catalog
-      </Button>
-
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex-1">
-          <div className="mb-2 flex items-center gap-2">
-            <CategoryTag category={course.category} />
-            {course.isRequired && (
-              <Badge style={{ backgroundColor: BRAND_COLOR }} className="text-white">
-                Required
-              </Badge>
-            )}
-          </div>
-          <h1 className="mb-2 text-2xl font-bold text-neutral-900 dark:text-white">
-            {course.title}
-          </h1>
-          <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-400">
-            {course.description}
-          </p>
-          <p className="mt-2 text-xs text-neutral-500">
-            {course.lessons.length} lessons · {course.estimatedDurationMinutes} min ·{" "}
-            {course.sequentialUnlock ? "Sequential" : "Free navigation"}
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <ProgressRing percent={pct} />
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <Button variant="ghost" size="sm" onClick={onBack}>
+          ← Course catalog
+        </Button>
+        {canManage && (
           <Button
-            onClick={() => onOpenLesson(course.lessons[continueIndex].id)}
-            disabled={isComplete}
+            variant="ghost"
+            size="sm"
+            onClick={withdraw}
+            isLoading={withdrawing}
+            className="text-red-600 hover:text-red-700"
           >
-            {isComplete ? "Completed" : pct > 0 ? "Continue" : "Start course"}
+            Withdraw unit
           </Button>
+        )}
+      </div>
+      {withdrawError && (
+        <p className="mb-4 border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+          {withdrawError}
+        </p>
+      )}
+
+      <div className="mb-6 border-y-4 border-double border-neutral-300 py-5 dark:border-neutral-700">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex-1">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <CourseNumber code={course.code} />
+              <DepartmentTag department={course.department} />
+              {course.isRequired && <RequiredSeal />}
+            </div>
+            <h1 className="mb-2 font-serif text-3xl font-bold tracking-wide text-neutral-900 dark:text-white">
+              {course.title}
+            </h1>
+            <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-400">
+              {course.description}
+            </p>
+            <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-xs">
+              <CourseFact term="Offered by" value={course.instructor ?? DEPARTMENT_LABEL[course.department]} />
+              <CourseFact
+                term="Format"
+                value={`${lectures} lecture${lectures === 1 ? "" : "s"}${
+                  exams > 0 ? ` · ${exams} exam${exams === 1 ? "" : "s"}` : ""
+                }`}
+              />
+              <CourseFact
+                term="Pacing"
+                value={course.sequentialUnlock ? "In order" : "Any order"}
+              />
+            </dl>
+          </div>
+          <div className="flex items-center gap-4">
+            <ProgressRing percent={pct} />
+            <Button
+              onClick={() => onOpenLesson(course.lessons[continueIndex].id)}
+              disabled={isComplete || course.lessons.length === 0}
+            >
+              {isComplete ? "Completed" : pct > 0 ? "Resume" : "Start"}
+            </Button>
+          </div>
         </div>
       </div>
 
-      {isComplete && (
-        <Card className="mb-6 border-2" style={{ borderColor: BRAND_COLOR }}>
-          <CardContent className="flex items-center gap-4 pt-6">
-            <div className="text-4xl">🏅</div>
-            <div className="flex-1">
-              <p className="font-semibold text-neutral-900 dark:text-white">
-                Course complete — Certified
-              </p>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                Certified on{" "}
-                {certifiedAt
-                  ? new Date(certifiedAt).toLocaleDateString()
-                  : new Date().toLocaleDateString()}
-                . Renewal due in 12 months.
-              </p>
-            </div>
-            {/* PDF generation is out of scope for this pass — stubbed. */}
-            <Button variant="outline" size="sm" disabled title="PDF generation coming soon">
-              Download certificate
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      {isComplete && <Diploma course={course} certifiedAt={certifiedAt} />}
 
+      <BulletinHeading>Syllabus</BulletinHeading>
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Lessons</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
-            {course.lessons.map((lesson, i) => {
-              const status = lessonStatus(progress, lesson);
-              const unlocked = lessonUnlocked(progress, course, i);
-              return (
-                <li key={lesson.id}>
-                  <button
-                    disabled={!unlocked}
-                    onClick={() => onOpenLesson(lesson.id)}
-                    className="flex w-full items-center gap-3 py-3 text-left disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-none bg-neutral-100 text-sm dark:bg-neutral-800">
-                      {status === "completed"
-                        ? "✅"
-                        : !unlocked
-                        ? "🔒"
-                        : lesson.type === "QUIZ"
-                        ? "📝"
-                        : "▶️"}
-                    </span>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-neutral-900 dark:text-white">
-                        {lesson.title}
-                      </p>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                        {lesson.type === "QUIZ"
-                          ? `Quiz · ${lesson.quiz?.questions.length} questions · pass ${lesson.quiz?.passingScorePercent}%`
-                          : `Video · ${Math.round((lesson.durationSeconds ?? 0) / 60) || 1} min`}
-                      </p>
-                    </div>
-                    <span className="text-xs font-medium capitalize text-neutral-400">
-                      {!unlocked ? "Locked" : status.replace("_", " ")}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+        <CardContent className="pt-6">
+          {course.lessons.length === 0 ? (
+            <p className="py-6 text-center text-sm text-neutral-500">
+              No lectures have been posted for this unit yet.
+            </p>
+          ) : (
+            <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
+              {course.lessons.map((lesson, i) => {
+                const status = lessonStatus(progress, lesson);
+                const unlocked = lessonUnlocked(progress, course, i);
+                return (
+                  <li key={lesson.id}>
+                    <button
+                      disabled={!unlocked}
+                      onClick={() => onOpenLesson(lesson.id)}
+                      className="flex w-full items-center gap-3 py-3 text-left disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-none bg-neutral-100 text-sm dark:bg-neutral-800">
+                        {status === "completed"
+                          ? "✅"
+                          : !unlocked
+                            ? "🔒"
+                            : lesson.type === "QUIZ"
+                              ? "📝"
+                              : "▶️"}
+                      </span>
+                      <div className="flex-1">
+                        <p className="text-[10px] uppercase tracking-[0.14em] text-neutral-400">
+                          {lessonLabel(course, i)}
+                        </p>
+                        <p className="text-sm font-medium text-neutral-900 dark:text-white">
+                          {lesson.title}
+                        </p>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                          {lesson.type === "QUIZ"
+                            ? `${lesson.quiz?.questions.length} questions · pass at ${lesson.quiz?.passingScorePercent}%`
+                            : `Video · ${formatRuntime(lesson.durationSeconds)}`}
+                        </p>
+                      </div>
+                      <span className="text-xs font-medium capitalize text-neutral-400">
+                        {!unlocked ? "Locked" : status.replace("_", " ")}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </CardContent>
       </Card>
     </div>
   );
 }
 
+function CourseFact({ term, value }: { term: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-[10px] uppercase tracking-[0.14em] text-neutral-400">
+        {term}
+      </dt>
+      <dd className="text-neutral-700 dark:text-neutral-300">{value}</dd>
+    </div>
+  );
+}
+
+/** The conferral card shown once every requirement of a unit is met. */
+function Diploma({
+  course,
+  certifiedAt,
+}: {
+  course: Course;
+  certifiedAt?: string;
+}) {
+  const date = certifiedAt ? new Date(certifiedAt) : new Date();
+  return (
+    <Card className="mb-6 border-2" style={{ borderColor: BRAND_COLOR }}>
+      <CardContent className="flex flex-col items-center gap-5 py-8 text-center sm:flex-row sm:text-left">
+        <Emblem height={64} />
+        <div className="flex-1">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 dark:text-neutral-400">
+            Six Volts to Lightning
+          </p>
+          <p className="mt-1 font-serif text-xl font-bold text-neutral-900 dark:text-white">
+            {course.code} conferred with all rights and privileges
+          </p>
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+            Completed {date.toLocaleDateString()}
+            {course.isRequired ? " · renews in 12 months" : ""}
+          </p>
+        </div>
+        {/* PDF generation is out of scope for this pass — stubbed. */}
+        <Button variant="outline" size="sm" disabled title="PDF generation coming soon">
+          Print certificate
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 /* ================================================================== */
-/* Lesson view (video OR quiz) + sidebar                               */
+/* Lesson view (lecture OR examination) + syllabus rail                */
 /* ================================================================== */
 
 function LessonView({
@@ -892,19 +1325,21 @@ function LessonView({
   const index = course.lessons.findIndex((l) => l.id === lessonId);
   const lesson = course.lessons[index];
 
+  if (!lesson) return <MissingCourse onBack={onBackToCourse} />;
+
   // Guard against direct navigation into a locked lesson (URL-bypass protection).
   if (!lessonUnlocked(progress, course, index)) {
     return (
       <Card className="mx-auto max-w-md">
         <CardContent className="pt-6 text-center">
           <div className="mb-3 text-4xl">🔒</div>
-          <p className="mb-1 font-semibold text-neutral-900 dark:text-white">
-            Lesson locked
+          <p className="mb-1 font-serif text-lg font-semibold text-neutral-900 dark:text-white">
+            Prerequisite not met
           </p>
           <p className="mb-4 text-sm text-neutral-500">
-            Complete the previous lessons before opening this one.
+            Complete the earlier lectures in {course.code} before opening this one.
           </p>
-          <Button onClick={onBackToCourse}>Back to course</Button>
+          <Button onClick={onBackToCourse}>Back to the syllabus</Button>
         </CardContent>
       </Card>
     );
@@ -914,12 +1349,13 @@ function LessonView({
     <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
       <div>
         <Button variant="ghost" size="sm" onClick={onBackToCourse} className="mb-3">
-          ← {course.title}
+          ← {course.code} · {course.title}
         </Button>
         {lesson.type === "VIDEO" ? (
           <VideoLesson
             key={lesson.id}
             lesson={lesson}
+            eyebrow={lessonLabel(course, index)}
             startAt={progress.lessons[lesson.id]?.lastWatchedSeconds ?? 0}
             completed={lessonStatus(progress, lesson) === "completed"}
             onProgress={(s, d) => onVideoProgress(lesson.id, s, d)}
@@ -934,6 +1370,7 @@ function LessonView({
           <QuizLesson
             key={lesson.id}
             quiz={lesson.quiz!}
+            eyebrow={lessonLabel(course, index)}
             existing={progress.quizzes[lesson.quiz!.id]}
             onSubmit={(score, passed) =>
               onQuizSubmit(lesson.quiz!.id, course.id, score, passed)
@@ -947,11 +1384,13 @@ function LessonView({
         )}
       </div>
 
-      {/* Lesson nav sidebar */}
+      {/* Syllabus rail */}
       <aside>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Course content</CardTitle>
+            <CardTitle className="font-serif text-sm uppercase tracking-[0.14em]">
+              Syllabus
+            </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <ol className="space-y-1">
@@ -964,7 +1403,7 @@ function LessonView({
                     <button
                       disabled={!unlocked}
                       onClick={() => onOpenLesson(l.id)}
-                      className={`flex w-full items-center gap-2 rounded-none px-2 py-2 text-left text-xs disabled:cursor-not-allowed disabled:opacity-50 ${
+                      className={`flex w-full items-start gap-2 rounded-none px-2 py-2 text-left text-xs disabled:cursor-not-allowed disabled:opacity-50 ${
                         isCurrent
                           ? "bg-neutral-100 font-medium dark:bg-neutral-800"
                           : "hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
@@ -974,13 +1413,18 @@ function LessonView({
                         {status === "completed"
                           ? "✅"
                           : !unlocked
-                          ? "🔒"
-                          : l.type === "QUIZ"
-                          ? "📝"
-                          : "▶️"}
+                            ? "🔒"
+                            : l.type === "QUIZ"
+                              ? "📝"
+                              : "▶️"}
                       </span>
-                      <span className="flex-1 text-neutral-700 dark:text-neutral-200">
-                        {l.title}
+                      <span className="flex-1">
+                        <span className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400">
+                          {lessonLabel(course, i)}
+                        </span>
+                        <span className="block text-neutral-700 dark:text-neutral-200">
+                          {l.title}
+                        </span>
                       </span>
                     </button>
                   </li>
@@ -1097,10 +1541,11 @@ function YouTubePlayer({
   );
 }
 
-/* ---------------------------- Video ------------------------------- */
+/* --------------------------- Lecture ------------------------------ */
 
 function VideoLesson({
   lesson,
+  eyebrow,
   startAt,
   completed,
   onProgress,
@@ -1108,6 +1553,7 @@ function VideoLesson({
   onNext,
 }: {
   lesson: Lesson;
+  eyebrow: string;
   startAt: number;
   completed: boolean;
   onProgress: (seconds: number, duration: number) => void;
@@ -1115,7 +1561,14 @@ function VideoLesson({
   onNext: () => void;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
-  const [watchPct, setWatchPct] = useState(0);
+  /* Seed the bar from where they left off, so a resumed lecture doesn't read 0%
+     until the first playback tick. Falls back to 0 when the unit has no runtime
+     on file — the first tick corrects it either way. */
+  const [watchPct, setWatchPct] = useState(() =>
+    startAt > 0 && lesson.durationSeconds
+      ? Math.min(100, (startAt / lesson.durationSeconds) * 100)
+      : 0,
+  );
   const seeded = useRef(false);
 
   const thresholdHit = watchPct >= VIDEO_COMPLETE_THRESHOLD * 100 || completed;
@@ -1131,7 +1584,10 @@ function VideoLesson({
   return (
     <Card>
       <CardContent className="pt-6">
-        <h2 className="mb-3 text-xl font-bold text-neutral-900 dark:text-white">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-400">
+          {eyebrow}
+        </p>
+        <h2 className="mb-3 font-serif text-2xl font-bold text-neutral-900 dark:text-white">
           {lesson.title}
         </h2>
         <div className="overflow-hidden rounded-none bg-black">
@@ -1164,7 +1620,7 @@ function VideoLesson({
 
         <div className="mt-4">
           <div className="mb-1 flex items-center justify-between text-xs text-neutral-500">
-            <span>Watch progress</span>
+            <span>Attendance</span>
             <span>{Math.round(watchPct)}%</span>
           </div>
           <ProgressBar percent={watchPct} />
@@ -1173,8 +1629,8 @@ function VideoLesson({
         <div className="mt-4 flex items-center justify-between">
           <p className="text-xs text-neutral-500">
             {thresholdHit
-              ? "✅ Watch requirement met"
-              : `Watch ${Math.round(VIDEO_COMPLETE_THRESHOLD * 100)}% to complete this lesson`}
+              ? "✅ Attendance requirement met"
+              : `Watch ${Math.round(VIDEO_COMPLETE_THRESHOLD * 100)}% to complete this lecture`}
           </p>
           <div className="flex gap-2">
             <Button
@@ -1183,7 +1639,7 @@ function VideoLesson({
               disabled={!thresholdHit || completed}
               title={
                 thresholdHit
-                  ? "Mark this lesson complete"
+                  ? "Mark this lecture complete"
                   : "Available once you've watched enough"
               }
             >
@@ -1199,20 +1655,22 @@ function VideoLesson({
   );
 }
 
-/* ---------------------------- Quiz -------------------------------- */
+/* ------------------------- Examination ---------------------------- */
 
 function QuizLesson({
   quiz,
+  eyebrow,
   existing,
   onSubmit,
   onNext,
 }: {
   quiz: Quiz;
+  eyebrow: string;
   existing?: QuizAttemptRecord;
   onSubmit: (score: number, passed: boolean) => void;
   onNext: () => void;
 }) {
-  // If the quiz was already passed, don't allow re-submission to game retake counts.
+  // If the exam was already passed, don't allow re-submission to game retake counts.
   const alreadyPassed = existing?.passed ?? false;
 
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
@@ -1266,14 +1724,15 @@ function QuizLesson({
       <Card>
         <CardContent className="pt-6 text-center">
           <div className="mb-3 text-4xl">🏅</div>
-          <h2 className="mb-1 text-xl font-bold text-neutral-900 dark:text-white">
+          <h2 className="mb-1 font-serif text-2xl font-bold text-neutral-900 dark:text-white">
             {quiz.title}
           </h2>
           <p className="mb-1 text-sm text-neutral-600 dark:text-neutral-400">
-            You've already passed this exam.
+            You've already sat and passed this examination.
           </p>
           <p className="mb-4 text-xs text-neutral-500">
-            Best score {existing?.bestScore}% · {existing?.attemptCount} attempt
+            Best mark {letterFor(existing?.bestScore ?? 0)} ({existing?.bestScore}%) ·{" "}
+            {existing?.attemptCount} sitting
             {existing && existing.attemptCount > 1 ? "s" : ""}
           </p>
           <Button onClick={onNext}>Continue →</Button>
@@ -1289,18 +1748,19 @@ function QuizLesson({
         <CardContent className="pt-6">
           <div className="mb-6 text-center">
             <div className="mb-2 text-5xl">{result.passed ? "🎉" : "📋"}</div>
-            <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+            <h2 className="font-serif text-2xl font-bold text-neutral-900 dark:text-white">
               {result.passed ? "Passed" : "Not passed"}
             </h2>
             <p
-              className="mt-1 text-3xl font-bold"
+              className="mt-1 font-serif text-4xl font-bold"
               style={{ color: result.passed ? BRAND_COLOR : "#dc2626" }}
             >
-              {result.score}%
+              {letterFor(result.score)}
             </p>
-            <p className="text-xs text-neutral-500">
-              Passing score: {quiz.passingScorePercent}% ·{" "}
-              {existing?.attemptCount ?? 1} attempt
+            <p className="text-sm text-neutral-500">{result.score}%</p>
+            <p className="mt-1 text-xs text-neutral-500">
+              Passing mark: {quiz.passingScorePercent}% ·{" "}
+              {existing?.attemptCount ?? 1} sitting
               {(existing?.attemptCount ?? 1) > 1 ? "s" : ""}
             </p>
           </div>
@@ -1308,7 +1768,7 @@ function QuizLesson({
           <div className="space-y-2">
             {quiz.questions.map((q, i) => {
               const ok = result.perQuestion[q.id];
-              // On a fail, only reveal correct answers if the quiz allows it.
+              // On a fail, only reveal correct answers if the exam allows it.
               const reveal = result.passed || quiz.revealAnswersOnFail;
               return (
                 <div
@@ -1335,8 +1795,8 @@ function QuizLesson({
           </div>
           {!result.passed && !quiz.revealAnswersOnFail && (
             <p className="mt-3 text-center text-xs text-neutral-400">
-              Correct answers are hidden on certification exams. Review the
-              material and retake.
+              Answers are withheld on certification examinations. Review the
+              material and sit the exam again.
             </p>
           )}
 
@@ -1344,7 +1804,7 @@ function QuizLesson({
             {result.passed ? (
               <Button onClick={onNext}>Continue →</Button>
             ) : (
-              <Button onClick={retake}>Retake quiz</Button>
+              <Button onClick={retake}>Sit the exam again</Button>
             )}
           </div>
         </CardContent>
@@ -1352,11 +1812,14 @@ function QuizLesson({
     );
   }
 
-  /* --- taking the quiz --------------------------------------------- */
+  /* --- sitting the exam -------------------------------------------- */
   return (
     <Card>
       <CardContent className="pt-6">
-        <h2 className="mb-1 text-xl font-bold text-neutral-900 dark:text-white">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-400">
+          {eyebrow}
+        </p>
+        <h2 className="mb-1 font-serif text-2xl font-bold text-neutral-900 dark:text-white">
           {quiz.title}
         </h2>
         <p className="mb-6 text-xs text-neutral-500">
@@ -1400,9 +1863,7 @@ function QuizLesson({
                               : { borderColor: "#a3a3a3" }
                           }
                         >
-                          {selected && (
-                            <span className="text-[10px] text-white">✓</span>
-                          )}
+                          {selected && <span className="text-[10px] text-white">✓</span>}
                         </span>
                         <span className="text-neutral-800 dark:text-neutral-200">
                           {choice.text}
@@ -1432,75 +1893,315 @@ function QuizLesson({
 }
 
 /* ================================================================== */
-/* My Training (progress overview)                                     */
+/* My Transcript                                                       */
 /* ================================================================== */
 
-function MyProgress({
+function Transcript({
+  courses,
   progress,
-  onOpen,
 }: {
+  courses: Course[];
   progress: ProgressState;
-  onOpen: (courseId: string) => void;
 }) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const studentName =
+    user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email || "Student";
+
+  const rows = courses.map((course) => ({
+    course,
+    pct: courseCompletion(progress, course),
+    grade: courseGrade(progress, course),
+    certifiedAt: progress.courseCertifiedAt[course.id],
+  }));
+
+  const unitsCompleted = rows.filter((r) => r.pct >= 100).length;
+
+  const gradedRows = rows.filter((r) => r.grade.graded && r.pct >= 100);
+  const gpa =
+    gradedRows.length > 0
+      ? gradedRows.reduce((sum, r) => sum + (GRADE_POINTS[r.grade.mark] ?? 0), 0) /
+        gradedRows.length
+      : null;
+
+  const requiredOutstanding = rows.filter(
+    (r) => r.course.isRequired && r.pct < 100,
+  ).length;
+  const deansList = gpa !== null && gpa >= 3.7 && requiredOutstanding === 0;
+
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-bold text-neutral-900 dark:text-white">
-        My Training
-      </h1>
-      <p className="mb-6 text-sm text-neutral-500 dark:text-neutral-400">
-        Your required and enrolled courses, and where you stand on each.
-      </p>
+      <div className="mb-6 border-y-4 border-double border-neutral-300 py-5 text-center dark:border-neutral-700">
+        <h1 className="mt-2 font-serif text-3xl font-bold tracking-wide text-neutral-900 dark:text-white">
+          Academic Transcript
+        </h1>
+        <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">{studentName}</p>
+      </div>
 
-      <div className="space-y-3">
-        {MOCK_COURSES.map((course) => {
-          const pct = courseCompletion(progress, course);
-          const certifiedAt = progress.courseCertifiedAt[course.id];
-          const status =
-            pct >= 100 ? "Completed" : pct > 0 ? "In progress" : "Not started";
-          return (
-            <Card
-              key={course.id}
-              className="cursor-pointer transition-shadow hover:shadow-md"
-              onClick={() => onOpen(course.id)}
-            >
-              <CardContent className="flex items-center gap-4 pt-6">
-                <div className="text-3xl">{course.thumbnail}</div>
+      <div className="mb-6 flex flex-wrap items-center justify-center divide-x divide-neutral-200 border border-neutral-200 bg-white dark:divide-neutral-800 dark:border-neutral-800 dark:bg-neutral-900">
+        <Stat value={`${unitsCompleted}/${rows.length}`} label="Units completed" />
+        <Stat value={gpa === null ? "—" : gpa.toFixed(2)} label="Grade point average" />
+        <Stat value={requiredOutstanding} label="Required outstanding" />
+      </div>
+
+      {deansList && (
+        <div
+          className="mb-6 flex items-center gap-3 border-2 bg-white px-4 py-3 dark:bg-neutral-900"
+          style={{ borderColor: BRAND_COLOR }}
+        >
+          <span className="text-2xl">🏛️</span>
+          <p className="text-sm text-neutral-700 dark:text-neutral-300">
+            <span className="font-serif font-semibold text-neutral-900 dark:text-white">
+              Dean's List.
+            </span>{" "}
+            Every required unit complete with a {gpa?.toFixed(2)} average.
+          </p>
+        </div>
+      )}
+
+      <BulletinHeading>Course record</BulletinHeading>
+
+      {rows.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center text-sm text-neutral-500">
+            Nothing on your record yet — no units have been published.
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="overflow-x-auto p-0">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead>
+                <tr className="border-b-2 border-neutral-300 text-left text-[10px] uppercase tracking-[0.14em] text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+                  <th className="px-4 py-3 font-semibold">Number</th>
+                  <th className="px-4 py-3 font-semibold">Unit</th>
+                  <th className="px-4 py-3 font-semibold">Progress</th>
+                  <th className="px-4 py-3 text-right font-semibold">Mark</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+                {rows.map(({ course, pct, grade, certifiedAt }) => (
+                  <tr
+                    key={course.id}
+                    onClick={() => navigate(coursePath(course.id))}
+                    className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/40"
+                  >
+                    <td className="whitespace-nowrap px-4 py-3 align-top">
+                      <CourseNumber code={course.code} />
+                    </td>
+                    <td className="px-4 py-3 align-top">
+                      <p className="font-medium text-neutral-900 dark:text-white">
+                        {course.title}
+                      </p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        {DEPARTMENT_LABEL[course.department]}
+                        {course.isRequired ? " · required" : ""}
+                      </p>
+                      {certifiedAt && (
+                        <p className="mt-0.5 text-xs" style={{ color: BRAND_COLOR }}>
+                          Conferred {new Date(certifiedAt).toLocaleDateString()} · renews in 12 months
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 align-top">
+                      <div className="w-32">
+                        <ProgressBar percent={pct} />
+                      </div>
+                      <p className="mt-1 text-xs text-neutral-500">{Math.round(pct)}%</p>
+                    </td>
+                    <td className="px-4 py-3 text-right align-top">
+                      <span className="font-serif text-lg font-semibold text-neutral-900 dark:text-white">
+                        {grade.mark}
+                      </span>
+                      {grade.score !== undefined && (
+                        <p className="text-xs text-neutral-500">{grade.score}%</p>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
+
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* Leaderboard                                                         */
+/* ================================================================== */
+
+/** Initials for the rank avatar: "Jack Lyons" -> "JL". */
+function initialsOf(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+const RANK_MARK = ["🥇", "🥈", "🥉"];
+
+function Leaderboard() {
+  const { user } = useAuth();
+  const [rows, setRows] = useState<LeaderboardRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchLeaderboard()
+      .then((data) => {
+        if (!cancelled) setRows(data);
+      })
+      .catch((e) => {
+        if (!cancelled)
+          setError(
+            e instanceof Error ? e.message : "Could not load the leaderboard.",
+          );
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const leader = rows[0];
+
+  return (
+    <div>
+      <div className="mb-6 border-y-4 border-double border-neutral-300 py-5 text-center dark:border-neutral-700">
+        <h1 className="font-serif text-3xl font-bold tracking-wide text-neutral-900 dark:text-white">
+          Leaderboard
+        </h1>
+        <p className="mx-auto mt-2 max-w-xl text-sm text-neutral-500 dark:text-neutral-400">
+          Who has finished the most. Ranked by units completed, then lectures.
+        </p>
+      </div>
+
+      {error && (
+        <p className="mb-6 border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+          {error}
+        </p>
+      )}
+
+      {loading ? (
+        <p className="py-16 text-center text-sm text-neutral-500">
+          Tallying the standings…
+        </p>
+      ) : rows.length === 0 ? (
+        <Card>
+          <CardContent className="py-16 text-center">
+            <div className="mb-6 flex justify-center">
+              <Emblem height={52} className="opacity-50" />
+            </div>
+            <p className="font-serif text-lg font-semibold text-neutral-900 dark:text-white">
+              Nobody on the board yet
+            </p>
+            <p className="mx-auto mt-2 max-w-sm text-sm text-neutral-500">
+              Finish a lecture and you'll be the one at the top of it.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {leader && (
+            <Card className="mb-6 border-2" style={{ borderColor: BRAND_COLOR }}>
+              <CardContent className="flex items-center gap-4 py-6">
+                <span className="text-4xl">🥇</span>
                 <div className="flex-1">
-                  <div className="mb-1 flex items-center gap-2">
-                    <CategoryTag category={course.category} />
-                    {course.isRequired && (
-                      <Badge
-                        style={{ backgroundColor: BRAND_COLOR }}
-                        className="text-white"
-                      >
-                        Required
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="font-semibold text-neutral-900 dark:text-white">
-                    {course.title}
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 dark:text-neutral-400">
+                    Leading the college
                   </p>
-                  <div className="mt-2 max-w-md">
-                    <ProgressBar percent={pct} />
-                  </div>
-                  {certifiedAt && (
-                    <p className="mt-1 text-xs" style={{ color: BRAND_COLOR }}>
-                      Certified {new Date(certifiedAt).toLocaleDateString()} ·
-                      renews in 12 months
-                    </p>
-                  )}
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-                    {Math.round(pct)}%
+                  <p className="mt-1 font-serif text-2xl font-bold text-neutral-900 dark:text-white">
+                    {leader.name}
                   </p>
-                  <p className="text-xs text-neutral-500">{status}</p>
+                  <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                    {leader.unitsCompleted} unit
+                    {leader.unitsCompleted === 1 ? "" : "s"} ·{" "}
+                    {leader.lessonsCompleted} lecture
+                    {leader.lessonsCompleted === 1 ? "" : "s"} ·{" "}
+                    {leader.examsPassed} exam
+                    {leader.examsPassed === 1 ? "" : "s"} passed
+                  </p>
                 </div>
               </CardContent>
             </Card>
-          );
-        })}
-      </div>
+          )}
+
+          <BulletinHeading>Standings</BulletinHeading>
+          <Card>
+            <CardContent className="overflow-x-auto p-0">
+              <table className="w-full min-w-[560px] text-sm">
+                <thead>
+                  <tr className="border-b-2 border-neutral-300 text-left text-[10px] uppercase tracking-[0.14em] text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+                    <th className="px-4 py-3 font-semibold">Rank</th>
+                    <th className="px-4 py-3 font-semibold">Name</th>
+                    <th className="px-4 py-3 text-right font-semibold">Units</th>
+                    <th className="px-4 py-3 text-right font-semibold">Lectures</th>
+                    <th className="px-4 py-3 text-right font-semibold">Exams</th>
+                    <th className="px-4 py-3 text-right font-semibold">Last active</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+                  {rows.map((row, i) => {
+                    const isYou = row.userId === user?.id;
+                    return (
+                      <tr
+                        key={row.userId}
+                        style={
+                          isYou ? { backgroundColor: `${BRAND_COLOR}12` } : undefined
+                        }
+                      >
+                        <td className="whitespace-nowrap px-4 py-3">
+                          <span className="font-serif text-lg font-semibold text-neutral-900 dark:text-white">
+                            {RANK_MARK[i] ?? i + 1}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <span
+                              className="flex h-8 w-8 shrink-0 items-center justify-center text-[11px] font-semibold text-white"
+                              style={{ backgroundColor: BRAND_COLOR }}
+                            >
+                              {initialsOf(row.name)}
+                            </span>
+                            <span className="font-medium text-neutral-900 dark:text-white">
+                              {row.name}
+                              {isYou && (
+                                <span className="ml-2 text-[10px] uppercase tracking-[0.14em] text-neutral-400">
+                                  you
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-right font-serif text-lg font-semibold text-neutral-900 dark:text-white">
+                          {row.unitsCompleted}
+                        </td>
+                        <td className="px-4 py-3 text-right text-neutral-700 dark:text-neutral-300">
+                          {row.lessonsCompleted}
+                        </td>
+                        <td className="px-4 py-3 text-right text-neutral-700 dark:text-neutral-300">
+                          {row.examsPassed}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-right text-xs text-neutral-500">
+                          {row.lastActivity
+                            ? new Date(row.lastActivity).toLocaleDateString()
+                            : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

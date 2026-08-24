@@ -71,7 +71,6 @@ export const RequisitionApprovals: React.FC = () => {
   const [rejecting, setRejecting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDepartment, setFilterDepartment] = useState<string>("all");
-  const [filterPriority, setFilterPriority] = useState<string>("all");
   const [viewTab, setViewTab] = useState<"mine" | "all">("mine");
 
   useEffect(() => {
@@ -274,26 +273,26 @@ export const RequisitionApprovals: React.FC = () => {
     return "Just now";
   };
 
-  const formatSalaryRange = (min?: number, max?: number) => {
+  const formatPayRange = (
+    min?: number,
+    max?: number,
+    payType?: JobRequisition["pay_type"],
+  ) => {
+    const hourly = payType === "hourly";
+    const amount = (value: number) =>
+      hourly
+        ? `$${Number(value).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`
+        : `$${Number(value).toLocaleString(undefined, {
+            maximumFractionDigits: 0,
+          })}`;
+    const unit = hourly ? "/hr" : "/yr";
     if (!min && !max) return "Not specified";
-    if (min && max)
-      return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
-    if (min) return `$${min.toLocaleString()}+`;
-    if (max) return `Up to $${max.toLocaleString()}`;
-    return "Not specified";
-  };
-
-  const getPriorityColor = (priority: JobRequisition["priority"]) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-      case "low":
-        return "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200";
-      default:
-        return "bg-neutral-100 text-neutral-800";
-    }
+    if (min && max) return `${amount(min)} - ${amount(max)} ${unit}`;
+    if (min) return `${amount(min)}+ ${unit}`;
+    return `Up to ${amount(max!)} ${unit}`;
   };
 
   const isMyTurn = (reqId: string): boolean => {
@@ -312,9 +311,7 @@ export const RequisitionApprovals: React.FC = () => {
       req.location.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDepartment =
       filterDepartment === "all" || req.department === filterDepartment;
-    const matchesPriority =
-      filterPriority === "all" || req.priority === filterPriority;
-    return matchesSearch && matchesDepartment && matchesPriority;
+    return matchesSearch && matchesDepartment;
   });
 
   const departments = Array.from(
@@ -408,13 +405,13 @@ export const RequisitionApprovals: React.FC = () => {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-red-600 dark:text-red-400">
-              High Priority
+            <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
+              With Other Approvers
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-              {allPending.filter((r) => r.priority === "high").length}
+            <div className="text-2xl font-bold text-neutral-900 dark:text-white">
+              {allPending.length - myPendingItems.length}
             </div>
           </CardContent>
         </Card>
@@ -473,16 +470,6 @@ export const RequisitionApprovals: React.FC = () => {
                 ))}
               </select>
             </div>
-            <select
-              value={filterPriority}
-              onChange={(e) => setFilterPriority(e.target.value)}
-              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
-            >
-              <option value="all">All Priorities</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
           </div>
           <div className="mt-4 text-sm text-neutral-600 dark:text-neutral-400">
             Showing {filteredRequisitions.length}{" "}
@@ -536,13 +523,6 @@ export const RequisitionApprovals: React.FC = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <CardTitle className="text-xl">{req.title}</CardTitle>
-                        <span
-                          className={`px-2 py-1 rounded-none text-xs font-medium ${getPriorityColor(req.priority)}`}
-                        >
-                          {req.priority.charAt(0).toUpperCase() +
-                            req.priority.slice(1)}{" "}
-                          Priority
-                        </span>
                         {canApprove && (
                           <span className="px-2 py-1 rounded-none text-xs font-medium bg-brand/10 text-brand ring-1 ring-brand/30">
                             Your Turn
@@ -567,9 +547,10 @@ export const RequisitionApprovals: React.FC = () => {
                         </span>
                         <span className="flex items-center gap-1">
                           <DollarSign className="h-4 w-4" />
-                          {formatSalaryRange(
+                          {formatPayRange(
                             req.salary_range_min,
                             req.salary_range_max,
+                            req.pay_type,
                           )}
                         </span>
                       </CardDescription>
@@ -677,26 +658,21 @@ export const RequisitionApprovals: React.FC = () => {
                     {selectedRequisition.employment_type}
                   </p>
                 </div>
-                <div>
-                  <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
-                    Priority
-                  </label>
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white mt-1 capitalize">
-                    {selectedRequisition.priority}
-                  </p>
-                </div>
               </div>
 
-              {/* Salary Information */}
+              {/* Pay Information */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                    Salary Range
+                    {selectedRequisition.pay_type === "hourly"
+                      ? "Hourly Rate"
+                      : "Salary Range"}
                   </label>
                   <p className="text-neutral-900 dark:text-white font-medium">
-                    {formatSalaryRange(
+                    {formatPayRange(
                       selectedRequisition.salary_range_min,
                       selectedRequisition.salary_range_max,
+                      selectedRequisition.pay_type,
                     )}
                   </p>
                 </div>

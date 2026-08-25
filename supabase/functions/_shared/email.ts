@@ -19,6 +19,8 @@ export interface SendEmailOptions {
   html: string;
   text?: string;
   replyTo?: string;
+  /** Optional copied recipients, same accepted shapes as `to`. */
+  cc?: string | string[];
 }
 
 export interface SendEmailResult {
@@ -65,6 +67,12 @@ export const sendEmail = async (
     return { ok: false, status: 0, body: "no RESEND_API_KEY" };
   }
 
+  // Drop any cc that duplicates a primary recipient, so nobody is mailed twice.
+  const toList = toRecipientArray(options.to);
+  const toLower = new Set(toList.map((a) => a.toLowerCase()));
+  const ccList = (options.cc ? toRecipientArray(options.cc) : [])
+    .filter((a) => !toLower.has(a.toLowerCase()));
+
   try {
     const res = await fetch(RESEND_ENDPOINT, {
       method: "POST",
@@ -74,11 +82,12 @@ export const sendEmail = async (
       },
       body: JSON.stringify({
         from: options.from,
-        to: toRecipientArray(options.to),
+        to: toList,
         subject: options.subject,
         html: options.html,
         ...(options.text ? { text: options.text } : {}),
         ...(options.replyTo ? { reply_to: options.replyTo } : {}),
+        ...(ccList.length ? { cc: ccList } : {}),
       }),
     });
 

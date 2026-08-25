@@ -1,25 +1,45 @@
 import { supabase } from '@/lib/supabase';
 import { candidatesService } from '@/services/hr/candidatesService';
 
-/** Fire-and-forget email notification to the current offer approver */
+type OfferNotifyAction = 'submitted' | 'advanced' | 'approved' | 'rejected';
+
+/**
+ * Email notification about an offer's approval chain.
+ *
+ * Fire-and-forget by design: a mail failure must never block the approval
+ * itself. But it is no longer silent — failures are logged with the reason so
+ * a missing API key or an unresolvable recipient is diagnosable from the
+ * console instead of vanishing.
+ */
 function notifyOfferApprover(
   offerId: string,
-  approverUserId: string,
+  approverUserId: string | null,
   stepNumber: number,
   totalSteps: number,
-  action: 'submitted' | 'advanced'
+  action: OfferNotifyAction,
+  extra?: { reason?: string; actorUserId?: string }
 ) {
   try {
     const fnUrl = (import.meta as any).env?.VITE_SUPABASE_URL;
     const anonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
-    if (!fnUrl || !anonKey) return;
+    if (!fnUrl || !anonKey) {
+      console.warn('[offer-notify] skipped: Supabase URL or anon key missing');
+      return;
+    }
     fetch(`${fnUrl.replace(/\/rest\/v1.*$/, '')}/functions/v1/offer-approval-notification`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${anonKey}` },
-      body: JSON.stringify({ offerId, approverUserId, stepNumber, totalSteps, action }),
-    }).catch(() => {});
-  } catch {
-    /* silent */
+      body: JSON.stringify({ offerId, approverUserId, stepNumber, totalSteps, action, ...extra }),
+    })
+      .then(async (res) => {
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok || payload?.emailSent === false) {
+          console.warn(`[offer-notify] ${action} email not sent:`, payload?.message || payload?.error || payload?.providerBody || res.status);
+        }
+      })
+      .catch((err) => console.warn(`[offer-notify] ${action} request failed:`, err?.message || err));
+  } catch (err) {
+    console.warn('[offer-notify] threw:', err);
   }
 }
 
@@ -849,6 +869,10 @@ export const offersService = {
 
     // All steps approved — mark offer approved.
     const finalOffer = await this.updateStatus(offerId, 'approved');
+
+    // Chain complete: tell whoever raised it, and copy HR.
+    notifyOfferApprover(offerId, null, currentStep, approvals.length, 'approved', { actorUserId: userId });
+
     return { offer: finalOffer, allApproved: true };
   },
 
@@ -884,6 +908,9 @@ export const offersService = {
       .from('offers')
       .update({ current_approval_step: 0, updated_at: new Date().toISOString() })
       .eq('id', offerId);
+
+    // Tell whoever raised it why it went back to draft, and copy HR.
+    notifyOfferApprover(offerId, null, currentStep, approvals.length, 'rejected', { reason, actorUserId: userId });
 
     return reverted;
   },

@@ -40,6 +40,15 @@ export const COMPANY_OPS_EMAIL = env(
 );
 
 /**
+ * Mailbox copied on every HR approval notification, so HR keeps visibility
+ * into requisitions and offers even when nobody there is in the chain.
+ */
+export const COMPANY_HR_EMAIL = env(
+  "HR_NOTIFICATION_EMAIL",
+  env("COMPANY_HR_EMAIL", COMPANY_ADMIN_EMAIL)
+);
+
+/**
  * Addresses that never receive notifications, even when they turn up as an
  * issue reporter or interested party. Departed staff go here so stale rows in
  * the database don't keep mailing them.

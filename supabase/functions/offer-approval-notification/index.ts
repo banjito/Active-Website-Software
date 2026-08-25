@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { BRAND_COLOR, COMPANY_FULL_NAME, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
+import { BRAND_COLOR, COMPANY_FULL_NAME, COMPANY_HR_EMAIL, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
 import { buildFromHeader, getEmailApiKey, sendEmail } from '../_shared/email.ts'
 
 console.log("offer-approval-notification: function loaded")
@@ -21,9 +21,15 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}))
     console.log("Request body:", JSON.stringify(body))
 
-    const { offerId, approverUserId, stepNumber, totalSteps, action } = body
-    if (!offerId || !approverUserId) {
-      return new Response(JSON.stringify({ error: 'offerId and approverUserId required' }), { headers, status: 400 })
+    const { offerId, approverUserId, stepNumber, totalSteps, action, reason, actorUserId } = body
+    if (!offerId) {
+      return new Response(JSON.stringify({ error: 'offerId required' }), { headers, status: 400 })
+    }
+
+    // Outcome mails go to whoever raised the offer, so they need no approver.
+    const isOutcome = action === 'approved' || action === 'rejected'
+    if (!isOutcome && !approverUserId) {
+      return new Response(JSON.stringify({ error: 'approverUserId required for this action' }), { headers, status: 400 })
     }
 
     const restHeaders = {
@@ -35,7 +41,7 @@ serve(async (req) => {
 
     // 1. Get the offer + candidate details
     const offerRes = await fetch(
-      `${url}/rest/v1/offers?id=eq.${offerId}&select=id,position_title,department,employment_type,base_salary,pay_frequency,salary_currency,expiration_date,candidate_id,start_date`,
+      `${url}/rest/v1/offers?id=eq.${offerId}&select=id,position_title,department,employment_type,base_salary,pay_frequency,salary_currency,expiration_date,candidate_id,start_date,created_by`,
       { headers: restHeaders }
     )
     const offerRawText = await offerRes.text()
@@ -60,11 +66,12 @@ serve(async (req) => {
       if (cand) candidateName = `${cand.first_name || ''} ${cand.last_name || ''}`.trim() || candidateName
     }
 
-    // 2. Get the approver's email (try auth.admin first, fall back to profiles)
+    // 2. Resolve the recipient (auth.admin first, fall back to profiles)
+    const recipientUserId = isOutcome ? offer.created_by : approverUserId
     let approverEmail = ''
     let approverName = 'there'
     try {
-      const userRes = await fetch(`${url}/auth/v1/admin/users/${approverUserId}`, {
+      const userRes = await fetch(`${url}/auth/v1/admin/users/${recipientUserId}`, {
         headers: { 'Authorization': `Bearer ${key}`, 'apikey': key }
       })
       const userText = await userRes.text()
@@ -85,7 +92,7 @@ serve(async (req) => {
     if (!approverEmail) {
       try {
         const profRes = await fetch(
-          `${url}/rest/v1/profiles?id=eq.${approverUserId}&select=email,full_name,name`,
+          `${url}/rest/v1/profiles?id=eq.${recipientUserId}&select=email,full_name,name`,
           { headers: restHeaders }
         )
         const profText = await profRes.text()
@@ -103,14 +110,32 @@ serve(async (req) => {
       }
     }
 
+    // HR still gets the mail even when the intended recipient can't be resolved.
     if (!approverEmail) {
-      console.warn("No email found for approverUserId:", approverUserId)
-      return new Response(JSON.stringify({ emailSent: false, message: 'no approver email found', approverUserId }), { headers })
+      console.warn("No email found for recipient:", recipientUserId)
+      if (!COMPANY_HR_EMAIL) {
+        return new Response(JSON.stringify({ emailSent: false, message: 'no recipient email found', recipientUserId }), { headers })
+      }
+    }
+
+    /** Display name of whoever approved or rejected, for outcome mails. */
+    let actorName = ''
+    if (actorUserId) {
+      try {
+        const actorRes = await fetch(`${url}/auth/v1/admin/users/${actorUserId}`, {
+          headers: { 'Authorization': `Bearer ${key}`, 'apikey': key }
+        })
+        if (actorRes.ok) {
+          const actorData = await actorRes.json()
+          actorName = actorData?.user_metadata?.name || actorData?.email?.split('@')[0] || ''
+        }
+      } catch { /* name is decorative */ }
     }
     console.log("Approver:", approverName, approverEmail)
 
     // 3. Build the email
     if (!getEmailApiKey()) {
+      console.error("RESEND_API_KEY is not set on this function - no mail can be sent")
       return new Response(JSON.stringify({ emailSent: false, message: 'no RESEND_API_KEY' }), { headers })
     }
 
@@ -124,8 +149,23 @@ serve(async (req) => {
     let emailSubject: string
     let heading: string
     let bodyText: string
+    let accent = BRAND_COLOR
 
-    if (action === 'submitted') {
+    if (action === 'reminder') {
+      emailSubject = `Still awaiting your approval: ${candidateName} - ${offer.position_title}`
+      heading = 'Approval Still Pending'
+      bodyText = `Hi ${approverName},<br><br>The offer letter for <strong>${safeCandidate}</strong> has been waiting on your approval and has not been actioned yet. You are approver <strong>${stepNumber} of ${totalSteps}</strong>.`
+    } else if (action === 'approved') {
+      emailSubject = `Offer letter approved: ${candidateName} - ${offer.position_title}`
+      heading = 'Offer Letter Approved'
+      bodyText = `Hi ${approverName},<br><br>The offer letter for <strong>${safeCandidate}</strong> has cleared every step of its approval chain${actorName ? `, with final approval from <strong>${actorName.replace(/</g, '&lt;')}</strong>` : ''}. It can now be sent to the candidate.`
+      accent = '#16a34a'
+    } else if (action === 'rejected') {
+      emailSubject = `Offer letter rejected: ${candidateName} - ${offer.position_title}`
+      heading = 'Offer Letter Rejected'
+      bodyText = `Hi ${approverName},<br><br>The offer letter for <strong>${safeCandidate}</strong> was rejected${actorName ? ` by <strong>${actorName.replace(/</g, '&lt;')}</strong>` : ''}.`
+      accent = '#dc2626'
+    } else if (action === 'submitted') {
       emailSubject = `Offer letter awaiting your approval: ${candidateName} - ${offer.position_title}`
       heading = 'Offer Letter Approval Required'
       bodyText = `Hi ${approverName},<br><br>An offer letter for <strong>${safeCandidate}</strong> has been submitted and requires your approval. You are approver <strong>${stepNumber} of ${totalSteps}</strong> in the approval chain.`
@@ -161,7 +201,7 @@ serve(async (req) => {
 
     const htmlBody = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
-        <div style="background:${BRAND_COLOR};color:#fff;padding:20px;text-align:center">
+        <div style="background:${accent};color:#fff;padding:20px;text-align:center">
           <h1 style="margin:0;font-size:24px">${heading}</h1>
         </div>
         <div style="padding:20px;background:#f9f9f9">
@@ -193,18 +233,24 @@ serve(async (req) => {
 
     const textBody = `${heading}\n\n${bodyText.replace(/<br>/g, '\n').replace(/<[^>]+>/g, '')}\n\nCandidate: ${candidateName}\nPosition: ${offer.position_title}\nDepartment: ${offer.department}\nBase Salary: ${salaryDisplay}\nStart Date: ${startDateDisplay}\nOffer Expires: ${expirationDisplay}\n\nStep ${stepNumber} of ${totalSteps}\n${approvalLink ? '\nReview: ' + approvalLink : ''}\n\nAutomated notification from ${COMPANY_FULL_NAME}`
 
-    // 4. Send the email
-    console.log("Sending offer approval notification to:", approverEmail)
+    // 4. Send the email. If the recipient could not be resolved, HR still gets it.
+    const primary = approverEmail || COMPANY_HR_EMAIL
+    const copy = approverEmail ? COMPANY_HR_EMAIL : ''
+    console.log("Sending offer approval notification to:", primary, copy ? `(cc ${copy})` : '')
     const sendRes = await sendEmail({
       from: fromHeader,
-      to: approverEmail,
+      to: primary,
+      cc: copy,
       subject: emailSubject,
       html: htmlBody,
       text: textBody
     })
     console.log("Resend response:", sendRes.status, sendRes.body)
 
-    return new Response(JSON.stringify({ emailSent: sendRes.ok, sentTo: approverEmail }), { headers })
+    return new Response(
+      JSON.stringify({ emailSent: sendRes.ok, sentTo: primary, cc: copy || undefined, providerStatus: sendRes.status, providerBody: sendRes.ok ? undefined : sendRes.body }),
+      { headers, status: sendRes.ok ? 200 : 502 }
+    )
   } catch (e) {
     console.error("ERROR:", e)
     const msg = e instanceof Error ? e.message : String(e)

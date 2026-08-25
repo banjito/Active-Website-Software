@@ -1,17 +1,45 @@
 import { supabase } from '@/lib/supabase';
 
-/** Fire-and-forget email notification to the current approver */
-function notifyApprover(requisitionId: string, approverUserId: string, stepNumber: number, totalSteps: number, action: 'submitted' | 'advanced') {
+type RequisitionNotifyAction = 'submitted' | 'advanced' | 'approved' | 'rejected';
+
+/**
+ * Email notification about a requisition's approval chain.
+ *
+ * Fire-and-forget by design: a mail failure must never block the approval
+ * itself. But it is no longer silent — failures are logged with the reason so
+ * a missing API key or an unresolvable recipient is diagnosable from the
+ * console instead of vanishing.
+ */
+function notifyApprover(
+  requisitionId: string,
+  approverUserId: string | null,
+  stepNumber: number,
+  totalSteps: number,
+  action: RequisitionNotifyAction,
+  extra?: { reason?: string; actorUserId?: string }
+) {
   try {
     const fnUrl = (import.meta as any).env?.VITE_SUPABASE_URL;
     const anonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
-    if (!fnUrl || !anonKey) return;
+    if (!fnUrl || !anonKey) {
+      console.warn('[requisition-notify] skipped: Supabase URL or anon key missing');
+      return;
+    }
     fetch(`${fnUrl.replace(/\/rest\/v1.*$/, '')}/functions/v1/requisition-approval-notification`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${anonKey}` },
-      body: JSON.stringify({ requisitionId, approverUserId, stepNumber, totalSteps, action })
-    }).catch(() => {});
-  } catch { /* silent */ }
+      body: JSON.stringify({ requisitionId, approverUserId, stepNumber, totalSteps, action, ...extra })
+    })
+      .then(async (res) => {
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok || payload?.emailSent === false) {
+          console.warn(`[requisition-notify] ${action} email not sent:`, payload?.message || payload?.error || payload?.providerBody || res.status);
+        }
+      })
+      .catch((err) => console.warn(`[requisition-notify] ${action} request failed:`, err?.message || err));
+  } catch (err) {
+    console.warn('[requisition-notify] threw:', err);
+  }
 }
 
 /** Escape HTML for safe display */
@@ -477,6 +505,10 @@ export const jobRequisitionsService = {
         .single();
 
       if (error) throw error;
+
+      // Chain complete: tell whoever raised it, and copy HR.
+      notifyApprover(requisitionId, null, currentStep, approvers.length, 'approved', { actorUserId: userId });
+
       return { requisition: data, allApproved: true };
     }
   },
@@ -523,6 +555,10 @@ export const jobRequisitionsService = {
       .single();
 
     if (error) throw error;
+
+    // Tell whoever raised it why it was closed, and copy HR.
+    notifyApprover(requisitionId, null, currentStep, approvers.length, 'rejected', { reason, actorUserId: userId });
+
     return data;
   },
 

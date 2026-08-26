@@ -24,6 +24,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Link,
   Navigate,
   Route,
   Routes,
@@ -31,6 +32,7 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import {
   Button,
   Card,
@@ -39,7 +41,7 @@ import {
   CardTitle,
   Badge,
 } from "../../components/ui";
-import { BRAND_COLOR } from "@/lib/companyConfig";
+import { BRAND_COLOR, companyConfig } from "@/lib/companyConfig";
 import { useAuth } from "@/lib/AuthContext";
 import { isSuperUser } from "@/lib/roles";
 import {
@@ -593,7 +595,7 @@ export default function AmpuPage() {
   /* --- render ------------------------------------------------------- */
 
   return (
-    <div className="min-h-full bg-neutral-50 dark:bg-neutral-950">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
       <Masthead pathname={location.pathname} />
 
       <div className="mx-auto max-w-6xl px-4 py-8">
@@ -834,6 +836,17 @@ function Masthead({ pathname }: { pathname: string }) {
           >
             Leaderboard
           </Button>
+
+          {/* AMPu renders outside the app <Layout>, so this link is the only
+              way back to the rest of ampOS. */}
+          <span className="mx-1 hidden h-6 w-px bg-neutral-200 dark:bg-neutral-700 sm:block" />
+          <Link
+            to="/portal"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Back to {companyConfig.name}</span>
+          </Link>
         </div>
       </div>
     </div>

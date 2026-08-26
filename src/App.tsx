@@ -631,14 +631,15 @@ function App() {
                     }
                   />
                   {/* AMPu owns everything under /ampu: catalog, transcript,
-                      syllabus, lecture. See src/app/ampu/AmpuPage.tsx. */}
+                      syllabus, lecture. See src/app/ampu/AmpuPage.tsx.
+                      Like the docs, it deliberately skips the app <Layout>:
+                      it is a reading surface with its own chrome and its own
+                      "Back to ampOS" exit, so the work sidebar is noise. */}
                   <Route
                     path="/ampu/*"
                     element={
                       <RequireAuth>
-                        <Layout>
-                          <AmpuPage />
-                        </Layout>
+                        <AmpuPage />
                       </RequireAuth>
                     }
                   />

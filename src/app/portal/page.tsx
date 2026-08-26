@@ -18,7 +18,6 @@ import {
   Calendar,
   Edit3,
   X as XIcon,
-  HelpCircle,
   EyeOff,
   Megaphone,
   Pin,
@@ -1130,6 +1129,9 @@ export default function PortalLanding() {
         break;
       case "ampOS Docs":
         navigate("/docs");
+        break;
+      case "AMPu":
+        navigate("/ampu");
         break;
       case "Calibration Division":
         handleDivisionClick("calibration");
@@ -2521,49 +2523,57 @@ export default function PortalLanding() {
             </Card>
           </PortalCardWrapper>
 
-          {/* ampOS Docs */}
-          <PortalCardWrapper portalName="ampOS Docs">
-            <Card
-              tabIndex={0}
-              role="button"
-              data-portal-title="ampOS Docs"
-              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
-            >
-              <CardHeader className="flex flex-row items-start justify-between p-6">
-                <div className="flex items-center gap-3">
+          {/* ampOS Docs + AMPu — one grid cell split into two logo-only
+              buttons. Neither card carries a title or badge: the wordmark and
+              the emblem are the whole label. */}
+          <div className="grid grid-cols-2 gap-4">
+            <PortalCardWrapper portalName="ampOS Docs" className="h-full">
+              <Card
+                tabIndex={0}
+                role="button"
+                data-portal-title="ampOS Docs"
+                className="portal-click-card h-full border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
+              >
+                <div className="flex h-[88px] items-center justify-center px-2">
+                  {/* Masked rather than <img> so the card's hover rule can
+                      whiten it. Width is pinned rather than derived from
+                      aspect-ratio: an auto width resolves against available
+                      space, which made the logo resize as the card changed on
+                      hover. 16234:2378, at 24px tall on the three-column grid
+                      and 20px on the narrower two-column one, where the wide
+                      wordmark would otherwise outrun its half of the card.
+                      The text-cyan-500 class is what picks the hover color. */}
                   <div
-                    className="portal-icon-bg p-2.5 rounded-none"
-                    style={{ color: "#155e75" }}
-                  >
-                    <HelpCircle
-                      className="h-5 w-5 text-cyan-500 dark:text-white"
-                      style={{ color: "#155e75" }}
-                    />
-                  </div>
-                  <div>
-                    {/* Wordmark stands in for the card title. Masked rather
-                        than <img> so the card's hover rule can whiten it. */}
-                    <CardTitle className="leading-none">
-                      {/* Width is pinned rather than derived from
-                          aspect-ratio: an auto width resolves against
-                          available space, which made the logo resize as the
-                          card changed on hover. 16234:2378 at 24px tall. */}
-                      <div
-                        role="img"
-                        aria-label="ampOS Docs"
-                        className="block h-6 w-[164px] shrink-0 bg-current text-[#155e75] dark:text-white"
-                        style={maskStyle("/ampOS_docs.svg", "100% 100%")}
-                      />
-                    </CardTitle>
-                  </div>
+                    role="img"
+                    aria-label="ampOS Docs"
+                    className="block h-5 w-[137px] lg:h-6 lg:w-[164px] shrink-0 translate-y-px bg-current text-cyan-500 dark:text-white"
+                    style={{
+                      ...maskStyle("/ampOS_docs.svg", "100% 100%"),
+                      color: "#155e75",
+                    }}
+                  />
                 </div>
-                <Badge className="portal-card-badge portal-general-badge !text-white px-2.5 py-1 text-xs font-medium">
-                  General
-                </Badge>
-              </CardHeader>
-              <CardContent className="px-6" />
-            </Card>
-          </PortalCardWrapper>
+              </Card>
+            </PortalCardWrapper>
+
+            <PortalCardWrapper portalName="AMPu" className="h-full">
+              <Card
+                tabIndex={0}
+                role="button"
+                data-portal-title="AMPu"
+                className="portal-click-card h-full border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
+              >
+                <div className="flex h-[88px] items-center justify-center px-4">
+                  {/* The emblem ships transparent and multicolored, so it gets
+                      no tile and the card takes none of the hover fills: a
+                      dark ground would swallow its browns. The file declares
+                      width/height as 100%, so the box is sized from its
+                      viewBox ratio, 2434.62:2013.85, at 64px tall. */}
+                  <img src="/img/ampU.svg" alt="AMPu" width={77} height={64} />
+                </div>
+              </Card>
+            </PortalCardWrapper>
+          </div>
         </div>
       </main>
 

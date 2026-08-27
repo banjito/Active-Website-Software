@@ -453,6 +453,21 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
             margin-bottom: 4px !important;
             padding-bottom: 2px !important;
           }
+          /* Report bodies are "p-6 flex justify-center" on screen and lean on
+             Tailwind's print:block utility to leave flex layout for print.
+             Reports inject their own global print CSS into <head> and most never
+             remove it on unmount, so after a few reports have been opened in one
+             session the head carries several bare
+             ".flex { display: flex !important }" rules from other reports.
+             That !important outranks the
+             utility class, the body stays a row flex container, and a row flex
+             container cannot fragment across printed pages — the whole report
+             gets pushed to page 2 and page 1 prints with nothing but the header.
+             The id + three classes here outrank those leaked rules. */
+          #report-container .p-6.flex.justify-center,
+          #report-container .report-body {
+            display: block !important;
+          }
           #report-container > div:nth-child(2),
           #report-container .report-body {
             flex: 0 0 auto !important;
@@ -1558,6 +1573,12 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
           flex: 0 0 auto !important;
           margin-bottom: 4px !important;
           padding-bottom: 2px !important;
+        }
+        /* Same as the @media print rule above: keep the report body out of flex
+           layout so it fragments across pages instead of moving as one block. */
+        .force-print #report-container .p-6.flex.justify-center,
+        .force-print #report-container .report-body {
+          display: block !important;
         }
         .force-print #report-container > div:nth-child(2),
         .force-print #report-container .report-body {

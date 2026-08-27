@@ -1349,6 +1349,12 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
     table.phase-deviation-table .text-xs { font-size:9px !important; }
     table.phase-deviation-table td:first-child { text-align:left !important; }
     table.phase-deviation-table td:first-child span.text-xs:first-child { display:inline-block !important; padding-left:5ch !important; }
+    /* Keep the whole sheet on one Letter page. At the shared 16px section gap
+       this report runs 1005px against 998px of printable height, so Test
+       Equipment Used spills onto a second page carrying nothing else. 10px
+       gaps bring it to 969px and leave room for a few extra table rows.
+       Scoped to the report body so the print header keeps its own 4px. */
+    #report-container .max-w-7xl div.mb-6 { margin-bottom: 10px !important; }
     }
     `;
     document.head.appendChild(style);
@@ -1402,8 +1408,8 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="p-6 flex justify-center">
-        <div className="max-w-7xl w-full space-y-6">
+      <div className="p-6 flex justify-center print:p-0 print:block">
+        <div className="max-w-7xl w-full space-y-6 print:max-w-none print:space-y-2">
           <ReportHeader
             title={reportName}
             isAutoSaving={isAutoSaving}

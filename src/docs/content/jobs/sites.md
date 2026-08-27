@@ -37,6 +37,8 @@ Give it a name a technician can recognize from a truck: `Decatur Plant, Building
 
 Assets attach to sites, not just to jobs. That is what makes year-over-year testing work: next year's PM job pulls the same transformer record, and you can compare this year's readings against last year's without retyping the nameplate.
 
+The site's list is organized by **Building / Area → Substation → folders**, and folders made here are inherited by every job at the site. See [organizing the list](/docs/jobs/assets#organizing-the-list).
+
 ::: tip
 Spend the extra five minutes naming assets consistently the first time you work a site. `T-1`, `T-2`, `T-3` beats `Transformer 1`, `XFMR 2`, `main xfmr`. Next year's crew will thank you, and trending only works if the names match.
 :::

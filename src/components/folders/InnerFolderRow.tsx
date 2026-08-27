@@ -42,6 +42,8 @@ export function InnerFolderRow({
   isOver,
   dropRef,
   dragHandleProps,
+  indentOffset = 0,
+  onContextMenu,
 }: {
   node: FolderNode;
   depth: number;
@@ -55,9 +57,17 @@ export function InnerFolderRow({
   onExpandAll?: () => void;
   onCollapseAll?: () => void;
   canEdit: boolean;
+  /**
+   * Levels above this folder's own tree. The asset list nests substations inside buildings
+   * before this row is reached, and without the offset a folder inside Sub 1 would line up
+   * with the building heading three levels above it.
+   */
+  indentOffset?: number;
   isOver?: boolean;
   dropRef?: (node: HTMLElement | null) => void;
   dragHandleProps?: Record<string, unknown>;
+  /** Right-click anywhere on the row. Omitted where the surface has no menu to show. */
+  onContextMenu?: (event: React.MouseEvent) => void;
 }) {
   const [renaming, setRenaming] = useState(false);
   const [draft, setDraft] = useState(node.folder.name);
@@ -70,6 +80,7 @@ export function InnerFolderRow({
 
   return (
     <TableRow
+      onContextMenu={onContextMenu}
       className={`group/folder border-neutral-100 dark:border-neutral-800 ${
         isOver ? "bg-brand/10 hover:bg-brand/10" : "hover:bg-neutral-50 dark:hover:bg-dark-200"
       }`}
@@ -86,7 +97,7 @@ export function InnerFolderRow({
         <div
           ref={dropRef}
           className="flex items-center gap-2"
-          style={{ paddingLeft: `${depth * 1.25}rem` }}
+          style={{ paddingLeft: `${(depth + indentOffset) * 1.25}rem` }}
         >
           {/* Separate from the options button on purpose: dnd listens on pointerdown and
               so does the menu trigger, so one element cannot be both. */}

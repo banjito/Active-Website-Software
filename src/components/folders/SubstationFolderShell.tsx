@@ -31,6 +31,7 @@ export function SubstationFolderShell({
   dropRef,
   isOver,
   dragHandleProps,
+  onContextMenu,
   children,
 }: {
   folder: SubstationFolder;
@@ -46,6 +47,11 @@ export function SubstationFolderShell({
   dropRef?: (node: HTMLElement | null) => void;
   isOver?: boolean;
   dragHandleProps?: Record<string, unknown>;
+  /**
+   * Right-click on the heading only, not on the whole folder: everything nested inside it
+   * has its own menu, and a folder's options appearing over a report row would be wrong.
+   */
+  onContextMenu?: (event: React.MouseEvent) => void;
   children: React.ReactNode;
 }) {
   const [renaming, setRenaming] = useState(false);
@@ -67,7 +73,10 @@ export function SubstationFolderShell({
         isOver ? "bg-brand/5 ring-1 ring-brand" : ""
       }`}
     >
-      <div className="group/folder flex items-center gap-2.5 px-1 py-1.5">
+      <div
+        className="group/folder flex items-center gap-2.5 px-1 py-1.5"
+        onContextMenu={onContextMenu}
+      >
 
         {/* While renaming, the input replaces the toggle rather than sitting inside it —
             an input nested in a button is invalid, and every keystroke would fight the

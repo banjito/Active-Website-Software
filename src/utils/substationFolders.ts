@@ -1,11 +1,26 @@
 import { compareAlphanumericLabels } from "@/utils/sortUtils";
 import type {
+  BuildingFolderAssignment,
+  FolderLevel,
   FolderNode,
   FolderedUnit,
   ResolvedFolders,
   SubstationFolder,
   SubstationFolderAssignment,
 } from "@/lib/types/substationFolders";
+
+/**
+ * What a folder holds.
+ *
+ * Falls back to what substation_key means on an instance that hasn't run
+ * add_building_area_folders.sql, which is the same thing the migration backfills: no
+ * substation_key is a folder of substations, one is a folder of items. A building folder
+ * cannot exist there at all, so nothing is lost by the fallback.
+ */
+export function folderLevel(folder: SubstationFolder): FolderLevel {
+  if (folder.level) return folder.level;
+  return folder.substation_key ? "item" : "substation";
+}
 
 /**
  * The two labels the Reports tab invents when it cannot work out a substation.
@@ -34,6 +49,17 @@ export function substationKey(label: string): string {
   return label.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
+/**
+ * The same normalisation, for a Building / Area name.
+ *
+ * Deliberately one function under two names rather than two implementations: the building
+ * level would drift out of step with the substation level the first time one of them
+ * learned a new rule, and both sides also have to match the SQL comments in
+ * add_building_area_folders.sql.
+ */
+export const groupKey = substationKey;
+export const buildingKey = substationKey;
+
 function compareFolders(a: SubstationFolder, b: SubstationFolder): number {
   if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
   return compareAlphanumericLabels(a.name, b.name);
@@ -50,58 +76,89 @@ function compareFolders(a: SubstationFolder, b: SubstationFolder): number {
 export function mergeFolderScopes(input: {
   siteFolders?: SubstationFolder[];
   siteAssignments?: SubstationFolderAssignment[];
+  siteBuildingAssignments?: BuildingFolderAssignment[];
   jobFolders?: SubstationFolder[];
   jobAssignments?: SubstationFolderAssignment[];
+  jobBuildingAssignments?: BuildingFolderAssignment[];
   itemFolderById?: Map<string, string>;
   available?: boolean;
+  buildingLevelAvailable?: boolean;
 }): ResolvedFolders {
-  // Outer folders hold substations; inner ones live inside a substation and hold items.
-  // They come back from the same table and are separated here, once, so no caller has to
-  // remember to filter.
-  const isOuter = (f: SubstationFolder) => !f.substation_key;
+  // Building folders hold buildings, outer folders hold substations, inner ones live
+  // inside a substation and hold items. They come back from the same table and are
+  // separated here, once, so no caller has to remember to filter.
+  const atLevel = (folders: SubstationFolder[] | undefined, level: FolderLevel) =>
+    (folders ?? []).filter((f) => folderLevel(f) === level);
+
   const innerFolders = [
-    ...(input.siteFolders ?? []).filter((f) => !isOuter(f)),
-    ...(input.jobFolders ?? []).filter((f) => !isOuter(f)),
-  ];
-  const siteFolders = (input.siteFolders ?? []).filter(isOuter);
-  const jobFolders = (input.jobFolders ?? []).filter(isOuter);
-
-  // Site folders form a fixed leading block, job folders follow. They are not interleaved
-  // by sort_order, because sort_order lives on the folder row: letting a job page drag an
-  // inherited folder would reorder it for every other job at that facility, which is a
-  // change to something nobody on this page asked to touch. Only same-scope folders are
-  // draggable, and this ordering is what makes that restriction look deliberate.
-  const jobNames = new Set(jobFolders.map((f) => f.name.trim().toLowerCase()));
-  const folders = [
-    ...siteFolders
-      .filter((f) => !jobNames.has(f.name.trim().toLowerCase()))
-      .sort(compareFolders),
-    ...[...jobFolders].sort(compareFolders),
+    ...atLevel(input.siteFolders, "item"),
+    ...atLevel(input.jobFolders, "item"),
   ];
 
-  const folderIds = new Set(folders.map((f) => f.id));
+  /**
+   * Site folders form a fixed leading block, job folders follow. They are not interleaved
+   * by sort_order, because sort_order lives on the folder row: letting a job page drag an
+   * inherited folder would reorder it for every other job at that facility, which is a
+   * change to something nobody on this page asked to touch. Only same-scope folders are
+   * draggable, and this ordering is what makes that restriction look deliberate.
+   *
+   * A job folder hides an inherited one of the same name at the *same* level, so the
+   * building folder "East Campus" never hides the substation folder of that name.
+   */
+  const mergeLevel = (level: FolderLevel) => {
+    const site = atLevel(input.siteFolders, level);
+    const job = atLevel(input.jobFolders, level);
+    const jobNames = new Set(job.map((f) => f.name.trim().toLowerCase()));
+    return [
+      ...site.filter((f) => !jobNames.has(f.name.trim().toLowerCase())).sort(compareFolders),
+      ...[...job].sort(compareFolders),
+    ];
+  };
 
-  const assignmentByKey = new Map<string, string | null>();
-  for (const row of input.siteAssignments ?? []) {
-    assignmentByKey.set(row.substation_key, row.folder_id);
-  }
-  for (const row of input.jobAssignments ?? []) {
-    assignmentByKey.set(row.substation_key, row.folder_id);
-  }
+  const folders = mergeLevel("substation");
+  const buildingFolders = mergeLevel("building");
 
   // A folder can be soft-deleted after something was filed in it, and a job can point at a
-  // site folder that a name clash has just hidden. Fail open: the substation shows up
-  // ungrouped rather than disappearing with the folder.
-  for (const [key, folderId] of assignmentByKey) {
-    if (folderId && !folderIds.has(folderId)) assignmentByKey.set(key, null);
-  }
+  // site folder that a name clash has just hidden. Fail open: the group shows up ungrouped
+  // rather than disappearing with the folder.
+  const resolveAssignments = (
+    rows: { key: string; folderId: string | null }[],
+    live: SubstationFolder[],
+  ) => {
+    const folderIds = new Set(live.map((f) => f.id));
+    const byKey = new Map<string, string | null>();
+    for (const row of rows) byKey.set(row.key, row.folderId);
+    for (const [key, folderId] of byKey) {
+      if (folderId && !folderIds.has(folderId)) byKey.set(key, null);
+    }
+    return byKey;
+  };
+
+  const assignmentByKey = resolveAssignments(
+    [...(input.siteAssignments ?? []), ...(input.jobAssignments ?? [])].map((row) => ({
+      key: row.substation_key,
+      folderId: row.folder_id,
+    })),
+    folders,
+  );
+
+  const buildingAssignmentByKey = resolveAssignments(
+    [
+      ...(input.siteBuildingAssignments ?? []),
+      ...(input.jobBuildingAssignments ?? []),
+    ].map((row) => ({ key: row.building_key, folderId: row.folder_id })),
+    buildingFolders,
+  );
 
   return {
     folders,
+    buildingFolders,
     innerFolders,
     itemFolderById: input.itemFolderById ?? new Map(),
     assignmentByKey,
+    buildingAssignmentByKey,
     available: input.available ?? true,
+    buildingLevelAvailable: input.buildingLevelAvailable ?? true,
   };
 }
 

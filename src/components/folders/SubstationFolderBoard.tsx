@@ -117,12 +117,14 @@ function SortableFolder({
   api,
   isClosed,
   onToggle,
+  onContextMenu,
   children,
 }: {
   unit: Extract<FolderedUnit, { kind: "folder" }>;
   api: SubstationFoldersApi;
   isClosed: boolean;
   onToggle: () => void;
+  onContextMenu?: (event: React.MouseEvent) => void;
   children: React.ReactNode;
 }) {
   const inherited = !api.isOwnScope(unit.folder);
@@ -144,6 +146,7 @@ function SortableFolder({
         onDelete={() => void api.deleteFolder(unit.folder.id)}
         canEdit
         isOver={isOver}
+        onContextMenu={onContextMenu}
         dragHandleProps={inherited ? undefined : { ...listeners, ...attributes }}
       >
         {children}
@@ -181,12 +184,15 @@ export function SubstationFolderBoard({
   api,
   closedFolders,
   onToggleFolder,
+  onFolderContextMenu,
   renderSubstation,
 }: {
   units: FolderedUnit[];
   api: SubstationFoldersApi;
   closedFolders: string[];
   onToggleFolder: (folderId: string) => void;
+  /** Right-click on a folder heading. Omitted where the surface has no menu to show. */
+  onFolderContextMenu?: (event: React.MouseEvent, folder: SubstationFolder) => void;
   renderSubstation: (label: string) => React.ReactNode;
 }) {
   const [activeLabel, setActiveLabel] = useState<string | null>(null);
@@ -297,6 +303,11 @@ export function SubstationFolderBoard({
                 api={api}
                 isClosed={closedFolders.includes(unit.folder.id)}
                 onToggle={() => onToggleFolder(unit.folder.id)}
+                onContextMenu={
+                  onFolderContextMenu
+                    ? (e) => onFolderContextMenu(e, unit.folder)
+                    : undefined
+                }
               >
                 {unit.substations.map((label) => (
                   <React.Fragment key={label}>{renderSubstation(label)}</React.Fragment>

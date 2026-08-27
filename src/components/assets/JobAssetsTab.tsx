@@ -464,12 +464,17 @@ export default function JobAssetsTab({
         actions={
           canEdit && (
             <>
-              {substationFolders.available && (
-                <AddFolderButton
-                  scopeLabel="this job"
-                  onCreate={(name) => substationFolders.addFolder(name)}
-                />
-              )}
+              {substationFolders.available &&
+                substationFolders.buildingLevelAvailable && (
+                  <AddFolderButton
+                    scopeLabel="this job"
+                    // Holds buildings, the top of this list's tree. Folders further down
+                    // are made from the heading they belong to.
+                    onCreate={(name) => substationFolders.addBuildingFolder(name)}
+                    description="Holds buildings and areas — the top of the list."
+                    placeholder="e.g. East Campus"
+                  />
+                )}
               {adoptable > 0 && (
                 <Button
                   variant="outline"

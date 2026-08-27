@@ -54,6 +54,8 @@ import {
   Layers,
   ArrowRightLeft,
   FolderPlus,
+  ChevronsDownUp,
+  ChevronsUpDown,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { supabase, isConnectionError } from "../../lib/supabase";
@@ -74,6 +76,10 @@ import { Button } from "../ui/Button";
 import ChangeOrdersSection from "./ChangeOrdersSection";
 import MoveReportsDialog from "./MoveReportsDialog";
 import type { MovedReport, MoveTargetJob } from "../../services/reportMoveService";
+import type {
+  FolderNode,
+  SubstationFolder,
+} from "@/lib/types/substationFolders";
 import type { ChangeOrderSummary } from "../../services/changeOrderService";
 import { reportImportService } from "../../services/reportImport";
 import { ShortcutService } from "../../services/ShortcutService";
@@ -156,10 +162,17 @@ import {
 } from "@/components/folders/SubstationFolderBoard";
 import {
   AddFolderButton,
+  MoveToFolderSubmenu,
   MoveToInnerFolderMenu,
   NameFolderDialog,
+  RenameFolderDialog,
   SubstationHeaderMenu,
 } from "@/components/folders/FolderControls";
+import { ContextMenu } from "@/components/ui/ContextMenu";
+import {
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/DropdownMenu";
 import { SignatureProfileSelector } from "./SignatureProfileSelector";
 import {
   getQuickBooksStatus,
@@ -503,6 +516,16 @@ function parseReportDateField(raw: unknown): Date | null {
   }
   return null;
 }
+
+/**
+ * What a right-click on the Reports tab landed on: a folder heading, a substation
+ * accordion, a folder inside one, or a report row.
+ */
+type ReportContextTarget =
+  | { kind: "folder"; folder: SubstationFolder }
+  | { kind: "substation"; label: string; innerFolderIds: string[] }
+  | { kind: "inner-folder"; node: FolderNode; substation: string }
+  | { kind: "report"; assetId: string; substation: string };
 
 /** Report row id from `report:/jobs/.../.../reportId` (handles grounding substation segment). */
 function parseReportIdFromAssetUrl(fileUrl: string): string | null {
@@ -1818,6 +1841,204 @@ export default function JobDetail() {
   const [assetSubstations, setAssetSubstations] = useState<
     Record<string, string>
   >({});
+
+  /**
+   * What a right-click on the Reports tab landed on.
+   *
+   * The tab has four kinds of row that mean something to the folder system, and each wants
+   * its own actions — the same ones its hover menu carries, reachable without hunting for
+   * the ··· that only appears once the pointer is already in the right place.
+   */
+  const [folderContextMenu, setFolderContextMenu] = useState<{
+    x: number;
+    y: number;
+    target: ReportContextTarget;
+  } | null>(null);
+  /** The folder the Rename dialog is pointed at, when it was opened by right-click. */
+  const [renamingFolder, setRenamingFolder] = useState<SubstationFolder | null>(null);
+
+  const openFolderContextMenu = (
+    e: React.MouseEvent,
+    target: ReportContextTarget,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setFolderContextMenu({ x: e.clientX, y: e.clientY, target });
+  };
+
+  /**
+   * The right-click menu for one row of the Reports tab.
+   *
+   * Each row offers what its own ··· menu offers, plus the folder move that is otherwise
+   * a drag. Right-click is a second route to the same writes, not a second set of them.
+   */
+  const renderFolderContextItems = (target: ReportContextTarget) => {
+    switch (target.kind) {
+      case "folder":
+        // A folder defined on the site is read-only here. Saying so beats a menu that
+        // silently doesn't open — that reads as the right-click being broken.
+        if (!substationFolders.isOwnScope(target.folder)) {
+          return (
+            <DropdownMenuItem disabled>
+              Defined on the site — edit it there
+            </DropdownMenuItem>
+          );
+        }
+        return (
+          <>
+            <DropdownMenuItem onSelect={() => setRenamingFolder(target.folder)}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Rename
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() => void substationFolders.deleteFolder(target.folder.id)}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete folder
+            </DropdownMenuItem>
+          </>
+        );
+
+      case "substation":
+        return (
+          <>
+            <DropdownMenuItem
+              onSelect={() =>
+                setNewSubfolder({ substation: target.label, parentId: null })
+              }
+            >
+              <FolderPlus className="mr-2 h-4 w-4" />
+              New folder here
+            </DropdownMenuItem>
+            <MoveToFolderSubmenu
+              folders={substationFolders.folders.map((folder) => ({ folder, depth: 0 }))}
+              currentFolderId={substationFolders.folderFor(target.label)?.id ?? null}
+              onMove={(folderId) =>
+                void substationFolders.moveSubstation(target.label, folderId)
+              }
+            />
+            {target.innerFolderIds.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => setFoldersClosed(target.innerFolderIds, false)}
+                >
+                  <ChevronsUpDown className="mr-2 h-4 w-4" />
+                  Expand all
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => setFoldersClosed(target.innerFolderIds, true)}
+                >
+                  <ChevronsDownUp className="mr-2 h-4 w-4" />
+                  Collapse all
+                </DropdownMenuItem>
+              </>
+            )}
+          </>
+        );
+
+      case "inner-folder": {
+        const subtree = flattenFolderTree([target.node]).map((f) => f.folder.id);
+        return (
+          <>
+            <DropdownMenuItem
+              onSelect={() =>
+                setNewSubfolder({
+                  substation: target.substation,
+                  parentId: target.node.folder.id,
+                })
+              }
+            >
+              <FolderPlus className="mr-2 h-4 w-4" />
+              New folder inside
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setRenamingFolder(target.node.folder)}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Rename
+            </DropdownMenuItem>
+            {target.node.children.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => setFoldersClosed(subtree, false)}>
+                  <ChevronsUpDown className="mr-2 h-4 w-4" />
+                  Expand all
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setFoldersClosed(subtree, true)}>
+                  <ChevronsDownUp className="mr-2 h-4 w-4" />
+                  Collapse all
+                </DropdownMenuItem>
+              </>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() =>
+                void substationFolders.deleteInnerFolder(target.node.folder.id)
+              }
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete folder
+            </DropdownMenuItem>
+          </>
+        );
+      }
+
+      case "report": {
+        const options = flattenFolderTree(
+          substationFolders.treeFor(target.substation, []).roots,
+        );
+        // The batch move is offered only when everything ticked sits in this substation:
+        // a folder belongs to one, so a mixed selection has no single destination.
+        const ticked = [...selectedAssetIds];
+        const tickedSubstations = new Set(
+          ticked.map((id) => (assetSubstations[id] || "").trim()),
+        );
+        const batch =
+          selectedAssetIds.has(target.assetId) &&
+          ticked.length > 1 &&
+          tickedSubstations.size === 1;
+        const tickedFolders = new Set(
+          ticked.map((id) => substationFolders.itemFolder(id)),
+        );
+
+        return (
+          <>
+            <MoveToFolderSubmenu
+              label="Move this report to folder"
+              folders={options}
+              currentFolderId={substationFolders.itemFolder(target.assetId)}
+              onMove={(folderId) =>
+                void substationFolders.moveItems([target.assetId], folderId, "report")
+              }
+            />
+            {batch && (
+              <MoveToFolderSubmenu
+                label={`Move ${ticked.length} selected to folder`}
+                folders={options}
+                currentFolderId={tickedFolders.size === 1 ? [...tickedFolders][0] : null}
+                onMove={(folderId) => {
+                  void substationFolders.moveItems(ticked, folderId, "report");
+                  setSelectedAssetIds(new Set());
+                }}
+              />
+            )}
+            {options.length > 0 && <DropdownMenuSeparator />}
+            <DropdownMenuItem
+              onSelect={() =>
+                setNewSubfolder({ substation: target.substation, parentId: null })
+              }
+            >
+              <FolderPlus className="mr-2 h-4 w-4" />
+              New folder in {target.substation}
+            </DropdownMenuItem>
+          </>
+        );
+      }
+    }
+  };
+
   // Nameplate serial numbers pulled out of each report, so the Reports search can
   // find a report by the serial of the equipment it covers. One report can carry
   // several (per-phase CTs, contactor plus starting reactor).
@@ -11463,7 +11684,19 @@ export default function JobDetail() {
                                     page — folder, substation, inner folder — starts on the
                                     same vertical line and the nesting reads down the left
                                     edge instead of having to be inferred. */}
-                                <summary className="flex cursor-pointer select-none list-none items-center gap-2.5 px-3 py-2.5 transition-colors hover:bg-neutral-50 dark:hover:bg-dark-200">
+                                <summary
+                                  className="flex cursor-pointer select-none list-none items-center gap-2.5 px-3 py-2.5 transition-colors hover:bg-neutral-50 dark:hover:bg-dark-200"
+                                  onContextMenu={
+                                    canFold
+                                      ? (e) =>
+                                          openFolderContextMenu(e, {
+                                            kind: "substation",
+                                            label: folderKey,
+                                            innerFolderIds,
+                                          })
+                                      : undefined
+                                  }
+                                >
                                   <ChevronRight className="h-4 w-4 shrink-0 text-neutral-400 transition-transform group-open/sub:rotate-90" />
 
                                   <span className="truncate text-[15px] font-semibold tracking-tight text-neutral-900 dark:text-white">
@@ -11556,6 +11789,13 @@ export default function JobDetail() {
                                               node={row.node}
                                               depth={row.depth}
                                               columnCount={10}
+                                              onContextMenu={(e) =>
+                                                openFolderContextMenu(e, {
+                                                  kind: "inner-folder",
+                                                  node: row.node,
+                                                  substation: folderKey,
+                                                })
+                                              }
                                               collapsed={closedFolders.includes(
                                                 row.node.folder.id,
                                               )}
@@ -11604,6 +11844,16 @@ export default function JobDetail() {
                                         return (
                                           <TableRow
                                             key={asset.id}
+                                            onContextMenu={
+                                              canFold
+                                                ? (e) =>
+                                                    openFolderContextMenu(e, {
+                                                      kind: "report",
+                                                      assetId: asset.id,
+                                                      substation: folderKey,
+                                                    })
+                                                : undefined
+                                            }
                                             // Tighter than the shared default (p-4 in
                                             // every cell), because these rows come in
                                             // fifties and the density is the readability.
@@ -12059,7 +12309,41 @@ export default function JobDetail() {
                                   api={substationFolders}
                                   closedFolders={closedFolders}
                                   onToggleFolder={toggleFolderOpen}
+                                  onFolderContextMenu={(e, folder) =>
+                                    openFolderContextMenu(e, { kind: "folder", folder })
+                                  }
                                   renderSubstation={renderSubstationTable}
+                                />
+                                {folderContextMenu && (
+                                  <ContextMenu
+                                    key={`${folderContextMenu.x}:${folderContextMenu.y}`}
+                                    x={folderContextMenu.x}
+                                    y={folderContextMenu.y}
+                                    onClose={() => setFolderContextMenu(null)}
+                                  >
+                                    {renderFolderContextItems(folderContextMenu.target)}
+                                  </ContextMenu>
+                                )}
+                                <RenameFolderDialog
+                                  open={!!renamingFolder}
+                                  name={renamingFolder?.name ?? ""}
+                                  onOpenChange={(open) => !open && setRenamingFolder(null)}
+                                  onRename={(name) => {
+                                    if (!renamingFolder) return;
+                                    // A folder inside a substation lives in its own list
+                                    // and has its own writer, so the two can't share one.
+                                    if (renamingFolder.substation_key) {
+                                      void substationFolders.renameInnerFolder(
+                                        renamingFolder.id,
+                                        name,
+                                      );
+                                    } else {
+                                      void substationFolders.renameFolder(
+                                        renamingFolder.id,
+                                        name,
+                                      );
+                                    }
+                                  }}
                                 />
                                 {newSubfolder && (
                               <NameFolderDialog

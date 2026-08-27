@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/lib/AuthContext";
 import {
+  assignBuilding,
   assignItemsToFolder,
   assignSubstation,
   createFolder,
@@ -14,6 +15,7 @@ import {
 } from "@/services/substationFoldersService";
 import {
   buildFolderTree,
+  groupKey,
   isSyntheticSubstation,
   orderFolderedGroups,
   substationKey,
@@ -28,10 +30,13 @@ import type {
 
 const EMPTY: ResolvedFolders = {
   folders: [],
+  buildingFolders: [],
   innerFolders: [],
   itemFolderById: new Map(),
   assignmentByKey: new Map(),
+  buildingAssignmentByKey: new Map(),
   available: false,
+  buildingLevelAvailable: false,
 };
 
 /**
@@ -121,12 +126,21 @@ export function useSubstationFolders(scopeInput: { jobId?: string | null; siteId
     [],
   );
 
+  /**
+   * A folder of substations. `buildingLabel` pins it inside one Building / Area on the
+   * asset list, which is what keeps a folder you just created visible before anything has
+   * been filed into it; without one it floats above every building, as every folder made
+   * before the building level existed does.
+   */
   const addFolder = useCallback(
-    async (name: string) => {
+    async (name: string, options?: { buildingLabel?: string | null }) => {
       if (!writeScope || !name.trim()) return;
       const sortOrder = resolved.folders.length;
       try {
-        const folder = await createFolder(writeScope, name, sortOrder, user?.id);
+        const folder = await createFolder(writeScope, name, sortOrder, user?.id, {
+          level: "substation",
+          buildingLabel: options?.buildingLabel ?? null,
+        });
         setResolved((current) => ({ ...current, folders: [...current.folders, folder] }));
       } catch (e: any) {
         console.error(e);
@@ -140,38 +154,95 @@ export function useSubstationFolders(scopeInput: { jobId?: string | null; siteId
     [writeScope, resolved.folders.length, user?.id],
   );
 
+  /** A folder of Building / Area names — the top level of the asset list. */
+  const addBuildingFolder = useCallback(
+    async (name: string) => {
+      if (!writeScope || !name.trim() || !resolved.buildingLevelAvailable) return;
+      const sortOrder = resolved.buildingFolders.length;
+      try {
+        const folder = await createFolder(writeScope, name, sortOrder, user?.id, {
+          level: "building",
+        });
+        setResolved((current) => ({
+          ...current,
+          buildingFolders: [...current.buildingFolders, folder],
+        }));
+      } catch (e: any) {
+        console.error(e);
+        toast.error(
+          e?.code === "23505"
+            ? `A folder named "${name.trim()}" already exists here.`
+            : "Couldn't create that folder.",
+        );
+      }
+    },
+    [writeScope, resolved.buildingFolders.length, resolved.buildingLevelAvailable, user?.id],
+  );
+
+  // Rename and delete take a folder id and don't care which level it came from: one folder
+  // row backs all three, and the caller already knows which list it clicked in.
   const rename = useCallback(
     (folderId: string, name: string) =>
       optimistic(
-        (current) => ({
-          ...current,
-          folders: current.folders.map((f) => (f.id === folderId ? { ...f, name: name.trim() } : f)),
-        }),
+        (current) => {
+          const applyName = (f: SubstationFolder) =>
+            f.id === folderId ? { ...f, name: name.trim() } : f;
+          return {
+            ...current,
+            folders: current.folders.map(applyName),
+            buildingFolders: current.buildingFolders.map(applyName),
+          };
+        },
         () => renameFolder(folderId, name),
         "Couldn't rename that folder.",
       ),
     [optimistic],
   );
 
-  /** Removes the folder only. Its substations fall back to ungrouped; no report moves. */
+  /**
+   * Removes the folder only. Whatever was in it — substations, buildings — falls back to
+   * ungrouped; no report, asset or equipment name is touched.
+   */
   const remove = useCallback(
     (folderId: string) =>
       optimistic(
         (current) => {
-          const assignmentByKey = new Map(current.assignmentByKey);
-          for (const [key, id] of assignmentByKey) {
-            if (id === folderId) assignmentByKey.delete(key);
-          }
+          const without = (map: Map<string, string | null>) => {
+            const next = new Map(map);
+            for (const [key, id] of next) {
+              if (id === folderId) next.delete(key);
+            }
+            return next;
+          };
           return {
             ...current,
             folders: current.folders.filter((f) => f.id !== folderId),
-            assignmentByKey,
+            buildingFolders: current.buildingFolders.filter((f) => f.id !== folderId),
+            assignmentByKey: without(current.assignmentByKey),
+            buildingAssignmentByKey: without(current.buildingAssignmentByKey),
           };
         },
         () => deleteFolder(folderId),
         "Couldn't delete that folder.",
       ),
     [optimistic],
+  );
+
+  /** File a Building / Area into a folder of buildings, or `null` to take it back out. */
+  const moveBuilding = useCallback(
+    (label: string, folderId: string | null) => {
+      if (!writeScope || !label.trim()) return Promise.resolve();
+      return optimistic(
+        (current) => {
+          const buildingAssignmentByKey = new Map(current.buildingAssignmentByKey);
+          buildingAssignmentByKey.set(groupKey(label), folderId);
+          return { ...current, buildingAssignmentByKey };
+        },
+        () => assignBuilding(writeScope, label, folderId, user?.id),
+        "Couldn't move that building.",
+      );
+    },
+    [optimistic, writeScope, user?.id],
   );
 
   const moveSubstation = useCallback(
@@ -229,6 +300,43 @@ export function useSubstationFolders(scopeInput: { jobId?: string | null; siteId
       return id ? (folderById.get(id) ?? null) : null;
     },
     [resolved.assignmentByKey, folderById],
+  );
+
+  const buildingFolderById = useMemo(
+    () => new Map(resolved.buildingFolders.map((f) => [f.id, f])),
+    [resolved.buildingFolders],
+  );
+
+  /** The folder a Building / Area currently sits in, or null when it's loose. */
+  const folderForBuilding = useCallback(
+    (label: string): SubstationFolder | null => {
+      const id = resolved.buildingAssignmentByKey.get(groupKey(label));
+      return id ? (buildingFolderById.get(id) ?? null) : null;
+    },
+    [resolved.buildingAssignmentByKey, buildingFolderById],
+  );
+
+  /**
+   * The folders of substations that belong to one building: the ones pinned inside it,
+   * plus any floating folder that holds a substation present in that building.
+   *
+   * A floating folder therefore shows up under every building whose substations it holds.
+   * That is deliberate — the same folder legitimately spans two buildings, and hiding it
+   * from one of them would hide equipment.
+   */
+  const substationFoldersInBuilding = useCallback(
+    (buildingLabel: string, substationLabels: string[]): SubstationFolder[] => {
+      const key = groupKey(buildingLabel);
+      const holders = new Set(
+        substationLabels
+          .map((label) => resolved.assignmentByKey.get(substationKey(label)))
+          .filter((id): id is string => Boolean(id)),
+      );
+      return resolved.folders.filter(
+        (f) => (f.building_key ? f.building_key === key : false) || holders.has(f.id),
+      );
+    },
+    [resolved.folders, resolved.assignmentByKey],
   );
 
   const unitsFor = useCallback(
@@ -386,6 +494,14 @@ export function useSubstationFolders(scopeInput: { jobId?: string | null; siteId
     moveSubstation,
     reorderFolders: reorder,
     refresh,
+    // The Building / Area level. Only the asset list renders it — the Reports tab has no
+    // building to group by and ignores every one of these.
+    buildingLevelAvailable: resolved.buildingLevelAvailable,
+    buildingFolders: resolved.buildingFolders,
+    folderForBuilding,
+    addBuildingFolder,
+    moveBuilding,
+    substationFoldersInBuilding,
     // Folders inside a substation.
     innerFolders: resolved.innerFolders,
     itemFolder,

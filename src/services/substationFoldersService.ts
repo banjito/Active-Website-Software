@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
-import { mergeFolderScopes, substationKey } from "@/utils/substationFolders";
+import { groupKey, mergeFolderScopes, substationKey } from "@/utils/substationFolders";
 import type {
+  BuildingFolderAssignment,
   FolderItemAssignment,
   FolderScope,
   ResolvedFolders,
@@ -8,12 +9,15 @@ import type {
   SubstationFolderAssignment,
 } from "@/lib/types/substationFolders";
 
-// Folder level above substation. See database/migrations/create_substation_folders.sql.
+// Folder levels above a report or a piece of equipment. See
+// database/migrations/create_substation_folders.sql and add_building_area_folders.sql.
 
 const FOLDER_COLUMNS =
-  "id, site_id, job_id, name, sort_order, created_by, created_at, updated_at, deleted_at, substation_key, parent_folder_id";
+  "id, site_id, job_id, name, sort_order, created_by, created_at, updated_at, deleted_at, substation_key, parent_folder_id, level, building_key";
 const ASSIGNMENT_COLUMNS =
   "id, site_id, job_id, substation_key, substation_label, folder_id, sort_order, created_at, updated_at";
+const BUILDING_ASSIGNMENT_COLUMNS =
+  "id, site_id, job_id, building_key, building_label, folder_id, sort_order, created_at, updated_at";
 const ITEM_COLUMNS = "id, folder_id, asset_id, equipment_asset_id, sort_order";
 
 /**
@@ -41,6 +45,17 @@ export function substationFoldersAvailable(): boolean {
   return foldersAvailable;
 }
 
+/**
+ * The building level arrived in a third migration (add_building_area_folders.sql). Without
+ * it the asset list still groups by Building / Area — that comes off the equipment row —
+ * but offers no folders at that level, rather than 42703-ing the whole list.
+ */
+let buildingLevelAvailable = true;
+
+export function buildingFoldersAvailable(): boolean {
+  return buildingLevelAvailable;
+}
+
 /** 42P01 = table missing, i.e. create_substation_folders.sql hasn't been applied here. */
 function isMissingTable(error: { code?: string } | null): boolean {
   return error?.code === "42P01";
@@ -48,10 +63,13 @@ function isMissingTable(error: { code?: string } | null): boolean {
 
 const UNAVAILABLE: ResolvedFolders = {
   folders: [],
+  buildingFolders: [],
   innerFolders: [],
   itemFolderById: new Map(),
   assignmentByKey: new Map(),
+  buildingAssignmentByKey: new Map(),
   available: false,
+  buildingLevelAvailable: false,
 };
 
 /** 42703 = column missing, i.e. the nesting migration hasn't been applied here. */
@@ -60,9 +78,10 @@ function isMissingColumn(error: { code?: string } | null): boolean {
 }
 
 function folderColumns(): string {
-  return nestingAvailable
-    ? FOLDER_COLUMNS
-    : FOLDER_COLUMNS.replace(", substation_key, parent_folder_id", "");
+  let columns = FOLDER_COLUMNS;
+  if (!buildingLevelAvailable) columns = columns.replace(", level, building_key", "");
+  if (!nestingAvailable) columns = columns.replace(", substation_key, parent_folder_id", "");
+  return columns;
 }
 
 function scopeColumn(scope: FolderScope): "site_id" | "job_id" {
@@ -75,9 +94,13 @@ function scopeValue(scope: FolderScope): string {
 
 // ── Reads ─────────────────────────────────────────────────────────────────────
 
-async function fetchScope(
-  scope: FolderScope,
-): Promise<{ folders: SubstationFolder[]; assignments: SubstationFolderAssignment[] } | null> {
+interface ScopeData {
+  folders: SubstationFolder[];
+  assignments: SubstationFolderAssignment[];
+  buildingAssignments: BuildingFolderAssignment[];
+}
+
+async function fetchScope(scope: FolderScope): Promise<ScopeData | null> {
   const column = scopeColumn(scope);
   const value = scopeValue(scope);
 
@@ -89,17 +112,25 @@ async function fetchScope(
       .eq(column, value)
       .is("deleted_at", null);
 
-  const [initialFolderResult, assignmentResult] = await Promise.all([
+  const [initialFolderResult, assignmentResult, initialBuildingResult] = await Promise.all([
     readFolders(),
     supabase
       .schema("neta_ops")
       .from("substation_folder_assignments")
       .select(ASSIGNMENT_COLUMNS)
       .eq(column, value),
+    fetchBuildingAssignments(column, value),
   ]);
   let folderResult = initialFolderResult;
+  let buildingResult = initialBuildingResult;
 
-  // Drop the nesting columns and retry once if this instance predates that migration.
+  // Retry once per migration this instance is missing, dropping that migration's columns:
+  // building level first, then nesting, since folderColumns() layers them in that order.
+  if (isMissingColumn(folderResult.error) && buildingLevelAvailable) {
+    buildingLevelAvailable = false;
+    buildingResult = { data: [], error: null };
+    folderResult = await readFolders();
+  }
   if (isMissingColumn(folderResult.error) && nestingAvailable) {
     nestingAvailable = false;
     folderResult = await readFolders();
@@ -117,7 +148,37 @@ async function fetchScope(
   return {
     folders: (folderResult.data ?? []) as unknown as SubstationFolder[],
     assignments: (assignmentResult.data ?? []) as unknown as SubstationFolderAssignment[],
+    buildingAssignments: buildingResult.data,
   };
+}
+
+/**
+ * Building memberships for one scope.
+ *
+ * Its own function so a missing table latches the level off and returns an empty list
+ * instead of taking the folder read down with it — the building *level* still renders,
+ * it just has no folders in it.
+ */
+async function fetchBuildingAssignments(
+  column: "site_id" | "job_id",
+  value: string,
+): Promise<{ data: BuildingFolderAssignment[]; error: null }> {
+  if (!buildingLevelAvailable) return { data: [], error: null };
+
+  const { data, error } = await supabase
+    .schema("neta_ops")
+    .from("building_folder_assignments")
+    .select(BUILDING_ASSIGNMENT_COLUMNS)
+    .eq(column, value);
+
+  if (error) {
+    if (isMissingTable(error) || isMissingColumn(error)) {
+      buildingLevelAvailable = false;
+      return { data: [], error: null };
+    }
+    throw error;
+  }
+  return { data: (data ?? []) as unknown as BuildingFolderAssignment[], error: null };
 }
 
 /**
@@ -169,9 +230,12 @@ export async function fetchFolderData(input: {
   return mergeFolderScopes({
     siteFolders: site?.folders,
     siteAssignments: site?.assignments,
+    siteBuildingAssignments: site?.buildingAssignments,
     jobFolders: job?.folders,
     jobAssignments: job?.assignments,
+    jobBuildingAssignments: job?.buildingAssignments,
     itemFolderById: await fetchItemAssignments(innerFolderIds),
+    buildingLevelAvailable,
   });
 }
 
@@ -209,14 +273,37 @@ async function fetchItemAssignments(folderIds: string[]): Promise<Map<string, st
 
 // ── Writes ────────────────────────────────────────────────────────────────────
 
+/**
+ * Where a new folder goes.
+ *
+ *  - omitted / `{}`      a folder of substations floating above every building, which is
+ *                        what every folder created before the building level existed is
+ *  - `{ buildingLabel }` a folder of substations pinned inside that Building / Area
+ *  - `{ level: "building" }` a folder of buildings, at the top of the asset list
+ *  - `{ substationLabel }`   a folder of items living inside that substation
+ */
+export type FolderPlacement =
+  | { level?: "substation"; buildingLabel?: string | null }
+  | { level: "building" }
+  | { substationLabel: string; parentFolderId?: string | null };
+
 export async function createFolder(
   scope: FolderScope,
   name: string,
   sortOrder: number,
   userId?: string | null,
-  /** Omitted for an outer folder holding substations; set for one living inside a substation. */
-  placement?: { substationLabel: string; parentFolderId?: string | null },
+  placement?: FolderPlacement,
 ): Promise<SubstationFolder> {
+  const inSubstation =
+    placement && "substationLabel" in placement ? placement : null;
+  const level = inSubstation
+    ? "item"
+    : placement && "level" in placement && placement.level
+      ? placement.level
+      : "substation";
+  const buildingLabel =
+    placement && "buildingLabel" in placement ? placement.buildingLabel : null;
+
   const { data, error } = await supabase
     .schema("neta_ops")
     .from("substation_folders")
@@ -225,10 +312,19 @@ export async function createFolder(
       name: name.trim(),
       sort_order: sortOrder,
       created_by: userId ?? null,
-      ...(placement
+      ...(inSubstation
         ? {
-            substation_key: substationKey(placement.substationLabel),
-            parent_folder_id: placement.parentFolderId ?? null,
+            substation_key: substationKey(inSubstation.substationLabel),
+            parent_folder_id: inSubstation.parentFolderId ?? null,
+          }
+        : {}),
+      // Only sent where the columns exist, so an instance that hasn't run
+      // add_building_area_folders.sql keeps working — it can only ever create the two
+      // levels it already had.
+      ...(buildingLevelAvailable
+        ? {
+            level,
+            building_key: buildingLabel ? groupKey(buildingLabel) : null,
           }
         : {}),
     })
@@ -317,6 +413,17 @@ export async function deleteFolder(folderId: string): Promise<void> {
     .delete()
     .eq("folder_id", folderId);
   if (assignmentError) throw assignmentError;
+
+  if (!buildingLevelAvailable) return;
+  const { error: buildingError } = await supabase
+    .schema("neta_ops")
+    .from("building_folder_assignments")
+    .delete()
+    .eq("folder_id", folderId);
+  // A soft-deleted folder whose building rows survive would keep those buildings hidden
+  // from the ungrouped list, so this is a real failure — except on an instance without the
+  // table, where there is nothing to clean up.
+  if (buildingError && !isMissingTable(buildingError)) throw buildingError;
 }
 
 export async function reorderFolders(folderIds: string[]): Promise<void> {
@@ -372,6 +479,52 @@ export async function assignSubstation(
       [column]: value,
       substation_key: key,
       substation_label: label.trim(),
+      folder_id: folderId,
+      created_by: userId ?? null,
+    });
+  if (error) throw error;
+}
+
+/**
+ * File a Building / Area into a folder, or out of one.
+ *
+ * The substation level's twin, for the same reasons: `folderId: null` writes a row rather
+ * than deleting one, so a job can pull a building out of a folder it inherited from its
+ * site without changing the site for everybody; and it is delete-then-insert rather than
+ * upsert because the uniqueness indexes are partial and PostgREST cannot infer them.
+ */
+export async function assignBuilding(
+  scope: FolderScope,
+  label: string,
+  folderId: string | null,
+  userId?: string | null,
+): Promise<void> {
+  if (!buildingLevelAvailable) return;
+  const column = scopeColumn(scope);
+  const value = scopeValue(scope);
+  const key = groupKey(label);
+
+  const { error: clearError } = await supabase
+    .schema("neta_ops")
+    .from("building_folder_assignments")
+    .delete()
+    .eq(column, value)
+    .eq("building_key", key);
+  if (clearError) {
+    if (isMissingTable(clearError)) {
+      buildingLevelAvailable = false;
+      return;
+    }
+    throw clearError;
+  }
+
+  const { error } = await supabase
+    .schema("neta_ops")
+    .from("building_folder_assignments")
+    .insert({
+      [column]: value,
+      building_key: key,
+      building_label: label.trim(),
       folder_id: folderId,
       created_by: userId ?? null,
     });

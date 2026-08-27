@@ -42,10 +42,15 @@ export function AddFolderButton({
   onCreate,
   scopeLabel,
   size = "md",
+  description,
+  placeholder = "e.g. Building A",
 }: {
   onCreate: (name: string) => void | Promise<void>;
   scopeLabel: string;
   size?: "sm" | "md";
+  /** What this folder holds. The asset list's top folder holds buildings, not substations. */
+  description?: string;
+  placeholder?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -79,6 +84,10 @@ export function AddFolderButton({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>New folder</DialogTitle>
+            <DialogDescription>
+              {description ? `${description} ` : ""}
+              Created on {scopeLabel}.
+            </DialogDescription>
           </DialogHeader>
 
           <Input
@@ -88,7 +97,7 @@ export function AddFolderButton({
             onKeyDown={(e) => {
               if (e.key === "Enter") void submit();
             }}
-            placeholder="e.g. Building A"
+            placeholder={placeholder}
           />
 
           <DialogFooter>
@@ -242,6 +251,125 @@ export function MoveToInnerFolderMenu({
 }
 
 /**
+ * "Move to folder" as a submenu, for menus that have other items around it.
+ *
+ * Shared by the header menus and by the right-click menu on the asset list, so a folder
+ * list looks and indents the same however it was opened. Returns nothing when there is
+ * nowhere to move to and the thing isn't already filed — an empty submenu is worse than
+ * no submenu.
+ */
+export function MoveToFolderSubmenu({
+  folders,
+  currentFolderId,
+  onMove,
+  label = "Move to folder",
+}: {
+  folders: { folder: SubstationFolder; depth: number }[];
+  currentFolderId: string | null;
+  onMove: (folderId: string | null) => void;
+  label?: string;
+}) {
+  if (folders.length === 0 && !currentFolderId) return null;
+
+  return (
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger>
+        <FolderInput className="mr-2 h-4 w-4" />
+        {label}
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
+        {folders.map(({ folder, depth }) => (
+          <DropdownMenuItem
+            key={folder.id}
+            onSelect={() => onMove(folder.id)}
+            className="flex items-center justify-between gap-4"
+          >
+            {/* Indent mirrors the tree, so "Zone 1" under "Line Protection" is
+                distinguishable from a "Zone 1" somewhere else. */}
+            <span className="truncate" style={{ paddingLeft: `${depth * 0.75}rem` }}>
+              {folder.name}
+            </span>
+            {folder.id === currentFolderId && <Check className="h-3.5 w-3.5 shrink-0" />}
+          </DropdownMenuItem>
+        ))}
+        {currentFolderId && (
+          <>
+            {folders.length > 0 && <DropdownMenuSeparator />}
+            <DropdownMenuItem onSelect={() => onMove(null)}>
+              Remove from folder
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
+  );
+}
+
+/**
+ * Rename a folder, from wherever the rename was asked for.
+ *
+ * A dialog rather than an inline field on the heading: the headings are full-width table
+ * rows, and swapping one for an input mid-list shoves everything under it down the page.
+ */
+export function RenameFolderDialog({
+  open,
+  name,
+  onOpenChange,
+  onRename,
+}: {
+  open: boolean;
+  name: string;
+  onOpenChange: (open: boolean) => void;
+  onRename: (name: string) => void;
+}) {
+  const [draft, setDraft] = useState(name);
+
+  // The dialog outlives one folder — it's mounted once per surface and pointed at
+  // whichever folder was just clicked, so the draft has to follow the name in.
+  React.useEffect(() => {
+    if (open) setDraft(name);
+  }, [open, name]);
+
+  const commit = () => {
+    const next = draft.trim();
+    if (next && next !== name) onRename(next);
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Rename folder</DialogTitle>
+          <DialogDescription>
+            Only the folder is renamed. Nothing filed inside it changes.
+          </DialogDescription>
+        </DialogHeader>
+
+        <Input
+          autoFocus
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+            if (e.key === "Escape") onOpenChange(false);
+          }}
+        />
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={commit} disabled={!draft.trim()}>
+            Rename
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/**
  * Everything you can do to a substation header, behind one button.
  *
  * Previously two loose icons sat next to the title competing with the name, the count and
@@ -258,6 +386,7 @@ export function SubstationHeaderMenu({
   onNewFolder,
   onExpandAll,
   onCollapseAll,
+  label = "Substation",
 }: {
   folders: SubstationFolder[];
   currentFolderId: string | null;
@@ -265,13 +394,18 @@ export function SubstationHeaderMenu({
   onNewFolder: () => void;
   onExpandAll?: () => void;
   onCollapseAll?: () => void;
+  /**
+   * What kind of heading this is on. The asset list puts the same menu on a Building /
+   * Area heading, where "Substation options" would be a lie.
+   */
+  label?: string;
 }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          title="Substation options"
+          title={`${label} options`}
           // Inside a <summary>: preventDefault stops the accordion toggling under the
           // menu. Radix opens on pointerdown, so cancelling the click costs nothing.
           onClick={(e) => {
@@ -303,41 +437,105 @@ export function SubstationHeaderMenu({
           </>
         )}
 
-        {folders.length > 0 && (
+        {(folders.length > 0 || currentFolderId) && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <FolderInput className="mr-2 h-4 w-4" />
-                Move to folder
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
-                {folders.map((folder) => (
-                  <DropdownMenuItem
-                    key={folder.id}
-                    onSelect={() => onMove(folder.id)}
-                    className="flex items-center justify-between gap-4"
-                  >
-                    <span className="truncate">{folder.name}</span>
-                    {folder.id === currentFolderId && (
-                      <Check className="h-3.5 w-3.5 shrink-0" />
-                    )}
-                  </DropdownMenuItem>
-                ))}
-                {currentFolderId && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => onMove(null)}>
-                      Remove from folder
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
+            <MoveToFolderSubmenu
+              folders={folders.map((folder) => ({ folder, depth: 0 }))}
+              currentFolderId={currentFolderId}
+              onMove={onMove}
+            />
           </>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+/**
+ * Everything you can do to an *outer* folder heading — one holding buildings, or one
+ * holding substations — from the asset list.
+ *
+ * The Reports tab manages those folders on its drag-and-drop board; the asset list is a
+ * table, where the board's affordances have nowhere to go. Rename and delete live here
+ * instead, so a folder created on the site page can also be fixed there rather than only
+ * from some job's Reports tab.
+ */
+export function FolderHeaderMenu({
+  name,
+  onRename,
+  onDelete,
+  onNewSubfolder,
+  newSubfolderLabel = "New folder inside",
+  onExpandAll,
+  onCollapseAll,
+}: {
+  name: string;
+  onRename: (name: string) => void;
+  onDelete: () => void;
+  onNewSubfolder?: () => void;
+  newSubfolderLabel?: string;
+  onExpandAll?: () => void;
+  onCollapseAll?: () => void;
+}) {
+  const [renaming, setRenaming] = useState(false);
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            title="Folder options"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            className="rounded-none p-1 text-neutral-400 transition-colors hover:text-neutral-700 dark:hover:text-white"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+          {onNewSubfolder && (
+            <DropdownMenuItem onSelect={onNewSubfolder}>
+              <FolderPlus className="mr-2 h-4 w-4" />
+              {newSubfolderLabel}
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem onSelect={() => setRenaming(true)}>Rename</DropdownMenuItem>
+
+          {onExpandAll && onCollapseAll && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={onExpandAll}>
+                <ChevronsUpDown className="mr-2 h-4 w-4" />
+                Expand all
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={onCollapseAll}>
+                <ChevronsDownUp className="mr-2 h-4 w-4" />
+                Collapse all
+              </DropdownMenuItem>
+            </>
+          )}
+
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onSelect={onDelete}
+            className="text-destructive focus:text-destructive"
+          >
+            Delete folder
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <RenameFolderDialog
+        open={renaming}
+        name={name}
+        onOpenChange={setRenaming}
+        onRename={onRename}
+      />
+    </>
   );
 }
 

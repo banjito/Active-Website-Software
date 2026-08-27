@@ -209,13 +209,20 @@ export default function SiteDetailPage() {
             actions={
               canEdit && (
                 <>
-                  {substationFolders.available && (
-                    <AddFolderButton
-                      // Worth being explicit: this one shows up on every job here.
-                      scopeLabel="this site, so every job at it will see the folder"
-                      onCreate={(name) => substationFolders.addFolder(name)}
-                    />
-                  )}
+                  {substationFolders.available &&
+                    substationFolders.buildingLevelAvailable && (
+                      <AddFolderButton
+                        // Worth being explicit: this one shows up on every job here.
+                        scopeLabel="this site, so every job at it will see the folder"
+                        // The top of the tree holds buildings. Folders further down are
+                        // made from the heading they belong to — a folder of substations
+                        // from a building's menu, a folder of equipment from a
+                        // substation's — so a new folder always lands somewhere visible.
+                        onCreate={(name) => substationFolders.addBuildingFolder(name)}
+                        description="Holds buildings and areas — the top of the list."
+                        placeholder="e.g. East Campus"
+                      />
+                    )}
                   <Button
                     variant="outline"
                     onClick={() => setImporting(true)}

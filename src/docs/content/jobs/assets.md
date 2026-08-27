@@ -59,6 +59,36 @@ Only ticked fields are written. Everything else on those assets is left exactly 
 
 Nameplate fields belong to an equipment type, so they appear only when the whole selection is one type -- either because it already is, or because you are setting one type for all of them in the same edit. Fields you do not tick keep their existing per-asset value, so changing the frame size on forty breakers leaves each one's trip unit alone.
 
+## Organizing the list
+
+A site with four hundred assets is not a list, it is a wall. The asset list groups itself the way the equipment is actually laid out:
+
+**Building / Area → Substation → folders → equipment**
+
+The first two levels are not something you set up. They are the **Building / Area** and **Substation** fields already on each asset, so a list that was imported with those columns filled in arrives organized. Fix a heading by fixing the field -- bulk edit is the fast way to move twenty assets into the right building at once.
+
+Uncheck **Group by building** to get the flat, sortable table back. That is the right shape when you are hunting one identifier across the whole site rather than walking the equipment.
+
+### Folders
+
+Folders are yours to invent, and they sit at every level:
+
+| Folder holds | Made from | Good for |
+|---|---|---|
+| Buildings / areas | **Add Folder**, above the list | `East Campus`, `Phase 2` |
+| Substations | A building heading's **···** menu | `Outage 3`, `Customer-owned` |
+| Equipment | A substation heading's **···** menu | `Relays`, `Feeder breakers` |
+
+Folders inside a substation nest as deep as you like; the other two levels are one deep.
+
+To file something, **right-click** the row -- a heading or a piece of equipment, on the asset list or the Reports tab -- and the same actions appear where the pointer is. The **···** menu on a heading and the folder icon on an asset row do the same thing for anyone who prefers to click. A whole ticked selection can be filed in one go with **Move to folder** in the bulk bar, as long as everything ticked is in the same substation.
+
+::: tip
+Folders made on the **site** are inherited by every job at that site -- they carry a `Site` badge on a job's list. Folders made on a job apply to that job only. Rename or delete a site folder from the site page.
+:::
+
+Deleting a folder deletes the folder and nothing else. Whatever was in it goes back to sitting loose under its building or substation.
+
 ## Sub-assets
 
 Real equipment nests. A switchgear lineup contains breakers. A substation contains transformers and relays.

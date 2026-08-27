@@ -39,8 +39,10 @@ import AdoptExistingReportsDialog, {
 } from "./AdoptExistingReportsDialog";
 import AddReportDialog from "./AddReportDialog";
 import ScheduleTestDialog from "./ScheduleTestDialog";
+import MoveAssetsToSiteDialog from "./MoveAssetsToSiteDialog";
 import type { ReportTemplateChoice } from "./useReportTemplateChoices";
 import type { ScheduledTest } from "@/lib/types/testScheduling";
+import { formatSiteLabel } from "@/lib/types/assetTracking";
 import type {
   EquipmentAsset,
   EquipmentAssetWithCounts,
@@ -108,6 +110,8 @@ export default function JobAssetsTab({
     useState<EquipmentAssetWithCounts | null>(null);
   /** Assets the Schedule test modal is open for — one row, or a whole ticked selection. */
   const [schedulingFor, setSchedulingFor] = useState<EquipmentAssetWithCounts[]>([]);
+  /** Non-empty while the "move to another site" dialog is open, holding what was ticked. */
+  const [movingAssets, setMovingAssets] = useState<EquipmentAssetWithCounts[]>([]);
   /** The site's existing schedule, so the modal can warn about scheduling a scope twice. */
   const [scheduledTests, setScheduledTests] = useState<ScheduledTest[]>([]);
 
@@ -444,6 +448,7 @@ export default function JobAssetsTab({
         onBatchSchedule={
           canEdit && supportsScheduling() ? (picked) => setSchedulingFor(picked) : undefined
         }
+        onBatchMoveSite={canEdit ? setMovingAssets : undefined}
         reportsByAsset={reportsByAsset}
         onOpenReport={(report) => report.url && navigate(report.url)}
         onDetachReport={canEdit ? handleDetachReport : undefined}
@@ -587,6 +592,22 @@ export default function JobAssetsTab({
         onScheduled={(created) => {
           setScheduledTests((current) => [...current, ...created]);
           setSchedulingFor([]);
+        }}
+      />
+
+      {/* The job keeps its link either way — this re-homes the equipment itself, which
+          is what a job filed against the wrong facility leaves behind. */}
+      <MoveAssetsToSiteDialog
+        open={movingAssets.length > 0}
+        onClose={() => setMovingAssets([])}
+        assets={movingAssets}
+        sourceSiteLabel={site ? formatSiteLabel(site) : undefined}
+        onMoved={(moved, target) => {
+          setMovingAssets([]);
+          toast.success(
+            `Moved ${moved} asset${moved === 1 ? "" : "s"} to ${target.name}`,
+          );
+          void load({ silent: true });
         }}
       />
     </div>

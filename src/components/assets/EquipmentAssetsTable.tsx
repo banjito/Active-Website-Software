@@ -3,6 +3,7 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
+  Building2,
   CalendarPlus,
   ChevronDown,
   ChevronRight,
@@ -45,6 +46,7 @@ import {
   SubstationHeaderMenu,
 } from "@/components/folders/FolderControls";
 import { InnerFolderRow } from "@/components/folders/InnerFolderRow";
+import { Tooltip } from "@/components/ui/Tooltip";
 import type { EquipmentAssetWithCounts } from "@/lib/types/assetTracking";
 import type { FolderNode, SubstationFolder } from "@/lib/types/substationFolders";
 import type { SubstationFoldersApi } from "@/hooks/useSubstationFolders";
@@ -95,6 +97,8 @@ interface EquipmentAssetsTableProps {
    * column and the bulk bar — a list with nothing to do in bulk doesn't grow a column.
    */
   onBatchSchedule?: (assets: EquipmentAssetWithCounts[]) => void;
+  /** Re-home everything ticked at a different site. Also turns on the checkbox column. */
+  onBatchMoveSite?: (assets: EquipmentAssetWithCounts[]) => void;
   /** Job context only — removes from the job's scope, leaving the asset at the site. */
   onRemoveFromJob?: (asset: EquipmentAssetWithCounts) => void;
   /** Detach a sub-asset from its parent. Omitted where sub-assets aren't available. */
@@ -166,6 +170,14 @@ const NO_FOLDERS: SubstationFolder[] = [];
 
 const BLANK = "—";
 
+/**
+ * Filter value for "this column is empty".
+ *
+ * A blank isn't a value the dropdown can list, but it's the one that matters most: a
+ * batch imported against the wrong site is usually exactly the rows nobody filled in.
+ */
+const NO_VALUE = "__none";
+
 /** Blanks sort to the bottom whichever way the column is pointing. */
 function compareValues(
   a: EquipmentAssetWithCounts,
@@ -206,6 +218,7 @@ export function EquipmentAssetsTable({
   onAddReport,
   onScheduleTest,
   onBatchSchedule,
+  onBatchMoveSite,
   onRemoveFromJob,
   onDetachFromParent,
   reportsByAsset,
@@ -284,12 +297,17 @@ export function EquipmentAssetsTable({
 
   const buildingOptions = useMemo(() => {
     const set = new Set<string>();
-    for (const a of assets) if (a.building_area?.trim()) set.add(a.building_area.trim());
+    let anyBlank = false;
+    for (const a of assets) {
+      if (a.building_area?.trim()) set.add(a.building_area.trim());
+      else anyBlank = true;
+    }
     return [
       { value: "all", label: "All buildings / areas" },
       ...Array.from(set)
         .sort(compareAlphanumericLabels)
         .map((s) => ({ value: s, label: s })),
+      ...(anyBlank ? [{ value: NO_VALUE, label: "No building / area" }] : []),
     ];
   }, [assets]);
 
@@ -321,8 +339,11 @@ export function EquipmentAssetsTable({
     const matches = (a: EquipmentAssetWithCounts) => {
       if (substationFilter !== "all" && (a.substation ?? "") !== substationFilter)
         return false;
-      if (buildingFilter !== "all" && (a.building_area ?? "") !== buildingFilter)
-        return false;
+      if (buildingFilter !== "all") {
+        const building = a.building_area?.trim() ?? "";
+        if (buildingFilter === NO_VALUE ? building !== "" : building !== buildingFilter)
+          return false;
+      }
       if (!term) return true;
       return [
         a.identifier,
@@ -571,7 +592,7 @@ export function EquipmentAssetsTable({
     treeFor ? flattenFolderTree(treeFor(label, []).roots).map((f) => f.folder.id) : [];
 
   // ── Selection ──────────────────────────────────────────────────────────────
-  const selectable = Boolean(onBatchSchedule) && canEdit;
+  const selectable = Boolean(onBatchSchedule || onBatchMoveSite) && canEdit;
   /** Ids in the order they're on screen — what a shift-click range walks over. */
   const visibleIds = useMemo(() => rows.map((r) => r.asset.id), [rows]);
   const visibleIdSet = useMemo(() => new Set(visibleIds), [visibleIds]);
@@ -592,6 +613,24 @@ export function EquipmentAssetsTable({
   );
   const allVisibleSelected =
     visibleIds.length > 0 && visibleIds.every((id) => selectedSet.has(id));
+
+  /**
+   * The selection plus any sub-assets nested inside it.
+   *
+   * A switchgear lineup's switches ride along in its row rather than getting their own
+   * checkbox, so ticking the lineup never ticks them. That's harmless for scheduling, but
+   * a move has to take the whole family — a sub-asset can't sit at a different site from
+   * its parent.
+   */
+  const selectedWithChildren = useMemo(() => {
+    const byId = new Map<string, EquipmentAssetWithCounts>();
+    for (const row of rows) {
+      if (!selectedSet.has(row.asset.id)) continue;
+      byId.set(row.asset.id, row.asset);
+      for (const child of row.children) byId.set(child.id, child);
+    }
+    return [...byId.values()];
+  }, [rows, selectedSet]);
 
   /** Shift-click ticks everything between the last click and this one. */
   const toggleRow = (assetId: string, withShift: boolean) => {
@@ -617,18 +656,22 @@ export function EquipmentAssetsTable({
     const Icon = active ? (sorts[level].asc ? ArrowUp : ArrowDown) : ArrowUpDown;
     return (
       <TableHead>
-        <button
-          type="button"
-          onClick={(e) => toggleSort(key, e.shiftKey)}
-          className="flex items-center gap-1 font-medium hover:text-brand"
-          title={`Sort by ${label} — shift-click to add it as an extra level`}
+        <Tooltip
+          content={`Sort by ${label}. Shift-click to add it as an extra level.`}
+          side="bottom"
         >
-          {label}
-          <Icon className={`h-3 w-3 ${active ? "text-brand" : "opacity-40"}`} />
-          {active && sorts.length > 1 && (
-            <span className="text-[10px] font-semibold text-brand">{level + 1}</span>
-          )}
-        </button>
+          <button
+            type="button"
+            onClick={(e) => toggleSort(key, e.shiftKey)}
+            className="flex items-center gap-1 font-medium hover:text-brand"
+          >
+            {label}
+            <Icon className={`h-3 w-3 ${active ? "text-brand" : "opacity-40"}`} />
+            {active && sorts.length > 1 && (
+              <span className="text-[10px] font-semibold text-brand">{level + 1}</span>
+            )}
+          </button>
+        </Tooltip>
       </TableHead>
     );
   };
@@ -689,12 +732,11 @@ export function EquipmentAssetsTable({
                   : row.assetCount}
               </span>
               {isFolder && foldersApi && !foldersApi.isOwnScope(row.folder) && (
-                <span
-                  title="Defined on the site. Edit it there to change it everywhere."
-                  className="shrink-0 rounded-none bg-neutral-200 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
-                >
-                  Site
-                </span>
+                <Tooltip content="Defined on the site. Edit it there to change it everywhere.">
+                  <span className="shrink-0 rounded-none bg-neutral-200 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+                    Site
+                  </span>
+                </Tooltip>
               )}
             </button>
 
@@ -788,14 +830,28 @@ export function EquipmentAssetsTable({
             )}
           </span>
           <span className="text-neutral-300 dark:text-neutral-600">·</span>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onBatchSchedule?.(selectedAssets)}
-            leftIcon={<CalendarPlus className="h-4 w-4" />}
-          >
-            Schedule test
-          </Button>
+          {onBatchSchedule && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onBatchSchedule(selectedAssets)}
+              leftIcon={<CalendarPlus className="h-4 w-4" />}
+            >
+              Schedule test
+            </Button>
+          )}
+          {/* Filed at the wrong facility is a whole-import mistake, not a per-row one,
+              so this is only ever offered in bulk. */}
+          {onBatchMoveSite && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onBatchMoveSite(selectedWithChildren)}
+              leftIcon={<Building2 className="h-4 w-4" />}
+            >
+              Move to site
+            </Button>
+          )}
           {/* File the whole selection at once. Folders belong to one substation, so this
               only appears when everything ticked is in the same one. */}
           {(() => {
@@ -1015,25 +1071,26 @@ export function EquipmentAssetsTable({
                     <TableCell>{asset.equipment_type || BLANK}</TableCell>
                     <TableCell>
                       {asset.report_count > 0 && linkedReports.length > 0 ? (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setExpandedReports((current) =>
-                              current.includes(asset.id)
-                                ? current.filter((id) => id !== asset.id)
-                                : [...current, asset.id],
-                            )
-                          }
-                          className="font-medium text-brand hover:underline"
-                          aria-expanded={reportsExpanded}
-                          title={
-                            reportsExpanded
-                              ? "Hide linked reports"
-                              : "Show linked reports"
+                        <Tooltip
+                          content={
+                            reportsExpanded ? "Hide linked reports" : "Show linked reports"
                           }
                         >
-                          {asset.report_count}
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExpandedReports((current) =>
+                                current.includes(asset.id)
+                                  ? current.filter((id) => id !== asset.id)
+                                  : [...current, asset.id],
+                              )
+                            }
+                            className="font-medium text-brand hover:underline"
+                            aria-expanded={reportsExpanded}
+                          >
+                            {asset.report_count}
+                          </button>
+                        </Tooltip>
                       ) : asset.report_count > 0 ? (
                         <span className="font-medium text-brand">
                           {asset.report_count}
@@ -1042,12 +1099,11 @@ export function EquipmentAssetsTable({
                         <span className="text-neutral-400">0</span>
                       )}
                       {childReports > 0 && (
-                        <span
-                          className="ml-1 text-xs text-neutral-400"
-                          title={`${childReports} more on sub-assets`}
-                        >
-                          +{childReports}
-                        </span>
+                        <Tooltip content={`${childReports} more on sub-assets`}>
+                          <span className="ml-1 text-xs text-neutral-400">
+                            +{childReports}
+                          </span>
+                        </Tooltip>
                       )}
                     </TableCell>
                     {showActions && (
@@ -1068,52 +1124,59 @@ export function EquipmentAssetsTable({
                             />
                           )}
                           {onAddReport && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => onAddReport(asset)}
-                              aria-label={`Add report to ${asset.identifier}`}
-                              title="Add report — new from a template, or link one that already exists"
-                            >
-                              <FilePlus2 className="h-4 w-4" />
-                            </Button>
+                            <Tooltip content="Add report: new from a template, or link one that already exists">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => onAddReport(asset)}
+                                aria-label={`Add report to ${asset.identifier}`}
+                              >
+                                <FilePlus2 className="h-4 w-4" />
+                              </Button>
+                            </Tooltip>
                           )}
                           {onScheduleTest && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => onScheduleTest(asset)}
-                              aria-label={`Schedule a test for ${asset.identifier}`}
-                              title="Schedule test"
-                            >
-                              <CalendarPlus className="h-4 w-4" />
-                            </Button>
+                            <Tooltip content="Schedule test">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => onScheduleTest(asset)}
+                                aria-label={`Schedule a test for ${asset.identifier}`}
+                              >
+                                <CalendarPlus className="h-4 w-4" />
+                              </Button>
+                            </Tooltip>
                           )}
                           {canEdit && (
                             <>
                               {/* Split button: the icon edits, the caret opens the
                                   menu holding everything you can't take back. */}
                               <div className="flex items-center">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => onEdit(asset)}
-                                  aria-label={`Edit ${asset.identifier}`}
-                                  title="Edit"
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
+                                <Tooltip content="Edit">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => onEdit(asset)}
+                                    aria-label={`Edit ${asset.identifier}`}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                </Tooltip>
                                 <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <button
-                                      type="button"
-                                      className="-ml-1 px-0.5 py-1 text-neutral-500 hover:text-brand"
-                                      aria-label={`More actions for ${asset.identifier}`}
-                                      title="More actions"
-                                    >
-                                      <ChevronDown className="h-3.5 w-3.5" />
-                                    </button>
-                                  </DropdownMenuTrigger>
+                                  {/* Tooltip outside the menu trigger, not inside it:
+                                      both clone onto their child, so the trigger has to
+                                      be the thing the tooltip wraps, not the reverse. */}
+                                  <Tooltip content="More actions">
+                                    <DropdownMenuTrigger asChild>
+                                      <button
+                                        type="button"
+                                        className="-ml-1 px-0.5 py-1 text-neutral-500 hover:text-brand"
+                                        aria-label={`More actions for ${asset.identifier}`}
+                                      >
+                                        <ChevronDown className="h-3.5 w-3.5" />
+                                      </button>
+                                    </DropdownMenuTrigger>
+                                  </Tooltip>
                                   <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={() => onEdit(asset)}>
                                       <Pencil className="mr-2 h-4 w-4" />
@@ -1162,15 +1225,16 @@ export function EquipmentAssetsTable({
                                 </DropdownMenu>
                               </div>
 
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => onDuplicate(asset)}
-                                aria-label={`Duplicate ${asset.identifier}`}
-                                title="Duplicate"
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
+                              <Tooltip content="Duplicate">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => onDuplicate(asset)}
+                                  aria-label={`Duplicate ${asset.identifier}`}
+                                >
+                                  <Copy className="h-4 w-4" />
+                                </Button>
+                              </Tooltip>
                             </>
                           )}
                         </div>
@@ -1205,15 +1269,16 @@ export function EquipmentAssetsTable({
                                 </span>
                               )}
                               {onDetachReport && (
-                                <button
-                                  type="button"
-                                  onClick={() => onDetachReport(asset, report)}
-                                  aria-label={`Unlink ${report.name || "this report"} from ${asset.identifier}`}
-                                  title="Unlink this report from the asset (the report itself is kept)"
-                                  className="ml-1 text-neutral-400 hover:text-destructive"
-                                >
-                                  <Unlink className="h-3.5 w-3.5" />
-                                </button>
+                                <Tooltip content="Unlink this report from the asset (the report itself is kept)">
+                                  <button
+                                    type="button"
+                                    onClick={() => onDetachReport(asset, report)}
+                                    aria-label={`Unlink ${report.name || "this report"} from ${asset.identifier}`}
+                                    className="ml-1 text-neutral-400 hover:text-destructive"
+                                  >
+                                    <Unlink className="h-3.5 w-3.5" />
+                                  </button>
+                                </Tooltip>
                               )}
                             </div>
                           ))}

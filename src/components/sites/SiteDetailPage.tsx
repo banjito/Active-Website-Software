@@ -29,6 +29,8 @@ import EquipmentAssetDialog, {
 } from "@/components/assets/EquipmentAssetDialog";
 import DuplicateAssetDialog from "@/components/assets/DuplicateAssetDialog";
 import BulkAssetImportDialog from "@/components/assets/BulkAssetImportDialog";
+import MoveAssetsToSiteDialog from "@/components/assets/MoveAssetsToSiteDialog";
+import { formatSiteLabel } from "@/lib/types/assetTracking";
 import type {
   EquipmentAsset,
   EquipmentAssetWithCounts,
@@ -68,6 +70,8 @@ export default function SiteDetailPage() {
   const [addingAsset, setAddingAsset] = useState(false);
   const [duplicating, setDuplicating] = useState<EquipmentAsset | null>(null);
   const [importing, setImporting] = useState(false);
+  /** Non-empty while the "move to another site" dialog is open, holding what was ticked. */
+  const [movingAssets, setMovingAssets] = useState<EquipmentAssetWithCounts[]>([]);
 
   /** Silent refetches leave the table mounted, so its search/sort/filters survive. */
   const load = useCallback(
@@ -196,6 +200,7 @@ export default function SiteDetailPage() {
             onDetachFromParent={
               canEdit && supportsSubAssets() ? handleDetachFromParent : undefined
             }
+            onBatchMoveSite={canEdit ? setMovingAssets : undefined}
             emptyMessage="No equipment registered at this site yet. Import a spreadsheet to load it in one go."
             actions={
               canEdit && (
@@ -266,6 +271,19 @@ export default function SiteDetailPage() {
         onImported={() => void load({ silent: true })}
       />
 
+      <MoveAssetsToSiteDialog
+        open={movingAssets.length > 0}
+        onClose={() => setMovingAssets([])}
+        assets={movingAssets}
+        sourceSiteLabel={formatSiteLabel(site)}
+        onMoved={(moved, target) => {
+          setMovingAssets([]);
+          toast.success(
+            `Moved ${moved} asset${moved === 1 ? "" : "s"} to ${target.name}`,
+          );
+          void load({ silent: true });
+        }}
+      />
     </div>
   );
 }

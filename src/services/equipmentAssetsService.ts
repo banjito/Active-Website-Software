@@ -334,6 +334,290 @@ export async function setAssetParent(
   return data as unknown as EquipmentAsset;
 }
 
+// ── Moving between sites ──────────────────────────────────────────────────────
+
+/** A destination asset that already owns one of the identifiers being moved. */
+export interface SiteMoveConflict {
+  identifier: string;
+  building_area: string | null;
+  substation: string | null;
+}
+
+/** A job that would be left pointing at an asset no longer at the job's own site. */
+export interface SiteMoveOffSiteJob {
+  id: string;
+  job_number: string | null;
+  title: string | null;
+  asset_count: number;
+}
+
+export interface SiteMovePreview {
+  /** Identifiers already taken at the destination. Any of these and the move can't run. */
+  conflicts: SiteMoveConflict[];
+  /**
+   * Parents or children left on the other side of the move. Sub-assets have to travel
+   * with their parent, so these block too.
+   */
+  splitFamilies: { id: string; identifier: string }[];
+  /** Jobs that keep their link but whose site no longer matches. A warning, not a block. */
+  offSiteJobs: SiteMoveOffSiteJob[];
+  /** Reports riding along. They follow the asset, so this is reassurance, not a risk. */
+  reportCount: number;
+  /** Folder filings that will be dropped because the folder belongs to the old site. */
+  staleFolderCount: number;
+}
+
+/** The unique index is (site_id, building_area, substation, lower(identifier)). */
+function uniquenessKey(a: {
+  building_area?: string | null;
+  substation?: string | null;
+  identifier?: string | null;
+}): string {
+  return [
+    a.building_area?.trim() ?? "",
+    a.substation?.trim() ?? "",
+    (a.identifier ?? "").trim().toLowerCase(),
+  ].join(" ");
+}
+
+/**
+ * Read every live asset at a site, paging past Supabase's 1000-row response cap.
+ *
+ * A site can hold thousands of assets, and a duplicate check that silently stopped at
+ * 1000 would wave through a move that the database then rejects halfway.
+ */
+async function fetchAllAssetsAtSite(
+  siteId: string,
+  columns: string,
+): Promise<Record<string, any>[]> {
+  const PAGE = 1000;
+  const rows: Record<string, any>[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .schema("neta_ops")
+      .from("equipment_assets")
+      .select(columns)
+      .eq("site_id", siteId)
+      .is("deleted_at", null)
+      .range(from, from + PAGE - 1);
+    if (error) {
+      if (isMissingTable(error)) return rows;
+      throw error;
+    }
+    const page = (data ?? []) as unknown as Record<string, any>[];
+    rows.push(...page);
+    if (page.length < PAGE) return rows;
+  }
+}
+
+/** Which folder filings among these assets belong to a folder owned by `siteId`. */
+async function staleFolderAssignmentIds(
+  assetIds: string[],
+  siteId: string,
+): Promise<string[]> {
+  const links: { id: string; folder_id: string }[] = [];
+  for (const ids of chunk(assetIds, IN_CHUNK_SIZE)) {
+    const { data, error } = await supabase
+      .schema("neta_ops")
+      .from("folder_item_assignments")
+      .select("id, folder_id")
+      .in("equipment_asset_id", ids);
+    if (error) {
+      if (isMissingTable(error) || isMissingColumn(error)) return [];
+      throw error;
+    }
+    links.push(...((data ?? []) as { id: string; folder_id: string }[]));
+  }
+  if (links.length === 0) return [];
+
+  const folderIds = [...new Set(links.map((l) => l.folder_id))];
+  const owned = new Set<string>();
+  for (const ids of chunk(folderIds, IN_CHUNK_SIZE)) {
+    const { data, error } = await supabase
+      .schema("neta_ops")
+      .from("substation_folders")
+      .select("id, site_id")
+      .in("id", ids)
+      .eq("site_id", siteId);
+    if (error) {
+      if (isMissingTable(error)) return [];
+      throw error;
+    }
+    for (const f of (data ?? []) as { id: string }[]) owned.add(f.id);
+  }
+  return links.filter((l) => owned.has(l.folder_id)).map((l) => l.id);
+}
+
+/**
+ * Everything worth knowing before moving assets to another site.
+ *
+ * Run before the write, not instead of it — the database's unique index is still the
+ * guarantee. This exists so the dialog can name the clashing identifiers rather than
+ * surfacing a raw 23505.
+ */
+export async function previewSiteMove(
+  assets: EquipmentAsset[],
+  targetSiteId: string,
+): Promise<SiteMovePreview> {
+  const assetIds = assets.map((a) => a.id);
+  const movingIds = new Set(assetIds);
+  const sourceSiteIds = [...new Set(assets.map((a) => a.site_id))];
+
+  const [atTarget, reportCounts] = await Promise.all([
+    fetchAllAssetsAtSite(targetSiteId, "id, building_area, substation, identifier"),
+    fetchLinkedReportCounts(assetIds),
+  ]);
+
+  const takenKeys = new Set(
+    atTarget.filter((a) => !movingIds.has(a.id)).map((a) => uniquenessKey(a)),
+  );
+
+  // Two selected assets can also collide with each other once they share a site — only
+  // possible when the selection spans more than one source site.
+  const seen = new Set<string>();
+  const conflicts: SiteMoveConflict[] = [];
+  for (const asset of assets) {
+    const key = uniquenessKey(asset);
+    if (takenKeys.has(key) || seen.has(key)) {
+      conflicts.push({
+        identifier: asset.identifier,
+        building_area: asset.building_area ?? null,
+        substation: asset.substation ?? null,
+      });
+      continue;
+    }
+    seen.add(key);
+  }
+
+  // A sub-asset whose parent isn't coming, or a parent leaving children behind.
+  const splitFamilies: { id: string; identifier: string }[] = [];
+  if (columnSupported.parent_asset_id) {
+    for (const a of assets) {
+      if (a.parent_asset_id && !movingIds.has(a.parent_asset_id)) {
+        splitFamilies.push({ id: a.id, identifier: a.identifier });
+      }
+    }
+    for (const siteId of sourceSiteIds) {
+      if (siteId === targetSiteId) continue;
+      const siblings = await fetchAllAssetsAtSite(siteId, "id, identifier, parent_asset_id");
+      for (const s of siblings) {
+        if (s.parent_asset_id && movingIds.has(s.parent_asset_id) && !movingIds.has(s.id)) {
+          splitFamilies.push({ id: s.id, identifier: s.identifier });
+        }
+      }
+    }
+  }
+
+  // Jobs keeping a link to an asset that's about to sit at a different site.
+  const links: { job_id: string; equipment_asset_id: string }[] = [];
+  for (const ids of chunk(assetIds, IN_CHUNK_SIZE)) {
+    const { data, error } = await supabase
+      .schema("neta_ops")
+      .from("job_equipment_assets")
+      .select("job_id, equipment_asset_id")
+      .in("equipment_asset_id", ids);
+    if (error) {
+      if (!isMissingTable(error)) throw error;
+      break;
+    }
+    links.push(...((data ?? []) as { job_id: string; equipment_asset_id: string }[]));
+  }
+
+  const offSiteJobs: SiteMoveOffSiteJob[] = [];
+  const jobIds = [...new Set(links.map((l) => l.job_id))];
+  if (jobIds.length > 0) {
+    for (const ids of chunk(jobIds, IN_CHUNK_SIZE)) {
+      const { data, error } = await supabase
+        .schema("neta_ops")
+        .from("jobs")
+        .select("id, job_number, title, site_id")
+        .in("id", ids);
+      if (error) {
+        if (!isMissingTable(error)) throw error;
+        break;
+      }
+      for (const job of (data ?? []) as {
+        id: string;
+        job_number: string | null;
+        title: string | null;
+        site_id: string | null;
+      }[]) {
+        if (job.site_id === targetSiteId) continue;
+        offSiteJobs.push({
+          id: job.id,
+          job_number: job.job_number,
+          title: job.title,
+          asset_count: links.filter((l) => l.job_id === job.id).length,
+        });
+      }
+    }
+  }
+
+  let staleFolderCount = 0;
+  for (const siteId of sourceSiteIds) {
+    if (siteId === targetSiteId) continue;
+    const ids = assets.filter((a) => a.site_id === siteId).map((a) => a.id);
+    staleFolderCount += (await staleFolderAssignmentIds(ids, siteId)).length;
+  }
+
+  return {
+    conflicts,
+    splitFamilies,
+    offSiteJobs,
+    reportCount: Object.values(reportCounts).reduce((sum, n) => sum + n, 0),
+    staleFolderCount,
+  };
+}
+
+/**
+ * Re-home assets at a different site.
+ *
+ * The asset row is the only thing that moves. Reports follow it (they point at the asset,
+ * not the site) and job links are deliberately left in place — a job at the old site
+ * keeps its link, which the dialog warns about first. Folder filings pointing at a folder
+ * the old site owns are dropped, because that folder doesn't exist at the destination.
+ */
+export async function moveAssetsToSite(
+  assets: EquipmentAsset[],
+  targetSiteId: string,
+  userId?: string,
+): Promise<number> {
+  const moving = assets.filter((a) => a.site_id !== targetSiteId);
+  if (moving.length === 0) return 0;
+
+  // Clear the old site's folder filings first. Doing it after the move would mean looking
+  // up assets by a site they no longer belong to.
+  for (const siteId of [...new Set(moving.map((a) => a.site_id))]) {
+    const ids = moving.filter((a) => a.site_id === siteId).map((a) => a.id);
+    const stale = await staleFolderAssignmentIds(ids, siteId);
+    for (const batch of chunk(stale, IN_CHUNK_SIZE)) {
+      const { error } = await supabase
+        .schema("neta_ops")
+        .from("folder_item_assignments")
+        .delete()
+        .in("id", batch);
+      if (error) throw error;
+    }
+  }
+
+  for (const ids of chunk(moving.map((a) => a.id), IN_CHUNK_SIZE)) {
+    const { error } = await supabase
+      .schema("neta_ops")
+      .from("equipment_assets")
+      .update({ site_id: targetSiteId, updated_by: userId ?? null })
+      .in("id", ids);
+    if (error) {
+      if (error.code === "23505") {
+        throw new Error(
+          "Some of these identifiers already exist at the destination site in the same building and substation. Nothing was moved in this batch — reopen the dialog to see which ones clash.",
+        );
+      }
+      throw error;
+    }
+  }
+  return moving.length;
+}
+
 export interface BulkInsertResult {
   inserted: EquipmentAsset[];
   /** Rows the database rejected as duplicates, with the reason. */

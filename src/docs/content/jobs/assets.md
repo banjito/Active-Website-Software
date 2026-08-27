@@ -64,6 +64,22 @@ Click into an asset to change its name, identifier, or parent. Edits save as you
 
 Changing an asset's **report type** after the report has data in it is not something you want to do; the fields do not map across form types. Delete and recreate instead, or ask an administrator.
 
+## Moving assets to another site
+
+Equipment imported against the wrong facility can be re-homed in bulk. This happens most often when a spreadsheet is imported with the wrong site picked in the dialog.
+
+1. Open the site's asset list, or a job's **Assets** tab.
+2. Tick the assets to move. **Shift**-click ticks a whole run, and **Select all N in this view** takes everything the current search and filters leave on screen -- so filter down to exactly what is wrong first, then select all.
+3. Click **Move to site** and pick the destination.
+
+Before the move runs it checks three things and shows you what it found:
+
+- **Identifiers already in use at the destination.** An identifier only has to be unique within one site, building and substation, so the same name can legitimately exist at two facilities. These block the move -- rename them or untick them first.
+- **Sub-assets that would be left behind.** A sub-asset has to live at the same site as its parent, so ticking a lineup brings its switches with it automatically.
+- **Jobs that are not at the destination.** Their links are kept on purpose: the same equipment is often worked by more than one customer. The equipment stays on those jobs' Assets tabs. Remove it there if that is wrong.
+
+Nothing is copied. The equipment keeps its id, so every linked report, nameplate value and note goes with it. Filings into a folder that belongs to the old site are cleared, because that folder does not exist at the destination.
+
 ## Deleting an asset
 
 Deleting an asset deletes its report. There is no undo.

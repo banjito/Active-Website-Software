@@ -8,6 +8,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { Input } from "@/components/ui/Input";
 import {
   Dialog,
@@ -194,17 +195,24 @@ export function MoveToInnerFolderMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        {trigger ?? (
-          <button
-            type="button"
-            title="Move to a folder"
-            className="rounded-none p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-white"
-          >
-            <FolderInput className="h-4 w-4" />
-          </button>
-        )}
-      </DropdownMenuTrigger>
+      {/* Tooltip outside the menu trigger, not inside it: both clone onto their child,
+          so the trigger has to be the thing the tooltip wraps, not the reverse. A caller
+          passing its own trigger labels it itself. */}
+      {trigger ? (
+        <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
+      ) : (
+        <Tooltip content="Move to a folder">
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label="Move to a folder"
+              className="rounded-none p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-white"
+            >
+              <FolderInput className="h-4 w-4" />
+            </button>
+          </DropdownMenuTrigger>
+        </Tooltip>
+      )}
       <DropdownMenuContent align={align} className="max-h-80 overflow-y-auto">
         {folders.map(({ folder, depth }) => (
           <DropdownMenuItem

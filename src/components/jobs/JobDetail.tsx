@@ -599,6 +599,30 @@ export default function JobDetail() {
   const [loading, setLoading] = useState(true);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [jobAssets, setJobAssets] = useState<Asset[]>([]);
+  /**
+   * True from the first byte of fetchJobAssets until the list is on screen.
+   *
+   * Starts true: on a job with 1300 reports the fetch pages through job_assets and then
+   * the assets themselves, and an empty list rendered meanwhile reads as "this job has no
+   * reports" rather than "not loaded yet".
+   */
+  const [jobAssetsLoading, setJobAssetsLoading] = useState(true);
+  /**
+   * The bracketed number on a status tab, or an ellipsis while the list is still loading.
+   *
+   * A count is a claim about the job. "(0)" on a job with 1300 reports is a wrong one, and
+   * it is on screen for long enough to be believed.
+   */
+  const assetTabCount = (n: number) => (jobAssetsLoading ? "…" : `(${n})`);
+  /**
+   * How far through fetchJobAssets we are, 0-100.
+   *
+   * Weighted by measured time per phase rather than by rows, because the phases are not
+   * remotely equal: on the largest job in the system (1,743 reports) collecting the ids
+   * takes ~300ms and fetching the asset rows ~950ms. Splitting the bar by row count
+   * parked it at 100% for the entire second half of the wait.
+   */
+  const [jobAssetsPercent, setJobAssetsPercent] = useState(0);
   const [filteredJobAssets, setFilteredJobAssets] = useState<Asset[]>([]);
   const [openReportFlagCount, setOpenReportFlagCount] = useState(0);
   const [reportTimestampsByAsset, setReportTimestampsByAsset] = useState<
@@ -3323,6 +3347,20 @@ export default function JobDetail() {
   }
 
   const JOB_ASSETS_BATCH_SIZE = 500;
+  /**
+   * Where each phase of fetchJobAssets finishes on the progress bar.
+   *
+   * Measured against job 26015 (1,743 reports): count 250ms, ids 300ms, asset rows 950ms,
+   * report links 720ms, report rows 215ms. Re-measure before changing these — guessing is
+   * what made the first version fill up in the first fifth of the wait.
+   */
+  const JOB_ASSET_LOAD_PHASES = {
+    count: 10,
+    ids: 25,
+    rows: 65,
+    links: 90,
+    reports: 100,
+  } as const;
   const FOLDER_PAGE_TARGET = 500;
 
   async function fetchOpenReportFlagCount(assetIds: string[]) {
@@ -3353,8 +3391,30 @@ export default function JobDetail() {
   }
 
   async function fetchJobAssets() {
-    if (!id) return;
+    // No job id means nothing will ever arrive, so drop the flag rather than leaving the
+    // tab spinning forever.
+    if (!id) {
+      setJobAssetsLoading(false);
+      return;
+    }
+    setJobAssetsLoading(true);
+    setJobAssetsPercent(0);
+    /** Move the bar to `done` of `total` within one phase's slice of it. */
+    const advance = (from: number, to: number, done: number, total: number) =>
+      setJobAssetsPercent(
+        from + (to - from) * (total > 0 ? Math.min(done / total, 1) : 1),
+      );
     try {
+      // 0. How many links there are, so every later phase knows its denominator up front.
+      // head:true returns the count and no rows.
+      const { count: linkCount } = await supabase
+        .schema("neta_ops")
+        .from("job_assets")
+        .select("asset_id", { count: "exact", head: true })
+        .eq("job_id", id);
+      const expectedLinks = linkCount ?? 0;
+      setJobAssetsPercent(JOB_ASSET_LOAD_PHASES.count);
+
       // 1. Fetch ALL asset IDs in batches
       const allAssetIds: string[] = [];
       let offset = 0;
@@ -3370,9 +3430,17 @@ export default function JobDetail() {
         if (batchError) throw batchError;
         if (!batch || batch.length === 0) break;
         allAssetIds.push(...batch.map((l) => l.asset_id));
+        advance(
+          JOB_ASSET_LOAD_PHASES.count,
+          JOB_ASSET_LOAD_PHASES.ids,
+          allAssetIds.length,
+          expectedLinks,
+        );
         if (batch.length < JOB_ASSETS_BATCH_SIZE) break;
         offset += JOB_ASSETS_BATCH_SIZE;
       }
+
+      setJobAssetsPercent(JOB_ASSET_LOAD_PHASES.ids);
 
       if (allAssetIds.length === 0) {
         setTotalAssetCount(0);
@@ -3411,7 +3479,14 @@ export default function JobDetail() {
 
         if (assetsError) throw assetsError;
         if (assetsData) allAssetsData.push(...assetsData);
+        advance(
+          JOB_ASSET_LOAD_PHASES.ids,
+          JOB_ASSET_LOAD_PHASES.rows,
+          i + chunk.length,
+          allAssetIds.length,
+        );
       }
+      setJobAssetsPercent(JOB_ASSET_LOAD_PHASES.rows);
 
       // Preserve same order as job_assets (allAssetIds)
       const idToAsset = new Map(allAssetsData.map((a) => [a.id, a]));
@@ -3433,16 +3508,30 @@ export default function JobDetail() {
         .map((a) => a.id);
       if (reportAssetIds.length > 0) {
         try {
-          const { data: links, error: linksErr } = await supabase
-            .schema("neta_ops")
-            .from("asset_reports")
-            .select("asset_id, report_id")
-            .in("asset_id", reportAssetIds);
-          if (linksErr) throw linksErr;
+          // Chunked like every other .in() here. Un-chunked, 1,700 ids build a URL long
+          // enough that the request dies with "fetch failed" after ~7s — and the catch
+          // below swallowed it, so on the biggest jobs these timestamps silently never
+          // loaded at all.
+          const links: { asset_id: string; report_id: string }[] = [];
+          for (let i = 0; i < reportAssetIds.length; i += JOB_ASSETS_BATCH_SIZE) {
+            const chunk = reportAssetIds.slice(i, i + JOB_ASSETS_BATCH_SIZE);
+            const { data: linkRows, error: linksErr } = await supabase
+              .schema("neta_ops")
+              .from("asset_reports")
+              .select("asset_id, report_id")
+              .in("asset_id", chunk);
+            if (linksErr) throw linksErr;
+            links.push(...(linkRows || []));
+            advance(
+              JOB_ASSET_LOAD_PHASES.rows,
+              JOB_ASSET_LOAD_PHASES.links,
+              i + chunk.length,
+              reportAssetIds.length,
+            );
+          }
+          setJobAssetsPercent(JOB_ASSET_LOAD_PHASES.links);
 
-          const reportIds = Array.from(
-            new Set((links || []).map((l) => l.report_id)),
-          );
+          const reportIds = Array.from(new Set(links.map((l) => l.report_id)));
           const repMap = new Map<string, any>();
           for (let i = 0; i < reportIds.length; i += JOB_ASSETS_BATCH_SIZE) {
             const chunk = reportIds.slice(i, i + JOB_ASSETS_BATCH_SIZE);
@@ -3455,10 +3544,16 @@ export default function JobDetail() {
               .in("id", chunk);
             if (repErr) throw repErr;
             (reports || []).forEach((r) => repMap.set(r.id, r));
+            advance(
+              JOB_ASSET_LOAD_PHASES.links,
+              JOB_ASSET_LOAD_PHASES.reports,
+              i + chunk.length,
+              reportIds.length,
+            );
           }
 
           const tsByAsset: Record<string, ReportAuditInfo> = {};
-          (links || []).forEach((link) => {
+          links.forEach((link) => {
             const r = repMap.get(link.report_id);
             if (r) {
               tsByAsset[link.asset_id] = {
@@ -3484,6 +3579,9 @@ export default function JobDetail() {
       }
     } catch (error) {
       console.error("Error fetching job assets:", error);
+    } finally {
+      // Also covers the early return above when the job has no linked assets.
+      setJobAssetsLoading(false);
     }
   }
 
@@ -10844,7 +10942,7 @@ export default function JobDetail() {
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
-                            All ({totalAssetCount})
+                            All {assetTabCount(totalAssetCount)}
                           </button>
                           <button
                             onClick={() => setAssetStatusFilter("not started")}
@@ -10854,13 +10952,12 @@ export default function JobDetail() {
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
-                            Not Started (
-                            {
+                            Not Started{" "}
+                            {assetTabCount(
                               jobAssets.filter(
                                 (asset) => asset.status === "not started",
-                              ).length
-                            }
-                            )
+                              ).length,
+                            )}
                           </button>
                           <button
                             onClick={() => setAssetStatusFilter("in_progress")}
@@ -10870,15 +10967,14 @@ export default function JobDetail() {
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
-                            In Progress (
-                            {
+                            In Progress{" "}
+                            {assetTabCount(
                               jobAssets.filter(
                                 (asset) =>
                                   !asset.status ||
                                   asset.status === "in_progress",
-                              ).length
-                            }
-                            )
+                              ).length,
+                            )}
                           </button>
                           <button
                             onClick={() =>
@@ -10890,13 +10986,12 @@ export default function JobDetail() {
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
-                            Ready for Review (
-                            {
+                            Ready for Review{" "}
+                            {assetTabCount(
                               jobAssets.filter(
                                 (asset) => asset.status === "ready_for_review",
-                              ).length
-                            }
-                            )
+                              ).length,
+                            )}
                           </button>
                           <button
                             onClick={() => setAssetStatusFilter("approved")}
@@ -10906,15 +11001,14 @@ export default function JobDetail() {
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
-                            Approved (
-                            {
+                            Approved{" "}
+                            {assetTabCount(
                               jobAssets.filter(
                                 (asset) =>
                                   asset.status === "approved" &&
                                   !isInternalFormAsset(asset),
-                              ).length
-                            }
-                            )
+                              ).length,
+                            )}
                           </button>
                           <button
                             onClick={() =>
@@ -10926,15 +11020,14 @@ export default function JobDetail() {
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
-                            Approved Internal Forms (
-                            {
+                            Approved Internal Forms{" "}
+                            {assetTabCount(
                               jobAssets.filter(
                                 (asset) =>
                                   asset.status === "approved" &&
                                   isInternalFormAsset(asset),
-                              ).length
-                            }
-                            )
+                              ).length,
+                            )}
                           </button>
                           <button
                             onClick={() => setAssetStatusFilter("sent")}
@@ -10944,13 +11037,10 @@ export default function JobDetail() {
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
-                            Sent (
-                            {
-                              jobAssets.filter(
-                                (asset) => asset.status === "sent",
-                              ).length
-                            }
-                            )
+                            Sent{" "}
+                            {assetTabCount(
+                              jobAssets.filter((asset) => asset.status === "sent").length,
+                            )}
                           </button>
                           <button
                             onClick={() => setAssetStatusFilter("issue")}
@@ -10960,13 +11050,10 @@ export default function JobDetail() {
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
-                            Issues (
-                            {
-                              jobAssets.filter(
-                                (asset) => asset.status === "issue",
-                              ).length
-                            }
-                            )
+                            Issues{" "}
+                            {assetTabCount(
+                              jobAssets.filter((asset) => asset.status === "issue").length,
+                            )}
                           </button>
                           <button
                             onClick={() => setAssetStatusFilter("archived")}
@@ -10976,13 +11063,11 @@ export default function JobDetail() {
                                 : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
                             }`}
                           >
-                            Archived (
-                            {
-                              jobAssets.filter(
-                                (asset) => asset.status === "archived",
-                              ).length
-                            }
-                            )
+                            Archived{" "}
+                            {assetTabCount(
+                              jobAssets.filter((asset) => asset.status === "archived")
+                                .length,
+                            )}
                           </button>
                         </div>
 
@@ -11250,7 +11335,31 @@ export default function JobDetail() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      {jobAssets.length === 0 ? (
+                      {jobAssetsLoading ? (
+                        <div className="flex items-center justify-center gap-3 py-10">
+                          <LoadingSpinner size="md" label="Loading reports" />
+                          {/* Track is always visible, so the row keeps its width from the
+                              first frame instead of growing once the count lands. */}
+                          <div
+                            className="h-1.5 w-full max-w-sm bg-neutral-200 dark:bg-dark-200"
+                            role="progressbar"
+                            aria-label="Loading reports"
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-valuenow={Math.round(jobAssetsPercent)}
+                          >
+                            <div
+                              className="h-full bg-brand transition-[width] duration-300 ease-out"
+                              style={{ width: `${jobAssetsPercent}%` }}
+                            />
+                          </div>
+                          {/* Fixed width and tabular figures: the number must not shove
+                              the bar sideways as it goes 9% -> 10% -> 100%. */}
+                          <span className="w-10 shrink-0 text-right text-sm tabular-nums text-neutral-500 dark:text-neutral-400">
+                            {Math.round(jobAssetsPercent)}%
+                          </span>
+                        </div>
+                      ) : jobAssets.length === 0 ? (
                         <div className="text-center py-4 text-neutral-500 dark:text-white">
                           <p>No assets have been linked to this job yet.</p>
                         </div>

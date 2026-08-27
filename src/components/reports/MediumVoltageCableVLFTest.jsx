@@ -1133,7 +1133,7 @@ const MediumVoltageCableVLFTest = () => {
     if (value === "" || value === null || value === undefined) return "";
     const trimmed = String(value).trim();
     const numeric = parseFloat(trimmed);
-    if (isNaN(numeric) || trimmed !== numeric.toString()) return trimmed; // copy non-pure numbers
+    if (isNaN(numeric) || !/^[+-]?(\d+\.?\d*|\.\d+)$/.test(trimmed)) return trimmed; // copy non-pure numbers
     if (!tcf || tcf === 0) return numeric.toFixed(2);
     return (numeric * tcf).toFixed(2);
   };

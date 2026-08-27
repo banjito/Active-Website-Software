@@ -50,6 +50,15 @@ const CATEGORY_ORDER = [
   "Other Reports",
 ];
 
+/** Report types that have been superseded. They stay in the registry so an
+ *  existing saved report still opens by slug, but they are not offered as a
+ *  starting point for new work. `switchgear-report` is the 2021 ATS sheet,
+ *  replaced by `switchgear-switchboard-assemblies-ats25`. */
+const RETIRED_SLUGS = new Set(["switchgear-report"]);
+
+/** The report types a tech can actually start from. */
+const AVAILABLE = REPORTS.filter((r) => !RETIRED_SLUGS.has(r.slug));
+
 /** A short initialism for a report, shown in the card's accent tile. */
 function initials(name: string): string {
   const cleaned = name.replace(/^[0-9.\-\s]+/, "").trim();
@@ -64,7 +73,7 @@ export default function ReportListPage() {
 
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = REPORTS.filter((r) => {
+    const filtered = AVAILABLE.filter((r) => {
       if (q && !r.name.toLowerCase().includes(q)) return false;
       if (activeCat && categoryOf(r.name) !== activeCat) return false;
       return true;
@@ -83,7 +92,7 @@ export default function ReportListPage() {
     }));
   }, [query, activeCat]);
 
-  const total = REPORTS.length;
+  const total = AVAILABLE.length;
 
   return (
     <div className="min-h-screen bg-neutral-100 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">

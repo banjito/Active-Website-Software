@@ -202,7 +202,7 @@ const calculateCorrectedValue = (value: string, tcf: number): string => {
   if (value === "" || value === null || value === undefined) return "";
   const trimmed = String(value).trim();
   const numeric = parseFloat(trimmed);
-  if (isNaN(numeric) || trimmed !== numeric.toString()) return trimmed;
+  if (isNaN(numeric) || !/^[+-]?(\d+\.?\d*|\.\d+)$/.test(trimmed)) return trimmed;
   if (!tcf || tcf === 0) return numeric.toFixed(2);
   return (numeric * tcf).toFixed(2);
 };

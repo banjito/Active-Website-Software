@@ -492,7 +492,7 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
         return "" as any;
       const trimmed = String(valueStr).trim();
       const numeric = parseFloat(trimmed);
-      if (isNaN(numeric) || trimmed !== numeric.toString()) return trimmed;
+      if (isNaN(numeric) || !/^[+-]?(\d+\.?\d*|\.\d+)$/.test(trimmed)) return trimmed;
       if (!tcf || tcf === 0) return numeric.toFixed(2);
       return (numeric * tcf).toFixed(2);
     },

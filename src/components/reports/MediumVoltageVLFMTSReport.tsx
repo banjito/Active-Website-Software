@@ -786,7 +786,7 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
     const trimmed = String(value).trim();
     const numeric = parseFloat(trimmed);
     // If not a pure number (e.g., "<22", ">2200", "N/A"), copy through unchanged
-    if (isNaN(numeric) || trimmed !== numeric.toString()) return trimmed;
+    if (isNaN(numeric) || !/^[+-]?(\d+\.?\d*|\.\d+)$/.test(trimmed)) return trimmed;
     if (!tcf || tcf === 0) return numeric.toFixed(2);
     return (numeric * tcf).toFixed(2);
   };

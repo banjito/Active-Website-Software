@@ -12,6 +12,7 @@ import GFITripTestReport from "@/components/reports/GFITripTestReport";
 import GroundingFallOfPotentialSlopeMethodTest from "@/components/reports/GroundingFallOfPotentialSlopeMethodTest";
 import GroundingSystemMaster from "@/components/reports/GroundingSystemMaster";
 import JobHazardAnalysisForm from "@/components/reports/JobHazardAnalysisForm";
+import LVCircuitBreakerMTS25Report from "@/components/reports/LVCircuitBreakerMTS25Report";
 import LVMoldedCaseCircuitBreakerATS25Report from "@/components/reports/LVMoldedCaseCircuitBreakerATS25Report";
 import LargeDryTypeTransformerMTSReport from "@/components/reports/LargeDryTypeTransformerMTSReport";
 import LargeDryTypeTransformerReport from "@/components/reports/LargeDryTypeTransformerReport";
@@ -102,6 +103,8 @@ export const REPORTS: ReportEntry[] = [
   { slug: "low-voltage-panelboard-small-breaker-report", name: "8-Low Voltage Panelboard Small Breaker Test ATS (up to 60 individual breakers)", component: LowVoltagePanelboardSmallBreakerTestATSReport },
   { slug: "low-voltage-switch-multi-device-test", name: "6-Low Voltage Switch - Multi-Device TEST", component: LowVoltageSwitchWithPrint },
   { slug: "low-voltage-switch-report", name: "6-Low Voltage Switch ATS", component: LowVoltageSwitchReport },
+  { slug: "lv-circuit-breaker-mts", name: "LV Circuit Breaker MTS 23", component: LVCircuitBreakerMTS25Report },
+  { slug: "lv-circuit-breaker-mts25", name: "LV Circuit Breaker MTS 23", component: LVCircuitBreakerMTS25Report },
   { slug: "lv-molded-case-circuit-breaker-ats25", name: "LV Circuit Breaker ATS 25", component: LVMoldedCaseCircuitBreakerATS25Report },
   { slug: "medium-voltage-cable-vlf-test", name: "4-Medium Voltage Cable VLF Test With Tan Delta ATS", component: MediumVoltageCableVLFTest },
   { slug: "medium-voltage-cable-vlf-test-mts", name: "4-Medium Voltage Cable VLF Test With Tan Delta MTS", component: MediumVoltageCableVLFTest },

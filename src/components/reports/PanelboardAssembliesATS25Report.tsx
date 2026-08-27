@@ -17,6 +17,10 @@ import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
 import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
 import {
+  useIdentifierRenameGuard,
+  type ReportIdentity,
+} from "./common/useIdentifierRenameGuard";
+import {
   reportSaveFailed,
   reportSaveSucceeded,
 } from "./common/autoSaveStatus";
@@ -289,6 +293,12 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
   const assetLinkedRef = React.useRef(false);
   /** An existing report failed to load; the form on screen is not its data. */
   const loadFailedRef = React.useRef(false);
+  /**
+   * The equipment name this report was loaded under. Set only by a load from
+   * the database, which is what arms the rename guard below.
+   */
+  const [loadedIdentity, setLoadedIdentity] =
+    useState<ReportIdentity | null>(null);
 
   // Keep state aligned when the route changes. If the route changed because we just
   // created a copied report, preserve the local copied form state so the user can
@@ -586,6 +596,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
           testEquipment: te ? te : prev.testEquipment,
           comments: data.comments || prev.comments,
         }));
+        setLoadedIdentity({ identifier: info.identifier || "" });
         setIsEditing(false);
       }
       loadFailedRef.current = false;
@@ -1047,6 +1058,69 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
 
     return reportId;
   }, [jobId, user?.id, buildReportPayload, reportSlug]);
+
+  /**
+   * The crew is starting a new panel from this one. Give the saved row its own
+   * name back -- only the name was edited, so its readings are still intact --
+   * and move what is on screen into a fresh row for the new panel.
+   */
+  const handleKeepBoth = React.useCallback(
+    async (previous: ReportIdentity, _next: ReportIdentity) => {
+      const originalId = reportIdRef.current;
+      if (!originalId || !jobId || !user?.id) {
+        throw new Error("This report is not saved yet.");
+      }
+
+      // A debounced save may still be queued or in flight from the keystrokes
+      // that renamed the report. Let it land first, or it would write the new
+      // name back over the row we are about to restore.
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = null;
+      }
+      for (let i = 0; savingRef.current && i < 100; i += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+
+      const payload = buildReportPayload();
+      const { error: restoreError } = await supabase
+        .schema("neta_ops")
+        .from("panelboard_assemblies_ats25_reports")
+        .update({
+          report_info: {
+            ...payload.report_info,
+            identifier: previous.identifier,
+          },
+        })
+        .eq("id", originalId);
+      if (restoreError) throw restoreError;
+
+      // Hand the form a new row. persistReport mints the id, links the asset
+      // and rewrites the URL, so the crew carries straight on typing.
+      reportIdRef.current = undefined;
+      assetLinkedRef.current = false;
+      const newId = await persistReport();
+      if (!newId) {
+        // Put the form back on the row it came from rather than leave it
+        // pointing at nothing.
+        reportIdRef.current = originalId;
+        throw new Error("Could not create the new report.");
+      }
+    },
+    [jobId, user?.id, buildReportPayload, persistReport],
+  );
+
+  const renameGuard = useIdentifierRenameGuard({
+    identity: { identifier: formData.identifier },
+    onKeepBoth: handleKeepBoth,
+    onRestore: (previous) =>
+      setFormData((prev) => ({ ...prev, identifier: previous.identifier })),
+  });
+
+  const { markLoaded } = renameGuard;
+  useEffect(() => {
+    if (loadedIdentity) markLoaded(loadedIdentity);
+  }, [loadedIdentity, markLoaded]);
 
   // Auto-save function
   const autoSave = React.useCallback(async () => {
@@ -1511,6 +1585,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                           identifier: e.target.value,
                         }))
                       }
+                      onBlur={renameGuard.handleBlur}
                       readOnly={!isEditing}
                       className={`w-full bg-transparent border-none focus:ring-0 ${!isEditing ? "cursor-default" : ""}`}
                     />
@@ -2952,6 +3027,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
           </button>
         </div>
       )}
+      {renameGuard.dialog}
     </ReportWrapper>
   );
 };

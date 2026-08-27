@@ -12,6 +12,10 @@ import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
 import { ensureReportAssetLink } from "./linkReportAsset";
 import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
+import {
+  useIdentifierRenameGuard,
+  type ReportIdentity,
+} from "./common/useIdentifierRenameGuard";
 import { ReportWrapper } from "./ReportWrapper";
 import { ReportHeader } from "./common/ReportHeader";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
@@ -691,6 +695,12 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
   const assetLinkedRef = React.useRef(false);
   /** An existing report failed to load; the form on screen is not its data. */
   const loadFailedRef = React.useRef(false);
+  /**
+   * The breaker this report was loaded under. Set only by a load from the
+   * database, which is what arms the rename guard below.
+   */
+  const [loadedIdentity, setLoadedIdentity] =
+    useState<ReportIdentity | null>(null);
 
   // When the reportId in the URL changes (e.g. after "Copy nameplate to new report" navigates),
   // sync state so we load and show the new report instead of keeping the old one
@@ -1296,6 +1306,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
               : prev.testEquipment,
           };
         });
+        setLoadedIdentity({
+          eqptIdentifier: reportData.eqptIdentifier || "",
+          breakerIdentifier: reportData.breakerIdentifier || "",
+        });
         setIsEditing(false);
       }
       loadFailedRef.current = false;
@@ -1396,6 +1410,77 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
     return reportId;
   }, [jobId, user?.id, reportSlug]);
+
+  /**
+   * The crew is starting a new breaker from this one. Give the saved row its
+   * own name back -- only the name was edited, so its readings are still
+   * intact -- and move what is on screen into a fresh row for the new breaker.
+   */
+  const handleKeepBoth = React.useCallback(
+    async (previous: ReportIdentity, _next: ReportIdentity) => {
+      const originalId = reportIdRef.current;
+      if (!originalId || !jobId) {
+        throw new Error("This report is not saved yet.");
+      }
+
+      // A debounced save may still be queued or in flight from the keystrokes
+      // that renamed the report. Let it land first, or it would write the new
+      // name back over the row we are about to restore.
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = null;
+      }
+      for (let i = 0; savingRef.current && i < 100; i += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+
+      const { error: restoreError } = await supabase
+        .schema("neta_ops")
+        .from("lv_molded_case_circuit_breaker_ats25")
+        .update({
+          report_data: {
+            ...formDataRef.current,
+            eqptIdentifier: previous.eqptIdentifier,
+            breakerIdentifier: previous.breakerIdentifier,
+          },
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", originalId);
+      if (restoreError) throw restoreError;
+
+      // Hand the form a new row. persistReport mints the id, links the asset
+      // and rewrites the URL, so the crew carries straight on typing.
+      reportIdRef.current = undefined;
+      assetLinkedRef.current = false;
+      const newId = await persistReport();
+      if (!newId) {
+        // Put the form back on the row it came from rather than leave it
+        // pointing at nothing.
+        reportIdRef.current = originalId;
+        throw new Error("Could not create the new report.");
+      }
+    },
+    [jobId, persistReport],
+  );
+
+  const renameGuard = useIdentifierRenameGuard({
+    identity: {
+      eqptIdentifier: formData.eqptIdentifier,
+      breakerIdentifier: formData.breakerIdentifier,
+    },
+    onKeepBoth: handleKeepBoth,
+    onRestore: (previous) =>
+      setFormData((prev) => ({
+        ...prev,
+        eqptIdentifier: previous.eqptIdentifier,
+        breakerIdentifier: previous.breakerIdentifier,
+      })),
+  });
+
+  const { markLoaded } = renameGuard;
+  useEffect(() => {
+    if (loadedIdentity) markLoaded(loadedIdentity);
+  }, [loadedIdentity, markLoaded]);
 
   // Auto-save functionality
   const autoSave = React.useCallback(async () => {
@@ -2633,6 +2718,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                         setPastBreakerIdentifiers,
                       );
                     }
+                    renameGuard.handleBlur();
                   }}
                   list="breaker-identifier-options"
                   readOnly={!isEditing}
@@ -2681,6 +2767,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                   onChange={(e) =>
                     handleChange("eqptIdentifier", e.target.value)
                   }
+                  onBlur={renameGuard.handleBlur}
                   readOnly={!isEditing}
                   className={`form-input w-full min-w-0 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                 />
@@ -6628,6 +6715,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           <option key={index} value={value} />
         ))}
       </datalist>
+      {renameGuard.dialog}
     </ReportWrapper>
   );
 };

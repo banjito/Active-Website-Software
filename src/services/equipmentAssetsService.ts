@@ -689,6 +689,93 @@ export async function bulkInsertEquipmentAssets(
   return result;
 }
 
+/** One asset and the columns to change on it. Anything absent is left alone. */
+export interface BulkAssetUpdate {
+  id: string;
+  /** For error messages — the database only knows ids. */
+  identifier?: string;
+  patch: Partial<
+    Pick<
+      EquipmentAsset,
+      | "building_area"
+      | "substation"
+      | "equipment_location"
+      | "equipment_type"
+      | "manufacturer"
+      | "model"
+      | "serial_number"
+      | "notes"
+      | "nameplate_data"
+    >
+  >;
+}
+
+export interface BulkUpdateResult {
+  updated: EquipmentAsset[];
+  /** Rows the database refused, usually an identifier clash after a move. */
+  failed: { id: string; identifier: string; reason: string }[];
+}
+
+/** How many row updates run at once. Enough to be quick, few enough to be polite. */
+const UPDATE_CONCURRENCY = 8;
+
+/**
+ * Apply changes to many assets at once (the bulk-edit dialog).
+ *
+ * Rows are updated one by one rather than with a single `.in()` write, because nameplate
+ * data is merged per asset — a bulk change to "frame size" must not wipe the serial number
+ * sitting beside it in the same JSON column. One row failing (a duplicate identifier in its
+ * new building, say) never stops the rest.
+ */
+export async function bulkUpdateEquipmentAssets(
+  updates: BulkAssetUpdate[],
+  userId?: string,
+): Promise<BulkUpdateResult> {
+  const result: BulkUpdateResult = { updated: [], failed: [] };
+  if (updates.length === 0) return result;
+
+  const applyOne = async (update: BulkAssetUpdate) => {
+    // Rebuilt per attempt, like upsertEquipmentAsset: a retry that establishes this
+    // instance has no nameplate_data column must also stop sending it.
+    const buildPayload = () =>
+      dropUnsupportedColumns({
+        ...update.patch,
+        ...(update.patch.nameplate_data !== undefined
+          ? { nameplate_data: cleanNameplate(update.patch.nameplate_data) }
+          : {}),
+        updated_by: userId ?? null,
+      });
+
+    const { data, error } = await withParentFallback<EquipmentAsset>((columns) =>
+      supabase
+        .schema("neta_ops")
+        .from("equipment_assets")
+        .update(buildPayload())
+        .eq("id", update.id)
+        .select(columns)
+        .single(),
+    );
+
+    if (error) {
+      result.failed.push({
+        id: update.id,
+        identifier: update.identifier ?? update.id,
+        reason:
+          error.code === "23505"
+            ? "another asset in that building and substation already has this identifier"
+            : error.message || "update failed",
+      });
+      return;
+    }
+    result.updated.push(data as EquipmentAsset);
+  };
+
+  for (const batch of chunk(updates, UPDATE_CONCURRENCY)) {
+    await Promise.all(batch.map(applyOne));
+  }
+  return result;
+}
+
 /**
  * Soft-delete an asset. Blocked while report documents point at it — that is the
  * "cannot delete an asset with a linked report" rule. The ON DELETE RESTRICT foreign key

@@ -40,6 +40,7 @@ import AdoptExistingReportsDialog, {
 import AddReportDialog from "./AddReportDialog";
 import ScheduleTestDialog from "./ScheduleTestDialog";
 import MoveAssetsToSiteDialog from "./MoveAssetsToSiteDialog";
+import BulkEditAssetsDialog from "./BulkEditAssetsDialog";
 import type { ReportTemplateChoice } from "./useReportTemplateChoices";
 import type { ScheduledTest } from "@/lib/types/testScheduling";
 import { formatSiteLabel } from "@/lib/types/assetTracking";
@@ -112,6 +113,8 @@ export default function JobAssetsTab({
   const [schedulingFor, setSchedulingFor] = useState<EquipmentAssetWithCounts[]>([]);
   /** Non-empty while the "move to another site" dialog is open, holding what was ticked. */
   const [movingAssets, setMovingAssets] = useState<EquipmentAssetWithCounts[]>([]);
+  /** Non-empty while the bulk-edit dialog is open, holding what was ticked. */
+  const [bulkEditing, setBulkEditing] = useState<EquipmentAssetWithCounts[]>([]);
   /** The site's existing schedule, so the modal can warn about scheduling a scope twice. */
   const [scheduledTests, setScheduledTests] = useState<ScheduledTest[]>([]);
 
@@ -449,6 +452,7 @@ export default function JobAssetsTab({
           canEdit && supportsScheduling() ? (picked) => setSchedulingFor(picked) : undefined
         }
         onBatchMoveSite={canEdit ? setMovingAssets : undefined}
+        onBatchEdit={canEdit ? setBulkEditing : undefined}
         reportsByAsset={reportsByAsset}
         onOpenReport={(report) => report.url && navigate(report.url)}
         onDetachReport={canEdit ? handleDetachReport : undefined}
@@ -597,6 +601,18 @@ export default function JobAssetsTab({
 
       {/* The job keeps its link either way — this re-homes the equipment itself, which
           is what a job filed against the wrong facility leaves behind. */}
+      <BulkEditAssetsDialog
+        open={bulkEditing.length > 0}
+        onClose={() => setBulkEditing([])}
+        assets={bulkEditing}
+        suggestions={suggestions}
+        userId={user?.id}
+        onSaved={(updated) => {
+          updated.forEach(applyLocalEdit);
+          setBulkEditing([]);
+        }}
+      />
+
       <MoveAssetsToSiteDialog
         open={movingAssets.length > 0}
         onClose={() => setMovingAssets([])}

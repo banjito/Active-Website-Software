@@ -1,7 +1,7 @@
 ---
 title: Assets
 description: The equipment list on a job. Adding it, importing it, and hanging reports off it.
-keywords: [asset, equipment, transformer, breaker, bulk import, sub-asset]
+keywords: [asset, equipment, transformer, breaker, bulk import, advanced import, bulk edit, nameplate, sub-asset]
 ---
 
 An asset is one piece of equipment you tested. The **Assets** tab on a job is the list of them, and each one carries the report written against it.
@@ -31,6 +31,33 @@ For a job with forty panels, do not type forty rows.
 ::: tip
 The preview is there so you can catch a column misalignment before it becomes forty badly-named assets. Read it. It takes ten seconds and saves an hour.
 :::
+
+### Advanced import
+
+A plain import brings in the equipment list -- identifier, building, substation, type. **Advanced** brings the equipment-specific data in with it, so you are not opening forty cables afterwards to type the conductor size into each one.
+
+Click **Advanced** at the mapping step and you get:
+
+- **Same type for every row.** For a sheet that is all one thing -- every row a medium voltage cable -- name the type once instead of adding a Type column. Rows that carry their own type in a column keep it.
+- **Manufacturer, model / catalog number, serial number.** Left out of the plain import on purpose, because a normal equipment list has none of them. An as-built or a vendor submittal usually does.
+- **The nameplate fields for the types in the sheet.** Once the importer knows what kind of equipment it is looking at, it offers exactly the fields that equipment has -- conductor size, insulation type, voltage rating and the rest for a cable; frame size, trip unit and I.C. rating for a breaker. Columns matching those names map themselves.
+
+A sheet can hold more than one type. Each row only takes the fields its own type has, so a mixed list still lands cleanly.
+
+The **Equipment detail** column in the preview shows what each row is bringing with it. That data lands on the equipment, which means every report written against it later starts pre-filled.
+
+## Bulk editing
+
+You find out that all forty MECH panel breakers are the same manufacturer and catalog number, and only the serial numbers differ. Change them once.
+
+1. Tick the assets. **Shift**-click ticks a whole run, and **Select all N in this view** takes everything the current search and filters leave on screen.
+2. Click **Edit fields**.
+3. Tick each field you want to change and type the new value.
+4. Apply.
+
+Only ticked fields are written. Everything else on those assets is left exactly as it was -- an untouched field is never blanked out by accident. A field ticked with an empty box *does* clear that value on every selected asset, and you are asked to confirm before it happens.
+
+Nameplate fields belong to an equipment type, so they appear only when the whole selection is one type -- either because it already is, or because you are setting one type for all of them in the same edit. Fields you do not tick keep their existing per-asset value, so changing the frame size on forty breakers leaves each one's trip unit alone.
 
 ## Sub-assets
 

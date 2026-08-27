@@ -292,6 +292,37 @@ export function getNameplateFields(equipmentType?: string | null): NameplateFiel
 
 export type NameplateData = Record<string, string>;
 
+/**
+ * Every nameplate field belonging to any of these equipment types, de-duplicated by key.
+ *
+ * A spreadsheet import can carry a mix of types, and the same key means the same thing
+ * everywhere ("icRating" is an I.C. rating whether it is on a breaker or a switch), so one
+ * column mapping serves them all. Each row still only takes the keys its own type has.
+ */
+export function unionNameplateFields(types: (string | null | undefined)[]): NameplateField[] {
+  const seen = new Set<string>();
+  const out: NameplateField[] = [];
+  for (const type of types) {
+    for (const field of getNameplateFields(type)) {
+      if (seen.has(field.key)) continue;
+      seen.add(field.key);
+      out.push(field);
+    }
+  }
+  return out;
+}
+
+/** The types among these that we actually have a field list for. */
+export function typesWithNameplate(types: (string | null | undefined)[]): string[] {
+  const out: string[] = [];
+  for (const type of types) {
+    const schema = getNameplateSchema(type);
+    if (schema && !out.includes(schema.type)) out.push(schema.type);
+  }
+  return out;
+}
+
+
 /** Keys holding an actual value, ignoring blanks. */
 export function filledNameplateKeys(data: NameplateData | null | undefined): string[] {
   if (!data) return [];

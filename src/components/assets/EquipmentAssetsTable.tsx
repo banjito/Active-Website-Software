@@ -15,6 +15,7 @@ import {
   FolderPlus,
   Link2Off,
   Pencil,
+  PencilLine,
   Trash2,
   Unlink,
   X,
@@ -99,6 +100,10 @@ interface EquipmentAssetsTableProps {
   onBatchSchedule?: (assets: EquipmentAssetWithCounts[]) => void;
   /** Re-home everything ticked at a different site. Also turns on the checkbox column. */
   onBatchMoveSite?: (assets: EquipmentAssetWithCounts[]) => void;
+  /**
+   * Apply the same field changes to everything ticked. Also turns on the checkbox column.
+   */
+  onBatchEdit?: (assets: EquipmentAssetWithCounts[]) => void;
   /** Job context only — removes from the job's scope, leaving the asset at the site. */
   onRemoveFromJob?: (asset: EquipmentAssetWithCounts) => void;
   /** Detach a sub-asset from its parent. Omitted where sub-assets aren't available. */
@@ -219,6 +224,7 @@ export function EquipmentAssetsTable({
   onScheduleTest,
   onBatchSchedule,
   onBatchMoveSite,
+  onBatchEdit,
   onRemoveFromJob,
   onDetachFromParent,
   reportsByAsset,
@@ -592,7 +598,8 @@ export function EquipmentAssetsTable({
     treeFor ? flattenFolderTree(treeFor(label, []).roots).map((f) => f.folder.id) : [];
 
   // ── Selection ──────────────────────────────────────────────────────────────
-  const selectable = Boolean(onBatchSchedule || onBatchMoveSite) && canEdit;
+  const selectable =
+    Boolean(onBatchSchedule || onBatchMoveSite || onBatchEdit) && canEdit;
   /** Ids in the order they're on screen — what a shift-click range walks over. */
   const visibleIds = useMemo(() => rows.map((r) => r.asset.id), [rows]);
   const visibleIdSet = useMemo(() => new Set(visibleIds), [visibleIds]);
@@ -830,6 +837,18 @@ export function EquipmentAssetsTable({
             )}
           </span>
           <span className="text-neutral-300 dark:text-neutral-600">·</span>
+          {/* Listed first: the same make and catalog number across a whole lineup is the
+              commonest reason to tick a batch of rows in the first place. */}
+          {onBatchEdit && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onBatchEdit(selectedAssets)}
+              leftIcon={<PencilLine className="h-4 w-4" />}
+            >
+              Edit fields
+            </Button>
+          )}
           {onBatchSchedule && (
             <Button
               size="sm"

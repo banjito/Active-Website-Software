@@ -1,10 +1,19 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import * as XLSX from "xlsx";
-import { AlertTriangle, FileSpreadsheet, Upload } from "lucide-react";
+import { AlertTriangle, FileSpreadsheet, Sliders, Upload } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
 import Select from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
+import { SuggestInput } from "./SuggestInput";
+import {
+  NAMEPLATE_SCHEMAS,
+  getNameplateFields,
+  summarizeNameplate,
+  typesWithNameplate,
+  unionNameplateFields,
+  type NameplateField,
+} from "@/lib/assetNameplateSchema";
 import {
   Dialog,
   DialogContent,
@@ -28,7 +37,9 @@ import {
   setAssetParent,
 } from "@/services/equipmentAssetsService";
 import {
+  ADVANCED_IMPORTABLE_ASSET_FIELDS,
   IMPORTABLE_ASSET_FIELDS,
+  nameplateColumnKey,
   type EquipmentAsset,
   type EquipmentAssetInput,
   type ImportableAssetField,
@@ -37,7 +48,7 @@ import {
 const UNMAPPED = "__unmapped__";
 
 /** Header spellings we auto-match, so a normal spreadsheet needs no mapping at all. */
-const HEADER_HINTS: Record<ImportableAssetField, string[]> = {
+const HEADER_HINTS: Record<string, string[]> = {
   identifier: ["identifier", "id", "equipmentid", "tag", "assetid", "name", "equipment"],
   // Deliberately narrow: "lineup" and "assembly" would fight the substation hints and
   // silently steal that column from it.
@@ -54,33 +65,87 @@ const HEADER_HINTS: Record<ImportableAssetField, string[]> = {
   equipment_location: ["equipmentlocation", "location", "room", "eqptlocation", "place"],
   equipment_type: ["equipmenttype", "type", "devicetype", "category", "equipclass"],
   notes: ["notes", "comment", "comments", "remarks", "description"],
+  // Advanced-only columns. An equipment list never has these; an as-built often does.
+  manufacturer: ["manufacturer", "mfr", "mfg", "make", "brand"],
+  model: ["model", "catalog", "catalogno", "catalognumber", "cat", "modelno", "partnumber"],
+  serial_number: ["serialnumber", "serial", "serialno", "sn"],
 };
 
 const normalizeHeader = (h: string) => h.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-/** Best-guess column mapping from the header row. Exact matches win over partial ones. */
-function autoMapColumns(headers: string[]): Record<ImportableAssetField, number> {
-  const mapping = {} as Record<ImportableAssetField, number>;
-  const taken = new Set<number>();
+/**
+ * Best-guess column mapping from the header row. Exact matches win over partial ones, and
+ * a column already claimed by another field is never stolen.
+ */
+function matchColumns(
+  headers: string[],
+  specs: { key: string; hints: string[]; exactOnly?: boolean }[],
+  alreadyMapped: Record<string, number> = {},
+): Record<string, number> {
+  const mapping: Record<string, number> = {};
+  const taken = new Set<number>(Object.values(alreadyMapped));
   const normalized = headers.map(normalizeHeader);
 
   for (const pass of ["exact", "partial"] as const) {
-    for (const field of IMPORTABLE_ASSET_FIELDS) {
-      if (mapping[field.key] !== undefined) continue;
-      const hints = HEADER_HINTS[field.key];
+    for (const spec of specs) {
+      if (alreadyMapped[spec.key] !== undefined || mapping[spec.key] !== undefined) continue;
+      if (pass === "partial" && spec.exactOnly) continue;
       const index = normalized.findIndex((h, i) => {
         if (!h || taken.has(i)) return false;
         return pass === "exact"
-          ? hints.includes(h)
-          : hints.some((hint) => h.includes(hint));
+          ? spec.hints.includes(h)
+          : spec.hints.some((hint) => h.includes(hint));
       });
       if (index >= 0) {
-        mapping[field.key] = index;
+        mapping[spec.key] = index;
         taken.add(index);
       }
     }
   }
   return mapping;
+}
+
+function autoMapColumns(headers: string[]): Record<string, number> {
+  return matchColumns(
+    headers,
+    IMPORTABLE_ASSET_FIELDS.map((f) => ({ key: f.key, hints: HEADER_HINTS[f.key] })),
+  );
+}
+
+/**
+ * Nameplate headers are matched on the field's own label only — never partially.
+ * "Type" as a nameplate field would otherwise swallow the Equipment Type column, and a
+ * wrongly claimed column is worse than one the user maps by hand.
+ */
+function nameplateHints(field: NameplateField): string[] {
+  return [
+    normalizeHeader(field.label),
+    normalizeHeader(field.key),
+    normalizeHeader(`${field.label} ${field.unit ?? ""}`),
+  ].filter(Boolean);
+}
+
+/** Advanced columns (manufacturer/model/serial) plus the nameplate fields in play. */
+function autoMapAdvanced(
+  headers: string[],
+  nameplateFields: NameplateField[],
+  alreadyMapped: Record<string, number>,
+): Record<string, number> {
+  return matchColumns(
+    headers,
+    [
+      ...ADVANCED_IMPORTABLE_ASSET_FIELDS.map((f) => ({
+        key: f.key as string,
+        hints: HEADER_HINTS[f.key],
+      })),
+      ...nameplateFields.map((f) => ({
+        key: nameplateColumnKey(f.key),
+        hints: nameplateHints(f),
+        exactOnly: true,
+      })),
+    ],
+    alreadyMapped,
+  );
 }
 
 /** Rows look like a header when the first row is all text and none of it is numeric. */
@@ -140,6 +205,10 @@ export function BulkAssetImportDialog({
   const [importing, setImporting] = useState(false);
   const [sourceLabel, setSourceLabel] = useState("");
   const [previewFilter, setPreviewFilter] = useState<"all" | "skipped">("all");
+  /** Advanced mode adds nameplate + manufacturer/model/serial columns to the mapping. */
+  const [advanced, setAdvanced] = useState(false);
+  /** Equipment type used for any row whose own type cell is empty. */
+  const [fixedType, setFixedType] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const reset = () => {
@@ -150,6 +219,8 @@ export function BulkAssetImportDialog({
     setPasteText("");
     setSourceLabel("");
     setPreviewFilter("all");
+    setAdvanced(false);
+    setFixedType("");
   };
 
   const close = () => {
@@ -231,6 +302,53 @@ export function BulkAssetImportDialog({
     return opts;
   }, [columnCount, hasHeader, headerRow]);
 
+  /**
+   * Every equipment type this import will produce: whatever the mapped Type column holds,
+   * plus the one typed into "same type for every row". That is what decides which
+   * nameplate fields are worth offering.
+   */
+  const detectedTypes = useMemo(() => {
+    const types = new Set<string>();
+    const typeColumn = mapping.equipment_type;
+    if (typeColumn !== undefined) {
+      for (const row of dataRows) {
+        const value = (row[typeColumn] ?? "").trim();
+        if (value) types.add(value);
+      }
+    }
+    if (fixedType.trim()) types.add(fixedType.trim());
+    return [...types];
+  }, [dataRows, mapping.equipment_type, fixedType]);
+
+  const nameplateFields = useMemo(
+    () => unionNameplateFields(detectedTypes),
+    [detectedTypes],
+  );
+  const nameplateTypeNames = useMemo(
+    () => typesWithNameplate(detectedTypes),
+    [detectedTypes],
+  );
+  /** Types already in use at this company, plus every type we hold a field list for. */
+  const typeSuggestions = useMemo(() => {
+    const all = new Set([...knownEquipmentTypes, ...NAMEPLATE_SCHEMAS.map((s) => s.type)]);
+    return [...all].sort((a, b) => a.localeCompare(b));
+  }, [knownEquipmentTypes]);
+
+  /**
+   * Fill in the advanced columns the moment there is something to fill them from —
+   * turning Advanced on, or naming a type that brings its own nameplate fields. Existing
+   * choices are never overwritten, so a hand-mapped column stays where it was put.
+   */
+  useEffect(() => {
+    if (!advanced || !activeSheet) return;
+    const headers = hasHeader ? (activeSheet.rows[0] ?? []) : [];
+    if (headers.length === 0) return;
+    setMapping((current) => {
+      const found = autoMapAdvanced(headers, nameplateFields, current);
+      return Object.keys(found).length > 0 ? { ...current, ...found } : current;
+    });
+  }, [advanced, activeSheet, hasHeader, nameplateFields]);
+
   const identifierColumn = mapping.identifier;
   /** "Part of" only makes sense where sub-assets exist on this database. */
   const subAssetsAvailable = Boolean(siteAssets);
@@ -271,11 +389,14 @@ export function BulkAssetImportDialog({
     const seenInFile = new Set<string>();
 
     return dataRows.map((row, index) => {
-      const valueOf = (field: ImportableAssetField): string => {
+      const valueOf = (field: ImportableAssetField | "parent_identifier"): string => {
         const col = mapping[field];
         if (col === undefined) return "";
         return (row[col] ?? "").trim();
       };
+      /** Advanced-only columns read as blank while the panel is closed. */
+      const advancedValueOf = (field: ImportableAssetField): string =>
+        advanced ? valueOf(field) : "";
 
       const identifier = valueOf("identifier");
       const key = identifier.toLowerCase();
@@ -318,11 +439,26 @@ export function BulkAssetImportDialog({
         }
       }
 
+      // ── Equipment type and its nameplate ───────────────────────────────────
+      // The row's own Type cell wins; "same type for every row" fills the blanks. Only
+      // the keys that type actually has are read, so a mixed file still lands cleanly.
+      const equipmentType = valueOf("equipment_type") || fixedType.trim();
+      const nameplate: Record<string, string> = {};
+      if (advanced) {
+        for (const field of getNameplateFields(equipmentType)) {
+          const column = mapping[nameplateColumnKey(field.key)];
+          if (column === undefined) continue;
+          const value = (row[column] ?? "").trim();
+          if (value) nameplate[field.key] = value;
+        }
+      }
+
       return {
         issue,
         warning,
         parentIdentifier,
         pendingParentIdentifier,
+        nameplate,
         // The row's line in the source spreadsheet, so a flagged row can be found there.
         rowNumber: index + (hasHeader ? 2 : 1),
         input: {
@@ -332,7 +468,11 @@ export function BulkAssetImportDialog({
           building_area: valueOf("building_area") || null,
           substation: valueOf("substation") || null,
           equipment_location: valueOf("equipment_location") || null,
-          equipment_type: valueOf("equipment_type") || null,
+          equipment_type: equipmentType || null,
+          manufacturer: advancedValueOf("manufacturer") || null,
+          model: advancedValueOf("model") || null,
+          serial_number: advancedValueOf("serial_number") || null,
+          nameplate_data: Object.keys(nameplate).length > 0 ? nameplate : null,
           notes: valueOf("notes") || null,
         } as EquipmentAssetInput,
       };
@@ -347,6 +487,8 @@ export function BulkAssetImportDialog({
     subAssetsAvailable,
     siteAssetsByIdentifier,
     parentsInFile,
+    advanced,
+    fixedType,
   ]);
 
   const importable = useMemo(() => candidates.filter((c) => !c.issue), [candidates]);
@@ -359,6 +501,18 @@ export function BulkAssetImportDialog({
     () =>
       importable.filter((c) => c.input.parent_asset_id || c.pendingParentIdentifier)
         .length,
+    [importable],
+  );
+  /** Rows arriving with equipment detail already filled in — the point of Advanced. */
+  const detailedCount = useMemo(
+    () =>
+      importable.filter(
+        (c) =>
+          Object.keys(c.nameplate).length > 0 ||
+          c.input.manufacturer ||
+          c.input.model ||
+          c.input.serial_number,
+      ).length,
     [importable],
   );
 
@@ -444,7 +598,9 @@ export function BulkAssetImportDialog({
           <DialogTitle>Import assets into {siteName}</DialogTitle>
           <DialogDescription>
             Drop an Excel or CSV file, or paste rows straight from your spreadsheet. The
-            file is read in your browser — nothing is uploaded.
+            file is read in your browser — nothing is uploaded. Switch on{" "}
+            <strong>Advanced</strong> at the mapping step to bring nameplate data in with
+            the equipment.
           </DialogDescription>
         </DialogHeader>
 
@@ -553,7 +709,18 @@ export function BulkAssetImportDialog({
             </div>
 
             <div>
-              <p className="mb-2 text-sm font-medium">Match your columns</p>
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <p className="text-sm font-medium">Match your columns</p>
+                <Button
+                  size="sm"
+                  variant={advanced ? "primary" : "outline"}
+                  className="ml-auto"
+                  onClick={() => setAdvanced((a) => !a)}
+                  leftIcon={<Sliders className="h-4 w-4" />}
+                >
+                  {advanced ? "Advanced on" : "Advanced"}
+                </Button>
+              </div>
               {subAssetsAvailable && (
                 <p className="mb-2 text-xs text-neutral-500 dark:text-neutral-400">
                   <strong>Part of</strong> takes the parent's identifier — either equipment
@@ -591,6 +758,96 @@ export function BulkAssetImportDialog({
               </div>
             </div>
 
+            {/* Advanced: the equipment-specific half of the sheet. Bringing it in here is
+                what saves opening 40 assets afterwards to type the same cable data in. */}
+            {advanced && (
+              <div className="border border-brand/40 bg-brand/5 p-3">
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <SuggestInput
+                    label="Same type for every row"
+                    value={fixedType}
+                    onChange={setFixedType}
+                    suggestions={typeSuggestions}
+                    placeholder="e.g. Medium Voltage Cable"
+                    hint="Used for any row whose own Type cell is blank."
+                  />
+                  {ADVANCED_IMPORTABLE_ASSET_FIELDS.map((field) => (
+                    <div key={field.key}>
+                      <Label htmlFor={`map-${field.key}`}>{field.label}</Label>
+                      <Select
+                        id={`map-${field.key}`}
+                        value={
+                          mapping[field.key] === undefined
+                            ? UNMAPPED
+                            : String(mapping[field.key])
+                        }
+                        onChange={(e) =>
+                          setMapping((m) => {
+                            const next = { ...m };
+                            if (e.target.value === UNMAPPED) delete next[field.key];
+                            else next[field.key] = Number(e.target.value);
+                            return next;
+                          })
+                        }
+                        options={columnOptions}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {nameplateFields.length > 0 ? (
+                  <div className="mt-4">
+                    <p className="text-sm font-medium">
+                      {nameplateTypeNames.join(", ")} data
+                    </p>
+                    <p className="mb-2 text-xs text-neutral-500 dark:text-neutral-400">
+                      Entered once on the equipment and reused by every report written
+                      against it. Each row only takes the fields its own type has.
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      {nameplateFields.map((field) => {
+                        const key = nameplateColumnKey(field.key);
+                        return (
+                          <div key={key}>
+                            <Label htmlFor={`map-${key}`}>
+                              {field.label}
+                              {field.unit && (
+                                <span className="ml-1 font-normal text-neutral-400">
+                                  ({field.unit})
+                                </span>
+                              )}
+                            </Label>
+                            <Select
+                              id={`map-${key}`}
+                              value={
+                                mapping[key] === undefined
+                                  ? UNMAPPED
+                                  : String(mapping[key])
+                              }
+                              onChange={(e) =>
+                                setMapping((m) => {
+                                  const next = { ...m };
+                                  if (e.target.value === UNMAPPED) delete next[key];
+                                  else next[key] = Number(e.target.value);
+                                  return next;
+                                })
+                              }
+                              options={columnOptions}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
+                    Map an <strong>Equipment Type</strong> column, or name one type above,
+                    and its nameplate fields appear here to map as well.
+                  </p>
+                )}
+              </div>
+            )}
+
             {identifierColumn === undefined ? (
               <div className="flex items-start gap-2 border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -608,6 +865,12 @@ export function BulkAssetImportDialog({
                       <span className="text-neutral-500 dark:text-neutral-400">
                         {" "}
                         · {nestedCount} nested under a parent
+                      </span>
+                    )}
+                    {detailedCount > 0 && (
+                      <span className="text-neutral-500 dark:text-neutral-400">
+                        {" "}
+                        · {detailedCount} with equipment detail
                       </span>
                     )}
                     {skipped > 0 && (
@@ -655,6 +918,7 @@ export function BulkAssetImportDialog({
                         {parentColumnMapped && <TableHead>Part of</TableHead>}
                         <TableHead>Location</TableHead>
                         <TableHead>Type</TableHead>
+                        {advanced && <TableHead>Equipment detail</TableHead>}
                         <TableHead>Status</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -700,6 +964,18 @@ export function BulkAssetImportDialog({
                           )}
                           <TableCell>{c.input.equipment_location || "—"}</TableCell>
                           <TableCell>{c.input.equipment_type || "—"}</TableCell>
+                          {advanced && (
+                            <TableCell className="text-xs text-neutral-500 dark:text-neutral-400">
+                              {[
+                                [c.input.manufacturer, c.input.model, c.input.serial_number]
+                                  .filter(Boolean)
+                                  .join(" · "),
+                                summarizeNameplate(c.input.equipment_type, c.nameplate, 4),
+                              ]
+                                .filter(Boolean)
+                                .join(" · ") || "—"}
+                            </TableCell>
+                          )}
                           <TableCell>
                             {c.issue ? (
                               <span className="text-amber-600 dark:text-amber-400">

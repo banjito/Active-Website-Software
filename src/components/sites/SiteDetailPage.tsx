@@ -30,6 +30,7 @@ import EquipmentAssetDialog, {
 import DuplicateAssetDialog from "@/components/assets/DuplicateAssetDialog";
 import BulkAssetImportDialog from "@/components/assets/BulkAssetImportDialog";
 import MoveAssetsToSiteDialog from "@/components/assets/MoveAssetsToSiteDialog";
+import BulkEditAssetsDialog from "@/components/assets/BulkEditAssetsDialog";
 import { formatSiteLabel } from "@/lib/types/assetTracking";
 import type {
   EquipmentAsset,
@@ -72,6 +73,8 @@ export default function SiteDetailPage() {
   const [importing, setImporting] = useState(false);
   /** Non-empty while the "move to another site" dialog is open, holding what was ticked. */
   const [movingAssets, setMovingAssets] = useState<EquipmentAssetWithCounts[]>([]);
+  /** Non-empty while the bulk-edit dialog is open, holding what was ticked. */
+  const [bulkEditing, setBulkEditing] = useState<EquipmentAssetWithCounts[]>([]);
 
   /** Silent refetches leave the table mounted, so its search/sort/filters survive. */
   const load = useCallback(
@@ -201,6 +204,7 @@ export default function SiteDetailPage() {
               canEdit && supportsSubAssets() ? handleDetachFromParent : undefined
             }
             onBatchMoveSite={canEdit ? setMovingAssets : undefined}
+            onBatchEdit={canEdit ? setBulkEditing : undefined}
             emptyMessage="No equipment registered at this site yet. Import a spreadsheet to load it in one go."
             actions={
               canEdit && (
@@ -269,6 +273,18 @@ export default function SiteDetailPage() {
         knownEquipmentTypes={suggestions.equipmentTypes}
         userId={user?.id}
         onImported={() => void load({ silent: true })}
+      />
+
+      <BulkEditAssetsDialog
+        open={bulkEditing.length > 0}
+        onClose={() => setBulkEditing([])}
+        assets={bulkEditing}
+        suggestions={suggestions}
+        userId={user?.id}
+        onSaved={(updated) => {
+          updated.forEach(applyLocalEdit);
+          setBulkEditing([]);
+        }}
       />
 
       <MoveAssetsToSiteDialog

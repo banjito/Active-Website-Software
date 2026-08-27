@@ -87,12 +87,33 @@ export const IMPORTABLE_ASSET_FIELDS = [
   { key: "substation", label: "Substation", required: false },
   { key: "equipment_location", label: "Equipment Location", required: false },
   { key: "equipment_type", label: "Equipment Type", required: false },
-  // Nameplate details (manufacturer, model, serial) are deliberately not importable —
-  // they're captured on the asset itself, not from the equipment-list spreadsheet.
   { key: "notes", label: "Notes", required: false },
 ] as const;
 
-export type ImportableAssetField = (typeof IMPORTABLE_ASSET_FIELDS)[number]["key"];
+/**
+ * Extra columns only the Advanced importer offers.
+ *
+ * A plain equipment list never has these — nobody knows a serial number before standing in
+ * front of the device — but an as-built or a vendor submittal often does, and re-keying it
+ * asset by asset is exactly what the advanced import exists to avoid.
+ */
+export const ADVANCED_IMPORTABLE_ASSET_FIELDS = [
+  { key: "manufacturer", label: "Manufacturer", required: false },
+  { key: "model", label: "Model / Catalog no.", required: false },
+  { key: "serial_number", label: "Serial number", required: false },
+] as const;
+
+export type ImportableAssetField =
+  | (typeof IMPORTABLE_ASSET_FIELDS)[number]["key"]
+  | (typeof ADVANCED_IMPORTABLE_ASSET_FIELDS)[number]["key"];
+
+/**
+ * Column key for an equipment-type-specific nameplate field in the importer's mapping.
+ * Namespaced so it can never collide with a real asset column.
+ */
+export const NAMEPLATE_COLUMN_PREFIX = "np:";
+export const nameplateColumnKey = (fieldKey: string) =>
+  `${NAMEPLATE_COLUMN_PREFIX}${fieldKey}`;
 
 /** Prefill handed to a report form when it is opened from an asset row. */
 export interface EquipmentAssetPrefill {

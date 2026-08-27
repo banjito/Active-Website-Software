@@ -24,6 +24,7 @@ const DIVISIONS = [
   { id: "north_alabama", label: "Decatur" },
   { id: "tennessee", label: "Nashville" },
   { id: "georgia", label: "Atlanta" },
+  { id: "virginia", label: "Virginia" },
   { id: "international", label: "International" },
   { id: "calibration", label: "Calibration" },
   { id: "armadillo", label: "Armadillo" },

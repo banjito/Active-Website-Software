@@ -3264,6 +3264,7 @@ export default function JobDetail() {
               "north_alabama",
               "tennessee",
               "georgia",
+              "virginia",
               "international",
             ]);
           } else {
@@ -8555,6 +8556,7 @@ export default function JobDetail() {
                         <option value="north_alabama">Decatur</option>
                         <option value="tennessee">Nashville</option>
                         <option value="georgia">Atlanta</option>
+                        <option value="virginia">Virginia</option>
                         <option value="international">International</option>
                         <option value="engineering">Engineering</option>
                         <option value="scavenger">Scavenger</option>

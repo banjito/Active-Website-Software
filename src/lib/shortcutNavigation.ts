@@ -10,6 +10,7 @@ export function divisionFromShortcutPath(path: string): string | null {
     north_alabama: 'north_alabama',
     tennessee: 'tennessee',
     georgia: 'georgia',
+    virginia: 'virginia',
     international: 'international',
     calibration: 'calibration',
     armadillo: 'armadillo',

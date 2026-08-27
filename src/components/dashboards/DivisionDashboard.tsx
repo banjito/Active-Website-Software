@@ -533,6 +533,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
     "north_alabama",
     "tennessee",
     "georgia",
+    "virginia",
     "international",
   ].includes(division);
 

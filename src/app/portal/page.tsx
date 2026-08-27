@@ -948,6 +948,7 @@ export default function PortalLanding() {
         north_alabama: "neta",
         tennessee: "neta",
         georgia: "neta",
+        virginia: "neta",
         international: "neta",
         calibration: "lab",
         armadillo: "lab",
@@ -1089,6 +1090,9 @@ export default function PortalLanding() {
         break;
       case "Atlanta":
         handleDivisionClick("georgia");
+        break;
+      case "Virginia":
+        handleDivisionClick("virginia");
         break;
       case "International":
         handleDivisionClick("international");
@@ -2197,6 +2201,7 @@ export default function PortalLanding() {
                     { id: "north_alabama", label: "Decatur" },
                     { id: "tennessee", label: "Nashville" },
                     { id: "georgia", label: "Atlanta" },
+                    { id: "virginia", label: "Virginia" },
                     { id: "international", label: "International" },
                   ].map((city) => (
                     <button

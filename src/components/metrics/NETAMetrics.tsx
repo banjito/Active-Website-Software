@@ -29,6 +29,7 @@ function formatDivisionForDisplay(division?: string | null): string {
     north_alabama: "Decatur",
     tennessee: "Nashville",
     georgia: "Atlanta",
+    virginia: "Virginia",
     international: "International",
   };
 

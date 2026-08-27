@@ -1878,6 +1878,10 @@ function App() {
                     element={<Navigate to="/field-tech" replace />}
                   />
                   <Route
+                    path="/virginia/dashboard"
+                    element={<Navigate to="/field-tech" replace />}
+                  />
+                  <Route
                     path="/international/dashboard"
                     element={<Navigate to="/field-tech" replace />}
                   />

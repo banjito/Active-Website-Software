@@ -1,4 +1,4 @@
-export type PipelineRegion = "AL" | "TN" | "GA" | "International";
+export type PipelineRegion = "AL" | "TN" | "GA" | "VA" | "International";
 export type PipelineStatus = "confirmed" | "expected" | "dropped";
 
 export interface PipelineJob {

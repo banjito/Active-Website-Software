@@ -21,6 +21,7 @@ const divisionDisplayMap: Record<string, string> = {
   'north_alabama': 'Decatur',
   'tennessee': 'Nashville',
   'georgia': 'Atlanta',
+  'virginia': 'Virginia',
   'international': 'International',
   'calibration': 'Calibration',
   'armadillo': 'Armadillo',
@@ -33,7 +34,7 @@ const divisionDisplayMap: Record<string, string> = {
 export async function fetchNETADivisionMetrics(): Promise<DivisionMetrics[]> {
   try {
     // Ensure all four NETA divisions are included
-    const divisions = ['north_alabama', 'tennessee', 'georgia', 'international'];
+    const divisions = ['north_alabama', 'tennessee', 'georgia', 'virginia', 'international'];
     
     // For demo purposes, we're creating sample data
     // In a real implementation, this would be fetched from the database
@@ -158,6 +159,7 @@ export async function fetchVehicleAvailabilityMetrics(division?: string): Promis
       'north_alabama': 12,
       'tennessee': 8,
       'georgia': 7,
+      'virginia': 6,
       'international': 5
     };
     
@@ -184,6 +186,7 @@ export async function fetchEquipmentAvailabilityMetrics(division?: string): Prom
       'north_alabama': 28,
       'tennessee': 21,
       'georgia': 18,
+      'virginia': 16,
       'international': 14
     };
     
@@ -210,6 +213,7 @@ export async function fetchTechnicianCountMetrics(division?: string): Promise<nu
       'north_alabama': 18,
       'tennessee': 14,
       'georgia': 12,
+      'virginia': 10,
       'international': 8
     };
     

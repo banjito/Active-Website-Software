@@ -11,6 +11,7 @@ export type BuiltinPortalKey =
   | "north_alabama"
   | "tennessee"
   | "georgia"
+  | "virginia"
   | "international"
   | "calibration"
   | "armadillo"
@@ -193,6 +194,7 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
       "north_alabama",
       "tennessee",
       "georgia",
+      "virginia",
       "international",
       "armadillo",
       "scavenger",
@@ -204,6 +206,7 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
         north_alabama: "Decatur",
         tennessee: "Nashville",
         georgia: "Atlanta",
+        virginia: "Virginia",
         international: "International",
       } as Record<string, string>)[key] ??
       key.charAt(0).toUpperCase() + key.slice(1),

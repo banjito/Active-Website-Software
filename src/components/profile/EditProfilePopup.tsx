@@ -390,7 +390,13 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
     "Scavenger",
   ];
 
-  const divisions = ["North Alabama", "Tennessee", "International", "Georgia"];
+  const divisions = [
+    "North Alabama",
+    "Tennessee",
+    "Georgia",
+    "Virginia",
+    "International",
+  ];
 
   const uploadProfileImage = async (file: File): Promise<string> => {
     console.log("Starting upload process (using direct fetch)...");

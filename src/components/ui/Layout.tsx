@@ -99,6 +99,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       "north_alabama",
       "tennessee",
       "georgia",
+      "virginia",
       "international",
       "engineering",
       "field-tech",
@@ -441,6 +442,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       northAlabama: "Decatur",
       tennessee: "Nashville",
       georgia: "Atlanta",
+      virginia: "Virginia",
       international: "International",
       calibration: "Calibration Division",
       armadillo: "Armadillo Division",
@@ -556,6 +558,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       { id: "north_alabama", label: "Decatur", path: "/north_alabama/jobs" },
       { id: "tennessee", label: "Nashville", path: "/tennessee/jobs" },
       { id: "georgia", label: "Atlanta", path: "/georgia/jobs" },
+      { id: "virginia", label: "Virginia", path: "/virginia/jobs" },
       {
         id: "international",
         label: "International",
@@ -718,6 +721,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             {(division === "north_alabama" ||
               division === "georgia" ||
               division === "tennessee" ||
+              division === "virginia" ||
               division === "international" ||
               division === "field_tech") && (
               <Link

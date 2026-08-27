@@ -47,6 +47,7 @@ export const FIELD_TECH_DIVISIONS = [
   "north_alabama",
   "tennessee",
   "georgia",
+  "virginia",
   "international",
 ];
 

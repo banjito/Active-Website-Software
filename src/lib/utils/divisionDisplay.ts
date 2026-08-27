@@ -16,6 +16,7 @@ const DIVISION_DISPLAY_MAP: Record<string, string> = {
   northAlabama: 'Decatur',
   tennessee: 'Nashville',
   georgia: 'Atlanta',
+  virginia: 'Virginia',
   international: 'International',
   calibration: 'Calibration Division',
   armadillo: 'Armadillo Division',

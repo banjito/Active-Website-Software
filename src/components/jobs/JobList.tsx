@@ -803,6 +803,7 @@ export default function JobList() {
             "north_alabama",
             "tennessee",
             "georgia",
+            "virginia",
             "international",
           ]);
         } else {
@@ -1168,6 +1169,7 @@ export default function JobList() {
       "north_alabama",
       "tennessee",
       "georgia",
+      "virginia",
       "international",
     ];
     const activeDivision = fieldTechDivisions.includes(division || "")
@@ -1519,6 +1521,7 @@ export default function JobList() {
       north_alabama: "Decatur",
       tennessee: "Nashville",
       georgia: "Atlanta",
+      virginia: "Virginia",
       international: "International",
       engineering: "Engineering",
       scavenger: "Scavenger",
@@ -1593,6 +1596,7 @@ export default function JobList() {
             division === "north_alabama" ||
             division === "tennessee" ||
             division === "georgia" ||
+            division === "virginia" ||
             division === "international") &&
             (user?.user_metadata?.role === "Admin" ||
               isSuperUser(user?.email)) && (
@@ -2805,6 +2809,12 @@ export default function JobList() {
                     className="dark:bg-dark-150 dark:text-white"
                   >
                     Atlanta
+                  </option>
+                  <option
+                    value="virginia"
+                    className="dark:bg-dark-150 dark:text-white"
+                  >
+                    Virginia
                   </option>
                   <option
                     value="international"

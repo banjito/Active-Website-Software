@@ -750,6 +750,7 @@ export const JobRequisitions: React.FC = () => {
     "North Alabama Division",
     "Tennessee Division",
     "Georgia Division",
+    "Virginia Division",
     "International Division",
     "Engineering",
     "Sales",

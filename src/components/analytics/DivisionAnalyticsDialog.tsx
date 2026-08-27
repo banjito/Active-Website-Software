@@ -197,6 +197,7 @@ export function DivisionAnalyticsDialog({
       north_alabama: "Decatur",
       tennessee: "Nashville",
       georgia: "Atlanta",
+      virginia: "Virginia",
       international: "International",
       engineering: "Engineering",
     };

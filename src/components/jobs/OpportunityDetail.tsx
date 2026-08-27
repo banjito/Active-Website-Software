@@ -357,6 +357,8 @@ const JOB_DIVISION_ALIASES: Record<string, string> = {
   atlanta: "georgia",
   georgia: "georgia",
   georgia_division: "georgia",
+  virginia: "virginia",
+  virginia_division: "virginia",
   international: "international",
   government_international: "international",
   government_and_international: "international",
@@ -4398,6 +4400,12 @@ export default function OpportunityDetail() {
                         Atlanta
                       </option>
                       <option
+                        value="virginia"
+                        className="dark:bg-dark-150 dark:text-white"
+                      >
+                        Virginia
+                      </option>
+                      <option
                         value="international"
                         className="dark:bg-dark-150 dark:text-white"
                       >
@@ -6297,6 +6305,7 @@ function formatDivisionName(division: string): string {
     north_alabama: "Decatur",
     tennessee: "Nashville",
     georgia: "Atlanta",
+    virginia: "Virginia",
     international: "International",
     engineering: "Engineering",
     scavenger: "Scavenger",

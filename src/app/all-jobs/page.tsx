@@ -15,6 +15,7 @@ const UNIFIED_DIVISIONS = [
   "north_alabama",
   "tennessee",
   "georgia",
+  "virginia",
   "international",
   "engineering",
   "scavenger",
@@ -24,6 +25,7 @@ const DIVISION_LABELS: Record<string, string> = {
   north_alabama: "Decatur",
   tennessee: "Nashville",
   georgia: "Atlanta",
+  virginia: "Virginia",
   international: "International",
   engineering: "Engineering",
   scavenger: "Scavenger",
@@ -37,6 +39,8 @@ const DIVISION_BADGE_CLASS: Record<string, string> = {
     "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-300 dark:border-blue-700",
   georgia:
     "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700",
+  virginia:
+    "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300 border border-rose-300 dark:border-rose-700",
   international:
     "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300 border border-sky-300 dark:border-sky-700",
   engineering:

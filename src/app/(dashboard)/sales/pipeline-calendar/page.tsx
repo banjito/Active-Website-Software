@@ -24,7 +24,7 @@ type SortKey = "startDate" | "customer" | "amount" | "region";
 type SortDirection = "asc" | "desc";
 type PopoverPosition = { top: number; left: number };
 
-const regions: PipelineRegion[] = ["AL", "TN", "GA", "International"];
+const regions: PipelineRegion[] = ["AL", "TN", "GA", "VA", "International"];
 const statuses: PipelineStatus[] = ["confirmed", "expected", "dropped"];
 
 const regionPalette: Record<
@@ -34,6 +34,7 @@ const regionPalette: Record<
   AL: { bg: "#2563eb", light: "#dbeafe", border: "#93c5fd" },
   TN: { bg: "#16a34a", light: "#dcfce7", border: "#86efac" },
   GA: { bg: "var(--brand)", light: "#ffedd5", border: "#fdba74" },
+  VA: { bg: "#db2777", light: "#fce7f3", border: "#f9a8d4" },
   International: { bg: "#7c3aed", light: "#ede9fe", border: "#c4b5fd" },
 };
 
@@ -47,6 +48,7 @@ const defaultRegionFilter: Record<PipelineRegion, boolean> = {
   AL: true,
   TN: true,
   GA: true,
+  VA: true,
   International: true,
 };
 
@@ -283,6 +285,7 @@ function getRegionFromOpportunity(opportunity: any): PipelineRegion {
 
   if (division.includes("tennessee")) return "TN";
   if (division.includes("georgia")) return "GA";
+  if (division.includes("virginia")) return "VA";
   if (division.includes("international")) return "International";
   return "AL";
 }

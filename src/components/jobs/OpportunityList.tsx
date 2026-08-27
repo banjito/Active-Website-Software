@@ -272,6 +272,7 @@ const DIVISION_FILTER_OPTIONS = [
   { value: "north_alabama", label: "Decatur" },
   { value: "tennessee", label: "Nashville" },
   { value: "georgia", label: "Atlanta" },
+  { value: "virginia", label: "Virginia" },
   { value: "international", label: "International" },
   { value: "engineering", label: "Engineering" },
   { value: "scavenger", label: "Scavenger" },
@@ -3915,6 +3916,12 @@ export default function OpportunityList() {
                     Atlanta
                   </option>
                   <option
+                    value="virginia"
+                    className="dark:bg-dark-150 dark:text-white"
+                  >
+                    Virginia
+                  </option>
+                  <option
                     value="international"
                     className="dark:bg-dark-150 dark:text-white"
                   >
@@ -4431,6 +4438,12 @@ export default function OpportunityList() {
                     className="dark:bg-dark-150 dark:text-white"
                   >
                     Atlanta
+                  </option>
+                  <option
+                    value="virginia"
+                    className="dark:bg-dark-150 dark:text-white"
+                  >
+                    Virginia
                   </option>
                   <option
                     value="international"

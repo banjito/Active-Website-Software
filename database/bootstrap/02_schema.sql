@@ -9183,7 +9183,7 @@ CASE
     WHEN (job_number ~ '^[0-9]+$'::text) THEN (job_number)::bigint
     ELSE (NULLIF(regexp_replace(COALESCE(job_number, ''::text), '\D'::text, ''::text, 'g'::text), ''::text))::bigint
 END) STORED,
-    CONSTRAINT jobs_division_check CHECK ((division = ANY (ARRAY['north_alabama'::text, 'tennessee'::text, 'georgia'::text, 'international'::text, 'engineering'::text, 'calibration'::text, 'armadillo'::text, 'scavenger'::text, 'lab'::text, 'field_tech'::text, 'hr'::text, 'Decatur'::text]))),
+    CONSTRAINT jobs_division_check CHECK ((division = ANY (ARRAY['north_alabama'::text, 'tennessee'::text, 'georgia'::text, 'virginia'::text, 'international'::text, 'engineering'::text, 'calibration'::text, 'armadillo'::text, 'scavenger'::text, 'lab'::text, 'field_tech'::text, 'hr'::text, 'Decatur'::text]))),
     CONSTRAINT jobs_priority_check CHECK ((priority = ANY (ARRAY['low'::text, 'medium'::text, 'high'::text]))),
     CONSTRAINT jobs_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'in_progress'::text, 'completed'::text, 'ready_to_bill'::text, 'progress_billing'::text, 'billed'::text, 'on_hold'::text, 'cancelled'::text]))),
     CONSTRAINT jobs_submittal_job_type_check CHECK ((submittal_job_type = ANY (ARRAY['standard'::text, 'data_center'::text])))
@@ -9194,7 +9194,7 @@ END) STORED,
 -- Name: COLUMN jobs.division; Type: COMMENT; Schema: neta_ops; Owner: -
 --
 
-COMMENT ON COLUMN neta_ops.jobs.division IS 'Division responsible for the job (north_alabama, tennessee, georgia, international)';
+COMMENT ON COLUMN neta_ops.jobs.division IS 'Division responsible for the job (north_alabama, tennessee, georgia, virginia, international)';
 
 
 --

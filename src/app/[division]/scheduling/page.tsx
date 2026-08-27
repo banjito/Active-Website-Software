@@ -49,9 +49,13 @@ export default function SchedulingPage() {
   useEffect(() => {
     if (division) {
       if (
-        ["north_alabama", "tennessee", "georgia", "international"].includes(
-          division,
-        )
+        [
+          "north_alabama",
+          "tennessee",
+          "georgia",
+          "virginia",
+          "international",
+        ].includes(division)
       ) {
         setPortalType("neta");
       } else if (["calibration", "armadillo"].includes(division)) {

@@ -854,6 +854,17 @@ export function EquipmentAssetsTable({
   const innerFolderIdsFor = (label: string) =>
     treeFor ? flattenFolderTree(treeFor(label, []).roots).map((f) => f.folder.id) : [];
 
+  /**
+   * The same list plus the substation's own heading — what its Expand all / Collapse all
+   * acts on. The heading the menu hangs off is part of the branch it acts on: collapsing
+   * everything inside a substation while leaving the substation itself open isn't
+   * "collapse all".
+   */
+  const branchKeysForSubstation = (headerId: string, label: string) => [
+    headerId,
+    ...innerFolderIdsFor(label),
+  ];
+
   // ── Selection ──────────────────────────────────────────────────────────────
   const selectable =
     Boolean(onBatchSchedule || onBatchMoveSite || onBatchEdit) && canEdit;
@@ -954,7 +965,10 @@ export function EquipmentAssetsTable({
    */
   const branchKeysForBuilding = (building: string) => {
     const labels = substationsByBuilding.get(building) ?? [];
-    const keys = labels.map((label) => substationRowId(building, label));
+    // The heading the menu was opened from is part of its own branch: Expand all has to
+    // open the building, not just everything filed under it.
+    const keys = [buildingRowId(building)];
+    keys.push(...labels.map((label) => substationRowId(building, label)));
     for (const folder of substationFoldersInBuilding?.(building, labels) ?? []) {
       keys.push(substationFolderRowId(building, folder.id));
     }
@@ -1151,12 +1165,20 @@ export function EquipmentAssetsTable({
                       }
                       onExpandAll={
                         innerFolderIdsFor(row.label).length > 0
-                          ? () => setGroupsCollapsed(innerFolderIdsFor(row.label), false)
+                          ? () =>
+                              setGroupsCollapsed(
+                                branchKeysForSubstation(row.id, row.label),
+                                false,
+                              )
                           : undefined
                       }
                       onCollapseAll={
                         innerFolderIdsFor(row.label).length > 0
-                          ? () => setGroupsCollapsed(innerFolderIdsFor(row.label), true)
+                          ? () =>
+                              setGroupsCollapsed(
+                                branchKeysForSubstation(row.id, row.label),
+                                true,
+                              )
                           : undefined
                       }
                     />
@@ -1238,6 +1260,10 @@ export function EquipmentAssetsTable({
 
       case "substation": {
         const inner = innerFolderIdsFor(target.label);
+        const branch = branchKeysForSubstation(
+          substationRowId(target.building, target.label),
+          target.label,
+        );
         return (
           <>
             <DropdownMenuItem
@@ -1257,11 +1283,11 @@ export function EquipmentAssetsTable({
             {inner.length > 0 && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={() => setGroupsCollapsed(inner, false)}>
+                <DropdownMenuItem onSelect={() => setGroupsCollapsed(branch, false)}>
                   <ChevronsUpDown className="mr-2 h-4 w-4" />
                   Expand all
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => setGroupsCollapsed(inner, true)}>
+                <DropdownMenuItem onSelect={() => setGroupsCollapsed(branch, true)}>
                   <ChevronsDownUp className="mr-2 h-4 w-4" />
                   Collapse all
                 </DropdownMenuItem>

@@ -750,6 +750,25 @@ export default function JobDetail() {
       }),
     [setClosedFolders],
   );
+  /**
+   * The substation headings, keyed by label.
+   *
+   * A substation is a native <details>, so its open state lives in the DOM rather than in
+   * `closedFolders`. Expand all / Collapse all has to reach the element itself, otherwise
+   * the pair acts on every folder in the branch except the one it was opened from.
+   */
+  const substationDetailsRef = useRef(new Map<string, HTMLDetailsElement>());
+  const registerSubstationDetails = useCallback(
+    (label: string, el: HTMLDetailsElement | null) => {
+      if (el) substationDetailsRef.current.set(label, el);
+      else substationDetailsRef.current.delete(label);
+    },
+    [],
+  );
+  const setSubstationOpen = useCallback((label: string, open: boolean) => {
+    const el = substationDetailsRef.current.get(label);
+    if (el) el.open = open;
+  }, []);
   /** Which substation (and optionally which parent folder) a new subfolder is going into. */
   const [newSubfolder, setNewSubfolder] = useState<{
     substation: string;
@@ -1923,13 +1942,19 @@ export default function JobDetail() {
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onSelect={() => setFoldersClosed(target.innerFolderIds, false)}
+                  onSelect={() => {
+                    setSubstationOpen(target.label, true);
+                    setFoldersClosed(target.innerFolderIds, false);
+                  }}
                 >
                   <ChevronsUpDown className="mr-2 h-4 w-4" />
                   Expand all
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onSelect={() => setFoldersClosed(target.innerFolderIds, true)}
+                  onSelect={() => {
+                    setSubstationOpen(target.label, false);
+                    setFoldersClosed(target.innerFolderIds, true);
+                  }}
                 >
                   <ChevronsDownUp className="mr-2 h-4 w-4" />
                   Collapse all
@@ -11678,6 +11703,9 @@ export default function JobDetail() {
                               return (
                               <details
                                 key={folderKey}
+                                ref={(el) => {
+                                  registerSubstationDetails(folderKey, el);
+                                }}
                                 className="group/sub rounded-none border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-dark-150"
                               >
                                 {/* The disclosure chevron leads, so every heading on the
@@ -11738,20 +11766,30 @@ export default function JobDetail() {
                                         }
                                         onExpandAll={
                                           innerFolderIds.length > 0
-                                            ? () =>
+                                            ? () => {
+                                                setSubstationOpen(
+                                                  folderKey,
+                                                  true,
+                                                );
                                                 setFoldersClosed(
                                                   innerFolderIds,
                                                   false,
-                                                )
+                                                );
+                                              }
                                             : undefined
                                         }
                                         onCollapseAll={
                                           innerFolderIds.length > 0
-                                            ? () =>
+                                            ? () => {
+                                                setSubstationOpen(
+                                                  folderKey,
+                                                  false,
+                                                );
                                                 setFoldersClosed(
                                                   innerFolderIds,
                                                   true,
-                                                )
+                                                );
+                                              }
                                             : undefined
                                         }
                                       />

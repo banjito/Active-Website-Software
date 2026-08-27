@@ -87,7 +87,11 @@ To file something, **right-click** the row -- a heading or a piece of equipment,
 Folders made on the **site** are inherited by every job at that site -- they carry a `Site` badge on a job's list. Folders made on a job apply to that job only. Rename or delete a site folder from the site page.
 :::
 
-Deleting a folder deletes the folder and nothing else. Whatever was in it goes back to sitting loose under its building or substation.
+### Renaming and deleting
+
+Every folder row carries a **···** menu on its right, always visible -- **Rename** and **Delete folder** are both in it. Right-clicking the folder row gets you the same two.
+
+Deleting asks first, then deletes the folder and any folders nested inside it, and nothing else. No equipment, report or substation is touched: whatever was filed in the folder goes back to sitting loose under its building or substation.
 
 ## Sub-assets
 

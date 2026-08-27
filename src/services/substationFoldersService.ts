@@ -396,30 +396,84 @@ export async function renameFolder(folderId: string, name: string): Promise<void
 }
 
 /**
- * Soft delete. The assignments cascade away with it, so the folder's substations fall back
- * to ungrouped — no report, asset or substation name is touched.
+ * A folder and every folder nested under it.
+ *
+ * The database cascades on a real DELETE, but a folder is soft-deleted, so nothing fires
+ * and the children would come back as orphans on the next read — promoted to the top of
+ * their substation by buildFolderTree(), which is not what "delete this folder" means.
+ * Walked level by level rather than recursively in SQL: the trees are a handful of nodes
+ * deep and this needs no database function to exist on the instance.
+ */
+async function folderSubtreeIds(rootId: string): Promise<string[]> {
+  const ids = [rootId];
+  if (!nestingAvailable) return ids;
+
+  let frontier = [rootId];
+  while (frontier.length > 0) {
+    const { data, error } = await supabase
+      .schema("neta_ops")
+      .from("substation_folders")
+      .select("id")
+      .in("parent_folder_id", frontier)
+      .is("deleted_at", null);
+
+    if (error) {
+      // No nesting on this instance means no children to find, so the root alone is the
+      // whole subtree — not a reason to fail the delete.
+      if (isMissingColumn(error) || isMissingTable(error)) return ids;
+      throw error;
+    }
+
+    // The seen check is what terminates this: the cycle trigger makes a loop impossible,
+    // but a delete that spins forever is a worse bug than one that misses a row.
+    frontier = ((data ?? []) as { id: string }[])
+      .map((row) => row.id)
+      .filter((id) => !ids.includes(id));
+    ids.push(...frontier);
+  }
+  return ids;
+}
+
+/**
+ * Soft delete, folder and subtree. The assignments go with it, so the folder's
+ * substations, buildings and items fall back to ungrouped — no report, asset or
+ * substation name is touched.
  */
 export async function deleteFolder(folderId: string): Promise<void> {
+  const ids = await folderSubtreeIds(folderId);
+
   const { error } = await supabase
     .schema("neta_ops")
     .from("substation_folders")
     .update({ deleted_at: new Date().toISOString() })
-    .eq("id", folderId);
+    .in("id", ids);
   if (error) throw error;
 
   const { error: assignmentError } = await supabase
     .schema("neta_ops")
     .from("substation_folder_assignments")
     .delete()
-    .eq("folder_id", folderId);
+    .in("folder_id", ids);
   if (assignmentError) throw assignmentError;
+
+  if (nestingAvailable) {
+    const { error: itemError } = await supabase
+      .schema("neta_ops")
+      .from("folder_item_assignments")
+      .delete()
+      .in("folder_id", ids);
+    // Rows pointing at a soft-deleted folder are never read back, but leaving them means a
+    // report stays "filed" in a folder that no longer exists. Missing table = no nesting
+    // here, so there is nothing to clean up.
+    if (itemError && !isMissingTable(itemError)) throw itemError;
+  }
 
   if (!buildingLevelAvailable) return;
   const { error: buildingError } = await supabase
     .schema("neta_ops")
     .from("building_folder_assignments")
     .delete()
-    .eq("folder_id", folderId);
+    .in("folder_id", ids);
   // A soft-deleted folder whose building rows survive would keep those buildings hidden
   // from the ungrouped list, so this is a real failure — except on an instance without the
   // table, where there is nothing to clean up.

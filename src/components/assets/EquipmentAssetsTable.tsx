@@ -44,8 +44,14 @@ import {
 } from "@/components/ui/Table";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { compareAlphanumericLabels } from "@/utils/sortUtils";
-import { flattenFolderRows, flattenFolderTree, groupKey } from "@/utils/substationFolders";
 import {
+  flattenFolderRows,
+  flattenFolderTree,
+  folderLevel,
+  groupKey,
+} from "@/utils/substationFolders";
+import {
+  DeleteFolderDialog,
   FolderHeaderMenu,
   MoveToFolderSubmenu,
   MoveToInnerFolderMenu,
@@ -374,6 +380,8 @@ export function EquipmentAssetsTable({
   } | null>(null);
   /** The folder the Rename dialog is pointed at, when it was opened by right-click. */
   const [renamingFolder, setRenamingFolder] = useState<SubstationFolder | null>(null);
+  /** The folder a right-click asked to delete, held until the confirmation comes back. */
+  const [deletingFolder, setDeletingFolder] = useState<SubstationFolder | null>(null);
 
   const substationOptions = useMemo(() => {
     const set = new Set<string>();
@@ -1094,13 +1102,25 @@ export function EquipmentAssetsTable({
 
             {/* No drag here — a table row is a poor drop target. The menu is the whole
                 interaction on this screen, and it's the same write the Reports tab does.
-                Hidden until hover: twenty substations is twenty rows of icons otherwise. */}
+                A building or substation heading hides its menu until hover — twenty
+                substations is twenty rows of icons otherwise — but a *folder* keeps its
+                own on show: it is the only way to rename or delete the folder, and hover
+                is not a gesture a tablet in a plant has. */}
             {canEdit && foldersApi && (
-              <span className="opacity-0 transition-opacity focus-within:opacity-100 group-hover/head:opacity-100">
+              <span
+                className={
+                  isFolder
+                    ? undefined
+                    : "opacity-0 transition-opacity focus-within:opacity-100 group-hover/head:opacity-100"
+                }
+              >
                 {isFolder ? (
                   foldersApi.isOwnScope(row.folder) && (
                     <FolderHeaderMenu
                       name={row.folder.name}
+                      contents={
+                        row.level === "building" ? "buildings and areas" : "substations"
+                      }
                       onRename={(name) => void foldersApi.renameFolder(row.folder.id, name)}
                       onDelete={() => void foldersApi.deleteFolder(row.folder.id)}
                     />
@@ -1177,7 +1197,7 @@ export function EquipmentAssetsTable({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onSelect={() => void foldersApi.deleteFolder(target.folder.id)}
+              onSelect={() => setDeletingFolder(target.folder)}
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 h-4 w-4" />
@@ -1285,7 +1305,7 @@ export function EquipmentAssetsTable({
             )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onSelect={() => void foldersApi.deleteInnerFolder(target.node.folder.id)}
+              onSelect={() => setDeletingFolder(target.node.folder)}
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="mr-2 h-4 w-4" />
@@ -1922,6 +1942,29 @@ export function EquipmentAssetsTable({
             void foldersApi.renameInnerFolder(renamingFolder.id, name);
           } else {
             void foldersApi.renameFolder(renamingFolder.id, name);
+          }
+        }}
+      />
+
+      <DeleteFolderDialog
+        open={!!deletingFolder}
+        name={deletingFolder?.name ?? ""}
+        contents={
+          deletingFolder && folderLevel(deletingFolder) === "building"
+            ? "buildings and areas"
+            : deletingFolder && folderLevel(deletingFolder) === "item"
+              ? "equipment"
+              : "substations"
+        }
+        onOpenChange={(open) => !open && setDeletingFolder(null)}
+        onConfirm={() => {
+          if (!deletingFolder || !foldersApi) return;
+          // Same split as the rename above: an inner folder has its own writer, because
+          // its children and the equipment filed in it have to fall loose with it.
+          if (deletingFolder.substation_key) {
+            void foldersApi.deleteInnerFolder(deletingFolder.id);
+          } else {
+            void foldersApi.deleteFolder(deletingFolder.id);
           }
         }}
       />

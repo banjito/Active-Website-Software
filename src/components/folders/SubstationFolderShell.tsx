@@ -1,6 +1,14 @@
 import React, { useState } from "react";
-import { ChevronRight, Folder, MoreHorizontal, GripVertical } from "lucide-react";
+import {
+  ChevronRight,
+  Folder,
+  GripVertical,
+  MoreHorizontal,
+  PencilLine,
+  Trash2,
+} from "lucide-react";
 import { Input } from "@/components/ui/Input";
+import { DeleteFolderDialog } from "@/components/folders/FolderControls";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,6 +63,7 @@ export function SubstationFolderShell({
   children: React.ReactNode;
 }) {
   const [renaming, setRenaming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [draft, setDraft] = useState(folder.name);
 
   const commitRename = () => {
@@ -136,12 +145,14 @@ export function SubstationFolderShell({
           </button>
         )}
 
-        <span className="ml-auto flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover/folder:opacity-100">
+        <span className="ml-auto flex shrink-0 items-center gap-0.5">
+          {/* Reordering is a nicety and hides until you hover. The options menu does not:
+              it is the only way to rename or delete this folder. */}
           {canEdit && !inherited && dragHandleProps && (
             <span
               {...dragHandleProps}
               title="Drag to reorder"
-              className="cursor-grab text-neutral-300 hover:text-neutral-600 dark:text-neutral-600 dark:hover:text-neutral-300"
+              className="cursor-grab text-neutral-300 opacity-0 transition-opacity hover:text-neutral-600 group-hover/folder:opacity-100 dark:text-neutral-600 dark:hover:text-neutral-300"
             >
               <GripVertical className="h-4 w-4" />
             </span>
@@ -151,8 +162,9 @@ export function SubstationFolderShell({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                title="Folder options"
-                className="rounded-none p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-white"
+                title={`Rename or delete “${folder.name}”`}
+                aria-label={`Options for folder ${folder.name}`}
+                className="rounded-none p-1 text-neutral-400 transition-colors hover:text-neutral-700 dark:hover:text-white"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </button>
@@ -164,13 +176,15 @@ export function SubstationFolderShell({
                   setRenaming(true);
                 }}
               >
+                <PencilLine className="mr-2 h-4 w-4" />
                 Rename
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onSelect={onDelete}
+                onSelect={() => setDeleting(true)}
                 className="text-destructive focus:text-destructive"
               >
+                <Trash2 className="mr-2 h-4 w-4" />
                 Delete folder
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -178,6 +192,14 @@ export function SubstationFolderShell({
         )}
         </span>
       </div>
+
+      <DeleteFolderDialog
+        open={deleting}
+        name={folder.name}
+        contents="substations"
+        onOpenChange={setDeleting}
+        onConfirm={onDelete}
+      />
 
       {open && (
         /* Indented with a hairline rail rather than boxed. The rail is what ties the

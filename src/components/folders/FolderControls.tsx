@@ -6,6 +6,8 @@ import {
   ChevronsDownUp,
   ChevronsUpDown,
   MoreHorizontal,
+  PencilLine,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -370,6 +372,58 @@ export function RenameFolderDialog({
 }
 
 /**
+ * Confirm deleting a folder.
+ *
+ * Deleting is one click from a menu and there is no undo, so it asks — and the copy is
+ * the part that matters: people hesitate here because they think the equipment goes with
+ * it. It does not, and saying so is what makes the button safe to press.
+ */
+export function DeleteFolderDialog({
+  open,
+  name,
+  contents,
+  onOpenChange,
+  onConfirm,
+}: {
+  open: boolean;
+  name: string;
+  /** What falls back to loose — "substations", "buildings", "equipment". */
+  contents?: string;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete “{name}”?</DialogTitle>
+          <DialogDescription>
+            The folder is removed, along with any folders nested inside it. Nothing filed
+            in it is deleted — the {contents ?? "contents"} go back to sitting loose where
+            they were.
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              onConfirm();
+              onOpenChange(false);
+            }}
+          >
+            Delete folder
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/**
  * Everything you can do to a substation header, behind one button.
  *
  * Previously two loose icons sat next to the title competing with the name, the count and
@@ -467,6 +521,7 @@ export function FolderHeaderMenu({
   onDelete,
   onNewSubfolder,
   newSubfolderLabel = "New folder inside",
+  contents,
   onExpandAll,
   onCollapseAll,
 }: {
@@ -475,10 +530,13 @@ export function FolderHeaderMenu({
   onDelete: () => void;
   onNewSubfolder?: () => void;
   newSubfolderLabel?: string;
+  /** What this folder holds, for the delete confirmation's copy. */
+  contents?: string;
   onExpandAll?: () => void;
   onCollapseAll?: () => void;
 }) {
   const [renaming, setRenaming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   return (
     <>
@@ -486,7 +544,8 @@ export function FolderHeaderMenu({
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            title="Folder options"
+            title={`Rename or delete “${name}”`}
+            aria-label={`Options for folder ${name}`}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -503,7 +562,10 @@ export function FolderHeaderMenu({
               {newSubfolderLabel}
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem onSelect={() => setRenaming(true)}>Rename</DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => setRenaming(true)}>
+            <PencilLine className="mr-2 h-4 w-4" />
+            Rename
+          </DropdownMenuItem>
 
           {onExpandAll && onCollapseAll && (
             <>
@@ -521,9 +583,10 @@ export function FolderHeaderMenu({
 
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onSelect={onDelete}
+            onSelect={() => setDeleting(true)}
             className="text-destructive focus:text-destructive"
           >
+            <Trash2 className="mr-2 h-4 w-4" />
             Delete folder
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -534,6 +597,14 @@ export function FolderHeaderMenu({
         name={name}
         onOpenChange={setRenaming}
         onRename={onRename}
+      />
+
+      <DeleteFolderDialog
+        open={deleting}
+        name={name}
+        contents={contents}
+        onOpenChange={setDeleting}
+        onConfirm={onDelete}
       />
     </>
   );

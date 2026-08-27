@@ -8,8 +8,11 @@ import {
   FolderPlus,
   GripVertical,
   MoreHorizontal,
+  PencilLine,
+  Trash2,
 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
+import { DeleteFolderDialog } from "@/components/folders/FolderControls";
 import { TableCell, TableRow } from "@/components/ui/Table";
 import {
   DropdownMenu,
@@ -70,6 +73,7 @@ export function InnerFolderRow({
   onContextMenu?: (event: React.MouseEvent) => void;
 }) {
   const [renaming, setRenaming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [draft, setDraft] = useState(node.folder.name);
 
   const commit = () => {
@@ -155,13 +159,17 @@ export function InnerFolderRow({
             </button>
           )}
 
+          {/* Always visible, unlike the drag handle above: this menu is the only route to
+              rename and delete, and a control you have to discover by hovering is one that
+              does not exist on a tablet in a plant. */}
           {canEdit && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  title="Folder options"
-                  className="rounded-none p-1 text-neutral-400 opacity-0 transition-opacity hover:text-neutral-700 focus:opacity-100 group-hover/folder:opacity-100 dark:hover:text-white"
+                  title={`Rename or delete “${node.folder.name}”`}
+                  aria-label={`Options for folder ${node.folder.name}`}
+                  className="rounded-none p-1 text-neutral-400 transition-colors hover:text-neutral-700 dark:hover:text-white"
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </button>
@@ -177,6 +185,7 @@ export function InnerFolderRow({
                     setRenaming(true);
                   }}
                 >
+                  <PencilLine className="mr-2 h-4 w-4" />
                   Rename
                 </DropdownMenuItem>
                 {/* A folder with nothing but items inside has one state, and the chevron
@@ -197,14 +206,23 @@ export function InnerFolderRow({
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onSelect={onDelete}
+                  onSelect={() => setDeleting(true)}
                   className="text-destructive focus:text-destructive"
                 >
+                  <Trash2 className="mr-2 h-4 w-4" />
                   Delete folder
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+
+          <DeleteFolderDialog
+            open={deleting}
+            name={node.folder.name}
+            contents="equipment and reports"
+            onOpenChange={setDeleting}
+            onConfirm={onDelete}
+          />
         </div>
       </TableCell>
     </TableRow>

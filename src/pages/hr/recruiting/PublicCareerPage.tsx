@@ -10,6 +10,11 @@ import {
   CreateCandidateInput,
 } from "../../../services/hr/candidatesService";
 import { eeoComplianceService } from "../../../services/hr/eeoComplianceService";
+import {
+  applicationQuestionsService,
+  ApplicationQuestion,
+  SubmitAnswerInput,
+} from "../../../services/hr/applicationQuestionsService";
 import { supabase } from "../../../lib/supabase";
 import { toast } from "../../../components/ui/toast";
 import { Button } from "../../../components/ui/Button";
@@ -38,6 +43,10 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+
+/** Shared field styling, matching the hardcoded fields on this form. */
+const inputClass =
+  "w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent";
 
 export const PublicCareerPage: React.FC = () => {
   const [approvedRequisitions, setApprovedRequisitions] = useState<
@@ -73,6 +82,14 @@ export const PublicCareerPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  // Custom questions HR attached to the selected posting, and the applicant's
+  // answers keyed by question id.
+  const [questions, setQuestions] = useState<ApplicationQuestion[]>([]);
+  const [questionsLoading, setQuestionsLoading] = useState(false);
+  const [answers, setAnswers] = useState<
+    Record<string, string | string[] | boolean>
+  >({});
+
   useEffect(() => {
     fetchApprovedRequisitions();
   }, []);
@@ -98,9 +115,64 @@ export const PublicCareerPage: React.FC = () => {
     }
   };
 
+  const loadQuestions = async (requisitionId: string) => {
+    try {
+      setQuestionsLoading(true);
+      const loaded =
+        await applicationQuestionsService.getPublicByRequisition(requisitionId);
+      setQuestions(loaded);
+      // Multi-select needs an array to push into; everything else starts blank.
+      const blank: Record<string, string | string[] | boolean> = {};
+      loaded.forEach((q) => {
+        if (q.question_type === "multi_select") blank[q.id] = [];
+      });
+      setAnswers(blank);
+    } catch (error) {
+      // A questions failure must not block the application itself.
+      console.error("Error loading application questions:", error);
+      setQuestions([]);
+      setAnswers({});
+    } finally {
+      setQuestionsLoading(false);
+    }
+  };
+
+  const setAnswer = (
+    questionId: string,
+    value: string | string[] | boolean,
+  ) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+  };
+
+  const toggleMultiSelect = (questionId: string, option: string) => {
+    setAnswers((prev) => {
+      const current = Array.isArray(prev[questionId])
+        ? (prev[questionId] as string[])
+        : [];
+      return {
+        ...prev,
+        [questionId]: current.includes(option)
+          ? current.filter((v) => v !== option)
+          : [...current, option],
+      };
+    });
+  };
+
+  /** True when a required question still has no usable answer. */
+  const isAnswerMissing = (question: ApplicationQuestion): boolean => {
+    const value = answers[question.id];
+    if (question.question_type === "yes_no") return typeof value !== "boolean";
+    if (question.question_type === "multi_select")
+      return !Array.isArray(value) || value.length === 0;
+    return typeof value !== "string" || value.trim() === "";
+  };
+
   const openApplicationModal = (requisition: JobRequisition) => {
     setSelectedRequisition(requisition);
     setIsApplicationModalOpen(true);
+    setQuestions([]);
+    setAnswers({});
+    loadQuestions(requisition.id);
     // Reset form
     setApplicationForm({
       first_name: "",
@@ -196,6 +268,16 @@ export const PublicCareerPage: React.FC = () => {
       return;
     }
 
+    const unanswered = questions.filter((q) => q.required && isAnswerMissing(q));
+    if (unanswered.length > 0) {
+      toast({
+        title: "Validation Error",
+        description: `Please answer: ${unanswered[0].label}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!applicationForm.eeo_gender.trim()) {
       toast({
         title: "Validation Error",
@@ -268,7 +350,46 @@ export const PublicCareerPage: React.FC = () => {
       };
 
       setUploadProgress(90);
-      await candidatesService.create(candidateData);
+      const createdCandidate = await candidatesService.create(candidateData);
+
+      // Save answers to the posting's custom questions. Non-blocking: the
+      // application is already recorded, and losing an answer must not tell the
+      // applicant their application failed.
+      if (questions.length > 0) {
+        try {
+          const payload: SubmitAnswerInput[] = questions.map((q, index) => {
+            const value = answers[q.id];
+            return {
+              question_id: q.id,
+              question_label: q.label,
+              question_type: q.question_type,
+              display_order: index,
+              answer_text:
+                q.question_type === "short_text" ||
+                q.question_type === "long_text" ||
+                q.question_type === "single_select"
+                  ? typeof value === "string"
+                    ? value.trim() || null
+                    : null
+                  : null,
+              answer_bool:
+                q.question_type === "yes_no" && typeof value === "boolean"
+                  ? value
+                  : null,
+              answer_json:
+                q.question_type === "multi_select" && Array.isArray(value)
+                  ? value
+                  : null,
+            };
+          });
+          await applicationQuestionsService.submitAnswers(
+            createdCandidate.id,
+            payload,
+          );
+        } catch (answerErr) {
+          console.error("Application answers failed (non-blocking):", answerErr);
+        }
+      }
 
       // Save EEO data anonymously to the compliance table (no candidate identifiers)
       try {
@@ -296,6 +417,8 @@ export const PublicCareerPage: React.FC = () => {
 
       // Close modal and reset form
       setIsApplicationModalOpen(false);
+      setQuestions([]);
+      setAnswers({});
       setApplicationForm({
         first_name: "",
         last_name: "",
@@ -718,6 +841,129 @@ export const PublicCareerPage: React.FC = () => {
                 className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent resize-none"
               />
             </div>
+
+            {/* Custom questions for this posting (set by HR per requisition) */}
+            {questionsLoading && (
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                Loading questions...
+              </p>
+            )}
+            {!questionsLoading && questions.length > 0 && (
+              <div className="space-y-4 border-t border-neutral-200 dark:border-neutral-700 pt-4">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                  A Few Questions
+                </h3>
+                {questions.map((question) => {
+                  const value = answers[question.id];
+                  return (
+                    <div key={question.id} className="space-y-2">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                        {question.label}
+                        {question.required && (
+                          <span className="text-red-500"> *</span>
+                        )}
+                      </label>
+                      {question.help_text && (
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                          {question.help_text}
+                        </p>
+                      )}
+
+                      {question.question_type === "short_text" && (
+                        <input
+                          type="text"
+                          value={typeof value === "string" ? value : ""}
+                          onChange={(e) =>
+                            setAnswer(question.id, e.target.value)
+                          }
+                          className={inputClass}
+                        />
+                      )}
+
+                      {question.question_type === "long_text" && (
+                        <textarea
+                          rows={4}
+                          value={typeof value === "string" ? value : ""}
+                          onChange={(e) =>
+                            setAnswer(question.id, e.target.value)
+                          }
+                          className={`${inputClass} resize-none`}
+                        />
+                      )}
+
+                      {question.question_type === "yes_no" && (
+                        <div className="flex gap-4">
+                          {[
+                            { label: "Yes", answer: true },
+                            { label: "No", answer: false },
+                          ].map((choice) => (
+                            <label
+                              key={choice.label}
+                              className="flex items-center gap-2"
+                            >
+                              <input
+                                type="radio"
+                                name={`question-${question.id}`}
+                                checked={value === choice.answer}
+                                onChange={() =>
+                                  setAnswer(question.id, choice.answer)
+                                }
+                                className="text-brand focus:ring-brand"
+                              />
+                              <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                                {choice.label}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+
+                      {question.question_type === "single_select" && (
+                        <select
+                          value={typeof value === "string" ? value : ""}
+                          onChange={(e) =>
+                            setAnswer(question.id, e.target.value)
+                          }
+                          className={inputClass}
+                        >
+                          <option value="">Select...</option>
+                          {question.options.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+
+                      {question.question_type === "multi_select" && (
+                        <div className="space-y-2">
+                          {question.options.map((option) => (
+                            <label
+                              key={option}
+                              className="flex items-center gap-2"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={
+                                  Array.isArray(value) && value.includes(option)
+                                }
+                                onChange={() =>
+                                  toggleMultiSelect(question.id, option)
+                                }
+                                className="rounded-none border-neutral-300 text-brand focus:ring-brand"
+                              />
+                              <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                                {option}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* EEO Information (Required) */}
             <div className="space-y-4 border-t border-neutral-200 dark:border-neutral-700 pt-4">

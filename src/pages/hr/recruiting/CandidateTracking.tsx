@@ -54,6 +54,10 @@ import {
   CreateCandidateInput,
 } from "../../../services/hr/candidatesService";
 import {
+  applicationQuestionsService,
+  CandidateQuestionAnswer,
+} from "../../../services/hr/applicationQuestionsService";
+import {
   interviewsService,
   Interview,
 } from "../../../services/hr/interviewsService";
@@ -81,6 +85,10 @@ export const CandidateTracking: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [candidateAnswers, setCandidateAnswers] = useState<
+    CandidateQuestionAnswer[]
+  >([]);
+  const [loadingAnswers, setLoadingAnswers] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
     null,
   );
@@ -540,6 +548,19 @@ export const CandidateTracking: React.FC = () => {
       interviews: false,
       coverLetter: false,
     });
+
+    // Fetch answers to the posting's custom application questions
+    try {
+      setLoadingAnswers(true);
+      setCandidateAnswers(
+        await applicationQuestionsService.getAnswersForCandidate(candidate.id),
+      );
+    } catch (error) {
+      console.error("Error fetching application answers:", error);
+      setCandidateAnswers([]);
+    } finally {
+      setLoadingAnswers(false);
+    }
 
     // Fetch interviews for this candidate
     try {
@@ -1863,6 +1884,38 @@ export const CandidateTracking: React.FC = () => {
               )}
 
               {/* Interviews Section - Collapsible */}
+              {/* Answers to the posting's custom application questions */}
+              {(loadingAnswers || candidateAnswers.length > 0) && (
+                <div className="bg-neutral-50 dark:bg-neutral-800 rounded-none p-6">
+                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
+                    Application Questions
+                  </h2>
+                  {loadingAnswers ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    <div className="space-y-4">
+                      {candidateAnswers.map((answer) => (
+                        <div key={answer.id}>
+                          <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                            {answer.question_label}
+                          </label>
+                          <p className="text-neutral-900 dark:text-white mt-1 whitespace-pre-wrap">
+                            {answer.answer_bool !== null
+                              ? answer.answer_bool
+                                ? "Yes"
+                                : "No"
+                              : Array.isArray(answer.answer_json) &&
+                                  answer.answer_json.length > 0
+                                ? answer.answer_json.join(", ")
+                                : answer.answer_text || "No answer"}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="border border-neutral-200 dark:border-neutral-700 rounded-none">
                 <button
                   onClick={() => toggleSection("interviews")}

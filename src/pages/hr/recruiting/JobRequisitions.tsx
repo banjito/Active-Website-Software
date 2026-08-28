@@ -46,7 +46,15 @@ import {
   ChevronUp,
   ChevronDown,
   Copy,
+  ListChecks,
 } from "lucide-react";
+import { ApplicationQuestionsDialog } from "@/components/hr/ApplicationQuestionsDialog";
+import { ApplicationQuestionsBuilder } from "@/components/hr/ApplicationQuestionsBuilder";
+import {
+  applicationQuestionsService,
+  toNewDraft,
+  DraftApplicationQuestion,
+} from "@/services/hr/applicationQuestionsService";
 import {
   jobRequisitionsService,
   JobRequisition,
@@ -85,6 +93,13 @@ export const JobRequisitions: React.FC = () => {
     string | null
   >(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [questionsRequisition, setQuestionsRequisition] =
+    useState<JobRequisition | null>(null);
+  // Questions typed into the create modal. Held here until the requisition
+  // exists, since a question has to belong to a saved posting.
+  const [draftQuestions, setDraftQuestions] = useState<
+    DraftApplicationQuestion[]
+  >([]);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedRequisition, setSelectedRequisition] =
     useState<JobRequisition | null>(null);
@@ -320,6 +335,12 @@ export const JobRequisitions: React.FC = () => {
         await jobRequisitionsService.setApprovers(
           created.id,
           selectedApprovers,
+        );
+      }
+      if (draftQuestions.length > 0) {
+        await applicationQuestionsService.saveForRequisition(
+          created.id,
+          draftQuestions,
         );
       }
       toast({
@@ -559,12 +580,13 @@ export const JobRequisitions: React.FC = () => {
     setSelectedApprovers([]);
     setApproverSearchTerm("");
     setDuplicateSourceTitle(null);
+    setDraftQuestions([]);
   };
 
   // Opens the create modal prefilled from an existing requisition. Recruiting
   // for the same roles repeatedly is the norm, so the copy carries everything
   // except the approval history: it starts as a fresh draft.
-  const openDuplicateModal = (requisition: JobRequisition) => {
+  const openDuplicateModal = async (requisition: JobRequisition) => {
     setFormData({
       title: `${requisition.title} (Copy)`,
       department: requisition.department,
@@ -596,7 +618,18 @@ export const JobRequisitions: React.FC = () => {
     setFormErrors({});
     setApproverSearchTerm("");
     setDuplicateSourceTitle(requisition.title);
+    setDraftQuestions([]);
     setIsCreateModalOpen(true);
+
+    // Same role, same questions. Copied without ids so they become new rows.
+    try {
+      const source = await applicationQuestionsService.getByRequisition(
+        requisition.id,
+      );
+      setDraftQuestions(source.map(toNewDraft));
+    } catch (error) {
+      console.error("Error copying application questions:", error);
+    }
   };
 
   const openEditModal = (requisition: JobRequisition) => {
@@ -1118,6 +1151,14 @@ export const JobRequisitions: React.FC = () => {
                           >
                             <Copy className="h-4 w-4" />
                           </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            title="Application questions"
+                            onClick={() => setQuestionsRequisition(req)}
+                          >
+                            <ListChecks className="h-4 w-4" />
+                          </Button>
                           {req.status === "draft" && (
                             <Button
                               variant="outline"
@@ -1277,6 +1318,12 @@ export const JobRequisitions: React.FC = () => {
                       size="sm"
                       onClick={() => openDuplicateModal(req)} leftIcon={<Copy className="h-4 w-4" />}>
                       Duplicate
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setQuestionsRequisition(req)} leftIcon={<ListChecks className="h-4 w-4" />}>
+                      Questions
                     </Button>
                     {req.status === "draft" && (
                       <Button
@@ -1528,6 +1575,17 @@ export const JobRequisitions: React.FC = () => {
                   submitting for approval.
                 </p>
               )}
+            </div>
+
+            {/* Application questions — saved with the requisition */}
+            <div className="border-t border-neutral-200 dark:border-dark-200 pt-4">
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-1">
+                Application Questions
+              </h3>
+              <ApplicationQuestionsBuilder
+                questions={draftQuestions}
+                onChange={setDraftQuestions}
+              />
             </div>
           </div>
           <DialogFooter>
@@ -2229,6 +2287,15 @@ export const JobRequisitions: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Application questions for one posting */}
+      <ApplicationQuestionsDialog
+        open={questionsRequisition !== null}
+        onOpenChange={(open) => {
+          if (!open) setQuestionsRequisition(null);
+        }}
+        requisition={questionsRequisition}
+      />
     </div>
   );
 };

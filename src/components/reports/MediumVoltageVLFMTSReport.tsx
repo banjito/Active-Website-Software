@@ -2674,7 +2674,7 @@ if (typeof document !== "undefined") {
     }
 
             @media print {
-          body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+          body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
           @page { margin: 0.25in; }
 
           /* Hide in-report navigation elements only (scoped to report container) */

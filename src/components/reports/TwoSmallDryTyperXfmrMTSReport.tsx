@@ -3259,7 +3259,7 @@ if (typeof document !== "undefined") {
         padding: 6px !important;
         min-height: 0 !important;
         height: auto !important;
-        font-family: Arial, sans-serif !important;
+        font-family: Arial, Helvetica, sans-serif !important;
         font-size: 9px !important;
       }
 
@@ -3407,7 +3407,7 @@ if (typeof document !== "undefined") {
         color: black !important;
         padding: 3px 4px !important;
         font-size: 12px !important;
-        font-family: Arial, sans-serif !important;
+        font-family: Arial, Helvetica, sans-serif !important;
         min-height: 18px !important;
         line-height: 1 !important;
         vertical-align: top !important;

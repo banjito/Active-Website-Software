@@ -539,7 +539,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         table select { color: black !important; font-size: 8px !important; }
 
         /* Force dropdown values to show - highest priority */
-        select { display: inline-block !important; visibility: visible !important; opacity: 1 !important; color: black !important; font-family: Arial, sans-serif !important; }
+        select { display: inline-block !important; visibility: visible !important; opacity: 1 !important; color: black !important; font-family: Arial, Helvetica, sans-serif !important; }
         table td select { color: black !important; font-size: 8px !important; display: inline-block !important; visibility: visible !important; }
         select option:checked, select option:selected { color: black !important; background: white !important; }
 

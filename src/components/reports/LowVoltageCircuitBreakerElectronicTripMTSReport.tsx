@@ -5376,7 +5376,7 @@ if (typeof document !== "undefined") {
     }
 
     @media print {
-      body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+      body { margin: 0; padding: 20px; font-family: Arial, Helvetica, sans-serif; }
       * { color: black !important; }
 
       /* Hide tolerance input section in print */

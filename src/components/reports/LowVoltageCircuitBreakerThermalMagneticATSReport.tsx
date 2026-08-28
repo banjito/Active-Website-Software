@@ -3379,7 +3379,7 @@ if (typeof document !== "undefined") {
   const style = document.createElement("style");
   style.textContent = `
     @media print {
-      body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+      body { margin: 0; padding: 20px; font-family: Arial, Helvetica, sans-serif; }
       * { color: black !important; }
       /* Ensure print:hidden and on-screen nameplate grid are hidden */
       .print\:hidden { display: none !important; }

@@ -63,7 +63,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "Helvetica Neue", "Helvetica", "ui-sans-serif", "system-ui", "-apple-system", "Arial", "sans-serif"],
+        sans: ["Helvetica Neue", "Helvetica", "ui-sans-serif", "system-ui", "-apple-system", "Arial", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -3726,7 +3726,7 @@ if (typeof document !== "undefined") {
         resize: none !important;
         white-space: pre-wrap !important;
         word-wrap: break-word !important;
-        font-family: Arial, sans-serif !important;
+        font-family: Arial, Helvetica, sans-serif !important;
         line-height: 1.4 !important;
         overflow: visible !important;
         display: block !important;

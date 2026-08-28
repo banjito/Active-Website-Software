@@ -5465,7 +5465,7 @@ const OilInspectionReport: React.FC = () => {
       style.textContent = `
         @media print {
           @page { size: 8.5in 11in; margin: 0.25in; }
-          body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+          body { margin: 0; padding: 20px; font-family: Arial, Helvetica, sans-serif; }
 
           /* Hide all navigation and header elements */
           header, nav, .navigation, [class*="nav"], [class*="header"],

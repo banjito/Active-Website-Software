@@ -51,7 +51,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
       <header className="mb-8 bg-white dark:bg-dark-150 p-6 rounded-none border-2 border-dark-accent/20 dark:border-dark-accent/10 shadow-sm">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-display font-bold text-dark-primary dark:text-dark-secondary">
+            <h1 className="text-2xl sm:text-3xl font-sans font-bold text-dark-primary dark:text-dark-secondary">
               {title}
             </h1>
             {subtitle && (

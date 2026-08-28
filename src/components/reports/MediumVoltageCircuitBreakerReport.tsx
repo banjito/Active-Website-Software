@@ -2414,7 +2414,7 @@ if (typeof document !== "undefined") {
   const style = document.createElement("style");
   style.textContent = `
     @media print {
-      body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+      body { margin: 0; padding: 20px; font-family: Arial, Helvetica, sans-serif; }
 
       /* Hide all navigation and header elements */
       header, nav, .navigation, [class*="nav"], [class*="header"],
@@ -2605,7 +2605,7 @@ if (typeof document !== "undefined") {
        so the review window's Print button and this report's own Print
        button produce the same document. */
     @media screen {
-    .force-print body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+    .force-print body { margin: 0; padding: 20px; font-family: Arial, Helvetica, sans-serif; }
 
     /* Hide on-screen UI in preview like print would */
     .force-print header,

@@ -1105,7 +1105,7 @@ if (typeof document !== "undefined") {
     @media print {
       /* Global resets */
       * { color: black !important; background: white !important; box-sizing: border-box !important; }
-      body { margin: 0 !important; padding: 20px !important; font-family: Arial, sans-serif !important; font-size: 12px !important; }
+      body { margin: 0 !important; padding: 20px !important; font-family: Arial, Helvetica, sans-serif !important; font-size: 12px !important; }
 
       /* PASS/FAIL/LIMITED badge — keep colors after global override */
       .pass-fail-status-box.pass { background-color: #22c55e !important; border: 2px solid #16a34a !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }

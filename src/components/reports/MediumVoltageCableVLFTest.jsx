@@ -1552,7 +1552,7 @@ const MediumVoltageCableVLFTest = () => {
         input[type="number"] { -moz-appearance: textfield !important; }
 
         @media print {
-          body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+          body { margin: 0; padding: 20px; font-family: Arial, Helvetica, sans-serif; }
 
           /* Hide all navigation and header elements */
           header, nav, .navigation, [class*="nav"], [class*="header"],

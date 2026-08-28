@@ -1309,7 +1309,7 @@ const PotentialTransformerATSReport: React.FC = () => {
     style.id = styleId;
     style.textContent = `
       @media print {
-        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        body { margin: 0; padding: 20px; font-family: Arial, Helvetica, sans-serif; }
         * { color: black !important; }
 
         /* Form elements – render as plain text in print (no boxes/underlines) */

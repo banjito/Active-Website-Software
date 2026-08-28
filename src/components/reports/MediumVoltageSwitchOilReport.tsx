@@ -3418,7 +3418,7 @@ if (typeof document !== "undefined") {
   const style = document.createElement("style");
   style.textContent = `
     @media print {
-      body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+      body { margin: 0; padding: 20px; font-family: Arial, Helvetica, sans-serif; }
 
       /* Hide all navigation and header elements */
       header, nav, .navigation, [class*="nav"], [class*="header"],

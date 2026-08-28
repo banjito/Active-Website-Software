@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../lib/AuthContext";
 import { supabase } from "../../lib/supabase";
-import { Link, useLocation, Navigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { usePermissions } from "@/hooks/usePermissions";
 import {
   FileText,
@@ -32,7 +32,6 @@ import {
   TrendingUp,
   Download,
   Building2,
-  ChevronDown,
   ChevronRight,
   Megaphone,
   Phone,
@@ -41,7 +40,6 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { Button } from "./Button";
 import { HeaderBar } from "./HeaderBar";
 
 interface HrLayoutProps {
@@ -54,12 +52,143 @@ interface MenuItem {
   icon: React.ReactNode;
 }
 
+/** Sidebar buckets. Twelve top-level entries in one flat column is hard to
+ *  scan, so every section belongs to one of these three labelled groups. */
+type NavGroup = "hiring" | "people" | "operations";
+
+const NAV_GROUP_ORDER: NavGroup[] = ["hiring", "people", "operations"];
+const NAV_GROUP_LABELS: Record<NavGroup, string> = {
+  hiring: "Hiring",
+  people: "People",
+  operations: "Operations",
+};
+
 interface MenuSection {
   key: string;
   label: string;
   icon: React.ReactNode;
+  group: NavGroup;
   items: MenuItem[];
 }
+
+const SECTION_STATE_KEY = "hr-nav-expanded-sections";
+
+/** `startsWith` alone would light up "/hr/data" for "/hr/data-export"; match a
+ *  full path segment instead. */
+function pathMatches(pathname: string, target: string): boolean {
+  return pathname === target || pathname.startsWith(target + "/");
+}
+
+const GROUP_LABEL_CLASS =
+  "px-2 pb-1.5 pt-4 text-[10px] font-bold uppercase tracking-[0.11em] text-neutral-400 dark:text-white/40";
+
+/** Shared row chrome for the flat, non-collapsible entries. */
+const NavLinkRow: React.FC<{
+  to: string;
+  icon: React.ReactNode;
+  label: string;
+  active: boolean;
+  /** Filled brand treatment, used for the one call-to-action link. */
+  emphasis?: boolean;
+  onNavigate?: () => void;
+}> = ({ to, icon, label, active, emphasis, onNavigate }) => (
+  <Link
+    to={to}
+    onClick={onNavigate}
+    className={`group flex h-9 items-center gap-2.5 px-2 text-[13px] font-semibold transition-colors ${
+      emphasis
+        ? "bg-brand text-white hover:bg-brand/90"
+        : active
+          ? "bg-brand/10 text-brand"
+          : "text-neutral-700 hover:bg-black/[0.04] hover:text-neutral-900 dark:text-dark-900 dark:hover:bg-dark-50"
+    }`}
+  >
+    <span
+      className={`shrink-0 ${
+        emphasis
+          ? "text-white"
+          : active
+            ? "text-brand"
+            : "text-neutral-400 group-hover:text-brand dark:text-white/45"
+      }`}
+    >
+      {icon}
+    </span>
+    <span className="truncate">{label}</span>
+  </Link>
+);
+
+/** Defined at module scope on purpose: declaring it inside HrLayout minted a new
+ *  component type every render, which remounted the whole subtree on each
+ *  keystroke in the search box. */
+const NavSection: React.FC<{
+  section: MenuSection;
+  expanded: boolean;
+  pathname: string;
+  onToggle: (key: string) => void;
+}> = ({ section, expanded, pathname, onToggle }) => {
+  const activeItem = section.items.find((item) =>
+    pathMatches(pathname, item.path),
+  );
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => onToggle(section.key)}
+        aria-expanded={expanded}
+        className={`group flex h-9 w-full items-center gap-2.5 px-2 text-[13px] font-semibold transition-colors ${
+          activeItem || expanded
+            ? "text-neutral-900 dark:text-white"
+            : "text-neutral-700 hover:text-neutral-900 dark:text-dark-900 dark:hover:text-white"
+        } hover:bg-black/[0.04] dark:hover:bg-dark-50`}
+      >
+        <span
+          className={`shrink-0 ${
+            activeItem
+              ? "text-brand"
+              : "text-neutral-400 group-hover:text-brand dark:text-white/45"
+          }`}
+        >
+          {section.icon}
+        </span>
+        <span className="flex-1 truncate text-left">{section.label}</span>
+        {/* Collapsed sections would otherwise hide the fact that you are inside
+            them, so mark the ancestor of the current page. */}
+        {activeItem && !expanded && (
+          <span className="h-1.5 w-1.5 shrink-0 bg-brand" aria-hidden />
+        )}
+        <ChevronRight
+          className={`h-3.5 w-3.5 shrink-0 text-neutral-400 transition-transform dark:text-white/40 ${
+            expanded ? "rotate-90" : ""
+          }`}
+          aria-hidden
+        />
+      </button>
+
+      {expanded && (
+        <div className="ml-[15px] flex flex-col border-l border-neutral-200 pb-1 dark:border-dark-200">
+          {section.items.map((item) => {
+            const isActive = pathMatches(pathname, item.path);
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`-ml-px flex h-8 items-center border-l-2 pl-3.5 pr-2 text-[12.5px] transition-colors ${
+                  isActive
+                    ? "border-brand bg-brand/10 font-semibold text-brand"
+                    : "border-transparent text-neutral-600 hover:border-neutral-300 hover:bg-black/[0.03] hover:text-neutral-900 dark:text-white/70 dark:hover:bg-dark-50 dark:hover:text-white"
+                }`}
+              >
+                <span className="truncate">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
   const { user, refreshUser } = useAuth();
@@ -67,6 +196,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
   const userRole = getUserRole();
   const isHrFullAccess = userRole === "Admin" || userRole === "Super Admin";
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Force a fresh role check from the server when entering the HR portal so role changes take effect immediately
   const hasRefreshed = useRef(false);
@@ -92,9 +222,9 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
     }
   }, [user]);
   const [navSearch, setNavSearch] = useState("");
-  const [expandedSections, setExpandedSections] = useState<
-    Record<string, boolean>
-  >({
+  const [navCursor, setNavCursor] = useState(0);
+  const navInputRef = useRef<HTMLInputElement>(null);
+  const DEFAULT_SECTION_STATE: Record<string, boolean> = {
     recruiting: false,
     offers: false,
     onboarding: false,
@@ -105,7 +235,43 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
     offboarding: false,
     integrations: false,
     analytics: false,
+  };
+  const [expandedSections, setExpandedSections] = useState<
+    Record<string, boolean>
+  >(() => {
+    // Remember which sections were open; re-collapsing them on every page load
+    // is the main reason this sidebar felt tedious.
+    try {
+      const stored = localStorage.getItem(SECTION_STATE_KEY);
+      if (stored) {
+        return { ...DEFAULT_SECTION_STATE, ...JSON.parse(stored) };
+      }
+    } catch {
+      /* private mode / blocked storage — fall through to defaults */
+    }
+    return DEFAULT_SECTION_STATE;
   });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(SECTION_STATE_KEY, JSON.stringify(expandedSections));
+    } catch {
+      /* nothing to do if storage is unavailable */
+    }
+  }, [expandedSections]);
+
+  // Cmd/Ctrl-K focuses the page search from anywhere in the HR portal.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        navInputRef.current?.focus();
+        navInputRef.current?.select();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   // Auto-expand section if current path matches
   useEffect(() => {
@@ -175,60 +341,12 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
     );
   }
 
-  // Helper component for collapsible menu sections
-  const CollapsibleSection: React.FC<{ section: MenuSection }> = ({
-    section,
-  }) => {
-    const isExpanded = expandedSections[section.key];
-    const hasActiveItem = section.items.some((item) =>
-      location.pathname.startsWith(item.path),
-    );
-
-    return (
-      <div>
-        <button
-          onClick={() => toggleSection(section.key)}
-          className={`w-full flex items-center justify-between px-2 h-8 text-xs font-medium text-muted-foreground dark:text-dark-500 hover:text-neutral-900 dark:hover:text-white transition-colors ${
-            hasActiveItem ? "text-neutral-900 dark:text-white" : ""
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <div className="h-3.5 w-3.5">{section.icon}</div>
-            <span>{section.label}</span>
-          </div>
-          {isExpanded ? (
-            <ChevronDown className="h-3.5 w-3.5" />
-          ) : (
-            <ChevronRight className="h-3.5 w-3.5" />
-          )}
-        </button>
-        {isExpanded && (
-          <div className="flex flex-col gap-1 pl-2 mt-1">
-            {section.items.map((item) => (
-              <Link key={item.path} to={item.path}>
-                <Button
-                  variant="ghost"
-                  className={`w-full justify-start pl-0 text-left text-xs font-normal text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
-                    location.pathname.startsWith(item.path)
-                      ? "bg-black/5 dark:bg-dark-50"
-                      : ""
-                  }`}
-                >
-                  {item.label}
-                </Button>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
-
   const menuSections: MenuSection[] = [
     {
       key: "recruiting",
       label: "Recruiting",
       icon: <Briefcase className="h-3.5 w-3.5" />,
+      group: "hiring",
       items: [
         {
           path: "/hr/recruiting/job-requisitions",
@@ -271,6 +389,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
       key: "offers",
       label: "Offers",
       icon: <FileText className="h-3.5 w-3.5" />,
+      group: "hiring",
       items: [
         {
           path: "/hr/offers/offer-letters",
@@ -298,6 +417,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
       key: "onboarding",
       label: "Onboarding",
       icon: <UserPlus className="h-3.5 w-3.5" />,
+      group: "hiring",
       items: [
         {
           path: "/hr/onboarding/your-onboarding",
@@ -365,12 +485,8 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
       key: "hrData",
       label: "HR Data",
       icon: <UserCircle className="h-3.5 w-3.5" />,
+      group: "people",
       items: [
-        {
-          path: "/hr/dashboard",
-          label: "HR Dashboard",
-          icon: <BarChart3 className="mr-2 h-3.5 w-3.5" />,
-        },
         {
           path: "/hr/data/employee-profiles",
           label: "Employee Profiles",
@@ -412,6 +528,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
       key: "timeAttendance",
       label: "Time & Attendance",
       icon: <Clock className="h-3.5 w-3.5" />,
+      group: "people",
       items: [
         {
           path: "/hr/time-attendance/pto-leave",
@@ -434,6 +551,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
       key: "performance",
       label: "Performance Reviews",
       icon: <Award className="h-3.5 w-3.5" />,
+      group: "people",
       items: [
         {
           path: "/hr/performance/review-cycles",
@@ -456,6 +574,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
       key: "compliance",
       label: "Compliance",
       icon: <Shield className="h-3.5 w-3.5" />,
+      group: "operations",
       items: [
         {
           path: "/hr/compliance/document-acknowledgment",
@@ -478,6 +597,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
       key: "offboarding",
       label: "Offboarding",
       icon: <DoorOpen className="h-3.5 w-3.5" />,
+      group: "operations",
       items: [
         {
           path: "/hr/offboarding/termination-workflows",
@@ -500,6 +620,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
       key: "integrations",
       label: "Integrations",
       icon: <Plug className="h-3.5 w-3.5" />,
+      group: "operations",
       items: [
         {
           path: "/hr/integrations/payroll",
@@ -522,6 +643,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
       key: "analytics",
       label: "Analytics",
       icon: <BarChart3 className="h-3.5 w-3.5" />,
+      group: "operations",
       items: [
         {
           path: "/hr/analytics/custom-reports",
@@ -541,6 +663,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
   const standaloneNavItems: { path: string; label: string; section?: string }[] =
     isHrFullAccess
       ? [
+          { path: "/hr/dashboard", label: "HR Dashboard" },
           { path: "/hr/handbook", label: "Employee Handbook" },
           { path: "/hr/announcements", label: "Announcements" },
           { path: "/hr/employee-files", label: "Employee Files" },
@@ -572,13 +695,67 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
   ];
   const navQuery = navSearch.trim().toLowerCase();
   const navResults = navQuery
-    ? searchableNavItems.filter(
-        (i) =>
-          i.label.toLowerCase().includes(navQuery) ||
-          (i.section || "").toLowerCase().includes(navQuery) ||
-          i.path.toLowerCase().includes(navQuery),
-      )
+    ? searchableNavItems
+        .filter(
+          (i) =>
+            i.label.toLowerCase().includes(navQuery) ||
+            (i.section || "").toLowerCase().includes(navQuery) ||
+            i.path.toLowerCase().includes(navQuery),
+        )
+        // A hit on the page's own name beats a hit on its section or URL.
+        .sort((a, b) => {
+          const rank = (x: typeof a) =>
+            x.label.toLowerCase().startsWith(navQuery)
+              ? 0
+              : x.label.toLowerCase().includes(navQuery)
+                ? 1
+                : 2;
+          return rank(a) - rank(b);
+        })
     : [];
+
+  const cursor = Math.min(navCursor, Math.max(navResults.length - 1, 0));
+
+  const clearSearch = () => {
+    setNavSearch("");
+    setNavCursor(0);
+  };
+
+  const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      clearSearch();
+      navInputRef.current?.blur();
+      return;
+    }
+    if (!navResults.length) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setNavCursor((c) => (c + 1) % navResults.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setNavCursor((c) => (c - 1 + navResults.length) % navResults.length);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const target = navResults[cursor];
+      if (target) {
+        clearSearch();
+        navigate(target.path);
+      }
+    }
+  };
+
+  const sectionsByGroup = NAV_GROUP_ORDER.map((group) => ({
+    group,
+    sections: menuSections.filter((section) => section.group === group),
+  })).filter((entry) => entry.sections.length > 0);
+
+  const anyExpanded = menuSections.some((s) => expandedSections[s.key]);
+  const toggleAllSections = () => {
+    const next = !anyExpanded;
+    setExpandedSections(
+      Object.fromEntries(menuSections.map((s) => [s.key, next])),
+    );
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background dark:bg-dark-background text-foreground">
@@ -587,202 +764,231 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
       </div>
 
       <div className="flex min-h-0 flex-1">
-        <div className="w-64 min-w-[16rem] flex-shrink-0 flex flex-col border-r border-black/10 bg-white dark:bg-dark-150 dark:border-dark-200">
-          {/* Sidebar Links */}
-          <div className="flex flex-col gap-1 p-4 flex-grow overflow-y-auto">
-            {/* Page search */}
-            <div className="relative mb-1">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400 pointer-events-none" />
+        <div className="flex w-72 min-w-[18rem] flex-shrink-0 flex-col border-r border-black/10 bg-white dark:border-dark-200 dark:bg-dark-150">
+          {/* Sticky search — stays put while the section list scrolls under it */}
+          <div className="sticky top-0 z-10 border-b border-neutral-200 bg-white px-4 pb-3 pt-4 dark:border-dark-200 dark:bg-dark-150">
+            <div className="relative">
+              <Search
+                className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-400"
+                aria-hidden
+              />
               <input
+                ref={navInputRef}
                 type="text"
                 value={navSearch}
-                onChange={(e) => setNavSearch(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") setNavSearch("");
+                onChange={(e) => {
+                  setNavSearch(e.target.value);
+                  setNavCursor(0);
                 }}
-                placeholder="Search HR pages..."
-                className="w-full h-8 pl-7 pr-7 text-xs rounded-none border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-100 text-black dark:text-dark-900 placeholder:text-neutral-400 focus:outline-none focus:border-brand"
+                onKeyDown={onSearchKeyDown}
+                placeholder="Search HR pages"
+                aria-label="Search HR pages"
+                className="h-9 w-full rounded-none border border-neutral-200 bg-neutral-50 pl-8 pr-14 text-[13px] text-black placeholder:text-neutral-400 focus:border-brand focus:bg-white focus:outline-none dark:border-dark-200 dark:bg-dark-100 dark:text-dark-900 dark:focus:bg-dark-100"
               />
-              {navSearch && (
+              {navSearch ? (
                 <button
-                  onClick={() => setNavSearch("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+                  type="button"
+                  onClick={clearSearch}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
                   title="Clear search"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
+              ) : (
+                <span
+                  className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 border border-neutral-200 px-1.5 py-px text-[10px] font-semibold text-neutral-400 dark:border-dark-200 dark:text-white/40"
+                  aria-hidden
+                >
+                  ⌘K
+                </span>
               )}
             </div>
+          </div>
 
+          <div className="flex flex-grow flex-col overflow-y-auto px-4 pb-6">
             {navQuery ? (
-              <div className="flex flex-col gap-0.5">
+              <div className="flex flex-col pt-3">
+                <div className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-[0.11em] text-neutral-400 dark:text-white/40">
+                  {navResults.length}{" "}
+                  {navResults.length === 1 ? "result" : "results"}
+                </div>
                 {navResults.length === 0 ? (
-                  <p className="text-xs text-muted-foreground px-2 py-2">
+                  <p className="px-2 py-2 text-xs text-muted-foreground">
                     No pages match &quot;{navSearch.trim()}&quot;
                   </p>
                 ) : (
-                  navResults.map((item) => (
+                  navResults.map((item, i) => (
                     <Link
                       key={item.path}
                       to={item.path}
-                      onClick={() => setNavSearch("")}
+                      onClick={clearSearch}
+                      onMouseEnter={() => setNavCursor(i)}
+                      className={`flex flex-col items-start px-2 py-1.5 transition-colors ${
+                        i === cursor
+                          ? "bg-brand/10 text-brand"
+                          : "text-neutral-700 hover:bg-black/[0.04] dark:text-dark-900 dark:hover:bg-dark-50"
+                      }`}
                     >
-                      <Button
-                        variant="ghost"
-                        className={`w-full !justify-start pl-2 text-left h-auto py-1.5 font-normal text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 ${
-                          location.pathname.startsWith(item.path)
-                            ? "bg-black/5 dark:bg-dark-50"
-                            : ""
-                        }`}
-                      >
-                        <span className="flex flex-col items-start">
-                          <span className="text-xs">{item.label}</span>
-                          {item.section && (
-                            <span className="text-[10px] text-muted-foreground">
-                              {item.section}
-                            </span>
-                          )}
+                      <span className="text-[13px] font-semibold">
+                        {item.label}
+                      </span>
+                      {item.section && (
+                        <span
+                          className={`text-[10.5px] ${
+                            i === cursor
+                              ? "text-brand/70"
+                              : "text-neutral-400 dark:text-white/40"
+                          }`}
+                        >
+                          {item.section}
                         </span>
-                      </Button>
+                      )}
                     </Link>
                   ))
                 )}
+                <p className="mt-2 px-2 text-[10.5px] text-neutral-400 dark:text-white/40">
+                  ↑↓ to move · ↵ to open · esc to clear
+                </p>
               </div>
             ) : (
               <>
-            {/* Standalone top-level items */}
-            <Link to="/hr/handbook">
-              <Button
-                variant="ghost"
-                leftIcon={<BookOpen className="h-3.5 w-3.5 text-white" />}
-                className="w-full justify-start pl-2 text-left text-xs font-medium text-white bg-brand hover:!bg-[#f5834a] hover:!text-white !justify-start h-8"
-              >
-                Employee Handbook
-              </Button>
-            </Link>
-
-            {isHrFullAccess && (
-              <Link to="/hr/announcements">
-                <Button
-                  variant="ghost"
-                  leftIcon={
-                    <Megaphone className="h-3.5 w-3.5 text-brand" />
-                  }
-                  className={`w-full justify-start pl-2 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
-                    location.pathname.startsWith("/hr/announcements")
-                      ? "bg-black/5 dark:bg-dark-50"
-                      : ""
-                  }`}
-                >
-                  Announcements
-                </Button>
-              </Link>
-            )}
-
-            <Link to="/hr/employee-files">
-              <Button
-                variant="ghost"
-                leftIcon={<Folder className="h-3.5 w-3.5 text-brand" />}
-                className={`w-full justify-start pl-2 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
-                  location.pathname.startsWith("/hr/employee-files")
-                    ? "bg-black/5 dark:bg-dark-50"
-                    : ""
-                }`}
-              >
-                Employee Files
-              </Button>
-            </Link>
-
-            {isHrFullAccess ? (
-              <>
-                <div className="flex flex-col gap-1">
-                  {menuSections.map((section) => (
-                    <CollapsibleSection key={section.key} section={section} />
-                  ))}
+                {/* Pinned — the handful of pages people open every day */}
+                <div className={GROUP_LABEL_CLASS}>Pinned</div>
+                <div className="flex flex-col">
+                  {isHrFullAccess && (
+                    <NavLinkRow
+                      to="/hr/dashboard"
+                      icon={<BarChart3 className="h-3.5 w-3.5" />}
+                      label="HR Dashboard"
+                      active={
+                        location.pathname === "/hr" ||
+                        pathMatches(location.pathname, "/hr/dashboard")
+                      }
+                    />
+                  )}
+                  <NavLinkRow
+                    to="/hr/handbook"
+                    icon={<BookOpen className="h-3.5 w-3.5" />}
+                    label="Employee Handbook"
+                    active={pathMatches(location.pathname, "/hr/handbook")}
+                    emphasis
+                  />
+                  {isHrFullAccess && (
+                    <NavLinkRow
+                      to="/hr/announcements"
+                      icon={<Megaphone className="h-3.5 w-3.5" />}
+                      label="Announcements"
+                      active={pathMatches(
+                        location.pathname,
+                        "/hr/announcements",
+                      )}
+                    />
+                  )}
+                  <NavLinkRow
+                    to="/hr/employee-files"
+                    icon={<Folder className="h-3.5 w-3.5" />}
+                    label="Employee Files"
+                    active={pathMatches(location.pathname, "/hr/employee-files")}
+                  />
                 </div>
-                <Link to="/hr/self-service/manager-portal">
-                  <Button
-                    variant="ghost"
-                    leftIcon={<Users className="h-3.5 w-3.5 text-brand" />}
-                    className={`w-full justify-start pl-2 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
-                      location.pathname.startsWith(
+
+                {isHrFullAccess ? (
+                  <>
+                    {sectionsByGroup.map(({ group, sections }, groupIndex) => (
+                      <div key={group}>
+                        <div className="flex items-baseline justify-between">
+                          <div className={GROUP_LABEL_CLASS}>
+                            {NAV_GROUP_LABELS[group]}
+                          </div>
+                          {groupIndex === 0 && (
+                            <button
+                              type="button"
+                              onClick={toggleAllSections}
+                              className="pr-2 pt-4 text-[11px] font-medium text-neutral-400 hover:text-brand dark:text-white/40"
+                            >
+                              {anyExpanded ? "Collapse all" : "Expand all"}
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          {sections.map((section) => (
+                            <NavSection
+                              key={section.key}
+                              section={section}
+                              expanded={!!expandedSections[section.key]}
+                              pathname={location.pathname}
+                              onToggle={toggleSection}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className={GROUP_LABEL_CLASS}>Portals</div>
+                    <NavLinkRow
+                      to="/hr/self-service/manager-portal"
+                      icon={<Users className="h-3.5 w-3.5" />}
+                      label="Manager Portal"
+                      active={pathMatches(
+                        location.pathname,
                         "/hr/self-service/manager-portal",
-                      )
-                        ? "bg-black/5 dark:bg-dark-50"
-                        : ""
-                    }`}
-                  >
-                    Manager Portal
-                  </Button>
-                </Link>
-              </>
-            ) : (
-              <div className="flex flex-col gap-1">
-                <Link to="/hr/onboarding/your-onboarding">
-                  <Button
-                    variant="ghost"
-                    className={`w-full justify-start pl-0 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
-                      location.pathname.startsWith(
-                        "/hr/onboarding/your-onboarding",
-                      )
-                        ? "bg-black/5 dark:bg-dark-50"
-                        : ""
-                    }`} leftIcon={<UserCheck className="h-3.5 w-3.5 text-brand" />}>
-                    Your Onboarding
-                  </Button>
-                </Link>
-                <Link to="/hr/data/employee-profiles">
-                  <Button
-                    variant="ghost"
-                    className={`w-full justify-start pl-0 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
-                      location.pathname.startsWith("/hr/data/employee-profiles")
-                        ? "bg-black/5 dark:bg-dark-50"
-                        : ""
-                    }`} leftIcon={<UserCircle className="h-3.5 w-3.5 text-brand" />}>
-                    Employee Profiles
-                  </Button>
-                </Link>
-                <Link to="/hr/data/org-chart">
-                  <Button
-                    variant="ghost"
-                    className={`w-full justify-start pl-0 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
-                      location.pathname.startsWith("/hr/data/org-chart")
-                        ? "bg-black/5 dark:bg-dark-50"
-                        : ""
-                    }`} leftIcon={<Network className="h-3.5 w-3.5 text-brand" />}>
-                    Org Chart
-                  </Button>
-                </Link>
-                <Link to="/hr/compliance/document-acknowledgment">
-                  <Button
-                    variant="ghost"
-                    className={`w-full justify-start pl-0 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
-                      location.pathname.startsWith(
-                        "/hr/compliance/document-acknowledgment",
-                      )
-                        ? "bg-black/5 dark:bg-dark-50"
-                        : ""
-                    }`} leftIcon={<Shield className="h-3.5 w-3.5 text-brand" />}>
-                    Document Acknowledgment
-                  </Button>
-                </Link>
-                <Link to="/hr/self-service/manager-portal">
-                  <Button
-                    variant="ghost"
-                    leftIcon={<Users className="h-3.5 w-3.5 text-brand" />}
-                    className={`w-full justify-start pl-2 text-left text-xs font-medium text-black dark:text-dark-900 hover:bg-black/5 dark:hover:bg-dark-50 !justify-start h-8 ${
-                      location.pathname.startsWith(
+                      )}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <div className={GROUP_LABEL_CLASS}>Your HR</div>
+                    <div className="flex flex-col">
+                      <NavLinkRow
+                        to="/hr/onboarding/your-onboarding"
+                        icon={<UserCheck className="h-3.5 w-3.5" />}
+                        label="Your Onboarding"
+                        active={pathMatches(
+                          location.pathname,
+                          "/hr/onboarding/your-onboarding",
+                        )}
+                      />
+                      <NavLinkRow
+                        to="/hr/data/employee-profiles"
+                        icon={<UserCircle className="h-3.5 w-3.5" />}
+                        label="Employee Profiles"
+                        active={pathMatches(
+                          location.pathname,
+                          "/hr/data/employee-profiles",
+                        )}
+                      />
+                      <NavLinkRow
+                        to="/hr/data/org-chart"
+                        icon={<Network className="h-3.5 w-3.5" />}
+                        label="Org Chart"
+                        active={pathMatches(
+                          location.pathname,
+                          "/hr/data/org-chart",
+                        )}
+                      />
+                      <NavLinkRow
+                        to="/hr/compliance/document-acknowledgment"
+                        icon={<Shield className="h-3.5 w-3.5" />}
+                        label="Document Acknowledgment"
+                        active={pathMatches(
+                          location.pathname,
+                          "/hr/compliance/document-acknowledgment",
+                        )}
+                      />
+                    </div>
+
+                    <div className={GROUP_LABEL_CLASS}>Portals</div>
+                    <NavLinkRow
+                      to="/hr/self-service/manager-portal"
+                      icon={<Users className="h-3.5 w-3.5" />}
+                      label="Manager Portal"
+                      active={pathMatches(
+                        location.pathname,
                         "/hr/self-service/manager-portal",
-                      )
-                        ? "bg-black/5 dark:bg-dark-50"
-                        : ""
-                    }`}
-                  >
-                    Manager Portal
-                  </Button>
-                </Link>
-              </div>
-            )}
+                      )}
+                    />
+                  </>
+                )}
               </>
             )}
           </div>

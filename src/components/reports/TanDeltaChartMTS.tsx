@@ -1092,7 +1092,7 @@ if (typeof document !== "undefined") {
       body {
         margin: 0 !important;
         padding: 20px !important;
-        font-family: Arial, sans-serif !important;
+        font-family: Arial, Helvetica, sans-serif !important;
         font-size: 12px !important;
       }
 

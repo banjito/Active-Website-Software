@@ -4080,7 +4080,7 @@ if (typeof document !== "undefined") {
     input[type="number"] { -moz-appearance: textfield !important; }
 
     @media print {
-      body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+      body { margin: 0; padding: 20px; font-family: Arial, Helvetica, sans-serif; }
       * { color: black !important; }
       header, nav, .navigation, [class*="nav"], [class*="header"], .sticky, [class*="sticky"], .print\\:hidden { display: none !important; }
       button:not(.print-visible) { display: none !important; }

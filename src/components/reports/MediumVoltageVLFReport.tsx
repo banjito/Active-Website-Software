@@ -3998,7 +3998,7 @@ if (typeof document !== "undefined") {
   const style = document.createElement("style");
   style.textContent = `
             @media print {
-          body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+          body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
           @page { margin: 0.25in; }
 
           /* Remove all gaps after job info - CRITICAL - TARGET EVERYTHING */

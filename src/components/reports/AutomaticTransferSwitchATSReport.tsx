@@ -1003,7 +1003,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
       style.id = "print-css-ats";
       style.textContent = `
         @media print {
-          body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+          body { margin: 0; padding: 20px; font-family: Arial, Helvetica, sans-serif; }
           .print\\:break-before-page { page-break-before: always; }
           .print\\:break-after-page { page-break-after: always; }
           .print\\:break-inside-avoid { page-break-inside: avoid; }
@@ -1097,7 +1097,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
             resize: none !important;
             white-space: pre-wrap !important;
             word-wrap: break-word !important;
-            font-family: Arial, sans-serif !important;
+            font-family: Arial, Helvetica, sans-serif !important;
             line-height: 1.4 !important;
             overflow: visible !important;
             display: block !important;

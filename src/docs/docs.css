@@ -19,7 +19,6 @@
 
   color: rgb(var(--docs-fg));
   background-color: rgb(var(--docs-bg));
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 .dark .docs-root {

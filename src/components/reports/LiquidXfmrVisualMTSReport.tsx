@@ -3357,7 +3357,7 @@ if (typeof document !== "undefined") {
     .insulation-resistance-section table input, .insulation-resistance-section table select { width: 100%; }
 
     @media print {
-      body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+      body { margin: 0; padding: 20px; font-family: Arial, Helvetica, sans-serif; }
       * { color: black !important; }
 
       /* Preserve Pass/Fail status box colors */

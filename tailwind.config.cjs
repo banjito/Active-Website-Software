@@ -139,7 +139,9 @@ module.exports = {
       },
       fontFamily: {
         sans: ['Helvetica Neue', 'Helvetica', 'ui-sans-serif', 'system-ui', '-apple-system', 'Arial', 'sans-serif'],
-        display: ['Helvetica Neue', 'Helvetica', 'ui-sans-serif', 'system-ui', '-apple-system', 'Arial', 'sans-serif']
+        // Editorial accent face. Loaded from Google Fonts in index.html; Georgia
+        // is a close enough fallback that a blocked/slow load is not jarring.
+        serif: ['Instrument Serif', 'Georgia', 'Times New Roman', 'serif']
       },
       borderRadius: {
         lg: "var(--radius)",

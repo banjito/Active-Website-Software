@@ -68,7 +68,8 @@ export const REPORT_NAMES: { [key: string]: string } = {
   'applied-voltage-test-ats-report': 'Applied Voltage Test ATS',
 
   // Internal Forms
-  'job-hazard-analysis-form': 'Job Hazard Analysis Form'
+  'job-hazard-analysis-form': 'Job Hazard Analysis Form',
+  'energized-work-permit-form': 'Energized Work Permit'
 };
 
 // Helper function to get report name by route slug

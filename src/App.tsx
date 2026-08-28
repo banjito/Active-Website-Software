@@ -290,6 +290,7 @@ import LiquidFilledXfmrATS25Report from "@/components/reports/LiquidFilledXfmrAT
 // Import Switchgear Panelboard MTS Report
 import SwitchgearPanelboardMTSReport from "./components/reports/SwitchgearPanelboardMTSReport";
 import JobHazardAnalysisForm from "./components/reports/JobHazardAnalysisForm";
+import EnergizedWorkPermitForm from "./components/reports/EnergizedWorkPermitForm";
 
 // Import the new Large Dry Type Transformer MTS Report
 import LargeDryTypeTransformerMTSReport from "./components/reports/LargeDryTypeTransformerMTSReport";
@@ -2779,6 +2780,18 @@ function App() {
                       <RequireAuth>
                         <Layout>
                           <JobHazardAnalysisForm />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+
+                  {/* Internal Forms - Energized Work Permit */}
+                  <Route
+                    path="/jobs/:id/energized-work-permit-form/:reportId?"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <EnergizedWorkPermitForm />
                         </Layout>
                       </RequireAuth>
                     }

@@ -2817,11 +2817,18 @@ CREATE FUNCTION neta_ops.fn_on_create_table_snapshot() RETURNS event_trigger
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'public'
     AS $$
-declare cmd record;
+declare
+  cmd record;
+  v_table text;
 begin
   for cmd in select * from pg_event_trigger_ddl_commands() loop
     if cmd.object_type = 'table' and cmd.schema_name = 'neta_ops' then
-      perform neta_ops.fn_attach_report_snapshot(cmd.schema_name, cmd.object_name);
+      -- pg_event_trigger_ddl_commands() has no object_name column; resolve the
+      -- bare relation name from objid.
+      select c.relname into v_table from pg_class c where c.oid = cmd.objid;
+      if v_table is not null then
+        perform neta_ops.fn_attach_report_snapshot(cmd.schema_name, v_table);
+      end if;
     end if;
   end loop;
 end; $$;

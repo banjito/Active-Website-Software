@@ -118,6 +118,7 @@ Three questions, in order:
 | Report | Use for |
 |---|---|
 | Job Hazard Analysis Form | Pre-job hazard assessment |
+| Energized Work Permit | NFPA 70E permit to work on energized equipment |
 
 ## Nothing fits?
 

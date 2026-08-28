@@ -416,6 +416,7 @@ interface InternalFormTemplate {
 }
 const INTERNAL_FORM_TEMPLATES: InternalFormTemplate[] = [
   { slug: "job-hazard-analysis-form", name: "Job Hazard Analysis Form" },
+  { slug: "energized-work-permit-form", name: "Energized Work Permit" },
 ];
 const INTERNAL_FORM_SLUGS = new Set(INTERNAL_FORM_TEMPLATES.map((t) => t.slug));
 
@@ -5126,6 +5127,7 @@ export default function JobDetail() {
       "gfi-trip-test-report": "gfi-trip-test-report",
       "applied-voltage-test-ats-report": "applied-voltage-test-ats-report",
       "job-hazard-analysis-form": "job-hazard-analysis-form",
+      "energized-work-permit-form": "energized-work-permit-form",
     };
 
     const mappedReportName =

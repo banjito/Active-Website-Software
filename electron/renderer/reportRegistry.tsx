@@ -8,6 +8,7 @@ import CableHiPotReport from "@/components/reports/CableHiPotReport";
 import CurrentTransformerTestATSReport from "@/components/reports/CurrentTransformerTestATSReport";
 import DryTypeTransformerReport from "@/components/reports/DryTypeTransformerReport";
 import EmergencySystemsEngineGeneratorATS25Report from "@/components/reports/EmergencySystemsEngineGeneratorATS25Report";
+import EnergizedWorkPermitForm from "@/components/reports/EnergizedWorkPermitForm";
 import GFITripTestReport from "@/components/reports/GFITripTestReport";
 import GroundingFallOfPotentialSlopeMethodTest from "@/components/reports/GroundingFallOfPotentialSlopeMethodTest";
 import GroundingSystemMaster from "@/components/reports/GroundingSystemMaster";
@@ -81,6 +82,7 @@ export const REPORTS: ReportEntry[] = [
   { slug: "dry-type-transformer", name: "2-Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test ATS 21", component: DryTypeTransformerReport },
   { slug: "electrical-tan-delta-test-mts-form", name: "4-Medium Voltage Cable VLF Tan Delta MTS", component: TanDeltaTestMTSForm },
   { slug: "emergency-systems-engine-generator-ats25", name: "7.22.1 Emergency Systems, Engine Generator Test Sheet ATS 25", component: EmergencySystemsEngineGeneratorATS25Report },
+  { slug: "energized-work-permit-form", name: "Energized Work Permit", component: EnergizedWorkPermitForm },
   { slug: "gfi-trip-test-report", name: "Ground Fault Trip Test Report", component: GFITripTestReport },
   { slug: "grounding-fall-of-potential-slope-method-test", name: "Grounding Fall of Potential Slope Method Test", component: GroundingFallOfPotentialSlopeMethodTest },
   { slug: "grounding-system-master", name: "Grounding System MASTER", component: GroundingSystemMaster },

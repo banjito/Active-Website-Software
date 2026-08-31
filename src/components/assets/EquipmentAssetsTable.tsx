@@ -1590,7 +1590,7 @@ export function EquipmentAssetsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.length === 0 ? (
+            {displayRows.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={columnCount}

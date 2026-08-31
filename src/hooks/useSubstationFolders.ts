@@ -368,7 +368,9 @@ export function useSubstationFolders(scopeInput: { jobId?: string | null; siteId
 
   const addInnerFolder = useCallback(
     async (substationLabel: string, name: string, parentFolderId?: string | null) => {
-      if (!writeScope || !name.trim() || isSyntheticSubstation(substationLabel)) return;
+      // No synthetic-label guard: 'Imported' and 'Other' can't be filed into a folder of
+      // substations, but they can hold folders of their own. See SYNTHETIC_SUBSTATION_LABELS.
+      if (!writeScope || !name.trim()) return;
       const siblings = resolved.innerFolders.filter(
         (f) =>
           f.substation_key === substationKey(substationLabel) &&

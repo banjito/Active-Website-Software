@@ -25,9 +25,14 @@ export function folderLevel(folder: SubstationFolder): FolderLevel {
 /**
  * The two labels the Reports tab invents when it cannot work out a substation.
  *
- * They are not substations, so they are never keyed, never assigned to a folder and never
- * draggable. Filing "we don't know" under "Building A" would be a lie, and the existing
- * pinning (Imported first, Other last) is what people already navigate by.
+ * They are not substations, so the *group itself* is never assigned to a folder of
+ * substations and never draggable: filing "we don't know" under "Building A" would be a
+ * lie, and the existing pinning (Imported first, Other last) is what people already
+ * navigate by.
+ *
+ * Folders *inside* them are a different question and are allowed. 'Other' is where every
+ * report with no substation piles up, so it is the group that most needs tidying, and a
+ * folder in there claims nothing about which substation anything belongs to.
  */
 export const SYNTHETIC_SUBSTATION_LABELS = ["Imported", "Other"] as const;
 

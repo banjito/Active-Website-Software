@@ -56,6 +56,9 @@ import {
   FolderPlus,
   ChevronsDownUp,
   ChevronsUpDown,
+  Archive,
+  ArchiveRestore,
+  SquareCheck,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { supabase, isConnectionError } from "../../lib/supabase";
@@ -151,6 +154,7 @@ import {
   packUnitsIntoPages,
   flattenFolderRows,
   flattenFolderTree,
+  isSyntheticSubstation,
 } from "@/utils/substationFolders";
 import { InnerFolderRow } from "@/components/folders/InnerFolderRow";
 import { useSubstationFolders } from "@/hooks/useSubstationFolders";
@@ -611,12 +615,29 @@ function parseReportDateField(raw: unknown): Date | null {
 /**
  * What a right-click on the Reports tab landed on: a folder heading, a substation
  * accordion, a folder inside one, or a report row.
+ *
+ * `foldable` says the group can hold folders, which is every group once folders are
+ * installed. `movable` says the group itself can be filed into a folder of substations,
+ * which the two pseudo-substations ('Imported' and 'Other') cannot be — they aren't
+ * substations, so there is nothing to file.
  */
 type ReportContextTarget =
   | { kind: "folder"; folder: SubstationFolder }
-  | { kind: "substation"; label: string; innerFolderIds: string[] }
+  | {
+      kind: "substation";
+      label: string;
+      innerFolderIds: string[];
+      assetIds: string[];
+      foldable: boolean;
+      movable: boolean;
+    }
   | { kind: "inner-folder"; node: FolderNode; substation: string }
-  | { kind: "report"; assetId: string; substation: string };
+  | {
+      kind: "report";
+      assetId: string;
+      substation: string;
+      foldable: boolean;
+    };
 
 /** Report row id from `report:/jobs/.../.../reportId` (handles grounding substation segment). */
 function parseReportIdFromAssetUrl(fileUrl: string): string | null {
@@ -1979,6 +2000,43 @@ export default function JobDetail() {
   >(() => cachedJobAssets?.derived?.substations ?? {});
 
   /**
+   * Which group of the Reports tab a report is listed under — its substation, or one of
+   * the two labels the tab invents when there isn't one.
+   *
+   * Folders inside a group are keyed by this label, so anything that files reports has to
+   * agree with the grouping down to the last character. It is one function for that
+   * reason: two 'Other' reports that disagree about their group would end up in folders
+   * neither of them can be seen in.
+   */
+  const reportGroupLabel = useCallback(
+    (asset: Asset): string => {
+      const sub = assetSubstations[asset.id];
+      if (typeof sub === "string" && sub.trim()) return sub.trim();
+      if (
+        /import/i.test(asset.name || "") ||
+        /import/i.test(asset.file_url || "")
+      )
+        return "Imported";
+      return "Other";
+    },
+    [assetSubstations],
+  );
+
+  /** The one group every ticked report is in, or null when the selection spans several. */
+  const soleSelectedGroup = useCallback(
+    (assetIds: string[]): string | null => {
+      const labels = new Set(
+        assetIds
+          .map((assetId) => jobAssets.find((a) => a.id === assetId))
+          .filter((a): a is Asset => !!a)
+          .map(reportGroupLabel),
+      );
+      return labels.size === 1 ? [...labels][0] : null;
+    },
+    [jobAssets, reportGroupLabel],
+  );
+
+  /**
    * What a right-click on the Reports tab landed on.
    *
    * The tab has four kinds of row that mean something to the folder system, and each wants
@@ -2040,21 +2098,50 @@ export default function JobDetail() {
       case "substation":
         return (
           <>
-            <DropdownMenuItem
-              onSelect={() =>
-                setNewSubfolder({ substation: target.label, parentId: null })
-              }
-            >
-              <FolderPlus className="mr-2 h-4 w-4" />
-              New folder here
-            </DropdownMenuItem>
-            <MoveToFolderSubmenu
-              folders={substationFolders.folders.map((folder) => ({ folder, depth: 0 }))}
-              currentFolderId={substationFolders.folderFor(target.label)?.id ?? null}
-              onMove={(folderId) =>
-                void substationFolders.moveSubstation(target.label, folderId)
-              }
-            />
+            {target.foldable && (
+              <DropdownMenuItem
+                onSelect={() =>
+                  setNewSubfolder({ substation: target.label, parentId: null })
+                }
+              >
+                <FolderPlus className="mr-2 h-4 w-4" />
+                New folder here
+              </DropdownMenuItem>
+            )}
+            {target.movable && (
+              <MoveToFolderSubmenu
+                folders={substationFolders.folders.map((folder) => ({
+                  folder,
+                  depth: 0,
+                }))}
+                currentFolderId={substationFolders.folderFor(target.label)?.id ?? null}
+                onMove={(folderId) =>
+                  void substationFolders.moveSubstation(target.label, folderId)
+                }
+              />
+            )}
+            {/* Selecting a whole group is the way anything gets archived in bulk, and
+                it's the only bulk action Imported and Other can offer at all. */}
+            {target.assetIds.length > 0 && (
+              <DropdownMenuItem
+                onSelect={() =>
+                  setSelectedAssetIds((prev) => {
+                    const next = new Set(prev);
+                    target.assetIds.forEach((assetId) => next.add(assetId));
+                    return next;
+                  })
+                }
+              >
+                <SquareCheck className="mr-2 h-4 w-4" />
+                {`Select all ${target.assetIds.length} here`}
+              </DropdownMenuItem>
+            )}
+            {selectedAssetIds.size > 0 && (
+              <DropdownMenuItem onSelect={() => setSelectedAssetIds(new Set())}>
+                <Check className="mr-2 h-4 w-4" />
+                Clear selection
+              </DropdownMenuItem>
+            )}
             {target.innerFolderIds.length > 0 && (
               <>
                 <DropdownMenuSeparator />
@@ -2128,53 +2215,128 @@ export default function JobDetail() {
       }
 
       case "report": {
-        const options = flattenFolderTree(
-          substationFolders.treeFor(target.substation, []).roots,
-        );
-        // The batch move is offered only when everything ticked sits in this substation:
-        // a folder belongs to one, so a mixed selection has no single destination.
+        const asset = jobAssets.find((a) => a.id === target.assetId);
+        const options = target.foldable
+          ? flattenFolderTree(substationFolders.treeFor(target.substation, []).roots)
+          : [];
+        // The batch move is offered only when everything ticked sits in this group: a
+        // folder belongs to one, so a mixed selection has no single destination.
         const ticked = [...selectedAssetIds];
-        const tickedSubstations = new Set(
-          ticked.map((id) => (assetSubstations[id] || "").trim()),
-        );
         const batch =
+          target.foldable &&
           selectedAssetIds.has(target.assetId) &&
           ticked.length > 1 &&
-          tickedSubstations.size === 1;
+          soleSelectedGroup(ticked) === target.substation;
         const tickedFolders = new Set(
           ticked.map((id) => substationFolders.itemFolder(id)),
         );
+        const isPdfUpload = !!(
+          asset?.file_url &&
+          !asset.file_url.startsWith("report:/") &&
+          !asset.file_url.startsWith("custom-form:") &&
+          asset.file_url.toLowerCase().endsWith(".pdf")
+        );
+        const isArchived = asset?.status === "archived";
+
+        const openAsset = () => {
+          if (!asset?.file_url) return;
+          if (asset.file_url.startsWith("custom-form:")) {
+            navigate(asset.file_url.replace(/^custom-form:/, ""));
+          } else if (asset.file_url.startsWith("report:")) {
+            navigate(getReportEditPath(asset));
+          } else {
+            window.open(asset.file_url, "_blank", "noopener,noreferrer");
+          }
+        };
 
         return (
           <>
-            <MoveToFolderSubmenu
-              label="Move this report to folder"
-              folders={options}
-              currentFolderId={substationFolders.itemFolder(target.assetId)}
-              onMove={(folderId) =>
-                void substationFolders.moveItems([target.assetId], folderId, "report")
-              }
-            />
-            {batch && (
-              <MoveToFolderSubmenu
-                label={`Move ${ticked.length} selected to folder`}
-                folders={options}
-                currentFolderId={tickedFolders.size === 1 ? [...tickedFolders][0] : null}
-                onMove={(folderId) => {
-                  void substationFolders.moveItems(ticked, folderId, "report");
-                  setSelectedAssetIds(new Set());
-                }}
-              />
+            {/* Filing only exists inside a real substation. Imported and Other skip
+                straight to the actions every row has. */}
+            {target.foldable && (
+              <>
+                <MoveToFolderSubmenu
+                  label="Move this report to folder"
+                  folders={options}
+                  currentFolderId={substationFolders.itemFolder(target.assetId)}
+                  onMove={(folderId) =>
+                    void substationFolders.moveItems(
+                      [target.assetId],
+                      folderId,
+                      "report",
+                    )
+                  }
+                />
+                {batch && (
+                  <MoveToFolderSubmenu
+                    label={`Move ${ticked.length} selected to folder`}
+                    folders={options}
+                    currentFolderId={
+                      tickedFolders.size === 1 ? [...tickedFolders][0] : null
+                    }
+                    onMove={(folderId) => {
+                      void substationFolders.moveItems(ticked, folderId, "report");
+                      setSelectedAssetIds(new Set());
+                    }}
+                  />
+                )}
+                {options.length > 0 && <DropdownMenuSeparator />}
+                <DropdownMenuItem
+                  onSelect={() =>
+                    setNewSubfolder({ substation: target.substation, parentId: null })
+                  }
+                >
+                  <FolderPlus className="mr-2 h-4 w-4" />
+                  New folder in {target.substation}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
             )}
-            {options.length > 0 && <DropdownMenuSeparator />}
-            <DropdownMenuItem
-              onSelect={() =>
-                setNewSubfolder({ substation: target.substation, parentId: null })
-              }
-            >
-              <FolderPlus className="mr-2 h-4 w-4" />
-              New folder in {target.substation}
-            </DropdownMenuItem>
+            {asset && (
+              <DropdownMenuItem onSelect={openAsset}>
+                <SquareArrowOutUpRight className="mr-2 h-4 w-4" />
+                Open
+              </DropdownMenuItem>
+            )}
+            {asset && isPdfUpload && (
+              <DropdownMenuItem onSelect={() => handleEditPdfReport(asset)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit name and substation
+              </DropdownMenuItem>
+            )}
+            {asset && (
+              <DropdownMenuItem
+                onSelect={() => handleToggleAssetSelection(target.assetId)}
+              >
+                <SquareCheck className="mr-2 h-4 w-4" />
+                {selectedAssetIds.has(target.assetId)
+                  ? "Deselect this report"
+                  : "Select this report"}
+              </DropdownMenuItem>
+            )}
+            {asset && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() =>
+                    void handleStatusUpdate(
+                      target.assetId,
+                      isArchived ? "not started" : "archived",
+                    )
+                  }
+                  className={
+                    isArchived ? undefined : "text-destructive focus:text-destructive"
+                  }
+                >
+                  {isArchived ? (
+                    <ArchiveRestore className="mr-2 h-4 w-4" />
+                  ) : (
+                    <Archive className="mr-2 h-4 w-4" />
+                  )}
+                  {isArchived ? "Restore report" : "Archive report"}
+                </DropdownMenuItem>
+              </>
+            )}
           </>
         );
       }
@@ -11731,20 +11893,14 @@ export default function JobDetail() {
                                     {`Move to Job (${selectedAssetIds.size})`}
                                   </Button>
                                 )}
-                                {/* File the whole selection at once. Folders belong to a
-                                    substation, so this only makes sense when everything
+                                {/* File the whole selection at once. Folders belong to
+                                    one group, so this only makes sense when everything
                                     ticked is in the same one — otherwise there is no
                                     single folder list to choose from. */}
                                 {(() => {
                                   if (!substationFolders.available) return null;
                                   const ticked = [...selectedAssetIds];
-                                  const subs = new Set(
-                                    ticked.map((id) =>
-                                      (assetSubstations[id] || "").trim(),
-                                    ),
-                                  );
-                                  if (subs.size !== 1) return null;
-                                  const substation = [...subs][0];
+                                  const substation = soleSelectedGroup(ticked);
                                   if (!substation) return null;
                                   const { roots } = substationFolders.treeFor(
                                     substation,
@@ -11833,22 +11989,9 @@ export default function JobDetail() {
                       ) : (
                         <div className="space-y-4">
                           {(() => {
-                            const getFolder = (asset: Asset): string => {
-                              const name = asset.name || "";
-                              const sub = assetSubstations[asset.id];
-                              if (typeof sub === "string" && sub.trim())
-                                return sub.trim();
-                              if (
-                                /import/i.test(name) ||
-                                /import/i.test(asset.file_url || "")
-                              )
-                                return "Imported";
-                              return "Other";
-                            };
-
                             const groups: Record<string, Asset[]> = {};
                             filteredJobAssets.forEach((asset) => {
-                              const key = getFolder(asset);
+                              const key = reportGroupLabel(asset);
                               if (!groups[key]) groups[key] = [];
                               groups[key].push(asset);
                             });
@@ -11896,12 +12039,15 @@ export default function JobDetail() {
                               const assetById = new Map(
                                 sortedAssets.map((a) => [a.id, a]),
                               );
-                              // Folders live inside a substation, so 'Imported' and
-                              // 'Other' — which aren't substations — never get one.
-                              const canFold =
-                                substationFolders.available &&
-                                folderKey !== "Imported" &&
-                                folderKey !== "Other";
+                              // Any group can hold folders, 'Imported' and 'Other'
+                              // included — 'Other' is where every report with no
+                              // substation lands, so it is the one that most needs them.
+                              const canFold = substationFolders.available;
+                              // Filing the group itself into a folder of substations, or
+                              // dragging it into one, is only meaningful for a real
+                              // substation. The two invented labels aren't.
+                              const isRealSubstation =
+                                !isSyntheticSubstation(folderKey);
                               const { roots, loose } = canFold
                                 ? substationFolders.treeFor(
                                     folderKey,
@@ -11935,15 +12081,15 @@ export default function JobDetail() {
                                     edge instead of having to be inferred. */}
                                 <summary
                                   className="flex cursor-pointer select-none list-none items-center gap-2.5 px-3 py-2.5 transition-colors hover:bg-neutral-50 dark:hover:bg-dark-200"
-                                  onContextMenu={
-                                    canFold
-                                      ? (e) =>
-                                          openFolderContextMenu(e, {
-                                            kind: "substation",
-                                            label: folderKey,
-                                            innerFolderIds,
-                                          })
-                                      : undefined
+                                  onContextMenu={(e) =>
+                                    openFolderContextMenu(e, {
+                                      kind: "substation",
+                                      label: folderKey,
+                                      innerFolderIds,
+                                      assetIds: sortedAssets.map((a) => a.id),
+                                      foldable: canFold,
+                                      movable: isRealSubstation,
+                                    })
                                   }
                                 >
                                   <ChevronRight className="h-4 w-4 shrink-0 text-neutral-400 transition-transform group-open/sub:rotate-90" />
@@ -11960,24 +12106,30 @@ export default function JobDetail() {
                                       otherwise, and none of them are the point. */}
                                   <span className="ml-auto flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover/sub:opacity-100">
                                     {substationFolders.folders.length > 0 &&
-                                      canFold && (
+                                      isRealSubstation && (
                                         <SubstationDragHandle label={folderKey} />
                                       )}
                                     {/* Imported and Other aren't substations, they're
-                                        "we couldn't tell" — filing them would be a lie,
-                                        so they get no controls at all. */}
+                                        "we couldn't tell" — filing them under one would
+                                        be a lie, so they keep the folder controls and
+                                        lose the move. */}
                                     {canFold && (
                                       <SubstationHeaderMenu
                                         folders={substationFolders.folders}
                                         currentFolderId={
-                                          substationFolders.folderFor(folderKey)?.id ??
-                                          null
+                                          isRealSubstation
+                                            ? (substationFolders.folderFor(folderKey)
+                                                ?.id ?? null)
+                                            : null
                                         }
-                                        onMove={(folderId) =>
-                                          void substationFolders.moveSubstation(
-                                            folderKey,
-                                            folderId,
-                                          )
+                                        onMove={
+                                          isRealSubstation
+                                            ? (folderId) =>
+                                                void substationFolders.moveSubstation(
+                                                  folderKey,
+                                                  folderId,
+                                                )
+                                            : undefined
                                         }
                                         onNewFolder={() =>
                                           setNewSubfolder({
@@ -12103,15 +12255,13 @@ export default function JobDetail() {
                                         return (
                                           <TableRow
                                             key={asset.id}
-                                            onContextMenu={
-                                              canFold
-                                                ? (e) =>
-                                                    openFolderContextMenu(e, {
-                                                      kind: "report",
-                                                      assetId: asset.id,
-                                                      substation: folderKey,
-                                                    })
-                                                : undefined
+                                            onContextMenu={(e) =>
+                                              openFolderContextMenu(e, {
+                                                kind: "report",
+                                                assetId: asset.id,
+                                                substation: folderKey,
+                                                foldable: canFold,
+                                              })
                                             }
                                             // Tighter than the shared default (p-4 in
                                             // every cell), because these rows come in
@@ -12612,7 +12762,7 @@ export default function JobDetail() {
                                   !open && setNewSubfolder(null)
                                 }
                                 title={`New folder in ${newSubfolder.substation}`}
-                                description="Holds reports inside this substation. Folders can be nested as deep as you like."
+                                description={`Holds reports inside ${newSubfolder.substation}. Folders can be nested as deep as you like.`}
                                 onSubmit={(name) =>
                                   substationFolders.addInnerFolder(
                                     newSubfolder.substation,

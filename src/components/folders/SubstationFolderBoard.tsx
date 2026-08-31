@@ -108,7 +108,7 @@ export function DroppableSubstation({
   children,
 }: {
   label: string;
-  /** Off for Imported / Other, which aren't substations and hold no folders. */
+  /** Off until folders are installed; on for every group, Imported and Other included. */
   enabled?: boolean;
   children: React.ReactNode;
 }) {

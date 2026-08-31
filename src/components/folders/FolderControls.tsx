@@ -444,7 +444,11 @@ export function SubstationHeaderMenu({
 }: {
   folders: SubstationFolder[];
   currentFolderId: string | null;
-  onMove: (folderId: string | null) => void;
+  /**
+   * Omitted for the 'Imported' and 'Other' groups: they can hold folders, but they are
+   * not substations, so there is nothing to file them into.
+   */
+  onMove?: (folderId: string | null) => void;
   onNewFolder: () => void;
   onExpandAll?: () => void;
   onCollapseAll?: () => void;
@@ -491,7 +495,7 @@ export function SubstationHeaderMenu({
           </>
         )}
 
-        {(folders.length > 0 || currentFolderId) && (
+        {onMove && (folders.length > 0 || currentFolderId) && (
           <>
             <DropdownMenuSeparator />
             <MoveToFolderSubmenu

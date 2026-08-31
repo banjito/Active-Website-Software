@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { supabase } from "./supabase";
+import {
+  supabase,
+  isOffline,
+  isRetryableAuthError,
+  isUnrecoverableAuthError,
+  readPersistedSession,
+  clearPersistedAuth,
+} from "./supabase";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Navigate, useLocation } from "react-router-dom";
 import { employeeNameEmailRegex } from "./companyConfig";
@@ -18,8 +25,44 @@ export const AuthContext = createContext<AuthContextType | undefined>(
   undefined,
 );
 
+/**
+ * Whether two user objects describe the same signed-in person in the same
+ * state. Used to avoid handing React a brand-new object for an unchanged user.
+ */
+function sameUser(a: User | null, b: User | null): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return (
+    a.id === b.id &&
+    a.email === b.email &&
+    a.role === b.role &&
+    a.updated_at === b.updated_at &&
+    JSON.stringify(a.user_metadata ?? null) ===
+      JSON.stringify(b.user_metadata ?? null) &&
+    JSON.stringify(a.app_metadata ?? null) ===
+      JSON.stringify(b.app_metadata ?? null)
+  );
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUserState] = useState<User | null>(null);
+
+  /**
+   * Sets the user, but keeps the *existing* object when nothing about the user
+   * actually changed.
+   *
+   * Every token renewal hands back a fresh user object describing the same
+   * person. Several reports re-run their load effect on `[jobId, reportId,
+   * user]`, and reloading throws away whatever the technician has typed since
+   * the last successful save. Returning the previous object makes React skip
+   * the re-render entirely, so a routine token renewal - including the one that
+   * fires the moment WiFi comes back, exactly when unsaved work exists - can't
+   * wipe a form. A real change (new sign-in, role update, renamed profile) still
+   * produces a new object and still re-runs those effects.
+   */
+  const setUser = React.useCallback((next: User | null) => {
+    setUserState((prev) => (sameUser(prev, next) ? prev : next));
+  }, []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   // Track users we've already attempted auto-name for this session to prevent loops
@@ -147,65 +190,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   /**
-   * softRefresh - Mimics what happens during sign-out/sign-in without requiring the user to sign out.
-   * This clears stale auth cache and forces a fresh session, which fixes "opportunities not loading" issues.
-   * Returns true if the refresh was successful, false otherwise.
+   * softRefresh - Recovers a stale session in place, without making the user
+   * sign out and back in. Call it when queries start failing with auth errors.
+   *
+   * Returns true when the session was refreshed. A false return does NOT mean
+   * "sign in again": if the auth server was simply unreachable (hotspot drop,
+   * WiFi handoff, captive portal) the stored credentials are left untouched and
+   * the signed-in user is kept, so the next attempt can succeed.
    */
   const softRefresh = async (): Promise<boolean> => {
+    // Offline: there is nothing to recover and nothing worth destroying. The
+    // stored refresh token is still valid; it just can't be exchanged yet.
+    if (isOffline()) {
+      console.warn("🔃 softRefresh: device is offline - keeping the current session.");
+      return false;
+    }
+
     try {
-      console.log(
-        "🔃 softRefresh: Starting session recovery (like sign-out/sign-in but without signing out)...",
-      );
+      console.log("🔃 softRefresh: refreshing the session in place...");
 
-      // Step 1: Clear stale Supabase auth data from storage (mimics what signOut does)
-      try {
-        // Clear only Supabase-related storage keys, not everything
-        const keysToRemove: string[] = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && (key.includes("supabase") || key.includes("sb-"))) {
-            keysToRemove.push(key);
-          }
-        }
-        keysToRemove.forEach((key) => {
-          console.log(`  ↳ Clearing localStorage key: ${key}`);
-          localStorage.removeItem(key);
-        });
-
-        // Also clear sessionStorage auth data
-        const sessionKeysToRemove: string[] = [];
-        for (let i = 0; i < sessionStorage.length; i++) {
-          const key = sessionStorage.key(i);
-          if (key && (key.includes("supabase") || key.includes("sb-"))) {
-            sessionKeysToRemove.push(key);
-          }
-        }
-        sessionKeysToRemove.forEach((key) => {
-          console.log(`  ↳ Clearing sessionStorage key: ${key}`);
-          sessionStorage.removeItem(key);
-        });
-      } catch (e) {
-        console.warn("  ↳ Error clearing storage:", e);
-      }
-
-      // Step 2: Force Supabase to get a completely fresh session
-      console.log("  ↳ Forcing fresh session from Supabase...");
+      // Refresh FIRST, and only ever clear storage once the server has actually
+      // rejected the refresh token. The previous version deleted every Supabase
+      // key before refreshing, so a refresh that failed because the network was
+      // down left the device with no credentials at all - which is why losing
+      // WiFi forced a fresh sign-in. A successful refresh rewrites storage
+      // itself, so the pre-emptive wipe bought nothing.
       const { data: refreshData, error: refreshError } =
         await supabase.auth.refreshSession();
 
       if (refreshError) {
-        console.error("  ↳ softRefresh refreshSession error:", refreshError);
-        // If refresh fails, the user likely needs to actually sign in again
+        if (isUnrecoverableAuthError(refreshError)) {
+          console.error(
+            "  ↳ refresh token was rejected by the server - signing out:",
+            refreshError,
+          );
+          clearPersistedAuth();
+          setUser(null);
+          return false;
+        }
+        console.warn(
+          "  ↳ softRefresh could not reach the auth server; session kept for retry:",
+          refreshError,
+        );
         return false;
       }
 
       if (!refreshData?.session) {
-        console.error("  ↳ softRefresh: No session returned");
+        console.warn("  ↳ softRefresh: no session returned; session kept for retry");
         return false;
       }
 
-      // Step 3: Update the user state with the fresh session
-      console.log("  ↳ softRefresh: Session recovered successfully!");
+      console.log("  ↳ softRefresh: session recovered successfully!");
       setUser(refreshData.session.user ?? null);
       lastRefreshTime.current = Date.now();
 
@@ -216,23 +251,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Helper: detect network/CORS/522 errors — don't clear tokens, treat as "try again later"
-  const isNetworkOrCorsError = (err: any): boolean => {
-    if (!err) return false;
-    const msg = (err?.message ?? String(err)).toLowerCase();
-    const name = (err?.name ?? "").toLowerCase();
-    const status = (err as any)?.status;
-    return (
-      msg.includes("failed to fetch") ||
-      msg.includes("cors") ||
-      msg.includes("access-control-allow-origin") ||
-      msg.includes("network error") ||
-      msg.includes("err_failed") ||
-      name.includes("authretryablefetcherror") ||
-      name.includes("fetcherror") ||
-      status === 522 ||
-      status === 0
+  // Network/CORS/522/offline detection lives in supabase.ts so the auth layer
+  // and the query layer agree on what counts as "try again later".
+  const isNetworkOrCorsError = isRetryableAuthError;
+
+  // onAuthStateChange closes over the first render's state, so read the current
+  // user through a ref instead of the (permanently null) captured value.
+  const userRef = useRef<User | null>(null);
+  userRef.current = user;
+
+  /**
+   * Restores the signed-in user from the tokens on disk, with no network call.
+   *
+   * getSession() reports `session: null` once the access token has aged out and
+   * it cannot reach the server to renew it - true after roughly an hour without
+   * signal. The refresh token in storage is still good, so treating that as
+   * "signed out" is what used to bounce field users to the login screen every
+   * time a hotspot dropped. Keep them signed in on the stored identity; the
+   * client renews the token by itself as soon as the connection is back.
+   */
+  const hydrateFromStoredSession = (): boolean => {
+    const stored = readPersistedSession();
+    if (!stored?.user) return false;
+    console.warn(
+      "📴 Auth server unreachable - staying signed in on the stored session; it will renew when the connection returns.",
     );
+    setUser(stored.user as User);
+    return true;
   };
 
   useEffect(() => {
@@ -285,35 +330,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const isRateLimitError =
           statusCode === 429 || errorMessage.includes("rate limit");
         const isNetworkError = isNetworkOrCorsError(sessionError);
-        const isUnrecoverableAuthError =
+        const isDeadSession =
           !isRateLimitError &&
           !isNetworkError &&
-          (errorMessage.includes("invalid_grant") ||
-            errorMessage.includes("invalid refresh token") ||
+          (isUnrecoverableAuthError(sessionError) ||
             errorMessage.includes("refresh token is invalid"));
 
-        if (isRateLimitError) {
+        if (isRateLimitError || isNetworkError) {
           console.warn(
-            "Rate limit hit - waiting before retry. Do NOT clear tokens.",
+            "Auth server unreachable (offline/CORS/522/rate limit). Restoring the stored session.",
           );
-          setUser(null);
-        } else if (isNetworkError) {
-          console.warn(
-            "Auth server unreachable (CORS/522/network). Showing login; tokens kept for retry.",
-          );
-          setUser(null);
-        } else if (isUnrecoverableAuthError) {
+          // Only fall back to the login screen when there is genuinely nothing
+          // on disk to restore.
+          if (!hydrateFromStoredSession()) setUser(null);
+        } else if (isDeadSession) {
           console.error(
             "Unrecoverable auth error detected - clearing stored auth",
           );
-          try {
-            localStorage.removeItem("supabase.auth.token");
-            Object.keys(localStorage)
-              .filter((k) => k.includes("sb-"))
-              .forEach((k) => localStorage.removeItem(k));
-          } catch (e) {
-            console.warn("Failed to clear localStorage:", e);
-          }
+          clearPersistedAuth();
           setError(sessionError);
           setUser(null);
         } else {
@@ -343,37 +377,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const isRateLimitError =
           (err as any)?.status === 429 || errorMessage.includes("rate limit");
         const isNetworkError = isTimeout || isNetworkOrCorsError(err);
-        const isUnrecoverableAuthError =
+        const isDeadSession =
           !isRateLimitError &&
           !isNetworkError &&
-          (errorMessage.includes("invalid_grant") ||
-            errorMessage.includes("invalid refresh token") ||
+          (isUnrecoverableAuthError(err) ||
             errorMessage.includes("refresh token is invalid"));
 
-        if (isTimeout) {
+        if (isTimeout || isRateLimitError || isNetworkError) {
           console.warn(
-            "Auth session timed out (Supabase may be slow or unreachable). Showing login.",
+            "Auth session could not be checked (timeout/offline/rate limit). Restoring the stored session.",
           );
-          setUser(null);
-        } else if (isRateLimitError) {
-          console.warn(
-            "Rate limit hit during session init - waiting before retry",
-          );
-          setUser(null);
-        } else if (isNetworkError) {
-          console.warn(
-            "Auth server unreachable. Showing login; tokens kept for retry.",
-          );
-          setUser(null);
-        } else if (isUnrecoverableAuthError) {
-          try {
-            localStorage.removeItem("supabase.auth.token");
-            Object.keys(localStorage)
-              .filter((k) => k.includes("sb-"))
-              .forEach((k) => localStorage.removeItem(k));
-          } catch (e) {
-            console.warn("Failed to clear localStorage:", e);
-          }
+          if (!hydrateFromStoredSession()) setUser(null);
+        } else if (isDeadSession) {
+          clearPersistedAuth();
           setError(err);
           setUser(null);
         } else {
@@ -403,19 +419,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // If we get SIGNED_OUT but we currently have a user, something is forcing logout
-      if (event === "SIGNED_OUT" && user) {
+      if (event === "SIGNED_OUT" && userRef.current) {
         console.error(
           "⚠️ SIGNED_OUT received while user exists - investigating...",
         );
+        // Offline, this is almost always a refresh that could not reach the
+        // server rather than a real sign-out. Keep the user on the stored
+        // credentials instead of dropping them at the login screen.
+        if (isOffline() && readPersistedSession()) {
+          console.log("  ↳ Offline with stored credentials, ignoring SIGNED_OUT");
+          return;
+        }
         // Don't immediately sign out - check if we actually have a valid session
         supabase.auth.getSession().then(({ data, error }) => {
-          if (error || !data.session) {
-            console.log("  ↳ Confirmed no valid session, signing out");
-            setUser(null);
-          } else {
+          if (data.session) {
             console.log("  ↳ Session still valid, ignoring SIGNED_OUT event");
+            return;
           }
+          if (isNetworkOrCorsError(error) && readPersistedSession()) {
+            console.log(
+              "  ↳ Could not reach the auth server; keeping the stored session",
+            );
+            return;
+          }
+          console.log("  ↳ Confirmed no valid session, signing out");
+          setUser(null);
         });
+        return;
+      }
+
+      // A null session on a non-sign-out event (INITIAL_SESSION offline, for
+      // instance) means "couldn't confirm", not "signed out". Don't drop a user
+      // we still hold valid credentials for.
+      if (!session && userRef.current && readPersistedSession()) {
+        console.log(
+          `  ↳ ${event} arrived without a session but credentials are stored - keeping the user signed in`,
+        );
+        setLoading(false);
         return;
       }
 
@@ -460,9 +500,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // We'll call setupRoleChannel from within the getSession callback once we have the user
 
     // Auto session health check when tab becomes visible (fixes "opportunities not loading" issue)
-    // This mimics what happens during sign-out/sign-in, automatically recovering stale sessions
+    // This refreshes a stale session in place, without making the user sign in again.
     let lastVisibilityCheck = Date.now();
     const VISIBILITY_CHECK_COOLDOWN_MS = 30000; // 30 seconds minimum between checks
+
+    const checkSessionHealth = async (trigger: string) => {
+      if (!mounted) return;
+
+      // Nothing to check and nothing to fix while the device has no network.
+      // The stored refresh token stays put and gets used the moment we're back.
+      if (isOffline()) {
+        console.log(`  ↳ ${trigger}: device is offline, skipping session check`);
+        return;
+      }
+
+      try {
+        const { data: sessionData, error: sessionError } =
+          await supabase.auth.getSession();
+
+        if (sessionData?.session) {
+          // Session exists, but let's verify the token is actually working
+          const { error: userError } = await supabase.auth.getUser();
+          if (!userError) {
+            console.log("  ↳ Session is healthy, no action needed");
+            return;
+          }
+          if (isNetworkOrCorsError(userError)) {
+            console.log("  ↳ Connection problem, not a session problem - leaving it alone");
+            return;
+          }
+          console.log(
+            "  ↳ getUser failed despite session existing, triggering softRefresh...",
+          );
+          await softRefresh();
+          return;
+        }
+
+        if (isNetworkOrCorsError(sessionError)) {
+          console.log(
+            "  ↳ Auth server unreachable - keeping the stored session for the next attempt",
+          );
+          // The connection died between the offline check above and this call.
+          // Hold onto the user rather than bouncing them to /login.
+          if (!userRef.current) hydrateFromStoredSession();
+          return;
+        }
+
+        console.log("  ↳ Session appears stale, triggering softRefresh...");
+        const success = await softRefresh();
+        if (!success && !isOffline() && !readPersistedSession()) {
+          console.warn("  ↳ softRefresh failed - user needs to sign in again");
+        }
+      } catch (err) {
+        console.warn("  ↳ Session health check error:", err);
+        if (!isNetworkOrCorsError(err)) await softRefresh();
+      }
+    };
 
     const handleVisibilityChange = async () => {
       if (!mounted) return;
@@ -482,41 +575,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       lastVisibilityCheck = now;
 
       console.log("👁️ Tab became visible - checking session health...");
+      await checkSessionHealth("visibilitychange");
+    };
 
-      // Check if session is actually valid by trying to get user
-      try {
-        const { data: sessionData, error: sessionError } =
-          await supabase.auth.getSession();
-
-        if (sessionError || !sessionData?.session) {
-          console.log("  ↳ Session appears stale, triggering softRefresh...");
-          // Session is invalid - trigger soft refresh (like sign-out/sign-in)
-          const success = await softRefresh();
-          if (!success) {
-            console.warn(
-              "  ↳ softRefresh failed - user may need to sign in again",
-            );
-          }
-        } else {
-          // Session exists, but let's verify the token is actually working
-          const { error: userError } = await supabase.auth.getUser();
-          if (userError) {
-            console.log(
-              "  ↳ getUser failed despite session existing, triggering softRefresh...",
-            );
-            await softRefresh();
-          } else {
-            console.log("  ↳ Session is healthy, no action needed");
-          }
-        }
-      } catch (err) {
-        console.warn("  ↳ Session health check error:", err);
-        // On error, try soft refresh just to be safe
-        await softRefresh();
+    // Coming back onto WiFi/hotspot is the moment the access token can actually
+    // be renewed. Do it right away so the first query after reconnecting works,
+    // instead of waiting for the auto-refresh timer or a tab switch.
+    const handleOnline = async () => {
+      if (!mounted) return;
+      console.log("🌐 Connection restored - renewing the session...");
+      lastVisibilityCheck = Date.now();
+      const refreshed = await softRefresh();
+      if (refreshed && !roleChangeChannel && userRef.current) {
+        // The role-change subscription can't be opened offline; open it now.
+        setupRoleChannel(userRef.current);
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("online", handleOnline);
 
     return () => {
       mounted = false;
@@ -525,6 +602,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         supabase.removeChannel(roleChangeChannel);
       }
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("online", handleOnline);
     };
   }, []);
 

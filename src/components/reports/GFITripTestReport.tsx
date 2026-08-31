@@ -1397,7 +1397,7 @@ const GFITripTestReport: React.FC = () => {
                 />
               </div>
               <div className={printOnly}>
-                <table className="w-full border-collapse border border-neutral-300 print:border-black">
+                <table className="comments-print-table w-full border-collapse border border-neutral-300 print:border-black">
                   <tbody>
                     <tr>
                       <td
@@ -1557,7 +1557,7 @@ const GFITripTestReport: React.FC = () => {
               />
             </div>
             <div className={printOnly}>
-              <table className="w-full border-collapse border border-neutral-300 print:border-black">
+              <table className="comments-print-table w-full border-collapse border border-neutral-300 print:border-black">
                 <tbody>
                   <tr>
                     <td

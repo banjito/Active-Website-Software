@@ -29,6 +29,130 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 
 console.log('Supabase client initialized, use direct schema selection in service calls');
 
+/** localStorage key the Supabase client persists the session under. */
+export const AUTH_STORAGE_KEY = 'supabase.auth.token';
+
+/**
+ * True when the browser itself says there is no network. `navigator.onLine` is
+ * only trustworthy in the negative direction (false really does mean no
+ * connection), which is the only direction we act on.
+ */
+export function isOffline(): boolean {
+  return typeof navigator !== 'undefined' && navigator.onLine === false;
+}
+
+/**
+ * True when an auth call failed because the request never reached the auth
+ * server: hotspot dropped, WiFi handed off, DNS failure, 522 from the edge.
+ *
+ * These are retryable. The stored refresh token is still perfectly good, so
+ * nothing about the session may be thrown away in response to one — that is
+ * what used to sign people out every time they lost signal. Only a server that
+ * answers and *rejects* the refresh token means the session is really dead.
+ */
+export function isRetryableAuthError(error: any): boolean {
+  if (!error) return false;
+  if (isOffline()) return true;
+  const message = (error?.message ?? String(error)).toLowerCase();
+  const name = (error?.name ?? '').toLowerCase();
+  const status = error?.status;
+  return (
+    name === 'authretryablefetcherror' ||
+    status === 0 ||
+    status === 429 ||
+    status === 502 ||
+    status === 503 ||
+    status === 504 ||
+    status === 522 ||
+    message.includes('failed to fetch') ||
+    message.includes('load failed') ||
+    message.includes('network error') ||
+    message.includes('networkerror') ||
+    message.includes('err_failed') ||
+    message.includes('err_internet_disconnected') ||
+    message.includes('timeout') ||
+    message.includes('cors') ||
+    message.includes('access-control-allow-origin') ||
+    message.includes('rate limit')
+  );
+}
+
+/** The opposite: the auth server answered and refused the refresh token. */
+export function isUnrecoverableAuthError(error: any): boolean {
+  if (!error || isRetryableAuthError(error)) return false;
+  const message = (error?.message ?? String(error)).toLowerCase();
+  return (
+    message.includes('invalid_grant') ||
+    message.includes('invalid refresh token') ||
+    message.includes('refresh token not found') ||
+    message.includes('refresh_token_not_found') ||
+    message.includes('already used') ||
+    message.includes('session_not_found') ||
+    message.includes('session from session_id claim in jwt does not exist')
+  );
+}
+
+export interface PersistedSession {
+  access_token?: string;
+  refresh_token?: string;
+  expires_at?: number;
+  user?: any;
+}
+
+/**
+ * Reads the session the Supabase client persisted, with no network call.
+ *
+ * This is how a user stays signed in while the device is offline. The tokens on
+ * disk are the truth about who is signed in; `getSession()` can only report that
+ * truth when it can *also* reach the server to trade an expired access token for
+ * a fresh one, so offline it returns `session: null` for a session that is
+ * perfectly recoverable the moment signal comes back.
+ */
+export function readPersistedSession(): PersistedSession | null {
+  try {
+    if (typeof localStorage === 'undefined') return null;
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // supabase-js v2 stores the session object directly; older builds nested it
+    // under `currentSession`.
+    const session = parsed?.currentSession ?? parsed;
+    if (!session?.refresh_token) return null;
+    if (!session.user) {
+      // v2 with a separate user store keeps the user under `<key>-user`.
+      try {
+        const rawUser = localStorage.getItem(`${AUTH_STORAGE_KEY}-user`);
+        const parsedUser = rawUser ? JSON.parse(rawUser) : null;
+        if (parsedUser?.user) session.user = parsedUser.user;
+      } catch {
+        /* no separate user store */
+      }
+    }
+    return session as PersistedSession;
+  } catch (e) {
+    console.warn('Could not read persisted Supabase session:', e);
+    return null;
+  }
+}
+
+/**
+ * Clears persisted auth state. Only call this when the session is *known* dead
+ * (the server rejected the refresh token) or the user asked to sign out. Never
+ * on a network failure.
+ */
+export function clearPersistedAuth(): void {
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.includes('supabase') || key.startsWith('sb-'))) keys.push(key);
+    }
+    keys.forEach((key) => localStorage.removeItem(key));
+  } catch (e) {
+    console.warn('Failed to clear persisted auth:', e);
+  }
+}
+
 // Helper function to identify cookie/session-related errors
 export function isCookieAuthError(error: any): boolean {
   if (!error) return false;
@@ -59,84 +183,93 @@ export function isCookieAuthError(error: any): boolean {
 // Helper function to refresh session and clear stale cookies if needed
 export async function ensureValidSession(): Promise<boolean> {
   try {
+    // Offline: the stored tokens are still the user's session, they just can't
+    // be exchanged right now. Report the session as usable so callers surface a
+    // connection error rather than an auth failure.
+    if (isOffline()) {
+      return !!readPersistedSession();
+    }
+
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-    
+
     if (sessionError || !sessionData?.session) {
+      if (isRetryableAuthError(sessionError)) {
+        console.warn('Auth server unreachable; keeping stored session:', sessionError);
+        return !!readPersistedSession();
+      }
+
       console.warn('Session invalid, attempting refresh:', sessionError);
       const { error: refreshError } = await supabase.auth.refreshSession();
-      
+
       if (refreshError) {
+        if (isRetryableAuthError(refreshError)) {
+          console.warn('Refresh could not reach the server; keeping stored session:', refreshError);
+          return !!readPersistedSession();
+        }
         console.error('Failed to refresh session:', refreshError);
         // If refresh fails, try to get user to see if we can recover
         const { error: getUserError } = await supabase.auth.getUser();
         if (getUserError) {
+          if (isRetryableAuthError(getUserError)) {
+            return !!readPersistedSession();
+          }
           console.error('Session completely invalid:', getUserError);
           return false;
         }
       }
     }
-    
+
     return true;
   } catch (error) {
     console.error('Error ensuring valid session:', error);
+    // A thrown fetch failure is a connection problem, not a dead session.
+    if (isRetryableAuthError(error)) return !!readPersistedSession();
     return false;
   }
 }
 
 /**
- * Performs a "soft refresh" of the Supabase session - clears stale auth cache and 
- * gets a fresh session. This mimics what happens during sign-out/sign-in without
- * requiring the user to actually sign out. Use this when queries start failing.
- * 
- * Returns true if session was successfully recovered, false if user needs to sign in again.
+ * Performs a "soft refresh" of the Supabase session: trades the stored refresh
+ * token for a fresh access token without making the user sign out and back in.
+ * Use this when queries start failing with auth errors.
+ *
+ * Returns true when the session was refreshed. A false return does NOT mean the
+ * user must sign in again - it may simply mean the server was unreachable, in
+ * which case the stored credentials are left untouched for the next attempt.
  */
 export async function performSoftSessionRefresh(): Promise<boolean> {
-  try {
-    console.log('🔃 performSoftSessionRefresh: Clearing stale auth cache and refreshing session...');
-    
-    // Step 1: Clear stale Supabase auth data from storage
-    try {
-      const keysToRemove: string[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.includes('supabase') || key.includes('sb-'))) {
-          keysToRemove.push(key);
-        }
-      }
-      keysToRemove.forEach(key => {
-        console.log(`  ↳ Clearing localStorage key: ${key}`);
-        localStorage.removeItem(key);
-      });
-      
-      const sessionKeysToRemove: string[] = [];
-      for (let i = 0; i < sessionStorage.length; i++) {
-        const key = sessionStorage.key(i);
-        if (key && (key.includes('supabase') || key.includes('sb-'))) {
-          sessionKeysToRemove.push(key);
-        }
-      }
-      sessionKeysToRemove.forEach(key => {
-        console.log(`  ↳ Clearing sessionStorage key: ${key}`);
-        sessionStorage.removeItem(key);
-      });
-    } catch (e) {
-      console.warn('  ↳ Error clearing storage:', e);
-    }
+  // Offline is not a reason to touch stored credentials. Bail out and let the
+  // caller retry when the connection is back.
+  if (isOffline()) {
+    console.warn('🔃 performSoftSessionRefresh: device is offline - keeping stored session.');
+    return false;
+  }
 
-    // Step 2: Force Supabase to get a fresh session
+  try {
+    console.log('🔃 performSoftSessionRefresh: refreshing session...');
+
+    // Refresh FIRST. The old version wiped every Supabase key out of storage
+    // before refreshing, so a refresh that failed for a network reason left the
+    // device with no credentials at all - a permanent sign-out caused by a
+    // temporary WiFi drop. A successful refresh rewrites storage on its own.
     const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-    
+
     if (refreshError) {
-      console.error('  ↳ performSoftSessionRefresh failed:', refreshError);
+      if (isUnrecoverableAuthError(refreshError)) {
+        console.error('  ↳ refresh token was rejected - clearing auth:', refreshError);
+        clearPersistedAuth();
+        return false;
+      }
+      console.warn('  ↳ refresh failed but is retryable; tokens kept:', refreshError);
       return false;
     }
 
     if (!refreshData?.session) {
-      console.error('  ↳ performSoftSessionRefresh: No session returned');
+      console.warn('  ↳ performSoftSessionRefresh: no session returned; tokens kept');
       return false;
     }
 
-    console.log('  ↳ performSoftSessionRefresh: Session recovered successfully!');
+    console.log('  ↳ performSoftSessionRefresh: session recovered successfully!');
     return true;
   } catch (err) {
     console.error('  ↳ performSoftSessionRefresh unexpected error:', err);

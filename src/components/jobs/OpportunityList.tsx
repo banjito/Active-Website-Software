@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { Dialog } from "@headlessui/react";
 import { format } from "date-fns";
-import { supabase, isAuthError } from "../../lib/supabase";
+import { supabase, isAuthError, isOffline } from "../../lib/supabase";
 import { useAuth } from "../../lib/AuthContext";
 import { useDemoMode } from "../../lib/DemoModeContext";
 import { useNavigate, Link } from "react-router-dom";
@@ -1691,6 +1691,13 @@ export default function OpportunityList() {
               fetchOpportunities();
             }, 100);
             return; // Don't set error, we're retrying
+          } else if (isOffline()) {
+            // No connection: the session is fine, the network isn't. Don't tell
+            // people to sign out - they'd have to sign back in over the same
+            // dead connection.
+            setLoadError(
+              "You're offline. This will load again once you're back on WiFi or data.",
+            );
           } else {
             console.warn(
               "❌ Session recovery failed - user may need to sign in again",
@@ -1699,7 +1706,11 @@ export default function OpportunityList() {
           }
         } catch (recoveryError) {
           console.error("Session recovery error:", recoveryError);
-          setLoadError("Session error. Please sign out and sign back in.");
+          setLoadError(
+            isOffline()
+              ? "You're offline. This will load again once you're back on WiFi or data."
+              : "Session error. Please sign out and sign back in.",
+          );
         }
       } else {
         setLoadError(

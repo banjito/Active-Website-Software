@@ -103,6 +103,18 @@ export class VersionChecker {
     }
   }
 
+  private playUpdateSound() {
+    try {
+      const audio = new Audio("/update.mp3");
+      audio.volume = 0.5;
+      // Autoplay can be blocked if the user hasn't interacted with the page yet.
+      // The toast is the real notification, so a silent failure is fine.
+      void audio.play().catch(() => {});
+    } catch {
+      // Ignore - sound is a nicety, not a requirement
+    }
+  }
+
   private handleUpdate(newVersion: string) {
     // Stop checking - we only need to notify once per session
     if (this.intervalId) {
@@ -115,6 +127,8 @@ export class VersionChecker {
     this.updateNotified = true;
 
     console.log("New version available:", newVersion);
+
+    this.playUpdateSound();
 
     // Show a persistent toast and let the user refresh when they're ready.
     // Never reload out from under them - they may be mid-task.

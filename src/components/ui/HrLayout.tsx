@@ -37,6 +37,7 @@ import {
   Phone,
   UserCheck,
   BookOpen,
+  PiggyBank,
   Search,
   X,
 } from "lucide-react";
@@ -323,6 +324,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
     "/hr/onboarding/your-onboarding",
     "/hr/onboarding/sign-form",
     "/hr/handbook",
+    "/hr/retirement-calculator",
   ];
   const isPathAllowedForLimited = HR_LIMITED_ALLOWED_PATHS.some(
     (p) => location.pathname === p || location.pathname.startsWith(p + "/"),
@@ -667,11 +669,13 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
           { path: "/hr/handbook", label: "Employee Handbook" },
           { path: "/hr/announcements", label: "Announcements" },
           { path: "/hr/employee-files", label: "Employee Files" },
+          { path: "/hr/retirement-calculator", label: "401(k) Calculator" },
           { path: "/hr/self-service/manager-portal", label: "Manager Portal" },
         ]
       : [
           { path: "/hr/handbook", label: "Employee Handbook" },
           { path: "/hr/employee-files", label: "Employee Files" },
+          { path: "/hr/retirement-calculator", label: "401(k) Calculator" },
           { path: "/hr/onboarding/your-onboarding", label: "Your Onboarding" },
           { path: "/hr/data/employee-profiles", label: "Employee Profiles" },
           { path: "/hr/data/org-chart", label: "Org Chart" },
@@ -889,6 +893,15 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                     icon={<Folder className="h-3.5 w-3.5" />}
                     label="Employee Files"
                     active={pathMatches(location.pathname, "/hr/employee-files")}
+                  />
+                  <NavLinkRow
+                    to="/hr/retirement-calculator"
+                    icon={<PiggyBank className="h-3.5 w-3.5" />}
+                    label="401(k) Calculator"
+                    active={pathMatches(
+                      location.pathname,
+                      "/hr/retirement-calculator",
+                    )}
                   />
                 </div>
 

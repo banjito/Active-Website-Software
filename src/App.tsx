@@ -100,6 +100,7 @@ import CustomFormTemplates from "./pages/CustomFormTemplates";
 import CustomFormPreview from "./pages/CustomFormPreview";
 import EULA from "./pages/EULA";
 import Privacy from "./pages/Privacy";
+import RetirementCalculator from "./pages/RetirementCalculator";
 import OilResults from "./pages/OilResults";
 import AmplifyResults from "./pages/AmplifyResults";
 import AmplifyReportPage from "./pages/AmplifyReportView";
@@ -1506,6 +1507,17 @@ function App() {
                       <RequireAuth>
                         <HrLayout>
                           <HROnboarding />
+                        </HrLayout>
+                      </RequireAuth>
+                    }
+                  />
+
+                  <Route
+                    path="/hr/retirement-calculator"
+                    element={
+                      <RequireAuth>
+                        <HrLayout>
+                          <RetirementCalculator />
                         </HrLayout>
                       </RequireAuth>
                     }

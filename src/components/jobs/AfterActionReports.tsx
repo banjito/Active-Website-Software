@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { isSuperUser } from "@/lib/roles";
@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { newReportId } from "@/components/reports/common/reportIdentity";
 
 interface TimeAllocation {
   category: string;
@@ -133,6 +134,10 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
   >("technician_progress");
   const [isEditMode, setIsEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
+  // The id for a report that has not been saved yet. A failed save leaves the
+  // dialog open with no id to key on, so the retry inserted a second row --
+  // minting the id up front and upserting on it keeps a retry to one report.
+  const draftReportIdRef = useRef<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState<Partial<AfterActionReport>>({
@@ -250,6 +255,7 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
   const handleCreateNew = (type: "technician_progress" | "admin_closeout") => {
     setReportType(type);
     setSelectedReport(null);
+    draftReportIdRef.current = null;
     resetForm();
     setIsEditMode(true);
     setIsCreateDialogOpen(true);
@@ -396,14 +402,22 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
           .select()
           .single();
       } else {
-        // Create new report
+        // Create new report, on an id claimed before the request goes out so a
+        // retry overwrites the same row instead of adding another copy.
+        if (!draftReportIdRef.current) {
+          draftReportIdRef.current = newReportId();
+        }
         result = await supabase
           .schema("neta_ops")
           .from("after_action_reports")
-          .insert({
-            ...reportData,
-            created_by: user.id,
-          })
+          .upsert(
+            {
+              ...reportData,
+              id: draftReportIdRef.current,
+              created_by: user.id,
+            },
+            { onConflict: "id" },
+          )
           .select()
           .single();
       }

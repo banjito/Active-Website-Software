@@ -159,6 +159,7 @@ import {
   SubstationDragHandle,
   ReportDragHandle,
   DroppableInnerFolderRow,
+  DroppableSubstation,
 } from "@/components/folders/SubstationFolderBoard";
 import {
   AddFolderButton,
@@ -328,6 +329,95 @@ type ReportAuditInfo = {
   reviewed_at?: string | null;
   review_comments?: string | null;
 };
+
+/**
+ * The Reports tab's data for a job, kept alive across remounts.
+ *
+ * Loading it is expensive on real jobs (1,743 reports is ~2.5s of paging, plus a fetch per
+ * report to derive the display names), and all of it was being paid again every time the
+ * tab was re-entered or the page remounted on the way back from a report. A cached entry
+ * paints immediately and is revalidated in the background instead. Module scope is what
+ * lets it outlive JobDetail.
+ */
+type JobAssetsCacheEntry = {
+  assets: Asset[];
+  totalAssetCount: number;
+  reportTimestamps: Record<string, ReportAuditInfo>;
+  openReportFlagCount: number;
+  /**
+   * Names, substations, serials and evaluations read out of the report bodies, plus the
+   * exact array they were derived from. That derivation is the slowest part of the load,
+   * so it is skipped when a revalidation comes back with rows identical to these.
+   */
+  derived: {
+    source: Asset[];
+    names: Record<string, string>;
+    substations: Record<string, string>;
+    serialNumbers: Record<string, string[]>;
+    evaluations: Record<string, EvaluationResult>;
+  } | null;
+};
+
+/** Keyed "<user id>:<job id>", so a user switch cannot inherit another user's rows. */
+const jobAssetsCache = new Map<string, JobAssetsCacheEntry>();
+const JOB_ASSETS_CACHE_LIMIT = 5;
+
+function readJobAssetsCache(key: string | null): JobAssetsCacheEntry | null {
+  return key ? (jobAssetsCache.get(key) ?? null) : null;
+}
+
+function writeJobAssetsCache(key: string | null, entry: JobAssetsCacheEntry) {
+  if (!key) return;
+  // Re-inserting keeps the Map in least-recently-used order for the eviction below.
+  jobAssetsCache.delete(key);
+  jobAssetsCache.set(key, entry);
+  while (jobAssetsCache.size > JOB_ASSETS_CACHE_LIMIT) {
+    const oldest = jobAssetsCache.keys().next().value;
+    if (oldest === undefined) break;
+    jobAssetsCache.delete(oldest);
+  }
+}
+
+function patchJobAssetsCache(
+  key: string | null,
+  patch: Partial<JobAssetsCacheEntry>,
+) {
+  const existing = readJobAssetsCache(key);
+  if (!key || !existing) return;
+  jobAssetsCache.set(key, { ...existing, ...patch });
+}
+
+/** The columns the Reports tab actually reads, i.e. what makes a row "changed". */
+const CACHED_ASSET_FIELDS = [
+  "id",
+  "name",
+  "file_url",
+  "created_at",
+  "status",
+  "substation",
+  "urgency",
+  "template_type",
+  "submitted_at",
+  "approved_at",
+  "sent_at",
+  "submitted_by",
+  "approved_by",
+  "sent_by",
+  "reviewed_by",
+  "reviewed_at",
+  "review_comments",
+  "equipment_asset_id",
+] as const satisfies readonly (keyof Asset)[];
+
+function sameAssetRows(a: Asset[], b: Asset[]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((row, index) => {
+    const other = b[index];
+    return CACHED_ASSET_FIELDS.every(
+      (field) => (row[field] ?? null) === (other[field] ?? null),
+    );
+  });
+}
 
 interface RelatedOpportunity {
   id: string;
@@ -603,6 +693,11 @@ export default function JobDetail() {
     refreshJobDetails,
   } = useJobDetails(id);
 
+  // See jobAssetsCache: this job's reports, if they are already loaded from an earlier
+  // visit in this session.
+  const jobAssetsCacheKey = user?.id && id ? `${user.id}:${id}` : null;
+  const cachedJobAssets = readJobAssetsCache(jobAssetsCacheKey);
+
   // Cache admin status to prevent unmounting ReportApprovalWorkflow during auth flickers
   const isAdminRef = useRef<boolean>(false);
   if (user?.user_metadata?.role === "Admin" || isSuperUser(user?.email)) {
@@ -622,15 +717,20 @@ export default function JobDetail() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [assets, setAssets] = useState<Asset[]>([]);
-  const [jobAssets, setJobAssets] = useState<Asset[]>([]);
+  const [jobAssets, setJobAssets] = useState<Asset[]>(
+    () => cachedJobAssets?.assets ?? [],
+  );
   /**
    * True from the first byte of fetchJobAssets until the list is on screen.
    *
    * Starts true: on a job with 1300 reports the fetch pages through job_assets and then
    * the assets themselves, and an empty list rendered meanwhile reads as "this job has no
-   * reports" rather than "not loaded yet".
+   * reports" rather than "not loaded yet". A cached job is the exception - its rows are
+   * already on screen, and the background revalidation must not hide them behind a bar.
    */
-  const [jobAssetsLoading, setJobAssetsLoading] = useState(true);
+  const [jobAssetsLoading, setJobAssetsLoading] = useState(
+    () => !cachedJobAssets,
+  );
   /**
    * The bracketed number on a status tab, or an ellipsis while the list is still loading.
    *
@@ -647,16 +747,30 @@ export default function JobDetail() {
    * parked it at 100% for the entire second half of the wait.
    */
   const [jobAssetsPercent, setJobAssetsPercent] = useState(0);
-  const [filteredJobAssets, setFilteredJobAssets] = useState<Asset[]>([]);
-  const [openReportFlagCount, setOpenReportFlagCount] = useState(0);
+  /** Cache key of the revalidation currently running, so re-entry does not stack them. */
+  const jobAssetsFetchInFlight = useRef<string | null>(null);
+  const [filteredJobAssets, setFilteredJobAssets] = useState<Asset[]>(
+    () => cachedJobAssets?.assets ?? [],
+  );
+  const [openReportFlagCount, setOpenReportFlagCount] = useState(
+    () => cachedJobAssets?.openReportFlagCount ?? 0,
+  );
+  /**
+   * Latest flag count, for the cache write in fetchJobAssets. The count is fetched in
+   * parallel with the asset rows and usually lands first, so reading it back off state
+   * (or off the cache entry, which may not exist yet) would write a stale zero.
+   */
+  const openReportFlagCountRef = useRef(
+    cachedJobAssets?.openReportFlagCount ?? 0,
+  );
   const [reportTimestampsByAsset, setReportTimestampsByAsset] = useState<
     Record<string, ReportAuditInfo>
-  >({});
+  >(() => cachedJobAssets?.reportTimestamps ?? {});
   // PASS / FAIL / LIMITED SERVICE per report asset, so the list shows the
   // equipment evaluation without having to open each report.
   const [assetEvaluations, setAssetEvaluations] = useState<
     Record<string, EvaluationResult>
-  >({});
+  >(() => cachedJobAssets?.derived?.evaluations ?? {});
   // How the reports list is searched, filtered and sorted survives a reload — losing a
   // carefully narrowed list to an accidental refresh is worse than the storage cost.
   const reportsListKey = id ? `job-reports:${id}` : null;
@@ -711,7 +825,9 @@ export default function JobDetail() {
 
   // Client-side folder-aware pagination for linked assets
   const [folderPage, setFolderPage] = useState(1);
-  const [totalAssetCount, setTotalAssetCount] = useState(0);
+  const [totalAssetCount, setTotalAssetCount] = useState(
+    () => cachedJobAssets?.totalAssetCount ?? 0,
+  );
 
   // The folder level above substation. Empty (and invisible) until someone creates one,
   // and on instances that haven't run create_substation_folders.sql.
@@ -1857,10 +1973,10 @@ export default function JobDetail() {
     useState<Asset | null>(null);
   const [dynamicAssetNames, setDynamicAssetNames] = useState<
     Record<string, string>
-  >({});
+  >(() => cachedJobAssets?.derived?.names ?? {});
   const [assetSubstations, setAssetSubstations] = useState<
     Record<string, string>
-  >({});
+  >(() => cachedJobAssets?.derived?.substations ?? {});
 
   /**
    * What a right-click on the Reports tab landed on.
@@ -2070,7 +2186,7 @@ export default function JobDetail() {
   // several (per-phase CTs, contactor plus starting reactor).
   const [assetSerialNumbers, setAssetSerialNumbers] = useState<
     Record<string, string[]>
-  >({});
+  >(() => cachedJobAssets?.derived?.serialNumbers ?? {});
   const [reportAuditUsers, setReportAuditUsers] = useState<
     Record<string, string>
   >({});
@@ -2978,7 +3094,8 @@ export default function JobDetail() {
       // These fetches might still be needed if useJobDetails doesn't cover them
       fetchAssets();
       setFolderPage(1);
-      fetchJobAssets();
+      // A revisit paints this job's cached reports first and revalidates behind them.
+      fetchJobAssets({ fromCache: true });
 
       // Fetch related opportunity if exists
       const fetchRelatedOpportunity = async () => {
@@ -3612,7 +3729,9 @@ export default function JobDetail() {
 
   async function fetchOpenReportFlagCount(assetIds: string[]) {
     if (assetIds.length === 0) {
+      openReportFlagCountRef.current = 0;
       setOpenReportFlagCount(0);
+      patchJobAssetsCache(jobAssetsCacheKey, { openReportFlagCount: 0 });
       return;
     }
 
@@ -3630,27 +3749,69 @@ export default function JobDetail() {
         if (error) throw error;
         count += chunkCount || 0;
       }
+      openReportFlagCountRef.current = count;
       setOpenReportFlagCount(count);
+      patchJobAssetsCache(jobAssetsCacheKey, { openReportFlagCount: count });
     } catch (error) {
       console.warn("[JobDetail] Failed to load report flag count:", error);
+      openReportFlagCountRef.current = 0;
       setOpenReportFlagCount(0);
     }
   }
 
-  async function fetchJobAssets() {
+  /**
+   * @param options.fromCache true when this is a plain (re)visit to the job rather than a
+   * refresh after a change. Such a load may reuse everything a previous visit derived, as
+   * long as the rows come back identical; an explicit refresh always re-derives, because
+   * editing a report can change its display name without touching its asset row.
+   */
+  async function fetchJobAssets(options?: { fromCache?: boolean }) {
     // No job id means nothing will ever arrive, so drop the flag rather than leaving the
     // tab spinning forever.
     if (!id) {
       setJobAssetsLoading(false);
       return;
     }
-    setJobAssetsLoading(true);
-    setJobAssetsPercent(0);
+
+    // A previous visit's rows go up immediately; the fetch below then revalidates them in
+    // the background. Only a job we have never loaded gets the progress bar.
+    const cached = readJobAssetsCache(jobAssetsCacheKey);
+    if (cached) {
+      setJobAssets(cached.assets);
+      setFilteredJobAssets(cached.assets);
+      setTotalAssetCount(cached.totalAssetCount);
+      setReportTimestampsByAsset(cached.reportTimestamps);
+      openReportFlagCountRef.current = cached.openReportFlagCount;
+      setOpenReportFlagCount(cached.openReportFlagCount);
+      setJobAssetsLoading(false);
+    }
+
+    // Tab flipping can call this again while the previous revalidation is still running;
+    // a second identical pass over 1,700 rows would only slow the first one down. A
+    // refresh after a change is never dropped this way - it has new rows to collect.
+    if (
+      options?.fromCache &&
+      jobAssetsFetchInFlight.current === jobAssetsCacheKey
+    ) {
+      return;
+    }
+    jobAssetsFetchInFlight.current = jobAssetsCacheKey;
+
+    const silent = Boolean(cached);
+    if (!silent) {
+      setJobAssetsLoading(true);
+      setJobAssetsPercent(0);
+    }
     /** Move the bar to `done` of `total` within one phase's slice of it. */
-    const advance = (from: number, to: number, done: number, total: number) =>
+    const advance = (from: number, to: number, done: number, total: number) => {
+      if (silent) return;
       setJobAssetsPercent(
         from + (to - from) * (total > 0 ? Math.min(done / total, 1) : 1),
       );
+    };
+    const setPhase = (percent: number) => {
+      if (!silent) setJobAssetsPercent(percent);
+    };
     try {
       // 0. How many links there are, so every later phase knows its denominator up front.
       // head:true returns the count and no rows.
@@ -3660,7 +3821,7 @@ export default function JobDetail() {
         .select("asset_id", { count: "exact", head: true })
         .eq("job_id", id);
       const expectedLinks = linkCount ?? 0;
-      setJobAssetsPercent(JOB_ASSET_LOAD_PHASES.count);
+      setPhase(JOB_ASSET_LOAD_PHASES.count);
 
       // 1. Fetch ALL asset IDs in batches
       const allAssetIds: string[] = [];
@@ -3687,13 +3848,23 @@ export default function JobDetail() {
         offset += JOB_ASSETS_BATCH_SIZE;
       }
 
-      setJobAssetsPercent(JOB_ASSET_LOAD_PHASES.ids);
+      setPhase(JOB_ASSET_LOAD_PHASES.ids);
 
       if (allAssetIds.length === 0) {
+        const empty: Asset[] = [];
         setTotalAssetCount(0);
-        setJobAssets([]);
-        setFilteredJobAssets([]);
+        setJobAssets(empty);
+        setFilteredJobAssets(empty);
+        openReportFlagCountRef.current = 0;
         setOpenReportFlagCount(0);
+        setReportTimestampsByAsset({});
+        writeJobAssetsCache(jobAssetsCacheKey, {
+          assets: empty,
+          totalAssetCount: 0,
+          reportTimestamps: {},
+          openReportFlagCount: 0,
+          derived: null,
+        });
         return;
       }
 
@@ -3733,7 +3904,7 @@ export default function JobDetail() {
           allAssetIds.length,
         );
       }
-      setJobAssetsPercent(JOB_ASSET_LOAD_PHASES.rows);
+      setPhase(JOB_ASSET_LOAD_PHASES.rows);
 
       // Preserve same order as job_assets (allAssetIds)
       const idToAsset = new Map(allAssetsData.map((a) => [a.id, a]));
@@ -3741,13 +3912,35 @@ export default function JobDetail() {
         .map((aid) => idToAsset.get(aid))
         .filter(Boolean) as any[];
 
-      setJobAssets(orderedAssets);
-      setTotalAssetCount(
-        orderedAssets.filter((asset) => asset.status !== "archived").length,
-      );
-      setFilteredJobAssets(orderedAssets);
-      setDynamicAssetNames({});
-      setAssetSerialNumbers({});
+      // Handing back the *previous* array when the rows are unchanged is what keeps the
+      // effects keyed on `jobAssets` - above all the per-report name derivation - from
+      // re-running on every revisit. An explicit refresh opts out: a report edit can
+      // change what those effects read without changing the asset row itself.
+      const rowsUnchanged =
+        Boolean(options?.fromCache) &&
+        Boolean(cached) &&
+        sameAssetRows(cached!.assets, orderedAssets as Asset[]);
+      const nextAssets = rowsUnchanged
+        ? cached!.assets
+        : (orderedAssets as Asset[]);
+      const nextTotalCount = nextAssets.filter(
+        (asset) => asset.status !== "archived",
+      ).length;
+
+      setJobAssets(nextAssets);
+      setTotalAssetCount(nextTotalCount);
+      setFilteredJobAssets(nextAssets);
+      if (!rowsUnchanged) {
+        setDynamicAssetNames({});
+        setAssetSerialNumbers({});
+      }
+      writeJobAssetsCache(jobAssetsCacheKey, {
+        assets: nextAssets,
+        totalAssetCount: nextTotalCount,
+        reportTimestamps: rowsUnchanged ? cached!.reportTimestamps : {},
+        openReportFlagCount: openReportFlagCountRef.current,
+        derived: rowsUnchanged ? cached!.derived : null,
+      });
 
       // 3. For report assets, fetch linked report timestamps
       const reportAssetIds = orderedAssets
@@ -3776,7 +3969,7 @@ export default function JobDetail() {
               reportAssetIds.length,
             );
           }
-          setJobAssetsPercent(JOB_ASSET_LOAD_PHASES.links);
+          setPhase(JOB_ASSET_LOAD_PHASES.links);
 
           const reportIds = Array.from(new Set(links.map((l) => l.report_id)));
           const repMap = new Map<string, any>();
@@ -3818,17 +4011,24 @@ export default function JobDetail() {
             }
           });
           setReportTimestampsByAsset(tsByAsset);
+          patchJobAssetsCache(jobAssetsCacheKey, {
+            reportTimestamps: tsByAsset,
+          });
         } catch (e) {
           console.warn("Failed to fetch report timestamps for assets:", e);
         }
       } else {
         setReportTimestampsByAsset({});
+        patchJobAssetsCache(jobAssetsCacheKey, { reportTimestamps: {} });
       }
     } catch (error) {
       console.error("Error fetching job assets:", error);
     } finally {
       // Also covers the early return above when the job has no linked assets.
       setJobAssetsLoading(false);
+      if (jobAssetsFetchInFlight.current === jobAssetsCacheKey) {
+        jobAssetsFetchInFlight.current = null;
+      }
     }
   }
 
@@ -5177,6 +5377,12 @@ export default function JobDetail() {
   useEffect(() => {
     (async () => {
       if (!jobAssets || jobAssets.length === 0) return;
+      // This pass costs one fetch per report, so it is skipped when a previous visit
+      // already ran it over these exact rows. fetchJobAssets keeps the array identity
+      // stable in precisely that case, and drops `derived` whenever the rows change.
+      if (readJobAssetsCache(jobAssetsCacheKey)?.derived?.source === jobAssets) {
+        return;
+      }
       const nameUpdates: Record<string, string> = {};
       const substationUpdates: Record<string, string> = {};
       const evaluationUpdates: Record<string, EvaluationResult> = {};
@@ -5560,8 +5766,17 @@ export default function JobDetail() {
         setAssetSerialNumbers((prev) => ({ ...prev, ...serialUpdates }));
       }
       setAssetEvaluations(evaluationUpdates);
+      patchJobAssetsCache(jobAssetsCacheKey, {
+        derived: {
+          source: jobAssets,
+          names: nameUpdates,
+          substations: substationUpdates,
+          serialNumbers: serialUpdates,
+          evaluations: evaluationUpdates,
+        },
+      });
     })();
-  }, [jobAssets]);
+  }, [jobAssets, jobAssetsCacheKey]);
 
   // Contract Management Functions
   const fetchContracts = async () => {
@@ -11703,8 +11918,12 @@ export default function JobDetail() {
                               );
 
                               return (
-                              <details
+                              <DroppableSubstation
                                 key={folderKey}
+                                label={folderKey}
+                                enabled={canFold}
+                              >
+                              <details
                                 ref={(el) => {
                                   registerSubstationDetails(folderKey, el);
                                 }}
@@ -12339,6 +12558,7 @@ export default function JobDetail() {
                                   </Table>
                                 </div>
                               </details>
+                              </DroppableSubstation>
                               );
                             };
 

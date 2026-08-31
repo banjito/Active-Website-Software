@@ -6,6 +6,7 @@ import {
   PointerSensor,
   closestCenter,
   pointerWithin,
+  useDndContext,
   useDraggable,
   useDroppable,
   useSensor,
@@ -25,6 +26,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, FolderOutput } from "lucide-react";
 import { SubstationFolderShell } from "./SubstationFolderShell";
 import { InnerFolderRow } from "./InnerFolderRow";
+import { substationKey } from "@/utils/substationFolders";
 import type { FolderedUnit, SubstationFolder } from "@/lib/types/substationFolders";
 import type { SubstationFoldersApi } from "@/hooks/useSubstationFolders";
 
@@ -32,6 +34,7 @@ const SUB_PREFIX = "sub:";
 const FOLDER_PREFIX = "folder:";
 const REPORT_PREFIX = "report:";
 const INNER_PREFIX = "inner:";
+const SUBROOT_PREFIX = "subroot:";
 const UNGROUPED_ID = "ungrouped";
 
 /**
@@ -88,6 +91,42 @@ export function ReportDragHandle({ assetId }: { assetId: string }) {
     >
       <GripVertical className="h-3.5 w-3.5" />
     </span>
+  );
+}
+
+/**
+ * A whole substation, as a place to drop a report that should sit loose in it.
+ *
+ * Wraps the substation accordion rather than sitting inside it so the heading counts too:
+ * dragging a report onto "Zech Bug Fix" is the obvious way to take it out of a folder
+ * nested under that substation. Inner folder rows are smaller, so pointer collision picks
+ * them first whenever the cursor is actually over one.
+ */
+export function DroppableSubstation({
+  label,
+  enabled = true,
+  children,
+}: {
+  label: string;
+  /** Off for Imported / Other, which aren't substations and hold no folders. */
+  enabled?: boolean;
+  children: React.ReactNode;
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `${SUBROOT_PREFIX}${label}`,
+    disabled: !enabled,
+  });
+  const { active } = useDndContext();
+  // Only a report can land loose in a substation, so only a report lights it up.
+  const highlight = isOver && String(active?.id ?? "").startsWith(REPORT_PREFIX);
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={highlight ? "outline outline-2 outline-offset-[-1px] outline-brand" : undefined}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -155,8 +194,8 @@ function SortableFolder({
   );
 }
 
-/** Somewhere to drop a substation to take it back out of a folder. */
-function UngroupedDropZone() {
+/** Somewhere to drop a substation, or a report, to take it back out of a folder. */
+function UngroupedDropZone({ what }: { what: "substation" | "report" }) {
   const { setNodeRef, isOver } = useDroppable({ id: UNGROUPED_ID });
   return (
     <div
@@ -168,7 +207,7 @@ function UngroupedDropZone() {
       }`}
     >
       <FolderOutput className="h-4 w-4" />
-      Drop here to take a substation out of its folder
+      Drop here to take this {what} out of its folder
     </div>
   );
 }
@@ -254,24 +293,47 @@ export function SubstationFolderBoard({
         void api.moveItems([assetId], overId.slice(INNER_PREFIX.length), "report");
       } else if (overId === UNGROUPED_ID) {
         void api.moveItems([assetId], null, "report");
+      } else if (overId.startsWith(SUBROOT_PREFIX)) {
+        // Dropped on the substation itself: out of every folder, still in the substation.
+        // A report belongs to one substation and can't be dragged to another, so a drop on
+        // somebody else's substation is a miss, not a move.
+        const label = overId.slice(SUBROOT_PREFIX.length);
+        const current = api.itemFolder(assetId);
+        const home = current
+          ? api.innerFolders.find((f) => f.id === current)?.substation_key
+          : null;
+        if (home && home !== substationKey(label)) return;
+        void api.moveItems([assetId], null, "report");
       }
       return;
     }
+
+    // A substation body under the cursor stands in for whatever folder holds it, so
+    // dropping onto one keeps meaning what it did before there was a target there.
+    const overUnitId = overId.startsWith(SUBROOT_PREFIX)
+      ? (() => {
+          const label = overId.slice(SUBROOT_PREFIX.length);
+          if (activeId === `${SUB_PREFIX}${label}`) return null;
+          const folder = api.folderFor(label);
+          return folder ? `${FOLDER_PREFIX}${folder.id}` : UNGROUPED_ID;
+        })()
+      : overId;
+    if (!overUnitId) return;
 
     if (activeId.startsWith(SUB_PREFIX)) {
       const label = activeId.slice(SUB_PREFIX.length);
-      if (overId === UNGROUPED_ID) {
+      if (overUnitId === UNGROUPED_ID) {
         void api.moveSubstation(label, null);
-      } else if (overId.startsWith(FOLDER_PREFIX)) {
-        void api.moveSubstation(label, overId.slice(FOLDER_PREFIX.length));
+      } else if (overUnitId.startsWith(FOLDER_PREFIX)) {
+        void api.moveSubstation(label, overUnitId.slice(FOLDER_PREFIX.length));
       }
       return;
     }
 
-    if (activeId.startsWith(FOLDER_PREFIX) && overId.startsWith(FOLDER_PREFIX)) {
-      if (activeId === overId) return;
+    if (activeId.startsWith(FOLDER_PREFIX) && overUnitId.startsWith(FOLDER_PREFIX)) {
+      if (activeId === overUnitId) return;
       const from = sortableFolderIds.indexOf(activeId);
-      const to = sortableFolderIds.indexOf(overId);
+      const to = sortableFolderIds.indexOf(overUnitId);
       if (from < 0 || to < 0) return;
       void api.reorderFolders(
         arrayMove(sortableFolderIds, from, to).map((id) => id.slice(FOLDER_PREFIX.length)),
@@ -318,7 +380,9 @@ export function SubstationFolderBoard({
 
           {/* Only while something is in the air — a permanent dashed strip below every
               reports list would be clutter on the jobs that never use folders. */}
-          {(activeLabel || activeReportId) && <UngroupedDropZone />}
+          {(activeLabel || activeReportId) && (
+            <UngroupedDropZone what={activeReportId ? "report" : "substation"} />
+          )}
         </div>
       </SortableContext>
 

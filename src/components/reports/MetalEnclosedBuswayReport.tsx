@@ -21,6 +21,7 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import { newReportId } from "./common/reportIdentity";
 
 // Add dropdown option constants
 const INSPECTION_OPTIONS = [
@@ -1230,29 +1231,43 @@ const MetalEnclosedBuswayReport: React.FC = () => {
         test_equipment: testEquipment,
       };
 
+      // One id for the whole save. Saving with skipAlertAndNavigation used to
+      // write the id nowhere -- no URL, no state -- so the next save inserted a
+      // second report; keying on currentReportId closes that.
+      const isNewReport = !reportId && !currentReportId;
+      const saveId = reportId || currentReportId || newReportId();
+
       let result;
-      if (reportId) {
-        // Update existing report
+      if (!isNewReport) {
+        // Update existing report. This stays a plain update: an upsert is an
+        // INSERT ... ON CONFLICT, and Postgres checks the proposed insert row
+        // first, so it would demand user_id -- which would mean overwriting the
+        // original author on every edit.
         result = await supabase
           .schema("neta_ops")
           .from("metal_enclosed_busway_reports")
           .update(upsertPayload)
-          .eq("id", reportId)
+          .eq("id", saveId)
           .select()
           .single();
       } else {
-        // Insert new report
+        // New report: claim the id before the request goes out and upsert on
+        // it, so a save that runs twice overwrites the same row.
         reportData.created_at = new Date().toISOString();
         result = await supabase
           .schema("neta_ops")
           .from("metal_enclosed_busway_reports")
-          .insert({
-            job_id: jobId,
-            user_id: user.id,
-            ...upsertPayload,
-            created_at: reportData.created_at,
-            updated_at: reportData.updated_at,
-          })
+          .upsert(
+            {
+              id: saveId,
+              job_id: jobId,
+              user_id: user.id,
+              ...upsertPayload,
+              created_at: reportData.created_at,
+              updated_at: reportData.updated_at,
+            },
+            { onConflict: "id" },
+          )
           .select()
           .single();
       }
@@ -1262,28 +1277,30 @@ const MetalEnclosedBuswayReport: React.FC = () => {
       }
 
       setJustSaved(true);
-      const savedId = result.data?.id || reportId;
+      const savedId = result.data?.id || saveId;
 
       // If this was a new report, create and link an asset
-      if (!reportId && result.data) {
+      if (isNewReport && result.data) {
         // Create asset entry
         const assetData = {
           name: getAssetName(
             reportSlug,
             formData.identifier || formData.equipment || "",
           ),
-          file_url: `report:/jobs/${jobId}/metal-enclosed-busway/${result.data.id}`,
+          file_url: `report:/jobs/${jobId}/metal-enclosed-busway/${savedId}`,
           user_id: user.id,
         };
 
         await ensureReportAssetLink(jobId, assetData, user.id);
       }
 
+      // Remember the id on every path, including the ones that do not navigate.
+      setCurrentReportId(savedId);
+
       if (options?.closeAfterSave) {
         setIsEditing(false);
       }
       if (!options?.skipAlertAndNavigation && !reportId) {
-        setCurrentReportId(savedId);
         navigate(`/jobs/${jobId}/${reportSlug}/${savedId}`, { replace: true });
       }
       return savedId || null;

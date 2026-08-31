@@ -5,7 +5,7 @@
  * custom_form_instances, creates an asset, and links to the job via job_assets.
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
@@ -16,6 +16,11 @@ import { Button } from "@/components/ui/Button";
 import { ReportWrapper } from "@/components/reports/ReportWrapper";
 import { ReportPhotosButton } from "@/components/reports/common/ReportPhotos";
 import { ReportStatusButton } from "@/components/reports/common/ReportStatusButton";
+import {
+  newReportId,
+  reportIdFromUrl,
+} from "@/components/reports/common/reportIdentity";
+import { ensureReportAssetLink } from "@/components/reports/linkReportAsset";
 import {
   CustomFormTemplate,
   SectionConfig,
@@ -67,9 +72,17 @@ export const CustomFormFiller: React.FC = () => {
   const [status, setStatus] = useState<"PASS" | "FAIL" | "LIMITED SERVICE">(
     "PASS",
   );
+  // Which row this form writes to. After the first save the id is in the
+  // address bar, put there with replaceState -- which useParams cannot see, so
+  // a re-mount comes back on the /new route. Read the address bar instead.
+  const urlInstanceId =
+    instanceId && instanceId !== "new" ? instanceId : reportIdFromUrl();
   const [existingInstanceId, setExistingInstanceId] = useState<string | null>(
-    instanceId && instanceId !== "new" ? instanceId : null,
+    urlInstanceId ?? null,
   );
+  // The id minted for a form that has not been saved yet, kept stable so a
+  // retried save overwrites its own row instead of creating a second one.
+  const draftInstanceIdRef = useRef<string | null>(null);
 
   // Load template and optionally existing instance
   useEffect(() => {
@@ -267,13 +280,13 @@ export const CustomFormFiller: React.FC = () => {
         structure: templateRow.structure,
       });
 
-      const isNew = !instanceId || instanceId === "new";
-      if (!isNew && instanceId) {
+      const isNew = !urlInstanceId;
+      if (!isNew && urlInstanceId) {
         const { data: instanceRow, error: instanceError } = await supabase
           .schema("neta_ops")
           .from("custom_form_instances")
           .select("*")
-          .eq("id", instanceId)
+          .eq("id", urlInstanceId)
           .eq("job_id", jobId)
           .single();
 
@@ -609,37 +622,35 @@ export const CustomFormFiller: React.FC = () => {
         if (error) throw error;
         toast({ title: "Form updated", variant: "success" });
       } else {
-        const { data: inserted, error } = await supabase
+        // Claim the id before the request goes out and upsert on it, so a save
+        // that runs twice overwrites the same row instead of adding a copy.
+        if (!draftInstanceIdRef.current) {
+          draftInstanceIdRef.current = newReportId();
+        }
+        const newInstanceId = draftInstanceIdRef.current;
+
+        const { error } = await supabase
           .schema("neta_ops")
           .from("custom_form_instances")
-          .insert(payload)
-          .select("id")
-          .single();
+          .upsert({ ...payload, id: newInstanceId }, { onConflict: "id" });
 
         if (error) throw error;
-        const newInstanceId = inserted.id;
 
         const assetName = `${template.name} – ${new Date().toLocaleDateString()}`;
         const fileUrl = `custom-form:/jobs/${jobId}/custom-form/${templateId}/${newInstanceId}`;
 
-        const { data: assetRow, error: assetError } = await supabase
-          .schema("neta_ops")
-          .from("assets")
-          .insert({
+        // Idempotent on file_url, which carries the instance id, so a retried
+        // save repairs the link rather than adding a second copy on the job.
+        await ensureReportAssetLink(
+          jobId,
+          {
             name: assetName,
             file_url: fileUrl,
+            user_id: user.id,
             status: "in_progress",
-          })
-          .select("id")
-          .single();
-
-        if (assetError) throw assetError;
-
-        await supabase.schema("neta_ops").from("job_assets").insert({
-          job_id: jobId,
-          asset_id: assetRow.id,
-          user_id: user.id,
-        });
+          },
+          user.id,
+        );
 
         setExistingInstanceId(newInstanceId);
         toast({ title: "Form saved and linked to job", variant: "success" });

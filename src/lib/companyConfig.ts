@@ -115,6 +115,16 @@ export const companyConfig = {
   ),
 
   /**
+   * Form employees open to report a safety incident, listed under Employee
+   * Links. AMP's is a Google Form; buyer instances must point this at their
+   * own, or set it empty to hide the menu item entirely.
+   */
+  incidentReportFormUrl: optionalStr(
+    env.VITE_COMPANY_INCIDENT_REPORT_FORM_URL,
+    "https://docs.google.com/forms/d/e/1FAIpQLScM_Z-MYZsGuc4NC0xJ7xGUKJI3VyzvYIzA_audX8gcT4qtmg/viewform?usp=dialog",
+  ),
+
+  /**
    * Employee-portal destinations listed under "Employee Links" in the profile
    * menu. Each is AMP's vendor/tenant URL; buyer instances point these at their
    * own, or set one empty to hide that item. HR support copies an address to

@@ -6,6 +6,7 @@ import {
   HeartHandshake,
   Truck,
   AlertTriangle,
+  ClipboardList,
   ExternalLink,
 } from "lucide-react";
 import { companyConfig } from "@/lib/companyConfig";
@@ -61,6 +62,11 @@ export const EmployeeLinksSubmenu: React.FC<EmployeeLinksSubmenuProps> = ({
       label: "Report Vehicle Accident",
       url: companyConfig.vehicleAccidentFormUrl,
       icon: AlertTriangle,
+    },
+    {
+      label: "Incident Report",
+      url: companyConfig.incidentReportFormUrl,
+      icon: ClipboardList,
     },
   ].filter((link) => !!link.url);
 

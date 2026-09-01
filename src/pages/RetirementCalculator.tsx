@@ -409,14 +409,16 @@ export default function RetirementCalculator() {
             hint={
               missingMatch
                 ? `Bump this to ${MATCH_CAP_PCT}% to earn the full company match.`
-                : `Maxed out - the company matches every dollar of it.`
+                : inputs.contributionPct === MATCH_CAP_PCT
+                  ? `You are getting the full company match.`
+                  : `The company matches the first ${MATCH_CAP_PCT}%. The extra ${(inputs.contributionPct - MATCH_CAP_PCT).toFixed(1)}% is unmatched, but it is still your money.`
             }
           >
             <Slider
               value={inputs.contributionPct}
               onChange={(v) => set("contributionPct", v)}
               min={0}
-              max={MATCH_CAP_PCT}
+              max={20}
               step={0.5}
               format={(v) => `${v}% of pay`}
             />

@@ -45,6 +45,7 @@ import {
   Bookmark,
   MessageCircle,
   SquareArrowOutUpRight,
+  ExternalLink,
   Filter,
   Check,
   ArrowDownWideNarrow,
@@ -2235,15 +2236,33 @@ export default function JobDetail() {
         );
         const isArchived = asset?.status === "archived";
 
+        /**
+         * Where this row's report lives — an in-app route for the two report kinds, and
+         * the stored URL for anything uploaded.
+         */
+        const assetHref = !asset?.file_url
+          ? null
+          : asset.file_url.startsWith("custom-form:")
+            ? asset.file_url.replace(/^custom-form:/, "")
+            : asset.file_url.startsWith("report:")
+              ? getReportEditPath(asset)
+              : asset.file_url;
+
         const openAsset = () => {
-          if (!asset?.file_url) return;
-          if (asset.file_url.startsWith("custom-form:")) {
-            navigate(asset.file_url.replace(/^custom-form:/, ""));
-          } else if (asset.file_url.startsWith("report:")) {
-            navigate(getReportEditPath(asset));
+          if (!asset?.file_url || !assetHref) return;
+          if (
+            asset.file_url.startsWith("custom-form:") ||
+            asset.file_url.startsWith("report:")
+          ) {
+            navigate(assetHref);
           } else {
-            window.open(asset.file_url, "_blank", "noopener,noreferrer");
+            window.open(assetHref, "_blank", "noopener,noreferrer");
           }
+        };
+
+        const openAssetInNewTab = () => {
+          if (!assetHref) return;
+          window.open(assetHref, "_blank", "noopener,noreferrer");
         };
 
         return (
@@ -2293,6 +2312,12 @@ export default function JobDetail() {
               <DropdownMenuItem onSelect={openAsset}>
                 <SquareArrowOutUpRight className="mr-2 h-4 w-4" />
                 Open
+              </DropdownMenuItem>
+            )}
+            {asset && assetHref && (
+              <DropdownMenuItem onSelect={openAssetInNewTab}>
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Open in new tab
               </DropdownMenuItem>
             )}
             {asset && isPdfUpload && (

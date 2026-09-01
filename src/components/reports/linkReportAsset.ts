@@ -109,23 +109,31 @@ async function linkOnce(
     if (renameError) throw renameError;
   }
 
-  const { data: link, error: linkLookupError } = await supabase
+  // limit(1) rather than maybeSingle(): a job that already carries a duplicate link
+  // (they exist from before the unique index) would make maybeSingle() fail, and a
+  // report whose link is merely duplicated must still save.
+  const { data: links, error: linkLookupError } = await supabase
     .schema("neta_ops")
     .from("job_assets")
     .select("asset_id")
     .eq("job_id", jobId)
     .eq("asset_id", assetId)
-    .maybeSingle();
+    .limit(1);
 
   if (linkLookupError) throw linkLookupError;
 
-  if (!link) {
+  if (!links?.length) {
     const { error: linkError } = await supabase
       .schema("neta_ops")
       .from("job_assets")
       .insert({ job_id: jobId, asset_id: assetId, user_id: userId ?? null });
 
-    if (linkError) throw linkError;
+    // Look-then-insert is not atomic: two saves a tenth of a second apart both found
+    // no link and both inserted one, which is how a report ended up listed twice on
+    // the same job with one shared id behind both rows. The unique index on
+    // (job_id, asset_id) is what actually prevents that; 23505 here means the other
+    // save won the race and the link exists, which is the outcome we wanted.
+    if (linkError && linkError.code !== "23505") throw linkError;
   }
 
   return assetId;

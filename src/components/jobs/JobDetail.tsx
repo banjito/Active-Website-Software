@@ -770,9 +770,6 @@ export default function JobDetail() {
   const [jobAssetsPercent, setJobAssetsPercent] = useState(0);
   /** Cache key of the revalidation currently running, so re-entry does not stack them. */
   const jobAssetsFetchInFlight = useRef<string | null>(null);
-  const [filteredJobAssets, setFilteredJobAssets] = useState<Asset[]>(
-    () => cachedJobAssets?.assets ?? [],
-  );
   const [openReportFlagCount, setOpenReportFlagCount] = useState(
     () => cachedJobAssets?.openReportFlagCount ?? 0,
   );
@@ -3472,8 +3469,16 @@ export default function JobDetail() {
     [getAssetParts],
   );
 
-  useEffect(() => {
-    // Filter job assets when search query or status filter changes
+  /**
+   * The rows the Reports tab actually shows: jobAssets narrowed by the date filter, the
+   * search box and the status tab, then sorted.
+   *
+   * Derived, not stored. It used to be state written by an effect *and* mirrored by hand
+   * from every status handler, and the mirrors were what put a report that had just been
+   * marked Ready for Review into the In Progress tab: they rewrote the row in place, so it
+   * kept its seat in a list it no longer belonged in until the next refetch.
+   */
+  const filteredJobAssets = React.useMemo<Asset[]>(() => {
     let filtered = jobAssets;
 
     // Apply date filter (created/submitted/approved)
@@ -3583,7 +3588,7 @@ export default function JobDetail() {
       });
     }
 
-    setFilteredJobAssets(filtered);
+    return filtered;
   }, [
     searchQuery,
     jobAssets,
@@ -3940,7 +3945,6 @@ export default function JobDetail() {
     const cached = readJobAssetsCache(jobAssetsCacheKey);
     if (cached) {
       setJobAssets(cached.assets);
-      setFilteredJobAssets(cached.assets);
       setTotalAssetCount(cached.totalAssetCount);
       setReportTimestampsByAsset(cached.reportTimestamps);
       openReportFlagCountRef.current = cached.openReportFlagCount;
@@ -3986,7 +3990,7 @@ export default function JobDetail() {
       setPhase(JOB_ASSET_LOAD_PHASES.count);
 
       // 1. Fetch ALL asset IDs in batches
-      const allAssetIds: string[] = [];
+      let allAssetIds: string[] = [];
       let offset = 0;
       while (true) {
         const { data: batch, error: batchError } = await supabase
@@ -4012,11 +4016,17 @@ export default function JobDetail() {
 
       setPhase(JOB_ASSET_LOAD_PHASES.ids);
 
+      // One asset, one row. A job_assets table with a duplicate (job_id, asset_id) link
+      // renders the same report twice, and both copies share an id — so the checkbox on
+      // one ticks both and there is no way to remove just the extra. The unique index
+      // stops new duplicates; this keeps any that are still in the database out of the
+      // list.
+      allAssetIds = Array.from(new Set(allAssetIds));
+
       if (allAssetIds.length === 0) {
         const empty: Asset[] = [];
         setTotalAssetCount(0);
         setJobAssets(empty);
-        setFilteredJobAssets(empty);
         openReportFlagCountRef.current = 0;
         setOpenReportFlagCount(0);
         setReportTimestampsByAsset({});
@@ -4091,7 +4101,6 @@ export default function JobDetail() {
 
       setJobAssets(nextAssets);
       setTotalAssetCount(nextTotalCount);
-      setFilteredJobAssets(nextAssets);
       if (!rowsUnchanged) {
         setDynamicAssetNames({});
         setAssetSerialNumbers({});
@@ -5294,9 +5303,6 @@ export default function JobDetail() {
       setJobAssets((prev) =>
         prev.map((a) => (a.id === assetId ? updatedAsset : a)),
       );
-      setFilteredJobAssets((prev) =>
-        prev.map((a) => (a.id === assetId ? updatedAsset : a)),
-      );
 
       // Refetch job assets to get the latest data from database
       await fetchJobAssets();
@@ -5328,9 +5334,6 @@ export default function JobDetail() {
 
       // Update local state
       setJobAssets((prev) =>
-        prev.map((a) => (a.id === assetId ? { ...a, urgency: newUrgency } : a)),
-      );
-      setFilteredJobAssets((prev) =>
         prev.map((a) => (a.id === assetId ? { ...a, urgency: newUrgency } : a)),
       );
 
@@ -6644,18 +6647,6 @@ export default function JobDetail() {
             : a,
         ),
       );
-      setFilteredJobAssets((prev) =>
-        prev.map((a) =>
-          assetIds.includes(a.id)
-            ? {
-                ...a,
-                status: "sent" as const,
-                sent_at: now,
-                sent_by: user?.id || null,
-              }
-            : a,
-        ),
-      );
 
       // Mark linked technical reports as sent in parallel
       const reportAssets = approvedAssets.filter((a) =>
@@ -6772,18 +6763,6 @@ export default function JobDetail() {
             : a,
         ),
       );
-      setFilteredJobAssets((prev) =>
-        prev.map((a) =>
-          assetIds.includes(a.id)
-            ? {
-                ...a,
-                status: "sent" as const,
-                sent_at: now,
-                sent_by: user?.id || null,
-              }
-            : a,
-        ),
-      );
 
       // Mark linked technical reports as sent in parallel
       const { getReportByAssetId, markReportAsSent } =
@@ -6878,11 +6857,6 @@ export default function JobDetail() {
 
       // Update local state
       setJobAssets((prev) =>
-        prev.map((a) =>
-          a.id === assetId ? { ...a, sent_at: newSentDate } : a,
-        ),
-      );
-      setFilteredJobAssets((prev) =>
         prev.map((a) =>
           a.id === assetId ? { ...a, sent_at: newSentDate } : a,
         ),
@@ -6993,11 +6967,6 @@ export default function JobDetail() {
       }
 
       setJobAssets((prev) =>
-        prev.map((a) =>
-          assetIds.includes(a.id) ? { ...a, status: targetStatus } : a,
-        ),
-      );
-      setFilteredJobAssets((prev) =>
         prev.map((a) =>
           assetIds.includes(a.id) ? { ...a, status: targetStatus } : a,
         ),

@@ -74,6 +74,7 @@ interface FormData {
         phaseA: PhaseReading;
         phaseB: PhaseReading;
         phaseC: PhaseReading;
+        neutral: PhaseReading;
       };
     };
   };
@@ -120,6 +121,7 @@ const emptyPrimaryInjection = (): FormData["primaryInjection"] => ({
       phaseA: emptyPhaseReading(),
       phaseB: emptyPhaseReading(),
       phaseC: emptyPhaseReading(),
+      neutral: emptyPhaseReading(),
     },
   },
 });
@@ -353,6 +355,10 @@ const GFITripTestReport: React.FC = () => {
                 ...emptyPhaseReading(),
                 ...(savedInjection.results?.groundFault?.phaseC || {}),
               },
+              neutral: {
+                ...emptyPhaseReading(),
+                ...(savedInjection.results?.groundFault?.neutral || {}),
+              },
             },
           },
         };
@@ -469,6 +475,7 @@ const GFITripTestReport: React.FC = () => {
               phaseA: { ...prev.primaryInjection.results.groundFault.phaseA },
               phaseB: { ...prev.primaryInjection.results.groundFault.phaseB },
               phaseC: { ...prev.primaryInjection.results.groundFault.phaseC },
+              neutral: { ...prev.primaryInjection.results.groundFault.neutral },
             },
           },
         },
@@ -951,9 +958,10 @@ const GFITripTestReport: React.FC = () => {
           <colgroup>
             <col style={{ width: "22%" }} />
             <col style={{ width: "14%" }} />
-            <col style={{ width: "21.33%" }} />
-            <col style={{ width: "21.33%" }} />
-            <col style={{ width: "21.34%" }} />
+            <col style={{ width: "16%" }} />
+            <col style={{ width: "16%" }} />
+            <col style={{ width: "16%" }} />
+            <col style={{ width: "16%" }} />
           </colgroup>
           <thead>
             <tr>
@@ -962,6 +970,7 @@ const GFITripTestReport: React.FC = () => {
               <th className={headerCellClass}>A Phase</th>
               <th className={headerCellClass}>B Phase</th>
               <th className={headerCellClass}>C Phase</th>
+              <th className={headerCellClass}>Neutral</th>
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-dark-150">
@@ -974,16 +983,18 @@ const GFITripTestReport: React.FC = () => {
               <tr key={key}>
                 <td className={cellClass}>Ground Fault</td>
                 <td className={`${cellClass} text-center`}>{label}</td>
-                {(["phaseA", "phaseB", "phaseC"] as const).map((phase) => (
-                  <React.Fragment key={phase}>
-                    {valueCell(
-                      print,
-                      `results.groundFault.${phase}.${key}`,
-                      groundFault[phase][key],
-                      { unit },
-                    )}
-                  </React.Fragment>
-                ))}
+                {(["phaseA", "phaseB", "phaseC", "neutral"] as const).map(
+                  (phase) => (
+                    <React.Fragment key={phase}>
+                      {valueCell(
+                        print,
+                        `results.groundFault.${phase}.${key}`,
+                        groundFault[phase][key],
+                        { unit },
+                      )}
+                    </React.Fragment>
+                  ),
+                )}
               </tr>
             ))}
           </tbody>

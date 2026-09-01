@@ -58,52 +58,6 @@ interface OrgNode extends OrgPerson {
   level: number;
 }
 
-// Fallback role options if the database table doesn't exist yet
-const DEFAULT_ROLE_OPTIONS: Array<{
-  value: string;
-  label: string;
-  color: string;
-}> = [
-  { value: "team_member", label: "Team Member", color: "blue" },
-  { value: "fire_team_lead", label: "Fire Team Lead", color: "red" },
-  { value: "office_admin", label: "Office Admin", color: "purple" },
-  { value: "technician", label: "Technician", color: "green" },
-];
-
-const getRoleColorFromPalette = (colorName?: string) => {
-  const c =
-    COLOR_PALETTE.find((p) => p.name === colorName) ||
-    COLOR_PALETTE[COLOR_PALETTE.length - 1];
-  return `${c.bg} ${c.text} ${c.border}`;
-};
-
-const getRoleColor = (
-  role?: string,
-  dynamicRoles?: Array<{ value: string; color: string }>,
-) => {
-  if (!role) return "bg-neutral-100 text-neutral-600 border-neutral-300";
-  if (dynamicRoles && dynamicRoles.length > 0) {
-    const found = dynamicRoles.find((r) => r.value === role);
-    if (found) return getRoleColorFromPalette(found.color);
-  }
-  const fallback = DEFAULT_ROLE_OPTIONS.find((r) => r.value === role);
-  if (fallback) return getRoleColorFromPalette(fallback.color);
-  return "bg-neutral-100 text-neutral-600 border-neutral-300";
-};
-
-const getRoleLabel = (
-  role?: string,
-  dynamicRoles?: Array<{ value: string; label: string }>,
-) => {
-  if (!role) return "";
-  if (dynamicRoles && dynamicRoles.length > 0) {
-    const found = dynamicRoles.find((r) => r.value === role);
-    if (found) return found.label;
-  }
-  const fallback = DEFAULT_ROLE_OPTIONS.find((r) => r.value === role);
-  return fallback?.label || role;
-};
-
 // Color palette for levels
 const COLOR_PALETTE = [
   {
@@ -448,13 +402,6 @@ const FlowchartNode: React.FC<{
   setDraggedId: (id: string | null) => void;
   dataVersion?: number;
   orgLevels?: Array<{ id: string; label: string; color?: string }>;
-  orgRoles?: Array<{
-    id: string;
-    value: string;
-    label: string;
-    color: string;
-    display_order: number;
-  }>;
   peopleLookup?: Record<string, OrgPerson>;
   profileToGroup?: Record<string, string>;
   groupMembers?: Record<string, string[]>;
@@ -479,7 +426,6 @@ const FlowchartNode: React.FC<{
   setDraggedId,
   dataVersion = 0,
   orgLevels,
-  orgRoles,
   peopleLookup = {},
   profileToGroup = {},
   groupMembers = {},
@@ -700,22 +646,15 @@ const FlowchartNode: React.FC<{
               {node.job_title}
             </p>
           )}
-          <div className="flex flex-wrap gap-1 justify-center mt-1">
-            {assignedLevel && (
+          {assignedLevel && (
+            <div className="flex flex-wrap gap-1 justify-center mt-1">
               <span
                 className={`text-xs px-1.5 py-0.5 rounded border ${colors.bg} ${colors.text} ${colors.border}`}
               >
                 {assignedLevel.label}
               </span>
-            )}
-            {node.role && (
-              <span
-                className={`text-xs px-1.5 py-0.5 rounded border ${getRoleColor(node.role, orgRoles)}`}
-              >
-                {getRoleLabel(node.role, orgRoles)}
-              </span>
-            )}
-          </div>
+            </div>
+          )}
           {secondaryManagerNames.length > 0 && (
             <p
               className="text-[10px] text-neutral-600 dark:text-neutral-300 mt-1 px-1"
@@ -857,7 +796,6 @@ const FlowchartNode: React.FC<{
                         setDraggedId={setDraggedId}
                         dataVersion={dataVersion}
                         orgLevels={orgLevels}
-                        orgRoles={orgRoles}
                         peopleLookup={peopleLookup}
                         profileToGroup={profileToGroup}
                         groupMembers={groupMembers}
@@ -944,8 +882,7 @@ const FlowchartNode: React.FC<{
                               setDraggedId={setDraggedId}
                               dataVersion={dataVersion}
                               orgLevels={orgLevels}
-                              orgRoles={orgRoles}
-                              peopleLookup={peopleLookup}
+                                    peopleLookup={peopleLookup}
                               profileToGroup={profileToGroup}
                               groupMembers={groupMembers}
                               groupColors={groupColors}
@@ -1023,8 +960,7 @@ const FlowchartNode: React.FC<{
                                       setDraggedId={setDraggedId}
                                       dataVersion={dataVersion}
                                       orgLevels={orgLevels}
-                                      orgRoles={orgRoles}
-                                      peopleLookup={peopleLookup}
+                                                    peopleLookup={peopleLookup}
                                       profileToGroup={profileToGroup}
                                       groupMembers={groupMembers}
                                       groupColors={groupColors}
@@ -1255,20 +1191,9 @@ export const OrgChart: React.FC = () => {
   const [orgLevels, setOrgLevels] = useState<
     Array<{ id: string; label: string; display_order: number; color?: string }>
   >([]);
-  const [orgRoles, setOrgRoles] = useState<
-    Array<{
-      id: string;
-      label: string;
-      value: string;
-      color: string;
-      display_order: number;
-    }>
-  >([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [newLevelLabel, setNewLevelLabel] = useState("");
   const [newLevelColor, setNewLevelColor] = useState("gray");
-  const [newRoleLabel, setNewRoleLabel] = useState("");
-  const [newRoleColor, setNewRoleColor] = useState("blue");
   const [dataVersion, setDataVersion] = useState(0); // Force re-render when data changes
 
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
@@ -1277,7 +1202,7 @@ export const OrgChart: React.FC = () => {
     null,
   );
   const [addLevelId, setAddLevelId] = useState<string | null>(null);
-  const [addRole, setAddRole] = useState("");
+  const [addJobTitle, setAddJobTitle] = useState("");
   const [addManagerIds, setAddManagerIds] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(
@@ -1288,7 +1213,6 @@ export const OrgChart: React.FC = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingPerson, setEditingPerson] = useState<OrgPerson | null>(null);
   const [editJobTitle, setEditJobTitle] = useState("");
-  const [editRole, setEditRole] = useState("");
   const [editLevelId, setEditLevelId] = useState<string | null>(null);
   const [editManagerIds, setEditManagerIds] = useState<string[]>([]);
 
@@ -1420,21 +1344,6 @@ export const OrgChart: React.FC = () => {
 
       setOrgLevels(levelsData || []);
 
-      // Fetch org chart roles (gracefully handle missing table)
-      try {
-        const { data: rolesData, error: rolesError } = await supabase
-          .schema("common")
-          .from("org_chart_roles")
-          .select("id, label, value, color, display_order")
-          .order("display_order", { ascending: true });
-
-        if (!rolesError && rolesData) {
-          setOrgRoles(rolesData);
-        }
-      } catch {
-        // Table may not exist yet; fall back to defaults
-      }
-
       // Get all users
       const { data: usersData } = await supabase
         .schema("common")
@@ -1563,7 +1472,11 @@ export const OrgChart: React.FC = () => {
                 u.user_metadata?.name ||
                 u.email?.split("@")[0] ||
                 "Unknown",
-              job_title: profile?.job_title || "",
+              job_title:
+                profile?.job_title ||
+                u?.raw_user_meta_data?.job_title ||
+                u?.user_metadata?.job_title ||
+                "",
               avatar_url: avatarUrl,
               reports_to: assignmentsMap[u.id] ?? null,
               reports_to_ids: assignmentManagerIdsMap[u.id] || [],
@@ -1585,7 +1498,8 @@ export const OrgChart: React.FC = () => {
 
       setAllEmployees([...employees]);
 
-      // Get job titles from employee history (most recent per person), with fallback to profiles.job_title
+      // Job title comes from the person's profile, then their auth metadata
+      // (same chain ProfileView uses), then their most recent history entry.
       const { data: jobHistoryData } = await supabase
         .schema("common")
         .from("job_title_history")
@@ -1605,7 +1519,7 @@ export const OrgChart: React.FC = () => {
       const metadataMap: Record<string, any> = {};
       const idsNeedingMetadata = Array.from(onChartIds).filter((id) => {
         const p = profilesMap[id];
-        return !p?.full_name;
+        return !p?.full_name || !p?.job_title;
       });
       // Batch fetch metadata for people missing names (only if admin_get_users didn't already provide it)
       if (idsNeedingMetadata.length > 0 && allUsers.length === 0) {
@@ -1636,7 +1550,12 @@ export const OrgChart: React.FC = () => {
           user?.email?.split("@")[0] ||
           "Unknown";
         const jobTitle =
-          latestJobTitleByProfile[profileId] || profile?.job_title || "";
+          profile?.job_title ||
+          user?.raw_user_meta_data?.job_title ||
+          user?.user_metadata?.job_title ||
+          meta?.job_title ||
+          latestJobTitleByProfile[profileId] ||
+          "";
         const avatarUrl =
           profile?.avatar_url ||
           profile?.profile_image ||
@@ -1959,7 +1878,7 @@ export const OrgChart: React.FC = () => {
           {
             id: selectedEmployeeId,
             full_name: employee.full_name || null,
-            job_title: employee.job_title || null,
+            job_title: addJobTitle.trim() || employee.job_title || null,
             avatar_url: employee.avatar_url || null,
           },
           { onConflict: "id" },
@@ -1979,7 +1898,7 @@ export const OrgChart: React.FC = () => {
           selectedManagerIds,
           {
             level_id: levelId,
-            role: addRole === "" ? null : addRole,
+            role: null,
             grid_column: 0,
           },
         );
@@ -2004,7 +1923,7 @@ export const OrgChart: React.FC = () => {
       setAddUnderManagerId(null);
       setAddManagerIds([]);
       setAddLevelId(null);
-      setAddRole("");
+      setAddJobTitle("");
       setSearch("");
       await fetchData();
     } catch (e: any) {
@@ -2134,108 +2053,11 @@ export const OrgChart: React.FC = () => {
     }
   };
 
-  // Role management functions
-  const handleAddRole = async () => {
-    if (!newRoleLabel.trim()) return;
-    const value = newRoleLabel
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "_")
-      .replace(/^_|_$/g, "");
-    if (!value) return;
-
-    setSaving(true);
-    try {
-      const newOrder =
-        orgRoles.length > 0
-          ? Math.max(...orgRoles.map((r) => r.display_order)) + 1
-          : 0;
-      const { error } = await supabase
-        .schema("common")
-        .from("org_chart_roles")
-        .insert({
-          label: newRoleLabel.trim(),
-          value,
-          color: newRoleColor,
-          display_order: newOrder,
-        });
-
-      if (error) throw error;
-
-      toast({ title: "Role added", variant: "success" });
-      setNewRoleLabel("");
-      setNewRoleColor("blue");
-      await fetchData();
-    } catch (e: any) {
-      toast({
-        title: "Error",
-        description: e?.message || "Failed to add role",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDeleteRole = async (roleId: string) => {
-    if (
-      !confirm(
-        "Delete this role? People assigned to it will keep their current role value until reassigned.",
-      )
-    )
-      return;
-
-    setSaving(true);
-    try {
-      const { error } = await supabase
-        .schema("common")
-        .from("org_chart_roles")
-        .delete()
-        .eq("id", roleId);
-
-      if (error) throw error;
-
-      toast({ title: "Role deleted", variant: "success" });
-      await fetchData();
-    } catch (e: any) {
-      toast({
-        title: "Error",
-        description: e?.message || "Failed to delete role",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleUpdateRoleColor = async (roleId: string, color: string) => {
-    try {
-      const { error } = await supabase
-        .schema("common")
-        .from("org_chart_roles")
-        .update({ color })
-        .eq("id", roleId);
-
-      if (error) throw error;
-
-      setOrgRoles((prev) =>
-        prev.map((r) => (r.id === roleId ? { ...r, color } : r)),
-      );
-      setDataVersion((v) => v + 1);
-    } catch (e: any) {
-      toast({
-        title: "Error",
-        description: e?.message || "Failed to update role color",
-        variant: "destructive",
-      });
-    }
-  };
-
   const openAddModal = (managerId: string | null = null) => {
     setAddUnderManagerId(managerId);
     setAddManagerIds(managerId ? [managerId] : []);
     setAddLevelId(null);
-    setAddRole("");
+    setAddJobTitle("");
     setSelectedEmployeeId(null);
     setSearch("");
     setAddModalOpen(true);
@@ -2244,7 +2066,6 @@ export const OrgChart: React.FC = () => {
   const openEditModal = (person: OrgPerson) => {
     setEditingPerson(person);
     setEditJobTitle(person.job_title || "");
-    setEditRole(person.role || "");
     setEditLevelId(person.level_id || null);
     setEditManagerIds(
       person.reports_to_ids && person.reports_to_ids.length > 0
@@ -2262,16 +2083,26 @@ export const OrgChart: React.FC = () => {
     setSaving(true);
     try {
       const userId = editingPerson.id;
-      const newRole = editRole === "" ? null : editRole || null;
       const newLevelId = editLevelId || null;
+      const newJobTitle = editJobTitle.trim();
       const managerIdsToSave = Array.from(
         new Set(editManagerIds.filter(Boolean)),
       );
       await replaceProfileOrgChartAssignments(userId, managerIdsToSave, {
         level_id: newLevelId,
-        role: newRole,
+        role: editingPerson.role || null,
         grid_column: 0,
       });
+
+      // Job title lives on the profile, so the chart and the profile page agree
+      if (newJobTitle !== (editingPerson.job_title || "")) {
+        const { error: titleError } = await supabase
+          .schema("common")
+          .from("profiles")
+          .update({ job_title: newJobTitle || null })
+          .eq("id", userId);
+        if (titleError) throw titleError;
+      }
 
       // Update local state immediately for instant feedback
       setPeople((prev) =>
@@ -2279,7 +2110,7 @@ export const OrgChart: React.FC = () => {
           p.id === userId
             ? {
                 ...p,
-                role: newRole || "",
+                job_title: newJobTitle,
                 level_id: newLevelId,
                 reports_to: managerIdsToSave[0] || null,
                 reports_to_ids: managerIdsToSave,
@@ -2297,7 +2128,6 @@ export const OrgChart: React.FC = () => {
       setEditModalOpen(false);
       setEditingPerson(null);
       setEditJobTitle("");
-      setEditRole("");
       setEditLevelId(null);
       setEditManagerIds([]);
 
@@ -2426,41 +2256,25 @@ export const OrgChart: React.FC = () => {
           </div>
         </CardHeader>
 
-        {/* Levels & Roles Legend */}
-        <div className="px-6 py-3 flex flex-wrap gap-3 items-center border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
-          {orgLevels.length > 0 && (
-            <>
-              <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
-                Levels:
-              </span>
-              {orgLevels.map((level) => {
-                const colorStyle = getColorByName(level.color);
-                return (
-                  <span
-                    key={level.id}
-                    className={`text-xs px-2.5 py-1 rounded ${colorStyle.bg} ${colorStyle.text} ${colorStyle.border} border`}
-                  >
-                    {level.label}
-                  </span>
-                );
-              })}
-              <span className="text-xs text-neutral-300 mx-1">|</span>
-            </>
-          )}
-          <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
-            Roles:
-          </span>
-          {(orgRoles.length > 0 ? orgRoles : DEFAULT_ROLE_OPTIONS).map(
-            (role) => (
-              <span
-                key={role.value}
-                className={`text-xs px-2.5 py-1 rounded border ${getRoleColorFromPalette(role.color)}`}
-              >
-                {role.label}
-              </span>
-            ),
-          )}
-        </div>
+        {/* Levels Legend */}
+        {orgLevels.length > 0 && (
+          <div className="px-6 py-3 flex flex-wrap gap-3 items-center border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50">
+            <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
+              Levels:
+            </span>
+            {orgLevels.map((level) => {
+              const colorStyle = getColorByName(level.color);
+              return (
+                <span
+                  key={level.id}
+                  className={`text-xs px-2.5 py-1 rounded ${colorStyle.bg} ${colorStyle.text} ${colorStyle.border} border`}
+                >
+                  {level.label}
+                </span>
+              );
+            })}
+          </div>
+        )}
 
         {/* Top level drop zone */}
         {canEdit && draggedId && (
@@ -2546,7 +2360,6 @@ export const OrgChart: React.FC = () => {
                     setDraggedId={setDraggedId}
                     dataVersion={dataVersion}
                     orgLevels={orgLevels}
-                    orgRoles={orgRoles}
                     peopleLookup={peopleLookup}
                     profileToGroup={profileToGroup}
                     groupMembers={groupMembers}
@@ -2598,17 +2411,24 @@ export const OrgChart: React.FC = () => {
                 ) : (
                   availableEmployees.slice(0, 50).map((emp) => {
                     const isSelected = selectedEmployeeId === emp.id;
+                    const toggleSelected = () => {
+                      if (isSelected) {
+                        setSelectedEmployeeId(null);
+                        setAddJobTitle("");
+                      } else {
+                        setSelectedEmployeeId(emp.id);
+                        setAddJobTitle(emp.job_title || "");
+                      }
+                    };
                     return (
                       <div
                         key={emp.id}
                         role="button"
                         tabIndex={0}
-                        onClick={() =>
-                          setSelectedEmployeeId(isSelected ? null : emp.id)
-                        }
+                        onClick={toggleSelected}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" || e.key === " ") {
-                            setSelectedEmployeeId(isSelected ? null : emp.id);
+                            toggleSelected();
                           }
                         }}
                         className={`w-full flex items-center gap-3 p-3 text-left cursor-pointer transition-colors ${
@@ -2686,21 +2506,17 @@ export const OrgChart: React.FC = () => {
               </div>
             )}
             <div>
-              <Label>Role (optional)</Label>
-              <select
-                value={addRole}
-                onChange={(e) => setAddRole(e.target.value)}
-                className="mt-1.5 w-full h-10 px-3 rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
-              >
-                <option value="">No Role</option>
-                {(orgRoles.length > 0 ? orgRoles : DEFAULT_ROLE_OPTIONS).map(
-                  (role) => (
-                    <option key={role.value} value={role.value}>
-                      {role.label}
-                    </option>
-                  ),
-                )}
-              </select>
+              <Label htmlFor="add-job-title">Job Title</Label>
+              <Input
+                id="add-job-title"
+                value={addJobTitle}
+                onChange={(e) => setAddJobTitle(e.target.value)}
+                placeholder="e.g. Field Engineer"
+                className="mt-1.5"
+              />
+              <p className="text-xs text-neutral-500 mt-1">
+                Saved to this person's profile and shown on their card.
+              </p>
             </div>
           </div>
           <DialogFooter>
@@ -2722,7 +2538,7 @@ export const OrgChart: React.FC = () => {
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
         <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Level & Role</DialogTitle>
+            <DialogTitle>Edit Level & Job Title</DialogTitle>
           </DialogHeader>
           {editingPerson && (
             <div className="space-y-4 py-4">
@@ -2759,11 +2575,9 @@ export const OrgChart: React.FC = () => {
                           }
                         </span>
                       )}
-                    {editingPerson.role && (
-                      <span
-                        className={`text-xs px-1.5 py-0.5 rounded border ${getRoleColor(editingPerson.role, orgRoles)}`}
-                      >
-                        {getRoleLabel(editingPerson.role, orgRoles)}
+                    {editingPerson.job_title && (
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                        {editingPerson.job_title}
                       </span>
                     )}
                   </div>
@@ -2788,22 +2602,17 @@ export const OrgChart: React.FC = () => {
                 </div>
               )}
               <div>
-                <Label htmlFor="role">Role</Label>
-                <select
-                  id="role"
-                  value={editRole}
-                  onChange={(e) => setEditRole(e.target.value)}
-                  className="mt-1.5 w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
-                >
-                  <option value="">No Role</option>
-                  {(orgRoles.length > 0 ? orgRoles : DEFAULT_ROLE_OPTIONS).map(
-                    (role) => (
-                      <option key={role.value} value={role.value}>
-                        {role.label}
-                      </option>
-                    ),
-                  )}
-                </select>
+                <Label htmlFor="job-title">Job Title</Label>
+                <Input
+                  id="job-title"
+                  value={editJobTitle}
+                  onChange={(e) => setEditJobTitle(e.target.value)}
+                  placeholder="e.g. Field Engineer"
+                  className="mt-1.5"
+                />
+                <p className="text-xs text-neutral-500 mt-1">
+                  Saved to this person's profile and shown on their card.
+                </p>
               </div>
               <ManagerPicker
                 people={people}
@@ -2918,102 +2727,6 @@ export const OrgChart: React.FC = () => {
               </div>
             </div>
 
-            {/* Role Management */}
-            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
-              <Label className="text-sm font-medium">Current Roles</Label>
-              <div className="mt-2 space-y-2">
-                {(orgRoles.length > 0 ? orgRoles : DEFAULT_ROLE_OPTIONS)
-                  .length === 0 ? (
-                  <p className="text-sm text-neutral-500">
-                    No roles defined yet. Add one below.
-                  </p>
-                ) : (
-                  (orgRoles.length > 0
-                    ? orgRoles
-                    : DEFAULT_ROLE_OPTIONS.map((r, i) => ({
-                        ...r,
-                        id: r.value,
-                        display_order: i,
-                      }))
-                  ).map((role) => {
-                    const colorStyle = getColorByName(role.color);
-                    return (
-                      <div
-                        key={role.id || role.value}
-                        className={`flex items-center gap-2 p-2 rounded-none border ${colorStyle.border} ${colorStyle.bg}`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="flex gap-1">
-                            {COLOR_PALETTE.map((c) => (
-                              <button
-                                key={c.name}
-                                onClick={() =>
-                                  orgRoles.length > 0
-                                    ? handleUpdateRoleColor(role.id, c.name)
-                                    : null
-                                }
-                                className={`w-4 h-4 rounded-none ${c.preview} ${role.color === c.name ? "ring-2 ring-offset-1 " + c.ring : "opacity-60 hover:opacity-100"}`}
-                                title={c.name}
-                                disabled={orgRoles.length === 0}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        <span
-                          className={`font-medium text-sm flex-1 ${colorStyle.text}`}
-                        >
-                          {role.label}
-                        </span>
-                        {orgRoles.length > 0 && (
-                          <button
-                            onClick={() => handleDeleteRole(role.id)}
-                            className="text-red-400 hover:text-red-600 p-1"
-                            title="Delete role"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
-            {/* Add New Role */}
-            <div className="pt-2">
-              <Label className="text-sm font-medium">Add New Role</Label>
-              <div className="mt-2 flex items-center gap-2">
-                <Input
-                  placeholder="e.g. Inspector, Foreman"
-                  value={newRoleLabel}
-                  onChange={(e) => setNewRoleLabel(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleAddRole()}
-                  className="flex-1"
-                />
-                <div className="flex gap-1 items-center">
-                  {COLOR_PALETTE.slice(0, 5).map((c) => (
-                    <button
-                      key={c.name}
-                      onClick={() => setNewRoleColor(c.name)}
-                      className={`w-5 h-5 rounded-none ${c.preview} ${newRoleColor === c.name ? "ring-2 ring-offset-1 " + c.ring : "opacity-60 hover:opacity-100"}`}
-                    />
-                  ))}
-                </div>
-                <Button
-                  size="sm"
-                  onClick={handleAddRole}
-                  disabled={saving || !newRoleLabel.trim()}
-                  className="bg-brand hover:bg-brand-dark text-white"
-                >
-                  +
-                </Button>
-              </div>
-              <p className="text-xs text-neutral-500 mt-2">
-                Click the edit button on any person's card to assign them a
-                role.
-              </p>
-            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSettingsOpen(false)}>

@@ -97,6 +97,11 @@ const currentUnits = [
   { label: "Milliamps", symbol: "mA" },
   { label: "Microamps", symbol: "µA" },
 ];
+// Capacitance units for withstand test
+const capacitanceUnits = [
+  { label: "Nanofarads", symbol: "nF" },
+  { label: "Microfarads", symbol: "µF" },
+];
 
 interface MediumVoltageVLFMTSReportForm {
   reportInfo: {
@@ -302,16 +307,19 @@ interface MediumVoltageVLFMTSReportForm {
         mA: string;
         nF: string;
         currentUnit?: string;
+        capacitanceUnit?: string;
       };
       phaseB: {
         mA: string;
         nF: string;
         currentUnit?: string;
+        capacitanceUnit?: string;
       };
       phaseC: {
         mA: string;
         nF: string;
         currentUnit?: string;
+        capacitanceUnit?: string;
       };
     }>;
   };
@@ -620,44 +628,44 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
         {
           timeMinutes: "10",
           kVAC: "",
-          phaseA: { mA: "", nF: "", currentUnit: "mA" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA" },
+          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
         },
         {
           timeMinutes: "20",
           kVAC: "",
-          phaseA: { mA: "", nF: "", currentUnit: "mA" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA" },
+          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
         },
         {
           timeMinutes: "30",
           kVAC: "",
-          phaseA: { mA: "", nF: "", currentUnit: "mA" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA" },
+          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
         },
         {
           timeMinutes: "40",
           kVAC: "",
-          phaseA: { mA: "", nF: "", currentUnit: "mA" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA" },
+          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
         },
         {
           timeMinutes: "50",
           kVAC: "",
-          phaseA: { mA: "", nF: "", currentUnit: "mA" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA" },
+          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
         },
         {
           timeMinutes: "60",
           kVAC: "",
-          phaseA: { mA: "", nF: "", currentUnit: "mA" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA" },
+          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
         },
       ],
     },
@@ -2136,8 +2144,40 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
                               ?.currentUnit || "mA"}
                           </div>
                         </th>
-                        <th className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
-                          nF
+                        <th className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white tracking-wider">
+                          <select
+                            onChange={(e) => {
+                              const newReadings = [
+                                ...formData.withstandTest.readings,
+                              ];
+                              newReadings.forEach((r) => {
+                                r[phase].capacitanceUnit = e.target.value;
+                              });
+                              handleChange("withstandTest", {
+                                readings: newReadings,
+                              });
+                            }}
+                            value={
+                              formData.withstandTest.readings[0]?.[phase]
+                                ?.capacitanceUnit || "nF"
+                            }
+                            disabled={!isEditMode}
+                            className={`w-16 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-xs dark:bg-dark-150 dark:text-white print:hidden ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          >
+                            {capacitanceUnits.map((unit) => (
+                              <option
+                                key={unit.symbol}
+                                value={unit.symbol}
+                                className="dark:bg-dark-150 dark:text-white"
+                              >
+                                {unit.symbol}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="hidden print:block text-xs text-black normal-case">
+                            {formData.withstandTest.readings[0]?.[phase]
+                              ?.capacitanceUnit || "nF"}
+                          </div>
                         </th>
                       </React.Fragment>
                     ))}

@@ -99,6 +99,11 @@ const currentUnits = [
   { label: "Milliamps", symbol: "mA" },
   { label: "Microamps", symbol: "µA" },
 ];
+// Capacitance units for withstand test
+const capacitanceUnits = [
+  { label: "Nanofarads", symbol: "nF" },
+  { label: "Microfarads", symbol: "µF" },
+];
 
 // Replace interface with a comment
 // MediumVoltageVLFReport structure:
@@ -646,44 +651,44 @@ const MediumVoltageCableVLFTest = () => {
         {
           timeMinutes: "10",
           kVAC: "13",
-          phaseA: { mA: "", nF: "", currentUnit: "mA" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA" },
+          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
         },
         {
           timeMinutes: "20",
           kVAC: "13",
-          phaseA: { mA: "", nF: "", currentUnit: "mA" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA" },
+          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
         },
         {
           timeMinutes: "30",
           kVAC: "13",
-          phaseA: { mA: "", nF: "", currentUnit: "mA" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA" },
+          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
         },
         {
           timeMinutes: "40",
           kVAC: "13",
-          phaseA: { mA: "", nF: "", currentUnit: "mA" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA" },
+          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
         },
         {
           timeMinutes: "50",
           kVAC: "13",
-          phaseA: { mA: "", nF: "", currentUnit: "mA" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA" },
+          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
         },
         {
           timeMinutes: "60",
           kVAC: "13",
-          phaseA: { mA: "", nF: "", currentUnit: "mA" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA" },
+          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
         },
       ],
     },
@@ -1232,9 +1237,9 @@ const MediumVoltageCableVLFTest = () => {
         readings.push({
           timeMinutes: "",
           kVAC: "13",
-          phaseA: { mA: "", nF: "", currentUnit: "mA" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA" },
+          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
         });
       }
 
@@ -1835,44 +1840,44 @@ const MediumVoltageCableVLFTest = () => {
               {
                 timeMinutes: "10",
                 kVAC: "13",
-                phaseA: { mA: "", nF: "", currentUnit: "mA" },
-                phaseB: { mA: "", nF: "", currentUnit: "mA" },
-                phaseC: { mA: "", nF: "", currentUnit: "mA" },
+                phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+                phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+                phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
               },
               {
                 timeMinutes: "20",
                 kVAC: "13",
-                phaseA: { mA: "", nF: "", currentUnit: "mA" },
-                phaseB: { mA: "", nF: "", currentUnit: "mA" },
-                phaseC: { mA: "", nF: "", currentUnit: "mA" },
+                phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+                phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+                phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
               },
               {
                 timeMinutes: "30",
                 kVAC: "13",
-                phaseA: { mA: "", nF: "", currentUnit: "mA" },
-                phaseB: { mA: "", nF: "", currentUnit: "mA" },
-                phaseC: { mA: "", nF: "", currentUnit: "mA" },
+                phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+                phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+                phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
               },
               {
                 timeMinutes: "40",
                 kVAC: "13",
-                phaseA: { mA: "", nF: "", currentUnit: "mA" },
-                phaseB: { mA: "", nF: "", currentUnit: "mA" },
-                phaseC: { mA: "", nF: "", currentUnit: "mA" },
+                phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+                phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+                phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
               },
               {
                 timeMinutes: "50",
                 kVAC: "13",
-                phaseA: { mA: "", nF: "", currentUnit: "mA" },
-                phaseB: { mA: "", nF: "", currentUnit: "mA" },
-                phaseC: { mA: "", nF: "", currentUnit: "mA" },
+                phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+                phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+                phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
               },
               {
                 timeMinutes: "60",
                 kVAC: "13",
-                phaseA: { mA: "", nF: "", currentUnit: "mA" },
-                phaseB: { mA: "", nF: "", currentUnit: "mA" },
-                phaseC: { mA: "", nF: "", currentUnit: "mA" },
+                phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+                phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+                phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
               },
             ],
           },
@@ -3829,7 +3834,38 @@ const MediumVoltageCableVLFTest = () => {
                       </select>
                     </th>
                     <th className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 tracking-wider">
-                      nF
+                      <select
+                        onChange={(e) => {
+                          const newReadings = [
+                            ...(formData.withstandTest?.readings || []),
+                          ];
+                          newReadings.forEach((reading) => {
+                            if (reading.phaseA) {
+                              reading.phaseA.capacitanceUnit = e.target.value;
+                            }
+                          });
+                          handleChange("withstandTest", {
+                            ...formData.withstandTest,
+                            readings: newReadings,
+                          });
+                        }}
+                        value={
+                          formData.withstandTest?.readings[0]?.phaseA
+                            ?.capacitanceUnit || "nF"
+                        }
+                        disabled={!isEditMode}
+                        className={`w-16 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-xs dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
+                      >
+                        {capacitanceUnits.map((unit) => (
+                          <option
+                            key={unit.symbol}
+                            value={unit.symbol}
+                            className="dark:bg-dark-100 dark:text-white"
+                          >
+                            {unit.symbol}
+                          </option>
+                        ))}
+                      </select>
                     </th>
                     <th className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       <select
@@ -3866,7 +3902,38 @@ const MediumVoltageCableVLFTest = () => {
                       </select>
                     </th>
                     <th className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 tracking-wider">
-                      nF
+                      <select
+                        onChange={(e) => {
+                          const newReadings = [
+                            ...(formData.withstandTest?.readings || []),
+                          ];
+                          newReadings.forEach((reading) => {
+                            if (reading.phaseB) {
+                              reading.phaseB.capacitanceUnit = e.target.value;
+                            }
+                          });
+                          handleChange("withstandTest", {
+                            ...formData.withstandTest,
+                            readings: newReadings,
+                          });
+                        }}
+                        value={
+                          formData.withstandTest?.readings[0]?.phaseB
+                            ?.capacitanceUnit || "nF"
+                        }
+                        disabled={!isEditMode}
+                        className={`w-16 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-xs dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
+                      >
+                        {capacitanceUnits.map((unit) => (
+                          <option
+                            key={unit.symbol}
+                            value={unit.symbol}
+                            className="dark:bg-dark-100 dark:text-white"
+                          >
+                            {unit.symbol}
+                          </option>
+                        ))}
+                      </select>
                     </th>
                     <th className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       <select
@@ -3903,7 +3970,38 @@ const MediumVoltageCableVLFTest = () => {
                       </select>
                     </th>
                     <th className="border border-neutral-300 dark:border-neutral-700 px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 tracking-wider">
-                      nF
+                      <select
+                        onChange={(e) => {
+                          const newReadings = [
+                            ...(formData.withstandTest?.readings || []),
+                          ];
+                          newReadings.forEach((reading) => {
+                            if (reading.phaseC) {
+                              reading.phaseC.capacitanceUnit = e.target.value;
+                            }
+                          });
+                          handleChange("withstandTest", {
+                            ...formData.withstandTest,
+                            readings: newReadings,
+                          });
+                        }}
+                        value={
+                          formData.withstandTest?.readings[0]?.phaseC
+                            ?.capacitanceUnit || "nF"
+                        }
+                        disabled={!isEditMode}
+                        className={`w-16 rounded-md border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-xs dark:bg-dark-100 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
+                      >
+                        {capacitanceUnits.map((unit) => (
+                          <option
+                            key={unit.symbol}
+                            value={unit.symbol}
+                            className="dark:bg-dark-100 dark:text-white"
+                          >
+                            {unit.symbol}
+                          </option>
+                        ))}
+                      </select>
                     </th>
                   </tr>
                 </thead>

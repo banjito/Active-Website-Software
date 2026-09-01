@@ -94,9 +94,9 @@ export class MediumVoltageVLFMTSImporter extends BaseImporter implements ReportI
       readings: (Array.isArray(ws.readings) ? ws.readings : []).map((r: any) => ({
         timeMinutes: (r.timeMinutes ?? '').toString(),
         kVAC: (r.kVAC ?? '').toString(),
-        phaseA: { currentUnit: r.phaseA?.currentUnit || 'mA', mA: r.phaseA?.mA || '', nF: r.phaseA?.nF || '' },
-        phaseB: { currentUnit: r.phaseB?.currentUnit || 'mA', mA: r.phaseB?.mA || '', nF: r.phaseB?.nF || '' },
-        phaseC: { currentUnit: r.phaseC?.currentUnit || 'mA', mA: r.phaseC?.mA || '', nF: r.phaseC?.nF || '' }
+        phaseA: { currentUnit: r.phaseA?.currentUnit || 'mA', mA: r.phaseA?.mA || '', nF: r.phaseA?.nF || '', capacitanceUnit: r.phaseA?.capacitanceUnit || 'nF' },
+        phaseB: { currentUnit: r.phaseB?.currentUnit || 'mA', mA: r.phaseB?.mA || '', nF: r.phaseB?.nF || '', capacitanceUnit: r.phaseB?.capacitanceUnit || 'nF' },
+        phaseC: { currentUnit: r.phaseC?.currentUnit || 'mA', mA: r.phaseC?.mA || '', nF: r.phaseC?.nF || '', capacitanceUnit: r.phaseC?.capacitanceUnit || 'nF' }
       }))
     };
 

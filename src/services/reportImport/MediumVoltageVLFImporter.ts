@@ -106,9 +106,9 @@ export class MediumVoltageVLFImporter extends BaseImporter implements ReportImpo
       return { readings: readings.map((r: any) => ({
         timeMinutes: (r.timeMinutes ?? '').toString(),
         kVAC: (r.kVAC ?? '').toString(),
-        phaseA: { currentUnit: r.phaseA?.currentUnit || 'mA', mA: r.phaseA?.mA || '' },
-        phaseB: { currentUnit: r.phaseB?.currentUnit || 'mA', mA: r.phaseB?.mA || '' },
-        phaseC: { currentUnit: r.phaseC?.currentUnit || 'mA', mA: r.phaseC?.mA || '' }
+        phaseA: { currentUnit: r.phaseA?.currentUnit || 'mA', mA: r.phaseA?.mA || '', capacitanceUnit: r.phaseA?.capacitanceUnit || 'nF' },
+        phaseB: { currentUnit: r.phaseB?.currentUnit || 'mA', mA: r.phaseB?.mA || '', capacitanceUnit: r.phaseB?.capacitanceUnit || 'nF' },
+        phaseC: { currentUnit: r.phaseC?.currentUnit || 'mA', mA: r.phaseC?.mA || '', capacitanceUnit: r.phaseC?.capacitanceUnit || 'nF' }
       })) };
     })();
 

@@ -46,6 +46,7 @@ import { getReportName, getAssetName } from "./reportMappings";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Types
 enum TestStatus {
@@ -800,6 +801,9 @@ const MediumVoltageVLFReport: React.FC = () => {
       ],
     },
   });
+
+  // Autofill the "User" header field from the job's User (new reports only).
+  useReportUserAutofill(setFormData, reportId, "contactPerson");
 
   // Check for returnToAssets query parameter
   const returnToAssets =

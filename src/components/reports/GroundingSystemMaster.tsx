@@ -12,6 +12,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Temperature Correction Factor (TCF) lookup table – maps Celsius to correction factor
 const TCF_TABLE: Record<string, number> = {
@@ -203,6 +204,9 @@ const GroundingSystemMaster: React.FC = () => {
     eqptLocation: "",
     temperature: { fahrenheit: 68, celsius: 20, tcf: 1, humidity: 0 },
   });
+
+  // Autofill the "User" header field from the job's User (new reports only).
+  useReportUserAutofill(setJobInfo, reportId, "user");
 
   // Master table rows
   const [rowCount, setRowCount] = useState<number>(50);

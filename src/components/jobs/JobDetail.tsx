@@ -115,6 +115,7 @@ import {
 import { toast } from "@/components/ui/toast";
 import { ReportApprovalWorkflow } from "../reports/ReportApprovalWorkflow";
 import { EvaluationResultBadge } from "../reports/EvaluationResultBadge";
+import { clearJobEndUserCache } from "../reports/useReportUserAutofill";
 import {
   extractEvaluationResult,
   type EvaluationResult,
@@ -256,6 +257,12 @@ interface Job {
   customer_id: string;
   division?: string | null;
   site_address?: string | null;
+  /**
+   * The "User" printed on this job's reports: the company or facility that
+   * will own the building, not the technician and not the customer that hired
+   * us. Marathon Electric hires us at FTY02, but the User is Microsoft.
+   */
+  end_user?: string | null;
   fireteam_lead?: string | null;
   submittal_job_type?: "standard" | "data_center" | null;
   submittal_window_hours?: number | null;
@@ -3234,6 +3241,7 @@ export default function JobDetail() {
           budget: jobDetails.budget || null,
           division: (jobDetails as any).division || null,
           site_address: jobDetails.site_address || null,
+          end_user: jobDetails.end_user ?? null,
           fireteam_lead: jobDetails.fireteam_lead || null,
           progress_billing_status:
             (jobDetails as any).progress_billing_status || null,
@@ -4355,6 +4363,7 @@ export default function JobDetail() {
         due_date: editFormData.due_date,
         budget: editFormData.budget,
         site_address: editFormData.site_address ?? null,
+        end_user: editFormData.end_user?.trim() || null,
         fireteam_lead: editFormData.fireteam_lead ?? null,
         division: editFormData.division ?? null,
         submittal_job_type: editFormData.submittal_job_type ?? "standard",
@@ -4387,6 +4396,9 @@ export default function JobDetail() {
 
       // Update the local job state with the new data
       setJob((prev) => (prev ? { ...prev, ...editFormData } : null));
+
+      // New reports opened after this read the job's User from a cache.
+      clearJobEndUserCache(id);
 
       // Exit edit mode
       setIsEditing(false);
@@ -9370,6 +9382,34 @@ export default function JobDetail() {
                         placeholder="Enter physical site address"
                       />
                     </div>
+
+                    <div className="md:col-span-2">
+                      <label
+                        htmlFor="end_user"
+                        className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
+                      >
+                        User{" "}
+                        <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                          (facility owner shown on reports)
+                        </span>
+                      </label>
+                      <input
+                        type="text"
+                        id="end_user"
+                        value={editFormData?.end_user || ""}
+                        onChange={(e) =>
+                          setEditFormData((prev) =>
+                            prev ? { ...prev, end_user: e.target.value } : null,
+                          )
+                        }
+                        className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm"
+                        placeholder="e.g. Microsoft"
+                      />
+                      <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                        Fills the "User" field on every new report for this job.
+                        Reports that already exist keep what is on them.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -10344,6 +10384,14 @@ export default function JobDetail() {
                                   "Not set"}
                               </p>
                             </div>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
+                              User
+                            </label>
+                            <p className="text-neutral-900 dark:text-white text-sm">
+                              {job.end_user ? maskCustomerName(job.end_user) : "Not set"}
+                            </p>
                           </div>
                           {job.description && !isDemoMode && (
                             <div>

@@ -22,6 +22,7 @@ import {
   reportSaveFailed,
   reportSaveSucceeded,
 } from "./common/autoSaveStatus";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Temperature conversion and correction factor lookup tables
 const tcfTable: { [key: string]: number } = {
@@ -838,6 +839,9 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
     status: "PASS",
     irDlroOnly: false,
   });
+
+  // Autofill the "User" header field from the job's User (new reports only).
+  useReportUserAutofill(setFormData, initialReportId, "user");
 
   const [error, setError] = useState<string | null>(null);
 

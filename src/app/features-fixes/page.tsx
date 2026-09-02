@@ -14,6 +14,7 @@ import {
   Filter,
   ArrowDownWideNarrow,
   Check,
+  Copy,
 } from "lucide-react";
 import IssueNotes from "@/components/feedback/IssueNotes";
 import { HeaderBar } from "@/components/ui/HeaderBar";
@@ -211,6 +212,7 @@ const FeaturesFixesPage: React.FC = () => {
   const [editedInterestedParties, setEditedInterestedParties] = useState<
     string[]
   >([]);
+  const [promptCopied, setPromptCopied] = useState(false);
   const [ipSearch, setIpSearch] = useState("");
   const [showIpDropdown, setShowIpDropdown] = useState(false);
   const [resolveIssue, setResolveIssue] = useState<Issue | null>(null);
@@ -1000,6 +1002,38 @@ const FeaturesFixesPage: React.FC = () => {
     setShowModal(true);
   };
 
+  const buildIssuePrompt = (issue: Issue) => {
+    const label = issue.type === "feature_request" ? "Feature Request" : "Issue";
+    let reportedFrom = issue.page_url || "";
+    try {
+      if (reportedFrom) {
+        const parsed = new URL(reportedFrom);
+        reportedFrom = `${parsed.host}${parsed.pathname}${parsed.search}`.replace(
+          /^www\./,
+          "",
+        );
+      }
+    } catch {
+      // leave the stored value as-is if it is not a parseable URL
+    }
+    return [
+      `${label}: ${issue.title}`,
+      `Description: ${issue.description || ""}`,
+      `Reported from: ${reportedFrom}`,
+    ].join("\n");
+  };
+
+  const handleCopyPrompt = async () => {
+    if (!selectedIssue) return;
+    try {
+      await navigator.clipboard.writeText(buildIssuePrompt(selectedIssue));
+      setPromptCopied(true);
+      setTimeout(() => setPromptCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy issue prompt:", err);
+    }
+  };
+
   const closeModal = () => {
     setShowModal(false);
     setSelectedIssue(null);
@@ -1657,6 +1691,23 @@ const FeaturesFixesPage: React.FC = () => {
                           </button>
                         </>
                       )}
+                      <button
+                        onClick={handleCopyPrompt}
+                        title="Copy as prompt text"
+                        className="flex items-center gap-1 px-2 py-1 text-sm text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 border border-neutral-300 dark:border-neutral-600 rounded-none"
+                      >
+                        {promptCopied ? (
+                          <>
+                            <Check className="w-4 h-4" />
+                            Copied
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4" />
+                            Copy
+                          </>
+                        )}
+                      </button>
                       <button
                         onClick={closeModal}
                         className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-2xl font-bold"

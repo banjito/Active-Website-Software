@@ -24,6 +24,8 @@ export interface JobDetails {
   division?: string;
   tracking_plan?: Record<string, number>;
   site_address?: string | null;
+  /** Facility owner / end user shown in the "User" field on this job's reports. */
+  end_user?: string | null;
   fireteam_lead?: string | null;
   progress_billing_status?: string | null;
   estimated_man_hours?: number | null;
@@ -106,6 +108,7 @@ export function useJobDetails(jobId: string | undefined) {
             customer_id,
             division,
             site_address,
+            end_user,
             tracking_plan,
             fireteam_lead,
             estimated_man_hours,
@@ -347,6 +350,7 @@ export function useJobDetails(jobId: string | undefined) {
           division: jobData.division,
           tracking_plan: (jobData as any).tracking_plan || undefined,
           site_address: (jobData as any).site_address || null,
+          end_user: (jobData as any).end_user ?? null,
           fireteam_lead: (jobData as any).fireteam_lead || null,
           progress_billing_status:
             (jobData as any).progress_billing_status || null,

@@ -15,6 +15,7 @@ import {
   reportSaveFailed,
   reportSaveSucceeded,
 } from "./common/autoSaveStatus";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 type ResultOption =
   | "Select One"
@@ -578,6 +579,9 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
     },
     comments: "",
   });
+
+  // Autofill the "User" header field from the job's User (new reports only).
+  useReportUserAutofill(setFormData, initialReportId, "user");
 
   // Print styles: clean table UI only (copy approach from PanelboardReport)
   useEffect(() => {

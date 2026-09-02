@@ -9185,6 +9185,7 @@ CREATE TABLE neta_ops.jobs (
     estimated_man_hours numeric(10,2),
     quickbooks_project_id text,
     quickbooks_project_name text,
+    end_user text,
     job_number_numeric bigint GENERATED ALWAYS AS (
 CASE
     WHEN (job_number ~ '^[0-9]+$'::text) THEN (job_number)::bigint
@@ -9209,6 +9210,13 @@ COMMENT ON COLUMN neta_ops.jobs.division IS 'Division responsible for the job (n
 --
 
 COMMENT ON COLUMN neta_ops.jobs.tracking_plan IS 'Job asset tracking plan: { "<report-slug>": <targetQuantity>, ... }';
+
+
+--
+-- Name: COLUMN jobs.end_user; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.jobs.end_user IS 'Facility owner / end user shown in the "User" field of this job''s reports (e.g. Microsoft at FTY02). Not an app user; see jobs.user_id for that.';
 
 
 --

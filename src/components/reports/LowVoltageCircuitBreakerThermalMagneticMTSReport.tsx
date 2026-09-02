@@ -18,6 +18,7 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -560,6 +561,9 @@ const LowVoltageCircuitBreakerThermalMagneticMTSReport: React.FC = () => {
       asLeft: "",
     },
   });
+
+  // Autofill the "User" header field from the job's User (new reports only).
+  useReportUserAutofill(setFormData, reportId, "user");
 
   // Load job information
   const loadJobInfo = async () => {

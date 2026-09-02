@@ -47,6 +47,7 @@ import Card, {
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getReportName, getAssetName } from "./reportMappings";
 import { BRAND_COLOR } from "@/lib/companyConfig";
+import { useReportUserAutofill } from "./useReportUserAutofill";
 
 // Types
 enum TestStatus {
@@ -670,6 +671,9 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
       ],
     },
   });
+
+  // Autofill the "User" header field from the job's User (new reports only).
+  useReportUserAutofill(setFormData, reportId, "contactPerson");
 
   useEffect(() => {
     if (error || !location.pathname) {

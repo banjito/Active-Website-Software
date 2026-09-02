@@ -40,7 +40,7 @@ export interface StageSpec {
 export const PDF_STAGES: StageSpec[] = [
   { key: "reading", label: "Rendering pages", weight: 0.15, paged: true },
   { key: "recognizing", label: "Reading the tables", weight: 0.55, paged: true },
-  { key: "structuring", label: "Structuring results", weight: 0.22 },
+  { key: "structuring", label: "Structuring results", weight: 0.22, paged: true },
   { key: "saving", label: "Saving report", weight: 0.08 },
 ];
 
@@ -94,7 +94,11 @@ function pdfDetail(state: ConversionState): string {
       ? `Page ${state.page} of ${state.pageCount}`
       : "Opening file";
   }
-  if (state.stage === "structuring") return "Rebuilding the table from the scan";
+  if (state.stage === "structuring") {
+    return state.pageCount > 1
+      ? `Part ${state.page} of ${state.pageCount}`
+      : "Rebuilding the table from the scan";
+  }
   return "Writing to the database";
 }
 

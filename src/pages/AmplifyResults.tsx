@@ -42,7 +42,7 @@ const dateFormatter = new Intl.DateTimeFormat(undefined, {
 /** A workbook is parsed instantly, so nearly all the wait is the model call. */
 const WORKBOOK_STAGES: StageSpec[] = [
   { key: "reading", label: "Reading the workbook", weight: 0.1 },
-  { key: "structuring", label: "Structuring results", weight: 0.8 },
+  { key: "structuring", label: "Structuring results", weight: 0.8, paged: true },
   { key: "saving", label: "Saving report", weight: 0.1 },
 ];
 
@@ -60,7 +60,13 @@ function conversionDetail(state: ConversionState): string {
       : "Opening PDF";
   }
   if (state.stage === "reading") return "Flattening the sheets";
-  if (state.stage === "structuring") return "Reading the test data";
+  if (state.stage === "structuring") {
+    // A long document is structured in several passes. These count passes, not
+    // reports: one unit can take more than one.
+    return state.pageCount > 1
+      ? `Part ${state.page} of ${state.pageCount}`
+      : "Reading the test data";
+  }
   return "Writing to the database";
 }
 
@@ -146,7 +152,16 @@ const AmplifyResults: React.FC = () => {
         }
 
         at("structuring");
-        const parsed = await parseAmplifyReport(text, file.name);
+        // A long export is structured one unit at a time; `page` counts those
+        // passes here rather than source pages.
+        const parsed = await parseAmplifyReport(text, file.name, (p) =>
+          setProgress({
+            stage: "structuring",
+            page: p.done,
+            pageCount: p.total,
+            fileName: file.name,
+          }),
+        );
 
         at("saving");
         const saved = await saveAmplifyConversion(parsed, file.name);

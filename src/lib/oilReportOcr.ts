@@ -30,6 +30,87 @@ export interface OcrResult {
 }
 
 /**
+ * One text run, placed on the page.
+ *
+ * pdf.js reports each run's position in the 6-element transform it would draw
+ * with: [4] is x and [5] is the baseline y, which grows upward.
+ */
+interface PlacedRun {
+  x: number;
+  y: number;
+  height: number;
+  str: string;
+}
+
+/** Rows within this many points of each other are one visual line. */
+const MIN_LINE_TOLERANCE = 2;
+
+/**
+ * Rebuild a page's reading order from where its text was actually drawn.
+ *
+ * pdf.js hands back runs in content-stream order, which is the order the
+ * generator happened to emit them, not the order a person reads them. Form
+ * exports are the worst case: a label and the box it belongs to are written in
+ * separate passes, so joining the runs as they arrive yields "PAGE <date> DATE
+ * 1" for what prints as "DATE <date>  PAGE 1". Structuring that text lands
+ * values on the wrong fields, so the runs are sorted by position first.
+ *
+ * Runs are grouped into lines by baseline, then ordered left to right within
+ * each line — the same reconstruction `pdftotext` performs.
+ */
+function readingOrder(items: unknown[]): string {
+  const runs: PlacedRun[] = [];
+  for (const item of items) {
+    // items are TextItem | TextMarkedContent; only the former has text.
+    if (!item || typeof item !== "object" || !("str" in item)) continue;
+    const run = item as { str: string; height?: number; transform?: number[] };
+    if (!run.str.trim()) continue;
+    const transform = run.transform ?? [];
+    runs.push({
+      x: transform[4] ?? 0,
+      y: transform[5] ?? 0,
+      height: run.height ?? 0,
+      str: run.str,
+    });
+  }
+
+  if (runs.length === 0) return "";
+
+  // Top-down, then left-to-right. The x tiebreak keeps the grouping pass below
+  // from depending on the order pdf.js emitted overlapping runs in.
+  runs.sort((a, b) => b.y - a.y || a.x - b.x);
+
+  const lines: PlacedRun[][] = [];
+  let baseline = runs[0].y;
+  let current: PlacedRun[] = [];
+
+  for (const run of runs) {
+    // Superscripts and mixed type sizes shift a baseline slightly without
+    // starting a new row, so the tolerance follows the run's own height.
+    const tolerance = Math.max(MIN_LINE_TOLERANCE, run.height / 2);
+    if (current.length > 0 && baseline - run.y > tolerance) {
+      lines.push(current);
+      current = [];
+    }
+    if (current.length === 0) baseline = run.y;
+    current.push(run);
+  }
+  lines.push(current);
+
+  return lines
+    .map((line) =>
+      line
+        .sort((a, b) => a.x - b.x)
+        .map((run) => run.str)
+        .join(" ")
+        .replace(/[ \t]+/g, " ")
+        .trim(),
+    )
+    .filter(Boolean)
+    .join("\n");
+}
+
+/**
  * Pull the embedded text layer, or null when there isn't a usable one.
  *
  * Today's MVA oil-report exports return null, but PDFs from other report
@@ -46,14 +127,7 @@ export async function extractTextLayer(file: File): Promise<OcrResult | null> {
     for (let i = 1; i <= doc.numPages; i++) {
       const page = await doc.getPage(i);
       const content = await page.getTextContent();
-      pages.push(
-        content.items
-          // items are TextItem | TextMarkedContent; only the former has text.
-          .map((item) => ("str" in item ? item.str : ""))
-          .join(" ")
-          .replace(/[ \t]+/g, " ")
-          .trim(),
-      );
+      pages.push(readingOrder(content.items));
       page.cleanup();
     }
 

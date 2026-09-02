@@ -11,6 +11,7 @@ import {
   Database,
   LockKeyhole,
   Bell,
+  Ruler,
   Clock,
   Link2,
   DollarSign,
@@ -90,6 +91,14 @@ const adminCards: AdminCard[] = [
     cardClassName:
       "border-rose-200 bg-rose-50/80 dark:border-rose-900 dark:bg-rose-950/30",
     path: "/admin-dashboard/notification-controls",
+  },
+  {
+    title: "Calibration Report Recipients",
+    icon: Ruler,
+    iconClassName: "text-orange-700 dark:text-orange-200",
+    cardClassName:
+      "border-orange-200 bg-orange-50/80 dark:border-orange-900 dark:bg-orange-950/30",
+    path: "/admin-dashboard/calibration-recipients",
   },
   {
     title: "System Health",
@@ -189,6 +198,7 @@ const CATEGORIES: CategorySection[] = [
       [
         "/admin-dashboard/user-management",
         "/admin-dashboard/role-management",
+        "/admin-dashboard/integrations",
       ].includes(c.path),
     ),
   },
@@ -219,7 +229,7 @@ const CATEGORIES: CategorySection[] = [
     cards: adminCards.filter((c) =>
       [
         "/admin-dashboard/notification-controls",
-        "/admin-dashboard/integrations",
+        "/admin-dashboard/calibration-recipients",
         "/admin-dashboard/site-theme",
       ].includes(c.path),
     ),

@@ -1129,11 +1129,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               </div>
             )}
             {canLogInteractions(user?.user_metadata?.role, user?.email) && (
-              <div
-                className="relative flex h-10 w-10 items-center justify-center"
-                {...tooltipHandlers("Log Interaction")}
-              >
-                <QuickLogInteraction />
+              <div className="relative flex h-10 w-10 items-center justify-center">
+                <QuickLogInteraction
+                  triggerProps={tooltipHandlers("Log Interaction")}
+                />
               </div>
             )}
             <div

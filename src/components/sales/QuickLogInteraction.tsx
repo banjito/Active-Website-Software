@@ -51,7 +51,14 @@ type Contact = {
  * Top-bar widget: quickly log an interaction. Flow: pick Customer → Contact → Note.
  * Dispatches an "interactionLogged" window event on success so feeds can refresh.
  */
-export const QuickLogInteraction: React.FC = () => {
+interface QuickLogInteractionProps {
+  /** Handlers applied to the trigger icon only, so a tooltip never covers the dropdown. */
+  triggerProps?: React.HTMLAttributes<HTMLButtonElement>;
+}
+
+export const QuickLogInteraction: React.FC<QuickLogInteractionProps> = ({
+  triggerProps,
+}) => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -302,6 +309,7 @@ export const QuickLogInteraction: React.FC = () => {
         aria-haspopup="true"
         aria-expanded={open}
         title="Log interaction"
+        {...triggerProps}
         onClick={() => setOpen((v) => !v)}
         className={cn(iconButtonClass, open && iconButtonActiveClass)}
       >

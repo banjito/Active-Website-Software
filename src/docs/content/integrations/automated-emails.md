@@ -14,6 +14,7 @@ A handful of emails go out on their own. They exist to stop work sitting quietly
 | **Daily Review Notification** | Daily, 12:00 PM | Reports sitting in `Ready for review`, grouped by job |
 | **Weekly PO Report** | Monday, 8:00 AM | Purchase order summary |
 | **Weekly Jobs Status Report** | Monday, 8:00 AM | Jobs grouped by status |
+| **Monthly Calibration Report** | 1st of the month, 8:00 AM | Equipment due for calibration within 60 days, and anything overdue |
 
 ## Triggered emails
 
@@ -36,6 +37,8 @@ Two mechanisms, and confusing them causes most "I am not getting the email" ques
 
 **Fixed.** The ready-to-bill notification goes to the configured accounting address, set at the instance level.
 
+**A managed list.** The monthly calibration report is the only one an administrator controls directly, from **Admin → Calibration Report Recipients**. It exists because that report is aimed at named people rather than at whoever happens to want it, and a new project manager should not miss it because nobody told them to switch it on. Individual settings still win in both directions: someone on the list who turns it off is dropped, and someone not on the list who turns it on is added.
+
 ## Empty emails are not sent
 
 Most of these are suppressed when there is nothing to report. No reports awaiting review means no daily review email that day.
@@ -43,6 +46,8 @@ Most of these are suppressed when there is nothing to report. No reports awaitin
 ::: note
 This is the single most common false alarm. "The daily email stopped working" usually means the review queue was empty, which is good news, not a fault.
 :::
+
+The monthly calibration report is the deliberate exception. It sends even with nothing due, because a silent first-of-the-month cannot be told apart from a schedule that has stopped running.
 
 ## Turning one off
 
@@ -55,6 +60,8 @@ Turning off the daily review notification is how reports quietly rot in the queu
 ## Testing
 
 Notification dev controls let an administrator fire an email on demand rather than waiting until tomorrow morning. Test after any change to recipients or email configuration.
+
+The calibration report has its own controls on its recipients page. **Preview** reports what it would send and exactly who would receive it, without sending anything. **Send now** sends the real email to the real list, so use preview first.
 
 ## When one does not arrive
 

@@ -18,6 +18,24 @@
 -- today breaks.
 --
 -- Safe to re-run.
+--
+-- PREREQUISITE: common.sites must exist. It is created by
+-- database/migrations/create_asset_tracking_tables.sql and is NOT in the bootstrap
+-- schema dump, so an instance that never ran that migration does not have it.
+
+-- ── 0. Prerequisites ──────────────────────────────────────────────────────────
+-- Checked up front because the SQL editor runs this file as one transaction: without
+-- this, a missing table surfaces as a foreign key error partway down and everything
+-- above it silently rolls back.
+DO $$
+BEGIN
+  IF to_regclass('common.sites') IS NULL THEN
+    RAISE EXCEPTION 'common.sites does not exist. Run database/migrations/create_asset_tracking_tables.sql first, then re-run this file.';
+  END IF;
+  IF to_regclass('neta_ops.equipment_trucks') IS NULL THEN
+    RAISE EXCEPTION 'neta_ops.equipment_trucks does not exist.';
+  END IF;
+END $$;
 
 -- ── 1. The link columns ───────────────────────────────────────────────────────
 ALTER TABLE neta_ops.field_equipment
@@ -81,8 +99,8 @@ UPDATE neta_ops.field_equipment fe
 SET    assigned_site_id = m.site_id
 FROM (
   SELECT fe2.id AS equipment_id,
-         min(s.id) AS site_id,
-         count(*)  AS match_count
+         (array_agg(s.id ORDER BY s.id))[1] AS site_id,
+         count(*)                          AS match_count
   FROM   neta_ops.field_equipment fe2
   JOIN   common.sites s
     ON   lower(btrim(s.name)) = lower(btrim(fe2.assigned_to))
@@ -265,7 +283,7 @@ REVOKE ALL ON FUNCTION neta_ops.log_field_equipment_assignment() FROM PUBLIC;
 
 -- ── 7. Verification ───────────────────────────────────────────────────────────
 -- SELECT assigned_type,
---        count(*) AS rows,
+--        count(*) AS total,
 --        count(assigned_site_id)  AS linked_sites,
 --        count(assigned_truck_id) AS linked_trucks,
 --        count(assigned_user_id)  AS linked_users

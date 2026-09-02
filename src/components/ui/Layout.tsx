@@ -25,6 +25,13 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 import { Button } from "./Button";
+import { AssignDivisionLeadPopover } from "./AssignDivisionLeadPopover";
+import { isSuperUser } from "@/lib/roles";
+import {
+  fetchDivisionLeads,
+  leadTitleFor,
+  type DivisionLeads,
+} from "@/services/divisionLeadsService";
 import { ThemeToggle } from "../theme/theme-toggle";
 import { SettingsSubmenu } from "./SettingsSubmenu";
 import { EmployeeLinksSubmenu } from "./EmployeeLinksSubmenu";
@@ -80,6 +87,22 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   // Print preview modal for report pages
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  // Who leads each division. ampOS has no project-manager role, so this is where "the PMs"
+  // are actually named; the monthly calibration report reads the same setting.
+  const [divisionLeads, setDivisionLeads] = useState<DivisionLeads>({});
+  const [leadPopoverFor, setLeadPopoverFor] = useState<{
+    id: string;
+    label: string;
+    anchor: DOMRect;
+  } | null>(null);
+
+  const refreshDivisionLeads = React.useCallback(() => {
+    void fetchDivisionLeads().then(setDivisionLeads);
+  }, []);
+
+  useEffect(() => {
+    refreshDivisionLeads();
+  }, [refreshDivisionLeads]);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isFieldTech = division === "field_tech";
@@ -566,6 +589,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       },
     ];
     const showCitySwitcher = fieldTechCities.some((c) => c.id === division);
+    const canAssignDivisionLead =
+      user?.user_metadata?.role === "Admin" ||
+      user?.user_metadata?.role === "Super Admin" ||
+      isSuperUser(user?.email);
 
     const handleCityClick = (cityId: string, path: string) => {
       setDivision(cityId);
@@ -582,18 +609,62 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               Divisions
             </p>
             <div className="flex flex-col gap-1.5">
-              {fieldTechCities.map((city) => (
-                <Button
-                  key={city.id}
-                  variant="ghost"
-                  onClick={() => handleCityClick(city.id, city.path)}
-                  className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
-                    division === city.id ? "bg-black/5 dark:bg-dark-50" : ""
-                  }`}
-                >
-                  {city.label}
-                </Button>
-              ))}
+              {fieldTechCities.map((city) => {
+                const lead = divisionLeads[city.id];
+                const roleTitle = leadTitleFor(city.id);
+                return (
+                  <div
+                    key={city.id}
+                    className={`group my-0.5 flex items-center transition-colors hover:bg-dark-accent/10 dark:hover:bg-dark-700/20 ${
+                      division === city.id ? "bg-black/5 dark:bg-dark-50" : ""
+                    }`}
+                  >
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleCityClick(city.id, city.path)}
+                      className="flex-1 min-w-0 justify-start pl-3 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-transform !duration-200 ease-out hover:!bg-transparent hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 !shadow-none"
+                    >
+                      {city.label}
+                    </Button>
+                    {canAssignDivisionLead && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const anchor =
+                            e.currentTarget.getBoundingClientRect();
+                          setLeadPopoverFor((prev) =>
+                            prev?.id === city.id
+                              ? null
+                              : { id: city.id, label: city.label, anchor },
+                          );
+                        }}
+                        title={
+                          lead
+                            ? `${roleTitle}: ${lead.name}`
+                            : `Assign ${roleTitle}`
+                        }
+                        aria-label={
+                          lead
+                            ? `Change ${roleTitle} for ${city.label}`
+                            : `Assign ${roleTitle} for ${city.label}`
+                        }
+                        className={`mr-2 shrink-0 rounded-none transition-opacity focus-visible:opacity-100 group-hover:opacity-100 ${
+                          leadPopoverFor?.id === city.id
+                            ? "opacity-100"
+                            : "opacity-0"
+                        } ${
+                          lead
+                            ? "text-brand"
+                            : "text-black/40 dark:text-dark-400 hover:text-black/70 dark:hover:text-dark-900"
+                        }`}
+                      >
+                        <UserIcon className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <div className="my-3 border-b border-black/10 dark:border-dark-300" />
           </div>
@@ -1142,6 +1213,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
 
       <AboutPopup isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
+
+      {leadPopoverFor && (
+        <AssignDivisionLeadPopover
+          anchor={leadPopoverFor.anchor}
+          divisionId={leadPopoverFor.id}
+          divisionLabel={leadPopoverFor.label}
+          current={divisionLeads[leadPopoverFor.id] ?? null}
+          onClose={() => setLeadPopoverFor(null)}
+          onSaved={refreshDivisionLeads}
+        />
+      )}
 
       {/* Report print-preview modal */}
       {previewUrl && (

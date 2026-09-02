@@ -77,6 +77,7 @@ import { SystemLogsCard } from "./components/admin/SystemLogsCard";
 import { DataBackupControls } from "./components/admin/DataBackupControls";
 import RoleManagement from "./components/admin/RoleManagement";
 import NotificationDevControls from "./components/admin/NotificationDevControls";
+import CalibrationReportRecipients from "./components/admin/CalibrationReportRecipients";
 import InProgressDashboard from "./components/admin/InProgressDashboard";
 import IntegrationsSettings from "./components/admin/IntegrationsSettings";
 import QuickBooksDashboard from "./components/admin/QuickBooksDashboard";
@@ -669,6 +670,10 @@ function App() {
                     <Route
                       path="notification-controls"
                       element={<NotificationDevControls />}
+                    />
+                    <Route
+                      path="calibration-recipients"
+                      element={<CalibrationReportRecipients />}
                     />
                     <Route
                       path="system-health"

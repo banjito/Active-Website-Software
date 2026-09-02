@@ -32,6 +32,7 @@ export interface AutomatedEmailPreferences {
   dailyReview: boolean;
   dailyReadyToBill: boolean;
   weeklyReports: boolean;
+  monthlyCalibration: boolean;
 }
 
 export interface NotificationPreferences {
@@ -52,6 +53,9 @@ export const DEFAULT_AUTOMATED_EMAILS: AutomatedEmailPreferences = {
   dailyReview: true,
   dailyReadyToBill: true,
   weeklyReports: true,
+  // Opt-in, unlike the three above. The calibration report goes to a named list an
+  // administrator maintains; this toggle only adds or removes the individual on top of it.
+  monthlyCalibration: false,
 };
 
 const DEFAULT_PREFERENCES: NotificationPreferences = {

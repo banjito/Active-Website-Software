@@ -40,6 +40,12 @@ const DIGEST_OPTIONS: {
     label: "Weekly reports digest",
     description: "PO summary and jobs status (Mondays around 8:00 AM Central).",
   },
+  {
+    key: "monthlyCalibration",
+    label: "Monthly calibration report",
+    description:
+      "Equipment due for calibration within 60 days (1st of the month, around 8:00 AM Central). Off unless an administrator has you on the list.",
+  },
 ];
 
 export function EmailDigestPreferences({

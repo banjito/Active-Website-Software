@@ -2,7 +2,11 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { RefreshCw, Trash2 } from "lucide-react";
 import { companyConfig } from "@/lib/companyConfig";
-import { resultSeverity, severityDot } from "@/lib/amplifyReport";
+import {
+  resultSeverity,
+  severityDot,
+  type AmplifyReport,
+} from "@/lib/amplifyReport";
 import { buildAmplifyReportPdf } from "@/lib/amplifyReportPdf";
 import { reviseAmplifyReport } from "@/lib/amplifyReportParse";
 import {
@@ -131,30 +135,63 @@ const AmplifyReportPage: React.FC = () => {
     };
   }, [id]);
 
-  const onDownload = useCallback(async () => {
+  /**
+   * Build a PDF from the given reports and hand it to the browser.
+   *
+   * The renderer already lays several reports out as one document, so the
+   * combined download is the same call with the whole batch rather than a
+   * separate merge step.
+   */
+  const download = useCallback(
+    async (reports: AmplifyReport[], fileName: string) => {
+      setBuilding(true);
+      setError(null);
+      try {
+        const blob = await buildAmplifyReportPdf(reports, pdfCompany);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      } catch (err) {
+        setError(
+          `Could not build the PDF: ${String((err as Error)?.message || err)}`,
+        );
+      } finally {
+        setBuilding(false);
+      }
+    },
+    // pdfCompany is derived from module-level config, so it never changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  const onDownload = useCallback(() => {
     if (!saved) return;
-    setBuilding(true);
-    setError(null);
-    try {
-      const blob = await buildAmplifyReportPdf([saved.report], pdfCompany);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      // The deliverable is a test report, not an AMP-lify artifact: nothing
-      // about the tool belongs in the file name a customer receives.
-      a.download = `${saved.label.replace(/\s+/g, "-")}-Test-Report.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 10_000);
-    } catch (err) {
-      setError(
-        `Could not build the PDF: ${String((err as Error)?.message || err)}`,
-      );
-    } finally {
-      setBuilding(false);
-    }
-  }, [saved]);
+    // The deliverable is a test report, not an AMP-lify artifact: nothing
+    // about the tool belongs in the file name a customer receives.
+    return download(
+      [saved.report],
+      `${saved.label.replace(/\s+/g, "-")}-Test-Report.pdf`,
+    );
+  }, [saved, download]);
+
+  /** Every report from this upload, in source order, as one document. */
+  const onDownloadBatch = useCallback(() => {
+    if (siblings.length === 0) return;
+    const site = siblings.find((s) => s.report.siteName)?.report.siteName;
+    const base = (site || saved?.report.jobNumber || "Test").replace(
+      /\s+/g,
+      "-",
+    );
+    return download(
+      siblings.map((s) => s.report),
+      `${base}-Test-Reports.pdf`,
+    );
+  }, [siblings, saved, download]);
 
   const onRegenerate = useCallback(
     async (instruction: string) => {
@@ -247,13 +284,23 @@ const AmplifyReportPage: React.FC = () => {
           >
             Send to job
           </button>
+          {siblings.length > 1 && (
+            <button
+              type="button"
+              onClick={onDownloadBatch}
+              disabled={building || !saved}
+              className="rounded-none border border-neutral-200 bg-white px-3.5 py-2 text-sm font-medium text-neutral-700 hover:border-neutral-300 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
+            >
+              {`Download all ${siblings.length} as one PDF`}
+            </button>
+          )}
           <button
             type="button"
             onClick={onDownload}
             disabled={building || !saved}
             className="rounded-none bg-brand px-3.5 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-50"
           >
-            {building ? "Building…" : "Download branded PDF"}
+            {building ? "Building…" : "Download this report"}
           </button>
         </div>
       </div>

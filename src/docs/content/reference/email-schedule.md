@@ -20,6 +20,12 @@ Quick reference. All times are Central.
 | **Monday 8:00 AM** | Weekly PO Report | Purchase order summary | Opted-in users |
 | **Monday 8:00 AM** | Weekly Jobs Status Report | Jobs grouped by status | Opted-in users |
 
+## Monthly
+
+| Time | Email | Contains | Recipients |
+|---|---|---|---|
+| **1st, 8:00 AM** | Monthly Calibration Report | Field equipment due for calibration within 60 days, plus anything already overdue, grouped by site, truck or person | A list an administrator maintains, plus anyone who opted in |
+
 ## Triggered
 
 | Fires when | Email | Goes to |
@@ -37,7 +43,14 @@ Immediate, not batched.
 
 Most of these are opt-in. Each user switches them on in their own settings; an administrator cannot simply add an address to the list.
 
-The exception is the ready-to-bill notification, which goes to a fixed accounting address configured at the instance level.
+Two exceptions:
+
+- The **ready-to-bill notification** goes to a fixed accounting address configured at the instance level.
+- The **monthly calibration report** goes to a list maintained in **Admin → Calibration Report Recipients**. Being on that list is enough; nobody has to opt in. A person can still switch it off for themselves, and anyone not on the list can switch it on.
+
+## Empty editions
+
+Every email here is suppressed when there is nothing to report, except the monthly calibration report. That one sends regardless, because "nothing due in the next 60 days" is the answer people want on the first of the month, and silence is indistinguishable from a broken schedule.
 
 ## Empty emails are not sent
 

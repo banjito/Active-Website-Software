@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { createPortal } from "react-dom";
+import { useSearchParams } from "react-router-dom";
 import {
   Plus,
   Pencil,
@@ -8,7 +9,6 @@ import {
   Search,
   User,
   Briefcase,
-  TriangleAlert,
   Truck as TruckIcon,
   FileText,
   Upload,
@@ -55,6 +55,24 @@ interface SubComponent {
 
 type AssignedType = "user" | "job_site" | "truck";
 
+/**
+ * A facility from common.sites — the registry the Sites page owns, shared with customer
+ * asset tracking. Equipment used to be assigned to a typed-in name in a separate table,
+ * so renaming a site quietly detached everything at it.
+ */
+interface SiteOption {
+  id: string;
+  name: string;
+  city: string | null;
+  state: string | null;
+  status: "active" | "inactive";
+}
+
+interface TruckOption {
+  id: string;
+  name: string;
+}
+
 interface FieldEquipment {
   id: string;
   equipment_name: string;
@@ -62,17 +80,30 @@ interface FieldEquipment {
   serial_number: string | null;
   calibration_date: string | null;
   calibration_due_date: string | null;
+  calibration_interval_months: number | null;
   category: string | null;
   location: string | null;
   sub_components: SubComponent[] | null;
+  /**
+   * Display fallback, and what the system stored before assignment became a real link:
+   * a user id for 'user', the site or truck *name* otherwise. Still written, still shown
+   * for rows the backfill could not resolve, but the *_id columns below are what
+   * filtering and grouping use.
+   */
   assigned_to: string | null;
   assigned_type: AssignedType | null;
+  assigned_site_id: string | null;
+  assigned_truck_id: string | null;
+  assigned_user_id: string | null;
   checked_out_by: string | null;
   checked_out_at: string | null;
   notes: string | null;
   tracking_url: string | null;
   calibration_certificate_url: string | null;
   in_service?: boolean;
+  maintenance_reason: string | null;
+  out_of_service_at: string | null;
+  out_of_service_by: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -89,6 +120,7 @@ interface EquipmentFormData {
   serial_number: string;
   calibration_date: string;
   calibration_due_date: string;
+  calibration_interval_months: string;
   category: string;
   location: string;
   assigned_to: string | null;
@@ -104,6 +136,7 @@ const initialFormData: EquipmentFormData = {
   serial_number: "",
   calibration_date: "",
   calibration_due_date: "",
+  calibration_interval_months: "",
   category: "",
   location: "",
   assigned_to: null,
@@ -158,8 +191,6 @@ function normalizeSubComponents(raw: unknown): SubComponent[] {
 
 export default function FieldEquipmentList() {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const openId = searchParams.get("open");
   const [equipment, setEquipment] = useState<FieldEquipment[]>([]);
@@ -177,8 +208,8 @@ export default function FieldEquipmentList() {
   );
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [users, setUsers] = useState<UserData[]>([]);
-  const [jobSites, setJobSites] = useState<string[]>([]);
-  const [trucks, setTrucks] = useState<string[]>([]);
+  const [jobSites, setJobSites] = useState<SiteOption[]>([]);
+  const [trucks, setTrucks] = useState<TruckOption[]>([]);
   const [openUserSelectors, setOpenUserSelectors] = useState<{
     [key: string]: boolean;
   }>({});
@@ -256,6 +287,25 @@ export default function FieldEquipmentList() {
   // Category filter: limits list to equipment in the selected category (saved categories)
   const [categoryFilter, setCategoryFilter] = useState<string>("");
 
+  // Location filter: a holderOf() key ("site:<id>", "truck:<id>", "user:<id>", "none"),
+  // or "" for everywhere. One picker covers sites, trucks and people, because "what is in
+  // trailer 3" and "what is at DC BLOX" are the same question asked of different things.
+  // Taking something out of the field asks for a reason; "what is actually wrong with it"
+  // is the question this whole tab exists to answer.
+  const [serviceDialogFor, setServiceDialogFor] =
+    useState<FieldEquipment | null>(null);
+  const [serviceReason, setServiceReason] = useState("");
+  const [serviceSaving, setServiceSaving] = useState(false);
+
+  const [locationFilter, setLocationFilter] = useState<string>("");
+  // Anchor rect rather than an absolutely positioned panel: `main` is overflow-x-auto, and
+  // an absolute child still counts toward that scroll area, which shunts the page sideways.
+  const [locationPickerAnchor, setLocationPickerAnchor] =
+    useState<DOMRect | null>(null);
+  const [locationSearch, setLocationSearch] = useState("");
+  const locationPickerRef = useRef<HTMLDivElement>(null);
+  const locationPanelRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (user) {
       fetchEquipment();
@@ -294,6 +344,14 @@ export default function FieldEquipmentList() {
           setOpenUserSelectors((prev) => ({ ...prev, [equipmentId]: false }));
         }
       });
+      const target = event.target as Node;
+      if (
+        locationPickerRef.current &&
+        !locationPickerRef.current.contains(target) &&
+        !locationPanelRef.current?.contains(target)
+      ) {
+        setLocationPickerAnchor(null);
+      }
       Object.keys(actionMenuRefs.current).forEach((equipmentId) => {
         const ref = actionMenuRefs.current[equipmentId];
         if (ref && !ref.contains(event.target as Node)) {
@@ -644,10 +702,13 @@ export default function FieldEquipmentList() {
 
   async function fetchJobSites() {
     try {
+      // common.sites rather than the old neta_ops.equipment_job_sites name list: this is
+      // the same facility registry the Sites page and customer asset tracking use, so a
+      // site keeps its equipment when it is renamed or its address is filled in.
       const { data, error } = await supabase
-        .schema("neta_ops")
-        .from("equipment_job_sites")
-        .select("name")
+        .schema("common")
+        .from("sites")
+        .select("id, name, city, state, status")
         .order("name", { ascending: true });
 
       if (error) {
@@ -658,76 +719,62 @@ export default function FieldEquipmentList() {
           setJobSites([]);
           return;
         }
-        console.error("Error fetching job sites:", error);
+        console.error("Error fetching sites:", error);
         setJobSites([]);
         return;
       }
 
-      setJobSites((data || []).map((row: any) => row.name));
+      setJobSites((data || []) as SiteOption[]);
     } catch (err) {
-      console.error("Error fetching job sites:", err);
+      console.error("Error fetching sites:", err);
     }
   }
 
-  async function createJobSite(name: string): Promise<boolean> {
+  /** Create a facility and hand it back, so the caller can assign to it immediately. */
+  async function createJobSite(name: string): Promise<SiteOption | null> {
     try {
-      const { error } = await supabase
-        .schema("neta_ops")
-        .from("equipment_job_sites")
-        .insert([{ name: name.trim() }]);
+      const { data, error } = await supabase
+        .schema("common")
+        .from("sites")
+        .insert([{ name: name.trim(), status: "active" }])
+        .select("id, name, city, state, status")
+        .single();
 
       if (error) {
-        if (error.code === "23505") return true; // already exists
-        console.error("Error creating job site:", error);
-        return false;
+        // 23505 = the unique index on (name, city, state). Somebody added it first, or
+        // it exists as inactive: use the existing row rather than failing the assignment.
+        if (error.code === "23505") {
+          const { data: existing } = await supabase
+            .schema("common")
+            .from("sites")
+            .select("id, name, city, state, status")
+            .ilike("name", name.trim())
+            .limit(1)
+            .maybeSingle();
+          await fetchJobSites();
+          return (existing as SiteOption) ?? null;
+        }
+        console.error("Error creating site:", error);
+        return null;
       }
       await fetchJobSites();
-      return true;
+      return data as SiteOption;
     } catch (err) {
-      console.error("Error creating job site:", err);
-      return false;
+      console.error("Error creating site:", err);
+      return null;
     }
   }
 
-  async function deleteJobSite(name: string) {
-    try {
-      const { error } = await supabase
-        .schema("neta_ops")
-        .from("equipment_job_sites")
-        .delete()
-        .eq("name", name.trim());
-
-      if (error) {
-        console.error("Error deleting job site:", error);
-        toast({
-          title: "Error",
-          description: "Could not delete job site",
-          variant: "destructive",
-        });
-        return;
-      }
-      await fetchJobSites();
-      toast({
-        title: "Job site removed",
-        description: `"${name}" removed from saved job sites.`,
-        variant: "success",
-      });
-    } catch (err) {
-      console.error("Error deleting job site:", err);
-      toast({
-        title: "Error",
-        description: "Could not delete job site",
-        variant: "destructive",
-      });
-    }
-  }
+  // There is deliberately no deleteJobSite here any more. A site is now a shared facility
+  // record with customer equipment and job history hanging off it; removing one is the
+  // Sites page's job, not a hover action in an assignment popover.
 
   async function fetchTrucks() {
     try {
       const { data, error } = await supabase
         .schema("neta_ops")
         .from("equipment_trucks")
-        .select("name")
+        .select("id, name")
         .order("name", { ascending: true });
 
       if (error) {
@@ -743,39 +790,51 @@ export default function FieldEquipmentList() {
         return;
       }
 
-      setTrucks((data || []).map((row: any) => row.name));
+      setTrucks((data || []) as TruckOption[]);
     } catch (err) {
       console.error("Error fetching trucks:", err);
     }
   }
 
-  async function createTruck(name: string): Promise<boolean> {
+  async function createTruck(name: string): Promise<TruckOption | null> {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .schema("neta_ops")
         .from("equipment_trucks")
-        .insert([{ name: name.trim() }]);
+        .insert([{ name: name.trim() }])
+        .select("id, name")
+        .single();
 
       if (error) {
-        if (error.code === "23505") return true; // already exists
+        if (error.code === "23505") {
+          const { data: existing } = await supabase
+            .schema("neta_ops")
+            .from("equipment_trucks")
+            .select("id, name")
+            .ilike("name", name.trim())
+            .limit(1)
+            .maybeSingle();
+          await fetchTrucks();
+          return (existing as TruckOption) ?? null;
+        }
         console.error("Error creating truck:", error);
-        return false;
+        return null;
       }
       await fetchTrucks();
-      return true;
+      return data as TruckOption;
     } catch (err) {
       console.error("Error creating truck:", err);
-      return false;
+      return null;
     }
   }
 
-  async function deleteTruck(name: string) {
+  async function deleteTruck(truck: TruckOption) {
     try {
       const { error } = await supabase
         .schema("neta_ops")
         .from("equipment_trucks")
         .delete()
-        .eq("name", name.trim());
+        .eq("id", truck.id);
 
       if (error) {
         console.error("Error deleting truck:", error);
@@ -789,7 +848,7 @@ export default function FieldEquipmentList() {
       await fetchTrucks();
       toast({
         title: "Truck removed",
-        description: `"${name}" removed from saved trucks.`,
+        description: `"${truck.name}" removed from saved trucks.`,
         variant: "success",
       });
     } catch (err) {
@@ -902,16 +961,110 @@ export default function FieldEquipmentList() {
   };
 
   const getAssignedLabel = (
-    item: Pick<FieldEquipment, "assigned_to" | "assigned_type">,
+    item: Pick<
+      FieldEquipment,
+      | "assigned_to"
+      | "assigned_type"
+      | "assigned_site_id"
+      | "assigned_truck_id"
+      | "assigned_user_id"
+    >,
   ): string => {
-    if (!item.assigned_to) return "Not assigned";
+    if (
+      !item.assigned_to &&
+      !item.assigned_site_id &&
+      !item.assigned_truck_id &&
+      !item.assigned_user_id
+    ) {
+      return "Not assigned";
+    }
     const type = item.assigned_type || "user";
+    if (type === "job_site") {
+      const site = jobSites.find((s) => s.id === item.assigned_site_id);
+      if (site) return site.name;
+    }
+    if (type === "truck") {
+      const truck = trucks.find((t) => t.id === item.assigned_truck_id);
+      if (truck) return truck.name;
+    }
     if (type === "user") {
-      const u = users.find((usr) => usr.id === item.assigned_to);
+      const u = users.find(
+        (usr) => usr.id === (item.assigned_user_id ?? item.assigned_to),
+      );
       return u ? displayUserName(u) : "Unknown User";
     }
-    return item.assigned_to;
+    // No resolved link: a name the backfill could not match still reads correctly.
+    return item.assigned_to || "Not assigned";
   };
+
+  /**
+   * Where this item lives, collapsed into one groupable value. Sites come first, then
+   * trucks, then people, then unassigned, so a manifest reads the way somebody looking for
+   * kit would search for it.
+   */
+  const holderOf = (
+    item: FieldEquipment,
+  ): { kind: string; label: string; order: number; key: string } => {
+    const type = item.assigned_type;
+    if (!type) return { kind: "Unassigned", label: "Unassigned", order: 3, key: "none" };
+    const label = getAssignedLabel(item);
+    if (type === "job_site")
+      return { kind: "Site", label, order: 0, key: `site:${item.assigned_site_id ?? label}` };
+    if (type === "truck")
+      return { kind: "Truck", label, order: 1, key: `truck:${item.assigned_truck_id ?? label}` };
+    return { kind: "Person", label, order: 2, key: `user:${item.assigned_user_id ?? label}` };
+  };
+
+  interface LocationOption {
+    key: string;
+    label: string;
+    sub: string;
+    kind: "Site" | "Truck" | "Person" | "Unassigned";
+    order: number;
+    count: number;
+    overdue: number;
+  }
+
+  const locationOptions = (): LocationOption[] => {
+    const options = new Map<string, LocationOption>();
+
+    const add = (
+      key: string,
+      label: string,
+      sub: string,
+      kind: LocationOption["kind"],
+      order: number,
+    ) => {
+      if (!options.has(key)) {
+        options.set(key, { key, label, sub, kind, order, count: 0, overdue: 0 });
+      }
+    };
+
+    // Every site and truck, even empty ones: "nothing is in trailer 3" is a real answer.
+    for (const site of jobSites) {
+      if (site.status === "inactive") continue;
+      add(`site:${site.id}`, site.name, siteSubLabel(site), "Site", 0);
+    }
+    for (const truck of trucks) add(`truck:${truck.id}`, truck.name, "", "Truck", 1);
+
+    // People and any unresolved holders only show up when they are actually holding kit.
+    for (const item of equipment) {
+      const holder = holderOf(item);
+      add(holder.key, holder.label, "", holder.kind as LocationOption["kind"], holder.order);
+      const option = options.get(holder.key)!;
+      option.count += 1;
+      if (isCalibrationPastDue(item.calibration_due_date)) option.overdue += 1;
+    }
+
+    return [...options.values()].sort(
+      (a, b) => a.order - b.order || a.label.localeCompare(b.label),
+    );
+  };
+
+  const selectedLocation = (): LocationOption | null =>
+    locationFilter
+      ? (locationOptions().find((o) => o.key === locationFilter) ?? null)
+      : null;
 
   const getAssignedTypeLabel = (
     type: AssignedType | null | undefined,
@@ -939,6 +1092,25 @@ export default function FieldEquipmentList() {
     if (!dateString) return "-";
     const date = parseLocalDate(dateString);
     return date.toLocaleDateString();
+  };
+
+  // The window the director's monthly calibration report will use. Keeping the page and
+  // the email on one number means what someone sees here is what lands in their inbox.
+  const CALIBRATION_DUE_SOON_DAYS = 60;
+
+  /** Whole days until calibration is due. Negative once it is past due. */
+  const daysUntilCalibrationDue = (dueDate: string | null): number | null => {
+    if (!dueDate) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = parseLocalDate(dueDate);
+    due.setHours(0, 0, 0, 0);
+    return Math.round((due.getTime() - today.getTime()) / 86400000);
+  };
+
+  const isCalibrationDueSoon = (dueDate: string | null): boolean => {
+    const days = daysUntilCalibrationDue(dueDate);
+    return days !== null && days >= 0 && days <= CALIBRATION_DUE_SOON_DAYS;
   };
 
   const isCalibrationPastDue = (dueDate: string | null): boolean => {
@@ -1068,6 +1240,9 @@ export default function FieldEquipmentList() {
         ...formData,
         calibration_date: formData.calibration_date || null,
         calibration_due_date: formData.calibration_due_date || null,
+        calibration_interval_months: formData.calibration_interval_months
+          ? Number(formData.calibration_interval_months)
+          : null,
         assigned_to: formData.assigned_to || null,
         assigned_type: formData.assigned_to
           ? formData.assigned_type || "user"
@@ -1230,6 +1405,10 @@ export default function FieldEquipmentList() {
       serial_number: equipmentItem.serial_number || "",
       calibration_date: equipmentItem.calibration_date || "",
       calibration_due_date: equipmentItem.calibration_due_date || "",
+      calibration_interval_months:
+        equipmentItem.calibration_interval_months != null
+          ? String(equipmentItem.calibration_interval_months)
+          : "",
       category: equipmentItem.category || "",
       location: equipmentItem.location || "",
       assigned_to: equipmentItem.assigned_to,
@@ -1286,22 +1465,56 @@ export default function FieldEquipmentList() {
     }
   }
 
+  /** calibration date + interval, as an ISO date. Empty when either is missing. */
+  function projectedDueDate(calDate: string, intervalMonths: string): string {
+    const months = Number(intervalMonths);
+    if (!calDate || !Number.isFinite(months) || months <= 0) return "";
+    const base = parseLocalDate(calDate);
+    const due = new Date(base);
+    due.setMonth(due.getMonth() + months);
+    // Rolling 31 Jan forward by one month lands on 3 March, not 28 February. Clamp back
+    // to the last day of the intended month so a due date never silently overshoots.
+    if (due.getDate() !== base.getDate()) due.setDate(0);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${due.getFullYear()}-${pad(due.getMonth() + 1)}-${pad(due.getDate())}`;
+  }
+
   function handleInputChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+      // Entering a calibration date or an interval used to leave the due date on its old
+      // value until somebody remembered to change it too, which is what made the due
+      // dates untrustworthy. Recompute instead, but never overwrite a due date the user
+      // is editing directly.
+      if (name === "calibration_date" || name === "calibration_interval_months") {
+        const projected = projectedDueDate(
+          next.calibration_date,
+          next.calibration_interval_months,
+        );
+        if (projected) next.calibration_due_date = projected;
+      }
+      return next;
+    });
   }
 
   const handleAssign = async (
     equipmentId: string,
     type: AssignedType | null,
-    value: string | null,
-    displayLabel?: string,
+    target: { id: string; label: string } | null,
   ) => {
     try {
-      const assignedTo = value && value.trim() !== "" ? value : null;
-      const assignedType = assignedTo ? type : null;
+      const assignedType = target ? type : null;
+      // Both get written: the *_id column is the real link, assigned_to stays the label
+      // that the table and the details modal already read. A database trigger records
+      // the change in neta_ops.field_equipment_assignments.
+      const assignedTo = target
+        ? assignedType === "user"
+          ? target.id
+          : target.label
+        : null;
 
       const { error } = await supabase
         .schema("neta_ops")
@@ -1309,19 +1522,21 @@ export default function FieldEquipmentList() {
         .update({
           assigned_to: assignedTo,
           assigned_type: assignedType,
+          assigned_site_id:
+            target && assignedType === "job_site" ? target.id : null,
+          assigned_truck_id:
+            target && assignedType === "truck" ? target.id : null,
+          assigned_user_id: target && assignedType === "user" ? target.id : null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", equipmentId);
 
       if (error) throw error;
 
-      const label = assignedTo
-        ? displayLabel || value || "Assigned"
-        : "Unassigned";
       toast({
         title: "Success",
-        description: assignedTo
-          ? `Equipment assigned to ${label}`
+        description: target
+          ? `Equipment assigned to ${target.label}`
           : "Equipment unassigned",
         variant: "success",
       });
@@ -1347,9 +1562,86 @@ export default function FieldEquipmentList() {
     return handleAssign(
       equipmentId,
       selectedUser ? "user" : null,
-      selectedUser ? selectedUser.id : null,
-      selectedUser ? displayUserName(selectedUser) : undefined,
+      selectedUser
+        ? { id: selectedUser.id, label: displayUserName(selectedUser) }
+        : null,
     );
+  };
+
+  const handleTakeOutOfService = async () => {
+    if (!serviceDialogFor) return;
+    const reason = serviceReason.trim();
+    if (!reason) return;
+
+    setServiceSaving(true);
+    try {
+      const nowIso = new Date().toISOString();
+      const { error } = await supabase
+        .schema("neta_ops")
+        .from("field_equipment")
+        .update({
+          in_service: false,
+          maintenance_reason: reason,
+          out_of_service_at: nowIso,
+          out_of_service_by: user?.id ?? null,
+          updated_at: nowIso,
+        })
+        .eq("id", serviceDialogFor.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Marked out of service",
+        description: `${serviceDialogFor.equipment_name} is out of the field.`,
+        variant: "success",
+      });
+      setServiceDialogFor(null);
+      setServiceReason("");
+      fetchEquipment();
+    } catch (err: any) {
+      console.error("Failed to take equipment out of service:", err);
+      toast({
+        title: "Error",
+        description: err.message || "Could not update this equipment",
+        variant: "destructive",
+      });
+    } finally {
+      setServiceSaving(false);
+    }
+  };
+
+  const handleReturnToService = async (item: FieldEquipment) => {
+    try {
+      const nowIso = new Date().toISOString();
+      const { error } = await supabase
+        .schema("neta_ops")
+        .from("field_equipment")
+        .update({
+          in_service: true,
+          maintenance_reason: null,
+          out_of_service_at: null,
+          out_of_service_by: null,
+          updated_at: nowIso,
+        })
+        .eq("id", item.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Back in service",
+        description: `${item.equipment_name} is available again.`,
+        variant: "success",
+      });
+      setOpenActionMenus((prev) => ({ ...prev, [item.id]: false }));
+      fetchEquipment();
+    } catch (err: any) {
+      console.error("Failed to return equipment to service:", err);
+      toast({
+        title: "Error",
+        description: err.message || "Could not update this equipment",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleCheckOut = async (equipmentId: string) => {
@@ -1470,14 +1762,25 @@ export default function FieldEquipmentList() {
 
   const filteredJobSites = (equipmentId: string) => {
     const query = (userSearchQueries[equipmentId] || "").toLowerCase();
-    if (!query) return jobSites;
-    return jobSites.filter((s) => s.toLowerCase().includes(query));
+    // Inactive facilities stay out of the picker. Equipment already assigned to one still
+    // shows its name, because assigned_to carries the label.
+    const selectable = jobSites.filter((s) => s.status !== "inactive");
+    if (!query) return selectable;
+    return selectable.filter((s) =>
+      `${s.name} ${s.city ?? ""} ${s.state ?? ""}`
+        .toLowerCase()
+        .includes(query),
+    );
   };
+
+  /** "QTS ATL2 · Atlanta, GA" — two facilities often share a name, so show where it is. */
+  const siteSubLabel = (site: SiteOption): string =>
+    [site.city, site.state].filter(Boolean).join(", ");
 
   const filteredTrucks = (equipmentId: string) => {
     const query = (userSearchQueries[equipmentId] || "").toLowerCase();
     if (!query) return trucks;
-    return trucks.filter((t) => t.toLowerCase().includes(query));
+    return trucks.filter((t) => t.name.toLowerCase().includes(query));
   };
 
   // Handle sort column click
@@ -1513,8 +1816,9 @@ export default function FieldEquipmentList() {
   const getFilteredEquipment = (): FieldEquipment[] => {
     let filtered = equipment;
 
-    // Apply service filter: in_service only shows equipment where in_service !== false
-    if (serviceFilter === "in_service") {
+    // Apply service filter: in_service only shows equipment where in_service !== false.
+    // Skipped on the maintenance tab, which exists to show exactly what that filter hides.
+    if (serviceFilter === "in_service" && activeTab !== "maintenance") {
       filtered = filtered.filter((item) => item.in_service !== false);
     }
 
@@ -1535,6 +1839,17 @@ export default function FieldEquipmentList() {
             isCalibrationPastDue(item.calibration_due_date),
         );
         break;
+      case "due-soon":
+        // Already overdue items are on the Out of Cal tab; this one is the warning list,
+        // soonest first, so it answers "what needs booking" rather than "what is late".
+        filtered = filtered
+          .filter((item) => isCalibrationDueSoon(item.calibration_due_date))
+          .sort((a, b) =>
+            (a.calibration_due_date || "").localeCompare(
+              b.calibration_due_date || "",
+            ),
+          );
+        break;
       case "assigned":
         // Show only assigned equipment
         filtered = filtered.filter((item) => item.assigned_to !== null);
@@ -1542,6 +1857,17 @@ export default function FieldEquipmentList() {
       case "unassigned":
         // Show only unassigned equipment
         filtered = filtered.filter((item) => item.assigned_to === null);
+        break;
+      case "maintenance":
+        // Out of the field. Longest-standing first: something sitting for three months is
+        // the one nobody has chased.
+        filtered = filtered
+          .filter((item) => item.in_service === false)
+          .sort((a, b) =>
+            (a.out_of_service_at || "").localeCompare(
+              b.out_of_service_at || "",
+            ),
+          );
         break;
       case "category":
         // Show all equipment, will be sorted by category
@@ -1562,6 +1888,13 @@ export default function FieldEquipmentList() {
           (item) => (item.category || "").trim() === categoryFilter,
         );
       }
+    }
+
+    // Apply location filter (a site, a truck, a person, or unassigned)
+    if (locationFilter) {
+      filtered = filtered.filter(
+        (item) => holderOf(item).key === locationFilter,
+      );
     }
 
     // Sort by category for category tab (default when no user sort is active)
@@ -1613,8 +1946,8 @@ export default function FieldEquipmentList() {
             valB = b.location || "";
             break;
           case "assigned_to": {
-            valA = a.assigned_to ? getAssignedLabel(a) : "";
-            valB = b.assigned_to ? getAssignedLabel(b) : "";
+            valA = a.assigned_type ? getAssignedLabel(a) : "";
+            valB = b.assigned_type ? getAssignedLabel(b) : "";
             break;
           }
           case "notes":
@@ -1634,10 +1967,91 @@ export default function FieldEquipmentList() {
   };
 
   const filteredEquipment = getFilteredEquipment();
-  const currentDivision = location.pathname.split("/").filter(Boolean)[0];
-  const maintenancePath = currentDivision
-    ? `/${currentDivision}/maintenance`
-    : "/field-tech/maintenance";
+
+  /**
+   * Export what is currently on screen, not the whole table: the tab, search, and the
+   * service, category and site filters are the question the person is asking, and a CSV
+   * of everything would make them re-do that filtering in Excel.
+   */
+  const handleExportCsv = () => {
+    const columns: { header: string; value: (item: FieldEquipment) => string }[] =
+      [
+        { header: "Equipment Name", value: (i) => i.equipment_name },
+        { header: "AMP ID", value: (i) => i.amp_id || "" },
+        { header: "Serial Number", value: (i) => i.serial_number || "" },
+        { header: "Category", value: (i) => i.category || "" },
+        { header: "Location", value: (i) => i.location || "" },
+        { header: "Assigned Type", value: (i) => getAssignedTypeLabel(i.assigned_type) },
+        { header: "Assigned To", value: (i) => getAssignedLabel(i) },
+        { header: "Calibration Date", value: (i) => i.calibration_date || "" },
+        { header: "Calibration Due Date", value: (i) => i.calibration_due_date || "" },
+        {
+          header: "Days Until Due",
+          value: (i) => {
+            const days = daysUntilCalibrationDue(i.calibration_due_date);
+            return days === null ? "" : String(days);
+          },
+        },
+        {
+          header: "Calibration Status",
+          value: (i) => {
+            if (!i.calibration_due_date) return "No due date";
+            if (isCalibrationPastDue(i.calibration_due_date)) return "Past due";
+            if (isCalibrationDueSoon(i.calibration_due_date)) return "Due soon";
+            return "In calibration";
+          },
+        },
+        {
+          header: "Calibration Interval (months)",
+          value: (i) =>
+            i.calibration_interval_months != null
+              ? String(i.calibration_interval_months)
+              : "",
+        },
+        { header: "In Service", value: (i) => (i.in_service !== false ? "Yes" : "No") },
+        { header: "Maintenance Reason", value: (i) => i.maintenance_reason || "" },
+        {
+          header: "Out Of Service Since",
+          value: (i) => (i.out_of_service_at ? i.out_of_service_at.split("T")[0] : ""),
+        },
+        {
+          header: "Checked Out By",
+          value: (i) => (i.checked_out_by ? getUserNameById(i.checked_out_by) : ""),
+        },
+        {
+          header: "Sub Components",
+          value: (i) => String(i.sub_components?.length ?? 0),
+        },
+        { header: "Notes", value: (i) => i.notes || "" },
+      ];
+
+    // Quote every field and double any embedded quotes. Equipment notes routinely carry
+    // commas and line breaks, and one unquoted note shifts every later column.
+    const escape = (value: string) => `"${value.replace(/"/g, '""')}"`;
+    const rows = [
+      columns.map((c) => escape(c.header)).join(","),
+      ...filteredEquipment.map((item) =>
+        columns.map((c) => escape(c.value(item))).join(","),
+      ),
+    ];
+
+    // Excel reads a bare UTF-8 CSV as Latin-1 and mangles accented names; the BOM fixes it.
+    const blob = new Blob(["\uFEFF" + rows.join("\r\n")], {
+      type: "text/csv;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const stamp = new Date().toISOString().split("T")[0];
+    link.href = url;
+    link.download = `field-equipment-${activeTab}-${stamp}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: `Exported ${filteredEquipment.length} item${filteredEquipment.length === 1 ? "" : "s"}`,
+      variant: "success",
+    });
+  };
 
   return (
     <PageLayout title="Field Equipment">
@@ -1648,17 +2062,6 @@ export default function FieldEquipmentList() {
               Field Equipment
             </h1>
             <div className="flex items-center gap-2">
-              <Button
-                onClick={() => navigate(maintenancePath)}
-                className="group flex items-center gap-2 border border-brand bg-transparent text-brand hover:bg-brand hover:text-white"
-                leftIcon={
-                  <TriangleAlert className="h-4 w-4 text-brand group-hover:text-white" />
-                }
-              >
-                <span className="text-brand group-hover:text-white">
-                  Maintenance
-                </span>
-              </Button>
               <Button
                 onClick={() => {
                   setFormData(initialFormData);
@@ -1685,7 +2088,7 @@ export default function FieldEquipmentList() {
                 <span className="font-semibold text-neutral-900 dark:text-white">
                   {totalCount}
                 </span>
-                {(searchTerm || categoryFilter) &&
+                {(searchTerm || categoryFilter || locationFilter) &&
                   filteredEquipment.length !== totalCount && (
                     <span className="ml-2 text-neutral-500 dark:text-neutral-500">
                       (Showing {filteredEquipment.length} of {totalCount})
@@ -1696,13 +2099,16 @@ export default function FieldEquipmentList() {
               <>
                 {activeTab === "in-cal" && "Equipment with Calibration: "}
                 {activeTab === "out-of-cal" && "Out of Calibration: "}
+                {activeTab === "due-soon" &&
+                  `Calibration Due Within ${CALIBRATION_DUE_SOON_DAYS} Days: `}
                 {activeTab === "assigned" && "Assigned Equipment: "}
                 {activeTab === "unassigned" && "Unassigned Equipment: "}
                 {activeTab === "category" && "Equipment by Category: "}
+                {activeTab === "maintenance" && "Out of Service: "}
                 <span className="font-semibold text-neutral-900 dark:text-white">
                   {filteredEquipment.length}
                 </span>
-                {(searchTerm || categoryFilter) && (
+                {(searchTerm || categoryFilter || locationFilter) && (
                   <span className="ml-2 text-neutral-500 dark:text-neutral-500">
                     (filtered from {totalCount} total)
                   </span>
@@ -1757,9 +2163,163 @@ export default function FieldEquipmentList() {
               ))}
             </select>
           </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap">
+              Location:
+            </span>
+            <div className="relative" ref={locationPickerRef}>
+              {(() => {
+                const selected = selectedLocation();
+                return (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setLocationPickerAnchor((prev) => (prev ? null : rect));
+                      setLocationSearch("");
+                    }}
+                    className="flex items-center gap-2 min-w-[220px] px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-sm text-left focus:outline-none focus:ring-2 focus:ring-brand"
+                  >
+                    {selected ? (
+                      <>
+                        {selected.kind === "Truck" ? (
+                          <TruckIcon className="h-4 w-4 shrink-0 text-neutral-400" />
+                        ) : selected.kind === "Site" ? (
+                          <Briefcase className="h-4 w-4 shrink-0 text-neutral-400" />
+                        ) : (
+                          <User className="h-4 w-4 shrink-0 text-neutral-400" />
+                        )}
+                        <span className="truncate text-neutral-900 dark:text-white">
+                          {selected.label}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-neutral-500 dark:text-neutral-400">
+                        Everywhere
+                      </span>
+                    )}
+                    <ChevronDown className="ml-auto h-4 w-4 shrink-0 text-neutral-400" />
+                  </button>
+                );
+              })()}
+
+              {locationPickerAnchor &&
+                createPortal(
+                  <div
+                    ref={locationPanelRef}
+                    style={{
+                      position: "fixed",
+                      top: Math.min(
+                        locationPickerAnchor.bottom + 4,
+                        window.innerHeight - 340,
+                      ),
+                      left: Math.min(
+                        locationPickerAnchor.left,
+                        window.innerWidth - 316,
+                      ),
+                      width: 300,
+                    }}
+                    className="z-[60] border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 shadow-lg"
+                  >
+                  <div className="p-2 border-b border-neutral-200 dark:border-neutral-700">
+                    <Input
+                      type="text"
+                      autoFocus
+                      value={locationSearch}
+                      onChange={(e) => setLocationSearch(e.target.value)}
+                      placeholder="Search trucks, sites, people…"
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="max-h-72 overflow-y-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLocationFilter("");
+                        setLocationPickerAnchor(null);
+                      }}
+                      className="w-full px-3 py-2 text-left text-sm border-b border-neutral-100 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-dark-100"
+                    >
+                      Everywhere
+                    </button>
+                    {(() => {
+                      const query = locationSearch.trim().toLowerCase();
+                      const matches = locationOptions().filter((option) =>
+                        query
+                          ? `${option.label} ${option.sub} ${option.kind}`
+                              .toLowerCase()
+                              .includes(query)
+                          : true,
+                      );
+                      if (matches.length === 0) {
+                        return (
+                          <p className="px-3 py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
+                            Nothing matches that search.
+                          </p>
+                        );
+                      }
+                      return matches.map((option, i) => {
+                        const previous = i > 0 ? matches[i - 1] : null;
+                        const showKind =
+                          previous === null || previous.kind !== option.kind;
+                        return (
+                          <React.Fragment key={option.key}>
+                            {showKind && (
+                              <p className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                                {option.kind === "Person"
+                                  ? "People"
+                                  : option.kind === "Unassigned"
+                                    ? "Unassigned"
+                                    : `${option.kind}s`}
+                              </p>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setLocationFilter(option.key);
+                                setLocationPickerAnchor(null);
+                              }}
+                              className={`flex w-full items-center gap-2 px-3 py-2 text-left border-b border-neutral-100 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-dark-100 ${
+                                locationFilter === option.key
+                                  ? "bg-neutral-50 dark:bg-dark-100"
+                                  : ""
+                              }`}
+                            >
+                              <span className="flex min-w-0 flex-col">
+                                <span className="truncate text-sm font-medium text-neutral-900 dark:text-white">
+                                  {option.label}
+                                </span>
+                                {option.sub && (
+                                  <span className="truncate text-xs text-neutral-500 dark:text-neutral-400">
+                                    {option.sub}
+                                  </span>
+                                )}
+                              </span>
+                              <span className="ml-auto flex shrink-0 items-center gap-2 text-xs">
+                                {option.overdue > 0 && (
+                                  <span className="font-semibold text-red-600 dark:text-red-400">
+                                    {option.overdue} out of cal
+                                  </span>
+                                )}
+                                <span className="text-neutral-500 dark:text-neutral-400">
+                                  {option.count}
+                                </span>
+                              </span>
+                            </button>
+                          </React.Fragment>
+                        );
+                      });
+                    })()}
+                    </div>
+                  </div>,
+                  document.body,
+                )}
+            </div>
+          </div>
         </div>
 
         {/* Tabs */}
+        <div className="mb-4 flex flex-wrap items-stretch gap-2">
         <Tabs
           value={activeTab}
           onValueChange={(tab) => {
@@ -1767,7 +2327,6 @@ export default function FieldEquipmentList() {
             setSortField(null);
             setSortDirection("asc");
           }}
-          className="mb-4"
         >
           <TabsList className="inline-flex flex-wrap space-x-1 bg-neutral-100 dark:bg-dark-150 p-1 rounded-none">
             <TabsTrigger
@@ -1792,6 +2351,13 @@ export default function FieldEquipmentList() {
               Out of Cal
             </TabsTrigger>
             <TabsTrigger
+              value="due-soon"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-none transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+            >
+              <Calendar className="h-4 w-4" />
+              Due Soon ({CALIBRATION_DUE_SOON_DAYS}d)
+            </TabsTrigger>
+            <TabsTrigger
               value="assigned"
               className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-none transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
@@ -1812,8 +2378,28 @@ export default function FieldEquipmentList() {
               <Tag className="h-4 w-4" />
               Category
             </TabsTrigger>
+            <TabsTrigger
+              value="maintenance"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-none transition-colors text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-dark-150 data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm"
+            >
+              <Wrench className="h-4 w-4" />
+              Maintenance
+            </TabsTrigger>
           </TabsList>
         </Tabs>
+        {/* Exports whatever the tabs and filters currently show, so the download matches
+            the question on screen rather than dumping the whole table. */}
+        <button
+          type="button"
+          onClick={handleExportCsv}
+          disabled={filteredEquipment.length === 0}
+          title={`Export ${filteredEquipment.length} item${filteredEquipment.length === 1 ? "" : "s"} to CSV`}
+          aria-label="Export to CSV"
+          className="flex items-center px-3 bg-neutral-100 dark:bg-dark-150 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded-none transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <Download className="h-4 w-4" />
+        </button>
+        </div>
 
         {/* Equipment Table */}
         {loading ? (
@@ -1861,7 +2447,9 @@ export default function FieldEquipmentList() {
                         In Cal Date{renderSortIcon("calibration_date")}
                       </th>
                     )}
-                    {(activeTab === "in-cal" || activeTab === "out-of-cal") && (
+                    {(activeTab === "in-cal" ||
+                      activeTab === "out-of-cal" ||
+                      activeTab === "due-soon") && (
                       <>
                         <th
                           className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider cursor-pointer select-none hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
@@ -1884,6 +2472,16 @@ export default function FieldEquipmentList() {
                       >
                         Category{renderSortIcon("category")}
                       </th>
+                    )}
+                    {activeTab === "maintenance" && (
+                      <>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                          What is wrong
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                          Out since
+                        </th>
+                      </>
                     )}
                     {(activeTab === "all" || activeTab === "category") && (
                       <th
@@ -1933,7 +2531,10 @@ export default function FieldEquipmentList() {
                     <tr>
                       <td
                         colSpan={
-                          activeTab === "in-cal" || activeTab === "out-of-cal"
+                          activeTab === "in-cal" ||
+                          activeTab === "out-of-cal" ||
+                          activeTab === "due-soon" ||
+                          activeTab === "maintenance"
                             ? 7
                             : activeTab === "all"
                               ? allTabShowExtraColumns
@@ -1949,17 +2550,21 @@ export default function FieldEquipmentList() {
                           ? "No equipment found matching your search"
                           : activeTab === "in-cal"
                             ? "No equipment with calibration dates"
-                            : activeTab === "out-of-cal"
-                              ? "No equipment out of calibration"
-                              : activeTab === "assigned"
-                                ? "No assigned equipment"
-                                : activeTab === "unassigned"
-                                  ? "No unassigned equipment"
-                                  : activeTab === "category"
-                                    ? "No equipment available"
-                                    : serviceFilter === "in_service"
-                                      ? "No in-service equipment found"
-                                      : "No equipment available"}
+                            : activeTab === "due-soon"
+                              ? `Nothing due for calibration in the next ${CALIBRATION_DUE_SOON_DAYS} days`
+                              : activeTab === "out-of-cal"
+                                ? "No equipment out of calibration"
+                                : activeTab === "assigned"
+                                  ? "No assigned equipment"
+                                  : activeTab === "unassigned"
+                                    ? "No unassigned equipment"
+                                    : activeTab === "maintenance"
+                                      ? "Nothing is out of service"
+                                      : activeTab === "category"
+                                        ? "No equipment available"
+                                      : serviceFilter === "in_service"
+                                        ? "No in-service equipment found"
+                                        : "No equipment available"}
                       </td>
                     </tr>
                   ) : (
@@ -1967,11 +2572,21 @@ export default function FieldEquipmentList() {
                       const isPastDue = isCalibrationPastDue(
                         item.calibration_due_date,
                       );
+                      const isDueSoon = isCalibrationDueSoon(
+                        item.calibration_due_date,
+                      );
+                      const daysLeft = daysUntilCalibrationDue(
+                        item.calibration_due_date,
+                      );
                       return (
                         <tr
                           key={item.id}
                           className={`hover:bg-neutral-50 dark:hover:bg-dark-100 cursor-pointer ${
-                            isPastDue ? "bg-red-50 dark:bg-red-900/20" : ""
+                            isPastDue
+                              ? "bg-red-50 dark:bg-red-900/20"
+                              : isDueSoon
+                                ? "bg-amber-50 dark:bg-amber-900/20"
+                                : ""
                           }`}
                           onClick={(e) => {
                             // Don't trigger if clicking on buttons or interactive elements
@@ -2032,7 +2647,8 @@ export default function FieldEquipmentList() {
                             </td>
                           )}
                           {(activeTab === "in-cal" ||
-                            activeTab === "out-of-cal") && (
+                            activeTab === "out-of-cal" ||
+                            activeTab === "due-soon") && (
                             <>
                               <td className="px-4 py-3 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
                                 {formatLocalDate(item.calibration_date)}
@@ -2041,10 +2657,20 @@ export default function FieldEquipmentList() {
                                 className={`px-4 py-3 whitespace-nowrap text-sm ${
                                   isPastDue
                                     ? "font-semibold text-red-600 dark:text-red-400"
-                                    : "text-neutral-500 dark:text-neutral-400"
+                                    : isDueSoon
+                                      ? "font-semibold text-amber-700 dark:text-amber-400"
+                                      : "text-neutral-500 dark:text-neutral-400"
                                 }`}
                               >
                                 {formatLocalDate(item.calibration_due_date)}
+                                {activeTab === "due-soon" &&
+                                  daysLeft !== null && (
+                                    <span className="ml-2 font-normal text-neutral-500 dark:text-neutral-400">
+                                      {daysLeft === 0
+                                        ? "today"
+                                        : `${daysLeft} day${daysLeft === 1 ? "" : "s"}`}
+                                    </span>
+                                  )}
                               </td>
                             </>
                           )}
@@ -2052,6 +2678,34 @@ export default function FieldEquipmentList() {
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
                               {item.category || "Uncategorized"}
                             </td>
+                          )}
+                          {activeTab === "maintenance" && (
+                            <>
+                              <td className="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300 max-w-xs">
+                                {item.maintenance_reason || (
+                                  <span className="italic text-neutral-400 dark:text-neutral-500">
+                                    No reason recorded
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
+                                {item.out_of_service_at ? (
+                                  <>
+                                    {formatDateTime(item.out_of_service_at)}
+                                    <span className="block text-xs text-neutral-400 dark:text-neutral-500">
+                                      {formatRelativeTime(
+                                        item.out_of_service_at,
+                                      )}
+                                      {item.out_of_service_by
+                                        ? ` · ${getUserNameById(item.out_of_service_by)}`
+                                        : ""}
+                                    </span>
+                                  </>
+                                ) : (
+                                  "-"
+                                )}
+                              </td>
+                            </>
                           )}
                           {(activeTab === "all" ||
                             activeTab === "category") && (
@@ -2219,8 +2873,10 @@ export default function FieldEquipmentList() {
                                                   handleAssign(
                                                     item.id,
                                                     "user",
-                                                    u.id,
-                                                    displayUserName(u),
+                                                    {
+                                                      id: u.id,
+                                                      label: displayUserName(u),
+                                                    },
                                                   )
                                                 }
                                               >
@@ -2254,41 +2910,37 @@ export default function FieldEquipmentList() {
                                             {filteredJobSites(item.id).map(
                                               (site) => (
                                                 <div
-                                                  key={site}
-                                                  className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-100 border-b border-neutral-100 dark:border-neutral-700 last:border-b-0"
+                                                  key={site.id}
+                                                  className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-100 border-b border-neutral-100 dark:border-neutral-700 last:border-b-0"
                                                   onClick={() =>
                                                     handleAssign(
                                                       item.id,
                                                       "job_site",
-                                                      site,
-                                                      site,
+                                                      {
+                                                        id: site.id,
+                                                        label: site.name,
+                                                      },
                                                     )
                                                   }
                                                 >
-                                                  <div className="flex items-center gap-2">
-                                                    <Briefcase className="h-4 w-4 text-neutral-400" />
+                                                  <Briefcase className="h-4 w-4 shrink-0 text-neutral-400" />
+                                                  <div className="flex flex-col">
                                                     <span className="font-medium text-neutral-900 dark:text-white">
-                                                      {site}
+                                                      {site.name}
                                                     </span>
+                                                    {siteSubLabel(site) && (
+                                                      <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                                                        {siteSubLabel(site)}
+                                                      </span>
+                                                    )}
                                                   </div>
-                                                  <button
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      deleteJobSite(site);
-                                                    }}
-                                                    className="opacity-0 group-hover:opacity-100 p-1 rounded text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
-                                                    title="Remove from saved job sites"
-                                                  >
-                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                  </button>
                                                 </div>
                                               ),
                                             )}
                                             {searchValue.trim() &&
                                               !jobSites.some(
                                                 (s) =>
-                                                  s.toLowerCase() ===
+                                                  s.name.toLowerCase() ===
                                                   searchValue
                                                     .trim()
                                                     .toLowerCase(),
@@ -2298,28 +2950,35 @@ export default function FieldEquipmentList() {
                                                   onClick={async () => {
                                                     const name =
                                                       searchValue.trim();
-                                                    const success =
+                                                    const site =
                                                       await createJobSite(name);
-                                                    if (success) {
+                                                    if (site) {
                                                       await handleAssign(
                                                         item.id,
                                                         "job_site",
-                                                        name,
-                                                        name,
+                                                        {
+                                                          id: site.id,
+                                                          label: site.name,
+                                                        },
                                                       );
                                                     } else {
                                                       toast({
                                                         title: "Error",
                                                         description:
-                                                          "Failed to create job site",
+                                                          "Could not create that site",
                                                         variant: "destructive",
                                                       });
                                                     }
                                                   }}
                                                 >
-                                                  <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                                                  <span className="block text-sm text-blue-600 dark:text-blue-400 font-medium">
                                                     + Create &amp; assign "
                                                     {searchValue.trim()}"
+                                                  </span>
+                                                  <span className="block text-xs text-neutral-500 dark:text-neutral-400">
+                                                    Adds a facility everyone
+                                                    shares. Add its address on
+                                                    the Sites page.
                                                   </span>
                                                 </div>
                                               )}
@@ -2327,8 +2986,8 @@ export default function FieldEquipmentList() {
                                               .length === 0 &&
                                               !searchValue.trim() && (
                                                 <div className="px-3 py-4 text-center text-neutral-500 dark:text-neutral-400 text-sm">
-                                                  No saved job sites yet. Type a
-                                                  name above to add one.
+                                                  No sites yet. Type a name
+                                                  above to add one.
                                                 </div>
                                               )}
                                           </>
@@ -2337,30 +2996,32 @@ export default function FieldEquipmentList() {
                                         {activeAssignTab === "truck" && (
                                           <>
                                             {filteredTrucks(item.id).map(
-                                              (truckName) => (
+                                              (truck) => (
                                                 <div
-                                                  key={truckName}
+                                                  key={truck.id}
                                                   className="group flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-100 border-b border-neutral-100 dark:border-neutral-700 last:border-b-0"
                                                   onClick={() =>
                                                     handleAssign(
                                                       item.id,
                                                       "truck",
-                                                      truckName,
-                                                      truckName,
+                                                      {
+                                                        id: truck.id,
+                                                        label: truck.name,
+                                                      },
                                                     )
                                                   }
                                                 >
                                                   <div className="flex items-center gap-2">
                                                     <TruckIcon className="h-4 w-4 text-neutral-400" />
                                                     <span className="font-medium text-neutral-900 dark:text-white">
-                                                      {truckName}
+                                                      {truck.name}
                                                     </span>
                                                   </div>
                                                   <button
                                                     type="button"
                                                     onClick={(e) => {
                                                       e.stopPropagation();
-                                                      deleteTruck(truckName);
+                                                      deleteTruck(truck);
                                                     }}
                                                     className="opacity-0 group-hover:opacity-100 p-1 rounded text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
                                                     title="Remove from saved trucks"
@@ -2373,7 +3034,7 @@ export default function FieldEquipmentList() {
                                             {searchValue.trim() &&
                                               !trucks.some(
                                                 (t) =>
-                                                  t.toLowerCase() ===
+                                                  t.name.toLowerCase() ===
                                                   searchValue
                                                     .trim()
                                                     .toLowerCase(),
@@ -2383,20 +3044,22 @@ export default function FieldEquipmentList() {
                                                   onClick={async () => {
                                                     const name =
                                                       searchValue.trim();
-                                                    const success =
+                                                    const truck =
                                                       await createTruck(name);
-                                                    if (success) {
+                                                    if (truck) {
                                                       await handleAssign(
                                                         item.id,
                                                         "truck",
-                                                        name,
-                                                        name,
+                                                        {
+                                                          id: truck.id,
+                                                          label: truck.name,
+                                                        },
                                                       );
                                                     } else {
                                                       toast({
                                                         title: "Error",
                                                         description:
-                                                          "Failed to create truck",
+                                                          "Could not create that truck",
                                                         variant: "destructive",
                                                       });
                                                     }
@@ -2552,6 +3215,33 @@ export default function FieldEquipmentList() {
                                     </button>
                                   )}
                                   <div className="my-1 border-t border-neutral-200 dark:border-neutral-700" />
+                                  {item.in_service === false ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleReturnToService(item)}
+                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100"
+                                    >
+                                      <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                      Return to Service
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenActionMenus((prev) => ({
+                                          ...prev,
+                                          [item.id]: false,
+                                        }));
+                                        setServiceReason("");
+                                        setServiceDialogFor(item);
+                                      }}
+                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100"
+                                    >
+                                      <Wrench className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                      Out for Maintenance
+                                    </button>
+                                  )}
+                                  <div className="my-1 border-t border-neutral-200 dark:border-neutral-700" />
                                   <button
                                     type="button"
                                     onClick={() => {
@@ -2593,6 +3283,58 @@ export default function FieldEquipmentList() {
             </div>
           </div>
         )}
+
+        {/* Out-of-service reason. A required field, because an item sitting in the
+            maintenance list with no reason is the problem this was built to fix. */}
+        <Dialog
+          open={serviceDialogFor !== null}
+          onClose={() => setServiceDialogFor(null)}
+          className="relative z-50"
+        >
+          <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <Dialog.Panel className="w-full max-w-md bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-dark-200 p-6">
+              <Dialog.Title className="text-lg font-semibold text-neutral-900 dark:text-white">
+                Out for maintenance
+              </Dialog.Title>
+              <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+                {serviceDialogFor?.equipment_name}
+                {serviceDialogFor?.amp_id ? ` · ${serviceDialogFor.amp_id}` : ""}
+              </p>
+
+              <label className="mt-4 block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                What is wrong with it?
+              </label>
+              <textarea
+                autoFocus
+                rows={4}
+                value={serviceReason}
+                onChange={(e) => setServiceReason(e.target.value)}
+                placeholder="e.g. Display intermittent, fails self-test on the 1000V range"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                This shows on the Maintenance tab, so whoever picks it up knows
+                what they are dealing with.
+              </p>
+
+              <div className="mt-5 flex items-center justify-end gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => setServiceDialogFor(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleTakeOutOfService}
+                  disabled={serviceSaving || serviceReason.trim() === ""}
+                >
+                  {serviceSaving ? "Saving…" : "Mark out of service"}
+                </Button>
+              </div>
+            </Dialog.Panel>
+          </div>
+        </Dialog>
 
         {/* Add/Edit Dialog */}
         <Dialog
@@ -3219,6 +3961,27 @@ export default function FieldEquipmentList() {
                         className="w-full"
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                      Calibration Interval (months)
+                    </label>
+                    <Input
+                      type="number"
+                      name="calibration_interval_months"
+                      min={1}
+                      max={120}
+                      value={formData.calibration_interval_months}
+                      onChange={handleInputChange}
+                      placeholder="e.g. 12"
+                      className="w-full"
+                    />
+                    <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                      Set this and the due date fills itself in from the
+                      calibration date. Leave it empty to keep setting the due
+                      date by hand.
+                    </p>
                   </div>
 
                   <div>

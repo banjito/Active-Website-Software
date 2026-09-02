@@ -63,6 +63,15 @@ RULES
 - Emit ONE report object per physical unit under test. Separate spreadsheet
   sheets or PDF pages that continue the same identified unit belong to ONE
   report; distinct units require distinct report objects.
+- "label" must name the SPECIFIC unit as the source names it — its string name,
+  equipment id, tag, or asset id — never the form's printed title. A source
+  showing "BATTERY TEST" at the top and "STRING NAME: BUS-INV-XP STRING 2" in
+  the body has the label "BUS-INV-XP STRING 2". Where a form covers several
+  units, each label must tell them apart.
+- "siteName" is the facility the work was performed at, not the substation,
+  building, or position field.
+- A value never repeats its own field label: "SUBSTATION 4674 BUILDING" is the
+  label "Substation" with the value "4674 BUILDING".
 - Set "sourceSheet" to the sheet name for spreadsheets. For PDFs, use the page
   number/range when useful, otherwise use "".
 - Output ONLY a JSON object of the form { "reports": [ ... ] }.`;

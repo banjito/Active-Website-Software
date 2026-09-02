@@ -17,49 +17,57 @@ const corsHeaders = {
 const MODEL = "deepseek-chat";
 const DEEPSEEK_URL = "https://api.deepseek.com/chat/completions";
 
-// Input here is a flattened Excel grid, not OCR: every character is exact, and
-// each cell arrives addressed as "C7: 12.4". So unlike the oil parser this
-// prompt is not fighting misread digits — it is fighting layout. The meaning
-// of a value lives in the label to its left or the heading above it, and the
-// workbooks are hand-edited, so those anchors move between revisions.
-const INSTRUCTIONS = `You convert a technician's Excel test report into JSON.
+// Input can be an addressed spreadsheet grid, embedded PDF text, or OCR. The
+// model must preserve exact values while rebuilding layout that may be encoded
+// by column letters, reading order, repeated headings, or page boundaries.
+const INSTRUCTIONS = `You convert a technician's electrical test report from a spreadsheet or PDF into JSON.
 
-INPUT FORMAT
-Each sheet appears as "### SHEET: <name>", then one line per non-empty row:
-  <row number> | A: <cell> | B: <cell> | D: <cell>
-Empty cells are omitted, so column letters are the only reliable alignment.
+INPUT FORMATS
+The source is one of these formats:
+1. SPREADSHEET TEXT. Each sheet starts with "### SHEET: <name>", followed by
+   non-empty rows such as:
+     <row number> | A: <cell> | B: <cell> | D: <cell>
+   Empty cells are omitted, so column letters are the reliable alignment.
+2. PDF TEXT. Each page starts with "--- PAGE <number> ---". Text may come from
+   an embedded text layer or OCR, so column alignment can be unreliable, lines
+   can be split, and OCR may confuse similar characters.
 
 HOW TO READ THE LAYOUT
-- A label and its value are usually adjacent on the same row ("A: Serial No." /
-  "B: 4471-A"). One row can hold several such pairs side by side.
-- A table is a heading row whose cells are column names, followed by rows whose
-  cells sit under the SAME column letters. Match by column letter, not by
-  position in the line: a blank cell shifts everything otherwise.
-- A row whose first cell is a name and whose remaining cells are readings is a
-  labelled row — put the name in "label" and the readings in "cells".
+- In spreadsheet text, match table values to headings by column letter, not by
+  position in the line: omitted blank cells otherwise shift values.
+- In PDF text, infer tables from headings, units, row labels, repeated blocks,
+  and the left-to-right order and count of values. Use page order to join
+  sections that continue on a later page.
+- A label and its value are usually adjacent. One row or line can hold several
+  label/value pairs side by side.
+- A row whose first value is a name and whose remaining values are readings is
+  a labelled row — put the name in "label" and the readings in "cells".
 - A units row ("kV", "Ω", "µA") directly under the headings is "units", not a
   data row.
-- A cell spanning a row on its own, often upper-case, is a SECTION TITLE. Start
-  a new section there.
-- Sheets named for instructions, a cover page, a dropdown list, or lookup data
-  hold no report. Skip them entirely.
+- Standalone, often upper-case text is usually a SECTION TITLE. Start a new
+  section there when the following content belongs to it.
+- Instructions, cover pages, dropdown lists, and lookup data hold no report.
+  Skip them entirely.
 
 RULES
-- Copy values VERBATIM, exactly as displayed: keep "N/A", "—", ">2000",
-  "0.0", "PASS", trailing units, and the workbook's own date formatting.
-- NEVER invent, compute, round, convert, or reformat a value. If a cell is
-  blank, emit "".
+- Copy source values VERBATIM: keep "N/A", "—", ">2000", "0.0", "PASS",
+  trailing units, and the source's own date formatting.
+- NEVER invent, compute, round, convert, or reformat a value. For OCR text, only
+  resolve an obvious character confusion when the surrounding value clearly
+  establishes it; otherwise preserve the extracted text or omit unreadable data.
 - Do not drop data you cannot categorize. Anything that does not fit a table or
   a label/value pair goes in that section's "notes" rather than being lost.
-- Keep every section the workbook has, in the order the workbook has them.
+- Keep every section in source order.
 - Comments, remarks, and recommendations are "notes": join wrapped lines with
   single spaces and separate distinct paragraphs with \\n\\n.
-- ONE report object per unit under test. A workbook with one sheet per unit
-  yields one report per sheet; a workbook testing one unit across several
-  sheets yields ONE report whose sections span those sheets.
+- Emit ONE report object per physical unit under test. Separate spreadsheet
+  sheets or PDF pages that continue the same identified unit belong to ONE
+  report; distinct units require distinct report objects.
+- Set "sourceSheet" to the sheet name for spreadsheets. For PDFs, use the page
+  number/range when useful, otherwise use "".
 - Output ONLY a JSON object of the form { "reports": [ ... ] }.`;
 
-const SCHEMA = `Each element of "reports" has this TypeScript shape. Every value is a STRING; use "" for anything the workbook leaves blank.
+const SCHEMA = `Each element of "reports" has this TypeScript shape. Every value is a STRING; use "" for anything the source leaves blank.
 
 interface AmplifyReport {
   id: string;            // kebab-case slug, e.g. "breaker-52-1"
@@ -72,8 +80,8 @@ interface AmplifyReport {
   technician: string;
   equipment: Field[];    // nameplate identity: manufacturer, model, serial, ratings…
   status: string;        // overall result as printed, e.g. "PASS"
-  sections: Section[];   // in workbook order
-  sourceSheet: string;   // sheet this report came from
+  sections: Section[];   // in source order
+  sourceSheet: string;   // spreadsheet sheet or PDF page/range, when useful
 }
 
 interface Field { label: string; value: string; }
@@ -88,7 +96,7 @@ interface Section {
 
 interface Table {
   columns: string[];     // headings, EXCLUDING the stub column that holds row labels
-  units?: string[];      // units line under the headings, if the sheet has one
+  units?: string[];      // units line under the headings, if the source has one
   rows: Row[];
 }
 
@@ -111,22 +119,33 @@ serve(async (req: Request) => {
     const apiKey = Deno.env.get("DEEPSEEK_API_KEY");
     if (!apiKey) throw new Error("DEEPSEEK_API_KEY is not set");
 
-    const { workbookText, fileName } = await req.json();
-    if (!workbookText || typeof workbookText !== "string") {
-      return json({ error: "workbookText (string) is required" }, 400);
+    const { sourceText: requestedSourceText, workbookText, fileName } =
+      await req.json();
+    // `workbookText` is retained for clients deployed before PDF support.
+    const sourceText = requestedSourceText ?? workbookText;
+    if (!sourceText || typeof sourceText !== "string") {
+      return json(
+        { error: "sourceText or workbookText (string) is required" },
+        400,
+      );
     }
 
-    // Guard the context window. The client already truncates, but a caller is
-    // not something to take on trust.
+    // Guard the context window. Spreadsheet extraction also truncates on the
+    // client, but PDF callers and direct API callers are not taken on trust.
     const MAX_CHARS = 120_000;
     const text =
-      workbookText.length > MAX_CHARS
-        ? workbookText.slice(0, MAX_CHARS)
-        : workbookText;
+      sourceText.length > MAX_CHARS
+        ? sourceText.slice(0, MAX_CHARS)
+        : sourceText;
+    const sourceFile =
+      typeof fileName === "string" && fileName ? fileName : "unknown";
+    const sourceDescription = /\.pdf$/i.test(sourceFile)
+      ? "PDF TEXT (page order is preserved; alignment may be unreliable)"
+      : "FLATTENED SPREADSHEET (cells are addressed by column letter)";
 
-    const userText = `Source file: ${fileName || "unknown.xlsx"}
+    const userText = `Source file: ${sourceFile}
 
-FLATTENED WORKBOOK (cells are addressed by column letter):
+${sourceDescription}:
 """
 ${text}
 """

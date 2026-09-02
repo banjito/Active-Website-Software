@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom";
 import { companyConfig } from "@/lib/companyConfig";
 import { readWorkbook } from "@/lib/amplifyWorkbook";
+import { extractTextLayer, ocrPdf } from "@/lib/oilReportOcr";
 import {
   parseAmplifyReport,
   reviseAmplifyReport,
@@ -15,16 +16,17 @@ import {
   updateAmplifyConversionReport,
   type SavedAmplifyConversion,
 } from "@/lib/amplifyReportStore";
-import { FileSpreadsheet, RefreshCw, Trash2 } from "lucide-react";
+import { FileUp, RefreshCw, Trash2 } from "lucide-react";
 import RegenerateDialog from "@/components/amplify/RegenerateDialog";
 import ConversionProgress, {
+  PDF_STAGES,
   type ConversionState,
   type StageSpec,
 } from "@/components/reports/common/ConversionProgress";
 
 /**
- * Entry point of the AMP-lify workflow: drop an Excel report, watch it
- * convert, land on the finished report.
+ * Entry point of the AMP-lify workflow: drop a spreadsheet or PDF report,
+ * watch it convert, and land on the finished report.
  *
  * The conversion costs an LLM call, so results are written to
  * neta_ops.amplify_reports and this page doubles as the index of everything
@@ -44,13 +46,25 @@ const WORKBOOK_STAGES: StageSpec[] = [
   { key: "saving", label: "Saving report", weight: 0.1 },
 ];
 
-function workbookDetail(state: ConversionState): string {
+function isPdfFileName(fileName: string): boolean {
+  return fileName.toLowerCase().endsWith(".pdf");
+}
+
+function conversionDetail(state: ConversionState): string {
+  if (
+    isPdfFileName(state.fileName) &&
+    (state.stage === "reading" || state.stage === "recognizing")
+  ) {
+    return state.pageCount
+      ? `Page ${state.page} of ${state.pageCount}`
+      : "Opening PDF";
+  }
   if (state.stage === "reading") return "Flattening the sheets";
   if (state.stage === "structuring") return "Reading the test data";
   return "Writing to the database";
 }
 
-const ACCEPTED = [".xlsx", ".xlsm", ".xls", ".csv"];
+const ACCEPTED = [".xlsx", ".xlsm", ".xls", ".csv", ".pdf"];
 
 /** Cells of the drop zone's sheet, filled in on a stagger while dragging. */
 const CELL_COUNT = 48;
@@ -108,7 +122,28 @@ const AmplifyResults: React.FC = () => {
 
       at("reading");
       try {
-        const { text } = await readWorkbook(file);
+        let text: string;
+        if (isPdfFileName(file.name)) {
+          // Prefer selectable PDF text; scanned/image-only reports fall back to
+          // browser-side OCR before entering the same structuring pipeline.
+          const embedded = await extractTextLayer(file);
+          const extracted =
+            embedded ??
+            (await ocrPdf(file, (pdfProgress) =>
+              setProgress({
+                stage:
+                  pdfProgress.stage === "recognizing"
+                    ? "recognizing"
+                    : "reading",
+                page: pdfProgress.page,
+                pageCount: pdfProgress.pageCount,
+                fileName: file.name,
+              }),
+            ));
+          text = extracted.text;
+        } else {
+          text = (await readWorkbook(file)).text;
+        }
 
         at("structuring");
         const parsed = await parseAmplifyReport(text, file.name);
@@ -131,7 +166,9 @@ const AmplifyResults: React.FC = () => {
       if (!file) return;
       const name = file.name.toLowerCase();
       if (!ACCEPTED.some((ext) => name.endsWith(ext))) {
-        setError("Please choose an Excel workbook (.xlsx, .xlsm, .xls) or a .csv.");
+        setError(
+          "Please choose an Excel workbook (.xlsx, .xlsm, .xls), a .csv, or a PDF.",
+        );
         return;
       }
       void ingest(file);
@@ -173,10 +210,10 @@ const AmplifyResults: React.FC = () => {
   );
 
   const remove = useCallback(async (c: SavedAmplifyConversion) => {
-    // Re-converting costs an API call, so confirm first.
+    // Re-converting costs an API call (and possibly OCR), so confirm first.
     if (
       !window.confirm(
-        `Delete the converted report for "${c.label}"? Converting it again means re-running the workbook.`,
+        `Delete the converted report for "${c.label}"? Converting it again means re-running the source file.`,
       )
     ) {
       return;
@@ -203,7 +240,8 @@ const AmplifyResults: React.FC = () => {
           AMP-lify Reports
         </h1>
         <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-          Turn an Excel report into a branded {companyConfig.name} report.
+          Turn an Excel, CSV, or PDF report into a branded {companyConfig.name}
+          report.
         </p>
       </div>
 
@@ -211,8 +249,10 @@ const AmplifyResults: React.FC = () => {
         {busy ? (
           <ConversionProgress
             state={progress}
-            stages={WORKBOOK_STAGES}
-            detailFor={workbookDetail}
+            stages={
+              isPdfFileName(progress.fileName) ? PDF_STAGES : WORKBOOK_STAGES
+            }
+            detailFor={conversionDetail}
           />
         ) : (
           <div
@@ -262,7 +302,7 @@ const AmplifyResults: React.FC = () => {
               </div>
             )}
 
-            <FileSpreadsheet
+            <FileUp
               className={`mx-auto h-12 w-12 transition-colors ${
                 dragOver
                   ? "stroke-brand"
@@ -272,15 +312,15 @@ const AmplifyResults: React.FC = () => {
               aria-hidden="true"
             />
             <p className="mt-4 text-lg font-bold text-neutral-900 dark:text-white">
-              Drop an Excel report to convert
+              Drop an Excel, CSV, or PDF report to convert
             </p>
             <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-              .xlsx, .xlsm, .xls or .csv
+              .xlsx, .xlsm, .xls, .csv or .pdf
             </p>
             <input
               ref={fileInputRef}
               type="file"
-              accept=".xlsx,.xlsm,.xls,.csv"
+              accept=".xlsx,.xlsm,.xls,.csv,.pdf"
               className="hidden"
               onChange={(e) => {
                 onPick(e.target.files);

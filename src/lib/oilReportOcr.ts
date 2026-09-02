@@ -1,10 +1,10 @@
 /**
- * Turns a lab-issued oil report PDF into raw text.
+ * Browser-side PDF text extraction shared by report ingestion workflows.
  *
- * These PDFs carry no text layer at all — every glyph is drawn as filled
- * vector outlines, so pdf.js `getTextContent()` returns nothing. The only way
- * to read them is to rasterize each page and OCR the pixels. Both steps run in
- * the browser; only the resulting text is sent to the server for structuring.
+ * PDFs with selectable text can be read directly with pdf.js. Scanned PDFs and
+ * files whose glyphs are only vector outlines must instead be rasterized and
+ * passed through OCR. Both paths run in the browser; only the resulting text is
+ * sent to the server for structuring.
  *
  * Everything here is dynamically imported so pdf.js and the Tesseract wasm
  * bundle stay out of the main chunk.
@@ -32,8 +32,8 @@ export interface OcrResult {
 /**
  * Pull the embedded text layer, or null when there isn't a usable one.
  *
- * Today's MVA exports always return null, but a lab that switches to a real
- * PDF export would land here and skip OCR entirely — seconds instead of
+ * Today's MVA oil-report exports return null, but PDFs from other report
+ * workflows commonly land here and skip OCR entirely — seconds instead of
  * minutes, with no OCR misreads to correct.
  */
 export async function extractTextLayer(file: File): Promise<OcrResult | null> {

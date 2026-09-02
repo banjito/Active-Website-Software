@@ -1,12 +1,12 @@
 /**
  * Types and helpers for AMP-lify reports.
  *
- * Source data arrives as an Excel workbook rather than a lab PDF, so there is
- * no OCR step — but the workbooks are hand-maintained, so the layout drifts
- * between revisions. The model below is deliberately shape-agnostic: a header
- * block plus an ordered list of sections, each of which is a key/value block, a
- * table, a note, or any combination. That way a column added to the workbook
- * next quarter shows up in the report instead of being silently dropped.
+ * Source data can arrive as a spreadsheet or PDF. Spreadsheets are flattened,
+ * while PDFs use their text layer or browser-side OCR; either way, layouts can
+ * drift between revisions. The model below is deliberately shape-agnostic: a
+ * header block plus an ordered list of sections, each of which is a key/value
+ * block, a table, a note, or any combination. That way a newly added source
+ * field shows up in the report instead of being silently dropped.
  *
  * See /amplify-reports for the branded renderer.
  */
@@ -31,7 +31,7 @@ export interface AmplifyField {
 export interface AmplifyRow {
   label?: string;
   cells: string[];
-  /** Pass/fail as printed for this row, when the workbook records one. */
+  /** Pass/fail as printed for this row, when the source records one. */
   result?: string;
 }
 
@@ -43,7 +43,7 @@ export interface AmplifyTable {
   units?: string[];
 }
 
-/** One block of the report, rendered in workbook order. */
+/** One block of the report, rendered in source order. */
 export interface AmplifySection {
   id: string;
   title: string;

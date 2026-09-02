@@ -1,10 +1,11 @@
 /**
  * Client side of the AMP-lify ingestion pipeline.
  *
- * The workbook is flattened in the browser (see amplifyWorkbook.ts); this
- * module hands the resulting text to the parse-amplify-report edge function,
- * which calls DeepSeek with the server-held API key, and coerces the response
- * into AmplifyReport.
+ * The source document is converted to text in the browser: spreadsheets are
+ * flattened by amplifyWorkbook.ts, while PDFs use their embedded text or OCR.
+ * This module hands that text to the parse-amplify-report edge function, which
+ * calls DeepSeek with the server-held API key and coerces the response into an
+ * AmplifyReport.
  *
  * The model is prompted for this shape but is not trusted to produce it, so
  * every field is normalized defensively before it reaches the renderer.
@@ -134,18 +135,20 @@ function normalizeReport(
 }
 
 /**
- * Send flattened workbook text for structuring and return renderable reports.
+ * Send extracted source text for structuring and return renderable reports.
  *
- * Reports with no sections are dropped: they are almost always a cover sheet or
+ * Reports with no sections are dropped: they are almost always a cover page or
  * an instructions tab the model tried to be helpful about.
  */
 export async function parseAmplifyReport(
-  workbookText: string,
+  sourceText: string,
   fileName: string,
 ): Promise<AmplifyReport[]> {
   const { data, error } = await supabase.functions.invoke(
     "parse-amplify-report",
-    { body: { workbookText, fileName } },
+    // Keep the legacy field name for compatibility with already-deployed
+    // versions of the edge function; it now carries spreadsheet or PDF text.
+    { body: { workbookText: sourceText, fileName } },
   );
 
   if (error) {
@@ -163,12 +166,12 @@ export async function parseAmplifyReport(
 
   if (reports.length === 0) {
     throw new Error(
-      "No readable report was found in that workbook. Check that the test data is on a sheet rather than in an embedded object.",
+      "No readable report was found in that file. Check that it contains test data as spreadsheet cells, selectable PDF text, or a clear scan.",
     );
   }
 
   // Ids feed React keys and the report switcher, so they must be unique even
-  // if two sheets share a label.
+  // if two source sections share a label.
   const seen = new Set<string>();
   return reports.map((report) => {
     let id = report.id;
@@ -183,7 +186,7 @@ export async function parseAmplifyReport(
  * Re-run a saved report through the model with one plain-language instruction
  * ("On Rated Voltage, change the value to 15kV") and return the revision.
  *
- * The uploaded workbook is not kept after a conversion, so this revises the
+ * The uploaded source file is not kept after a conversion, so this revises the
  * stored JSON rather than parsing the source again. The response is normalized
  * through the same path as a fresh parse, since a revision is no more trusted
  * to hold the shape than the original was.

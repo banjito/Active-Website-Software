@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { getReportAssets, type ReportAsset } from "@/services/portalData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { ReportRow } from "@/components/ReportRow";
+import { dateSearchText } from "@/lib/utils";
 
 const STATUS_FILTERS = ["all", "sent", "approved"] as const;
 type StatusFilter = (typeof STATUS_FILTERS)[number];
@@ -15,6 +16,8 @@ export function Reports() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  // Input stays instant; the list filter runs off the deferred value.
+  const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
     (async () => {
@@ -28,8 +31,30 @@ export function Reports() {
     })();
   }, []);
 
+  // Per-report search haystack, rebuilt only when the data changes. Includes the
+  // report date in the many shapes people type it ("Sept. 3, 2026", "9/3/26"…).
+  const searchIndex = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const r of reports) {
+      map.set(
+        r.asset_id,
+        [
+          r.asset_name,
+          r.substation,
+          r.job_number,
+          r.job_title,
+          dateSearchText(r.sent_at ?? r.approved_at ?? r.created_at),
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase(),
+      );
+    }
+    return map;
+  }, [reports]);
+
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = deferredQuery.trim().toLowerCase();
     return reports.filter((r) => {
       if (
         statusFilter !== "all" &&
@@ -37,11 +62,9 @@ export function Reports() {
       )
         return false;
       if (!q) return true;
-      return [r.asset_name, r.substation, r.job_number, r.job_title].some((v) =>
-        v?.toLowerCase().includes(q),
-      );
+      return searchIndex.get(r.asset_id)?.includes(q) ?? false;
     });
-  }, [reports, query, statusFilter]);
+  }, [reports, searchIndex, deferredQuery, statusFilter]);
 
   return (
     <div className="space-y-6">

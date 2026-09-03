@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin } from 'lucide-react';
+import { ArrowLeft, MapPin, Search } from 'lucide-react';
 import {
   getJob,
   getReportAssetsForJob,
@@ -15,9 +15,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { ReportRow } from '@/components/ReportRow';
-import { formatDate } from '@/lib/utils';
+import { dateSearchText, formatDate } from '@/lib/utils';
 
 export function JobDetail() {
   const { jobId } = useParams<{ jobId: string }>();
@@ -28,6 +29,10 @@ export function JobDetail() {
   const [folderRows, setFolderRows] = useState<SubstationFolderRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  // The input stays on `query` (instant); the heavy list filter runs off the
+  // deferred value so typing never blocks on re-rendering hundreds of rows.
+  const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
     if (!jobId) return;
@@ -51,10 +56,41 @@ export function JobDetail() {
     })();
   }, [jobId]);
 
+  // One lowercased search haystack per report, rebuilt only when the data
+  // changes — not on every keystroke. Covers report name, substation, folder
+  // name and the report date in the many shapes people type it.
+  const searchIndex = useMemo(() => {
+    const folderBySubKey = new Map(folderRows.map((f) => [f.substation_key, f.folder_name]));
+    const map = new Map<string, string>();
+    for (const r of reports) {
+      map.set(
+        r.asset_id,
+        [
+          r.asset_name,
+          r.substation,
+          folderBySubKey.get(substationKey(r.substation ?? '')),
+          dateSearchText(r.sent_at ?? r.approved_at ?? r.created_at),
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase(),
+      );
+    }
+    return map;
+  }, [reports, folderRows]);
+
+  const activeQuery = deferredQuery.trim();
+
+  const visibleReports = useMemo(() => {
+    const q = activeQuery.toLowerCase();
+    if (!q) return reports;
+    return reports.filter((r) => searchIndex.get(r.asset_id)?.includes(q));
+  }, [reports, searchIndex, activeQuery]);
+
   // Group reports by substation, mirroring the staff app's grouping.
   const groups = useMemo(() => {
     const map = new Map<string, ReportAsset[]>();
-    for (const r of reports) {
+    for (const r of visibleReports) {
       const key = r.substation || 'Other';
       const list = map.get(key) ?? [];
       list.push(r);
@@ -110,9 +146,9 @@ export function JobDetail() {
   // silently dropped — the packet never widens access.
   const reportsById = useMemo(() => {
     const map = new Map<string, ReportAsset>();
-    for (const r of reports) map.set(r.asset_id, r);
+    for (const r of visibleReports) map.set(r.asset_id, r);
     return map;
-  }, [reports]);
+  }, [visibleReports]);
 
   const packetReports = (packet: Deliverable): ReportAsset[] =>
     (packet.report_asset_ids ?? [])
@@ -158,7 +194,19 @@ export function JobDetail() {
         </div>
       </div>
 
-      {packets.length > 0 && (
+      {reports.length > 0 && (
+        <div className="group relative w-full animate-fade-up sm:w-72">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+          <Input
+            className="pl-9"
+            placeholder="Search reports…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+      )}
+
+      {packets.length > 0 && !activeQuery && (
         <section className="space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             Report Packets
@@ -213,6 +261,26 @@ export function JobDetail() {
             No published reports for this job yet.
           </CardContent>
         </Card>
+      ) : visibleReports.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center text-sm text-muted-foreground">
+            No reports match “{activeQuery}”.
+          </CardContent>
+        </Card>
+      ) : activeQuery ? (
+        // While searching, drop the folder/substation grouping and show a flat
+        // result list, exactly like the /reports page.
+        <div className="space-y-2">
+          {visibleReports.map((r, i) => (
+            <div
+              key={r.asset_id}
+              className="enter"
+              style={{ animationDelay: `${Math.min(i, 12) * 45}ms` }}
+            >
+              <ReportRow report={r} />
+            </div>
+          ))}
+        </div>
       ) : (
         <section className="space-y-3">
           {packets.length > 0 && (

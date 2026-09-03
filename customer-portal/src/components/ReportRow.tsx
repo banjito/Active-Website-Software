@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { Download, Eye, FileText, Flag, X } from "lucide-react";
 import {
   fetchReportFlags,
@@ -17,7 +17,7 @@ import { formatDate } from "@/lib/utils";
 
 type Action = "view" | "download";
 
-export function ReportRow({
+function ReportRowImpl({
   report,
   showJob = false,
 }: {
@@ -285,3 +285,7 @@ export function ReportRow({
     </div>
   );
 }
+
+// Rows re-render only when their own report changes — not on every keystroke
+// in the parent's search box.
+export const ReportRow = memo(ReportRowImpl);

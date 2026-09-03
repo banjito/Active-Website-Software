@@ -679,7 +679,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             >
               <Button
                 variant="ghost"
-                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
                   location.pathname === "/office/vendors"
                     ? "bg-black/5 dark:bg-dark-50"
                     : ""
@@ -691,7 +691,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Link to="/office" onClick={() => setIsMobileSidebarOpen(false)}>
               <Button
                 variant="ghost"
-                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
                   location.pathname === "/office"
                     ? "bg-black/5 dark:bg-dark-50"
                     : ""
@@ -710,7 +710,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Button
             variant="ghost"
             leftIcon={<Users className="h-4 w-4" />}
-            className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+            className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
               location.pathname.endsWith("/customers")
                 ? "bg-black/5 dark:bg-dark-50"
                 : ""
@@ -726,7 +726,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Button
             variant="ghost"
             leftIcon={<Building2 className="h-4 w-4" />}
-            className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+            className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
               location.pathname.includes("/sites")
                 ? "bg-black/5 dark:bg-dark-50"
                 : ""
@@ -742,7 +742,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Button
             variant="ghost"
             leftIcon={<Contact className="h-4 w-4" />}
-            className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+            className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
               location.pathname.endsWith("/contacts")
                 ? "bg-black/5 dark:bg-dark-50"
                 : ""
@@ -762,7 +762,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Button
                 variant="ghost"
                 leftIcon={<Briefcase className="h-4 w-4" />}
-                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
                   location.pathname === "/all-jobs" ||
                   location.pathname.endsWith("/jobs")
                     ? "bg-black/5 dark:bg-dark-50"
@@ -779,7 +779,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Button
                 variant="ghost"
                 leftIcon={<CalendarDays className="h-4 w-4" />}
-                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
                   location.pathname.endsWith("/scheduling")
                     ? "bg-black/5 dark:bg-dark-50"
                     : ""
@@ -806,7 +806,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <Button
                   variant="ghost"
                   leftIcon={<Wrench className="h-4 w-4" />}
-                  className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                  className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
                     location.pathname.endsWith("/field-equipment")
                       ? "bg-black/5 dark:bg-dark-50"
                       : ""
@@ -825,7 +825,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <Button
                   variant="ghost"
                   leftIcon={<Droplet className="h-4 w-4" />}
-                  className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                  className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
                     location.pathname.startsWith("/oil-results")
                       ? "bg-black/5 dark:bg-dark-50"
                       : ""
@@ -843,7 +843,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Button
                 variant="ghost"
                 leftIcon={<FileSpreadsheet className="h-4 w-4" />}
-                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
                   location.pathname.startsWith("/amplify-reports")
                     ? "bg-black/5 dark:bg-dark-50"
                     : ""
@@ -862,7 +862,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             <Button
               variant="ghost"
-              className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start ${
+              className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
                 location.pathname.startsWith("/custom-forms")
                   ? "bg-black/5 dark:bg-dark-50"
                   : ""

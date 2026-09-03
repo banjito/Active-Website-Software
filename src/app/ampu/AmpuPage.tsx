@@ -239,7 +239,7 @@ function BulletinHeading({
 }) {
   return (
     <div className="mb-4 flex items-end justify-between gap-4 border-b-4 border-double border-neutral-300 pb-2 dark:border-neutral-700">
-      <h2 className="font-serif text-lg font-semibold tracking-wide text-neutral-900 dark:text-white">
+      <h2 className="font-serif text-lg tracking-wide text-neutral-900 dark:text-white">
         {children}
       </h2>
       {right}
@@ -334,7 +334,7 @@ function ProgressRing({ percent }: { percent: number }) {
 function Stat({ value, label }: { value: React.ReactNode; label: string }) {
   return (
     <div className="px-4 py-3 text-center">
-      <p className="font-serif text-2xl font-semibold text-neutral-900 dark:text-white">
+      <p className="font-serif text-2xl text-neutral-900 dark:text-white">
         {value}
       </p>
       <p className="mt-0.5 text-[10px] uppercase tracking-[0.14em] text-neutral-500 dark:text-neutral-400">
@@ -783,7 +783,7 @@ function MissingCourse({ onBack }: { onBack: () => void }) {
   return (
     <Card className="mx-auto max-w-md">
       <CardContent className="pt-6 text-center">
-        <p className="mb-1 font-serif text-lg font-semibold text-neutral-900 dark:text-white">
+        <p className="mb-1 font-serif text-lg text-neutral-900 dark:text-white">
           Unit not in the catalog
         </p>
         <p className="mb-4 text-sm text-neutral-500">
@@ -918,7 +918,7 @@ function Catalog({
     <div>
       {/* Bulletin masthead */}
       <div className="mb-6 border-y-4 border-double border-neutral-300 py-5 text-center dark:border-neutral-700">
-        <h1 className="mt-2 font-serif text-3xl font-bold tracking-wide text-neutral-900 dark:text-white">
+        <h1 className="mt-2 font-serif text-3xl tracking-wide text-neutral-900 dark:text-white">
           Course Catalog
         </h1>
       </div>
@@ -1014,7 +1014,7 @@ function Catalog({
                     <CourseNumber code={course.code} />
                     {course.isRequired && <RequiredSeal />}
                   </div>
-                  <h3 className="font-serif text-base font-semibold leading-snug text-neutral-900 dark:text-white">
+                  <h3 className="font-serif text-base leading-snug text-neutral-900 dark:text-white">
                     {course.title}
                   </h3>
                   <p className="line-clamp-2 text-xs text-neutral-500 dark:text-neutral-400">
@@ -1078,7 +1078,7 @@ function EmptyCatalog({
         <div className="mb-6 flex justify-center">
           <Emblem height={52} className="opacity-50" />
         </div>
-        <p className="font-serif text-lg font-semibold text-neutral-900 dark:text-white">
+        <p className="font-serif text-lg text-neutral-900 dark:text-white">
           Nothing published yet
         </p>
         <p className="mx-auto mt-2 max-w-sm text-sm text-neutral-500">
@@ -1184,7 +1184,7 @@ function CourseDetail({
               <DepartmentTag department={course.department} />
               {course.isRequired && <RequiredSeal />}
             </div>
-            <h1 className="mb-2 font-serif text-3xl font-bold tracking-wide text-neutral-900 dark:text-white">
+            <h1 className="mb-2 font-serif text-3xl tracking-wide text-neutral-900 dark:text-white">
               {course.title}
             </h1>
             <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-400">
@@ -1310,7 +1310,7 @@ function Diploma({
           <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 dark:text-neutral-400">
             Six Volts to Lightning
           </p>
-          <p className="mt-1 font-serif text-xl font-bold text-neutral-900 dark:text-white">
+          <p className="mt-1 font-serif text-xl text-neutral-900 dark:text-white">
             {course.code} conferred with all rights and privileges
           </p>
           <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
@@ -1361,7 +1361,7 @@ function LessonView({
       <Card className="mx-auto max-w-md">
         <CardContent className="pt-6 text-center">
           <div className="mb-3 text-4xl">🔒</div>
-          <p className="mb-1 font-serif text-lg font-semibold text-neutral-900 dark:text-white">
+          <p className="mb-1 font-serif text-lg text-neutral-900 dark:text-white">
             Prerequisite not met
           </p>
           <p className="mb-4 text-sm text-neutral-500">
@@ -1514,7 +1514,7 @@ function DocumentLesson({
         <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-400">
           {eyebrow}
         </p>
-        <h2 className="mb-3 font-serif text-2xl font-bold text-neutral-900 dark:text-white">
+        <h2 className="mb-3 font-serif text-2xl text-neutral-900 dark:text-white">
           {lesson.title}
         </h2>
 
@@ -1719,7 +1719,7 @@ function VideoLesson({
         <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-400">
           {eyebrow}
         </p>
-        <h2 className="mb-3 font-serif text-2xl font-bold text-neutral-900 dark:text-white">
+        <h2 className="mb-3 font-serif text-2xl text-neutral-900 dark:text-white">
           {lesson.title}
         </h2>
         <div className="overflow-hidden rounded-none bg-black">
@@ -1856,7 +1856,7 @@ function QuizLesson({
       <Card>
         <CardContent className="pt-6 text-center">
           <div className="mb-3 text-4xl">🏅</div>
-          <h2 className="mb-1 font-serif text-2xl font-bold text-neutral-900 dark:text-white">
+          <h2 className="mb-1 font-serif text-2xl text-neutral-900 dark:text-white">
             {quiz.title}
           </h2>
           <p className="mb-1 text-sm text-neutral-600 dark:text-neutral-400">
@@ -1880,11 +1880,11 @@ function QuizLesson({
         <CardContent className="pt-6">
           <div className="mb-6 text-center">
             <div className="mb-2 text-5xl">{result.passed ? "🎉" : "📋"}</div>
-            <h2 className="font-serif text-2xl font-bold text-neutral-900 dark:text-white">
+            <h2 className="font-serif text-2xl text-neutral-900 dark:text-white">
               {result.passed ? "Passed" : "Not passed"}
             </h2>
             <p
-              className="mt-1 font-serif text-4xl font-bold"
+              className="mt-1 font-serif text-4xl"
               style={{ color: result.passed ? BRAND_COLOR : "#dc2626" }}
             >
               {letterFor(result.score)}
@@ -1951,7 +1951,7 @@ function QuizLesson({
         <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-400">
           {eyebrow}
         </p>
-        <h2 className="mb-1 font-serif text-2xl font-bold text-neutral-900 dark:text-white">
+        <h2 className="mb-1 font-serif text-2xl text-neutral-900 dark:text-white">
           {quiz.title}
         </h2>
         <p className="mb-6 text-xs text-neutral-500">
@@ -2064,7 +2064,7 @@ function Transcript({
   return (
     <div>
       <div className="mb-6 border-y-4 border-double border-neutral-300 py-5 text-center dark:border-neutral-700">
-        <h1 className="mt-2 font-serif text-3xl font-bold tracking-wide text-neutral-900 dark:text-white">
+        <h1 className="mt-2 font-serif text-3xl tracking-wide text-neutral-900 dark:text-white">
           Academic Transcript
         </h1>
         <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">{studentName}</p>
@@ -2083,7 +2083,7 @@ function Transcript({
         >
           <span className="text-2xl">🏛️</span>
           <p className="text-sm text-neutral-700 dark:text-neutral-300">
-            <span className="font-serif font-semibold text-neutral-900 dark:text-white">
+            <span className="font-serif text-neutral-900 dark:text-white">
               Dean's List.
             </span>{" "}
             Every required unit complete with a {gpa?.toFixed(2)} average.
@@ -2142,7 +2142,7 @@ function Transcript({
                       <p className="mt-1 text-xs text-neutral-500">{Math.round(pct)}%</p>
                     </td>
                     <td className="px-4 py-3 text-right align-top">
-                      <span className="font-serif text-lg font-semibold text-neutral-900 dark:text-white">
+                      <span className="font-serif text-lg text-neutral-900 dark:text-white">
                         {grade.mark}
                       </span>
                       {grade.score !== undefined && (
@@ -2206,7 +2206,7 @@ function Leaderboard() {
   return (
     <div>
       <div className="mb-6 border-y-4 border-double border-neutral-300 py-5 text-center dark:border-neutral-700">
-        <h1 className="font-serif text-3xl font-bold tracking-wide text-neutral-900 dark:text-white">
+        <h1 className="font-serif text-3xl tracking-wide text-neutral-900 dark:text-white">
           Leaderboard
         </h1>
         <p className="mx-auto mt-2 max-w-xl text-sm text-neutral-500 dark:text-neutral-400">
@@ -2230,7 +2230,7 @@ function Leaderboard() {
             <div className="mb-6 flex justify-center">
               <Emblem height={52} className="opacity-50" />
             </div>
-            <p className="font-serif text-lg font-semibold text-neutral-900 dark:text-white">
+            <p className="font-serif text-lg text-neutral-900 dark:text-white">
               Nobody on the board yet
             </p>
             <p className="mx-auto mt-2 max-w-sm text-sm text-neutral-500">
@@ -2248,7 +2248,7 @@ function Leaderboard() {
                   <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-500 dark:text-neutral-400">
                     Leading the college
                   </p>
-                  <p className="mt-1 font-serif text-2xl font-bold text-neutral-900 dark:text-white">
+                  <p className="mt-1 font-serif text-2xl text-neutral-900 dark:text-white">
                     {leader.name}
                   </p>
                   <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
@@ -2289,7 +2289,7 @@ function Leaderboard() {
                         }
                       >
                         <td className="whitespace-nowrap px-4 py-3">
-                          <span className="font-serif text-lg font-semibold text-neutral-900 dark:text-white">
+                          <span className="font-serif text-lg text-neutral-900 dark:text-white">
                             {RANK_MARK[i] ?? i + 1}
                           </span>
                         </td>
@@ -2311,7 +2311,7 @@ function Leaderboard() {
                             </span>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-right font-serif text-lg font-semibold text-neutral-900 dark:text-white">
+                        <td className="px-4 py-3 text-right font-serif text-lg text-neutral-900 dark:text-white">
                           {row.unitsCompleted}
                         </td>
                         <td className="px-4 py-3 text-right text-neutral-700 dark:text-neutral-300">

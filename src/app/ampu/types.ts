@@ -35,10 +35,12 @@ export interface Quiz {
 export interface Lesson {
   id: string;
   title: string;
-  type: "VIDEO" | "QUIZ";
+  type: "VIDEO" | "QUIZ" | "DOCUMENT";
   durationSeconds?: number;
   videoUrl?: string; // direct file URL (HTML5 <video>)
   youtubeId?: string; // YouTube video id (embedded via IFrame API)
+  documentUrl?: string; // public URL of an assigned PDF / Word doc
+  documentName?: string; // original file name, for the download link
   quiz?: Quiz;
 }
 

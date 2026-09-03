@@ -9,6 +9,7 @@
 import { useMemo, useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui";
+import { supabase } from "@/lib/supabase";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import {
   DEPARTMENT_LABEL,
@@ -23,18 +24,36 @@ const DEPARTMENTS: Department[] = ["NFPA_70E", "NFPA_70B", "ONBOARDING", "OTHER"
 
 const COVER_EMOJI = ["⚡", "🔧", "🎓", "🔌", "📘", "🧰", "🛡️", "🔬", "📐", "🏗️"];
 
+/** Documents live in the public `documents` bucket under this prefix. */
+const DOC_BUCKET = "documents";
+const DOC_PREFIX = "ampu-documents";
+const DOC_ACCEPT = ".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+const DOC_MAX_BYTES = 25 * 1024 * 1024;
+
+type LessonKind = "VIDEO" | "DOCUMENT";
+
 interface LessonDraft {
   key: string;
+  kind: LessonKind;
   title: string;
   source: string; // YouTube link/id or a direct media URL
   minutes: string;
+  docUrl: string; // public URL once uploaded
+  docName: string; // original file name
+  uploading: boolean;
+  uploadError: string | null;
 }
 
 const emptyLesson = (): LessonDraft => ({
   key: crypto.randomUUID(),
+  kind: "VIDEO",
   title: "",
   source: "",
   minutes: "",
+  docUrl: "",
+  docName: "",
+  uploading: false,
+  uploadError: null,
 });
 
 const fieldClass =
@@ -114,12 +133,63 @@ export default function NewUnitDialog({
       prev.map((l) => (l.key === key ? { ...l, ...patch } : l)),
     );
 
+  const uploadDocument = async (key: string, file: File) => {
+    if (file.size > DOC_MAX_BYTES) {
+      updateLesson(key, { uploadError: "File is larger than 25 MB." });
+      return;
+    }
+    updateLesson(key, { uploading: true, uploadError: null });
+    try {
+      const ext = file.name.split(".").pop() || "pdf";
+      const path = `${DOC_PREFIX}/${Date.now()}_${Math.random()
+        .toString(36)
+        .slice(2, 10)}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from(DOC_BUCKET)
+        .upload(path, file, { cacheControl: "3600", upsert: false });
+      if (upErr) throw upErr;
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from(DOC_BUCKET).getPublicUrl(path);
+      const current = lessons.find((l) => l.key === key);
+      const patch: Partial<LessonDraft> = {
+        docUrl: publicUrl,
+        docName: file.name,
+        uploading: false,
+      };
+      if (!current?.title.trim()) {
+        patch.title = file.name.replace(/\.[^.]+$/, "");
+      }
+      updateLesson(key, patch);
+    } catch (e) {
+      updateLesson(key, {
+        uploading: false,
+        uploadError:
+          e instanceof Error ? e.message : "Upload failed. Try again.",
+      });
+    }
+  };
+
   const validLessons = (): NewLessonInput[] | string => {
     const out: NewLessonInput[] = [];
     for (const [i, draft] of lessons.entries()) {
-      const hasAnything = draft.title.trim() || draft.source.trim();
+      const hasAnything =
+        draft.title.trim() || draft.source.trim() || draft.docUrl;
       if (!hasAnything) continue; // an untouched row is just left blank
       if (!draft.title.trim()) return `Lesson ${i + 1} needs a title.`;
+
+      if (draft.kind === "DOCUMENT") {
+        if (draft.uploading) return `Lesson ${i + 1} is still uploading.`;
+        if (!draft.docUrl) return `Lesson ${i + 1} needs a PDF or Word file.`;
+        out.push({
+          title: draft.title,
+          type: "DOCUMENT",
+          documentUrl: draft.docUrl,
+          documentName: draft.docName || undefined,
+        });
+        continue;
+      }
+
       const source = toVideoSource(draft.source);
       if (!source) {
         return `Lesson ${i + 1} needs a YouTube link or a direct video URL.`;
@@ -135,7 +205,7 @@ export default function NewUnitDialog({
         ...source,
       });
     }
-    if (out.length === 0) return "Add at least one video lesson.";
+    if (out.length === 0) return "Add at least one lecture or document.";
     return out;
   };
 
@@ -189,7 +259,8 @@ export default function NewUnitDialog({
       <div className="max-h-[70vh] space-y-6 overflow-y-auto px-1">
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
           Publishing adds the unit to the course catalog for every employee.
-          Video lessons today; the exam can be attached later.
+          Attach video lectures and PDF/Word documents now; the exam can be
+          added later.
         </p>
 
         {/* --- Catalog entry ------------------------------------------- */}
@@ -295,7 +366,7 @@ export default function NewUnitDialog({
         {/* --- Lessons -------------------------------------------------- */}
         <section className="space-y-3">
           <h4 className="border-b border-neutral-200 pb-1 font-serif text-base font-semibold text-neutral-900 dark:border-neutral-800 dark:text-white">
-            Lectures
+            Coursework
           </h4>
           {lessons.map((lesson, i) => (
             <div
@@ -304,67 +375,148 @@ export default function NewUnitDialog({
             >
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
-                  Lecture {i + 1}
+                  {lesson.kind === "DOCUMENT" ? "Reading" : "Lecture"} {i + 1}
                 </span>
-                {lessons.length > 1 && (
-                  <button
-                    onClick={() =>
-                      setLessons((prev) => prev.filter((l) => l.key !== lesson.key))
-                    }
-                    className="text-xs text-neutral-400 hover:text-red-600"
+                <div className="flex items-center gap-3">
+                  <div className="flex border border-neutral-300 dark:border-neutral-700">
+                    {(["VIDEO", "DOCUMENT"] as LessonKind[]).map((k) => (
+                      <button
+                        key={k}
+                        type="button"
+                        onClick={() => updateLesson(lesson.key, { kind: k })}
+                        className="px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.1em]"
+                        style={
+                          lesson.kind === k
+                            ? { backgroundColor: BRAND_COLOR, color: "#fff" }
+                            : undefined
+                        }
+                      >
+                        {k === "VIDEO" ? "Video" : "Document"}
+                      </button>
+                    ))}
+                  </div>
+                  {lessons.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLessons((prev) =>
+                          prev.filter((l) => l.key !== lesson.key),
+                        )
+                      }
+                      className="text-xs text-neutral-400 hover:text-red-600"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {lesson.kind === "DOCUMENT" ? (
+                <>
+                  <Field label="Reading title">
+                    <input
+                      value={lesson.title}
+                      onChange={(e) =>
+                        updateLesson(lesson.key, { title: e.target.value })
+                      }
+                      placeholder="NFPA 70E Article 130 — study packet"
+                      className={fieldClass}
+                    />
+                  </Field>
+                  <Field
+                    label="Document"
+                    hint="PDF or Word (.doc / .docx), up to 25 MB."
                   >
-                    Remove
-                  </button>
-                )}
-              </div>
-              <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-                <Field label="Lecture title">
-                  <input
-                    value={lesson.title}
-                    onChange={(e) =>
-                      updateLesson(lesson.key, { title: e.target.value })
-                    }
-                    placeholder="Reading a thermogram"
-                    className={fieldClass}
-                  />
-                </Field>
-                <Field label="Runtime (min)">
-                  <input
-                    type="number"
-                    min="0"
-                    value={lesson.minutes}
-                    onChange={(e) =>
-                      updateLesson(lesson.key, { minutes: e.target.value })
-                    }
-                    placeholder="30"
-                    className={`${fieldClass} sm:w-28`}
-                  />
-                </Field>
-              </div>
-              <Field
-                label="Video"
-                hint="A YouTube link or id, or a direct .mp4 URL."
-              >
-                <input
-                  value={lesson.source}
-                  onChange={(e) =>
-                    updateLesson(lesson.key, { source: e.target.value })
-                  }
-                  placeholder="https://www.youtube.com/watch?v=…"
-                  className={fieldClass}
-                />
-              </Field>
+                    <input
+                      type="file"
+                      accept={DOC_ACCEPT}
+                      disabled={lesson.uploading}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void uploadDocument(lesson.key, file);
+                        e.target.value = "";
+                      }}
+                      className={`${fieldClass} file:mr-3 file:border-0 file:bg-neutral-100 file:px-2 file:py-1 file:text-xs dark:file:bg-neutral-800 dark:file:text-neutral-200`}
+                    />
+                  </Field>
+                  {lesson.uploading && (
+                    <p className="text-xs text-neutral-500">Uploading…</p>
+                  )}
+                  {lesson.docUrl && !lesson.uploading && (
+                    <p className="text-xs text-green-700 dark:text-green-400">
+                      ✓ {lesson.docName}
+                    </p>
+                  )}
+                  {lesson.uploadError && (
+                    <p className="text-xs text-red-600">{lesson.uploadError}</p>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+                    <Field label="Lecture title">
+                      <input
+                        value={lesson.title}
+                        onChange={(e) =>
+                          updateLesson(lesson.key, { title: e.target.value })
+                        }
+                        placeholder="Reading a thermogram"
+                        className={fieldClass}
+                      />
+                    </Field>
+                    <Field label="Runtime (min)">
+                      <input
+                        type="number"
+                        min="0"
+                        value={lesson.minutes}
+                        onChange={(e) =>
+                          updateLesson(lesson.key, { minutes: e.target.value })
+                        }
+                        placeholder="30"
+                        className={`${fieldClass} sm:w-28`}
+                      />
+                    </Field>
+                  </div>
+                  <Field
+                    label="Video"
+                    hint="A YouTube link or id, or a direct .mp4 URL."
+                  >
+                    <input
+                      value={lesson.source}
+                      onChange={(e) =>
+                        updateLesson(lesson.key, { source: e.target.value })
+                      }
+                      placeholder="https://www.youtube.com/watch?v=…"
+                      className={fieldClass}
+                    />
+                  </Field>
+                </>
+              )}
             </div>
           ))}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setLessons((prev) => [...prev, emptyLesson()])}
-          >
-            + Add another lecture
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLessons((prev) => [...prev, emptyLesson()])}
+            >
+              + Add lecture
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setLessons((prev) => [
+                  ...prev,
+                  { ...emptyLesson(), kind: "DOCUMENT" },
+                ])
+              }
+            >
+              + Add document
+            </Button>
+          </div>
           <p className="text-xs text-neutral-400">
-            Exams are authored separately — publish the lectures now and attach
+            Exams are authored separately — publish the coursework now and attach
             the exam when it's written.
           </p>
         </section>

@@ -176,11 +176,17 @@ function nextIncompleteIndex(progress: ProgressState, course: Course): number {
   return i === -1 ? course.lessons.length - 1 : i;
 }
 
-/** Lectures are numbered; exams are named for what they are. */
+/** Lectures and readings are numbered; exams are named for what they are. */
 function lessonLabel(course: Course, index: number): string {
   const lesson = course.lessons[index];
   if (lesson.type === "QUIZ") {
     return course.isRequired ? "Certification Exam" : "Final Examination";
+  }
+  if (lesson.type === "DOCUMENT") {
+    const readingNumber = course.lessons
+      .slice(0, index + 1)
+      .filter((l) => l.type === "DOCUMENT").length;
+    return `Reading ${readingNumber}`;
   }
   const lectureNumber =
     course.lessons.slice(0, index + 1).filter((l) => l.type === "VIDEO").length;
@@ -1124,6 +1130,7 @@ function CourseDetail({
   const certifiedAt = progress.courseCertifiedAt[course.id];
   const continueIndex = nextIncompleteIndex(progress, course);
   const lectures = course.lessons.filter((l) => l.type === "VIDEO").length;
+  const readings = course.lessons.filter((l) => l.type === "DOCUMENT").length;
   const exams = course.lessons.filter((l) => l.type === "QUIZ").length;
 
   const withdraw = async () => {
@@ -1188,6 +1195,10 @@ function CourseDetail({
               <CourseFact
                 term="Format"
                 value={`${lectures} lecture${lectures === 1 ? "" : "s"}${
+                  readings > 0
+                    ? ` · ${readings} reading${readings === 1 ? "" : "s"}`
+                    : ""
+                }${
                   exams > 0 ? ` · ${exams} exam${exams === 1 ? "" : "s"}` : ""
                 }`}
               />
@@ -1237,7 +1248,9 @@ function CourseDetail({
                             ? "🔒"
                             : lesson.type === "QUIZ"
                               ? "📝"
-                              : "▶️"}
+                              : lesson.type === "DOCUMENT"
+                                ? "📄"
+                                : "▶️"}
                       </span>
                       <div className="flex-1">
                         <p className="text-[10px] uppercase tracking-[0.14em] text-neutral-400">
@@ -1249,7 +1262,9 @@ function CourseDetail({
                         <p className="text-xs text-neutral-500 dark:text-neutral-400">
                           {lesson.type === "QUIZ"
                             ? `${lesson.quiz?.questions.length} questions · pass at ${lesson.quiz?.passingScorePercent}%`
-                            : `Video · ${formatRuntime(lesson.durationSeconds)}`}
+                            : lesson.type === "DOCUMENT"
+                              ? `Document${lesson.documentName ? ` · ${lesson.documentName}` : ""}`
+                              : `Video · ${formatRuntime(lesson.durationSeconds)}`}
                         </p>
                       </div>
                       <span className="text-xs font-medium capitalize text-neutral-400">
@@ -1379,6 +1394,19 @@ function LessonView({
                 : onBackToCourse
             }
           />
+        ) : lesson.type === "DOCUMENT" ? (
+          <DocumentLesson
+            key={lesson.id}
+            lesson={lesson}
+            eyebrow={lessonLabel(course, index)}
+            completed={lessonStatus(progress, lesson) === "completed"}
+            onMarkComplete={() => onMarkComplete(lesson.id)}
+            onNext={
+              index < course.lessons.length - 1
+                ? () => onOpenLesson(course.lessons[index + 1].id)
+                : onBackToCourse
+            }
+          />
         ) : (
           <QuizLesson
             key={lesson.id}
@@ -1429,7 +1457,9 @@ function LessonView({
                             ? "🔒"
                             : l.type === "QUIZ"
                               ? "📝"
-                              : "▶️"}
+                              : l.type === "DOCUMENT"
+                                ? "📄"
+                                : "▶️"}
                       </span>
                       <span className="flex-1">
                         <span className="block text-[10px] uppercase tracking-[0.12em] text-neutral-400">
@@ -1448,6 +1478,95 @@ function LessonView({
         </Card>
       </aside>
     </div>
+  );
+}
+
+/* ----------------------- Assigned document ------------------------ */
+
+/**
+ * A reading assignment: a PDF or Word document the registrar attached to the
+ * unit. PDFs preview inline; Word files (which browsers can't render) show a
+ * download card. Either way the learner opens it and marks it read — there's no
+ * scroll tracking, so completion is on the honor system, the same as a lecture's
+ * "I've finished this".
+ */
+function DocumentLesson({
+  lesson,
+  eyebrow,
+  completed,
+  onMarkComplete,
+  onNext,
+}: {
+  lesson: Lesson;
+  eyebrow: string;
+  completed: boolean;
+  onMarkComplete: () => void;
+  onNext: () => void;
+}) {
+  const url = lesson.documentUrl ?? "";
+  const name = lesson.documentName ?? "document";
+  const isPdf = /\.pdf($|\?)/i.test(url) || /\.pdf$/i.test(name);
+  const [opened, setOpened] = useState(completed);
+
+  return (
+    <Card>
+      <CardContent className="pt-6">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-400">
+          {eyebrow}
+        </p>
+        <h2 className="mb-3 font-serif text-2xl font-bold text-neutral-900 dark:text-white">
+          {lesson.title}
+        </h2>
+
+        {isPdf ? (
+          <iframe
+            title={lesson.title}
+            src={url}
+            className="h-[70vh] w-full rounded-none border border-neutral-200 bg-white dark:border-neutral-800"
+            onLoad={() => setOpened(true)}
+          />
+        ) : (
+          <div className="flex flex-col items-center gap-3 border border-neutral-200 bg-neutral-50 px-6 py-10 text-center dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="text-4xl">📄</div>
+            <p className="text-sm text-neutral-600 dark:text-neutral-300">
+              {name}
+            </p>
+            <p className="text-xs text-neutral-500">
+              This document opens in a new tab.
+            </p>
+          </div>
+        )}
+
+        <div className="mt-4 flex items-center justify-between">
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setOpened(true)}
+            className="text-xs font-medium text-brand hover:underline"
+          >
+            Open {name} in a new tab ↗
+          </a>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={onMarkComplete}
+              disabled={(!opened && !completed) || completed}
+              title={
+                opened || completed
+                  ? "Mark this reading complete"
+                  : "Open the document first"
+              }
+            >
+              {completed ? "Completed ✓" : "I've read this"}
+            </Button>
+            <Button onClick={onNext} disabled={!opened && !completed}>
+              Next →
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

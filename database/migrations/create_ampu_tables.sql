@@ -47,23 +47,27 @@ CREATE TABLE IF NOT EXISTS common.ampu_courses (
   updated_at                 TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- ── Lessons (video today; QUIZ rows carry their questions in `quiz`) ───────────
+-- ── Lessons (VIDEO / DOCUMENT; QUIZ rows carry their questions in `quiz`) ──────
 CREATE TABLE IF NOT EXISTS common.ampu_lessons (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   course_id        UUID NOT NULL REFERENCES common.ampu_courses(id) ON DELETE CASCADE,
   title            TEXT NOT NULL,
-  lesson_type      TEXT NOT NULL DEFAULT 'VIDEO' CHECK (lesson_type IN ('VIDEO', 'QUIZ')),
+  lesson_type      TEXT NOT NULL DEFAULT 'VIDEO' CHECK (lesson_type IN ('VIDEO', 'QUIZ', 'DOCUMENT')),
   duration_seconds INTEGER,
   video_url        TEXT,        -- direct file URL, played by <video>
   youtube_id       TEXT,        -- YouTube id, played by the IFrame API
+  document_url     TEXT,        -- public URL of an assigned PDF / Word doc
+  document_name    TEXT,        -- original file name, shown on the download link
   quiz             JSONB,       -- { title, passingScorePercent, revealAnswersOnFail, questions[] }
   sort_order       INTEGER NOT NULL DEFAULT 0,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-  -- A video lesson needs somewhere to play from; a quiz lesson needs questions.
+  -- A video lesson needs somewhere to play from; a document lesson needs a file;
+  -- a quiz lesson needs questions.
   CONSTRAINT ampu_lessons_payload_present CHECK (
     (lesson_type = 'VIDEO' AND (video_url IS NOT NULL OR youtube_id IS NOT NULL))
+    OR (lesson_type = 'DOCUMENT' AND document_url IS NOT NULL)
     OR (lesson_type = 'QUIZ' AND quiz IS NOT NULL)
   )
 );
@@ -136,7 +140,7 @@ GRANT EXECUTE ON FUNCTION common.is_ampu_registrar() TO authenticated;
 COMMENT ON TABLE common.ampu_courses IS
   'AMPu training catalog. One row per unit/course; lessons live in common.ampu_lessons.';
 COMMENT ON TABLE common.ampu_lessons IS
-  'AMPu lessons. VIDEO rows carry video_url or youtube_id; QUIZ rows carry their questions in the quiz JSONB.';
+  'AMPu lessons. VIDEO rows carry video_url or youtube_id; DOCUMENT rows carry document_url (a PDF/Word file); QUIZ rows carry their questions in the quiz JSONB.';
 
 -- ══════════════════════════════════════════════════════════════════════════════
 -- Learner progress + leaderboard

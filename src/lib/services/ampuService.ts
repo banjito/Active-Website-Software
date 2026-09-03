@@ -36,10 +36,12 @@ export interface CatalogResult {
 
 export interface NewLessonInput {
   title: string;
-  type?: 'VIDEO' | 'QUIZ';
+  type?: 'VIDEO' | 'QUIZ' | 'DOCUMENT';
   durationSeconds?: number;
   videoUrl?: string;
   youtubeId?: string;
+  documentUrl?: string;
+  documentName?: string;
   quiz?: Quiz;
 }
 
@@ -78,10 +80,12 @@ interface LessonRow {
   id: string;
   course_id: string;
   title: string;
-  lesson_type: 'VIDEO' | 'QUIZ';
+  lesson_type: 'VIDEO' | 'QUIZ' | 'DOCUMENT';
   duration_seconds: number | null;
   video_url: string | null;
   youtube_id: string | null;
+  document_url: string | null;
+  document_name: string | null;
   quiz: Quiz | null;
   sort_order: number;
 }
@@ -105,6 +109,8 @@ function toLesson(row: LessonRow): Lesson {
     durationSeconds: row.duration_seconds ?? undefined,
     videoUrl: row.video_url ?? undefined,
     youtubeId: row.youtube_id ?? undefined,
+    documentUrl: row.document_url ?? undefined,
+    documentName: row.document_name ?? undefined,
     quiz: row.quiz ?? undefined,
   };
 }
@@ -168,7 +174,7 @@ export async function fetchCatalog(seed: Course[]): Promise<CatalogResult> {
   const { data: lessonRows, error: lessonError } = await supabase
     .schema(SCHEMA)
     .from(LESSONS)
-    .select('id, course_id, title, lesson_type, duration_seconds, video_url, youtube_id, quiz, sort_order')
+    .select('id, course_id, title, lesson_type, duration_seconds, video_url, youtube_id, document_url, document_name, quiz, sort_order')
     .in('course_id', courses.map((c) => c.id))
     .order('sort_order', { ascending: true });
 
@@ -233,6 +239,8 @@ export async function createCourse(input: NewCourseInput): Promise<Course> {
     duration_seconds: lesson.durationSeconds ?? null,
     video_url: lesson.videoUrl ?? null,
     youtube_id: lesson.youtubeId ?? null,
+    document_url: lesson.documentUrl ?? null,
+    document_name: lesson.documentName ?? null,
     quiz: lesson.quiz ?? null,
     sort_order: index,
   }));
@@ -288,6 +296,8 @@ export async function addLesson(
     duration_seconds: input.durationSeconds ?? null,
     video_url: input.videoUrl ?? null,
     youtube_id: input.youtubeId ?? null,
+    document_url: input.documentUrl ?? null,
+    document_name: input.documentName ?? null,
     quiz: input.quiz ?? null,
     sort_order: ((existing?.[0]?.sort_order as number | undefined) ?? -1) + 1,
   };
@@ -340,6 +350,8 @@ export async function publishSeedCatalog(seed: Course[]): Promise<Course[]> {
           durationSeconds: lesson.durationSeconds,
           videoUrl: lesson.videoUrl,
           youtubeId: lesson.youtubeId,
+          documentUrl: lesson.documentUrl,
+          documentName: lesson.documentName,
           quiz: lesson.quiz,
         })),
       }),

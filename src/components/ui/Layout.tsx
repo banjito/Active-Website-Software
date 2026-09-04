@@ -23,15 +23,23 @@ import {
   Link2,
   Droplet,
   FileSpreadsheet,
+  Plus,
 } from "lucide-react";
 import { Button } from "./Button";
 import { AssignDivisionLeadPopover } from "./AssignDivisionLeadPopover";
+import { NewDivisionPopover } from "./NewDivisionPopover";
 import { isSuperUser } from "@/lib/roles";
 import {
   fetchDivisionLeads,
   leadTitleFor,
   type DivisionLeads,
 } from "@/services/divisionLeadsService";
+import {
+  BUILTIN_FIELD_TECH_DIVISIONS,
+  divisionPath,
+  fetchFieldTechDivisions,
+  type Division,
+} from "@/services/divisionsService";
 import { ThemeToggle } from "../theme/theme-toggle";
 import { SettingsSubmenu } from "./SettingsSubmenu";
 import { EmployeeLinksSubmenu } from "./EmployeeLinksSubmenu";
@@ -103,6 +111,25 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   useEffect(() => {
     refreshDivisionLeads();
   }, [refreshDivisionLeads]);
+
+  // The division switcher reads common.divisions so an admin can add one without
+  // a migration. Seeded with the built-in list, so the sidebar renders the same
+  // six entries on the first paint and on an instance that never ran the
+  // divisions migration.
+  const [fieldTechDivisions, setFieldTechDivisions] = useState<Division[]>(
+    BUILTIN_FIELD_TECH_DIVISIONS,
+  );
+  const [newDivisionAnchor, setNewDivisionAnchor] = useState<DOMRect | null>(
+    null,
+  );
+
+  const refreshDivisions = React.useCallback(() => {
+    void fetchFieldTechDivisions().then(setFieldTechDivisions);
+  }, []);
+
+  useEffect(() => {
+    refreshDivisions();
+  }, [refreshDivisions]);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isFieldTech = division === "field_tech";
@@ -575,19 +602,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     const isGlobalPortal = location.pathname === "/all-jobs" || useGlobalJobs;
 
     // Field Technician Portal + its per-city views share a city switcher so users
-    // can drill from the combined view into a single city and back.
-    const fieldTechCities = [
-      { id: "field_tech", label: "Field Tech (All)", path: "/field-tech" },
-      { id: "north_alabama", label: "Decatur", path: "/north_alabama/jobs" },
-      { id: "tennessee", label: "Nashville", path: "/tennessee/jobs" },
-      { id: "georgia", label: "Atlanta", path: "/georgia/jobs" },
-      { id: "virginia", label: "Virginia", path: "/virginia/jobs" },
-      {
-        id: "international",
-        label: "International",
-        path: "/international/jobs",
-      },
-    ];
+    // can drill from the combined view into a single city and back. The list
+    // comes from common.divisions; routes are already generic (/:division/jobs),
+    // so a division added here needs no routing work.
+    const fieldTechCities = fieldTechDivisions.map((d) => ({
+      id: d.id,
+      label: d.label,
+      path: divisionPath(d.id),
+    }));
     const showCitySwitcher = fieldTechCities.some((c) => c.id === division);
     const canAssignDivisionLead =
       user?.user_metadata?.role === "Admin" ||
@@ -665,6 +687,22 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </div>
                 );
               })}
+
+              {canAssignDivisionLead && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    // Read the rect before the updater runs: currentTarget is
+                    // cleared once the handler returns.
+                    const anchor = e.currentTarget.getBoundingClientRect();
+                    setNewDivisionAnchor((prev) => (prev ? null : anchor));
+                  }}
+                  className="my-0.5 flex items-center gap-1.5 pl-3 py-2 text-left text-sm font-medium text-black/50 transition-transform duration-200 ease-out hover:translate-x-1 hover:text-black dark:text-dark-400 dark:hover:text-dark-900"
+                >
+                  <Plus className="h-4 w-4" />
+                  New Division
+                </button>
+              )}
             </div>
             <div className="my-3 border-b border-black/10 dark:border-dark-300" />
           </div>
@@ -1222,6 +1260,18 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           current={divisionLeads[leadPopoverFor.id] ?? null}
           onClose={() => setLeadPopoverFor(null)}
           onSaved={refreshDivisionLeads}
+        />
+      )}
+
+      {newDivisionAnchor && (
+        <NewDivisionPopover
+          anchor={newDivisionAnchor}
+          onClose={() => setNewDivisionAnchor(null)}
+          onCreated={(created) => {
+            refreshDivisions();
+            setDivision(created.id);
+            navigate(divisionPath(created.id));
+          }}
         />
       )}
 

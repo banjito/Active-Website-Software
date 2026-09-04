@@ -16,6 +16,7 @@ import { ReportHeader } from "./common/ReportHeader";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
 import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
+import { openPendingReportTab } from "./common/openReportTab";
 import {
   useIdentifierRenameGuard,
   type ReportIdentity,
@@ -1223,6 +1224,10 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
       return;
     }
 
+    // Claim the tab the copy will open in while the click is still fresh; the
+    // saves below take long enough that a later window.open reads as a popup.
+    const copyTab = openPendingReportTab();
+
     try {
       setIsSaving(true);
       if (autoSaveTimerRef.current) {
@@ -1392,26 +1397,12 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
         user.id,
       );
 
-      // Switch the form over to the copy. The ref moves in the same breath as
-      // the id, so an auto-save landing right now cannot write the finished
-      // report's readings into the blank one.
-      reportIdRef.current = copyReportId;
-      formDataRef.current = newFormData;
-      assetLinkedRef.current = true;
-      locallyCreatedIdRef.current = copyReportId;
-      setCurrentReportId(copyReportId);
-      setFormData(newFormData);
-      setIsEditing(true);
-      // The copy carries no equipment name yet, so the rename guard has no
-      // earlier unit to protect. Without this it would still be armed with the
-      // finished report's name and challenge the first name typed here.
-      setLoadedIdentity(null);
-      markLoaded({ identifier: "" });
-      markSaved();
-      navigate(`/jobs/${jobId}/${reportSlug}/${copyReportId}`, {
-        replace: true,
-      });
+      // The copy opens in its own tab. This one is deliberately left on the
+      // finished report so it can go on serving as the template, which also
+      // means neither the refs nor the rename guard here may move to the copy.
+      copyTab.go(`/jobs/${jobId}/${reportSlug}/${copyReportId}`);
     } catch (error: any) {
+      copyTab.cancel();
       console.error("Error creating new panelboard report:", error);
       alert(
         `Failed to create new report: ${error?.message || "Unknown error"}`,
@@ -1422,11 +1413,8 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
   }, [
     formData,
     jobId,
-    markLoaded,
-    markSaved,
     maskCustomerAddress,
     maskCustomerName,
-    navigate,
     persistReport,
     reportSlug,
     user?.id,
@@ -2998,7 +2986,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
             disabled={isSaving}
             className="px-6 py-3 text-base font-medium text-white bg-green-600 rounded-none hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Copy Nameplate data to new report
+            Copy Nameplate data to new report (opens in a new tab)
           </button>
         </div>
       )}

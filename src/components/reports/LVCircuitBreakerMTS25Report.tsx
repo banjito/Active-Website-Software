@@ -12,6 +12,7 @@ import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
 import { ensureReportAssetLink } from "./linkReportAsset";
 import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
+import { openPendingReportTab } from "./common/openReportTab";
 import { ReportWrapper } from "./ReportWrapper";
 import { ReportHeader } from "./common/ReportHeader";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
@@ -1202,10 +1203,14 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
       return;
     }
 
+    // Claim the tab the copy will open in while the click is still fresh; the
+    // saves below take long enough that a later window.open reads as a popup.
+    const copyTab = openPendingReportTab();
+
     try {
       // Finish the report on screen first, through the same one-row-per-report
       // save the rest of the form uses. It also attaches the report we are
-      // leaving to the job, which matters because we navigate away next.
+      // leaving to the job, which this tab stays on as a template.
       if (!(await persistReport())) {
         throw new Error("Failed to save current report.");
       }
@@ -1375,25 +1380,18 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
         );
       }
 
-      // Switch the form over to the copy. The refs move in the same breath as
-      // the id, so an auto-save landing right now cannot write the finished
-      // breaker's readings into the blank one.
-      reportIdRef.current = copyReportId;
-      formDataRef.current = newReportData;
-      assetLinkedRef.current = true;
-      isAutoSaveCreatedRef.current = true;
-
-      // Open the new report so user can start the next one immediately
-      navigate(`/jobs/${jobId}/${reportSlug}/${copyReportId}`, {
-        replace: true,
-      });
+      // The copy opens in its own tab. This one is deliberately left on the
+      // finished breaker so it can go on serving as the template, which also
+      // means none of the refs here may move to the copy's id.
+      copyTab.go(`/jobs/${jobId}/${reportSlug}/${copyReportId}`);
     } catch (err) {
+      copyTab.cancel();
       console.error("Error creating new report:", err);
       alert(
         `Failed to create new report: ${err instanceof Error ? err.message : "Unknown error"}`,
       );
     }
-  }, [formData, jobId, isEditing, user, navigate, persistReport, reportSlug]);
+  }, [formData, jobId, isEditing, user, persistReport, reportSlug]);
 
   // Handle form changes with nested path support
   const handleChange = (path: string, value: any) => {
@@ -4770,7 +4768,7 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
             onClick={copyNameplateDataToNewReport}
             className="px-6 py-3 text-base font-medium text-white bg-green-600 rounded-none hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           >
-            Copy Nameplate data to new report
+            Copy Nameplate data to new report (opens in a new tab)
           </button>
         </div>
       )}

@@ -65,6 +65,10 @@ import CopyEstimateToOpportunityModal, {
 import type { EstimatingScopeLibraryItem } from "../../services/estimatingScopeLibraryService";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import {
+  planRedistribution,
+  sectionSpan,
+} from "@/lib/estimateRedistribution";
+import {
   PAYMENT_TERM_OPTIONS,
   formatAllowedTerms,
   hasPaymentTermRestriction,
@@ -660,6 +664,111 @@ function computeMobilizationFactor(
   return factors.base;
 }
 
+/**
+ * Mobilization dollars for one scope. An explicit override wins over the tier
+ * table: when a pricing group is split, the pieces have to add back up to the
+ * original mobilization, and the tiers plus their rounding will not do that on
+ * their own. Set by redistribution, or by hand on the estimate.
+ */
+function resolveMobilizationAmount(
+  finalValue: number,
+  factors: { base: number; over100k: number; over500k: number; over1m: number },
+  source?: { mobilizationOverride?: boolean; mobilizationValue?: any } | null,
+) {
+  if (source?.mobilizationOverride) {
+    const overridden = Number(source.mobilizationValue);
+    return Number.isFinite(overridden) && overridden > 0
+      ? Math.round(overridden)
+      : 0;
+  }
+  return Math.ceil(finalValue * computeMobilizationFactor(finalValue, factors));
+}
+
+/**
+ * Travel non-labor dollars for one scope. A split allocates travel as an
+ * amount rather than as trips, because trips and flights don't divide: you
+ * either make the drive or you don't. When a scope carries an allocated
+ * amount it wins over whatever its own travel inputs would compute.
+ */
+function resolveTravelNonLaborCost(
+  travelData: any,
+  source?: {
+    travelNonLaborOverride?: boolean;
+    travelNonLaborValue?: any;
+  } | null,
+) {
+  if (source?.travelNonLaborOverride) {
+    const allocated = Number(source.travelNonLaborValue);
+    return Number.isFinite(allocated) && allocated > 0 ? allocated : 0;
+  }
+  try {
+    const sum = computeTravelTotals(travelData || {}).nonLaborCost;
+    return Number.isFinite(sum) ? sum : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * FINAL, mobilization and the overhead figures for a saved estimate snapshot.
+ * Mirrors the combined-letter pricing math so a redistribution preview shows
+ * the same numbers the proposal will print.
+ */
+function summarizeEstimateSnapshot(
+  parsedData: any,
+  travelData: any,
+  materialMarkupValue: number,
+) {
+  const rates = getHourlyRatesForCombinedScope(parsedData);
+  const factors = getMobilizationFactorsForCombinedScope(parsedData);
+  const netTerms = !!parsedData?.netTermsOnly;
+  const tax = netTerms ? 1.0 : 1.09;
+  const divisor = netTerms ? 1.0 : 0.96;
+
+  const cv = parsedData?.calculatedValues || {};
+  const hs = parsedData?.hoursSummary || {};
+
+  const matExpBase =
+    (cv.totalMaterial || 0) * tax * materialMarkupValue +
+    (cv.totalExpense || 0) * tax +
+    (cv.nonSovExpense || 0) * 1.0;
+  const workLabor =
+    (hs.straightTimeHours || 0) * rates.straightTime +
+    (hs.overtimeHours || 0) * rates.overtime +
+    (hs.doubleTimeHours || 0) * rates.doubleTime;
+  const travelLabor =
+    (hs.travelStraightTimeHours || 0) * rates.straightTime +
+    (hs.travelOvertimeHours || 0) * rates.overtime +
+    (hs.travelDoubleTimeHours || 0) * rates.doubleTime;
+  const travelNonLabor = Math.max(
+    0,
+    resolveTravelNonLaborCost(travelData, parsedData),
+  );
+
+  const manual = parsedData?.manualPriceOverride
+    ? Math.max(0, Number(parsedData.manualPriceValue) || 0)
+    : null;
+  const rawFinal =
+    manual != null
+      ? manual
+      : Math.ceil(
+          (matExpBase + workLabor + travelLabor + travelNonLabor) / divisor,
+        );
+  const finalValue = Number.isFinite(rawFinal) ? rawFinal : 0;
+
+  return {
+    finalValue,
+    mobilization: resolveMobilizationAmount(finalValue, factors, parsedData),
+    travelNonLabor,
+    workLabor,
+    travelLabor,
+    hoursSummary: hs,
+    rates,
+    factors,
+    isManualPrice: manual != null,
+  };
+}
+
 // Copy-to-clipboard buttons for symbols that are awkward to type (≥ / ≤).
 // Used in both the estimate sheet header and the letter proposal toolbar so
 // the symbol can be pasted anywhere as plain text.
@@ -893,6 +1002,18 @@ export default function EstimateSheet({
   const [manualPriceOverride, setManualPriceOverride] = useState<boolean>(false);
   const [manualPriceValue, setManualPriceValue] = useState<number>(0);
 
+  // Explicit mobilization amount. Set when a pricing group is split, so the
+  // pieces still sum to the mobilization the original scope quoted.
+  const [mobilizationOverride, setMobilizationOverride] =
+    useState<boolean>(false);
+  const [mobilizationValue, setMobilizationValue] = useState<number>(0);
+
+  // Travel non-labor dollars allocated to this scope by a split, in place of
+  // whatever its own trip inputs would compute.
+  const [travelNonLaborOverride, setTravelNonLaborOverride] =
+    useState<boolean>(false);
+  const [travelNonLaborValue, setTravelNonLaborValue] = useState<number>(0);
+
   // Mobilization factors state (threshold-based)
   // base: <= 100,000; over100k: > 100,000; over500k: > 500,000; over1m: > 1,000,000
   const [mobilizationFactors, setMobilizationFactors] = useState({
@@ -925,6 +1046,27 @@ export default function EstimateSheet({
   const [copyTargetQuoteId, setCopyTargetQuoteId] = useState<string>("");
   const [newCopyEstimateTitle, setNewCopyEstimateTitle] = useState<string>("");
   const [isCopyingSovItems, setIsCopyingSovItems] = useState<boolean>(false);
+
+  // Redistribution: move rows to another pricing group and carry overhead with
+  // them. "copy" is the original behavior and stays the default.
+  const [sovActionMode, setSovActionMode] = useState<"copy" | "move">("copy");
+  const [isRedistributing, setIsRedistributing] = useState<boolean>(false);
+  /** Per-stream share of the source going to the target, as 0-100 percentages.
+   *  Empty string means "follow the pro-rata split". */
+  const [splitOverrides, setSplitOverrides] = useState<{
+    travelNonLabor: string;
+    nonSov: string;
+    mobilization: string;
+  }>({ travelNonLabor: "", nonSov: "", mobilization: "" });
+  /** Enough to put both estimates back the way they were. */
+  const [lastRedistribution, setLastRedistribution] = useState<{
+    sourceId: string;
+    sourceData: string;
+    targetId: string;
+    targetData: string | null;
+    targetWasCreated: boolean;
+    label: string;
+  } | null>(null);
   const DEFAULT_ITEM_COL_WIDTH = 240;
   const MAX_ITEM_COL_WIDTH = 1200; // clamp so columns never render "really long" (e.g. Windows/cross-browser)
   const estimateColWidthKey = "estimateItemColWidth";
@@ -1254,6 +1396,10 @@ export default function EstimateSheet({
         // Restore manual price override if present in draft
         setManualPriceOverride(!!savedDraft.manualPriceOverride);
         setManualPriceValue(toNum(savedDraft.manualPriceValue));
+        setMobilizationOverride(!!savedDraft.mobilizationOverride);
+        setMobilizationValue(toNum(savedDraft.mobilizationValue));
+        setTravelNonLaborOverride(!!savedDraft.travelNonLaborOverride);
+        setTravelNonLaborValue(toNum(savedDraft.travelNonLaborValue));
 
         setDraftRestored(true);
       }
@@ -1274,6 +1420,10 @@ export default function EstimateSheet({
         netTermsOnly,
         manualPriceOverride,
         manualPriceValue,
+        mobilizationOverride,
+        mobilizationValue,
+        travelNonLaborOverride,
+        travelNonLaborValue,
       };
       // Save to Supabase (debounced by the service)
       updatePreference(`drafts.${draftKey}`, draftData);
@@ -1288,6 +1438,10 @@ export default function EstimateSheet({
     netTermsOnly,
     manualPriceOverride,
     manualPriceValue,
+    mobilizationOverride,
+    mobilizationValue,
+    travelNonLaborOverride,
+    travelNonLaborValue,
     isOpen,
     isNewQuote,
     opportunityId,
@@ -1745,6 +1899,10 @@ export default function EstimateSheet({
       // Restore manual price override (exact FINAL value)
       setManualPriceOverride(!!parsedData.manualPriceOverride);
       setManualPriceValue(toNum(parsedData.manualPriceValue));
+      setMobilizationOverride(!!parsedData.mobilizationOverride);
+      setMobilizationValue(toNum(parsedData.mobilizationValue));
+      setTravelNonLaborOverride(!!parsedData.travelNonLaborOverride);
+      setTravelNonLaborValue(toNum(parsedData.travelNonLaborValue));
 
       // Restore quantity for combined letter proposal (default 1)
       if (
@@ -1940,6 +2098,10 @@ export default function EstimateSheet({
       netTermsOnly: netTermsOnly,
       manualPriceOverride: manualPriceOverride,
       manualPriceValue: manualPriceValue,
+      mobilizationOverride: mobilizationOverride,
+      mobilizationValue: mobilizationValue,
+      travelNonLaborOverride: travelNonLaborOverride,
+      travelNonLaborValue: travelNonLaborValue,
     };
 
     // Debug: Log what's being saved
@@ -2890,15 +3052,470 @@ export default function EstimateSheet({
     }
   };
 
-  // Travel non-labor costs (vehicle, per diem, lodging, etc. — excludes travel labor which is now in the Labor Hours Tracking table)
-  const getTravelNonLaborCost = () => {
+  /** Selected rows, expanded so picking a section header takes its rows too. */
+  const getMovingSovIndexes = () => {
+    const expanded = new Set<number>();
+    selectedSovItemIndexes.forEach((index) => {
+      const item = data.sovItems[index];
+      if (item?.rowType === "section") {
+        sectionSpan(data.sovItems as any, index).forEach((i) =>
+          expanded.add(i),
+        );
+      } else {
+        expanded.add(index);
+      }
+    });
+    return Array.from(expanded).sort((a, b) => a - b);
+  };
+
+  const pctToShare = (raw: string): number | undefined => {
+    const trimmed = raw.trim();
+    if (trimmed === "") return undefined;
+    const value = Number(trimmed);
+    if (!Number.isFinite(value)) return undefined;
+    return Math.min(1, Math.max(0, value / 100));
+  };
+
+  /**
+   * Build the split without writing it. Returns the plan plus before/after
+   * figures for both groups, so the panel can show what applying would do.
+   */
+  const buildRedistributionPreview = () => {
+    const movingIndexes = getMovingSovIndexes();
+    if (movingIndexes.length === 0) return null;
+
+    const isNewTarget = copyTargetQuoteId === "__new__";
+    const targetQuote = quotes.find((q) => q.id === copyTargetQuoteId);
+    if (!isNewTarget && !targetQuote) return null;
+
+    const sourceFinal = getFinalValue();
+    const sourceMob = getMobilizationAmount(sourceFinal);
+    const hs = data.hoursSummary;
+
+    const plan = planRedistribution({
+      sourceSovItems: data.sovItems as any,
+      sourceNonSovItems: data.nonSovItems as any,
+      overheads: {
+        straightTimeHours: toNum(hs.straightTimeHours),
+        overtimeHours: toNum(hs.overtimeHours),
+        doubleTimeHours: toNum(hs.doubleTimeHours),
+        travelStraightTimeHours: toNum(hs.travelStraightTimeHours),
+        travelOvertimeHours: toNum(hs.travelOvertimeHours),
+        travelDoubleTimeHours: toNum(hs.travelDoubleTimeHours),
+        travelNonLaborCost: getTravelNonLaborCost(),
+        mobilization: sourceMob,
+      },
+      movingIndexes,
+      overrides: {
+        travelNonLabor: pctToShare(splitOverrides.travelNonLabor),
+        nonSov: pctToShare(splitOverrides.nonSov),
+        mobilization: pctToShare(splitOverrides.mobilization),
+      },
+    });
+
+    // The target keeps whatever it already had; the allocated slice adds to it.
+    const targetParsed = targetQuote ? parseQuoteData(targetQuote) : null;
+    let targetTravel: any = targetQuote?.travel_data ?? null;
+    if (typeof targetTravel === "string" && targetTravel.trim()) {
+      try {
+        targetTravel = JSON.parse(targetTravel);
+      } catch {
+        targetTravel = null;
+      }
+    }
+    const targetBefore = targetParsed
+      ? summarizeEstimateSnapshot(
+          targetParsed,
+          targetTravel,
+          toNum(materialMarkup),
+        )
+      : { finalValue: 0, mobilization: 0, travelNonLabor: 0 };
+
+    const sourceAfterData = buildRedistributedSnapshot({
+      baseData: data,
+      sovItems: plan.sourceSovItems,
+      nonSovItems: plan.sourceNonSovItems,
+      overheads: plan.sourceOverheads,
+      existingTravelNonLabor: 0,
+      existingMobilization: 0,
+      mergeWithExisting: false,
+      travelData,
+    });
+    const targetAfterData = buildRedistributedSnapshot({
+      baseData: targetParsed || buildNewTargetBase(),
+      sovItems: [
+        ...(targetParsed
+          ? trimTrailingEmptySovItems(
+              normalizeEstimateLineItems(
+                targetParsed.sovItems,
+                createDefaultLineItems(),
+              ),
+            )
+          : []),
+        ...plan.targetSovItems,
+      ],
+      nonSovItems: targetParsed
+        ? normalizeEstimateLineItems(
+            targetParsed.nonSovItems,
+            createDefaultNonSovItems(),
+          )
+        : plan.targetNonSovItems,
+      overheads: plan.targetOverheads,
+      // Existing target overhead is kept and added to, so the combined total
+      // across both groups does not move.
+      existingTravelNonLabor: targetBefore.travelNonLabor,
+      existingMobilization: targetBefore.mobilization,
+      mergeWithExisting: !!targetParsed,
+      // An existing target keeps its own non-SOV rows and gains the allocated
+      // slice as separate labeled rows, so where the cost came from stays
+      // readable. Non-SOV rows never print on the proposal.
+      extraNonSovItems: targetParsed
+        ? plan.targetNonSovItems
+            .filter((row: any) => row?.rowType !== "blank")
+            .map((row: any) => ({
+              ...row,
+              item: `${row.item || "Allocated"} (from split)`,
+            }))
+        : [],
+      travelData: targetTravel,
+    });
+
+    const sourceAfter = summarizeEstimateSnapshot(
+      sourceAfterData,
+      travelData,
+      toNum(materialMarkup),
+    );
+    const targetAfter = summarizeEstimateSnapshot(
+      targetAfterData,
+      targetTravel,
+      toNum(materialMarkup),
+    );
+
+    const before = sourceFinal + targetBefore.finalValue;
+    const after = sourceAfter.finalValue + targetAfter.finalValue;
+    const mobBefore = sourceMob + targetBefore.mobilization;
+    const mobAfter = sourceAfter.mobilization + targetAfter.mobilization;
+
+    return {
+      plan,
+      movingIndexes,
+      isNewTarget,
+      targetQuote,
+      sourceAfterData,
+      targetAfterData,
+      targetTravel,
+      figures: {
+        sourceBefore: sourceFinal,
+        sourceAfter: sourceAfter.finalValue,
+        targetBefore: targetBefore.finalValue,
+        targetAfter: targetAfter.finalValue,
+        mobSourceBefore: sourceMob,
+        mobSourceAfter: sourceAfter.mobilization,
+        mobTargetBefore: targetBefore.mobilization,
+        mobTargetAfter: targetAfter.mobilization,
+        totalBefore: before,
+        totalAfter: after,
+        totalDelta: after - before,
+        mobTotalBefore: mobBefore,
+        mobTotalAfter: mobAfter,
+        mobTotalDelta: mobAfter - mobBefore,
+      },
+    };
+  };
+
+  /** Shape of a brand-new pricing group created by a split. */
+  const buildNewTargetBase = () => ({
+    ...data,
+    title: newCopyEstimateTitle.trim() || `Split of ${data.title?.trim() || "Estimate"}`,
+    sovItems: [],
+    nonSovItems: createDefaultNonSovItems(),
+    manualPriceOverride: false,
+    manualPriceValue: 0,
+  });
+
+  /**
+   * Write a side of the split into an estimate snapshot. Hours and dollars are
+   * pinned rather than re-derived: overtime is bucketed per day, so recomputing
+   * after a split would move the total on its own.
+   */
+  function buildRedistributedSnapshot(args: {
+    baseData: any;
+    sovItems: any[];
+    nonSovItems: any[];
+    overheads: {
+      straightTimeHours: number;
+      overtimeHours: number;
+      doubleTimeHours: number;
+      travelStraightTimeHours: number;
+      travelOvertimeHours: number;
+      travelDoubleTimeHours: number;
+      travelNonLaborCost: number;
+      mobilization: number;
+    };
+    existingTravelNonLabor: number;
+    existingMobilization: number;
+    /** True when writing into an estimate that already has work of its own,
+     *  so its hours are kept and the allocated slice is added on top. */
+    mergeWithExisting: boolean;
+    extraNonSovItems?: any[];
+    travelData: any;
+  }) {
+    const {
+      baseData,
+      sovItems,
+      nonSovItems,
+      overheads,
+      existingTravelNonLabor,
+      existingMobilization,
+      mergeWithExisting,
+      extraNonSovItems,
+      travelData: sideTravel,
+    } = args;
+
+    const baseHours = baseData?.hoursSummary || {};
+    const add = (existing: any, allocated: number) =>
+      toNum(existing) + toNum(allocated);
+
+    const isExistingTarget = mergeWithExisting;
+
+    return recalculateEstimateSnapshot(
+      {
+        ...baseData,
+        sovItems,
+        nonSovItems: [...nonSovItems, ...(extraNonSovItems || [])],
+        isManualLaborHours: true,
+        isManualTravelLaborHours: true,
+        hoursSummary: {
+          ...baseHours,
+          straightTimeHours: isExistingTarget
+            ? add(baseHours.straightTimeHours, overheads.straightTimeHours)
+            : overheads.straightTimeHours,
+          overtimeHours: isExistingTarget
+            ? add(baseHours.overtimeHours, overheads.overtimeHours)
+            : overheads.overtimeHours,
+          doubleTimeHours: isExistingTarget
+            ? add(baseHours.doubleTimeHours, overheads.doubleTimeHours)
+            : overheads.doubleTimeHours,
+          travelStraightTimeHours: isExistingTarget
+            ? add(
+                baseHours.travelStraightTimeHours,
+                overheads.travelStraightTimeHours,
+              )
+            : overheads.travelStraightTimeHours,
+          travelOvertimeHours: isExistingTarget
+            ? add(baseHours.travelOvertimeHours, overheads.travelOvertimeHours)
+            : overheads.travelOvertimeHours,
+          travelDoubleTimeHours: isExistingTarget
+            ? add(
+                baseHours.travelDoubleTimeHours,
+                overheads.travelDoubleTimeHours,
+              )
+            : overheads.travelDoubleTimeHours,
+        },
+        travelNonLaborOverride: true,
+        travelNonLaborValue:
+          existingTravelNonLabor + overheads.travelNonLaborCost,
+        mobilizationOverride: true,
+        mobilizationValue: existingMobilization + overheads.mobilization,
+      },
+      sideTravel || undefined,
+    );
+  }
+
+  const handleRedistributeSovItems = async () => {
+    if (!user) return;
+    if (isNewQuote) {
+      alert("Save this estimate before splitting it.");
+      return;
+    }
+    const sourceQuote = quotes[selectedQuoteIndex];
+    if (!sourceQuote) return;
+
+    const preview = buildRedistributionPreview();
+    if (!preview) {
+      alert("Select at least one SOV line item and a destination.");
+      return;
+    }
+
+    const targetName = preview.isNewTarget
+      ? newCopyEstimateTitle.trim() || "New pricing group"
+      : getQuoteDisplayName(
+          preview.targetQuote!,
+          quotes.findIndex((q) => q.id === preview.targetQuote!.id),
+        );
+
+    const { figures, plan } = preview;
+    const warningText =
+      plan.warnings.length > 0 ? `\n\n${plan.warnings.join("\n")}` : "";
+    const driftText =
+      figures.totalDelta === 0
+        ? "Grand total is unchanged."
+        : `Grand total moves by ${formatCurrency(figures.totalDelta)}.`;
+
+    if (
+      !confirm(
+        `Move ${preview.movingIndexes.length} row(s) to "${targetName}"?\n\n` +
+          `This estimate: ${formatCurrency(figures.sourceBefore)} to ${formatCurrency(figures.sourceAfter)}\n` +
+          `${targetName}: ${formatCurrency(figures.targetBefore)} to ${formatCurrency(figures.targetAfter)}\n` +
+          `${driftText}${warningText}`,
+      )
+    ) {
+      return;
+    }
+
     try {
-      const sum = computeTravelTotals(travelData).nonLaborCost;
-      return Number.isFinite(sum) ? sum : 0;
-    } catch {
-      return 0;
+      setIsRedistributing(true);
+
+      const sourceDataBefore =
+        typeof sourceQuote.data === "string"
+          ? sourceQuote.data
+          : JSON.stringify(sourceQuote.data);
+
+      let targetId = preview.targetQuote?.id || "";
+      let targetDataBefore: string | null = null;
+
+      if (preview.isNewTarget) {
+        const { data: created, error } = await supabase
+          .schema("business")
+          .from("estimates")
+          .insert({
+            opportunity_id: opportunityId,
+            data: JSON.stringify(preview.targetAfterData),
+            travel_data: null,
+            quote_number: getNextQuoteNumber(),
+            user_id: user.id,
+            status: estimateStatus || null,
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        targetId = created.id;
+        setQuotes((prev) => [created, ...prev]);
+      } else {
+        targetDataBefore =
+          typeof preview.targetQuote!.data === "string"
+            ? preview.targetQuote!.data
+            : JSON.stringify(preview.targetQuote!.data);
+        const { data: updated, error } = await supabase
+          .schema("business")
+          .from("estimates")
+          .update({ data: JSON.stringify(preview.targetAfterData) })
+          .eq("id", targetId)
+          .select()
+          .single();
+        if (error) throw error;
+        setQuotes((prev) => prev.map((q) => (q.id === updated.id ? updated : q)));
+      }
+
+      const { data: updatedSource, error: sourceError } = await supabase
+        .schema("business")
+        .from("estimates")
+        .update({ data: JSON.stringify(preview.sourceAfterData) })
+        .eq("id", sourceQuote.id)
+        .select()
+        .single();
+      if (sourceError) throw sourceError;
+
+      setQuotes((prev) =>
+        prev.map((q) => (q.id === updatedSource.id ? updatedSource : q)),
+      );
+      setLastRedistribution({
+        sourceId: sourceQuote.id,
+        sourceData: sourceDataBefore,
+        targetId,
+        targetData: targetDataBefore,
+        targetWasCreated: preview.isNewTarget,
+        label: targetName,
+      });
+
+      setSelectedSovItemIndexes([]);
+      setCopyTargetQuoteId("");
+      setNewCopyEstimateTitle("");
+      setSplitOverrides({ travelNonLabor: "", nonSov: "", mobilization: "" });
+      loadQuoteData(updatedSource);
+
+      window.dispatchEvent(
+        new CustomEvent("estimateSaved", {
+          detail: { opportunityId, estimateId: updatedSource.id },
+        }),
+      );
+      alert(
+        `Split applied. Any saved letter proposal using these estimates is now out of date and should be regenerated.`,
+      );
+    } catch (error: any) {
+      console.error("Error redistributing SOV items:", error);
+      alert(`Failed to split: ${error.message || "Unknown error"}`);
+    } finally {
+      setIsRedistributing(false);
     }
   };
+
+  const handleUndoRedistribution = async () => {
+    if (!lastRedistribution) return;
+    if (!confirm(`Undo the split to "${lastRedistribution.label}"?`)) return;
+
+    try {
+      setIsRedistributing(true);
+
+      if (lastRedistribution.targetWasCreated) {
+        const { error } = await supabase
+          .schema("business")
+          .from("estimates")
+          .delete()
+          .eq("id", lastRedistribution.targetId);
+        if (error) throw error;
+        setQuotes((prev) =>
+          prev.filter((q) => q.id !== lastRedistribution.targetId),
+        );
+      } else if (lastRedistribution.targetData) {
+        const { data: restored, error } = await supabase
+          .schema("business")
+          .from("estimates")
+          .update({ data: lastRedistribution.targetData })
+          .eq("id", lastRedistribution.targetId)
+          .select()
+          .single();
+        if (error) throw error;
+        setQuotes((prev) =>
+          prev.map((q) => (q.id === restored.id ? restored : q)),
+        );
+      }
+
+      const { data: restoredSource, error: sourceError } = await supabase
+        .schema("business")
+        .from("estimates")
+        .update({ data: lastRedistribution.sourceData })
+        .eq("id", lastRedistribution.sourceId)
+        .select()
+        .single();
+      if (sourceError) throw sourceError;
+
+      setQuotes((prev) =>
+        prev.map((q) => (q.id === restoredSource.id ? restoredSource : q)),
+      );
+      loadQuoteData(restoredSource);
+      setLastRedistribution(null);
+
+      window.dispatchEvent(
+        new CustomEvent("estimateSaved", {
+          detail: { opportunityId, estimateId: restoredSource.id },
+        }),
+      );
+      alert("Split undone.");
+    } catch (error: any) {
+      console.error("Error undoing redistribution:", error);
+      alert(`Failed to undo: ${error.message || "Unknown error"}`);
+    } finally {
+      setIsRedistributing(false);
+    }
+  };
+
+  // Travel non-labor costs (vehicle, per diem, lodging, etc. — excludes travel labor which is now in the Labor Hours Tracking table)
+  const getTravelNonLaborCost = () =>
+    resolveTravelNonLaborCost(travelData, {
+      travelNonLaborOverride,
+      travelNonLaborValue,
+    });
 
   // Travel labor cost from the Labor Hours Tracking table
   const getTravelLaborCost = () => {
@@ -3011,7 +3628,7 @@ export default function EstimateSheet({
   // Plain-text version of the quote terms block, for pasting straight into a quote.
   const buildQuoteText = () => {
     const f = getFinalValue();
-    const mob = (v: number) => Math.ceil(v * getMobilizationFactor(v));
+    const mob = (v: number) => getMobilizationAmount(v);
     const termAmt = (v: number, factor: number) =>
       Math.ceil(v * factor) + mob(v);
     const lines: string[] = [];
@@ -5360,7 +5977,7 @@ export default function EstimateSheet({
       return source || {};
     })();
     const getParsedTravelNonLaborCost = () =>
-      computeTravelTotals(parsedTravel).nonLaborCost;
+      resolveTravelNonLaborCost(parsedTravel, parsedData);
     const hs = parsedData.hoursSummary || {};
     const matExpBase = getMaterialExpenseBaseParsed(parsedData);
     const travelNonLabor = getParsedTravelNonLaborCost();
@@ -5404,10 +6021,17 @@ export default function EstimateSheet({
           )
         : baseFinalValue;
     const sunFinalValue = sunBaseFinalValue * (singleLetterScopeQuantity || 1);
-    const mobilizationRaw = (() => {
-      const factor = getMobilizationFactor(finalValue);
-      return Math.ceil(finalValue * factor);
-    })();
+    // Read the override off this quote's own saved data, the same way the
+    // manual FINAL override is read above.
+    const parsedMobSource = {
+      mobilizationOverride: !!parsedData.mobilizationOverride,
+      mobilizationValue: parsedData.mobilizationValue,
+    };
+    const mobilizationRaw = resolveMobilizationAmount(
+      finalValue,
+      mobilizationFactors,
+      parsedMobSource,
+    );
     const mobilization = formatCurrency(mobilizationRaw);
     const showMobilizationInLetter =
       mobilizationRaw > 0 || includeMobilizationWhenZero;
@@ -5419,10 +6043,18 @@ export default function EstimateSheet({
 
     // Mobilization amounts per scenario
     const satMobRaw = hasSaturdayPricing
-      ? Math.ceil(satFinalValue * getMobilizationFactor(satFinalValue))
+      ? resolveMobilizationAmount(
+          satFinalValue,
+          mobilizationFactors,
+          parsedMobSource,
+        )
       : mobilizationRaw;
     const sunMobRaw = hasSundayPricing
-      ? Math.ceil(sunFinalValue * getMobilizationFactor(sunFinalValue))
+      ? resolveMobilizationAmount(
+          sunFinalValue,
+          mobilizationFactors,
+          parsedMobSource,
+        )
       : mobilizationRaw;
 
     // Determine which payment terms to render
@@ -5788,7 +6420,10 @@ export default function EstimateSheet({
         (hs.travelStraightTimeHours || 0) * quoteHourlyRates.straightTime +
         (hs.travelOvertimeHours || 0) * quoteHourlyRates.overtime +
         (hs.travelDoubleTimeHours || 0) * quoteHourlyRates.doubleTime;
-      const travelNonLabor = computeTravelTotals(parsedTravel).nonLaborCost;
+      const travelNonLabor = resolveTravelNonLaborCost(
+        parsedTravel,
+        parsedData,
+      );
       const travelNonLaborSafe = Math.max(0, travelNonLabor);
 
       const finalValue =
@@ -5841,6 +6476,12 @@ export default function EstimateSheet({
         hasSat,
         hasSun,
         scopeMobFactors,
+        // A split scope carries a fixed mobilization so the blocks still sum
+        // to what the original scope quoted.
+        mobSource: {
+          mobilizationOverride: !!parsedData.mobilizationOverride,
+          mobilizationValue: parsedData.mobilizationValue,
+        },
         quoteNumber:
           (opportunityData as any)?.quote_number ||
           quote.id?.slice(0, 6) ||
@@ -5868,12 +6509,21 @@ export default function EstimateSheet({
       return sum + value * scopeQty;
     }, 0);
 
+    // Mobilization for one scope at a given quantity. An override is a fixed
+    // amount per performance, so quantity multiplies it; without one this is
+    // the original tier math, untouched.
+    const scopeMobAtQty = (q: any, value: number, qty: number) =>
+      q.mobSource?.mobilizationOverride
+        ? Math.round(toNum(q.mobSource.mobilizationValue)) * qty
+        : Math.ceil(
+            value * qty * computeMobilizationFactor(value, q.scopeMobFactors),
+          );
+
     // Sum per-scope mobilizations using each scope's own saved factors
     const combinedMobilizationRaw = processedQuotes.reduce((sum, q, index) => {
       const originalQuoteIndex = selectedQuotesForCombined[index];
       const scopeQty = scopeQuantities[originalQuoteIndex] || 1;
-      const factor = computeMobilizationFactor(q.finalValue, q.scopeMobFactors);
-      return sum + Math.ceil(q.finalValue * scopeQty * factor);
+      return sum + scopeMobAtQty(q, q.finalValue, scopeQty);
     }, 0);
     const combinedMobilization = formatCurrency(combinedMobilizationRaw);
 
@@ -5886,17 +6536,7 @@ export default function EstimateSheet({
     const combinedSatMobRaw = processedQuotes.reduce((sum, q, index) => {
       const originalQuoteIndex = selectedQuotesForCombined[index];
       const scopeQty = scopeQuantities[originalQuoteIndex] || 1;
-      const satVal = (q.satFinalValue || q.finalValue) * scopeQty;
-      return (
-        sum +
-        Math.ceil(
-          satVal *
-            computeMobilizationFactor(
-              q.satFinalValue || q.finalValue,
-              q.scopeMobFactors,
-            ),
-        )
-      );
+      return sum + scopeMobAtQty(q, q.satFinalValue || q.finalValue, scopeQty);
     }, 0);
 
     // Sunday combined final value
@@ -5908,17 +6548,7 @@ export default function EstimateSheet({
     const combinedSunMobRaw = processedQuotes.reduce((sum, q, index) => {
       const originalQuoteIndex = selectedQuotesForCombined[index];
       const scopeQty = scopeQuantities[originalQuoteIndex] || 1;
-      const sunVal = (q.sunFinalValue || q.finalValue) * scopeQty;
-      return (
-        sum +
-        Math.ceil(
-          sunVal *
-            computeMobilizationFactor(
-              q.sunFinalValue || q.finalValue,
-              q.scopeMobFactors,
-            ),
-        )
-      );
+      return sum + scopeMobAtQty(q, q.sunFinalValue || q.finalValue, scopeQty);
     }, 0);
 
     const anyScopeHasSat = processedQuotes.some((q) => q.hasSat);
@@ -5943,13 +6573,11 @@ export default function EstimateSheet({
           letterIncludeSovNotes,
         );
 
-        const scopeMobilizationRaw = (() => {
-          const factor = computeMobilizationFactor(
-            processedQuote.finalValue,
-            processedQuote.scopeMobFactors,
-          );
-          return Math.ceil(processedQuote.finalValue * factor);
-        })();
+        const scopeMobilizationRaw = resolveMobilizationAmount(
+          processedQuote.finalValue,
+          processedQuote.scopeMobFactors,
+          processedQuote.mobSource,
+        );
         const showScopeMobilization =
           scopeMobilizationRaw > 0 || includeMobilizationWhenZero;
         const showScopesMF = letterIncludeMF;
@@ -5957,21 +6585,17 @@ export default function EstimateSheet({
         const showScopesSun = letterIncludeSunday && processedQuote.hasSun;
 
         const satScopeMobRaw = processedQuote.hasSat
-          ? Math.ceil(
-              processedQuote.satFinalValue *
-                computeMobilizationFactor(
-                  processedQuote.satFinalValue,
-                  processedQuote.scopeMobFactors,
-                ),
+          ? resolveMobilizationAmount(
+              processedQuote.satFinalValue,
+              processedQuote.scopeMobFactors,
+              processedQuote.mobSource,
             )
           : scopeMobilizationRaw;
         const sunScopeMobRaw = processedQuote.hasSun
-          ? Math.ceil(
-              processedQuote.sunFinalValue *
-                computeMobilizationFactor(
-                  processedQuote.sunFinalValue,
-                  processedQuote.scopeMobFactors,
-                ),
+          ? resolveMobilizationAmount(
+              processedQuote.sunFinalValue,
+              processedQuote.scopeMobFactors,
+              processedQuote.mobSource,
             )
           : scopeMobilizationRaw;
 
@@ -6900,6 +7524,14 @@ export default function EstimateSheet({
     return mobilizationFactors.base;
   }
 
+  /** Mobilization dollars for this estimate, honoring a split's fixed amount. */
+  function getMobilizationAmount(finalValue: number) {
+    return resolveMobilizationAmount(finalValue, mobilizationFactors, {
+      mobilizationOverride,
+      mobilizationValue,
+    });
+  }
+
   // When mobilization or payment-term factors change, update the letter/proposal HTML so the
   // "Pricing & Terms" and "Copy paste below into quote" amounts stay in sync with the estimate.
   // NOTE: letterHtml is intentionally NOT in the dependency array — this should only run when the
@@ -6932,9 +7564,7 @@ export default function EstimateSheet({
       ? (option1Raw - mobilizationRawFromLetter) / paymentTermFactors.net30
       : option1Raw / paymentTermFactors.net30;
     if (!Number.isFinite(finalValue) || finalValue <= 0) return;
-    const newMobilizationRaw = Math.ceil(
-      finalValue * getMobilizationFactor(finalValue),
-    );
+    const newMobilizationRaw = getMobilizationAmount(finalValue);
     const newMobilization = formatCurrency(newMobilizationRaw);
     const newOption1 = formatCurrency(
       Math.ceil(finalValue * paymentTermFactors.net30) + newMobilizationRaw,
@@ -8548,7 +9178,31 @@ export default function EstimateSheet({
                                     Deselect
                                   </Button>
                                 )}
+                                <div className="ml-auto inline-flex rounded-none border border-neutral-300 dark:border-neutral-600">
+                                  {(["copy", "move"] as const).map((mode) => (
+                                    <button
+                                      key={mode}
+                                      type="button"
+                                      onClick={() => setSovActionMode(mode)}
+                                      className={`px-3 py-1 text-sm rounded-none transition-colors ${
+                                        sovActionMode === mode
+                                          ? "bg-brand text-white"
+                                          : "bg-transparent text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                                      }`}
+                                    >
+                                      {mode === "copy" ? "Copy" : "Move & split"}
+                                    </button>
+                                  ))}
+                                </div>
                               </div>
+                              {sovActionMode === "move" && (
+                                <p className="text-xs text-neutral-600 dark:text-neutral-400">
+                                  Selecting a section header moves every row
+                                  under it. Travel, mobilization and non-SOV
+                                  costs follow the work, so the groups still add
+                                  up to today's total.
+                                </p>
+                              )}
                               <div className="flex flex-wrap items-center gap-2">
                                 <select
                                   value={copyTargetQuoteId}
@@ -8593,21 +9247,51 @@ export default function EstimateSheet({
                                     }}
                                   />
                                 )}
-                                <Button
-                                  type="button"
-                                  onClick={handleCopySelectedSovItems}
-                                  disabled={
-                                    isCopyingSovItems ||
-                                    selectedSovItemIndexes.length === 0 ||
-                                    !copyTargetQuoteId
-                                  }
-                                  className="h-9 bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1"
-                                  leftIcon={<Copy className="h-5 w-5" />}
-                                >
-                                  {isCopyingSovItems
-                                    ? "Copying..."
-                                    : "Copy SOV Items"}
-                                </Button>
+                                {sovActionMode === "copy" ? (
+                                  <Button
+                                    type="button"
+                                    onClick={handleCopySelectedSovItems}
+                                    disabled={
+                                      isCopyingSovItems ||
+                                      selectedSovItemIndexes.length === 0 ||
+                                      !copyTargetQuoteId
+                                    }
+                                    className="h-9 rounded-none bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1"
+                                    leftIcon={<Copy className="h-5 w-5" />}
+                                  >
+                                    {isCopyingSovItems
+                                      ? "Copying..."
+                                      : "Copy SOV Items"}
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    type="button"
+                                    onClick={handleRedistributeSovItems}
+                                    disabled={
+                                      isRedistributing ||
+                                      isViewMode ||
+                                      selectedSovItemIndexes.length === 0 ||
+                                      !copyTargetQuoteId
+                                    }
+                                    className="h-9 rounded-none bg-brand text-white hover:opacity-90 transition-colors flex items-center gap-1"
+                                    leftIcon={<Copy className="h-5 w-5" />}
+                                  >
+                                    {isRedistributing
+                                      ? "Splitting..."
+                                      : "Move & Split Pricing"}
+                                  </Button>
+                                )}
+                                {lastRedistribution && (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handleUndoRedistribution}
+                                    disabled={isRedistributing}
+                                    className="h-9 rounded-none text-sm"
+                                  >
+                                    Undo split
+                                  </Button>
+                                )}
                                 {!isViewMode && (
                                   <Button
                                     type="button"
@@ -8622,6 +9306,180 @@ export default function EstimateSheet({
                                   </Button>
                                 )}
                               </div>
+                              {sovActionMode === "move" &&
+                                (() => {
+                                  const preview = buildRedistributionPreview();
+                                  if (!preview) return null;
+                                  const f = preview.figures;
+                                  const pct = (
+                                    Math.round(preview.plan.share.share * 1000) /
+                                    10
+                                  ).toFixed(1);
+                                  const cell =
+                                    "px-2 py-1 text-right tabular-nums";
+                                  return (
+                                    <div className="mt-2 border border-neutral-300 dark:border-neutral-600 rounded-none p-3 space-y-3 bg-neutral-50 dark:bg-neutral-800">
+                                      <div className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
+                                        Splitting {pct}% of this estimate
+                                        <span className="ml-2 font-normal text-xs text-neutral-600 dark:text-neutral-400">
+                                          weighted by{" "}
+                                          {preview.plan.share.basis === "hours"
+                                            ? "labor hours"
+                                            : preview.plan.share.basis ===
+                                                "laborTotal"
+                                              ? "crew hours per row"
+                                              : preview.plan.share.basis ===
+                                                  "materialExpense"
+                                                ? "material and expense"
+                                                : "an equal share per row"}
+                                        </span>
+                                      </div>
+
+                                      <div className="flex flex-wrap gap-3">
+                                        {(
+                                          [
+                                            ["travelNonLabor", "Travel %"],
+                                            ["nonSov", "Non-SOV %"],
+                                            ["mobilization", "Mobilization %"],
+                                          ] as const
+                                        ).map(([key, label]) => (
+                                          <label
+                                            key={key}
+                                            className="flex items-center gap-2 text-xs text-neutral-700 dark:text-neutral-300"
+                                          >
+                                            {label}
+                                            <input
+                                              type="text"
+                                              inputMode="decimal"
+                                              value={splitOverrides[key]}
+                                              placeholder={pct}
+                                              onChange={(e) =>
+                                                setSplitOverrides((prev) => ({
+                                                  ...prev,
+                                                  [key]: e.target.value,
+                                                }))
+                                              }
+                                              className="form-input h-8 w-20 rounded-none text-sm"
+                                              style={{
+                                                backgroundColor:
+                                                  "var(--input-bg)",
+                                                color: "var(--text-color)",
+                                                borderColor:
+                                                  "var(--border-color)",
+                                              }}
+                                            />
+                                          </label>
+                                        ))}
+                                        <span className="text-xs text-neutral-500 dark:text-neutral-400 self-center">
+                                          Blank follows the split above.
+                                        </span>
+                                      </div>
+
+                                      <div className="overflow-x-auto">
+                                        <table className="w-full text-xs border-collapse">
+                                          <thead>
+                                            <tr className="text-neutral-600 dark:text-neutral-400">
+                                              <th className="px-2 py-1 text-left font-medium">
+                                                Group
+                                              </th>
+                                              <th className="px-2 py-1 text-right font-medium">
+                                                Price now
+                                              </th>
+                                              <th className="px-2 py-1 text-right font-medium">
+                                                After
+                                              </th>
+                                              <th className="px-2 py-1 text-right font-medium">
+                                                Mobilization
+                                              </th>
+                                            </tr>
+                                          </thead>
+                                          <tbody className="text-neutral-800 dark:text-neutral-100">
+                                            <tr className="border-t border-neutral-200 dark:border-neutral-700">
+                                              <td className="px-2 py-1">
+                                                This estimate
+                                              </td>
+                                              <td className={cell}>
+                                                {formatCurrency(f.sourceBefore)}
+                                              </td>
+                                              <td className={cell}>
+                                                {formatCurrency(f.sourceAfter)}
+                                              </td>
+                                              <td className={cell}>
+                                                {formatCurrency(
+                                                  f.mobSourceAfter,
+                                                )}
+                                              </td>
+                                            </tr>
+                                            <tr className="border-t border-neutral-200 dark:border-neutral-700">
+                                              <td className="px-2 py-1">
+                                                {preview.isNewTarget
+                                                  ? newCopyEstimateTitle.trim() ||
+                                                    "New pricing group"
+                                                  : getQuoteDisplayName(
+                                                      preview.targetQuote!,
+                                                      quotes.findIndex(
+                                                        (q) =>
+                                                          q.id ===
+                                                          preview.targetQuote!
+                                                            .id,
+                                                      ),
+                                                    )}
+                                              </td>
+                                              <td className={cell}>
+                                                {formatCurrency(f.targetBefore)}
+                                              </td>
+                                              <td className={cell}>
+                                                {formatCurrency(f.targetAfter)}
+                                              </td>
+                                              <td className={cell}>
+                                                {formatCurrency(
+                                                  f.mobTargetAfter,
+                                                )}
+                                              </td>
+                                            </tr>
+                                            <tr className="border-t-2 border-neutral-300 dark:border-neutral-600 font-semibold">
+                                              <td className="px-2 py-1">
+                                                Combined
+                                              </td>
+                                              <td className={cell}>
+                                                {formatCurrency(f.totalBefore)}
+                                              </td>
+                                              <td className={cell}>
+                                                {formatCurrency(f.totalAfter)}
+                                              </td>
+                                              <td className={cell}>
+                                                {formatCurrency(
+                                                  f.mobTotalAfter,
+                                                )}
+                                              </td>
+                                            </tr>
+                                          </tbody>
+                                        </table>
+                                      </div>
+
+                                      <div
+                                        className={`text-xs font-medium ${
+                                          f.totalDelta === 0
+                                            ? "text-green-700 dark:text-green-400"
+                                            : "text-amber-700 dark:text-amber-400"
+                                        }`}
+                                      >
+                                        {f.totalDelta === 0
+                                          ? "Grand total unchanged."
+                                          : `Grand total moves by ${formatCurrency(f.totalDelta)}.`}
+                                      </div>
+
+                                      {preview.plan.warnings.map((w, i) => (
+                                        <div
+                                          key={i}
+                                          className="text-xs text-amber-700 dark:text-amber-400"
+                                        >
+                                          {w}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  );
+                                })()}
                             </div>
                           );
                         })()}
@@ -9618,7 +10476,7 @@ export default function EstimateSheet({
                     {(() => {
                       const summaryNavItems: SectionNavItem<typeof activeSummarySection>[] = [
                         { key: "hoursLabor", label: "Hours & Labor", badge: `${formatNumber(data.hoursSummary.totalHours)} hrs` },
-                        { key: "terms", label: "Payment + mob", badge: formatCurrency(Math.ceil(getFinalValue() * paymentTermFactors.net30) + Math.ceil(getFinalValue() * getMobilizationFactor(getFinalValue()))) },
+                        { key: "terms", label: "Payment + mob", badge: formatCurrency(Math.ceil(getFinalValue() * paymentTermFactors.net30) + getMobilizationAmount(getFinalValue())) },
                         { key: "financial", label: "Financial", badge: formatCurrency(getFinalValue()) },
                       ];
                       return (
@@ -12486,12 +13344,7 @@ export default function EstimateSheet({
                                       getFinalValue() *
                                         paymentTermFactors.net30,
                                     ) +
-                                      Math.ceil(
-                                        getFinalValue() *
-                                          getMobilizationFactor(
-                                            getFinalValue(),
-                                          ),
-                                      ),
+                                      getMobilizationAmount(getFinalValue()),
                                   )}
                                 </td>
                               </tr>
@@ -12557,12 +13410,7 @@ export default function EstimateSheet({
                                       getFinalValue() *
                                         paymentTermFactors.net60,
                                     ) +
-                                      Math.ceil(
-                                        getFinalValue() *
-                                          getMobilizationFactor(
-                                            getFinalValue(),
-                                          ),
-                                      ),
+                                      getMobilizationAmount(getFinalValue()),
                                   )}
                                 </td>
                               </tr>
@@ -12628,12 +13476,7 @@ export default function EstimateSheet({
                                       getFinalValue() *
                                         paymentTermFactors.net90,
                                     ) +
-                                      Math.ceil(
-                                        getFinalValue() *
-                                          getMobilizationFactor(
-                                            getFinalValue(),
-                                          ),
-                                      ),
+                                      getMobilizationAmount(getFinalValue()),
                                   )}
                                 </td>
                               </tr>
@@ -13008,10 +13851,8 @@ export default function EstimateSheet({
                                   <div style={{ marginBottom: "5px" }}>
                                     Mobilization:{" "}
                                     {(() => {
-                                      const final = getFinalValue();
-                                      const factor = getMobilizationFactor(final);
                                       return formatCurrency(
-                                        Math.ceil(final * factor),
+                                        getMobilizationAmount(getFinalValue()),
                                       );
                                     })()}
                                   </div>
@@ -13200,12 +14041,7 @@ export default function EstimateSheet({
                                           getFinalValue() *
                                             paymentTermFactors.net30,
                                         ) +
-                                          Math.ceil(
-                                            getFinalValue() *
-                                              getMobilizationFactor(
-                                                getFinalValue(),
-                                              ),
-                                          ),
+                                          getMobilizationAmount(getFinalValue()),
                                       )}
                                     </td>
                                     {showSaturdayHours && (
@@ -13221,12 +14057,7 @@ export default function EstimateSheet({
                                             getSaturdayFinalValue() *
                                               paymentTermFactors.net30,
                                           ) +
-                                            Math.ceil(
-                                              getSaturdayFinalValue() *
-                                                getMobilizationFactor(
-                                                  getSaturdayFinalValue(),
-                                                ),
-                                            ),
+                                            getMobilizationAmount(getSaturdayFinalValue()),
                                         )}
                                       </td>
                                     )}
@@ -13243,12 +14074,7 @@ export default function EstimateSheet({
                                             getSundayFinalValue() *
                                               paymentTermFactors.net30,
                                           ) +
-                                            Math.ceil(
-                                              getSundayFinalValue() *
-                                                getMobilizationFactor(
-                                                  getSundayFinalValue(),
-                                                ),
-                                            ),
+                                            getMobilizationAmount(getSundayFinalValue()),
                                         )}
                                       </td>
                                     )}
@@ -13275,12 +14101,7 @@ export default function EstimateSheet({
                                           getFinalValue() *
                                             paymentTermFactors.net60,
                                         ) +
-                                          Math.ceil(
-                                            getFinalValue() *
-                                              getMobilizationFactor(
-                                                getFinalValue(),
-                                              ),
-                                          ),
+                                          getMobilizationAmount(getFinalValue()),
                                       )}
                                     </td>
                                     {showSaturdayHours && (
@@ -13296,12 +14117,7 @@ export default function EstimateSheet({
                                             getSaturdayFinalValue() *
                                               paymentTermFactors.net60,
                                           ) +
-                                            Math.ceil(
-                                              getSaturdayFinalValue() *
-                                                getMobilizationFactor(
-                                                  getSaturdayFinalValue(),
-                                                ),
-                                            ),
+                                            getMobilizationAmount(getSaturdayFinalValue()),
                                         )}
                                       </td>
                                     )}
@@ -13318,12 +14134,7 @@ export default function EstimateSheet({
                                             getSundayFinalValue() *
                                               paymentTermFactors.net60,
                                           ) +
-                                            Math.ceil(
-                                              getSundayFinalValue() *
-                                                getMobilizationFactor(
-                                                  getSundayFinalValue(),
-                                                ),
-                                            ),
+                                            getMobilizationAmount(getSundayFinalValue()),
                                         )}
                                       </td>
                                     )}
@@ -13350,12 +14161,7 @@ export default function EstimateSheet({
                                           getFinalValue() *
                                             paymentTermFactors.net90,
                                         ) +
-                                          Math.ceil(
-                                            getFinalValue() *
-                                              getMobilizationFactor(
-                                                getFinalValue(),
-                                              ),
-                                          ),
+                                          getMobilizationAmount(getFinalValue()),
                                       )}
                                     </td>
                                     {showSaturdayHours && (
@@ -13371,12 +14177,7 @@ export default function EstimateSheet({
                                             getSaturdayFinalValue() *
                                               paymentTermFactors.net90,
                                           ) +
-                                            Math.ceil(
-                                              getSaturdayFinalValue() *
-                                                getMobilizationFactor(
-                                                  getSaturdayFinalValue(),
-                                                ),
-                                            ),
+                                            getMobilizationAmount(getSaturdayFinalValue()),
                                         )}
                                       </td>
                                     )}
@@ -13393,12 +14194,7 @@ export default function EstimateSheet({
                                             getSundayFinalValue() *
                                               paymentTermFactors.net90,
                                           ) +
-                                            Math.ceil(
-                                              getSundayFinalValue() *
-                                                getMobilizationFactor(
-                                                  getSundayFinalValue(),
-                                                ),
-                                            ),
+                                            getMobilizationAmount(getSundayFinalValue()),
                                         )}
                                       </td>
                                     )}

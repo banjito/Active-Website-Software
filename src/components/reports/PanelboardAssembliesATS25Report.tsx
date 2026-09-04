@@ -283,7 +283,15 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
-  const isAutoSaveCreatedRef = React.useRef(false);
+  /**
+   * The report id whose data is already on screen because this session created
+   * it (auto-save minting a row, or the copy button). Its row must not be read
+   * back from the database, which would overwrite what the crew is typing.
+   * Held as an id rather than a boolean: the route effect and the load effect
+   * fire on separate renders after a copy, and a boolean that either one could
+   * clear left the other reloading -- or waiting forever.
+   */
+  const locallyCreatedIdRef = React.useRef<string | undefined>(undefined);
   const reportIdRef = React.useRef<string | undefined>(openReportId);
   /** A save is in flight; a second one must not start alongside it. */
   const savingRef = React.useRef(false);
@@ -305,18 +313,23 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
   // continue editing immediately.
   useEffect(() => {
     const routeReportId = initialReportId ?? reportIdFromUrl();
+
+    // The copy button already moved the form onto this report; the route is
+    // only catching up a render later. Touching state here would clear the
+    // copied form and raise a spinner that nothing ever lowers, because
+    // currentReportId is unchanged and so the load effect never re-runs.
+    if (routeReportId && routeReportId === locallyCreatedIdRef.current) {
+      return;
+    }
+
     reportIdRef.current = routeReportId;
     setCurrentReportId(routeReportId);
     // A different report is on screen now; its asset link is unverified again.
     assetLinkedRef.current = false;
+    locallyCreatedIdRef.current = undefined;
 
     if (!routeReportId) {
       setIsEditing(true);
-      isAutoSaveCreatedRef.current = false;
-      return;
-    }
-
-    if (isAutoSaveCreatedRef.current) {
       return;
     }
 
@@ -508,9 +521,10 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
 
   // Load existing report (reuse switchgear table to avoid new migrations)
   const loadReport = async () => {
-    // Don't reload if we just created the report via autosave
-    if (isAutoSaveCreatedRef.current) {
-      isAutoSaveCreatedRef.current = false;
+    // This session created the row and the form already holds its data. The
+    // flag stays set: the route effect fires after this one on a copy, and it
+    // needs to recognise the id too.
+    if (currentReportId && currentReportId === locallyCreatedIdRef.current) {
       setLoading(false);
       return;
     }
@@ -1048,7 +1062,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
 
     if (isNewReport) {
       setCurrentReportId(reportId);
-      isAutoSaveCreatedRef.current = true;
+      locallyCreatedIdRef.current = reportId;
       window.history.replaceState(
         {},
         "",
@@ -1254,15 +1268,14 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
           ? "≥ 25"
           : `≥ ${computedCriteria % 1 === 0 ? computedCriteria.toString() : computedCriteria}`;
 
+      // User, technicians, substation and equipment location carry over with
+      // the nameplate: the next panel is tested by the same crew, in the same
+      // room, on the same day. Only the panel's own name is cleared.
       const newFormData: FormData = {
         ...formData,
-        userName: "",
         date: new Date().toISOString().split("T")[0],
         identifier: "",
-        technicians: "",
         temperature: defaultTemperature,
-        substation: "",
-        eqptLocation: "",
         status: "PASS",
         nameplate: {
           ...formData.nameplate,
@@ -1385,10 +1398,15 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
       reportIdRef.current = copyReportId;
       formDataRef.current = newFormData;
       assetLinkedRef.current = true;
-      isAutoSaveCreatedRef.current = true;
+      locallyCreatedIdRef.current = copyReportId;
       setCurrentReportId(copyReportId);
       setFormData(newFormData);
       setIsEditing(true);
+      // The copy carries no equipment name yet, so the rename guard has no
+      // earlier unit to protect. Without this it would still be armed with the
+      // finished report's name and challenge the first name typed here.
+      setLoadedIdentity(null);
+      markLoaded({ identifier: "" });
       markSaved();
       navigate(`/jobs/${jobId}/${reportSlug}/${copyReportId}`, {
         replace: true,
@@ -1404,6 +1422,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
   }, [
     formData,
     jobId,
+    markLoaded,
     markSaved,
     maskCustomerAddress,
     maskCustomerName,

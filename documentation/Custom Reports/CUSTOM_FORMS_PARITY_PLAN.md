@@ -44,7 +44,7 @@ representative, or the block-tree editor for layout containers.
 ### Verification available today
 
 - `node --import ./scripts/ts-alias-loader.mjs scripts/custom-forms-regression.ts`
-  (also `npm run custom-forms-regression`) runs 432 checks: adapter fidelity,
+  (also `npm run custom-forms-regression`) runs 455 checks: adapter fidelity,
   row identity, grids, conditions, bindings, the typed expression engine, and
   **the rendered output of every fixture in every mode**. It needs no database
   and no test framework.
@@ -1532,9 +1532,45 @@ harness now fails if any runtime element carries a class containing "header".
 The underlying leak is the one recorded for the hard-coded reports; fixing it at
 its source is still the right long-term move.
 
+**Builder formulas now do logic.** The formula box in the builder ran through
+`new Function` behind an allowlist of arithmetic and `round`, so `if`, `min`,
+`max` and every comparison gave a blank cell with no error, while the ƒ picker
+advertised them. That blocked building any report with a PASS/FAIL or deviation
+column (LV Molded Case Circuit Breaker ATS 25 first among them) in the app.
+`evaluateFormula` now parses with the typed engine instead: nothing is
+executed, arithmetic results are unchanged, and functions, comparisons,
+`and`/`or` and quoted text work. A `<`/`>` carried by a reading stays on numeric
+results and never reaches a verdict. The formula box also checks syntax and
+types as you type, with plain messages for spreadsheet habits (a leading `=`,
+single quotes, `=` to compare), and the picker shows worked examples.
+
+A formula now stays blank until at least one of its readings is entered (table
+cells count as readings; a single field such as the TCF does not). Before, an
+empty form printed "0" for every corrected reading and "FAIL" for every
+verdict. Once a reading is in, other blanks still count as 0, so partial totals
+behave as before.
+
+**First in-app MCCB print, and what it exposed.** Printing an in-app build of
+LV Circuit Breaker ATS 25 showed four runtime problems, all fixed:
+
+- *Controls printed as controls.* The preview and job pages print the live
+  page, so empty dropdowns printed "Select..." and dates "mm/dd/yyyy" with a
+  calendar icon. Every control now has a print-only plain-text copy.
+- *Columns overflowed or were crushed.* Add Column gave every new column 25%,
+  so a nine-column table asked for 225% of the page. New columns now take a fair
+  share, and `fitColumnWidths` scales whatever is authored to exactly 100%,
+  keeping proportions and never letting a column drop below half a fair share.
+- *Formulas printed 0 before anything was entered*, as above.
+- *Report CSS again.* Labels were centred because 46 hard-coded reports inject
+  global CSS at module load, and App imports them all up front, so the rules are
+  live on every page (one centres every table cell but the first). Each
+  injection is now tagged `data-report-print`, and the builder, preview and
+  filler disable tagged sheets while mounted via `useReportCssIsolation`,
+  restoring them on unmount so the hard-coded reports print unchanged.
+
 Verification is now:
 
-- `npm run custom-forms-regression` — 432 checks, fast, no browser;
+- `npm run custom-forms-regression` — 455 checks, fast, no browser;
 - `npm run custom-forms-browser` — real Chrome, the only test that can see CSS
   interfering with layout.
 

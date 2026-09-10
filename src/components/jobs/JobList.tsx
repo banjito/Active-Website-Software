@@ -29,6 +29,11 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { withPgTimeoutRetry } from "../../lib/retryPgTimeout";
 import { isSuperUser } from "../../lib/roles";
 import { formatStatusLabel } from "@/utils/formatters";
+import { getDivisions, useDivisions } from "@/hooks/useDivisions";
+import {
+  fieldTechDivisionIds,
+  jobDivisionOptions,
+} from "@/services/divisionsService";
 
 interface Contact {
   id: string;
@@ -188,6 +193,9 @@ const initialFormData: JobFormData = {
 
 export default function JobList() {
   const { user, loading: authLoading } = useAuth();
+  const allDivisions = useDivisions();
+  const fieldTechIds = fieldTechDivisionIds(allDivisions);
+  const divisionOptions = jobDivisionOptions(allDivisions);
   const { maskCustomerName, maskJobTitle } = useDemoMode();
   const navigate = useNavigate();
   const location = useLocation();
@@ -799,13 +807,10 @@ export default function JobList() {
 
       if (division) {
         if (division === "field_tech" || division === "field-tech") {
-          jobQuery = jobQuery.in("division", [
-            "north_alabama",
-            "tennessee",
-            "georgia",
-            "virginia",
-            "international",
-          ]);
+          jobQuery = jobQuery.in(
+            "division",
+            fieldTechDivisionIds(await getDivisions()),
+          );
         } else {
           jobQuery = jobQuery.eq("division", division);
         }
@@ -1165,14 +1170,7 @@ export default function JobList() {
       return;
     }
 
-    const fieldTechDivisions = [
-      "north_alabama",
-      "tennessee",
-      "georgia",
-      "virginia",
-      "international",
-    ];
-    const activeDivision = fieldTechDivisions.includes(division || "")
+    const activeDivision = fieldTechIds.includes(division || "")
       ? division
       : TMFormData.division;
 
@@ -1531,7 +1529,11 @@ export default function JobList() {
       lab: "Lab Portal",
     };
 
-    return divisionMap[divisionValue.toLowerCase()] || divisionValue;
+    return (
+      divisionMap[divisionValue.toLowerCase()] ||
+      allDivisions.find((d) => d.id === divisionValue)?.label ||
+      divisionValue
+    );
   }
 
   if (loadError) {
@@ -1593,11 +1595,7 @@ export default function JobList() {
           {/* T&M button for Field Tech divisions - Admin role or superusers */}
           {(division === "field_tech" ||
             division === "field-tech" ||
-            division === "north_alabama" ||
-            division === "tennessee" ||
-            division === "georgia" ||
-            division === "virginia" ||
-            division === "international") &&
+            fieldTechIds.includes(division || "")) &&
             (user?.user_metadata?.role === "Admin" ||
               isSuperUser(user?.email)) && (
               <button
@@ -2792,42 +2790,15 @@ export default function JobList() {
                   <option value="" className="dark:bg-dark-150 dark:text-white">
                     Select a division
                   </option>
-                  <option
-                    value="north_alabama"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Decatur
-                  </option>
-                  <option
-                    value="tennessee"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Nashville
-                  </option>
-                  <option
-                    value="georgia"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Atlanta
-                  </option>
-                  <option
-                    value="virginia"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Virginia
-                  </option>
-                  <option
-                    value="international"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    International
-                  </option>
-                  <option
-                    value="engineering"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Engineering
-                  </option>
+                  {divisionOptions.map((d) => (
+                    <option
+                      key={d.id}
+                      value={d.id}
+                      className="dark:bg-dark-150 dark:text-white"
+                    >
+                      {d.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 

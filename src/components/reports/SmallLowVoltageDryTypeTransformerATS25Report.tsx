@@ -987,6 +987,8 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
       table.vm-inspection-table col:nth-child(3) { width: 20% !important; }
       table.vm-inspection-table th:nth-child(2), table.vm-inspection-table td:nth-child(2) { white-space: normal !important; overflow-wrap: anywhere !important; word-break: break-word !important; text-align: left !important; }
     }`;
+    // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+    style.setAttribute("data-report-print", "");
     document.head.appendChild(style);
     return () => {
       try {

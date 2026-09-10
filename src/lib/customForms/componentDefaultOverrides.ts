@@ -65,7 +65,6 @@ export async function fetchComponentDefaultOverrides(): Promise<Record<string, P
     const cfg = row.default_config as Record<string, unknown> | null;
     if (cfg && typeof cfg === 'object') {
       map[row.component_type as string] = cfg as Partial<SectionConfig>;
-      console.log(`[fetchComponentDefaultOverrides] ${row.component_type}: aboveTableFields=`, JSON.stringify((cfg as Record<string, unknown>).aboveTableFields ?? 'undefined'));
     }
   }
   return map;

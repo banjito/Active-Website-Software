@@ -389,8 +389,19 @@ heading("Electrical Tests: paired reading rows");
   );
   report(
     "column widths carry through to the rendered table",
-    table.columns.every((c) => c.width !== undefined) && html.includes("7%"),
-    "widths missing",
+    (() => {
+      // Widths are scaled to fill the table exactly, so what carries through
+      // is the proportion: From (7%) against Size (5%).
+      const cols = [...html.matchAll(/<col style="width:([\d.]+)%"/g)].map((m) => parseFloat(m[1]));
+      const total = cols.reduce((sum, width) => sum + width, 0);
+      return (
+        table.columns.every((c) => c.width !== undefined) &&
+        cols.length === table.columns.length &&
+        Math.abs(total - 100) < 0.05 &&
+        Math.abs(cols[0] / cols[2] - 7 / 5) < 0.01
+      );
+    })(),
+    "widths missing or out of proportion",
   );
 }
 

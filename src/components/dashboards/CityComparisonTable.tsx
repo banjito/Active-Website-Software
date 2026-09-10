@@ -13,7 +13,11 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useDivision } from "@/App";
 import { formatDivisionDisplay } from "@/lib/utils/divisionDisplay";
-import { FIELD_TECH_DIVISIONS } from "@/app/dashboards/FieldTechDashboard";
+import { getDivisions, useDivisions } from "@/hooks/useDivisions";
+import {
+  BUILTIN_FIELD_TECH_DIVISIONS,
+  fieldTechDivisionIds,
+} from "@/services/divisionsService";
 
 interface CityCounts {
   division: string;
@@ -42,8 +46,9 @@ const emptyCounts = (division: string): CityCounts => ({
 export const CityComparisonTable: React.FC = () => {
   const navigate = useNavigate();
   const { setDivision } = useDivision();
+  const divisions = useDivisions();
   const [rows, setRows] = useState<CityCounts[]>(
-    FIELD_TECH_DIVISIONS.map(emptyCounts),
+    fieldTechDivisionIds(BUILTIN_FIELD_TECH_DIVISIONS).map(emptyCounts),
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,17 +60,18 @@ export const CityComparisonTable: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
+        const fieldTechIds = fieldTechDivisionIds(await getDivisions());
         const { data, error: queryError } = await supabase
           .schema("neta_ops")
           .from("jobs")
           .select("division, status")
           .is("deleted_at", null)
-          .in("division", FIELD_TECH_DIVISIONS);
+          .in("division", fieldTechIds);
 
         if (queryError) throw queryError;
 
         const byDivision: Record<string, CityCounts> = {};
-        for (const division of FIELD_TECH_DIVISIONS) {
+        for (const division of fieldTechIds) {
           byDivision[division] = emptyCounts(division);
         }
 
@@ -80,7 +86,7 @@ export const CityComparisonTable: React.FC = () => {
         }
 
         if (!cancelled) {
-          setRows(FIELD_TECH_DIVISIONS.map((d) => byDivision[d]));
+          setRows(fieldTechIds.map((d) => byDivision[d]));
         }
       } catch (e) {
         console.error("CityComparisonTable: failed to load job counts", e);
@@ -183,7 +189,8 @@ export const CityComparisonTable: React.FC = () => {
                 className="group cursor-pointer !border-0 transition-colors hover:!bg-neutral-50 dark:hover:!bg-dark-200/60"
               >
                 <TableCell className="font-medium text-neutral-800 transition-colors group-hover:text-brand dark:text-white">
-                  {formatDivisionDisplay(r.division)}
+                  {divisions.find((d) => d.id === r.division)?.label ??
+                    formatDivisionDisplay(r.division)}
                 </TableCell>
                 <TableCell className="text-center text-sm font-semibold tabular-nums text-neutral-900 dark:text-white">
                   {text(r.total)}

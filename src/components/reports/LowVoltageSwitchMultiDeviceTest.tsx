@@ -4295,5 +4295,7 @@ ${contactResistanceFitCss(".force-print.is-windows #report-container")}
 ${contactResistanceFitCss(".report-section")}
 ${contactResistanceFitCss(".is-windows .report-section")}
   `;
+  // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+  style.setAttribute("data-report-print", "");
   document.head.appendChild(style);
 }

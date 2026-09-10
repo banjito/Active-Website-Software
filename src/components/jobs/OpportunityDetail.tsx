@@ -58,6 +58,8 @@ import CopyEstimateToOpportunityModal, {
   type CopyTargetOpportunity,
 } from "../estimates/CopyEstimateToOpportunityModal";
 import { toast } from "../ui/toast";
+import { getDivisions, useDivisions } from "@/hooks/useDivisions";
+import { jobDivisionOptions } from "@/services/divisionsService";
 
 interface Customer {
   id: string;
@@ -375,7 +377,15 @@ const JOB_DIVISION_ALIASES: Record<string, string> = {
   human_resources: "hr",
 };
 
-function normalizeJobDivision(value: unknown): string | null {
+/**
+ * Map a free-form division value to a jobs.division id. Aliases cover legacy
+ * spellings; anything else is accepted if it is a division id in
+ * common.divisions, so divisions added from the sidebar convert too.
+ */
+function normalizeJobDivision(
+  value: unknown,
+  knownDivisionIds: string[],
+): string | null {
   if (typeof value !== "string") return null;
 
   const normalized = value
@@ -384,7 +394,10 @@ function normalizeJobDivision(value: unknown): string | null {
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
 
-  return JOB_DIVISION_ALIASES[normalized] || null;
+  return (
+    JOB_DIVISION_ALIASES[normalized] ||
+    (knownDivisionIds.includes(normalized) ? normalized : null)
+  );
 }
 
 async function createJobManually(
@@ -437,7 +450,10 @@ async function createJobManually(
     return existingJob.id;
   }
 
-  const division = normalizeJobDivision(opportunity.amp_division);
+  const division = normalizeJobDivision(
+    opportunity.amp_division,
+    (await getDivisions()).map((d) => d.id),
+  );
   if (!division) {
     const currentDivision =
       typeof opportunity.amp_division === "string"
@@ -667,6 +683,10 @@ export default function OpportunityDetail() {
     ? mergedIdsParam.split(",").filter(Boolean)
     : [];
   const { user, softRefresh } = useAuth();
+  const allDivisions = useDivisions();
+  const divisionOptions = jobDivisionOptions(allDivisions);
+  const formatDivisionName = (division: string): string =>
+    allDivisions.find((d) => d.id === division)?.label || division;
   const [opportunity, setOpportunity] =
     useState<OpportunityWithCustomer | null>(null);
   const [adjacentOpportunityIds, setAdjacentOpportunityIds] =
@@ -4381,48 +4401,15 @@ export default function OpportunityDetail() {
                       >
                         Select a division
                       </option>
-                      <option
-                        value="north_alabama"
-                        className="dark:bg-dark-150 dark:text-white"
-                      >
-                        Decatur
-                      </option>
-                      <option
-                        value="tennessee"
-                        className="dark:bg-dark-150 dark:text-white"
-                      >
-                        Nashville
-                      </option>
-                      <option
-                        value="georgia"
-                        className="dark:bg-dark-150 dark:text-white"
-                      >
-                        Atlanta
-                      </option>
-                      <option
-                        value="virginia"
-                        className="dark:bg-dark-150 dark:text-white"
-                      >
-                        Virginia
-                      </option>
-                      <option
-                        value="international"
-                        className="dark:bg-dark-150 dark:text-white"
-                      >
-                        International
-                      </option>
-                      <option
-                        value="engineering"
-                        className="dark:bg-dark-150 dark:text-white"
-                      >
-                        Engineering
-                      </option>
-                      <option
-                        value="scavenger"
-                        className="dark:bg-dark-150 dark:text-white"
-                      >
-                        Scavenger
-                      </option>
+                      {divisionOptions.map((d) => (
+                        <option
+                          key={d.id}
+                          value={d.id}
+                          className="dark:bg-dark-150 dark:text-white"
+                        >
+                          {d.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -6298,17 +6285,4 @@ export default function OpportunityDetail() {
       </div>
     </div>
   );
-}
-
-function formatDivisionName(division: string): string {
-  const divisionMap: { [key: string]: string } = {
-    north_alabama: "Decatur",
-    tennessee: "Nashville",
-    georgia: "Atlanta",
-    virginia: "Virginia",
-    international: "International",
-    engineering: "Engineering",
-    scavenger: "Scavenger",
-  };
-  return divisionMap[division] || division;
 }

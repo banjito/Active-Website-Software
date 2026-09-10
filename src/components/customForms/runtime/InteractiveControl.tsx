@@ -133,6 +133,30 @@ const TemperatureHumidity: React.FC<{
   );
 };
 
+/** "2026-09-10" as "09/10/2026", the way a date input shows it; anything else as is. */
+function printedDate(value: unknown): string {
+  const text = String(value ?? "");
+  const match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return match ? `${match[2]}/${match[3]}/${match[1]}` : text;
+}
+
+/**
+ * A control on screen, its value as plain text on paper.
+ *
+ * The preview and job pages print the live page, so without this an empty
+ * dropdown printed "Select..." and a date printed "mm/dd/yyyy" with a calendar
+ * icon. The wrapper is `display: contents`, so on screen the control lays out
+ * exactly as if it were not wrapped.
+ */
+function withPrintText(control: React.ReactNode, text: string): React.ReactNode {
+  return (
+    <>
+      <div className="contents print:hidden">{control}</div>
+      <span className="hidden print:block whitespace-pre-wrap break-words">{text}</span>
+    </>
+  );
+}
+
 /**
  * Build the `renderControl` a fill-mode chrome hands to the runtime.
  */
@@ -165,7 +189,7 @@ export function createInteractiveControlRenderer(
 
     switch (field.type) {
       case "textarea":
-        return (
+        return withPrintText(
           <textarea
             value={value}
             onChange={(e) => change(e.target.value)}
@@ -173,11 +197,15 @@ export function createInteractiveControlRenderer(
             rows={3}
             readOnly={readOnly}
             className={classes}
-          />
+          />,
+          String(value ?? ""),
         );
 
-      case "select":
-        return (
+      case "select": {
+        const chosen = field.options?.find(
+          (opt: any) => String(opt?.value ?? opt?.label ?? "") === String(value ?? ""),
+        );
+        return withPrintText(
           <select
             value={value}
             onChange={(e) => change(e.target.value)}
@@ -201,8 +229,12 @@ export function createInteractiveControlRenderer(
                 </option>
               );
             })}
-          </select>
+          </select>,
+          value === "" || value == null
+            ? ""
+            : String(chosen?.label ?? chosen?.value ?? value),
         );
+      }
 
       case "checkbox":
         return (
@@ -216,7 +248,7 @@ export function createInteractiveControlRenderer(
         );
 
       case "date":
-        return (
+        return withPrintText(
           <input
             type="date"
             size={1}
@@ -224,11 +256,12 @@ export function createInteractiveControlRenderer(
             onChange={(e) => change(e.target.value)}
             readOnly={readOnly}
             className={classes}
-          />
+          />,
+          printedDate(value),
         );
 
       case "number":
-        return (
+        return withPrintText(
           <input
             type="text"
             inputMode="numeric"
@@ -238,7 +271,8 @@ export function createInteractiveControlRenderer(
             placeholder={field.placeholder}
             readOnly={readOnly}
             className={classes}
-          />
+          />,
+          String(value ?? ""),
         );
 
       case "temperature-humidity":
@@ -252,7 +286,7 @@ export function createInteractiveControlRenderer(
         );
 
       default:
-        return (
+        return withPrintText(
           <input
             type="text"
             size={1}
@@ -261,7 +295,8 @@ export function createInteractiveControlRenderer(
             placeholder={field.placeholder}
             readOnly={readOnly}
             className={classes}
-          />
+          />,
+          String(value ?? ""),
         );
     }
   };
@@ -377,7 +412,7 @@ function renderV2Control(
         control.units.default ??
         control.units.options[0] ??
         "";
-      return (
+      return withPrintText(
         <div className="flex items-center gap-1">
           <input
             type="text"
@@ -401,7 +436,8 @@ function renderV2Control(
               </option>
             ))}
           </select>
-        </div>
+        </div>,
+        value === "" || value == null ? "" : `${String(value)} ${unit}`.trim(),
       );
     }
 
@@ -441,14 +477,17 @@ function renderV2Control(
 
     case "time":
     case "datetime":
-      return (
+      return withPrintText(
         <input
           type={control.type === "time" ? "time" : "datetime-local"}
           value={value as string}
           readOnly={readOnly}
           onChange={(e) => change(e.target.value)}
           className={readOnly ? READ_ONLY_CONTROL_CLASSES : CONTROL_CLASSES}
-        />
+        />,
+        control.type === "time"
+          ? String(value ?? "")
+          : String(value ?? "").replace("T", " "),
       );
 
     default:

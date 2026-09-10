@@ -94,3 +94,49 @@ export function tablePrintStyles(layout?: TablePrintLayout): TablePrintStyles {
 export function sortedSections(sections: SectionConfig[]): SectionConfig[] {
   return [...sections].sort((a, b) => a.order - b.order);
 }
+
+/** Width a fixed-pixel column is measured against: the form's content width. */
+const NOMINAL_TABLE_PX = 960;
+
+function widthAsPercent(width: string | undefined): number | null {
+  const match = width?.trim().match(/^(\d*\.?\d+)\s*(%|px|rem|em)?$/i);
+  if (!match) return null;
+  const value = parseFloat(match[1]);
+  if (!(value > 0)) return null;
+  switch ((match[2] ?? "px").toLowerCase()) {
+    case "%":
+      return value;
+    case "rem":
+    case "em":
+      return ((value * 16) / NOMINAL_TABLE_PX) * 100;
+    default:
+      return (value / NOMINAL_TABLE_PX) * 100;
+  }
+}
+
+/**
+ * Column widths that always fit the table.
+ *
+ * Widths are authored per column, so nothing stops them adding up to more than
+ * the page (the builder once gave every new column 25%), and a fixed-layout
+ * table then either runs off the page or crushes the columns with no width to
+ * one letter per line. The authored widths are kept as proportions, columns
+ * without one get a fair share, nothing drops below half a fair share, and the
+ * result is scaled to exactly 100%.
+ */
+export function fitColumnWidths(widths: readonly (string | undefined)[]): (string | undefined)[] {
+  const count = widths.length;
+  if (!count) return [];
+  const parsed = widths.map(widthAsPercent);
+  if (parsed.every((value) => value == null)) return widths.map(() => undefined);
+
+  const fair = 100 / count;
+  const known = parsed.filter((value): value is number => value != null);
+  const unset = count - known.length;
+  const knownTotal = known.reduce((sum, value) => sum + value, 0);
+  const unsetShare = unset ? Math.max((100 - knownTotal) / unset, fair * 0.75) : 0;
+
+  const floored = parsed.map((value) => Math.max(value ?? unsetShare, fair * 0.5));
+  const total = floored.reduce((sum, value) => sum + value, 0);
+  return floored.map((value) => `${Math.round((value / total) * 100000) / 1000}%`);
+}

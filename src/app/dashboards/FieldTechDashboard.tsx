@@ -19,6 +19,8 @@ import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { formatStatusLabel } from "@/utils/formatters";
 import CityComparisonTable from "@/components/dashboards/CityComparisonTable";
+import { getDivisions } from "@/hooks/useDivisions";
+import { fieldTechDivisionIds } from "@/services/divisionsService";
 
 interface CountsData {
   customers: number;
@@ -42,14 +44,6 @@ interface JobItem {
     name: string;
   };
 }
-
-export const FIELD_TECH_DIVISIONS = [
-  "north_alabama",
-  "tennessee",
-  "georgia",
-  "virginia",
-  "international",
-];
 
 export const FieldTechDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -117,6 +111,7 @@ export const FieldTechDashboard: React.FC = () => {
 
   async function fetchCounts(): Promise<CountsData> {
     try {
+      const fieldTechIds = fieldTechDivisionIds(await getDivisions());
       const customersQuery = supabase
         .schema("common")
         .from("customers")
@@ -131,28 +126,28 @@ export const FieldTechDashboard: React.FC = () => {
         .from("jobs")
         .select("*", { count: "exact", head: true })
         .is("deleted_at", null)
-        .in("division", FIELD_TECH_DIVISIONS);
+        .in("division", fieldTechIds);
       let activeJobsQuery = supabase
         .schema("neta_ops")
         .from("jobs")
         .select("*", { count: "exact", head: true })
         .eq("status", "in_progress")
         .is("deleted_at", null)
-        .in("division", FIELD_TECH_DIVISIONS);
+        .in("division", fieldTechIds);
       let upcomingJobsQuery = supabase
         .schema("neta_ops")
         .from("jobs")
         .select("*", { count: "exact", head: true })
         .eq("status", "pending")
         .is("deleted_at", null)
-        .in("division", FIELD_TECH_DIVISIONS);
+        .in("division", fieldTechIds);
       let completedJobsQuery = supabase
         .schema("neta_ops")
         .from("jobs")
         .select("*", { count: "exact", head: true })
         .eq("status", "completed")
         .is("deleted_at", null)
-        .in("division", FIELD_TECH_DIVISIONS);
+        .in("division", fieldTechIds);
 
       const queries = [
         customersQuery,
@@ -192,11 +187,12 @@ export const FieldTechDashboard: React.FC = () => {
   }
 
   async function fetchRecentJobs() {
+    const fieldTechIds = fieldTechDivisionIds(await getDivisions());
     const { data, error } = await supabase
       .schema("neta_ops")
       .from("jobs")
       .select("id, title, status, division, job_number, due_date, customer_id")
-      .in("division", FIELD_TECH_DIVISIONS)
+      .in("division", fieldTechIds)
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(5);

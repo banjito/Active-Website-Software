@@ -283,7 +283,10 @@ function StatusBadge({ status }: { status: PipelineStatus }) {
 function getRegionFromOpportunity(opportunity: any): PipelineRegion {
   const division = String(opportunity?.amp_division || "").toLowerCase();
 
-  if (division.includes("tennessee")) return "TN";
+  // Regions are states, which common.divisions does not record, so a new city
+  // needs a line here or it falls through to AL.
+  if (division.includes("tennessee") || division.includes("chattanooga"))
+    return "TN";
   if (division.includes("georgia")) return "GA";
   if (division.includes("virginia")) return "VA";
   if (division.includes("international")) return "International";

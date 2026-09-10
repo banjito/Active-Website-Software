@@ -2900,6 +2900,8 @@ if (typeof document !== "undefined") {
       .device-onscreen, .fuse-onscreen { height: 0 !important; margin: 0 !important; padding: 0 !important; }
     }
   `;
+  // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+  style.setAttribute("data-report-print", "");
   document.head.appendChild(style);
 }
 

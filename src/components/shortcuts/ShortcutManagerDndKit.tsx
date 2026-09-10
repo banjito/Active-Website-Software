@@ -13,7 +13,7 @@ import {
   Shortcut,
   MAX_SHORTCUTS,
 } from "@/services/ShortcutService";
-import { BUILTIN_PORTALS } from "@/components/shortcuts/builtins";
+import { useBuiltinPortals } from "@/components/shortcuts/builtins";
 import { Search } from "lucide-react";
 import {
   DndContext,
@@ -131,6 +131,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
   onClose,
 }) => {
   const { user } = useAuth();
+  const builtinPortals = useBuiltinPortals();
   const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -206,7 +207,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
       setUseBuiltin(true);
       setSelectedPortal("sales");
       const defaultFirst =
-        BUILTIN_PORTALS.find((p) => p.key === "sales")?.options[0]?.path || "";
+        builtinPortals.find((p) => p.key === "sales")?.options[0]?.path || "";
       setSelectedOption(defaultFirst);
     }
     setIsFormOpen(true);
@@ -244,7 +245,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
           selectedOption
           ? {
               title:
-                BUILTIN_PORTALS.find(
+                builtinPortals.find(
                   (p) => p.key === selectedPortal,
                 )?.options.find((o) => o.path === selectedOption)?.label ||
                 "Shortcut",
@@ -252,7 +253,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
             }
           : {
               title:
-                BUILTIN_PORTALS.find((p) => p.key === selectedPortal)?.label ||
+                builtinPortals.find((p) => p.key === selectedPortal)?.label ||
                 "Portal",
               url: `portal:${selectedPortal}`,
             }
@@ -279,7 +280,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
 
   const quickAddItems = React.useMemo(() => {
     const items: Array<{ key: string; label: string; path: string }> = [];
-    BUILTIN_PORTALS.forEach((p) => {
+    builtinPortals.forEach((p) => {
       p.options.forEach((opt) => {
         // Exclude any UI-only text that might have been added as data (e.g. "Drag to reorder" must not appear as a shortcut option)
         if (
@@ -294,7 +295,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
     return items.filter((it) =>
       it.label.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-  }, [searchQuery]);
+  }, [searchQuery, builtinPortals]);
 
   const toggleQuickSelect = (key: string) => {
     setSelectedQuick((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -667,13 +668,13 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                             onChange={(e) => {
                               setSelectedPortal(e.target.value);
                               const first =
-                                BUILTIN_PORTALS.find(
+                                builtinPortals.find(
                                   (p) => p.key === (e.target.value as any),
                                 )?.options[0]?.path || "";
                               setSelectedOption(first);
                             }}
                           >
-                            {BUILTIN_PORTALS.map((p) => (
+                            {builtinPortals.map((p) => (
                               <option key={p.key} value={p.key}>
                                 {p.label}
                               </option>
@@ -690,7 +691,7 @@ export const ShortcutManagerDndKit: React.FC<ShortcutManagerProps> = ({
                             onChange={(e) => setSelectedOption(e.target.value)}
                           >
                             <option value="">(Add as portal group)</option>
-                            {BUILTIN_PORTALS.find(
+                            {builtinPortals.find(
                               (p) => p.key === (selectedPortal as any),
                             )?.options.map((opt) => (
                               <option key={opt.path} value={opt.path}>

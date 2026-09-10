@@ -65,6 +65,8 @@ import { toast } from "@/components/ui/toast";
 import { HeaderBar } from "@/components/ui/HeaderBar";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useSiteLogos } from "@/services/siteThemeService";
+import { useDivisions } from "@/hooks/useDivisions";
+import { fieldTechCities } from "@/services/divisionsService";
 
 /**
  * CSS-mask style for painting an SVG in the current text color.
@@ -98,6 +100,7 @@ export default function PortalLanding() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { logoUrl, hideLogo } = useSiteLogos();
+  const fieldTechCityList = fieldTechCities(useDivisions());
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [showBrian, setShowBrian] = useState(false);
   const [showBrianBubble, setShowBrianBubble] = useState(false);
@@ -958,7 +961,10 @@ export default function PortalLanding() {
         engineering: "engineering",
       };
 
-      const portalType = divisionMap[division];
+      // Field tech cities added from the sidebar are NETA-gated like the rest.
+      const portalType =
+        divisionMap[division] ??
+        (fieldTechCityList.some((d) => d.id === division) ? "neta" : undefined);
       if (portalType && !checkPortalAccess(portalType)) {
         setPopupContent(
           "Your current role does not have access to this portal. Please request an updated role and await admin approval.",
@@ -2197,13 +2203,7 @@ export default function PortalLanding() {
 
                 {/* Per-city mini-cards */}
                 <div className="grid grid-cols-2 gap-2 p-4 sm:w-1/2">
-                  {[
-                    { id: "north_alabama", label: "Decatur" },
-                    { id: "tennessee", label: "Nashville" },
-                    { id: "georgia", label: "Atlanta" },
-                    { id: "virginia", label: "Virginia" },
-                    { id: "international", label: "International" },
-                  ].map((city) => (
+                  {fieldTechCityList.map((city) => (
                     <button
                       key={city.id}
                       type="button"

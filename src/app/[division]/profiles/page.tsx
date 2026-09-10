@@ -22,12 +22,13 @@ export default function TechnicianProfilesPage() {
 
   useEffect(() => {
     if (division) {
-      if (['north_alabama', 'tennessee', 'georgia', 'virginia', 'international'].includes(division)) {
-        setPortalType('neta');
-      } else if (['calibration', 'armadillo'].includes(division)) {
+      // Every field tech division (including ones added from the sidebar) is neta.
+      if (['calibration', 'armadillo'].includes(division)) {
         setPortalType('lab');
       } else if (division === 'scavenger') {
         setPortalType('scavenger');
+      } else {
+        setPortalType('neta');
       }
     }
   }, [division]);

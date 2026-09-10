@@ -1,3 +1,7 @@
+import { useMemo } from "react";
+import { useDivisions } from "@/hooks/useDivisions";
+import { fieldTechCities } from "@/services/divisionsService";
+
 export type BuiltinPortalKey =
   | "portal"
   | "sales"
@@ -23,7 +27,8 @@ interface BuiltinOption {
 }
 
 export interface BuiltinPortal {
-  key: BuiltinPortalKey;
+  /** A BuiltinPortalKey, or a division id added later in common.divisions. */
+  key: string;
   label: string;
   options: BuiltinOption[];
 }
@@ -199,9 +204,9 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
       "armadillo",
       "scavenger",
     ] as BuiltinPortalKey[]
-  ).map((key) => ({
-    key,
-    label:
+  ).map((key) =>
+    divisionPortal(
+      key,
       ({
         north_alabama: "Decatur",
         tennessee: "Nashville",
@@ -209,7 +214,15 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
         virginia: "Virginia",
         international: "International",
       } as Record<string, string>)[key] ??
-      key.charAt(0).toUpperCase() + key.slice(1),
+        key.charAt(0).toUpperCase() + key.slice(1),
+    ),
+  ),
+];
+
+function divisionPortal(key: string, label: string): BuiltinPortal {
+  return {
+    key,
+    label,
     options: [
       { label: "Dashboard", path: `/${key}/dashboard` },
       { label: "Customers", path: `/${key}/customers` },
@@ -219,5 +232,20 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
       { label: "Scheduling", path: `/${key}/scheduling` },
       { label: "Equipment", path: `/${key}/field-equipment` },
     ],
-  })),
-];
+  };
+}
+
+/**
+ * BUILTIN_PORTALS plus a portal for every field tech city in common.divisions
+ * that the static list does not already cover (e.g. one added from the sidebar).
+ */
+export function useBuiltinPortals(): BuiltinPortal[] {
+  const divisions = useDivisions();
+  return useMemo(() => {
+    const known = new Set(BUILTIN_PORTALS.map((p) => p.key));
+    const added = fieldTechCities(divisions)
+      .filter((d) => !known.has(d.id))
+      .map((d) => divisionPortal(d.id, d.label));
+    return [...BUILTIN_PORTALS, ...added];
+  }, [divisions]);
+}

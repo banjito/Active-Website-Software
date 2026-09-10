@@ -1154,6 +1154,8 @@ if (typeof document !== "undefined") {
       .form-input { display: block !important; width: 100% !important; padding: 0.5rem !important; border: 1px solid #d1d5db !important; border-radius: 0.375rem !important; background-color: white !important; color: black !important; font-size: 12px !important; }
     }
   `;
+  // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+  style.setAttribute("data-report-print", "");
   document.head.appendChild(style);
 }
 

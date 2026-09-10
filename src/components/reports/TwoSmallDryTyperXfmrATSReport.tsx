@@ -1329,6 +1329,8 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
       max-width: 0 !important;
       overflow: hidden !important;
     }`;
+    // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+    style.setAttribute("data-report-print", "");
     document.head.appendChild(style);
     return () => {
       try {

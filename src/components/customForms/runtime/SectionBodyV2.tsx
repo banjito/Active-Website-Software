@@ -30,7 +30,7 @@ import {
   resolveTableRows,
   type RuntimeRowV2,
 } from "@/lib/customForms/v2/rows";
-import { rowStateKey } from "@/lib/customForms/runtime/layout";
+import { fitColumnWidths, rowStateKey } from "@/lib/customForms/runtime/layout";
 import type {
   ControlSlot,
   SectionChrome,
@@ -239,8 +239,12 @@ const TableRenderer: React.FC<TableProps> = ({
   const readOnlyMode = chrome.mode !== "fill";
 
   // Conditional columns shrink the grid rather than leaving a gap.
-  const visibleColumns = table.columns.filter((column) =>
+  const shownColumns = table.columns.filter((column) =>
     evaluateCondition(column.visibleWhen, scope),
+  );
+  const fittedWidths = fitColumnWidths(shownColumns.map((column) => column.width));
+  const visibleColumns = shownColumns.map((column, index) =>
+    column.width === fittedWidths[index] ? column : { ...column, width: fittedWidths[index] },
   );
   const columnIndexById = new Map(
     visibleColumns.map((column, index) => [column.id, index]),

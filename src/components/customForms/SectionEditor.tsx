@@ -1026,7 +1026,8 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                         const newColumn: ColumnConfig = {
                           id: `col-${Date.now()}`,
                           label: `Column ${(section.columns?.length || 0) + 1}`,
-                          width: "25%",
+                          // No width: it takes a fair share. A fixed 25% made
+                          // every table past four columns overflow the page.
                           field: {
                             id: `field-${Date.now()}`,
                             label: `Column ${(section.columns?.length || 0) + 1}`,

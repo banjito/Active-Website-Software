@@ -980,6 +980,8 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
       .visual-mechanical-table td:nth-child(2) { width: 68% !important; }
       .visual-mechanical-table td:last-child { width: 20% !important; text-align: center !important; }
     }`;
+    // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+    style.setAttribute("data-report-print", "");
     document.head.appendChild(style);
     return () => {
       try {

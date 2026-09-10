@@ -3040,6 +3040,8 @@ if (typeof document !== "undefined") {
       table.visual-mechanical-table td:nth-child(2) { white-space: normal !important; word-break: break-word !important; }
     }
   `;
+  // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+  style.setAttribute("data-report-print", "");
   document.head.appendChild(style);
 }
 

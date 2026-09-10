@@ -3,6 +3,9 @@
  * Supports friendly refs like {IR.C1.R2} (Insulation resistance, column 1, row 2).
  */
 
+import { parseExpression } from '@/lib/customForms/expressions/parser';
+import { evaluateNode, inferNode } from '@/lib/customForms/expressions/semantics';
+import type { ExpressionValue } from '@/lib/customForms/expressions/types';
 import type { FieldConfig, SectionConfig } from '@/lib/types/customForms';
 
 /** Abbreviate section title to a short code, e.g. "Insulation Resistance" -> "IR", "Job Details" -> "Job" */
@@ -208,37 +211,76 @@ function substituteRefs(
   currentRowIndex: number,
   sections: SectionConfig[] = []
 ): string {
+  return substituteRefsTracked(formula, formData, currentSectionId, currentRowIndex, sections).text;
+}
+
+interface SubstitutedRef {
+  /** A table cell (a reading), as opposed to a single field such as the TCF. */
+  isCell: boolean;
+  blank: boolean;
+}
+
+function substituteRefsTracked(
+  formula: string,
+  formData: Record<string, Record<string, any>>,
+  _currentSectionId: string,
+  currentRowIndex: number,
+  sections: SectionConfig[] = []
+): { text: string; refs: SubstitutedRef[] } {
+  const refs: SubstitutedRef[] = [];
   const re = /\{([^}]+)\}/g;
-  return formula.replace(re, (_, path) => {
+  const text = formula.replace(re, (_, path) => {
     const parts = path.trim().split('.').filter(Boolean);
     const resolved = resolveRef(parts, sections, currentRowIndex);
     if (resolved) {
       const val = getValueAt(formData, resolved.sectionId, resolved.fieldId, resolved.rowIndex);
       const num = parseNumericValue(val);
+      refs.push({ isCell: resolved.rowIndex != null, blank: !isFinite(num) });
       return isFinite(num) ? String(num) : '0';
     }
+    refs.push({ isCell: false, blank: true });
     return '0';
   });
+  return { text, refs };
 }
 
 /**
- * Safe eval for numeric expressions: digits, +, -, *, /, (, ), ., round(x) or round(x, decimals).
+ * True when nothing has been entered for the formula to work on yet.
+ *
+ * Blank readings count as 0, which keeps a total of partly-filled rows
+ * working, but before anything is entered it printed "0" for every corrected
+ * reading and "FAIL" for every verdict. So a formula waits until at least one
+ * of its readings is filled in. Where it uses table readings, those are what
+ * count: a TCF is always filled in and does not make a reading exist.
  */
-function safeEvalNumeric(expr: string): number | null {
+function nothingEntered(refs: SubstitutedRef[]): boolean {
+  const cells = refs.filter((ref) => ref.isCell);
+  const considered = cells.length ? cells : refs;
+  return considered.length > 0 && considered.every((ref) => ref.blank);
+}
+
+/**
+ * Evaluate a formula whose references have already been replaced by numbers.
+ *
+ * This used to hand the string to `new Function` behind a character allowlist
+ * that admitted only arithmetic and `round`. Anything else, including `if`,
+ * `min`, `max` and comparisons, quietly produced a blank cell, which is the
+ * worst failure a non-developer can meet: no error, just nothing.
+ *
+ * It now goes through the typed expression engine's parser, which never
+ * executes source. Arithmetic gives exactly the results it always did; the
+ * functions and comparisons the builder's help advertises now work.
+ */
+function safeEvalExpression(expr: string): ExpressionValue | null {
   const trimmed = expr.trim();
   if (!trimmed) return null;
-  // Allow numbers, + - * / ( ) . , round (no other letters)
-  if (!/^[\d\s+\-*/().,\sround]+$/i.test(trimmed)) return null;
+  const parsed = parseExpression(trimmed);
+  if (!parsed.ok) return null;
   try {
-    const round = (x: number, decimals?: number) => {
-      const n = Number(x);
-      if (!isFinite(n)) return NaN;
-      if (decimals != null) return parseFloat(n.toFixed(decimals));
-      return Math.round(n);
-    };
-    const fn = new Function('round', 'return ' + trimmed);
-    const result = fn(round);
-    return typeof result === 'number' && isFinite(result) ? result : null;
+    // Every reference is already a literal, so there is nothing to type but
+    // the literals themselves. A type error still means "no answer".
+    inferNode(parsed.value, () => "number");
+    return evaluateNode(parsed.value, () => null);
   } catch {
     return null;
   }
@@ -284,9 +326,16 @@ export function evaluateFormula(
 ): string {
   if (!formula || !formula.trim()) return '';
   const prefix = detectRefPrefix(formula, formData, currentRowIndex, sections);
-  const substituted = substituteRefs(formula, formData, currentSectionId, currentRowIndex, sections);
-  const result = safeEvalNumeric(substituted);
-  return result != null ? prefix + String(result) : '';
+  const { text: substituted, refs } = substituteRefsTracked(
+    formula, formData, currentSectionId, currentRowIndex, sections
+  );
+  if (nothingEntered(refs)) return '';
+  const result = safeEvalExpression(substituted);
+  if (result == null || Array.isArray(result)) return '';
+  // A "<" or ">" carried by the source reading only means something on a
+  // number. It must not leak onto a verdict such as "PASS".
+  if (typeof result === 'number') return prefix + String(result);
+  return String(result);
 }
 
 /**

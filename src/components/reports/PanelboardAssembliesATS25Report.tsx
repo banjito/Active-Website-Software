@@ -1438,6 +1438,8 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
     #report-container .max-w-7xl div.mb-6 { margin-bottom: 10px !important; }
     }
     `;
+    // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+    style.setAttribute("data-report-print", "");
     document.head.appendChild(style);
     return () => {
       try {

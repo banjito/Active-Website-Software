@@ -27,6 +27,8 @@ import { supabase } from "@/lib/supabase";
 import { SCHEMAS } from "@/lib/schema";
 import equipmentService from "@/lib/services/equipmentService";
 import { useDivision } from "@/lib/DivisionContext";
+import { useDivisions } from "@/hooks/useDivisions";
+import { fieldTechCities } from "@/services/divisionsService";
 import { Modal } from "@/components/ui/Modal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
@@ -102,13 +104,6 @@ const statusOptions = [
   { value: "out-of-service", label: "Out of Service" },
 ];
 
-const divisionOptions = [
-  { value: "north_alabama", label: "Decatur" },
-  { value: "tennessee", label: "Nashville" },
-  { value: "georgia", label: "Atlanta" },
-  { value: "virginia", label: "Virginia" },
-  { value: "international", label: "International" },
-];
 
 // Add interface for the details modal
 interface EquipmentDetailsModalProps {
@@ -127,6 +122,10 @@ export const EquipmentTracking = forwardRef<
   EquipmentTrackingProps
 >(({ division, initialFormOpen = false, onClose }, ref) => {
   const { user } = useAuth();
+  const divisionOptions = fieldTechCities(useDivisions()).map((d) => ({
+    value: d.id,
+    label: d.label,
+  }));
   const [equipment, setEquipment] = useState<any[]>([]);
   const [technicians, setTechnicians] = useState<
     { id: string; name: string }[]

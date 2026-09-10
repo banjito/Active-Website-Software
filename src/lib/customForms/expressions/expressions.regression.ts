@@ -205,12 +205,55 @@ check("id encoding avoids slash/brace collisions", () => {
   const id = expressionReferenceId({ scope: "binding", bindingId: "a{b} c" });
   assert.equal(unwrap(parseExpression(`{${id}}`)).kind, "reference");
 });
-check("V1 blank-as-zero remains legacy-only until an explicit upgrade", () => {
-  assert.equal(evaluateFormula("{JD.tcf} * 2", {}, "sec-ir", 0, sections), "0");
+check("V1 waits for a reading, then counts a blank as zero", () => {
+  // Nothing entered: blank, not "0" (which printed as a reading of zero).
+  assert.equal(evaluateFormula("{JD.tcf} * 2", {}, "sec-ir", 0, sections), "");
+  const row = { "sec-ir_row0": { a: "5" }, "sec-job": { tcf: "2" } };
+  // A filled TCF alone does not make a reading exist.
+  assert.equal(evaluateFormula("{sec-ir.sameRow.b} * {sec-job.tcf}", row, "sec-ir", 0, sections), "");
+  assert.equal(evaluateFormula('if({sec-ir.sameRow.b} >= 100, "PASS", "FAIL")', row, "sec-ir", 0, sections), "");
+  // Once one reading is in, the rest still count as zero, so a partial total works.
+  assert.equal(evaluateFormula("{sec-ir.sameRow.a} + {sec-ir.sameRow.b}", row, "sec-ir", 0, sections), "5");
   const translated = unwrap(translateV1Expression("{JD.tcf} * 2", context));
   assert.equal(unwrap(evaluate(translated.source, {}, { [tcfReference]: "number" })), null);
 });
 check("the adapter leaves the original fixture untouched", () => assert.deepEqual(sections, fixture.structure.sections));
+
+// The builder's own formulas used to run through `new Function` behind an
+// allowlist of arithmetic and `round`, so `if`, `min`, `max` and comparisons
+// silently gave a blank cell. They now use this engine's parser.
+check("builder formulas keep their arithmetic results", () => {
+  const legacy = (formula: string) => evaluateFormula(formula, {}, "sec-ir", 0, sections);
+  assert.equal(legacy("1+2"), "3");
+  assert.equal(legacy("10 / 3"), String(10 / 3));
+  assert.equal(legacy("2*(3+4)"), "14");
+  assert.equal(legacy("round(3.14159, 2)"), "3.14");
+  assert.equal(legacy("round(2.5)"), "3");
+  assert.equal(legacy("0.1+0.2"), String(0.1 + 0.2));
+  assert.equal(legacy("1/0"), "");
+});
+check("builder formulas run functions, comparisons and text", () => {
+  const row = { "sec-ir_row0": { a: "10", b: "-3", c: "<30" } };
+  const legacy = (formula: string) => evaluateFormula(formula, row, "sec-ir", 0, sections);
+  assert.equal(legacy("max(1, 2, 3)"), "3");
+  assert.equal(legacy("min(4, 2, 9)"), "2");
+  assert.equal(legacy("avg(1, 2, 3)"), "2");
+  assert.equal(legacy("{sec-ir.sameRow.a} - {sec-ir.sameRow.b}"), "13");
+  assert.equal(legacy('if({sec-ir.sameRow.a} > 5 and {sec-ir.sameRow.b} < 0, "PASS", "FAIL")'), "PASS");
+  assert.equal(legacy('if(max({sec-ir.sameRow.a}, {sec-ir.sameRow.c}) / min({sec-ir.sameRow.a}, {sec-ir.sameRow.c}) > 1.5, "FAIL", "PASS")'), "FAIL");
+});
+check("a < or > carried by a reading stays on numbers and never reaches a verdict", () => {
+  const row = { "sec-ir_row0": { c: "<30" } };
+  const legacy = (formula: string) => evaluateFormula(formula, row, "sec-ir", 0, sections);
+  assert.equal(legacy("{sec-ir.sameRow.c} * 2"), "<60");
+  assert.equal(legacy('if({sec-ir.sameRow.c} >= 30, "PASS", "FAIL")'), "PASS");
+});
+check("builder formulas never execute source", () => {
+  const legacy = (formula: string) => evaluateFormula(formula, {}, "sec-ir", 0, sections);
+  assert.equal(legacy("(function(){ return 1 })()"), "");
+  assert.equal(legacy("globalThis"), "");
+  assert.equal(legacy('"PASS" + 1'), "");
+});
 
 console.log("\nElectronic-trip breaker acceptance slice (not report certification)");
 // Numeric formulas from LowVoltageCircuitBreakerElectronicTripATSReport.tsx,

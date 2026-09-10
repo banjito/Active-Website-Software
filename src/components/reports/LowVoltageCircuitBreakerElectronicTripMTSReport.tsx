@@ -5548,6 +5548,8 @@ if (typeof document !== "undefined") {
       }
     }
   `;
+  // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+  style.setAttribute("data-report-print", "");
   document.head.appendChild(style);
 }
 
@@ -5902,6 +5904,8 @@ if (typeof document !== "undefined") {
       .grid-cols-1.md\\:grid-cols-4.lg\\:grid-cols-6 { grid-template-columns: repeat(6, 1fr) !important; gap: 4px !important; }
     }
   `;
+  // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+  style2.setAttribute("data-report-print", "");
   document.head.appendChild(style2);
 }
 

@@ -43,7 +43,7 @@ import {
 } from "../src/lib/customForms/compile";
 import { canonicalJson } from "../src/lib/customForms/checksum";
 import { CUSTOM_FORM_RESULTS } from "../src/lib/types/customForms";
-import { rowStateKey } from "../src/lib/customForms/runtime/layout";
+import { fitColumnWidths, rowStateKey } from "../src/lib/customForms/runtime/layout";
 import {
   documentFromV1,
   sectionFromV1,
@@ -1220,6 +1220,19 @@ section("Builder: the formula reference picker");
     })(),
     JSON.stringify(checkFormula("1 + {NOPE.x}", refs)[0]),
   );
+  // Mistakes a spreadsheet user makes, caught before the cell comes out blank.
+  const first = (formula: string) => checkFormula(formula, refs)[0]?.message ?? "";
+  check("a leading = is explained", first("={IR.C2}").includes('"="'));
+  check("single-quoted text is explained", first("if({IR.C2} > 1, 'PASS', 'FAIL')").includes("double quotes"));
+  check("= used to compare is explained", first('if({IR.C2} = 1, "PASS", "FAIL")').includes('"=="'));
+  check("a missing if branch is reported", first('if({IR.C2} > 1, "PASS")').includes("arguments"));
+  check("an unknown function is reported", first("foo({IR.C2})").includes("foo"));
+  check("a dangling operator is reported", first("{IR.C2} +").length > 0);
+  check(
+    "logic formulas are accepted",
+    checkFormula('if(max({IR.C2}, {JD.tcf}) > 1 and {IR.C2} != 0, "FAIL", "PASS")', refs).length === 0,
+    JSON.stringify(checkFormula('if(max({IR.C2}, {JD.tcf}) > 1 and {IR.C2} != 0, "FAIL", "PASS")', refs)),
+  );
 }
 
 {
@@ -1438,6 +1451,21 @@ section("V2 authoring: deleting a column");
 }
 
 // ---------------------------------------------------------------------------
+
+section("Column width fitting");
+{
+  const sum = (widths: (string | undefined)[]) =>
+    widths.reduce((total, width) => total + parseFloat(width ?? "0"), 0);
+  check("no widths are left to the browser", fitColumnWidths([undefined, undefined]).every((w) => w === undefined));
+  check("widths that already fit are kept", fitColumnWidths(["25%", "25%", "50%"]).join() === "25%,25%,50%");
+  const over = fitColumnWidths(Array(9).fill("25%"));
+  check("nine 25% columns share the page", Math.abs(sum(over) - 100) < 0.01 && over.every((w) => w === over[0]), over.join());
+  const mixed = fitColumnWidths(["60%", "60%", undefined]);
+  check("an unset column keeps a fair share", parseFloat(mixed[2]!) >= 100 / 3 / 2, mixed.join());
+  const px = fitColumnWidths(["480px", "50%"]);
+  check("pixel widths become proportions", Math.abs(parseFloat(px[0]!) - parseFloat(px[1]!)) < 0.01, px.join());
+  check("auto counts as unset", fitColumnWidths(["auto", "50%"])[0] !== undefined);
+}
 
 // Phase 6 conversion pilots. Each asserts internally and throws on the first
 // failure, so it counts as one check here; its own output lists the detail.

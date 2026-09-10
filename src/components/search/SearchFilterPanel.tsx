@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Button } from "../ui/Button";
 import { SearchFilters } from "./GlobalSearchBar";
+import { useDivisions } from "@/hooks/useDivisions";
+import { fieldTechCities } from "@/services/divisionsService";
 
 export interface SearchFilterPanelProps {
   filters: SearchFilters;
@@ -19,13 +21,9 @@ const ENTITY_TYPES = [
   { id: "reports", label: "Reports" },
 ];
 
-// Available divisions in the system
-const DIVISIONS = [
-  { id: "north_alabama", label: "Decatur" },
-  { id: "tennessee", label: "Nashville" },
-  { id: "georgia", label: "Atlanta" },
-  { id: "virginia", label: "Virginia" },
-  { id: "international", label: "International" },
+// Non-field-tech divisions. The field tech cities come from common.divisions
+// so ones added from the sidebar appear here too.
+const OTHER_DIVISIONS = [
   { id: "calibration", label: "Calibration" },
   { id: "armadillo", label: "Armadillo" },
   { id: "scavenger", label: "Scavenger" },
@@ -39,6 +37,11 @@ export const SearchFilterPanel: React.FC<SearchFilterPanelProps> = ({
   onChange,
   onClose,
 }) => {
+  const allDivisions = useDivisions();
+  const divisionChoices = [
+    ...fieldTechCities(allDivisions).map(({ id, label }) => ({ id, label })),
+    ...OTHER_DIVISIONS,
+  ];
   const [localFilters, setLocalFilters] = useState<SearchFilters>({
     ...filters,
   });
@@ -179,7 +182,7 @@ export const SearchFilterPanel: React.FC<SearchFilterPanelProps> = ({
             Divisions
           </h4>
           <div className="grid grid-cols-2 gap-2">
-            {DIVISIONS.map((division) => (
+            {divisionChoices.map((division) => (
               <div key={division.id} className="flex items-center">
                 <input
                   type="checkbox"

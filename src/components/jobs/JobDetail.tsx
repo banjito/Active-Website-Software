@@ -160,6 +160,11 @@ import {
 } from "@/utils/substationFolders";
 import { InnerFolderRow } from "@/components/folders/InnerFolderRow";
 import { useSubstationFolders } from "@/hooks/useSubstationFolders";
+import { getDivisions, useDivisions } from "@/hooks/useDivisions";
+import {
+  fieldTechDivisionIds,
+  jobDivisionOptions,
+} from "@/services/divisionsService";
 import {
   SubstationFolderBoard,
   SubstationDragHandle,
@@ -713,6 +718,7 @@ export default function JobDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const divisionOptions = jobDivisionOptions(useDivisions());
   const { isDemoMode, maskCustomerName, maskCustomerAddress, maskJobTitle } =
     useDemoMode();
   const {
@@ -3848,13 +3854,10 @@ export default function JobDetail() {
             divisionFilter === "field_tech" ||
             divisionFilter === "field-tech"
           ) {
-            query = query.in("division", [
-              "north_alabama",
-              "tennessee",
-              "georgia",
-              "virginia",
-              "international",
-            ]);
+            query = query.in(
+              "division",
+              fieldTechDivisionIds(await getDivisions()),
+            );
           } else {
             query = query.eq("division", divisionFilter);
           }
@@ -9282,13 +9285,21 @@ export default function JobDetail() {
                         className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm"
                       >
                         <option value="">Select Division</option>
-                        <option value="north_alabama">Decatur</option>
-                        <option value="tennessee">Nashville</option>
-                        <option value="georgia">Atlanta</option>
-                        <option value="virginia">Virginia</option>
-                        <option value="international">International</option>
-                        <option value="engineering">Engineering</option>
-                        <option value="scavenger">Scavenger</option>
+                        {divisionOptions.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.label}
+                          </option>
+                        ))}
+                        {/* Keep a retired or legacy division selectable so opening
+                            the form doesn't silently blank it. */}
+                        {editFormData?.division &&
+                          !divisionOptions.some(
+                            (d) => d.id === editFormData.division,
+                          ) && (
+                            <option value={editFormData.division}>
+                              {editFormData.division}
+                            </option>
+                          )}
                       </select>
                     </div>
                     <div>

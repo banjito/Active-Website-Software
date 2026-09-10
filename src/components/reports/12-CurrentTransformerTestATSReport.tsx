@@ -608,6 +608,8 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         .ct-ident-grid .form-input { width: calc(100% - 120px) !important; }
       }
     `;
+    // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+    style.setAttribute("data-report-print", "");
     document.head.appendChild(style);
     return () => {
       document.head.removeChild(style);
@@ -1037,6 +1039,8 @@ const CurrentTransformerTestATSReport: React.FC = () => {
           .ratio-polarity-table colgroup col:nth-child(8) { width: 28% !important; }
         }
       `;
+      // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+      style.setAttribute("data-report-print", "");
       document.head.appendChild(style);
       return () => {
         if (document.head.contains(style)) {

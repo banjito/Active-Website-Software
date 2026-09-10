@@ -37,6 +37,8 @@ import {
 import equipmentService from "@/lib/services/equipmentService";
 import { toast } from "react-hot-toast";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useDivisions } from "@/hooks/useDivisions";
+import { fieldTechCities } from "@/services/divisionsService";
 
 export interface VehicleTrackingProps {
   division: string;
@@ -166,15 +168,6 @@ const statusOptions = [
   { value: "out-of-service", label: "Out of Service" },
 ];
 
-// Update division options to only include Neta Technician Divisions
-const divisionOptions = [
-  { value: "north_alabama", label: "Decatur" },
-  { value: "tennessee", label: "Nashville" },
-  { value: "georgia", label: "Atlanta" },
-  { value: "virginia", label: "Virginia" },
-  { value: "international", label: "International" },
-];
-
 export function VehicleTracking({
   division,
   initialFormOpen = false,
@@ -182,6 +175,11 @@ export function VehicleTracking({
   hideAddButton = false,
 }: VehicleTrackingProps) {
   const { user } = useAuth();
+  // Only the NETA field tech divisions, read from common.divisions.
+  const divisionOptions = fieldTechCities(useDivisions()).map((d) => ({
+    value: d.id,
+    label: d.label,
+  }));
   const [vehicles, setVehicles] = useState<ExtendedVehicle[]>([]);
   const [technicians, setTechnicians] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);

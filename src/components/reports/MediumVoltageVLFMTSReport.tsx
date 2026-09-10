@@ -2988,5 +2988,7 @@ if (typeof document !== "undefined") {
       .nameplate-section .grid-cols-2 .gap-x-6 { column-gap: 16px !important; }
     }
   `;
+  // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+  style.setAttribute("data-report-print", "");
   document.head.appendChild(style);
 }

@@ -7,19 +7,13 @@ import { useDemoMode } from "@/lib/DemoModeContext";
 import { PageLayout } from "@/components/ui/PageLayout";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { formatStatusLabel } from "@/utils/formatters";
+import { getDivisions, useDivisions } from "@/hooks/useDivisions";
+import { jobDivisionOptions } from "@/services/divisionsService";
 
 const PAGE_SIZE = 50;
 
-/** Divisions that have jobs: all field services (NETA) + engineering + scavenger */
-const UNIFIED_DIVISIONS = [
-  "north_alabama",
-  "tennessee",
-  "georgia",
-  "virginia",
-  "international",
-  "engineering",
-  "scavenger",
-] as const;
+// Divisions that have jobs (all field services + engineering + scavenger) come
+// from common.divisions via jobDivisionOptions, so new cities show up here too.
 
 const DIVISION_LABELS: Record<string, string> = {
   north_alabama: "Decatur",
@@ -90,6 +84,7 @@ function getStatusColor(status: string): string {
 
 export default function UnifiedJobsPage() {
   const { user } = useAuth();
+  const divisions = useDivisions();
   const { maskJobTitle, maskCustomerName } = useDemoMode();
   const navigate = useNavigate();
   const location = useLocation();
@@ -119,7 +114,10 @@ export default function UnifiedJobsPage() {
         .schema("neta_ops")
         .from("jobs")
         .select("*")
-        .in("division", [...UNIFIED_DIVISIONS])
+        .in(
+          "division",
+          jobDivisionOptions(await getDivisions()).map((d) => d.id),
+        )
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
@@ -719,7 +717,10 @@ export default function UnifiedJobsPage() {
                         DIVISION_BADGE_CLASS[div] ||
                         "bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300";
                       const sourceLabel =
-                        DIVISION_LABELS[div] || job.division || "—";
+                        DIVISION_LABELS[div] ||
+                        divisions.find((d) => d.id === job.division)?.label ||
+                        job.division ||
+                        "—";
                       return (
                         <tr
                           key={job.id}

@@ -30,8 +30,10 @@ import {
   StatusToggleButton,
   type CustomFormStatus,
 } from "@/components/customForms/runtime/PrintHeader";
+import { useReportCssIsolation } from "@/components/customForms/runtime/useReportCssIsolation";
 
 export const CustomFormPreview: React.FC = () => {
+  useReportCssIsolation();
   const { templateId } = useParams<{ templateId: string }>();
   const navigate = useNavigate();
   const location = useLocation();

@@ -4599,5 +4599,7 @@ if (typeof document !== "undefined") {
       .cable-termination-section table td { font-size: 9px !important; padding: 4px !important; }
     }
   `;
+  // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+  style.setAttribute("data-report-print", "");
   document.head.appendChild(style);
 }

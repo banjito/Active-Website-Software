@@ -1,4 +1,5 @@
 import type { NavigateFunction } from 'react-router-dom';
+import { peekDivisions } from '@/hooks/useDivisions';
 
 /** Map URL first segment to division context (same as HeaderBar shortcuts). */
 export function divisionFromShortcutPath(path: string): string | null {
@@ -26,7 +27,10 @@ export function divisionFromShortcutPath(path: string): string | null {
     meetings: 'meetings',
   };
 
-  return pathToDivision[segment] ?? null;
+  if (pathToDivision[segment]) return pathToDivision[segment];
+
+  // Divisions added from the sidebar (e.g. /chattanooga/jobs).
+  return peekDivisions().some((d) => d.id === segment) ? segment : null;
 }
 
 export function navigateFromShortcut(

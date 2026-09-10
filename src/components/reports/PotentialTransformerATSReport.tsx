@@ -1179,6 +1179,8 @@ const PotentialTransformerATSReport: React.FC = () => {
         table.visual-mechanical-table td:nth-child(2) { white-space: normal !important; word-break: break-word !important; }
       }
     `;
+    // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+    style.setAttribute("data-report-print", "");
     document.head.appendChild(style);
     return () => {
       document.head.removeChild(style);
@@ -1429,6 +1431,8 @@ const PotentialTransformerATSReport: React.FC = () => {
         textarea { display: block !important; width: 100% !important; }
       }
     `;
+    // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+    style.setAttribute("data-report-print", "");
     document.head.appendChild(style);
     return () => {
       const el = document.getElementById(styleId);

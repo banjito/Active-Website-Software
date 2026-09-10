@@ -85,8 +85,10 @@ import {
 } from "@/lib/customForms/savedComponents";
 import { SavedComponentsDialog } from "./SavedComponentsDialog";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useReportCssIsolation } from "./runtime/useReportCssIsolation";
 
 export const FormBuilder: React.FC = () => {
+  useReportCssIsolation();
   const { templateId } = useParams<{ templateId?: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();

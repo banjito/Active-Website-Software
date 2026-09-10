@@ -3567,6 +3567,8 @@ if (typeof document !== "undefined") {
       table:has(colgroup col[style*="12%"]) td:nth-child(7) { width: 9% !important; min-width: 9% !important; max-width: 9% !important; }
     }
   `;
+  // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+  style.setAttribute("data-report-print", "");
   document.head.appendChild(style);
 }
 
@@ -3583,5 +3585,7 @@ const tableStyles = `
 if (typeof document !== "undefined") {
   const tableStyle = document.createElement("style");
   tableStyle.textContent = tableStyles;
+  // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+  tableStyle.setAttribute("data-report-print", "");
   document.head.appendChild(tableStyle);
 }

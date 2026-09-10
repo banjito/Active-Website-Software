@@ -40,6 +40,7 @@ import {
   fetchFieldTechDivisions,
   type Division,
 } from "@/services/divisionsService";
+import { refreshDivisionsCache } from "@/hooks/useDivisions";
 import { ThemeToggle } from "../theme/theme-toggle";
 import { SettingsSubmenu } from "./SettingsSubmenu";
 import { EmployeeLinksSubmenu } from "./EmployeeLinksSubmenu";
@@ -156,6 +157,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       "calibration",
       "armadillo",
       "scavenger",
+      ...fieldTechDivisions.map((d) => d.id),
     ].includes(pathSegments[0]) &&
     (pathSegments[1] === "jobs" || pathSegments[1] === "dashboard");
   useEffect(() => {
@@ -501,7 +503,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       field_tech: "Field Technician Portal",
       Decatur: "Decatur",
     };
-    return divisionMap[divisionValue] || "All Divisions";
+    return (
+      divisionMap[divisionValue] ||
+      fieldTechDivisions.find((d) => d.id === divisionValue)?.label ||
+      "All Divisions"
+    );
   }
 
   useEffect(() => {
@@ -826,13 +832,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 Scheduling
               </Button>
             </Link>
-            {/* Field Equipment - Show only for specific divisions */}
-            {(division === "north_alabama" ||
-              division === "georgia" ||
-              division === "tennessee" ||
-              division === "virginia" ||
-              division === "international" ||
-              division === "field_tech") && (
+            {/* Field Equipment - Field Tech divisions only (includes Field Tech (All)) */}
+            {fieldTechDivisions.some((d) => d.id === division) && (
               <Link
                 to={
                   division === "field_tech"
@@ -1269,6 +1270,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           onClose={() => setNewDivisionAnchor(null)}
           onCreated={(created) => {
             refreshDivisions();
+            refreshDivisionsCache();
             setDivision(created.id);
             navigate(divisionPath(created.id));
           }}

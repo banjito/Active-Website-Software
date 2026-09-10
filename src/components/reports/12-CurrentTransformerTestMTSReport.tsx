@@ -749,6 +749,8 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
         .device-onscreen, .ct-ident-onscreen, .te-onscreen { display: none !important; visibility: hidden !important; height: 0 !important; margin: 0 !important; padding: 0 !important; }
       }
     `;
+    // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+    style.setAttribute("data-report-print", "");
     document.head.appendChild(style);
     return () => {
       document.head.removeChild(style);
@@ -789,6 +791,8 @@ const CurrentTransformerTestMTSReport: React.FC = () => {
           }
         }
       `;
+      // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+      style.setAttribute("data-report-print", "");
       document.head.appendChild(style);
       return () => {
         if (document.head.contains(style)) {

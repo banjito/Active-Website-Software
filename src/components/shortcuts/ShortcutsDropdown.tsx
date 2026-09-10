@@ -17,7 +17,7 @@ import {
   Shortcut,
   MAX_SHORTCUTS,
 } from "@/services/ShortcutService";
-import { BUILTIN_PORTALS } from "@/components/shortcuts/builtins";
+import { useBuiltinPortals } from "@/components/shortcuts/builtins";
 import {
   DndContext,
   closestCenter,
@@ -139,6 +139,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
   onNavigate,
 }) => {
   const { user } = useAuth();
+  const builtinPortals = useBuiltinPortals();
   const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -192,7 +193,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
     setUseBuiltin(true);
     setSelectedPortal("sales");
     setSelectedOption(
-      BUILTIN_PORTALS.find((p) => p.key === "sales")?.options[0]?.path || "",
+      builtinPortals.find((p) => p.key === "sales")?.options[0]?.path || "",
     );
     setError(null);
     setView("form");
@@ -218,7 +219,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
       ? selectedOption
         ? {
             title:
-              BUILTIN_PORTALS.find(
+              builtinPortals.find(
                 (p) => p.key === selectedPortal,
               )?.options.find((o) => o.path === selectedOption)?.label ||
               "Shortcut",
@@ -226,7 +227,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
           }
         : {
             title:
-              BUILTIN_PORTALS.find((p) => p.key === selectedPortal)?.label ||
+              builtinPortals.find((p) => p.key === selectedPortal)?.label ||
               "Portal",
             url: `portal:${selectedPortal}`,
           }
@@ -287,7 +288,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
 
   const quickAddItems = useMemo(() => {
     const items: Array<{ key: string; label: string; path: string }> = [];
-    BUILTIN_PORTALS.forEach((p) => {
+    builtinPortals.forEach((p) => {
       p.options.forEach((opt) => {
         const l = opt.label.toLowerCase();
         if (
@@ -305,7 +306,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
     return items.filter((it) =>
       it.label.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-  }, [searchQuery]);
+  }, [searchQuery, builtinPortals]);
 
   const selectedQuickCount =
     Object.values(selectedQuick).filter(Boolean).length;
@@ -474,13 +475,13 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
                     onChange={(e) => {
                       setSelectedPortal(e.target.value);
                       setSelectedOption(
-                        BUILTIN_PORTALS.find(
+                        builtinPortals.find(
                           (p) => p.key === (e.target.value as any),
                         )?.options[0]?.path || "",
                       );
                     }}
                   >
-                    {BUILTIN_PORTALS.map((p) => (
+                    {builtinPortals.map((p) => (
                       <option key={p.key} value={p.key}>
                         {p.label}
                       </option>
@@ -497,7 +498,7 @@ export const ShortcutsDropdown: React.FC<ShortcutsDropdownProps> = ({
                     onChange={(e) => setSelectedOption(e.target.value)}
                   >
                     <option value="">(Add as portal group)</option>
-                    {BUILTIN_PORTALS.find(
+                    {builtinPortals.find(
                       (p) => p.key === (selectedPortal as any),
                     )?.options.map((opt) => (
                       <option key={opt.path} value={opt.path}>

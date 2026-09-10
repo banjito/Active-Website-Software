@@ -528,15 +528,6 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
     return new Date(dateString).toLocaleDateString();
   };
 
-  // Check if the division is a NETA division
-  const isNETADivision = [
-    "north_alabama",
-    "tennessee",
-    "georgia",
-    "virginia",
-    "international",
-  ].includes(division);
-
   return (
     <div
       className={`w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 no-horizontal-scroll ${isMobile ? "mobile-container mobile-force-small" : ""}`}

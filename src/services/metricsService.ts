@@ -1,4 +1,6 @@
 import { supabase } from '../lib/supabase';
+import { getDivisions } from '../hooks/useDivisions';
+import { fieldTechDivisionIds } from './divisionsService';
 
 // Types
 export interface DivisionMetrics {
@@ -33,8 +35,9 @@ const divisionDisplayMap: Record<string, string> = {
  */
 export async function fetchNETADivisionMetrics(): Promise<DivisionMetrics[]> {
   try {
-    // Ensure all four NETA divisions are included
-    const divisions = ['north_alabama', 'tennessee', 'georgia', 'virginia', 'international'];
+    // Every Field Tech division, including ones added from the sidebar
+    const allDivisions = await getDivisions();
+    const divisions = fieldTechDivisionIds(allDivisions);
     
     // For demo purposes, we're creating sample data
     // In a real implementation, this would be fetched from the database
@@ -44,7 +47,10 @@ export async function fetchNETADivisionMetrics(): Promise<DivisionMetrics[]> {
       
       return {
         division,
-        displayName: divisionDisplayMap[division] || division,
+        displayName:
+          divisionDisplayMap[division] ||
+          allDivisions.find((d) => d.id === division)?.label ||
+          division,
         technicians: 5 + (divHash % 15), // Between 5-20 technicians
         vehicles: 3 + (divHash % 10),    // Between 3-13 vehicles
         equipment: 10 + (divHash % 20)   // Between 10-30 equipment

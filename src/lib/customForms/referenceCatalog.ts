@@ -15,6 +15,9 @@ import { getSectionReferenceCode } from "./formCellResolution";
 import { classifySection } from "./runtime/sectionKind";
 import { resolveRowCount } from "./runtime/layout";
 import { ComponentType } from "@/lib/types/customForms";
+import { parseExpression } from "./expressions/parser";
+import { inferNode } from "./expressions/semantics";
+import { ExpressionFailure, type ExpressionIssue } from "./expressions/types";
 
 export interface ReferenceEntry {
   /** What gets inserted, braces included. */
@@ -244,6 +247,54 @@ export function checkFormula(
       end: match.index + whole.length,
     });
   }
+  if (problems.length) return problems;
 
+  const syntax = checkFormulaSyntax(source);
+  if (syntax) problems.push(syntax);
   return problems;
+}
+
+/**
+ * Check the formula the way the form will run it. At run time every reference
+ * is replaced by a number before the formula is evaluated, so the same is done
+ * here, padded to the reference's length so a problem's position still points
+ * at the right characters.
+ */
+function checkFormulaSyntax(source: string): FormulaProblem | null {
+  const leadingEquals = source.match(/^\s*=/);
+  if (leadingEquals) {
+    return {
+      message: 'Leave out the "=" at the start. Formulas here begin with the value itself.',
+      start: leadingEquals.index! + leadingEquals[0].length - 1,
+      end: leadingEquals[0].length,
+    };
+  }
+  const singleQuote = source.indexOf("'");
+  if (singleQuote >= 0) {
+    return {
+      message: 'Put text in double quotes, like "PASS".',
+      start: singleQuote,
+      end: singleQuote + 1,
+    };
+  }
+
+  const numeric = source.replace(/\{[^{}]*\}/g, (ref) => "1".padEnd(ref.length, " "));
+  const parsed = parseExpression(numeric);
+  if (!parsed.ok) return toProblem(parsed.issues[0], source);
+  try {
+    inferNode(parsed.value, () => "number");
+  } catch (error) {
+    if (error instanceof ExpressionFailure) return toProblem(error.issue, source);
+    throw error;
+  }
+  return null;
+}
+
+function toProblem(issue: ExpressionIssue, source: string): FormulaProblem {
+  const lone = source.slice(issue.start, issue.end).trim();
+  const message =
+    issue.code === "syntax.character" && lone === "="
+      ? 'Use "==" to compare two values, e.g. {IR.C1} == 0.'
+      : issue.message;
+  return { message, start: issue.start, end: Math.max(issue.end, issue.start + 1) };
 }

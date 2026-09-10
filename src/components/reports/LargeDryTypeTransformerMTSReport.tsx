@@ -3233,6 +3233,8 @@ ${sectionDividerCss("#report-container")}
 ${turnsRatioFitCss(".force-print #report-container")}
 ${sectionDividerCss(".force-print #report-container")}
   `;
+  // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+  style.setAttribute("data-report-print", "");
   document.head.appendChild(style);
 }
 

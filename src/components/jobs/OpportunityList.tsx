@@ -29,6 +29,8 @@ import { useUserPreferences } from "../../hooks/useUserPreferences";
 import { withPgTimeoutRetry } from "../../lib/retryPgTimeout";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { isSuperUser } from "../../lib/roles";
+import { useDivisions } from "@/hooks/useDivisions";
+import { jobDivisionOptions } from "@/services/divisionsService";
 
 interface Customer {
   id: string;
@@ -268,16 +270,6 @@ const DEFAULT_FILTER_SETTINGS = {
   statusFilter: [] as string[],
 };
 
-const DIVISION_FILTER_OPTIONS = [
-  { value: "north_alabama", label: "Decatur" },
-  { value: "tennessee", label: "Nashville" },
-  { value: "georgia", label: "Atlanta" },
-  { value: "virginia", label: "Virginia" },
-  { value: "international", label: "International" },
-  { value: "engineering", label: "Engineering" },
-  { value: "scavenger", label: "Scavenger" },
-];
-
 const OPPORTUNITY_TYPE_OPTIONS = [
   { value: "large_acceptance", label: "Large Acceptance" },
   { value: "small_acceptance", label: "Small Acceptance" },
@@ -329,18 +321,18 @@ function areFilterArraysEqual(a: string[], b: string[]): boolean {
   return a.every((value) => b.includes(value));
 }
 
-function formatDivisionName(division: string): string {
-  return (
-    DIVISION_FILTER_OPTIONS.find((option) => option.value === division)
-      ?.label || division
-  );
-}
-
 const OPPORTUNITY_MODAL_PANEL_CLASS =
   "relative bg-white dark:bg-dark-150 rounded-none max-w-xl w-full mx-auto p-6 shadow-xl max-h-[70vh] overflow-y-scroll [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:#d1d5db_#f3f4f6] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:rounded-none [&::-webkit-scrollbar-track]:bg-neutral-100 [&::-webkit-scrollbar-thumb]:rounded-none [&::-webkit-scrollbar-thumb]:bg-neutral-400 [&::-webkit-scrollbar-thumb]:hover:bg-neutral-500 dark:[scrollbar-color:#4b5563_#262626] dark:[&::-webkit-scrollbar-track]:bg-dark-200 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-600";
 
 export default function OpportunityList() {
   const { user, loading: authLoading, softRefresh } = useAuth();
+  // Divisions a job can land in, from common.divisions.
+  const divisionFilterOptions = jobDivisionOptions(useDivisions()).map(
+    (d) => ({ value: d.id, label: d.label }),
+  );
+  const formatDivisionName = (division: string): string =>
+    divisionFilterOptions.find((option) => option.value === division)?.label ||
+    division;
   const { maskCustomerName } = useDemoMode();
   const navigate = useNavigate();
   const hasAttemptedRecovery = useRef(false); // Prevent infinite retry loops
@@ -2586,7 +2578,7 @@ export default function OpportunityList() {
                       Division
                     </div>
                     {renderFilterOptions(
-                      DIVISION_FILTER_OPTIONS,
+                      divisionFilterOptions,
                       divisionFilters,
                       setDivisionFilters,
                     )}
@@ -3908,48 +3900,15 @@ export default function OpportunityList() {
                   <option value="" className="dark:bg-dark-150 dark:text-white">
                     Select a division
                   </option>
-                  <option
-                    value="north_alabama"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Decatur
-                  </option>
-                  <option
-                    value="tennessee"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Nashville
-                  </option>
-                  <option
-                    value="georgia"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Atlanta
-                  </option>
-                  <option
-                    value="virginia"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Virginia
-                  </option>
-                  <option
-                    value="international"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    International
-                  </option>
-                  <option
-                    value="engineering"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Engineering
-                  </option>
-                  <option
-                    value="scavenger"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Scavenger
-                  </option>
+                  {divisionFilterOptions.map((d) => (
+                    <option
+                      key={d.value}
+                      value={d.value}
+                      className="dark:bg-dark-150 dark:text-white"
+                    >
+                      {d.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -4432,48 +4391,15 @@ export default function OpportunityList() {
                   <option value="" className="dark:bg-dark-150 dark:text-white">
                     Select a division
                   </option>
-                  <option
-                    value="north_alabama"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Decatur
-                  </option>
-                  <option
-                    value="tennessee"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Nashville
-                  </option>
-                  <option
-                    value="georgia"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Atlanta
-                  </option>
-                  <option
-                    value="virginia"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Virginia
-                  </option>
-                  <option
-                    value="international"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    International
-                  </option>
-                  <option
-                    value="engineering"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Engineering
-                  </option>
-                  <option
-                    value="scavenger"
-                    className="dark:bg-dark-150 dark:text-white"
-                  >
-                    Scavenger
-                  </option>
+                  {divisionFilterOptions.map((d) => (
+                    <option
+                      key={d.value}
+                      value={d.value}
+                      className="dark:bg-dark-150 dark:text-white"
+                    >
+                      {d.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 

@@ -3371,6 +3371,8 @@ if (typeof document !== "undefined") {
       .primary-injection-table .tol-pct-input + span { margin-left: 4px !important; }
     }
   `;
+  // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+  style.setAttribute("data-report-print", "");
   document.head.appendChild(style);
 }
 
@@ -3565,6 +3567,8 @@ if (typeof document !== "undefined") {
       .primary-injection-table col:nth-child(9) { width: 12% !important; }
     }
   `;
+  // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+  style.setAttribute("data-report-print", "");
   document.head.appendChild(style);
 }
 

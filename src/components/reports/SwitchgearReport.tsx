@@ -920,6 +920,8 @@ const SwitchgearReport: React.FC = () => {
       .section-contact-resistance td input,
       .section-dielectric td input { width: 100%; }
     `;
+    // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+    style.setAttribute("data-report-print", "");
     document.head.appendChild(style);
     return () => {
       try {
@@ -3172,5 +3174,7 @@ if (typeof document !== "undefined") {
       .hidden.print\:block { display: block !important; }
     }
   `;
+  // Tagged so custom-form pages can switch this sheet off; it is global and never removed.
+  style.setAttribute("data-report-print", "");
   document.head.appendChild(style);
 }

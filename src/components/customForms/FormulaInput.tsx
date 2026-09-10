@@ -28,6 +28,14 @@ const FUNCTION_HELP: Array<{ name: string; hint: string }> = [
   { name: "sqrt(x)", hint: "Square root." },
 ];
 
+/** Worked examples, the quickest way to see how the pieces fit together. */
+const FORMULA_EXAMPLES: Array<{ label: string; formula: string }> = [
+  { label: "Corrected reading", formula: "{IR.C1} * {JD.tcf}" },
+  { label: "Deviation %", formula: "(max({CR.C1}, {CR.C2}, {CR.C3}) / min({CR.C1}, {CR.C2}, {CR.C3}) - 1) * 100" },
+  { label: "Pass / fail", formula: 'if({IR.C1} >= 100, "PASS", "FAIL")' },
+  { label: "Two conditions", formula: 'if({CR.C1} > 0 and {CR.C1} < 50, "PASS", "FAIL")' },
+];
+
 export interface FormulaInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -187,6 +195,20 @@ export const FormulaInput: React.FC<FormulaInputProps> = ({
                 >
                   {fn.name}
                 </button>
+              ))}
+            </div>
+            <p className="mt-1.5 text-[10px] text-neutral-500 dark:text-neutral-400">
+              Compare with <code>&gt; &lt; &gt;= &lt;= == !=</code>, combine with <code>and</code> / <code>or</code>,
+              and put text in double quotes. A blank reading counts as 0.
+            </p>
+            <div className="mt-1.5 space-y-0.5">
+              {FORMULA_EXAMPLES.map((example) => (
+                <div key={example.label} className="text-[10px] leading-snug">
+                  <span className="text-neutral-500 dark:text-neutral-400">{example.label}: </span>
+                  <code className="font-mono text-neutral-700 dark:text-neutral-300 break-all select-all">
+                    {example.formula}
+                  </code>
+                </div>
               ))}
             </div>
           </div>

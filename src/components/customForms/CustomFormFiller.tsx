@@ -60,8 +60,10 @@ import {
   StatusToggleButton,
   type CustomFormStatus,
 } from "./runtime/PrintHeader";
+import { useReportCssIsolation } from "./runtime/useReportCssIsolation";
 
 export const CustomFormFiller: React.FC = () => {
+  useReportCssIsolation();
   const { jobId, templateId, instanceId } = useParams<{
     jobId: string;
     templateId: string;

@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useDivisions } from "@/hooks/useDivisions";
 import {
   ChartContainer,
   ChartTooltip,
@@ -53,6 +54,7 @@ export function DivisionAnalyticsDialog({
   isOpen,
   onClose,
 }: DivisionAnalyticsDialogProps) {
+  const allDivisions = useDivisions();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DivisionStats>({
     activeOpportunities: 0,
@@ -201,7 +203,11 @@ export function DivisionAnalyticsDialog({
       international: "International",
       engineering: "Engineering",
     };
-    return divisionMap[division] || division;
+    return (
+      divisionMap[division] ||
+      allDivisions.find((d) => d.id === division)?.label ||
+      division
+    );
   }
 
   return (

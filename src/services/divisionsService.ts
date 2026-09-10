@@ -41,6 +41,67 @@ export const divisionPath = (id: string): string =>
 const UNDEFINED_TABLE = "42P01";
 
 /**
+ * Standalone portals whose jobs live in neta_ops.jobs, so a job can be moved
+ * into them. Calibration, armadillo and lab keep theirs in lab_ops.lab_jobs and
+ * hr has none, so they are never offered on a neta_ops job.
+ */
+const STANDALONE_JOB_DIVISION_IDS = ["engineering", "scavenger"];
+
+/** Fallback for fetchDivisions: the switcher plus the standalone job portals. */
+export const BUILTIN_DIVISIONS: Division[] = [
+  ...BUILTIN_FIELD_TECH_DIVISIONS,
+  { id: "engineering", label: "Engineering", sort_order: 100, is_field_tech: false, active: true },
+  { id: "scavenger", label: "Scavenger", sort_order: 130, is_field_tech: false, active: true },
+];
+
+/**
+ * The real Field Tech divisions -- the switcher minus the "Field Tech (All)"
+ * aggregate.
+ */
+export const fieldTechCities = (divisions: Division[]): Division[] =>
+  divisions.filter((d) => d.is_field_tech && d.active && d.id !== "field_tech");
+
+/** The id list the Field Tech (All) aggregate view filters jobs by. */
+export const fieldTechDivisionIds = (divisions: Division[]): string[] =>
+  fieldTechCities(divisions).map((d) => d.id);
+
+/** Divisions a neta_ops job can be assigned to, in display order. */
+export const jobDivisionOptions = (divisions: Division[]): Division[] =>
+  divisions.filter(
+    (d) =>
+      d.active &&
+      d.id !== "field_tech" &&
+      (d.is_field_tech || STANDALONE_JOB_DIVISION_IDS.includes(d.id)),
+  );
+
+/**
+ * Every active division, field tech and standalone, in sort order. Never
+ * throws; falls back to the built-in lists like fetchFieldTechDivisions.
+ */
+export async function fetchDivisions(): Promise<Division[]> {
+  const { data, error } = await supabase
+    .schema("common")
+    .from("divisions")
+    .select("id, label, sort_order, is_field_tech, active")
+    .eq("active", true)
+    .order("sort_order", { ascending: true })
+    .order("label", { ascending: true });
+
+  if (error) {
+    if (error.code !== UNDEFINED_TABLE) {
+      console.error("Failed to load divisions:", describeSupabaseError(error));
+    }
+    return BUILTIN_DIVISIONS;
+  }
+
+  if (!data?.length) {
+    return BUILTIN_DIVISIONS;
+  }
+
+  return data as Division[];
+}
+
+/**
  * Active Field Tech divisions in sidebar order. Never throws: a failure here
  * would blank the navigation, so it falls back to the built-in list.
  */

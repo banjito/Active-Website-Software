@@ -18,7 +18,7 @@
 | 2 — Complete document and table schema | **Mostly done** | Schema, runtime, validation and the table grid editor landed. Layout containers and bindings still have no authoring UI. |
 | 3 — Typed expression and rule engine | **In progress: core library** | Safe parser, typed evaluation, stable-reference upgrade helper, dependency checks and regression tests landed. Not activated in the report runtime or publication path. |
 | 4 — Repeaters, comparisons, charts, signatures | Not started | Signature capture is stubbed; the schema slot exists. |
-| 5 — Operational workflow | Not started | `workflow_status` column exists from phase 0; nothing reads it yet. |
+| 5 — Operational workflow | **Started** | Workflow itself not begun (`workflow_status` exists, nothing reads it). Excel import built alongside it: workbook to reviewable draft, with deterministic formula translation checked against the workbook's saved results. |
 | 6 — Convert and certify the report catalogue | **Started** | Matrix of all 59 reports built; 3 in progress, 0 certified. Low Voltage Switch is the first hand-built conversion. |
 
 ### Where the work actually stands
@@ -44,7 +44,7 @@ representative, or the block-tree editor for layout containers.
 ### Verification available today
 
 - `node --import ./scripts/ts-alias-loader.mjs scripts/custom-forms-regression.ts`
-  (also `npm run custom-forms-regression`) runs 455 checks: adapter fidelity,
+  (also `npm run custom-forms-regression`) runs 479 checks: adapter fidelity,
   row identity, grids, conditions, bindings, the typed expression engine, and
   **the rendered output of every fixture in every mode**. It needs no database
   and no test framework.
@@ -1446,7 +1446,7 @@ Regression harness is now 293 checks (212 expression, 81 template): `npm run cus
 
 ---
 
-### Phase 5 — Complete operational workflow  ⬜ Not started
+### Phase 5 — Complete operational workflow  🟡 Started
 
 **Objective:** make custom reports first-class production reports.
 
@@ -1463,6 +1463,61 @@ Regression harness is now 293 checks (212 expression, 81 template): `npm run cus
 - [ ] Normalize report-kind detection instead of scattering file URL prefix checks.
 - [ ] Audit and enforce database and storage authorization.
 - [ ] Preserve published PDFs and checksums as historical artifacts.
+
+#### Excel import (added alongside phase 5)
+
+A technician's own .xlsx becomes a draft template. Three parts, and only the
+middle one is a model:
+
+1. `excel/workbook.ts` parses the file **in the browser**. It checks the ZIP and
+   the XML itself before handing anything to SheetJS, refuses macro-enabled,
+   encrypted and renamed files, and never calculates a formula: Excel's cached
+   results are read as they were saved.
+2. The `generate-form-template` edge function proposes a **layout and the source
+   ranges it came from**. Its prompt forbids formulas, defaults and cached
+   values, the request is validated before the provider is called, and the
+   answer is validated against that same request, so a model cannot invent a
+   sheet, a cell or a calculation.
+
+   Sources are rectangles, not cells. Per-cell mappings made the answer grow
+   with the workbook and the first real file overran the model's 8192-token
+   output ceiling, returning JSON cut off mid-object. A table now costs one
+   range whatever its size, and `deriveMappings` expands it. Which cells are
+   readings and which are calculations is read from the workbook (a cell with a
+   formula is a calculation), so that judgement was taken away from the model
+   as well.
+3. `excel/import.ts` translates the workbook's **own** formulas with
+   `excel/formulas.ts`, a deterministic translator for a bounded Excel subset
+   (SUM, AVERAGE, MIN, MAX, IF, AND, OR, NOT, ABS, ROUND(n,0), arithmetic and
+   comparisons). Every reference must already be mapped: an unmapped reference is
+   an error, never a cached number quietly standing in for a live one.
+
+Each translation is then **run against the workbook's own saved inputs and
+compared with its cached result**, which is the only check that can say the form
+reproduces the file, and only for the values it was saved with. Each formula
+ends as `matched`, `different`, `unverified` or `unsupported`. Anything the type
+checker rejects is dropped, its field is left as one a technician can fill in
+(never a dead read-only cell), and the reason is recorded against the cell.
+
+The findings do not live in a dialog that closes. They are written into the
+draft as a non-printing "Review notes: imported from Excel, not verified"
+section, listing disagreements first. `reviewed` records only that a person
+looked; nothing here is an engineering certification.
+
+`src/lib/customForms/excel/excel.regression.ts` (24 checks, in the main suite)
+builds a real .xlsx in memory and asserts the parse, the translation subset, the
+refusals, and that a workbook whose saved result disagrees with its own formula
+is reported as `different` rather than shipped.
+
+One of those checks repackages a workbook with zlib before reading it. The ZIP
+verifier had the RFC 1951 code-length order wrong, so every dynamic Huffman
+block failed with "Invalid ZIP compression code": that is what Excel writes and
+what SheetJS's own writer does not, so a test built only from `XLSX.write`
+passed while no real workbook could be opened. Any change to the ZIP or DEFLATE
+checking needs a stream from a real compressor, not one from SheetJS.
+
+Remaining: the edge function must be deployed for the Import Excel button to
+work, and no engineer has yet reviewed an imported draft end to end.
 
 #### Exit gate
 
@@ -1570,7 +1625,7 @@ LV Circuit Breaker ATS 25 showed four runtime problems, all fixed:
 
 Verification is now:
 
-- `npm run custom-forms-regression` — 455 checks, fast, no browser;
+- `npm run custom-forms-regression` — 479 checks, fast, no browser;
 - `npm run custom-forms-browser` — real Chrome, the only test that can see CSS
   interfering with layout.
 

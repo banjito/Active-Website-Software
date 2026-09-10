@@ -24,6 +24,7 @@ import {
   Globe,
   Lock,
   Sparkles,
+  Upload,
   X,
 } from "lucide-react";
 
@@ -38,6 +39,11 @@ import {
 } from "@/lib/customForms/generateTemplateFromReport";
 import { publishTemplateVersion } from "@/lib/customForms/versioning";
 import { hasRegisteredConversion } from "@/lib/customForms/conversions";
+import { importExcelTemplate } from "@/lib/customForms/excel/generate";
+import {
+  reviewAsDescription,
+  summarizeExcelReview,
+} from "@/lib/customForms/excel/import";
 
 interface Template {
   id: string;
@@ -64,6 +70,14 @@ export const CustomFormTemplates: React.FC = () => {
   const [showAiModal, setShowAiModal] = useState(false);
   const [reportSearch, setReportSearch] = useState("");
   const [generatingReport, setGeneratingReport] = useState<string | null>(null);
+  const [showExcelModal, setShowExcelModal] = useState(false);
+  const [importingExcel, setImportingExcel] = useState(false);
+  const [excelError, setExcelError] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const excelInputRef = React.useRef<HTMLInputElement>(null);
+  // Drag events fire for every child element, so nesting is counted rather
+  // than trusting a single leave to mean the pointer left the drop zone.
+  const dragDepth = React.useRef(0);
   const reports = React.useMemo(() => listReports(), []);
   const filteredReports = reports.filter((r) =>
     r.fileName.toLowerCase().includes(reportSearch.toLowerCase()),
@@ -113,6 +127,87 @@ export const CustomFormTemplates: React.FC = () => {
     } finally {
       setGeneratingReport(null);
     }
+  };
+
+  /**
+   * Turn an uploaded workbook into a draft template.
+   *
+   * The workbook is read in this browser; only the resulting analysis is sent
+   * for a layout. Formulas are translated here from the original file, and
+   * whatever could not be reproduced arrives as review notes on the draft.
+   */
+  const handleExcelFile = async (file: File) => {
+    if (importingExcel) return;
+    if (!/\.xlsx$/i.test(file.name)) {
+      setExcelError(
+        `${file.name} is not an .xlsx file. Open it in Excel and save a copy as .xlsx (macro-enabled .xlsm and older .xls files are not accepted).`,
+      );
+      return;
+    }
+    setExcelError(null);
+    setImportingExcel(true);
+    const toastId = toast.loading(`Reading ${file.name}…`);
+    try {
+      const draft = await importExcelTemplate(file);
+      const counts = summarizeExcelReview(draft.review);
+
+      const { data, error } = await supabase
+        .schema("neta_ops")
+        .from("custom_form_templates")
+        .insert({
+          name: draft.template.name || file.name.replace(/\.xlsx$/i, ""),
+          description: reviewAsDescription(draft.review),
+          neta_section: null,
+          created_by: user?.id,
+          structure: draft.template.structure,
+          is_active: true,
+          is_published: false,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+
+      const trouble = counts.different + counts.unsupported;
+      toast.success(
+        trouble
+          ? `Draft created. ${trouble} calculation${trouble === 1 ? "" : "s"} need${trouble === 1 ? "s" : ""} checking — see the review notes at the end of the form.`
+          : "Draft created — review it in the builder before publishing.",
+        { id: toastId, duration: trouble ? 8000 : 4000 },
+      );
+      setShowExcelModal(false);
+      navigate(`/custom-forms/builder/${data.id}`);
+    } catch (err) {
+      console.error("Excel import failed:", err);
+      const message =
+        err instanceof Error ? err.message : "Could not import that workbook";
+      // The modal stays open on failure: the reader's messages say what to fix
+      // in the workbook, and a toast disappears before it can be acted on.
+      setExcelError(message);
+      toast.error(message, { id: toastId, duration: 8000 });
+    } finally {
+      setImportingExcel(false);
+    }
+  };
+
+  const openExcelModal = () => {
+    setExcelError(null);
+    setDragging(false);
+    dragDepth.current = 0;
+    setShowExcelModal(true);
+  };
+
+  const handleDrop = (event: React.DragEvent) => {
+    event.preventDefault();
+    dragDepth.current = 0;
+    setDragging(false);
+    if (importingExcel) return;
+    const files = Array.from(event.dataTransfer.files ?? []);
+    if (!files.length) return;
+    if (files.length > 1) {
+      setExcelError("Drop one workbook at a time.");
+      return;
+    }
+    void handleExcelFile(files[0]);
   };
 
   const loadTemplates = async () => {
@@ -299,6 +394,14 @@ export const CustomFormTemplates: React.FC = () => {
               </h1>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                onClick={openExcelModal}
+                variant="outline"
+                title="Read an .xlsx workbook and turn it into a draft template. Calculations are translated from the workbook and checked against its saved results."
+                leftIcon={<Upload className="w-4 h-4" />}
+              >
+                Import Excel
+              </Button>
               <Button
                 onClick={() => {
                   setReportSearch("");
@@ -489,6 +592,113 @@ export const CustomFormTemplates: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Excel import modal */}
+      {showExcelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg bg-white dark:bg-dark-100 rounded-lg shadow-xl">
+            <div className="flex items-start justify-between p-6 pb-4">
+              <div>
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                  <Upload className="w-5 h-5 text-brand" />
+                  Import an Excel workbook
+                </h2>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                  The workbook is read in your browser and turned into a draft
+                  template you can edit.
+                </p>
+              </div>
+              <button
+                onClick={() => !importingExcel && setShowExcelModal(false)}
+                disabled={importingExcel}
+                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 disabled:opacity-40"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="px-6 pb-6">
+              <input
+                ref={excelInputRef}
+                type="file"
+                accept=".xlsx"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  // Clear first, so picking the same file twice still fires.
+                  e.target.value = "";
+                  if (file) void handleExcelFile(file);
+                }}
+              />
+              <div
+                role="button"
+                tabIndex={0}
+                aria-label="Choose or drop an .xlsx workbook"
+                onClick={() => !importingExcel && excelInputRef.current?.click()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    if (!importingExcel) excelInputRef.current?.click();
+                  }
+                }}
+                onDragEnter={(e) => {
+                  e.preventDefault();
+                  dragDepth.current += 1;
+                  setDragging(true);
+                }}
+                onDragOver={(e) => e.preventDefault()}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  dragDepth.current = Math.max(0, dragDepth.current - 1);
+                  if (dragDepth.current === 0) setDragging(false);
+                }}
+                onDrop={handleDrop}
+                className={`flex flex-col items-center justify-center gap-2 px-6 py-10 rounded-lg border-2 border-dashed text-center transition-colors ${
+                  importingExcel
+                    ? "cursor-wait border-neutral-300 dark:border-neutral-600"
+                    : dragging
+                      ? "cursor-copy border-brand bg-brand/10"
+                      : "cursor-pointer border-neutral-300 dark:border-neutral-600 hover:border-brand hover:bg-brand/5"
+                }`}
+              >
+                {importingExcel ? (
+                  <>
+                    <LoadingSpinner size="sm" />
+                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                      Reading the workbook and building a draft…
+                    </p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                      This can take a moment on a large file.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <Upload
+                      className={`w-8 h-8 ${dragging ? "text-brand" : "text-neutral-400"}`}
+                    />
+                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                      {dragging
+                        ? "Drop the workbook to import it"
+                        : "Drag a workbook here, or click to choose one"}
+                    </p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                      .xlsx only, up to 10 MB. Macro-enabled and password
+                      protected files are not accepted.
+                    </p>
+                  </>
+                )}
+              </div>
+
+              {excelError && (
+                <p className="mt-3 text-sm text-red-700 dark:text-red-300">
+                  {excelError}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* AI: Generate from report modal */}
       {showAiModal && (

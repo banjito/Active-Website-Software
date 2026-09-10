@@ -1,6 +1,12 @@
 /// <reference lib="dom" />
 // @ts-ignore deno: types are resolved at runtime
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import {
+  ExcelValidationError,
+  buildExcelMessages,
+  parseExcelResponse,
+  validateExcelRequest,
+} from "./excel-prompt.ts";
 // Local TS linting shim (for non-Deno editors)
 declare const Deno: {
   env: { get: (name: string) => string | undefined };
@@ -173,7 +179,15 @@ serve(async (req) => {
     const apiKey = Deno.env.get("DEEPSEEK_API_KEY");
     if (!apiKey) throw new Error("DEEPSEEK_API_KEY is not set");
 
-    const { reportName, reportSource, componentCatalog } = await req.json();
+    const payload = await req.json();
+
+    // An uploaded workbook takes a different path: its prompt forbids formulas
+    // entirely, and the app translates those itself from the original file.
+    if (payload?.sourceType === "excel") {
+      return await generateFromExcel(payload, apiKey);
+    }
+
+    const { reportName, reportSource, componentCatalog } = payload ?? {};
     if (!reportSource || typeof reportSource !== "string") {
       return json({ error: "reportSource (string) is required" }, 400);
     }
@@ -245,6 +259,63 @@ Generate the CustomFormTemplate JSON now.`;
     return json({ error: String((err as Error).message || err) }, 500);
   }
 });
+
+/**
+ * Workbook to layout. The model may propose a layout and cell mappings only.
+ *
+ * The request is fully validated before the provider is called, and the answer
+ * is validated against that same request, so a model cannot invent a sheet,
+ * a cell, or a formula.
+ */
+async function generateFromExcel(payload: unknown, apiKey: string): Promise<Response> {
+  let request;
+  try {
+    request = validateExcelRequest(payload);
+  } catch (err) {
+    if (err instanceof ExcelValidationError) {
+      return json({ error: `Workbook upload rejected: ${err.message}` }, 400);
+    }
+    throw err;
+  }
+
+  const resp = await fetch(DEEPSEEK_URL, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 8192,
+      stream: true,
+      temperature: 0,
+      response_format: { type: "json_object" },
+      messages: buildExcelMessages(request),
+    }),
+  });
+  if (!resp.ok || !resp.body) {
+    const detail = await resp.text();
+    console.error("DeepSeek API error (excel):", resp.status, detail);
+    return json({ error: `DeepSeek API error (${resp.status})`, detail }, 502);
+  }
+
+  const rawText = await collectStreamedText(resp.body);
+  try {
+    // Never echo the raw model output: it can contain workbook contents.
+    return json(parseExcelResponse(rawText, request));
+  } catch (err) {
+    if (err instanceof ExcelValidationError) {
+      console.error("Excel response rejected:", err.message);
+      // Say enough to act on without quoting the answer, which carries
+      // workbook contents: length and whether it was cut off mid-object.
+      const truncated = rawText.length > 0 && !rawText.trimEnd().endsWith("}");
+      const shape = rawText.length === 0
+        ? "The model returned nothing."
+        : truncated
+          ? `The answer was cut off after ${rawText.length} characters, so this workbook is too large to lay out in one pass. Import a smaller sheet, or split the workbook.`
+          : `The answer was ${rawText.length} characters.`;
+      return json({ error: `The generated layout was rejected: ${err.message}`, detail: shape }, 502);
+    }
+    throw err;
+  }
+}
 
 function json(payload: unknown, status = 200): Response {
   return new Response(JSON.stringify(payload), {

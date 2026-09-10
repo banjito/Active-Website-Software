@@ -17,6 +17,7 @@
  */
 
 import { expressionCheckCount } from "@/lib/customForms/expressions/expressions.regression";
+import { excelCheckCount, excelFailureCount } from "@/lib/customForms/excel/excel.regression";
 import {
   renderCheckCount,
   renderFailureCount,
@@ -1481,9 +1482,9 @@ try {
   console.log(`  FAIL  Low Voltage Switch conversion\n        ${(error as Error).message}`);
 }
 
-const total = checks + expressionCheckCount + renderCheckCount + conversionChecks;
-const failed = failures + renderFailureCount + conversionFailures;
+const total = checks + expressionCheckCount + renderCheckCount + conversionChecks + excelCheckCount;
+const failed = failures + renderFailureCount + conversionFailures + excelFailureCount;
 console.log(
-  `\n${total - failed}/${total} checks passed (${expressionCheckCount} expression, ${checks} V1/V2, ${renderCheckCount} render, ${conversionChecks} conversion)${failed ? `, ${failed} FAILED` : ""}`,
+  `\n${total - failed}/${total} checks passed (${expressionCheckCount} expression, ${checks} V1/V2, ${renderCheckCount} render, ${excelCheckCount} Excel import, ${conversionChecks} conversion)${failed ? `, ${failed} FAILED` : ""}`,
 );
 process.exit(failed > 0 ? 1 : 0);

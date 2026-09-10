@@ -21,6 +21,7 @@ import {
   renderCheckCount,
   renderFailureCount,
 } from "./custom-forms-render";
+import { runLowVoltageSwitchRegression } from "../src/lib/customForms/conversions/low-voltage-switch.regression";
 
 import {
   V1_FIXTURES,
@@ -1438,9 +1439,23 @@ section("V2 authoring: deleting a column");
 
 // ---------------------------------------------------------------------------
 
-const total = checks + expressionCheckCount + renderCheckCount;
-const failed = failures + renderFailureCount;
+// Phase 6 conversion pilots. Each asserts internally and throws on the first
+// failure, so it counts as one check here; its own output lists the detail.
+section("Phase 6 conversion: Low Voltage Switch");
+let conversionChecks = 0;
+let conversionFailures = 0;
+try {
+  await runLowVoltageSwitchRegression();
+  conversionChecks += 1;
+} catch (error) {
+  conversionChecks += 1;
+  conversionFailures += 1;
+  console.log(`  FAIL  Low Voltage Switch conversion\n        ${(error as Error).message}`);
+}
+
+const total = checks + expressionCheckCount + renderCheckCount + conversionChecks;
+const failed = failures + renderFailureCount + conversionFailures;
 console.log(
-  `\n${total - failed}/${total} checks passed (${expressionCheckCount} expression, ${checks} V1/V2, ${renderCheckCount} render)${failed ? `, ${failed} FAILED` : ""}`,
+  `\n${total - failed}/${total} checks passed (${expressionCheckCount} expression, ${checks} V1/V2, ${renderCheckCount} render, ${conversionChecks} conversion)${failed ? `, ${failed} FAILED` : ""}`,
 );
 process.exit(failed > 0 ? 1 : 0);

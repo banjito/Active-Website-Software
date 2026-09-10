@@ -19,7 +19,7 @@
 | 3 — Typed expression and rule engine | **In progress: core library** | Safe parser, typed evaluation, stable-reference upgrade helper, dependency checks and regression tests landed. Not activated in the report runtime or publication path. |
 | 4 — Repeaters, comparisons, charts, signatures | Not started | Signature capture is stubbed; the schema slot exists. |
 | 5 — Operational workflow | Not started | `workflow_status` column exists from phase 0; nothing reads it yet. |
-| 6 — Convert and certify the report catalogue | Not started | Depends on phase 2's authoring UI. |
+| 6 — Convert and certify the report catalogue | **Started** | Matrix of all 59 reports built; 3 in progress, 0 certified. Low Voltage Switch is the first hand-built conversion. |
 
 ### Where the work actually stands
 
@@ -44,7 +44,7 @@ representative, or the block-tree editor for layout containers.
 ### Verification available today
 
 - `node --import ./scripts/ts-alias-loader.mjs scripts/custom-forms-regression.ts`
-  (also `npm run custom-forms-regression`) runs 415 checks: adapter fidelity,
+  (also `npm run custom-forms-regression`) runs 432 checks: adapter fidelity,
   row identity, grids, conditions, bindings, the typed expression engine, and
   **the rendered output of every fixture in every mode**. It needs no database
   and no test framework.
@@ -1481,15 +1481,15 @@ A custom report can move through this complete path without a hard-coded report 
 
 ---
 
-### Phase 6 — Convert and certify the report catalogue  ⬜ Not started
+### Phase 6 — Convert and certify the report catalogue  🟡 Started
 
 **Objective:** replace hard-coded reports carefully, with a rollback path.
 
 #### Work
 
-- [ ] Create a certification matrix for all 59 canonical implementations and 63 routes.
-- [ ] Record route aliases separately from canonical report implementations.
-- [ ] Build each report as a V2 template draft.
+- [x] Create a certification matrix for all 59 canonical implementations and 63 routes. [`REPORT_CONVERSION_MATRIX.md`](REPORT_CONVERSION_MATRIX.md), derived from the route declarations in `App.tsx`. 0 of 59 certified.
+- [x] Record route aliases separately from canonical report implementations. Same matrix.
+- [ ] Build each report as a V2 template draft. **3 of 59 in progress:** 3-Low Voltage Cable MTS and Dry Type Transformer (structural pilots), Low Voltage Switch (a full hand-built conversion, below).
 - [ ] Review calculations and rules with a qualified domain owner.
 - [ ] Compare representative data entry between hard-coded and custom versions.
 - [ ] Compare screen, print preview, and production PDFs.
@@ -1500,6 +1500,43 @@ A custom report can move through this complete path without a hard-coded report 
 - [ ] Route new reports to the builder only after certification.
 - [ ] Preserve historical hard-coded reports; do not force-convert them without a separate migration requirement.
 - [ ] Retire a hard-coded implementation only after its routes and aliases pass certification.
+
+#### Phase 6 notes
+
+**Hand-built conversions replace the AI for the reports they cover.**
+`src/lib/customForms/conversions/` holds deterministic conversions, written and
+tested against their source report. "Generate template from a report" uses one
+when it exists and falls back to the AI otherwise; the dialog labels those
+reports *Tested conversion*. A registered conversion generates the same
+template every time, which the AI does not.
+
+The first is **Low Voltage Switch**, with its own regression covering all 12
+inspection criteria, every source choice and unit, all 135 temperature
+correction lookup entries and 541 temperature cases, save and reopen with stable
+row identities, and the rendered output in every mode. It carries a
+`LOW_VOLTAGE_SWITCH_GAPS` list of what a person still has to review, including
+a real discrepancy in the source: its print heading says ATS 7.6.1.2 but its
+inspection criteria are 7.5.1.1.A.*. Both are preserved; neither was silently
+corrected.
+
+**The missing header was report CSS, not the builder.** Nineteen hard-coded
+reports inject a stylesheet into `<head>` on mount and never remove it, and it
+hides every element matching `[class*="header"]`. The custom-form `<thead>`
+carried `print:table-header-group`, which contains "header", so once a
+technician had opened one of those reports in the session the header vanished.
+Markup tests could not see it: the HTML was right and CSS removed it.
+
+The `<thead>` now uses an inline style, `scripts/custom-forms-browser.tsx`
+renders the runtime in real Chrome with that stylesheet loaded, and the render
+harness now fails if any runtime element carries a class containing "header".
+The underlying leak is the one recorded for the hard-coded reports; fixing it at
+its source is still the right long-term move.
+
+Verification is now:
+
+- `npm run custom-forms-regression` — 432 checks, fast, no browser;
+- `npm run custom-forms-browser` — real Chrome, the only test that can see CSS
+  interfering with layout.
 
 #### Exit gate
 

@@ -37,6 +37,7 @@ import {
   type ReportOption,
 } from "@/lib/customForms/generateTemplateFromReport";
 import { publishTemplateVersion } from "@/lib/customForms/versioning";
+import { hasRegisteredConversion } from "@/lib/customForms/conversions";
 
 interface Template {
   id: string;
@@ -545,6 +546,14 @@ export const CustomFormTemplates: React.FC = () => {
                         <span className="flex items-center gap-2 text-sm text-neutral-800 dark:text-neutral-200 truncate">
                           <FileText className="w-4 h-4 text-neutral-400 shrink-0" />
                           {report.fileName}
+                          {hasRegisteredConversion(report.fileName) && (
+                            <span
+                              className="shrink-0 px-1.5 py-0.5 text-[10px] font-medium rounded border border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
+                              title="Uses a hand-built conversion tested against this report, not the AI. Still needs engineering and PDF review before certification."
+                            >
+                              Tested conversion
+                            </span>
+                          )}
                         </span>
                         <Button
                           size="sm"

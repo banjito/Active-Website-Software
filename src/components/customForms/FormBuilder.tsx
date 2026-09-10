@@ -64,7 +64,6 @@ import Card, { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ComponentLibrarySidebar } from "./ComponentLibrarySidebar";
 import { FormCanvas } from "./FormCanvas";
 import { SectionEditor } from "./SectionEditor";
-import { FormPreview } from "./FormPreview";
 
 import {
   CustomFormTemplate,
@@ -170,7 +169,6 @@ export const FormBuilder: React.FC = () => {
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true); // open by default so component library is visible when editing
   const [activeId, setActiveId] = useState<string | null>(null);
   const [actionTooltip, setActionTooltip] = useState<{
@@ -333,21 +331,24 @@ export const FormBuilder: React.FC = () => {
     }
   };
 
-  const handleSaveTemplate = async () => {
+  /** Saves the draft. Resolves to the template id, or null if it did not save. */
+  const handleSaveTemplate = async (
+    options: { quiet?: boolean } = {},
+  ): Promise<string | null> => {
     if (!user?.id) {
       toast.error("You must be logged in to save templates");
       console.error("No user ID found");
-      return;
+      return null;
     }
 
     if (!template.name.trim()) {
       toast.error("Please enter a template name");
-      return;
+      return null;
     }
 
     if (template.structure.sections.length === 0) {
       toast.error("Please add at least one section to the form");
-      return;
+      return null;
     }
 
     setIsSaving(true);
@@ -400,9 +401,10 @@ export const FormBuilder: React.FC = () => {
       // Stay in the builder. Saving used to bounce back to the template list a
       // second later, which loses your place mid-edit and reads as though the
       // button did nothing. Leaving is what the Back button is for.
-      toast.success(
-        template.id ? "Changes saved" : "Template saved",
-      );
+      if (!options.quiet) {
+        toast.success(template.id ? "Changes saved" : "Template saved");
+      }
+      return result.data.id as string;
     } catch (error: any) {
       console.error("Error saving template:", error);
       console.error("Error details:", {
@@ -415,9 +417,27 @@ export const FormBuilder: React.FC = () => {
       toast.error(
         `Failed to save template: ${error?.message || error?.hint || "Unknown error"}`,
       );
+      return null;
     } finally {
       setIsSaving(false);
     }
+  };
+
+  /**
+   * Open the full-page preview.
+   *
+   * That page loads the template from the database, and returning from it
+   * remounts this editor from the database too. So unsaved edits are saved
+   * first: otherwise the preview shows stale content and coming back throws
+   * the edits away.
+   */
+  const handleOpenPreview = async () => {
+    let id = template.id ?? null;
+    if (!id || isDirty) {
+      id = await handleSaveTemplate({ quiet: true });
+      if (!id) return; // save already explained why
+    }
+    navigate(`/custom-forms/preview/${id}`, { state: { from: "builder" } });
   };
 
   /**
@@ -910,7 +930,7 @@ export const FormBuilder: React.FC = () => {
       : template.isPublished
         ? "Unpublish"
         : "Publish";
-  const previewTooltipTitle = showPreview ? "Edit" : "Preview";
+  const previewTooltipTitle = isDirty ? "Save and preview" : "Preview";
   const filteredNetaSections = netaSections.filter(
     (section) =>
       !netaSectionInput ||
@@ -1096,18 +1116,13 @@ export const FormBuilder: React.FC = () => {
               onMouseLeave={() => setActionTooltip(null)}
             >
               <Button
-                onClick={() => setShowPreview(!showPreview)}
+                onClick={handleOpenPreview}
+                disabled={isSaving}
                 variant="outline"
                 className="!h-10 !w-10 !rounded-none !p-0 flex items-center justify-center border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-white bg-transparent hover:bg-transparent hover:border-purple-600 hover:text-purple-600 dark:hover:border-purple-400 dark:hover:text-purple-400 focus:outline-none focus:border-purple-600 focus:text-purple-600 focus:ring-2 focus:ring-purple-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
                 size="sm"
                 aria-label={previewTooltipTitle}
-                leftIcon={
-                  showPreview ? (
-                    <Edit className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )
-                }
+                leftIcon={<Eye className="w-5 h-5" />}
               />
             </span>
 
@@ -1122,7 +1137,7 @@ export const FormBuilder: React.FC = () => {
               onMouseLeave={() => setActionTooltip(null)}
             >
               <Button
-                onClick={handleSaveTemplate}
+                onClick={() => handleSaveTemplate()}
                 disabled={isSaving || !isDirty}
                 variant="outline"
                 className="!h-10 !w-10 !rounded-none !p-0 flex items-center justify-center border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-white bg-transparent hover:bg-transparent hover:border-green-600 hover:text-green-600 dark:hover:border-green-600 dark:hover:text-green-400 focus:outline-none focus:border-green-600 focus:text-green-600 focus:ring-2 focus:ring-green-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
@@ -1258,29 +1273,25 @@ export const FormBuilder: React.FC = () => {
 
           {/* Center - Form Canvas */}
           <div className="flex-1 overflow-auto p-4 md:p-6">
-            {showPreview ? (
-              <FormPreview template={template} />
-            ) : (
-              <FormCanvas
-                sections={template.structure.sections}
-                selectedSectionId={selectedSectionId}
-                onSectionSelect={setSelectedSectionId}
-                onSectionDelete={deleteSection}
-                onSectionDuplicate={duplicateSection}
-                formulaEditingSectionId={formulaEditingSectionId}
-                onCellFormulaChange={handleCellFormulaChange}
-                onRequestEditFormulas={(sectionId) => {
-                  if (template.structure.expressions !== undefined) {
-                    toast("Use the Typed calculations panel above to edit stable formulas.");
-                    return;
-                  }
-                  setSelectedSectionId(sectionId);
-                  setFormulaEditingSectionId(sectionId);
-                }}
-              />
-            )}
+            <FormCanvas
+              sections={template.structure.sections}
+              selectedSectionId={selectedSectionId}
+              onSectionSelect={setSelectedSectionId}
+              onSectionDelete={deleteSection}
+              onSectionDuplicate={duplicateSection}
+              formulaEditingSectionId={formulaEditingSectionId}
+              onCellFormulaChange={handleCellFormulaChange}
+              onRequestEditFormulas={(sectionId) => {
+                if (template.structure.expressions !== undefined) {
+                  toast("Use the Typed calculations panel above to edit stable formulas.");
+                  return;
+                }
+                setSelectedSectionId(sectionId);
+                setFormulaEditingSectionId(sectionId);
+              }}
+            />
 
-            {template.structure.sections.length === 0 && !showPreview && (
+            {template.structure.sections.length === 0 && (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center max-w-md px-4">
                   <div className="text-neutral-400 dark:text-neutral-500 mb-4">

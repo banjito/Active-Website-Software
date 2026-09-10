@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { toast } from "react-hot-toast";
 import { ArrowLeft, Eye, Printer } from "lucide-react";
@@ -34,6 +34,17 @@ import {
 export const CustomFormPreview: React.FC = () => {
   const { templateId } = useParams<{ templateId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Opened from the builder's Preview button: Back returns to that editor
+  // rather than dropping you on the template list.
+  const cameFromBuilder =
+    (location.state as { from?: string } | null)?.from === "builder";
+  const goBack = () =>
+    navigate(
+      cameFromBuilder && templateId
+        ? `/custom-forms/builder/${templateId}`
+        : "/custom-forms/templates",
+    );
 
   const [template, setTemplate] = useState<CustomFormTemplate | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -112,11 +123,8 @@ export const CustomFormPreview: React.FC = () => {
       <div className="flex justify-center items-center h-screen">
         <div className="text-center">
           <p className="text-red-600 dark:text-red-400">Template not found</p>
-          <Button
-            onClick={() => navigate("/custom-forms/templates")}
-            className="mt-4"
-          >
-            Back to Templates
+          <Button onClick={goBack} className="mt-4">
+            {cameFromBuilder ? "Back to editor" : "Back to Templates"}
           </Button>
         </div>
       </div>
@@ -134,10 +142,10 @@ export const CustomFormPreview: React.FC = () => {
               <div className="flex items-center gap-4">
                 <Button
                   variant="ghost"
-                  onClick={() => navigate("/custom-forms/templates")}
+                  onClick={goBack}
                   leftIcon={<ArrowLeft className="w-4 h-4" />}
                 >
-                  Back
+                  {cameFromBuilder ? "Back to editor" : "Back"}
                 </Button>
                 <div>
                   <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">

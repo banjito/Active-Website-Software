@@ -11,6 +11,7 @@
 import { supabase } from "@/lib/supabase";
 import { COMPONENT_LIBRARY } from "./componentLibrary";
 import type { CustomFormTemplate } from "@/lib/types/customForms";
+import { registeredConversion } from "./conversions";
 
 // Raw source of every report, lazily loaded (Vite turns each into a string import).
 const reportModules = import.meta.glob("/src/components/reports/*.{tsx,jsx}", {
@@ -53,6 +54,11 @@ function buildComponentCatalog() {
 export async function generateTemplateFromReport(
   report: ReportOption,
 ): Promise<CustomFormTemplate> {
+  // A hand-built, tested conversion beats a model's first draft. Use it when
+  // one exists; the AI is the fallback for reports nobody has converted yet.
+  const conversion = registeredConversion(report.fileName);
+  if (conversion) return conversion.create();
+
   const loader = reportModules[report.path];
   if (!loader) throw new Error(`Report not found: ${report.path}`);
 

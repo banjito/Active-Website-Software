@@ -103,14 +103,11 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ template }) => {
       <div className="mb-6 pb-6 border-b border-neutral-200 dark:border-neutral-700">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
+            {/* No description here: a report has a title, not a subtitle. The
+                description is for telling templates apart in the list. */}
+            <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
               {template.name}
             </h1>
-            {template.description && (
-              <p className="text-neutral-600 dark:text-neutral-400">
-                {template.description}
-              </p>
-            )}
           </div>
           {template.netaSection && (
             <div className="text-right">

@@ -13,6 +13,17 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { supabase } from "@/lib/supabase";
+import {
+  getActiveTemplateVersion,
+  publicationStatus,
+  publishTemplateVersion,
+} from "@/lib/customForms/versioning";
+import type { TemplatePublicationStatus } from "@/lib/types/customForms";
+import { TypedCalculationEditor } from "@/components/customForms/TypedCalculationEditor";
+import {
+  validateTemplateDraft,
+  type ValidationReport,
+} from "@/lib/customForms/compile";
 import { toast } from "react-hot-toast";
 import {
   DndContext,
@@ -43,6 +54,7 @@ import {
   LayoutPanelTop,
   Lock,
   Trash2,
+  AlertTriangle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
@@ -111,6 +123,43 @@ export const FormBuilder: React.FC = () => {
       },
     },
   });
+
+  const [isPublishing, setIsPublishing] = useState(false);
+  /**
+   * Whether the draft differs from the version forms are created against.
+   *
+   * Publishing used to be a plain toggle, so once a template was published the
+   * button only ever unpublished it and there was no way to release a change.
+   * A template could sit at version 1 forever while its draft moved on, and
+   * every form kept rendering the old structure with no sign anything was
+   * wrong.
+   */
+  const [publishState, setPublishState] = useState<TemplatePublicationStatus>(
+    "unpublished",
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!template.id) {
+      setPublishState("unpublished");
+      return;
+    }
+    (async () => {
+      const active = await getActiveTemplateVersion(template.id!);
+      const status = await publicationStatus(template, active);
+      if (!cancelled) setPublishState(status);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [template]);
+  // Draft validation. Drafts may be saved with errors; publishing may not.
+  const [validationReport, setValidationReport] =
+    useState<ValidationReport | null>(null);
+
+  useEffect(() => {
+    setValidationReport(validateTemplateDraft(template.structure));
+  }, [template.structure]);
 
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(
     null,
@@ -291,10 +340,6 @@ export const FormBuilder: React.FC = () => {
       return;
     }
 
-    console.log("User ID:", user.id);
-    console.log("Template name:", template.name);
-    console.log("Sections count:", template.structure.sections.length);
-
     if (!template.name.trim()) {
       toast.error("Please enter a template name");
       return;
@@ -316,8 +361,6 @@ export const FormBuilder: React.FC = () => {
         is_active: true,
         is_published: template.isPublished ?? false,
       };
-
-      console.log("Attempting to save template data:", templateData);
 
       let result;
       if (template.id) {
@@ -354,14 +397,12 @@ export const FormBuilder: React.FC = () => {
         isPublished: result.data.is_published ?? false,
       }));
       setIsDirty(false);
+      // Stay in the builder. Saving used to bounce back to the template list a
+      // second later, which loses your place mid-edit and reads as though the
+      // button did nothing. Leaving is what the Back button is for.
       toast.success(
-        `Template ${template.id ? "updated" : "saved"} successfully!`,
+        template.id ? "Changes saved" : "Template saved",
       );
-
-      // Navigate to template list after saving
-      setTimeout(() => {
-        navigate("/custom-forms/templates");
-      }, 1000);
     } catch (error: any) {
       console.error("Error saving template:", error);
       console.error("Error details:", {
@@ -379,33 +420,76 @@ export const FormBuilder: React.FC = () => {
     }
   };
 
+  /**
+   * Publishing freezes the draft as a new immutable version. Forms created
+   * from here on are pinned to it, so later edits to the draft cannot change
+   * a report that has already been filled in and signed.
+   *
+   * Unpublishing only hides the template from jobs. Published versions are
+   * never deleted, because instances point at them.
+   */
   const handlePublishToggle = async () => {
     if (!template.id) {
       toast.error("Please save the template first before publishing");
       return;
     }
 
-    const newPublished = !template.isPublished;
+    // Only unpublish when there is nothing waiting to be released. A published
+    // template whose draft has changed needs a NEW VERSION, not a toggle off.
+    if (template.isPublished && publishState === "published") {
+      try {
+        const { error } = await supabase
+          .schema("neta_ops")
+          .from("custom_form_templates")
+          .update({ is_published: false })
+          .eq("id", template.id);
+        if (error) throw error;
+        setTemplate((prev) => ({ ...prev, isPublished: false }));
+        setPublishState("unpublished");
+        toast.success(
+          "Template unpublished. It will no longer appear in jobs. Existing forms keep the version they were filled against.",
+        );
+      } catch (error: any) {
+        console.error("Error unpublishing template:", error);
+        toast.error("Failed to unpublish template");
+      }
+      return;
+    }
+
+    setIsPublishing(true);
     try {
-      const { error } = await supabase
-        .schema("neta_ops")
-        .from("custom_form_templates")
-        .update({ is_published: newPublished })
-        .eq("id", template.id);
+      const result = await publishTemplateVersion(template, {
+        userId: user?.id,
+      });
 
-      if (error) throw error;
+      if (!result.ok) {
+        setValidationReport(result.report);
+        const firstError = result.report.errors[0];
+        toast.error(
+          result.error ??
+            (firstError
+              ? `Cannot publish: ${firstError.message}`
+              : "Cannot publish: the template did not compile."),
+        );
+        return;
+      }
 
-      setTemplate((prev) => ({ ...prev, isPublished: newPublished }));
+      setValidationReport(result.report);
+      setTemplate((prev) => ({
+        ...prev,
+        isPublished: true,
+        activeVersionId: result.version!.id,
+        latestVersion: result.version!.version,
+      }));
+      setPublishState("published");
       toast.success(
-        newPublished
-          ? "Template published! It will now appear in jobs."
-          : "Template unpublished. It will no longer appear in jobs.",
+        `Published version ${result.version!.version}. New forms will use it; forms already filled in keep the version they were made with.`,
       );
     } catch (error: any) {
-      console.error("Error toggling publish:", error);
-      toast.error(
-        `Failed to ${newPublished ? "publish" : "unpublish"} template`,
-      );
+      console.error("Error publishing template:", error);
+      toast.error(error?.message ?? "Failed to publish template");
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -820,7 +904,12 @@ export const FormBuilder: React.FC = () => {
   }
 
   const saveTooltipTitle = isSaving ? "Saving..." : "Save";
-  const publishTooltipTitle = template.isPublished ? "Unpublish" : "Publish";
+  const publishTooltipTitle =
+    publishState === "draft_ahead_of_published"
+      ? "Publish changes — forms still use the last published version"
+      : template.isPublished
+        ? "Unpublish"
+        : "Publish";
   const previewTooltipTitle = showPreview ? "Edit" : "Preview";
   const filteredNetaSections = netaSections.filter(
     (section) =>
@@ -1055,13 +1144,14 @@ export const FormBuilder: React.FC = () => {
             >
               <Button
                 onClick={handlePublishToggle}
-                disabled={!template.id}
+                disabled={!template.id || isPublishing}
                 variant="outline"
                 className="!h-10 !w-10 !rounded-none !p-0 flex items-center justify-center border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-white bg-transparent hover:bg-transparent hover:border-green-600 hover:text-green-600 dark:hover:border-green-600 dark:hover:text-green-400 focus:outline-none focus:border-green-600 focus:text-green-600 focus:ring-2 focus:ring-green-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
                 size="sm"
-                aria-label={template.isPublished ? "Unpublish" : "Publish"}
+                aria-label={publishTooltipTitle}
                 leftIcon={
-                  template.isPublished ? (
+                  template.isPublished &&
+                  publishState !== "draft_ahead_of_published" ? (
                     <Lock className="w-5 h-5" />
                   ) : (
                     <Globe className="w-5 h-5" />
@@ -1072,6 +1162,70 @@ export const FormBuilder: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <TypedCalculationEditor
+        structure={template.structure}
+        onChange={(structure) => {
+          setTemplate((previous) => ({ ...previous, structure }));
+          setIsDirty(true);
+          setFormulaEditingSectionId(null);
+        }}
+      />
+
+      {/* Unpublished changes. Forms render the published version, so a draft
+          that has moved on is invisible in the app until it is released. */}
+      {publishState === "draft_ahead_of_published" && (
+        <div className="shrink-0 border-b border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2">
+          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+          <span className="flex-1">
+            This draft has changes that are not published. New forms still use
+            the last published version.
+          </span>
+          <button
+            type="button"
+            onClick={handlePublishToggle}
+            disabled={isPublishing}
+            className="shrink-0 px-2 py-1 font-medium rounded border border-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 disabled:opacity-50"
+          >
+            {isPublishing ? "Publishing…" : "Publish changes"}
+          </button>
+        </div>
+      )}
+
+      {/* Draft validation. Drafts save with errors; publishing does not. */}
+      {validationReport && validationReport.issues.length > 0 && (
+        <div
+          className={`shrink-0 border-b px-4 py-2 text-xs ${
+            validationReport.ok
+              ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200"
+              : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-900 dark:text-red-200"
+          }`}
+        >
+          <div className="flex items-center gap-2 font-medium">
+            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+            {validationReport.errors.length > 0
+              ? `${validationReport.errors.length} problem${validationReport.errors.length === 1 ? "" : "s"} blocking publication`
+              : `${validationReport.warnings.length} warning${validationReport.warnings.length === 1 ? "" : "s"}`}
+          </div>
+          <ul className="mt-1 space-y-0.5 max-h-24 overflow-y-auto">
+            {[...validationReport.errors, ...validationReport.warnings]
+              .slice(0, 8)
+              .map((issue, index) => (
+                <li key={`${issue.code}-${index}`} className="flex gap-1.5">
+                  <span className="font-mono opacity-60 shrink-0">
+                    {issue.severity === "error" ? "error" : "warn"}
+                  </span>
+                  <span>{issue.message}</span>
+                </li>
+              ))}
+            {validationReport.issues.length > 8 && (
+              <li className="opacity-70">
+                and {validationReport.issues.length - 8} more
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
@@ -1116,6 +1270,10 @@ export const FormBuilder: React.FC = () => {
                 formulaEditingSectionId={formulaEditingSectionId}
                 onCellFormulaChange={handleCellFormulaChange}
                 onRequestEditFormulas={(sectionId) => {
+                  if (template.structure.expressions !== undefined) {
+                    toast("Use the Typed calculations panel above to edit stable formulas.");
+                    return;
+                  }
                   setSelectedSectionId(sectionId);
                   setFormulaEditingSectionId(sectionId);
                 }}
@@ -1168,6 +1326,10 @@ export const FormBuilder: React.FC = () => {
               isAdmin={isAdmin}
               isFormulaEditing={formulaEditingSectionId === selectedSectionId}
               onToggleFormulaEditing={() => {
+                if (template.structure.expressions !== undefined) {
+                  toast("Use the Typed calculations panel above to edit stable formulas.");
+                  return;
+                }
                 setFormulaEditingSectionId((prev) =>
                   prev === selectedSectionId ? null : selectedSectionId,
                 );

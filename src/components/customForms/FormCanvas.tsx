@@ -1,60 +1,359 @@
 /**
  * Form Canvas
  *
- * The main drag-and-drop area where form sections are displayed and arranged.
- * Sections can be reordered, selected for editing, duplicated, or deleted.
- * Supports per-cell formula editing when formula mode is active.
+ * The builder's editing shell: drag-and-drop ordering, per-section actions,
+ * and per-cell formula editing. The section bodies themselves come from the
+ * shared runtime, so the canvas cannot drift from what the filler renders.
  */
 
-import React, { useState } from "react";
+import React from "react";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
+  useSortable,
 } from "@dnd-kit/sortable";
-import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
   GripVertical,
   Trash2,
   Copy,
   Settings,
-  Eye,
   EyeOff,
   FileCode2,
 } from "lucide-react";
 
-import {
-  SectionConfig,
-  type ConditionalRowConfig,
-  type ColumnConfig,
-} from "@/lib/types/customForms";
+import { SectionConfig } from "@/lib/types/customForms";
 import { getComponentDefinition } from "@/lib/customForms/componentLibrary";
 import { getSectionReferenceCode } from "@/lib/customForms/formCellResolution";
-import { packGroupedFieldGrid } from "@/lib/customForms/groupedFieldGrid";
+import {
+  cellKey,
+  classifySection,
+  isColumnVisible,
+  isConditionalRowVisible,
+  resolveRowCount,
+  resolveSettingValues,
+  type ControlSlot,
+  type SectionChrome,
+  type SectionRowInfo,
+} from "@/lib/customForms/runtime";
+import { SectionBody } from "./runtime/SectionBody";
+import { FormulaInput } from "./FormulaInput";
+import { createPlaceholderControlRenderer } from "./runtime/PlaceholderControl";
+import { useLocalSectionSettings } from "./runtime/useLocalSectionSettings";
 
-function isVisibleWhen(
-  visibleWhen: Record<string, string | string[]> | undefined,
-  settings: Record<string, string>,
-): boolean {
-  if (!visibleWhen || Object.keys(visibleWhen).length === 0) return true;
-  for (const [settingId, allowed] of Object.entries(visibleWhen)) {
-    const current = settings[settingId] ?? "";
-    const allowedList = Array.isArray(allowed) ? allowed : [allowed];
-    if (!allowedList.includes(current)) return false;
+/**
+ * A formula cell in the canvas grid. It stays a narrow monospace box until the
+ * author focuses it, then expands to the full picker, so formula mode still
+ * reads as a table rather than a column of dropdowns.
+ */
+const FormulaCell: React.FC<{
+  value: string;
+  sections: SectionConfig[];
+  placeholder?: string;
+  title?: string;
+  onChange: (value: string) => void;
+}> = ({ value, sections, placeholder, title, onChange }) => {
+  const [active, setActive] = React.useState(false);
+
+  if (!active) {
+    return (
+      <input
+        type="text"
+        value={value}
+        readOnly
+        onFocus={() => setActive(true)}
+        onClick={() => setActive(true)}
+        placeholder={placeholder}
+        title={title}
+        className="w-full px-1.5 py-1 text-[11px] font-mono bg-amber-50/50 dark:bg-amber-900/10 text-neutral-900 dark:text-white border-none focus:ring-1 focus:ring-amber-400 cursor-text placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
+      />
+    );
   }
-  return true;
+
+  return (
+    <div className="p-1 min-w-[16rem]">
+      <FormulaInput
+        value={value}
+        onChange={onChange}
+        sections={sections}
+        placeholder={placeholder}
+      />
+      <button
+        type="button"
+        onClick={() => setActive(false)}
+        className="mt-1 text-[10px] text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+      >
+        Done
+      </button>
+    </div>
+  );
+};
+
+/** Rows shown per table before the canvas offers to expand into formula mode. */
+const CANVAS_PREVIEW_ROWS = 3;
+
+interface SectionPreviewProps {
+  section: SectionConfig;
+  allSections: SectionConfig[];
+  isFormulaEditing: boolean;
+  onCellFormulaChange?: (
+    sectionId: string,
+    rowIndex: number,
+    colId: string,
+    formula: string,
+  ) => void;
+  onRequestEditFormulas?: (sectionId: string) => void;
 }
 
-function isConditionalRowVisible(
-  row: ConditionalRowConfig,
-  settings: Record<string, string>,
-): boolean {
-  return isVisibleWhen(row.visibleWhen, settings);
-}
+const FormulaHint: React.FC = () => (
+  <div className="mb-2 px-2 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded text-[10px] text-amber-800 dark:text-amber-200">
+    Type formulas directly in cells below. Use references like{" "}
+    <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 rounded">
+      {"{"}Code.fieldId{"}"}
+    </code>{" "}
+    or{" "}
+    <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 rounded">
+      {"{"}Code.C1.R2{"}"}
+    </code>
+    . Math:{" "}
+    <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 rounded">
+      {"{"}ND.ratedCurrent{"}"}*{"{"}ND.ratedVoltage{"}"}
+    </code>
+  </div>
+);
+
+/**
+ * Section body as the builder sees it: reference codes on every addressable
+ * cell, and editable formula boxes when formula mode is on for this section.
+ */
+const SectionPreview: React.FC<SectionPreviewProps> = ({
+  section,
+  allSections,
+  isFormulaEditing,
+  onCellFormulaChange,
+  onRequestEditFormulas,
+}) => {
+  const { getSettingValue, setSettingValue, conditionValues } =
+    useLocalSectionSettings();
+  const placeholder = React.useMemo(
+    () => createPlaceholderControlRenderer({ density: "compact" }),
+    [],
+  );
+  const kind = classifySection(section);
+  const code = getSectionReferenceCode(section);
+
+  const renderFormulaCell = (slot: ControlSlot) => {
+    const { cell } = slot;
+    if (!cell) return placeholder(slot);
+    const value = section.cellFormulas?.[cellKey(cell.rowIndex, cell.colId)] ?? "";
+    const columnHint =
+      slot.field?.cellBehavior === "calculate"
+        ? (slot.field.calculation?.formula ?? "")
+        : slot.field?.cellBehavior === "populate"
+          ? "(populated)"
+          : "";
+    return (
+      <FormulaCell
+        value={value}
+        sections={allSections}
+        placeholder={columnHint || "e.g. {JD.tcf} or {IR.C1.R2}"}
+        title={`Cell ${code}.C${cell.colIndex + 1}.R${cell.rowIndex + 1}`}
+        onChange={(next) =>
+          onCellFormulaChange?.(section.id, cell.rowIndex, cell.colId, next)
+        }
+      />
+    );
+  };
+
+  const chrome: SectionChrome = {
+    mode: "edit",
+    density: "compact",
+    renderControl: isFormulaEditing ? renderFormulaCell : placeholder,
+    getSettingValue,
+    setSettingValue,
+    conditionValues,
+    maxBodyRows: isFormulaEditing ? undefined : CANVAS_PREVIEW_ROWS,
+    rowGutter: isFormulaEditing
+      ? {
+          header: "#",
+          cell: (rowIndex) => `R${rowIndex + 1}`,
+        }
+      : undefined,
+    renderSectionHeader: () => (isFormulaEditing ? <FormulaHint /> : null),
+    renderColumnHeaderExtra: (_section, col, colIndex) => {
+      const cNum = colIndex + 1;
+      const totalRows = resolveRowCount(section);
+      const rowRefs = Array.from(
+        { length: Math.min(totalRows, 5) },
+        (_, i) => `{${code}.C${cNum}.R${i + 1}}`,
+      ).join(", ");
+      return (
+        <>
+          {col.width && (
+            <span className="text-[9px] text-neutral-400 ml-1">
+              ({col.width})
+            </span>
+          )}
+          <div
+            className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5"
+            title={`${section.title || "Section"}, column ${cNum} (same row). Or ${rowRefs} for specific rows.`}
+          >
+            {`{${code}.C${cNum}}`}
+          </div>
+          {!isFormulaEditing && (
+            <div className="text-[9px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+              ({section.title || "Section"}, column {cNum}, same row)
+            </div>
+          )}
+        </>
+      );
+    },
+    renderFieldLabelExtra: (_section, field) => (
+      <>
+        {field.readOnly && (
+          <span className="text-blue-500 ml-1 text-[10px]">(Auto)</span>
+        )}
+        <div
+          className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5"
+          title={`${section.title || "Section"} » ${field.label || field.id}`}
+        >
+          {`{${code}.${field.id}}`}
+        </div>
+      </>
+    ),
+    renderRowOverflow: (_section, info, columnCount) => {
+      if (kind === "checklist") {
+        return (
+          <tr>
+            <td
+              colSpan={columnCount}
+              className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-neutral-500 dark:text-neutral-400"
+            >
+              ... {info.rowCount - info.shownRowCount} more items
+            </td>
+          </tr>
+        );
+      }
+      return (
+        <tr>
+          <td
+            colSpan={columnCount}
+            className="border border-neutral-300 dark:border-neutral-600 p-0"
+          >
+            <button
+              type="button"
+              onClick={() => onRequestEditFormulas?.(section.id)}
+              className="w-full px-2 py-2.5 text-center text-xs font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 border-0 border-t border-neutral-200 dark:border-neutral-600"
+            >
+              Show all {info.rowCount} rows and edit formulas…
+            </button>
+          </td>
+        </tr>
+      );
+    },
+    renderSectionFooter: (_section, info) => (
+      <CanvasSectionFooter
+        section={section}
+        info={info}
+        isFormulaEditing={isFormulaEditing}
+        getSettingValue={getSettingValue}
+      />
+    ),
+  };
+
+  if (kind === "empty") {
+    return (
+      <div className="text-center text-neutral-500 dark:text-neutral-400 py-4 text-sm">
+        No preview available
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={isFormulaEditing ? "max-h-[420px] overflow-y-auto" : undefined}
+    >
+      <SectionBody section={section} chrome={chrome} />
+    </div>
+  );
+};
+
+const CanvasSectionFooter: React.FC<{
+  section: SectionConfig;
+  info: SectionRowInfo;
+  isFormulaEditing: boolean;
+  getSettingValue: (section: SectionConfig, settingId: string) => unknown;
+}> = ({ section, info, isFormulaEditing, getSettingValue }) => {
+  const kind = classifySection(section);
+
+  if (kind === "grouped-fields") {
+    if (section.componentType !== "job-info") return null;
+    return (
+      <p className="mt-2 pt-2 border-t border-neutral-200 dark:border-neutral-600 text-[11px] text-amber-700 dark:text-amber-300 font-medium">
+        Use <span className="font-mono">{"{JD.TCF}"}</span> in formulas for
+        Temperature Correction Factor
+      </p>
+    );
+  }
+
+  if (kind === "conditional-table") {
+    const settings = resolveSettingValues(section, (id) =>
+      getSettingValue(section, id),
+    );
+    const visibleColumns = (section.columns ?? []).filter((col) =>
+      isColumnVisible(col, settings),
+    );
+    const visibleRows = (section.conditionalRows ?? []).filter((row) =>
+      isConditionalRowVisible(row, settings),
+    );
+    return (
+      <div className="flex items-center gap-2 text-[10px]">
+        <span className="text-neutral-500 dark:text-neutral-400">
+          {visibleRows.length} row{visibleRows.length !== 1 ? "s" : ""},{" "}
+          {visibleColumns.length} col{visibleColumns.length !== 1 ? "s" : ""}{" "}
+          &middot; {(section.conditionalRows ?? []).length} total defined
+        </span>
+        {section.allowAddRows && <span className="text-brand">+ Add Row</span>}
+        {section.allowRemoveRows && (
+          <span className="text-red-500">- Remove Row</span>
+        )}
+      </div>
+    );
+  }
+
+  if (kind !== "table" && kind !== "contact-resistance") return null;
+
+  if (isFormulaEditing) {
+    return (
+      <p className="mt-1.5 text-[10px] text-neutral-500 dark:text-neutral-400">
+        Showing all {info.rowCount} rows. Empty cells use column-level behavior.
+        Per-cell formulas override column settings.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 mt-1.5 text-[10px]">
+      <span className="text-neutral-500 dark:text-neutral-400">
+        {info.rowCount} row{info.rowCount !== 1 ? "s" : ""}
+      </span>
+      {section.allowAddRows && <span className="text-brand">+ Add Row</span>}
+      {section.allowRemoveRows && (
+        <span className="text-red-500">- Remove Row</span>
+      )}
+      {!section.allowAddRows && !section.allowRemoveRows && (
+        <span className="text-neutral-400 dark:text-neutral-500 italic">
+          fixed rows
+        </span>
+      )}
+    </div>
+  );
+};
 
 interface SortableSectionProps {
   section: SectionConfig;
+  allSections: SectionConfig[];
   isSelected: boolean;
   onSelect: () => void;
   onDelete: () => void;
@@ -71,6 +370,7 @@ interface SortableSectionProps {
 
 const SortableSection: React.FC<SortableSectionProps> = ({
   section,
+  allSections,
   isSelected,
   onSelect,
   onDelete,
@@ -106,7 +406,6 @@ const SortableSection: React.FC<SortableSectionProps> = ({
           : "border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600"
       }`}
     >
-      {/* Section Header */}
       <div
         className={`flex items-center gap-2 md:gap-3 px-2 md:px-4 py-2 md:py-3 border-b ${
           isSelected
@@ -114,7 +413,6 @@ const SortableSection: React.FC<SortableSectionProps> = ({
             : "border-neutral-200 dark:border-neutral-700"
         }`}
       >
-        {/* Drag Handle */}
         <button
           {...attributes}
           {...listeners}
@@ -123,7 +421,6 @@ const SortableSection: React.FC<SortableSectionProps> = ({
           <GripVertical className="w-4 h-4 md:w-5 md:h-5" />
         </button>
 
-        {/* Section Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="text-xs md:text-sm font-semibold text-neutral-900 dark:text-white truncate">
@@ -153,7 +450,6 @@ const SortableSection: React.FC<SortableSectionProps> = ({
           </p>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex items-center gap-0.5 md:gap-1">
           <button
             onClick={onSelect}
@@ -181,509 +477,15 @@ const SortableSection: React.FC<SortableSectionProps> = ({
         </div>
       </div>
 
-      {/* Section Preview */}
       <div className="p-3 md:p-4">
         <SectionPreview
           section={section}
+          allSections={allSections}
           isFormulaEditing={isFormulaEditing}
           onCellFormulaChange={onCellFormulaChange}
           onRequestEditFormulas={onRequestEditFormulas}
         />
       </div>
-    </div>
-  );
-};
-
-/** Interactive conditional table preview for the builder canvas */
-const ConditionalTableCanvasPreview: React.FC<{ section: SectionConfig }> = ({
-  section,
-}) => {
-  const initialSettings: Record<string, string> = {};
-  (section.settingFields ?? []).forEach((sf) => {
-    initialSettings[sf.id] = sf.defaultValue ?? sf.options[0]?.value ?? "";
-  });
-  const [settings, setSettings] =
-    useState<Record<string, string>>(initialSettings);
-
-  const visibleRows = (section.conditionalRows ?? []).filter((row) =>
-    isVisibleWhen(row.visibleWhen, settings),
-  );
-  const visibleColumns = (section.columns ?? []).filter((col: ColumnConfig) =>
-    isVisibleWhen(col.visibleWhen, settings),
-  );
-
-  return (
-    <div className="space-y-3 w-full min-w-0">
-      <div className="flex flex-wrap items-center gap-3 text-xs pb-2 border-b border-neutral-200 dark:border-neutral-600">
-        {(section.settingFields ?? []).map((sf) => (
-          <div key={sf.id} className="flex items-center gap-1.5">
-            <span className="font-medium text-neutral-700 dark:text-neutral-300">
-              {sf.label}:
-            </span>
-            <select
-              value={settings[sf.id] ?? ""}
-              onChange={(e) =>
-                setSettings((prev) => ({ ...prev, [sf.id]: e.target.value }))
-              }
-              className="px-2 py-1 text-xs border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-brand"
-            >
-              {sf.options.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        ))}
-      </div>
-      {visibleColumns.length > 0 && visibleRows.length > 0 ? (
-        <div className="overflow-x-auto w-full min-w-0">
-          <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-xs">
-            <thead>
-              <tr>
-                {visibleColumns.map((col) => (
-                  <th
-                    key={col.id}
-                    className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 bg-neutral-50 dark:bg-dark-200 text-left font-medium"
-                    style={col.width ? { width: col.width } : undefined}
-                  >
-                    {col.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {visibleRows.map((row) => (
-                <tr key={row.id}>
-                  <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 font-medium text-neutral-700 dark:text-neutral-300">
-                    {row.label}
-                  </td>
-                  {visibleColumns.slice(1).map((col) => (
-                    <td
-                      key={col.id}
-                      className="border border-neutral-300 dark:border-neutral-600 px-2 py-1"
-                    >
-                      <div className="h-6 bg-neutral-100 dark:bg-dark-100 rounded" />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p className="text-xs text-neutral-500 dark:text-neutral-400 italic py-2">
-          No rows/columns visible for the selected settings.
-        </p>
-      )}
-      <div className="flex items-center gap-2 text-[10px]">
-        <span className="text-neutral-500 dark:text-neutral-400">
-          {visibleRows.length} row{visibleRows.length !== 1 ? "s" : ""},{" "}
-          {visibleColumns.length} col{visibleColumns.length !== 1 ? "s" : ""}{" "}
-          &middot; {(section.conditionalRows ?? []).length} total defined
-        </span>
-        {section.allowAddRows && (
-          <span className="text-brand">+ Add Row</span>
-        )}
-        {section.allowRemoveRows && (
-          <span className="text-red-500">- Remove Row</span>
-        )}
-      </div>
-    </div>
-  );
-};
-
-/**
- * Preview of what the section will look like.
- * When formula editing is active, table cells become editable inputs for per-cell formulas.
- */
-const SectionPreview: React.FC<{
-  section: SectionConfig;
-  isFormulaEditing?: boolean;
-  onCellFormulaChange?: (
-    sectionId: string,
-    rowIndex: number,
-    colId: string,
-    formula: string,
-  ) => void;
-  onRequestEditFormulas?: (sectionId: string) => void;
-}> = ({
-  section,
-  isFormulaEditing = false,
-  onCellFormulaChange,
-  onRequestEditFormulas,
-}) => {
-  // Conditional table: interactive dropdowns + all visible rows
-  if (
-    section.settingFields &&
-    section.settingFields.length > 0 &&
-    section.conditionalRows &&
-    section.conditionalRows.length > 0 &&
-    section.columns &&
-    section.columns.length > 0
-  ) {
-    return <ConditionalTableCanvasPreview section={section} />;
-  }
-
-  // For table-based components
-  if (section.columns && section.columns.length > 0) {
-    const code = getSectionReferenceCode(section);
-    const totalRows = section.rows || 1;
-    const showAllRows = isFormulaEditing;
-    const displayRows = showAllRows ? totalRows : Math.min(totalRows, 3);
-
-    return (
-      <div
-        className={`overflow-x-auto ${isFormulaEditing ? "max-h-[420px] overflow-y-auto" : ""}`}
-      >
-        {isFormulaEditing && (
-          <div className="mb-2 px-2 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded text-[10px] text-amber-800 dark:text-amber-200">
-            Type formulas directly in cells below. Use references like{" "}
-            <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 rounded">
-              {"{"}Code.fieldId{"}"}
-            </code>{" "}
-            or{" "}
-            <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 rounded">
-              {"{"}Code.C1.R2{"}"}
-            </code>
-            . Math:{" "}
-            <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 rounded">
-              {"{"}ND.ratedCurrent{"}"}*{"{"}ND.ratedVoltage{"}"}
-            </code>
-          </div>
-        )}
-        <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-xs">
-          <thead>
-            <tr>
-              {isFormulaEditing && (
-                <th className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 bg-neutral-50 dark:bg-dark-200 text-center font-medium w-8 text-[10px] text-neutral-400">
-                  #
-                </th>
-              )}
-              {section.columns.map((col, colIndex) => {
-                const cNum = colIndex + 1;
-                const sameRowRef = `{${code}.C${cNum}}`;
-                const rowRefs = Array.from(
-                  { length: Math.min(totalRows, 5) },
-                  (_, i) => `{${code}.C${cNum}.R${i + 1}}`,
-                ).join(", ");
-                return (
-                  <th
-                    key={col.id}
-                    className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 bg-neutral-50 dark:bg-dark-200 text-left font-medium align-top"
-                    style={col.width ? { width: col.width } : undefined}
-                  >
-                    <div>
-                      {col.label}
-                      {col.width && (
-                        <span className="text-[9px] text-neutral-400 ml-1">
-                          ({col.width})
-                        </span>
-                      )}
-                    </div>
-                    <div
-                      className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5"
-                      title={`${section.title || "Section"}, column ${cNum} (same row). Or ${rowRefs} for specific rows.`}
-                    >
-                      {sameRowRef}
-                    </div>
-                    {!isFormulaEditing && (
-                      <div className="text-[9px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-                        ({section.title || "Section"}, column {cNum}, same row)
-                      </div>
-                    )}
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {Array.from({ length: displayRows }).map((_, rowIndex) => (
-              <tr key={rowIndex}>
-                {isFormulaEditing && (
-                  <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-[10px] text-neutral-400 bg-neutral-50 dark:bg-dark-200">
-                    R{rowIndex + 1}
-                  </td>
-                )}
-                {section.columns!.map((col) => {
-                  const cellKey = `row${rowIndex}_${col.id}`;
-                  const cellFormula = section.cellFormulas?.[cellKey] ?? "";
-                  const colLevelFormula =
-                    col.field?.cellBehavior === "calculate"
-                      ? (col.field.calculation?.formula ?? "")
-                      : col.field?.cellBehavior === "populate"
-                        ? "(populated)"
-                        : "";
-
-                  if (isFormulaEditing) {
-                    return (
-                      <td
-                        key={col.id}
-                        className="border border-neutral-300 dark:border-neutral-600 p-0"
-                        style={col.width ? { width: col.width } : undefined}
-                      >
-                        <input
-                          type="text"
-                          value={cellFormula}
-                          onChange={(e) =>
-                            onCellFormulaChange?.(
-                              section.id,
-                              rowIndex,
-                              col.id,
-                              e.target.value,
-                            )
-                          }
-                          placeholder={
-                            colLevelFormula || "e.g. {JD.TCF} or {IR.C1.R2}"
-                          }
-                          className="w-full px-1.5 py-1 text-[11px] font-mono bg-amber-50/50 dark:bg-amber-900/10 text-neutral-900 dark:text-white border-none focus:ring-1 focus:ring-amber-400 focus:bg-amber-50 dark:focus:bg-amber-900/20 placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
-                          title={`Cell ${code}.C${section.columns!.indexOf(col) + 1}.R${rowIndex + 1} — e.g. {JD.TCF} for TCF, {section.C1.R2} for table ref`}
-                        />
-                      </td>
-                    );
-                  }
-
-                  const staticText =
-                    col.field?.cellBehavior === "static"
-                      ? (section.staticCells?.[cellKey] ??
-                        col.field?.staticValue ??
-                        "")
-                      : "";
-
-                  return (
-                    <td
-                      key={col.id}
-                      className="border border-neutral-300 dark:border-neutral-600 px-2 py-1"
-                      style={col.width ? { width: col.width } : undefined}
-                    >
-                      {col.field?.cellBehavior === "static" ? (
-                        <div className="h-6 flex items-center">
-                          <span className="text-[11px] text-neutral-700 dark:text-neutral-300 truncate">
-                            {staticText || (
-                              <span className="italic text-neutral-400">
-                                static
-                              </span>
-                            )}
-                          </span>
-                        </div>
-                      ) : cellFormula ? (
-                        <div className="h-6 bg-amber-50 dark:bg-amber-900/20 rounded px-1 flex items-center">
-                          <span className="text-[10px] font-mono text-amber-700 dark:text-amber-300 truncate">
-                            {cellFormula}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="h-6 bg-neutral-100 dark:bg-dark-100 rounded"></div>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-            {!showAllRows && totalRows > 3 && (
-              <tr>
-                <td
-                  colSpan={section.columns.length + (isFormulaEditing ? 1 : 0)}
-                  className="border border-neutral-300 dark:border-neutral-600 p-0"
-                >
-                  <button
-                    type="button"
-                    onClick={() => onRequestEditFormulas?.(section.id)}
-                    className="w-full px-2 py-2.5 text-center text-xs font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 border-0 border-t border-neutral-200 dark:border-neutral-600"
-                  >
-                    Show all {totalRows} rows and edit formulas…
-                  </button>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-        {isFormulaEditing && (
-          <p className="mt-1.5 text-[10px] text-neutral-500 dark:text-neutral-400">
-            Showing all {totalRows} rows. Empty cells use column-level behavior.
-            Per-cell formulas override column settings.
-          </p>
-        )}
-        {!isFormulaEditing && (
-          <div className="flex items-center gap-2 mt-1.5 text-[10px]">
-            <span className="text-neutral-500 dark:text-neutral-400">
-              {totalRows} row{totalRows !== 1 ? "s" : ""}
-            </span>
-            {section.allowAddRows && (
-              <span className="text-brand">+ Add Row</span>
-            )}
-            {section.allowRemoveRows && (
-              <span className="text-red-500">- Remove Row</span>
-            )}
-            {!section.allowAddRows && !section.allowRemoveRows && (
-              <span className="text-neutral-400 dark:text-neutral-500 italic">
-                fixed rows
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // For grouped fields (nameplate data, job info, etc.) - stacked label + input in each cell
-  if (section.fields && section.fields.length > 0) {
-    const columns =
-      section.componentType === "job-info"
-        ? 5
-        : section.layout === "five-column"
-          ? 5
-          : section.layout === "four-column"
-            ? 4
-            : section.layout === "three-column"
-              ? 3
-              : section.layout === "two-column"
-                ? 2
-                : 1;
-    const code = getSectionReferenceCode(section);
-    const gridRows = packGroupedFieldGrid(section.fields, columns);
-    const isJobInfo = section.componentType === "job-info";
-    return (
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-xs">
-          <tbody>
-            {gridRows.map((row, rowIdx) => (
-              <tr key={rowIdx}>
-                {row.map((slot, slotIdx) =>
-                  slot.type === "empty" ? (
-                    <td
-                      key={`empty-${slotIdx}`}
-                      className="border border-neutral-300 dark:border-neutral-600 px-2 py-1"
-                    ></td>
-                  ) : (
-                    <td
-                      key={slot.field.id}
-                      colSpan={slot.colSpan > 1 ? slot.colSpan : undefined}
-                      rowSpan={slot.rowSpan > 1 ? slot.rowSpan : undefined}
-                      className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 align-top"
-                    >
-                      <div className="font-medium text-neutral-700 dark:text-neutral-300">
-                        {slot.field.label}
-                        {slot.field.unit && (
-                          <span className="text-neutral-500 ml-1">
-                            ({slot.field.unit})
-                          </span>
-                        )}
-                        {slot.field.required && (
-                          <span className="text-red-500 ml-1">*</span>
-                        )}
-                        {slot.field.readOnly && (
-                          <span className="text-blue-500 ml-1 text-[10px]">
-                            (Auto)
-                          </span>
-                        )}
-                      </div>
-                      <div
-                        className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5"
-                        title={`${section.title || "Section"} » ${slot.field.label || slot.field.id}`}
-                      >
-                        {`{${code}.${slot.field.id}}`}
-                      </div>
-                      <div
-                        className={`h-6 mt-1 ${slot.field.readOnly ? "bg-neutral-200 dark:bg-dark-200" : "bg-neutral-100 dark:bg-dark-100"} rounded`}
-                      ></div>
-                    </td>
-                  ),
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {isJobInfo && (
-          <p className="mt-2 pt-2 border-t border-neutral-200 dark:border-neutral-600 text-[11px] text-amber-700 dark:text-amber-300 font-medium">
-            Use <span className="font-mono">{"{JD.TCF}"}</span> in formulas for
-            Temperature Correction Factor
-          </p>
-        )}
-      </div>
-    );
-  }
-
-  // For single field components (comments, custom text) - stacked label + input in one cell
-  if (section.field) {
-    const code = getSectionReferenceCode(section);
-    return (
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-xs">
-          <tbody>
-            <tr>
-              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
-                <div className="font-medium text-neutral-700 dark:text-neutral-300">
-                  {section.field.label}
-                </div>
-                <div
-                  className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5"
-                  title={`Use in formula: {${code}.${section.field.id}}`}
-                >
-                  {`{${code}.${section.field.id}}`}
-                </div>
-                <div
-                  className={`${section.field.type === "textarea" ? "h-16" : "h-6"} mt-1 bg-neutral-100 dark:bg-dark-100 rounded`}
-                ></div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-
-  // For checklist components (visual inspection)
-  if (section.checklistItems && section.checklistItems.length > 0) {
-    return (
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-xs">
-          <thead>
-            <tr>
-              <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 bg-neutral-50 dark:bg-dark-200 text-left font-medium w-24">
-                NETA Section
-              </th>
-              <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 bg-neutral-50 dark:bg-dark-200 text-left font-medium">
-                Description
-              </th>
-              <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 bg-neutral-50 dark:bg-dark-200 text-left font-medium w-32">
-                Result
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {section.checklistItems.slice(0, 3).map((item) => (
-              <tr key={item.id}>
-                <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
-                  {item.netaSection || "-"}
-                </td>
-                <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
-                  {item.description}
-                </td>
-                <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
-                  <div className="h-6 bg-neutral-100 dark:bg-dark-100 rounded"></div>
-                </td>
-              </tr>
-            ))}
-            {section.checklistItems.length > 3 && (
-              <tr>
-                <td
-                  colSpan={3}
-                  className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-neutral-500 dark:text-neutral-400"
-                >
-                  ... {section.checklistItems.length - 3} more items
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-
-  return (
-    <div className="text-center text-neutral-500 dark:text-neutral-400 py-4 text-sm">
-      No preview available
     </div>
   );
 };
@@ -714,23 +516,21 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
   onCellFormulaChange,
   onRequestEditFormulas,
 }) => {
-  const { setNodeRef } = useDroppable({
-    id: "form-canvas",
-  });
-
-  const sortedSections = [...sections].sort((a, b) => a.order - b.order);
+  const { setNodeRef } = useDroppable({ id: "form-canvas" });
+  const ordered = [...sections].sort((a, b) => a.order - b.order);
 
   return (
     <div ref={setNodeRef} className="w-full mx-auto">
       <SortableContext
-        items={sortedSections.map((s) => s.id)}
+        items={ordered.map((s) => s.id)}
         strategy={verticalListSortingStrategy}
       >
         <div className="space-y-3 md:space-y-4">
-          {sortedSections.map((section) => (
+          {ordered.map((section) => (
             <SortableSection
               key={section.id}
               section={section}
+              allSections={ordered}
               isSelected={section.id === selectedSectionId}
               onSelect={() => onSectionSelect(section.id)}
               onDelete={() => {

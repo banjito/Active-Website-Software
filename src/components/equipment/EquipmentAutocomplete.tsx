@@ -216,7 +216,10 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
           readOnly={readOnly}
           autoComplete="off"
           spellCheck={false}
-          className={`w-full pl-10 print:pl-2 pr-10 print:pr-2 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand ${readOnly ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+          // A text input defaults to about twenty characters wide, which in a
+          // table forces its column wide and squeezes the ones after it.
+          size={1}
+          className={`w-full min-w-0 pl-10 print:pl-2 pr-10 print:pr-2 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand ${readOnly ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
         />
         {searchQuery && !readOnly && (
           <button

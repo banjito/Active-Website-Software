@@ -57,7 +57,7 @@ export async function fetchComponentDefaultOverrides(): Promise<Record<string, P
     return {};
   }
 
-  const PROTECTED_TYPES = new Set([ComponentType.CUSTOM_TABLE]);
+  const PROTECTED_TYPES = new Set<ComponentType>([ComponentType.CUSTOM_TABLE]);
 
   const map: Record<string, Partial<SectionConfig>> = {};
   for (const row of data ?? []) {
@@ -113,7 +113,7 @@ export async function saveComponentDefaultOverride(
   sectionConfig: Partial<SectionConfig>,
   userId: string
 ): Promise<{ error: Error | null }> {
-  const PROTECTED_TYPES = new Set([ComponentType.CUSTOM_TABLE]);
+  const PROTECTED_TYPES = new Set<ComponentType>([ComponentType.CUSTOM_TABLE]);
   if (PROTECTED_TYPES.has(componentType)) {
     return { error: new Error(`Cannot override the default for "${componentType}". Use "Save as new component" instead.`) };
   }

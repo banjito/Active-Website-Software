@@ -22,6 +22,13 @@ import {
   GripVertical,
   Columns,
 } from "lucide-react";
+import { TableGridEditor } from "./TableGridEditor";
+import { useResizablePanel } from "./useResizablePanel";
+import {
+  fillBodyGaps,
+  fillHeaderGaps,
+  removeColumn,
+} from "@/lib/customForms/v2/authoring";
 import {
   DndContext,
   closestCenter,
@@ -422,8 +429,37 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
     }
   };
 
+  const { width, isResizing, startResize, onHandleKeyDown, resetWidth } =
+    useResizablePanel({
+      storageKey: "customForms.sectionEditorWidth",
+      defaultWidth: 384,
+      minWidth: 320,
+    });
+
   return (
-    <div className="w-96 bg-white dark:bg-dark-150 border-l dark:border-neutral-700 flex flex-col overflow-hidden">
+    <div
+      className="relative bg-white dark:bg-dark-150 border-l dark:border-neutral-700 flex flex-col overflow-hidden shrink-0"
+      style={{ width }}
+    >
+      {/* Drag the left edge to widen. The grid editor is often wider than the
+          default panel, and scrolling a grid sideways to read its headers is
+          worse than making room for it. */}
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize panel"
+        tabIndex={0}
+        onPointerDown={(event) => {
+          event.preventDefault();
+          startResize();
+        }}
+        onDoubleClick={resetWidth}
+        onKeyDown={onHandleKeyDown}
+        title="Drag to resize. Double-click to reset."
+        className={`absolute left-0 top-0 bottom-0 w-1.5 -ml-0.5 cursor-col-resize z-10 transition-colors ${
+          isResizing ? "bg-brand" : "bg-transparent hover:bg-brand/40"
+        } focus:outline-none focus:bg-brand/60`}
+      />
       {/* Header */}
       <div className="p-4 border-b dark:border-neutral-700 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
@@ -637,6 +673,20 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
             )}
           </div>
         </div>
+
+        {/* Grid layout: the shapes a flat column list cannot express. */}
+        {section.columns && section.columns.length > 0 && (
+          <div className="border border-neutral-200 dark:border-neutral-700 rounded p-3">
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">
+              Grid Layout
+            </h3>
+            <TableGridEditor
+              section={section}
+              onUpdate={onUpdate}
+              allSections={allSections}
+            />
+          </div>
+        )}
 
         {/* Table Settings (for table-based components) */}
         {section.columns && (
@@ -852,6 +902,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                             <option value={FieldType.NUMBER}>Number</option>
                             <option value={FieldType.DATE}>Date</option>
                             <option value={FieldType.SELECT}>Dropdown</option>
+                            <option value={FieldType.RADIO}>Radio buttons</option>
                           </select>
                           <button
                             type="button"
@@ -982,8 +1033,27 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                             type: FieldType.TEXT,
                           },
                         };
+                        const columns = [...(section.columns || []), newColumn];
+                        const grown: SectionConfig = { ...section, columns };
                         onUpdate({
-                          columns: [...(section.columns || []), newColumn],
+                          columns,
+                          // A new column is not covered by an existing header,
+                          // so give it a header cell rather than leaving a hole
+                          // that blocks publication.
+                          ...(section.v2?.header?.length
+                            ? {
+                                v2: {
+                                  ...section.v2,
+                                  header: fillHeaderGaps(
+                                    grown,
+                                    section.v2.header,
+                                  ),
+                                  body: section.v2.body
+                                    ? fillBodyGaps(grown, section.v2.body)
+                                    : undefined,
+                                },
+                              }
+                            : {}),
                         });
                       }}
                       leftIcon={<Plus className="w-3 h-3" />}
@@ -1023,10 +1093,13 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                               : undefined
                           }
                           onDelete={() => {
-                            const newColumns = section.columns?.filter(
-                              (c) => c.id !== column.id,
-                            );
-                            onUpdate({ columns: newColumns });
+                            // Goes through removeColumn so the grid overlay,
+                            // per-cell formulas and unit selectors that named
+                            // this column are cleaned up with it. Filtering
+                            // `columns` alone leaves header cells anchored to a
+                            // column that no longer exists, and the renderer
+                            // then drops them and the table loses its header.
+                            onUpdate(removeColumn(section, column.id));
                           }}
                         />
                       ))}
@@ -1999,6 +2072,7 @@ const ColumnEditor: React.FC<{
                     <option value={FieldType.NUMBER}>Number</option>
                     <option value={FieldType.DATE}>Date</option>
                     <option value={FieldType.SELECT}>Dropdown (select)</option>
+                    <option value={FieldType.RADIO}>Radio buttons</option>
                   </select>
                   {field.type === FieldType.SELECT && (
                     <div className="space-y-1.5">
@@ -2326,6 +2400,7 @@ const FieldEditor: React.FC<{
             <option value={FieldType.NUMBER}>Number</option>
             <option value={FieldType.DATE}>Date</option>
             <option value={FieldType.SELECT}>Select</option>
+            <option value={FieldType.RADIO}>Radio buttons</option>
             <option value={FieldType.TEXTAREA}>Text Area</option>
             <option value={FieldType.CHECKBOX}>Checkbox</option>
           </select>

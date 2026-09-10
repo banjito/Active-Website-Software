@@ -36,6 +36,7 @@ import {
   generateTemplateFromReport,
   type ReportOption,
 } from "@/lib/customForms/generateTemplateFromReport";
+import { publishTemplateVersion } from "@/lib/customForms/versioning";
 
 interface Template {
   id: string;
@@ -56,6 +57,7 @@ export const CustomFormTemplates: React.FC = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [publishingId, setPublishingId] = useState<string | null>(null);
 
   // AI-assisted generation from a hard-coded report
   const [showAiModal, setShowAiModal] = useState(false);
@@ -194,28 +196,73 @@ export const CustomFormTemplates: React.FC = () => {
     }
   };
 
+  /**
+   * Publishing compiles the draft and freezes it as a new immutable version.
+   * Unpublishing only hides the template from jobs; published versions stay,
+   * because filled-in forms are pinned to them.
+   */
   const handleTogglePublish = async (
     templateId: string,
     currentlyPublished: boolean,
   ) => {
+    if (currentlyPublished) {
+      try {
+        const { error } = await supabase
+          .schema("neta_ops")
+          .from("custom_form_templates")
+          .update({ is_published: false })
+          .eq("id", templateId);
+        if (error) throw error;
+        toast.success("Template unpublished");
+        loadTemplates();
+      } catch (error) {
+        console.error("Error unpublishing template:", error);
+        toast.error("Failed to update publish status");
+      }
+      return;
+    }
+
+    setPublishingId(templateId);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .schema("neta_ops")
         .from("custom_form_templates")
-        .update({ is_published: !currentlyPublished })
-        .eq("id", templateId);
+        .select("*")
+        .eq("id", templateId)
+        .single();
+      if (error || !data) throw error ?? new Error("Template not found");
 
-      if (error) throw error;
+      const result = await publishTemplateVersion(
+        {
+          id: data.id,
+          name: data.name,
+          description: data.description ?? undefined,
+          netaSection: data.neta_section ?? undefined,
+          structure: data.structure,
+        },
+        { userId: user?.id },
+      );
+
+      if (!result.ok) {
+        const firstError = result.report.errors[0];
+        toast.error(
+          result.error ??
+            (firstError
+              ? `Cannot publish: ${firstError.message}`
+              : "Cannot publish: the template did not compile."),
+        );
+        return;
+      }
 
       toast.success(
-        currentlyPublished
-          ? "Template unpublished"
-          : "Template published! It will now appear in jobs.",
+        `Published version ${result.version!.version}. It will now appear in jobs.`,
       );
       loadTemplates();
     } catch (error) {
-      console.error("Error toggling publish:", error);
+      console.error("Error publishing template:", error);
       toast.error("Failed to update publish status");
+    } finally {
+      setPublishingId(null);
     }
   };
 
@@ -377,7 +424,8 @@ export const CustomFormTemplates: React.FC = () => {
                             template.is_published,
                           )
                         }
-                        variant={template.is_published ? "outline" : "default"}
+                        disabled={publishingId === template.id}
+                        variant={template.is_published ? "outline" : "primary"}
                         className={`flex-1 ${template.is_published ? "border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" : "bg-green-600 hover:bg-green-700 text-white"}`}
                         title={
                           template.is_published
@@ -392,7 +440,11 @@ export const CustomFormTemplates: React.FC = () => {
                           )
                         }
                       >
-                        {template.is_published ? "Unpublish" : "Publish"}
+                        {publishingId === template.id
+                          ? "Publishing..."
+                          : template.is_published
+                            ? "Unpublish"
+                            : "Publish"}
                       </Button>
                     </div>
 

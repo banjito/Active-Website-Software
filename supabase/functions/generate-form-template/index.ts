@@ -53,6 +53,52 @@ interface SectionConfig {
   layout?: 'single-column'|'two-column'|'three-column'|'four-column'|'five-column'|'grid';
   // visual & mechanical inspection:
   checklistItems?: { id: string; netaSection?: string; description: string; resultOptions: string[] }[];
+  // fields shown above a table, e.g. "Test Voltage:" / "Number of Cable Sets:"
+  aboveTableFields?: FieldConfig[];
+  // V2 grid: use this whenever the report's table is more than one header row
+  // of plain columns. Omit it entirely for simple tables.
+  v2?: SectionTableOverlay;
+}
+
+interface SectionTableOverlay {
+  // Multi-row headers with merged cells. Row 1 is the top row.
+  header?: { id: string; cells: HeaderCell[] }[];
+  // Replaces the generated body. Use it to mix repeated rows with notes,
+  // dividers, labels and totals.
+  body?: BodyRow[];
+  footer?: { id: string; cells: BodyCell[] }[];
+}
+
+// A header cell anchors to a column id and may span right (colSpan) or down
+// (rowSpan). Every column must be covered exactly once across the header.
+interface HeaderCell { id: string; columnId: string; label: string; colSpan?: number; rowSpan?: number; align?: 'left'|'center'|'right' }
+
+type BodyRow =
+  | { id: string; kind: 'records'; policy: RowPolicy }
+  | { id: string; kind: 'fixed'; label?: string; cells: BodyCell[] }
+  | { id: string; kind: 'divider' }
+  | { id: string; kind: 'note'|'criteria'|'label'; text: string; align?: 'left'|'center'|'right' }
+  | { id: string; kind: 'subtotal'|'total'; label?: string; cells: BodyCell[] };
+
+interface RowPolicy {
+  initial: number; min: number; max: number;
+  allowAdd: boolean; allowRemove: boolean; allowReorder: boolean; allowCopy: boolean;
+  // Set when ONE record occupies several table rows (e.g. a reading row and a
+  // corrected row per circuit).
+  rowsPerRecord?: number;
+  // Columns drawn once per record, spanning its rows (the identifying columns).
+  spanningColumns?: string[];
+  // A label per sub-row, e.g. ["RDG", "Corrected"].
+  subRowLabels?: string[];
+}
+
+interface BodyCell {
+  id: string; columnId: string; colSpan?: number; rowSpan?: number;
+  kind: 'editable'|'calculated'|'populated'|'display'|'static'|'empty';
+  text?: string;      // for 'static'
+  formula?: string;   // for 'calculated'
+  align?: 'left'|'center'|'right';
+  emphasis?: 'none'|'bold'|'muted'|'heading';
 }
 
 interface ColumnConfig { id: string; label: string; field: FieldConfig; width?: string }
@@ -70,7 +116,7 @@ interface FieldConfig {
   calculation?: { formula: string; dependsOn: string[] }; // when cellBehavior='calculate'
 }
 
-enum FieldType { TEXT='text', NUMBER='number', DATE='date', SELECT='select', TEXTAREA='textarea', CHECKBOX='checkbox', CALCULATED='calculated', TEMPERATURE_HUMIDITY='temperature-humidity' }
+enum FieldType { TEXT='text', NUMBER='number', DATE='date', SELECT='select', RADIO='radio', TEXTAREA='textarea', CHECKBOX='checkbox', CALCULATED='calculated', TEMPERATURE_HUMIDITY='temperature-humidity' }
 
 ComponentType is one of the ids given in the COMPONENT CATALOG below.`;
 
@@ -85,6 +131,32 @@ Rules:
 6. Temperature-corrected columns: set the reading columns first (positional order matters), then each corrected column uses cellBehavior "calculate" with calculation.formula referencing the reading column by position and the TCF, e.g. "{ETI.C5}*{JD.tcf}". {REF.Cn} = column n of the section with referenceCode REF (1-based). Lowercase {JD.tcf}.
 7. Always include a Test Equipment Used section (componentType "test-equipment") and a Comments section (componentType "comments") near the end if the report has them.
 8. Give every section a stable, unique kebab-case id and a unique referenceCode.
+9. HEADERS. Every table column needs a "label" — a table whose columns have no
+   labels renders with a blank header strip, which is always wrong. If the
+   report's <thead> is a SINGLE row of plain <th>, just set column labels and do
+   NOT emit v2. If the <thead> has TWO rows, or any <th> with colSpan/rowSpan,
+   reproduce it in v2.header: one entry per <tr>, each cell anchored to the
+   column id it starts at, carrying the same colSpan/rowSpan as the source.
+   Across the whole header every column must be covered exactly once.
+10. PAIRED ROWS. If the report renders TWO <tr> per record (a measured row and a
+   corrected row, with the identifying <td>s carrying rowSpan={2}), express that
+   as ONE records row with policy.rowsPerRecord = 2 and
+   policy.spanningColumns = the ids of the columns that carry the rowSpan. Do
+   not emit twice as many columns or twice as many rows.
+11. NOTES AND TOTALS. A caption under a table, a criteria note, or a totals row
+   is a v2.body entry of kind note/criteria/label/subtotal/total. Put the
+   repeated data rows in a 'records' entry in the right position among them.
+12. WIDTHS. If the source table has a <colgroup>, copy each column's width onto
+   the matching ColumnConfig.width.
+13. RADIO BUTTONS. When the report renders <input type="radio"> for an exclusive
+   choice (winding connection, material), use FieldType RADIO, not SELECT.
+   Reproduce the options exactly.
+14. ROW LABELS. When a table's first column is a fixed set of names rather than
+   something the technician types (e.g. "Primary to Ground", "Secondary to
+   Ground"), emit one 'fixed' body row per name with a 'static' cell carrying
+   the text, instead of a records row.
+15. Reproduce the report's own section headings verbatim as section titles,
+   including any "Electrical Tests - ..." prefix.
 
 Output ONLY the JSON object for the CustomFormTemplate — no prose, no markdown fences, no commentary.`;
 

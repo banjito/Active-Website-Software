@@ -3452,6 +3452,54 @@ $$;
 
 
 --
+-- Name: custom_form_version_is_immutable(); Type: FUNCTION; Schema: neta_ops; Owner: -
+--
+
+CREATE FUNCTION neta_ops.custom_form_version_is_immutable() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    RAISE EXCEPTION
+      'custom_form_template_versions rows are immutable; instances are pinned to them';
+  END IF;
+
+  IF NEW.template_id IS DISTINCT FROM OLD.template_id
+     OR NEW.version IS DISTINCT FROM OLD.version
+     OR NEW.schema_version IS DISTINCT FROM OLD.schema_version
+     OR NEW.structure::text IS DISTINCT FROM OLD.structure::text
+     OR NEW.checksum IS DISTINCT FROM OLD.checksum
+     OR NEW.name IS DISTINCT FROM OLD.name
+     OR NEW.neta_section IS DISTINCT FROM OLD.neta_section
+     OR NEW.published_at IS DISTINCT FROM OLD.published_at
+  THEN
+    RAISE EXCEPTION
+      'custom_form_template_versions payload is immutable (version % of template %)',
+      OLD.version, OLD.template_id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: custom_form_instance_bump_revision(); Type: FUNCTION; Schema: neta_ops; Owner: -
+--
+
+CREATE FUNCTION neta_ops.custom_form_instance_bump_revision() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.revision = OLD.revision THEN
+    NEW.revision := OLD.revision + 1;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: get_asset_id_by_report_id(uuid); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -8288,7 +8336,15 @@ CREATE TABLE neta_ops.custom_form_instances (
     status text DEFAULT 'PASS'::text,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
-    CONSTRAINT custom_form_instances_status_check CHECK ((status = ANY (ARRAY['PASS'::text, 'FAIL'::text])))
+    template_version_id uuid,
+    template_version integer,
+    schema_version integer DEFAULT 1 NOT NULL,
+    revision integer DEFAULT 1 NOT NULL,
+    template_checksum text,
+    workflow_status text DEFAULT 'draft'::text NOT NULL,
+    CONSTRAINT custom_form_instances_status_check CHECK ((status = ANY (ARRAY['PASS'::text, 'FAIL'::text, 'LIMITED SERVICE'::text, 'N/A'::text]))),
+    CONSTRAINT custom_form_instances_workflow_status_check CHECK ((workflow_status = ANY (ARRAY['draft'::text, 'ready_for_review'::text, 'in_review'::text, 'changes_requested'::text, 'approved'::text]))),
+    CONSTRAINT custom_form_instances_version_required CHECK (((template_id IS NULL) OR (template_version_id IS NOT NULL)))
 );
 
 
@@ -8356,7 +8412,10 @@ CREATE TABLE neta_ops.custom_form_templates (
     is_active boolean DEFAULT true,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
-    is_published boolean DEFAULT false
+    is_published boolean DEFAULT false,
+    active_version_id uuid,
+    latest_version integer DEFAULT 0 NOT NULL,
+    archived_at timestamp with time zone
 );
 
 
@@ -8372,6 +8431,37 @@ COMMENT ON TABLE neta_ops.custom_form_templates IS 'Stores reusable custom form 
 --
 
 COMMENT ON COLUMN neta_ops.custom_form_templates.structure IS 'JSONB containing form sections, components, and configuration';
+
+
+--
+-- Name: custom_form_template_versions; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.custom_form_template_versions (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    template_id uuid NOT NULL,
+    version integer NOT NULL,
+    schema_version integer DEFAULT 1 NOT NULL,
+    name text NOT NULL,
+    description text,
+    neta_section text,
+    structure jsonb NOT NULL,
+    checksum text,
+    release_notes text,
+    origin text DEFAULT 'published'::text NOT NULL,
+    created_by uuid,
+    published_by uuid,
+    published_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT custom_form_template_versions_origin_check CHECK ((origin = ANY (ARRAY['published'::text, 'imported'::text])))
+);
+
+
+--
+-- Name: TABLE custom_form_template_versions; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.custom_form_template_versions IS 'Immutable published snapshots of a custom form template. Instances render from these, never from the mutable draft on custom_form_templates.';
 
 
 --
@@ -12583,6 +12673,22 @@ ALTER TABLE ONLY neta_ops.custom_form_templates
 
 
 --
+-- Name: custom_form_template_versions custom_form_template_versions_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.custom_form_template_versions
+    ADD CONSTRAINT custom_form_template_versions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: custom_form_template_versions custom_form_template_versions_template_id_version_key; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.custom_form_template_versions
+    ADD CONSTRAINT custom_form_template_versions_template_id_version_key UNIQUE (template_id, version);
+
+
+--
 -- Name: deliverables deliverables_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -15661,6 +15767,20 @@ CREATE INDEX idx_custom_form_instances_template_id ON neta_ops.custom_form_insta
 --
 
 CREATE INDEX idx_custom_form_instances_user_id ON neta_ops.custom_form_instances USING btree (user_id);
+
+
+--
+-- Name: idx_custom_form_instances_version; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_custom_form_instances_version ON neta_ops.custom_form_instances USING btree (template_version_id);
+
+
+--
+-- Name: idx_custom_form_template_versions_template; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_custom_form_template_versions_template ON neta_ops.custom_form_template_versions USING btree (template_id, version DESC);
 
 
 --
@@ -19532,6 +19652,20 @@ CREATE TRIGGER update_custom_form_templates_updated_at BEFORE UPDATE ON neta_ops
 
 
 --
+-- Name: custom_form_template_versions custom_form_versions_immutable; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER custom_form_versions_immutable BEFORE DELETE OR UPDATE ON neta_ops.custom_form_template_versions FOR EACH ROW EXECUTE FUNCTION neta_ops.custom_form_version_is_immutable();
+
+
+--
+-- Name: custom_form_instances custom_form_instances_bump_revision; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER custom_form_instances_bump_revision BEFORE UPDATE ON neta_ops.custom_form_instances FOR EACH ROW EXECUTE FUNCTION neta_ops.custom_form_instance_bump_revision();
+
+
+--
 -- Name: job_costs update_job_costs_timestamp; Type: TRIGGER; Schema: neta_ops; Owner: -
 --
 
@@ -21467,6 +21601,46 @@ ALTER TABLE ONLY neta_ops.custom_form_saved_components
 
 ALTER TABLE ONLY neta_ops.custom_form_templates
     ADD CONSTRAINT custom_form_templates_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: custom_form_templates custom_form_templates_active_version_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.custom_form_templates
+    ADD CONSTRAINT custom_form_templates_active_version_id_fkey FOREIGN KEY (active_version_id) REFERENCES neta_ops.custom_form_template_versions(id) ON DELETE SET NULL;
+
+
+--
+-- Name: custom_form_instances custom_form_instances_template_version_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.custom_form_instances
+    ADD CONSTRAINT custom_form_instances_template_version_id_fkey FOREIGN KEY (template_version_id) REFERENCES neta_ops.custom_form_template_versions(id) ON DELETE RESTRICT;
+
+
+--
+-- Name: custom_form_template_versions custom_form_template_versions_template_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.custom_form_template_versions
+    ADD CONSTRAINT custom_form_template_versions_template_id_fkey FOREIGN KEY (template_id) REFERENCES neta_ops.custom_form_templates(id) ON DELETE CASCADE;
+
+
+--
+-- Name: custom_form_template_versions custom_form_template_versions_created_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.custom_form_template_versions
+    ADD CONSTRAINT custom_form_template_versions_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: custom_form_template_versions custom_form_template_versions_published_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.custom_form_template_versions
+    ADD CONSTRAINT custom_form_template_versions_published_by_fkey FOREIGN KEY (published_by) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 
 --
@@ -26280,6 +26454,27 @@ CREATE POLICY "Users can view change orders" ON neta_ops.job_change_orders FOR S
 --
 
 CREATE POLICY "Users can view form instances" ON neta_ops.custom_form_instances FOR SELECT USING ((auth.uid() IS NOT NULL));
+
+
+--
+-- Name: custom_form_template_versions; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.custom_form_template_versions ENABLE ROW LEVEL SECURITY;
+
+
+--
+-- Name: custom_form_template_versions Authenticated users can view template versions; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view template versions" ON neta_ops.custom_form_template_versions FOR SELECT USING ((auth.uid() IS NOT NULL));
+
+
+--
+-- Name: custom_form_template_versions Authenticated users can publish template versions; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can publish template versions" ON neta_ops.custom_form_template_versions FOR INSERT WITH CHECK ((auth.uid() IS NOT NULL));
 
 
 --

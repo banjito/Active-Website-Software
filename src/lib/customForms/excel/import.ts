@@ -95,6 +95,26 @@ function parseAddress(address: string): { column: number; row: number } | null {
  * That keeps the answer small enough to fit the output limit, and takes a whole
  * class of per-cell mistake away from the model.
  */
+/**
+ * How far apart a table's data rows are on the sheet.
+ *
+ * A row of a form drawn in Excel is often several sheet rows tall, merged into
+ * one. Stepping by one row would then read blank cells between the real ones.
+ * The merge that starts at a column's first data cell says how tall a row is.
+ */
+function rowStep(sheet: ExcelWorkbookAnalysis["sheets"][number], anchors: readonly string[]): number {
+  let step = 1;
+  for (const merge of sheet.merges) {
+    const [from, to] = merge.split(":");
+    const start = parseAddress(from ?? "");
+    const end = parseAddress(to ?? from ?? "");
+    if (!start || !end) continue;
+    if (!anchors.includes(`${columnLetters(start.column)}${start.row}`)) continue;
+    step = Math.max(step, end.row - start.row + 1);
+  }
+  return step;
+}
+
 export function deriveMappings(
   structure: CustomFormStructure,
   workbook: ExcelWorkbookAnalysis,
@@ -162,6 +182,37 @@ export function deriveMappings(
     }
 
     const columns = section.columns ?? [];
+
+    if (source.kind === "columns") {
+      const sheet = workbook.sheets.find((entry) => entry.name === source.sheet)!;
+      const step = rowStep(sheet, source.anchors);
+      source.anchors.forEach((anchor, index) => {
+        // An empty anchor is a column of fixed text: nothing to read from.
+        if (!anchor || !columns[index]) return;
+        const start = parseAddress(anchor);
+        if (!start) {
+          issues.push({
+            code: "UNMAPPED_TARGET",
+            message: `"${columns[index].label || `column ${index + 1}`}" of "${section.title}" has an unreadable cell ("${anchor}"); it was left out.`,
+            sheet: source.sheet,
+          });
+          return;
+        }
+        for (let row = 0; row < source.rows; row++) {
+          add({
+            sheet: source.sheet,
+            cell: `${columnLetters(start.column)}${start.row + row * step}`,
+            sectionId: section.id,
+            fieldId: columns[index].field.id,
+            rowIndex: row,
+            columnId: columns[index].id,
+            role: "input",
+          });
+        }
+      });
+      continue;
+    }
+
     const [from, to] = source.range.split(":");
     const start = parseAddress(from ?? "");
     const end = parseAddress(to ?? from ?? "");
@@ -198,6 +249,81 @@ export function deriveMappings(
     }
   }
   return mappings;
+}
+
+/**
+ * Take each field's type from the workbook, not from the model's guess.
+ *
+ * A column left as text cannot carry a numeric calculation: the type checker
+ * rejects the arithmetic and the formula is dropped, which is how a run can map
+ * every cell correctly and still carry over nothing. What the cells actually
+ * hold is in the file, so it is read rather than asked for.
+ */
+function inferFieldTypes(
+  structure: CustomFormStructure,
+  workbook: ExcelWorkbookAnalysis,
+  mappings: readonly ExcelCellMapping[],
+): void {
+  const cells = new Map<string, ExcelCell>();
+  for (const sheet of workbook.sheets) {
+    for (const cell of sheet.cells) cells.set(sourceKey(sheet.name, cell.address), cell);
+  }
+  const evidence = new Map<FieldConfig, { numeric: number; other: number }>();
+
+  for (const mapping of mappings) {
+    const section = findSection(structure, mapping.sectionId);
+    const field = section ? mappedField(section, mapping) : undefined;
+    // A choice or a date is already more specific than anything a value can say.
+    if (!field || field.type !== "text") continue;
+    const cell = cells.get(sourceKey(mapping.sheet, mapping.cell));
+    if (!cell) continue;
+    const tally = evidence.get(field) ?? { numeric: 0, other: 0 };
+    const numeric =
+      cell.type === "number" ||
+      (cell.formula !== undefined && (cell.value === undefined || typeof cell.value === "number"));
+    if (numeric) tally.numeric += 1;
+    else if (cell.value !== undefined && cell.value !== "") tally.other += 1;
+    evidence.set(field, tally);
+  }
+
+  for (const [field, tally] of evidence) {
+    if (tally.numeric > 0 && tally.other === 0) field.type = FieldType.NUMBER;
+  }
+}
+
+/**
+ * What the form does not account for.
+ *
+ * Valid JSON is not coverage: a layout can parse, compile and agree with every
+ * formula it kept while quietly leaving a whole table out of the form. Formula
+ * cells are already reported one by one; this counts the filled cells no
+ * section covers, so a workbook that came across half-imported says so.
+ *
+ * Labels and headings are expected to be uncovered: the layout turns them into
+ * titles and static text rather than fields. The count is a prompt to compare
+ * against the workbook, not a defect list.
+ */
+function coverageIssues(
+  workbook: ExcelWorkbookAnalysis,
+  mappings: readonly ExcelCellMapping[],
+): ExcelImportIssue[] {
+  const covered = new Set(mappings.map((mapping) => sourceKey(mapping.sheet, mapping.cell)));
+  const issues: ExcelImportIssue[] = [];
+  for (const sheet of workbook.sheets) {
+    const missed = sheet.cells.filter(
+      (cell) =>
+        (cell.formula !== undefined || (cell.value !== undefined && cell.value !== "")) &&
+        !covered.has(sourceKey(sheet.name, cell.address)),
+    );
+    if (!missed.length) continue;
+    const shown = missed.slice(0, 10).map((cell) => cell.address).join(", ");
+    issues.push({
+      code: "UNCOVERED_CELLS",
+      message: `${missed.length} of ${sheet.cells.length} filled cells on this sheet are not in the form (${shown}${missed.length > 10 ? ", …" : ""}). Headings and labels are expected here; anything a technician types or reads is not.`,
+      sheet: sheet.name,
+    });
+  }
+  return issues;
 }
 
 /**
@@ -327,8 +453,37 @@ function translateAll(
 ): { formulas: Record<string, string>; reviews: ExcelFormulaReview[] } {
   const formulas: Record<string, string> = {};
   const reviews: ExcelFormulaReview[] = [];
-  const resolve = (sheet: string, address: string) =>
-    wiring.slotBySource.get(sourceKey(sheet, address));
+  const blankTextReferences = new Set<string>();
+  const translations = new Map<string, ReturnType<typeof translateExcelFormula>>();
+  const dependents = new Map<string, Set<string>>();
+  const blankQueue: string[] = [];
+  const translate = (id: string, mapping: ExcelCellMapping) => {
+    const cell = wiring.cellBySource.get(sourceKey(mapping.sheet, mapping.cell));
+    if (mapping.role !== "calculated" || !cell?.formula) return;
+    const result = translateExcelFormula(cell.formula, mapping.sheet, (sheet, address) => {
+      const reference = wiring.slotBySource.get(sourceKey(sheet, address));
+      if (reference) {
+        const readers = dependents.get(reference) ?? new Set<string>();
+        readers.add(id);
+        dependents.set(reference, readers);
+      }
+      return reference;
+    }, blankTextReferences);
+    translations.set(id, result);
+    if (result.ok && result.blankText && !blankTextReferences.has(id)) {
+      blankTextReferences.add(id);
+      blankQueue.push(id);
+    }
+  };
+  for (const [id, mapping] of wiring.mappingByTarget) translate(id, mapping);
+  // Empty-text results display as missing typed values. Do not let another formula
+  // mistake them for genuinely blank numeric cells and silently turn them into zero.
+  // Propagate that distinction independent of worksheet/mapping order, including chains.
+  for (let index = 0; index < blankQueue.length; index++) {
+    for (const id of dependents.get(blankQueue[index]) ?? []) {
+      translate(id, wiring.mappingByTarget.get(id)!);
+    }
+  }
 
   for (const mapping of mappings) {
     const section = findSection(structure, mapping.sectionId);
@@ -343,7 +498,7 @@ function translateAll(
     }
     if (mapping.role !== "calculated" || !cell?.formula) continue;
 
-    const translated = translateExcelFormula(cell.formula, mapping.sheet, resolve);
+    const translated = translations.get(id)!;
     if (translated.ok) {
       formulas[id] = translated.source;
       reviews.push({
@@ -354,6 +509,9 @@ function translateAll(
         translated: translated.source,
         status: "unverified",
         message: "Translated. Not yet compared with the workbook's cached result.",
+        // Where the translation is close rather than identical, the caveat
+        // travels with the cell instead of being lost.
+        ...(translated.notes?.length ? { caveats: translated.notes } : {}),
       });
     } else {
       const field = mappedField(section, mapping);
@@ -496,6 +654,7 @@ function compareWithWorkbook(
     } else if (agrees) {
       review.status = "matched";
       review.message = `Matches the workbook's saved result (${String(cell?.value)}) for the values saved in the file. Other inputs are untested.`;
+      if (review.caveats?.length) review.message += ` Note: ${review.caveats.join(" ")}`;
     } else {
       review.status = "different";
       review.message = `Does not match the workbook: it saved ${String(cell?.value)}, this works out to ${String(result.value)}. Check this cell before using the form.`;
@@ -572,11 +731,13 @@ export function buildExcelDraft(
   let structure = assignRowIds(template.structure, newId);
 
   const mappings = deriveMappings(structure, workbook, response.sources, issues);
+  inferFieldTypes(structure, workbook, mappings);
   const wiring = wire(structure, workbook, mappings, issues);
   const { formulas, reviews } = translateAll(structure, workbook, mappings, wiring);
   structure = compileWhatWorks(structure, formulas, reviews, issues);
   compareWithWorkbook(structure, wiring, reviews);
 
+  issues.push(...coverageIssues(workbook, mappings));
   reviews.sort((a, b) => a.sheet.localeCompare(b.sheet) || a.cell.localeCompare(b.cell));
   for (const warning of response.warnings) issues.push({ code: "LAYOUT_REVIEW", message: warning });
 

@@ -2,10 +2,14 @@
 // @ts-ignore deno: types are resolved at runtime
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import {
+  ExcelGenerationError,
   ExcelValidationError,
   buildExcelMessages,
-  parseExcelResponse,
+  completeAnswer,
+  extractJsonObject,
+  parseCompletedExcelResponse,
   validateExcelRequest,
+  type ExcelAnswer,
 } from "./excel-prompt.ts";
 // Local TS linting shim (for non-Deno editors)
 declare const Deno: {
@@ -23,6 +27,8 @@ const corsHeaders = {
 // the reasoner does NOT support response_format json_object, so drop that below.
 const MODEL = "deepseek-chat";
 const DEEPSEEK_URL = "https://api.deepseek.com/chat/completions";
+// Prefix completion (continuing a partial answer) lives on the beta endpoint.
+const DEEPSEEK_BETA_URL = "https://api.deepseek.com/beta/chat/completions";
 
 // ---------------------------------------------------------------------------
 // The template schema the model must emit. Kept in sync with
@@ -166,7 +172,7 @@ Rules:
 
 Output ONLY the JSON object for the CustomFormTemplate — no prose, no markdown fences, no commentary.`;
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -181,10 +187,16 @@ serve(async (req) => {
 
     const payload = await req.json();
 
+    // The workbook builder drives the model one tool call at a time, so each
+    // request here is one short step of a conversation the app holds.
+    if (payload?.sourceType === "excel-step") {
+      return await excelStep(payload, apiKey);
+    }
+
     // An uploaded workbook takes a different path: its prompt forbids formulas
     // entirely, and the app translates those itself from the original file.
     if (payload?.sourceType === "excel") {
-      return await generateFromExcel(payload, apiKey);
+      return await generateFromExcel(payload, apiKey, req.signal);
     }
 
     const { reportName, reportSource, componentCatalog } = payload ?? {};
@@ -260,22 +272,40 @@ Generate the CustomFormTemplate JSON now.`;
   }
 });
 
+/** The only tools this function will pass on. The app owns what they do. */
+const BUILD_TOOL_NAMES = [
+  "add_section", "add_table", "add_header_row", "set_column_text", "add_note", "finish",
+];
+const STEP_LIMITS = { messages: 600, contentChars: 200_000, totalChars: 600_000, tools: 12 };
+
 /**
- * Workbook to layout. The model may propose a layout and cell mappings only.
+ * One step of a tool-driven build.
  *
- * The request is fully validated before the provider is called, and the answer
- * is validated against that same request, so a model cannot invent a sheet,
- * a cell, or a formula.
+ * The conversation lives in the browser, so this stays a thin, bounded pass to
+ * the provider: it checks the shape and size of what it is given, forwards it,
+ * and returns the model's next tool calls. It never interprets them.
  */
-async function generateFromExcel(payload: unknown, apiKey: string): Promise<Response> {
-  let request;
-  try {
-    request = validateExcelRequest(payload);
-  } catch (err) {
-    if (err instanceof ExcelValidationError) {
-      return json({ error: `Workbook upload rejected: ${err.message}` }, 400);
+async function excelStep(payload: any, apiKey: string): Promise<Response> {
+  const messages = payload?.messages;
+  const tools = payload?.tools;
+  if (!Array.isArray(messages) || !messages.length || messages.length > STEP_LIMITS.messages) {
+    return json({ error: "A build step needs between 1 and 600 messages." }, 400);
+  }
+  if (!Array.isArray(tools) || !tools.length || tools.length > STEP_LIMITS.tools) {
+    return json({ error: "A build step needs its tool declarations." }, 400);
+  }
+  if (!tools.every((tool: any) => BUILD_TOOL_NAMES.includes(tool?.function?.name ?? tool?.name))) {
+    return json({ error: "Unknown build tool." }, 400);
+  }
+  let total = 0;
+  for (const message of messages) {
+    const content = typeof message?.content === "string" ? message.content : "";
+    if (content.length > STEP_LIMITS.contentChars) return json({ error: "A build message is too long." }, 400);
+    total += content.length;
+    if (total > STEP_LIMITS.totalChars) return json({ error: "This build has grown too large to continue." }, 400);
+    if (!["system", "user", "assistant", "tool"].includes(message?.role)) {
+      return json({ error: "Unsupported message role." }, 400);
     }
-    throw err;
   }
 
   const resp = await fetch(DEEPSEEK_URL, {
@@ -283,35 +313,124 @@ async function generateFromExcel(payload: unknown, apiKey: string): Promise<Resp
     headers: { Authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 8192,
-      stream: true,
+      max_tokens: 2048, // One tool call is small; this bounds a runaway answer.
       temperature: 0,
-      response_format: { type: "json_object" },
-      messages: buildExcelMessages(request),
+      messages,
+      tools,
+      tool_choice: "auto",
     }),
   });
-  if (!resp.ok || !resp.body) {
+  if (!resp.ok) {
     const detail = await resp.text();
-    console.error("DeepSeek API error (excel):", resp.status, detail);
-    return json({ error: `DeepSeek API error (${resp.status})`, detail }, 502);
+    console.error("DeepSeek API error (excel-step):", resp.status, detail.slice(0, 500));
+    return json({ error: `The layout provider failed (HTTP ${resp.status}). The build can continue.` }, 502);
   }
+  const body = await resp.json();
+  const choice = body?.choices?.[0];
+  const toolCalls = Array.isArray(choice?.message?.tool_calls)
+    ? choice.message.tool_calls
+        .filter((entry: any) => BUILD_TOOL_NAMES.includes(entry?.function?.name))
+        .slice(0, 4)
+        .map((entry: any) => ({
+          id: String(entry.id ?? "call"),
+          name: String(entry.function.name),
+          args: typeof entry.function.arguments === "string" ? entry.function.arguments : "{}",
+        }))
+    : [];
+  return json({ text: typeof choice?.message?.content === "string" ? choice.message.content : "", toolCalls });
+}
 
-  const rawText = await collectStreamedText(resp.body);
+/**
+ * Workbook to layout. The model may propose a layout and cell mappings only.
+ *
+ * The request is fully validated before the provider is called, and the answer
+ * is validated against that same request, so a model cannot invent a sheet,
+ * a cell, or a formula.
+ */
+async function generateFromExcel(payload: unknown, apiKey: string, signal: AbortSignal): Promise<Response> {
+  const requestId = crypto.randomUUID();
+  const started = Date.now();
+  let request;
   try {
-    // Never echo the raw model output: it can contain workbook contents.
-    return json(parseExcelResponse(rawText, request));
+    request = validateExcelRequest(payload);
   } catch (err) {
     if (err instanceof ExcelValidationError) {
-      console.error("Excel response rejected:", err.message);
-      // Say enough to act on without quoting the answer, which carries
-      // workbook contents: length and whether it was cut off mid-object.
-      const truncated = rawText.length > 0 && !rawText.trimEnd().endsWith("}");
-      const shape = rawText.length === 0
-        ? "The model returned nothing."
-        : truncated
-          ? `The answer was cut off after ${rawText.length} characters, so this workbook is too large to lay out in one pass. Import a smaller sheet, or split the workbook.`
-          : `The answer was ${rawText.length} characters.`;
-      return json({ error: `The generated layout was rejected: ${err.message}`, detail: shape }, 502);
+      return json({ error: `Workbook upload rejected: ${err.message}`, code: "invalid_workbook", requestId }, 400);
+    }
+    throw err;
+  }
+
+  let answer: ExcelAnswer | undefined;
+  try {
+    answer = await completeAnswer(buildExcelMessages(request), async (messages, continuing, providerSignal) => {
+      const resp = await fetch(continuing ? DEEPSEEK_BETA_URL : DEEPSEEK_URL, {
+        method: "POST",
+        signal: providerSignal,
+        headers: { Authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
+        body: JSON.stringify({
+          model: MODEL,
+          max_tokens: 8192,
+          stream: true,
+          temperature: 0,
+          // Continuations use DeepSeek's explicit assistant-prefix contract,
+          // not another request to generate an independent JSON object.
+          ...(continuing ? {} : { response_format: { type: "json_object" } }),
+          messages,
+        }),
+      });
+      if (!resp.ok || !resp.body) {
+        void resp.body?.cancel().catch(() => {});
+        // Provider error bodies can repeat workbook text; retain status only.
+        throw new ExcelGenerationError("provider_error", `The layout provider could not complete the request (HTTP ${resp.status}). Please retry the import.`);
+      }
+      return resp.body;
+    }, { signal });
+
+    // A length-limited or interrupted answer is never accepted just because
+    // its accumulated text happens to be valid JSON.
+    const result = parseCompletedExcelResponse(answer, request);
+    console.info("Excel layout generated", {
+      requestId, attempts: answer.attempts,
+      responseBytes: new TextEncoder().encode(answer.text).length,
+      elapsedMs: Date.now() - started,
+    });
+    return json(result);
+  } catch (err) {
+    if (err instanceof ExcelGenerationError || err instanceof ExcelValidationError) {
+      const code = err instanceof ExcelGenerationError
+        ? err.code
+        : err.message === "the answer was not JSON" ? "invalid_json" : "invalid_layout";
+      console.error("Excel layout rejected", {
+        // The message carries ids and paths only, never workbook contents.
+        requestId, code, message: err.message, stage: answer ? "validation" : "generation",
+        attempts: answer?.attempts,
+        responseBytes: answer ? new TextEncoder().encode(answer.text).length : undefined,
+        elapsedMs: Date.now() - started,
+      });
+      // "Not JSON" after several turns is almost always the turns failing to
+      // join, so say what the joined text looks like. Shapes and offsets only:
+      // no provider text, which can quote the workbook.
+      let shape = "";
+      if (code === "invalid_json" && answer) {
+        const text = answer.text;
+        let position = "";
+        try {
+          JSON.parse(extractJsonObject(text));
+        } catch (parseError) {
+          const offset = /position (\d+)/.exec(String((parseError as Error).message))?.[1];
+          if (offset) position = `, first unparseable at character ${offset} of ${text.length}`;
+        }
+        const objects = (text.match(/"template"\s*:/g) ?? []).length;
+        shape = ` The answer came back in ${answer.attempts} turn${answer.attempts === 1 ? "" : "s"}${position}.${
+          objects > 1 ? ` It contains ${objects} separate layouts, so the turns did not join: the provider restarted rather than continued.` : ""
+        }`;
+      }
+      return json({
+        error: err instanceof ExcelGenerationError ? err.message : `The generated layout was rejected: ${err.message}`,
+        code,
+        requestId,
+        detail: `Reference: ${requestId}. No imported draft was created.${shape}`,
+      }, code === "timeout" ? 504 : 502);
     }
     throw err;
   }

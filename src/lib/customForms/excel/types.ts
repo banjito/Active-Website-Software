@@ -43,6 +43,16 @@ export interface ExcelWorkbookAnalysis {
  */
 export type ExcelSourceMap =
   | { sectionId: string; kind: "table"; sheet: string; range: string }
+  /**
+   * A table whose columns are named by their first data cell.
+   *
+   * A form drawn in Excel merges cells, so what reads as eight columns can be
+   * twenty-seven columns of the raw grid. Demanding a rectangle whose width
+   * matched the column count forced empty padding columns into the form. An
+   * anchor per column says where each one actually starts, and the row step
+   * comes from the merge heights in the workbook.
+   */
+  | { sectionId: string; kind: "columns"; sheet: string; anchors: string[]; rows: number }
   | { sectionId: string; kind: "fields"; sheet: string; cells: { fieldId: string; cell: string }[] };
 
 /** One workbook cell against one form field. Derived here, never sent by the model. */
@@ -69,6 +79,8 @@ export interface ExcelFormulaReview {
   translated?: string;
   status: "matched" | "different" | "unverified" | "unsupported";
   message: string;
+  /** Where the translation is close but not identical, said plainly. */
+  caveats?: string[];
 }
 /** Stored with the draft so problems do not disappear after leaving the import dialog. */
 export interface ExcelImportReview {

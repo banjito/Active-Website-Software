@@ -96,6 +96,7 @@ Equality accepts matching scalar types. Mixed-type branches/lists are rejected.
 | `isNull(value)` | Explicit missing-value check. |
 | `min`, `max`, `sum`, `avg` | One or more numeric arguments and/or numeric lists. Empty input data or any null element returns null. |
 | `abs(value)`, `sqrt(value)` | Numeric result; negative square roots report an error. |
+| `exp(value)` | e raised to the value, for correction factors of the form `0.1758 * exp(0.0256 * C)`. An overflow is an error, never infinity. |
 | `round(value, decimals?)` | No precision: `Math.round`. Explicit precision: `Number(value.toFixed(decimals))`, integer precision 0–12. |
 | `concat(a, ...)` | String-only concatenation. Any missing argument returns null. |
 

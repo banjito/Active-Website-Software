@@ -18,7 +18,7 @@ import {
   type ExpressionResources,
 } from "@/lib/customForms/expressions/resources";
 
-const NUMERIC = new Set(["min", "max", "abs", "avg", "sum", "sqrt", "round"]);
+const NUMERIC = new Set(["min", "max", "abs", "avg", "sum", "sqrt", "round", "exp"]);
 const isNullType = (type: InferredType) => type === "null" || type === "null[]";
 
 function requireType(actual: InferredType, expected: InferredType[], node: SourceSpan): void {
@@ -77,9 +77,9 @@ export function inferNode(node: ExpressionNode, referenceType: (id: string) => I
     case "call": {
       const name = node.name;
       const arity: Record<string, [number, number]> = {
-        if: [3, 3], coalesce: [2, Infinity], isnull: [1, 1],
+        if: [3, 3], coalesce: [2, Infinity], isnull: [1, 1], isnumber: [1, 1], textmatches: [3, 3],
         min: [1, Infinity], max: [1, Infinity], avg: [1, Infinity], sum: [1, Infinity],
-        abs: [1, 1], sqrt: [1, 1], round: [1, 2], concat: [1, Infinity],
+        abs: [1, 1], sqrt: [1, 1], exp: [1, 1], round: [1, 2], concat: [1, Infinity],
         verdict: [1, 1], lookup: [2, 2], interpolate: [2, 2], convert: [3, 3],
       };
       const signature = Object.prototype.hasOwnProperty.call(arity, name) ? arity[name] : undefined;
@@ -94,6 +94,17 @@ export function inferNode(node: ExpressionNode, referenceType: (id: string) => I
       }
       if (name === "coalesce") return commonType(types, node);
       if (name === "isnull") return "boolean";
+      if (name === "isnumber" || name === "textmatches") {
+        requireType(types[0], ["number", "string", "boolean", "result"], node.args[0]);
+        if (name === "textmatches") {
+          for (const [index, expected] of [[1, "string"], [2, "boolean"]] as const) {
+            if (types[index] !== expected) {
+              throw new ExpressionFailure("type.mismatch", `Expected ${expected}, received ${types[index]}.`, node.args[index]);
+            }
+          }
+        }
+        return "boolean";
+      }
       if (name === "concat") {
         types.forEach((type, index) => requireType(type, ["string"], node.args[index]));
         return "string";
@@ -149,6 +160,57 @@ function literalName(node: ExpressionNode, what: string): string {
 function finite(value: number, span: SourceSpan): number {
   if (!Number.isFinite(value)) throw new ExpressionFailure("number.nonFinite", "Calculation produced a non-finite number.", span);
   return value;
+}
+
+function textMatches(value: ExpressionValue, pattern: string, caseSensitive: boolean, span: SourceSpan): boolean {
+  if (pattern.length > EXPRESSION_LIMITS.sourceLength || (typeof value === "string" && value.length > EXPRESSION_LIMITS.sourceLength)) {
+    throw new ExpressionFailure("limit.string", "Text matching arguments are too long.", span);
+  }
+  if (typeof value !== "string") return false;
+
+  type Token = { kind: "star" | "any" } | { kind: "literal"; value: string };
+  const fold = (character: string) => caseSensitive ? character : character.toLowerCase();
+  const characters = Array.from(value, fold);
+  const patternCharacters = Array.from(pattern);
+  const tokens: Token[] = [];
+  for (let index = 0; index < patternCharacters.length; index++) {
+    const character = patternCharacters[index];
+    const next = patternCharacters[index + 1];
+    if (character === "~" && (next === "*" || next === "?" || next === "~")) {
+      tokens.push({ kind: "literal", value: fold(next) });
+      index++;
+    } else if (character === "*") {
+      if (tokens[tokens.length - 1]?.kind !== "star") tokens.push({ kind: "star" });
+    } else if (character === "?") {
+      tokens.push({ kind: "any" });
+    } else {
+      tokens.push({ kind: "literal", value: fold(character) });
+    }
+  }
+
+  // Retry only the latest star, never recursively or through regex. Worst-case
+  // work is O(text length * pattern length), bounded by the engine string limit.
+  let textIndex = 0;
+  let tokenIndex = 0;
+  let starIndex = -1;
+  let starEnd = 0;
+  while (textIndex < characters.length) {
+    const token = tokens[tokenIndex];
+    if (token?.kind === "any" || (token?.kind === "literal" && token.value === characters[textIndex])) {
+      textIndex++;
+      tokenIndex++;
+    } else if (token?.kind === "star") {
+      starIndex = tokenIndex++;
+      starEnd = textIndex;
+    } else if (starIndex >= 0) {
+      tokenIndex = starIndex + 1;
+      textIndex = ++starEnd;
+    } else {
+      return false;
+    }
+  }
+  while (tokens[tokenIndex]?.kind === "star") tokenIndex++;
+  return tokenIndex === tokens.length;
 }
 
 /** Browser input strings are parsed only at the typed input boundary, not by operators. */
@@ -228,6 +290,12 @@ export function evaluateNode(node: ExpressionNode, read: (id: string, span: Sour
       }
       const values = node.args.map((arg) => evaluateNode(arg, read, resources));
       if (name === "isnull") return values[0] === null;
+      if (name === "isnumber") return typeof values[0] === "number";
+      if (name === "textmatches") {
+        if (typeof values[1] !== "string") throw new ExpressionFailure("type.mismatch", "Text matching requires a string pattern.", node.args[1]);
+        if (typeof values[2] !== "boolean") throw new ExpressionFailure("type.mismatch", "Text matching requires a boolean caseSensitive flag.", node.args[2]);
+        return textMatches(values[0], values[1], values[2], node);
+      }
       if (values.includes(null)) return null;
       if (name === "verdict") {
         const text = values[0] as string;
@@ -268,6 +336,9 @@ export function evaluateNode(node: ExpressionNode, read: (id: string, span: Sour
           case "sqrt":
             if (numbers[0] < 0) throw new ExpressionFailure("number.domain", "Square root requires a nonnegative number.", node);
             result = Math.sqrt(numbers[0]); break;
+          // Temperature correction factors are exponential; `finite` below
+          // turns an overflow into an error rather than Infinity.
+          case "exp": result = Math.exp(numbers[0]); break;
           case "round": {
             const decimals = numbers[1];
             if (decimals !== undefined && (!Number.isInteger(decimals) || decimals < 0 || decimals > 12)) {

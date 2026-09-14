@@ -805,35 +805,29 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
 
   useEffect(() => {
     const tcf = getTCF(formData.temperature.celsius);
-    setFormData((prev) => ({
-      ...prev,
-      temperature: { ...prev.temperature, tcf },
-    }));
-    updateCorrectedValues();
+    setFormData((prev) => {
+      const { insulationTest } = prev;
+      const next = { ...prev, temperature: { ...prev.temperature, tcf } };
+      if (!insulationTest) return next;
+      // Recompute corrected values with the NEW tcf (not the stale closure value)
+      return {
+        ...next,
+        insulationTest: {
+          ...insulationTest,
+          preTestCorrected: {
+            ag: calculateCorrectedValue(insulationTest.preTest.ag, tcf),
+            bg: calculateCorrectedValue(insulationTest.preTest.bg, tcf),
+            cg: calculateCorrectedValue(insulationTest.preTest.cg, tcf),
+          },
+          postTestCorrected: {
+            ag: calculateCorrectedValue(insulationTest.postTest.ag, tcf),
+            bg: calculateCorrectedValue(insulationTest.postTest.bg, tcf),
+            cg: calculateCorrectedValue(insulationTest.postTest.cg, tcf),
+          },
+        },
+      };
+    });
   }, [formData.temperature.celsius]);
-
-  const updateCorrectedValues = () => {
-    const { insulationTest, temperature } = formData;
-    if (!insulationTest) return;
-    const preTestCorrected = {
-      ag: calculateCorrectedValue(insulationTest.preTest.ag, temperature.tcf),
-      bg: calculateCorrectedValue(insulationTest.preTest.bg, temperature.tcf),
-      cg: calculateCorrectedValue(insulationTest.preTest.cg, temperature.tcf),
-    };
-    const postTestCorrected = {
-      ag: calculateCorrectedValue(insulationTest.postTest.ag, temperature.tcf),
-      bg: calculateCorrectedValue(insulationTest.postTest.bg, temperature.tcf),
-      cg: calculateCorrectedValue(insulationTest.postTest.cg, temperature.tcf),
-    };
-    setFormData((prev) => ({
-      ...prev,
-      insulationTest: {
-        ...prev.insulationTest,
-        preTestCorrected,
-        postTestCorrected,
-      },
-    }));
-  };
 
   const handleFahrenheitChange = (fahrenheit: number) => {
     setJustSaved(false);

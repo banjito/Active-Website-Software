@@ -75,7 +75,7 @@ export const TypedCalculationEditor: React.FC<Props> = ({ structure, onChange })
                 {slots.map((slot) => <option key={slot.id} value={slot.id}>{slot.label}</option>)}
               </select>
             </label>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">References are inserted at the end. Use numeric input types for math. Supported: if, coalesce, isNull, min, max, avg, sum, abs, sqrt, round and concat. Clear the formula to return a normal input to manual entry.</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">References are inserted at the end. Use numeric input types for math. Supported: if, coalesce, isNull, isnumber, textmatches, min, max, avg, sum, abs, sqrt, round and concat. isnumber(value) tests for a number without converting text. textmatches(value, pattern, caseSensitive) matches text using * and ? wildcards; use ~ to escape a wildcard. Clear the formula to return a normal input to manual entry.</p>
           </>}
         </>}
       </div>

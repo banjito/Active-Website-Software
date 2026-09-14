@@ -6,7 +6,18 @@
 
 import { supabase } from "@/lib/supabase";
 import { COMPONENT_LIBRARY } from "@/lib/customForms/componentLibrary";
+import type { SectionConfig } from "@/lib/types/customForms";
 import { buildExcelDraft } from "@/lib/customForms/excel/import";
+import { BUILD_TOOLS } from "@/lib/customForms/excel/tools";
+import {
+  draftFromBuild,
+  rebuildSection,
+  regenerateSection,
+  runBuild,
+  type BuildEvent,
+  type BuildRun,
+  type ModelCall,
+} from "@/lib/customForms/excel/build";
 import { readExcelWorkbook } from "@/lib/customForms/excel/workbook";
 import type {
   ExcelGenerationResponse,
@@ -71,4 +82,94 @@ export async function importExcelTemplate(
   const workbook = await readExcelWorkbook(file);
   const response = await (options.generate ?? requestLayout)(workbook);
   return buildExcelDraft(workbook, response);
+}
+
+/**
+ * One step of the tool-driven build.
+ *
+ * The conversation is held here, in the browser, so each provider call is short
+ * and the person can watch and stop the run. The edge function is a bounded
+ * pass-through that adds the API key.
+ */
+const stepCall: ModelCall = async (messages, signal) => {
+  const { data, error } = await supabase.functions.invoke("generate-form-template", {
+    body: {
+      sourceType: "excel-step",
+      messages: messages.map((message) => ({
+        role: message.role,
+        content: message.content,
+        ...(message.toolCallId ? { tool_call_id: message.toolCallId } : {}),
+        ...(message.toolCalls
+          ? {
+              tool_calls: message.toolCalls.map((call) => ({
+                id: call.id,
+                type: "function",
+                function: { name: call.name, arguments: call.args },
+              })),
+            }
+          : {}),
+      })),
+      tools: BUILD_TOOLS.map((tool) => ({ type: "function", function: tool })),
+    },
+    ...(signal ? { signal } : {}),
+  });
+  if (error) throw new Error(await functionErrorMessage(error));
+  if (data?.error) throw new Error(data.error);
+  return { text: String(data?.text ?? ""), toolCalls: Array.isArray(data?.toolCalls) ? data.toolCalls : [] };
+};
+
+export interface FileImportOptions {
+  onEvent?: (event: BuildEvent) => void;
+  signal?: AbortSignal;
+  /** Overridden in tests so no network call is made. */
+  call?: ModelCall;
+}
+
+/**
+ * Read a workbook and build a draft from it, one step at a time.
+ *
+ * Returns whatever was built, complete or not: every step was valid on its own,
+ * so a run that stops early still produces a draft worth opening.
+ */
+export async function buildTemplateFromFile(
+  file: File,
+  options: FileImportOptions = {},
+): Promise<{ analysis: ExcelWorkbookAnalysis; draft: ExcelImportDraft; run: BuildRun }> {
+  const analysis = await readExcelWorkbook(file);
+  const run = await runBuild({
+    analysis,
+    call: options.call ?? stepCall,
+    onEvent: options.onEvent,
+    signal: options.signal,
+  });
+  return { analysis, draft: draftFromBuild(analysis, run), run };
+}
+
+/** Build one section again, leaving the rest of the form as it is. */
+export async function rebuildOneSection(
+  analysis: ExcelWorkbookAnalysis,
+  run: BuildRun,
+  sectionId: string,
+  complaint: string,
+  options: FileImportOptions = {},
+): Promise<{ draft: ExcelImportDraft; run: BuildRun }> {
+  const next = await rebuildSection(analysis, run, sectionId, complaint, options.call ?? stepCall, {
+    onEvent: options.onEvent,
+    signal: options.signal,
+  });
+  return { draft: draftFromBuild(analysis, next), run: next };
+}
+
+/**
+ * Rebuild one section of any template from a written instruction.
+ *
+ * Nothing here is specific to an imported form: the builder's sections are the
+ * same whatever made them.
+ */
+export async function regenerateSectionWithPrompt(
+  section: SectionConfig,
+  instruction: string,
+  options: { call?: ModelCall; signal?: AbortSignal } = {},
+): Promise<SectionConfig[] | null> {
+  return regenerateSection(section, instruction, options.call ?? stepCall, { signal: options.signal });
 }

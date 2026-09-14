@@ -86,6 +86,7 @@ import {
 import { SavedComponentsDialog } from "./SavedComponentsDialog";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useReportCssIsolation } from "./runtime/useReportCssIsolation";
+import { regenerateSectionWithPrompt } from "@/lib/customForms/excel/generate";
 
 export const FormBuilder: React.FC = () => {
   useReportCssIsolation();
@@ -888,6 +889,36 @@ export const FormBuilder: React.FC = () => {
     setIsDirty(true);
   };
 
+  /**
+   * Replace a section with one rebuilt from a written instruction.
+   *
+   * Everything else in the form is left alone, including the section's place in
+   * the order and its reference code, which formulas elsewhere may point at.
+   */
+  const regenerateSection = async (sectionId: string, instruction: string) => {
+    const section = template.structure.sections.find((entry) => entry.id === sectionId);
+    if (!section) return;
+    if (template.structure.expressions !== undefined) {
+      throw new Error(
+        "This template uses typed calculations. Rebuilding a section would leave its formulas pointing at fields that no longer exist.",
+      );
+    }
+    const rebuilt = await regenerateSectionWithPrompt(section, instruction);
+    if (!rebuilt?.length) throw new Error("Nothing usable came back. Try describing the section differently.");
+
+    setTemplate((prev) => ({
+      ...prev,
+      structure: {
+        ...prev.structure,
+        sections: prev.structure.sections
+          .flatMap((entry) => (entry.id === sectionId ? rebuilt : [entry]))
+          .map((entry, order) => ({ ...entry, order })),
+      },
+    }));
+    setIsDirty(true);
+    toast.success(`Rebuilt "${section.title}". Check it before saving.`);
+  };
+
   const duplicateSection = (sectionId: string) => {
     const sectionToDuplicate = template.structure.sections.find(
       (s) => s.id === sectionId,
@@ -1281,6 +1312,7 @@ export const FormBuilder: React.FC = () => {
               onSectionSelect={setSelectedSectionId}
               onSectionDelete={deleteSection}
               onSectionDuplicate={duplicateSection}
+              onSectionRegenerate={regenerateSection}
               formulaEditingSectionId={formulaEditingSectionId}
               onCellFormulaChange={handleCellFormulaChange}
               onRequestEditFormulas={(sectionId) => {

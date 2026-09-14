@@ -162,6 +162,178 @@ check("evaluation order is deterministic across source JSON reloads", () => {
   assert.deepEqual(unwrap(compileExpressionProgram(definition)).order, unwrap(compileExpressionProgram(JSON.parse(JSON.stringify(definition)))).order);
 });
 
+console.log("\nTyped scalar predicates and Excel-style text wildcards");
+check("isnumber tests the scalar type without coercion", () => {
+  for (const [source, expected] of [
+    ["0", true], ["-2.5", true], ["1e3", true], ["1 + 2", true],
+    ['"42"', false], ['"text"', false], ['""', false], ['" "', false],
+    ["true", false], ["false", false], ["null", false], ['verdict("PASS")', false],
+  ] as const) assert.equal(unwrap(evaluate(`isnumber(${source})`)), expected, source);
+  assert.equal(unwrap(evaluate("ISNUMBER(1)")), true);
+});
+check("scalar predicates preserve typed input parsing", () => {
+  for (const [type, value, numeric, text] of [
+    ["number", " 1.25e2 ", true, false], ["number", 0, true, false],
+    ["string", "125", false, true], ["string", "false", false, true],
+    ["boolean", true, false, false], ["boolean", false, false, false],
+    ["result", "PASS", false, true],
+  ] as const) {
+    assert.equal(unwrap(evaluate("isnumber({x})", { x: value }, { x: type })), numeric);
+    assert.equal(unwrap(evaluate('textmatches({x}, "*", false)', { x: value }, { x: type })), text);
+  }
+  for (const type of ["number", "string", "boolean", "result"] as const) {
+    for (const value of [undefined, null, "", "   "]) {
+      assert.equal(unwrap(evaluate("isnumber({x})", { x: value }, { x: type })), false);
+      assert.equal(unwrap(evaluate('textmatches({x}, "*", true)', { x: value }, { x: type })), false);
+    }
+  }
+});
+check("textmatches distinguishes text, empty text, null, numbers and booleans", () => {
+  for (const source of ["null", "0", "42", "true", "false"]) {
+    for (const pattern of ["*", "", "0", "42", "true", "false"]) {
+      assert.equal(unwrap(evaluate(`textmatches(${source}, ${JSON.stringify(pattern)}, false)`)), false);
+    }
+  }
+  assert.equal(unwrap(evaluate('textmatches("42", "42", true)')), true);
+  assert.equal(unwrap(evaluate('textmatches(verdict("PASS"), "p*", false)')), true);
+  assert.equal(unwrap(evaluate('textmatches("", "", true)')), true);
+  assert.equal(unwrap(evaluate('textmatches(concat("", ""), "*", true)')), true);
+  assert.equal(unwrap(evaluate('textmatches("", "?", true)')), false);
+  assert.equal(unwrap(evaluate('textmatches(" ", "", true)')), false);
+  assert.equal(unwrap(evaluate('textmatches(" ", "?", true)')), true);
+});
+const wildcardCases: Array<[string, string, boolean, boolean]> = [
+  ["abc", "abc", true, true], ["abc", "b", true, false], ["abc", "ab", true, false],
+  ["abc", "abcd", true, false], ["abc", "", true, false], ["", "***", true, true],
+  ["abc", "a*", true, true], ["abc", "*c", true, true], ["abc", "*b*", true, true],
+  ["ac", "a*c", true, true], ["abc", "a?c", true, true], ["ac", "a?c", true, false],
+  ["abbc", "a?c", true, false], ["abc", "***?**?***?**", true, true],
+  ["ababc", "*abc", true, true], ["abxxabyycd", "*ab*cd", true, true],
+  ["abxxabyyce", "*ab*cd", true, false], ["aaaab", "*a*a*a*a*c", true, false],
+  ["AbC", "a?c", true, false], ["AbC", "a?c", false, true],
+  ["École", "é*", true, false], ["École", "é*", false, true], ["😀", "?", true, true],
+  ["a*b", "a~*b", true, true], ["axxb", "a~*b", true, false],
+  ["a?b", "a~?b", true, true], ["acb", "a~?b", true, false],
+  ["a~b", "a~~b", true, true], ["~", "~", true, true], ["a~", "a~", true, true],
+  ["", "~", true, false], ["a~b", "a~b", true, true], ["ab", "a~b", true, false],
+  ["~a", "~A", false, true], ["~*", "~~~*", true, true], ["~tail", "~~*", true, true],
+  ["*?~", "~*~?~~", true, true], ["prefix*suffix", "*~**", true, true],
+  ["prefix?suffix", "*~?*", true, true], ["prefix~suffix", "*~~*", true, true],
+  ["a\nb", "a*b", true, true], ["a\nb", "a?b", true, true],
+  ["a\r\nb", "a??b", true, true], ["a\r\nb", "a?b", true, false],
+  ["A\nB", "a?b", false, true], ["a\nb", "a", true, false],
+];
+for (const [value, pattern, sensitive, expected] of wildcardCases) {
+  check(`wildcard ${JSON.stringify(value)} against ${JSON.stringify(pattern)} (case ${sensitive})`, () => {
+    assert.equal(unwrap(evaluate(`textmatches(${JSON.stringify(value)}, ${JSON.stringify(pattern)}, ${sensitive})`)), expected);
+  });
+}
+check("regex punctuation is literal text, not executable regex", () => {
+  for (const value of [".^$+()[]{}|\\", "[ab]", "(a+)+$", "a|b", "a{2}", "\\d", "~."]) {
+    assert.equal(unwrap(evaluate(`textmatches(${JSON.stringify(value)}, ${JSON.stringify(value)}, true)`)), true);
+  }
+  for (const pattern of [".", "[ab]", "a|b", "(a+)+$", "a{2}", "\\d"]) {
+    assert.equal(unwrap(evaluate(`textmatches("a", ${JSON.stringify(pattern)}, true)`)), false);
+  }
+});
+check("pattern and case flag may be typed expressions rather than literals", () => {
+  assert.equal(unwrap(evaluate('TEXTMATCHES("AbC", concat("a", "*"), not true)')), true);
+  assert.equal(unwrap(evaluate('textmatches("", coalesce(null, ""), true)')), true);
+  assert.equal(unwrap(evaluate('textmatches("AbC", {pattern}, {flag})', { pattern: "a*", flag: false }, { pattern: "string", flag: "boolean" })), true);
+});
+check("calculated empty text and null support blank equality without coercion", () => {
+  for (const [source, expected] of [['""', true], ["null", true], ["0", false], ["false", false], ['" "', false]] as const) {
+    const compiled = unwrap(program([
+      { id: "raw", source },
+      { id: "answer", source: 'isnull({raw}) or textmatches({raw}, "", true)', type: "boolean" },
+    ]));
+    assert.equal(unwrap(compiled.evaluate(new Map()).results.get("answer")!), expected, source);
+  }
+});
+check("text predicates compose with numeric counting and escaped substring tests", () => {
+  assert.equal(unwrap(evaluate('if(textmatches("Passed", "pass*", false), 1, 0)')), 1);
+  assert.equal(unwrap(evaluate('if(textmatches(null, "*", false), 1, 0)')), 0);
+  assert.equal(unwrap(evaluate('textmatches("prefix *?~ suffix", "*~*~?~~*", true)')), true);
+  assert.equal(unwrap(evaluate('textmatches("prefix other suffix", "*~*~?~~*", true)')), false);
+});
+check("both new functions infer boolean outputs", () => {
+  for (const source of ["isnumber(null)", 'textmatches(null, "*", true)']) {
+    assert.equal(program([{ id: "answer", source, type: "boolean" }]).ok, true);
+    errorCode(program([{ id: "answer", source, type: "number" }]), "type.output");
+  }
+});
+for (const source of ["isnumber()", "isnumber(1, 2)", "textmatches()", 'textmatches("a")', 'textmatches("a", "*")', 'textmatches("a", "*", true, false)']) {
+  check(`scalar predicate arity: ${source}`, () => errorCode(compile(source), "function.arity"));
+}
+check("scalar predicates reject every list type, including empty and null lists", () => {
+  for (const source of ["[]", "[null]", "[1]", '["a"]', "[true]", '[verdict("PASS")]']) {
+    errorCode(compile(`isnumber(${source})`), "type.mismatch");
+    errorCode(compile(`textmatches(${source}, "*", true)`), "type.mismatch");
+  }
+  for (const type of ["number[]", "string[]", "boolean[]", "result[]"] as const) {
+    for (const source of ["isnumber({x})", 'textmatches({x}, "*", true)', 'textmatches("a", {x}, true)', 'textmatches("a", "*", {x})']) {
+      errorCode(compile(source, { x: type }), "type.mismatch");
+    }
+  }
+});
+check("textmatches requires a string pattern and boolean case flag", () => {
+  for (const pattern of ["1", "true", "null", '["*"]', "[]", '[null]', 'verdict("PASS")']) {
+    errorCode(compile(`textmatches("a", ${pattern}, true)`), "type.mismatch");
+  }
+  for (const flag of ["0", '"false"', "null", "[true]", "[]", "[null]", 'verdict("PASS")']) {
+    errorCode(compile(`textmatches("a", "*", ${flag})`), "type.mismatch");
+  }
+  errorCode(evaluate('textmatches(null, {pattern}, true)', {}, { pattern: "string" }), "type.mismatch");
+  errorCode(evaluate('textmatches("a", "*", {flag})', {}, { flag: "boolean" }), "type.mismatch");
+  errorCode(evaluate('textmatches("", {pattern}, true)', { pattern: "" }, { pattern: "string" }), "type.mismatch");
+});
+check("scalar predicates do not swallow evaluation errors in any argument", () => {
+  for (const source of ["isnumber(1 / 0)", 'textmatches(1 / 0, "*", true)', 'textmatches(null, if(1 / 0 > 0, "a", "b"), true)', 'textmatches(0, "*", 1 / 0 > 0)']) {
+    errorCode(evaluate(source), "number.divisionByZero");
+  }
+  errorCode(evaluate("isnumber(sqrt(-1))"), "number.domain");
+  errorCode(evaluate('textmatches(verdict("typo"), "*", true)'), "result.unknown");
+  for (const source of ["isnumber({missing})", 'textmatches(null, {missing}, true)']) errorCode(compile(source), "reference.unknown");
+});
+check("scalar predicates retain failed input and calculation dependencies", () => {
+  for (const [type, value] of [["number", "oops"], ["number", Infinity], ["string", 42], ["boolean", "false"], ["result", "typo"]] as const) {
+    for (const source of ["isnumber({x})", 'textmatches({x}, "*", true)']) {
+      errorCode(evaluate(source, { x: value }, { x: type }), "dependency.error");
+    }
+  }
+  const compiled = unwrap(program([
+    { id: "bad", source: "1 / 0" },
+    { id: "numberTest", source: "isnumber({bad})" },
+    { id: "textTest", source: 'textmatches({bad}, "*", true)' },
+    { id: "patternTest", source: 'textmatches(null, if({bad} > 0, "a", "b"), true)' },
+    { id: "caseTest", source: 'textmatches(false, "*", {bad} > 0)' },
+  ]));
+  const results = compiled.evaluate(new Map()).results;
+  for (const id of ["numberTest", "textTest", "patternTest", "caseTest"]) errorCode(results.get(id)!, "dependency.error");
+});
+check("text matching accepts the engine's full string length, including wildcard-heavy patterns", () => {
+  const value = "a".repeat(EXPRESSION_LIMITS.sourceLength);
+  for (const pattern of [value, "?".repeat(EXPRESSION_LIMITS.sourceLength), "*".repeat(EXPRESSION_LIMITS.sourceLength)]) {
+    assert.equal(unwrap(evaluate("textmatches({value}, {pattern}, false)", { value, pattern }, { value: "string", pattern: "string" })), true);
+  }
+  for (const pattern of ["*a".repeat(2000) + "b", "*" + "a".repeat(EXPRESSION_LIMITS.sourceLength / 2) + "b"]) {
+    assert.equal(unwrap(evaluate("textmatches({value}, {pattern}, true)", { value, pattern }, { value: "string", pattern: "string" })), false);
+  }
+});
+check("scalar predicates obey source, input and computed string limits", () => {
+  for (const source of ["isnumber(1)", 'textmatches("", "", true)']) {
+    assert.equal(unwrap(evaluate(source.padEnd(EXPRESSION_LIMITS.sourceLength))), true);
+    errorCode(compile(source.padEnd(EXPRESSION_LIMITS.sourceLength + 1)), "limit.source");
+  }
+  const oversized = "a".repeat(EXPRESSION_LIMITS.sourceLength + 1);
+  for (const source of ["isnumber({x})", 'textmatches({x}, "*", true)', 'textmatches(null, {x}, true)']) {
+    errorCode(evaluate(source, { x: oversized }, { x: "string" }), "dependency.error");
+  }
+  for (const source of ['isnumber(concat({x}, "a"))', 'textmatches(concat({x}, "a"), "*", true)', 'textmatches(null, concat({x}, "a"), true)']) {
+    errorCode(evaluate(source, { x: "a".repeat(EXPRESSION_LIMITS.sourceLength) }, { x: "string" }), "limit.string");
+  }
+});
+
 console.log("\nV1 references upgrade once without reinterpreting historical formulas");
 const fixture = VALID_FIXTURES.find((entry) => entry.name === "insulation-resistance")!;
 const sections = structuredClone(fixture.structure.sections);
@@ -217,6 +389,14 @@ check("V1 waits for a reading, then counts a blank as zero", () => {
   const translated = unwrap(translateV1Expression("{JD.tcf} * 2", context));
   assert.equal(unwrap(evaluate(translated.source, {}, { [tcfReference]: "number" })), null);
 });
+check("exp computes the exponential, and overflow is an error not infinity", () => {
+  assert.equal(unwrap(evaluate("exp(0)", {}, {})), 1);
+  assert.equal(unwrap(evaluate("round(0.1758 * exp(0.0256 * 20), 3)", {}, {})), 0.293);
+  const overflow = evaluate("exp(1000)", {}, {});
+  assert.equal(overflow.ok, false);
+  assert.equal(unwrap(evaluate("exp(null)", {}, {})), null);
+});
+
 check("the adapter leaves the original fixture untouched", () => assert.deepEqual(sections, fixture.structure.sections));
 
 // The builder's own formulas used to run through `new Function` behind an

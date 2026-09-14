@@ -16,8 +16,21 @@
  * pattern as scripts/importer-regression.ts rather than adding a test runner.
  */
 
+import assert from "node:assert/strict";
 import { expressionCheckCount } from "@/lib/customForms/expressions/expressions.regression";
 import { excelCheckCount, excelFailureCount } from "@/lib/customForms/excel/excel.regression";
+import {
+  EXCEL_LIMITS,
+  ExcelGenerationError,
+  ExcelValidationError,
+  buildExcelMessages,
+  completeAnswer,
+  parseCompletedExcelResponse,
+  parseExcelResponse,
+  readStreamedAnswer,
+  validateExcelRequest,
+  type ProviderMessage,
+} from "../supabase/functions/generate-form-template/excel-prompt";
 import {
   renderCheckCount,
   renderFailureCount,
@@ -1452,6 +1465,504 @@ section("V2 authoring: deleting a column");
 }
 
 // ---------------------------------------------------------------------------
+
+const excelEncoder = new TextEncoder();
+const excelError = (code: string) => (error: unknown) =>
+  error instanceof ExcelGenerationError && error.code === code;
+
+async function excelCheck(name: string, run: () => void | Promise<void>) {
+  try {
+    await run();
+    check(name, true);
+  } catch (error) {
+    check(name, false, error instanceof Error ? error.message : String(error));
+  }
+}
+
+function excelWire(text: string, finishReason: string) {
+  return `data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n` +
+    `data: ${JSON.stringify({ choices: [{ delta: {}, finish_reason: finishReason }] })}\n\n` +
+    "data: [DONE]\n\n";
+}
+
+// Slice encoded bytes, not strings: a fragment may end inside a UTF-8 character.
+function excelByteStream(bytes: Uint8Array, fragmentSize = bytes.length || 1, close = true) {
+  let cancellations = 0;
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      for (let offset = 0; offset < bytes.length; offset += fragmentSize) {
+        controller.enqueue(bytes.slice(offset, offset + fragmentSize));
+      }
+      if (close) controller.close();
+    },
+    cancel() { cancellations += 1; },
+  });
+  return { stream, get cancellations() { return cancellations; } };
+}
+
+// A broken timeout implementation must fail the check instead of hanging the harness.
+async function excelDeadline<T>(work: Promise<T>): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      work,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error("Excel regression exceeded its 1s deadline")), 1000);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+section("Excel layout answers (edge function contract)");
+{
+  // The smallest request and answer the contract accepts, so the checks below
+  // are about the wrapper around the JSON, not the JSON itself.
+  const request = validateExcelRequest({
+    sourceType: "excel",
+    workbook: {
+      fileName: "book.xlsx",
+      sheets: [{
+        name: "Sheet1", hidden: false, range: "A1:B1",
+        cells: [
+          { address: "A1", type: "number", value: 1 },
+          { address: "B1", type: "number", value: 2 },
+        ],
+        merges: [], columnWidths: [], validations: [],
+      }],
+      formulaCount: 0, names: [], features: [], issues: [],
+    },
+    componentCatalog: [{ componentType: "custom-table" }],
+  });
+  const answer = {
+    template: {
+      name: "Book",
+      structure: {
+        settings: { includePassFail: false, includeJobInfo: false, includePrintHeader: false },
+        sections: [{
+          id: "s1", componentType: "custom-table", title: "Sheet1", order: 0, showInPrint: true,
+          rows: 1, allowAddRows: false, allowRemoveRows: false,
+          columns: [{ id: "c1", label: "A", field: { id: "f1", label: "A", type: "number" } }],
+        }],
+      },
+    },
+    sources: [{ sectionId: "s1", kind: "table", sheet: "Sheet1", range: "A1:A1" }],
+    warnings: [],
+  };
+  const json = JSON.stringify(answer);
+  const parsed = (raw: string) => parseExcelResponse(raw, request);
+  const prompt = buildExcelMessages(request).find((message) => message.role === "system")?.content ?? "";
+  check("uniform tables are instructed to omit v2.body", /uniform/i.test(prompt) && /omit[^\n]{0,100}v2\.body/i.test(prompt));
+  check("fixed records are described compactly", /compact/i.test(prompt) && /records/i.test(prompt) && /initial[\s\S]*min[\s\S]*max/.test(prompt));
+
+  await excelCheck("only completed generation reaches the layout parser", async () => {
+    const completed = await completeAnswer([], async () => excelByteStream(excelEncoder.encode(excelWire(json, "stop"))).stream);
+    assert.deepEqual(parseCompletedExcelResponse(completed, request), parsed(json));
+    for (const reason of ["length", "content_filter", "tool_calls"]) {
+      const partial = await completeAnswer([], async () => excelByteStream(excelEncoder.encode(excelWire(json, reason))).stream, 1);
+      assert.equal(partial.complete, false);
+      assert.equal(parsed(partial.text).sources.length, 1, "the partial JSON is otherwise valid");
+      const generationFailure = (error: unknown) => error instanceof ExcelGenerationError && typeof error.code === "string";
+      assert.throws(() => parseCompletedExcelResponse(partial, request), generationFailure);
+      assert.throws(() => parseCompletedExcelResponse({ ...partial, text: "not JSON" }, request), generationFailure);
+    }
+  });
+
+  check("a plain JSON answer is accepted", parsed(json).sources.length === 1);
+  check(
+    "an answer wrapped in a markdown fence is accepted",
+    parsed("```json\n" + json + "\n```").sources.length === 1,
+  );
+  check(
+    "an answer with a sentence in front of it is accepted",
+    parsed("Here is the layout you asked for:\n\n" + json).sources.length === 1,
+  );
+  check(
+    "an answer that is not JSON is refused",
+    (() => {
+      try {
+        parsed("I cannot help with that.");
+        return false;
+      } catch (error) {
+        return error instanceof ExcelValidationError && /not JSON/.test(error.message);
+      }
+    })(),
+  );
+  check(
+    "a source range that does not match its table is refused",
+    (() => {
+      const wrong = { ...answer, sources: [{ ...answer.sources[0], range: "A1:B1" }] };
+      try {
+        parsed(JSON.stringify(wrong));
+        return false;
+      } catch (error) {
+        return error instanceof ExcelValidationError && /width/.test(error.message);
+      }
+    })(),
+  );
+  const rejection = (mutate: (answer: any) => void) => {
+    const broken = structuredClone(answer) as any;
+    mutate(broken);
+    try {
+      parsed(JSON.stringify(broken));
+      return "";
+    } catch (error) {
+      return error instanceof ExcelValidationError ? error.message : "";
+    }
+  };
+  // "Invalid or oversized text" with no location was unactionable in a layout
+  // of hundreds of fields: the message has to say which one.
+  check(
+    "a bad column label names the column it is in",
+    /sections\[0\] "s1" > columns\[0\]/.test(
+      rejection((broken) => { broken.template.structure.sections[0].columns[0].label = 1; }),
+    ),
+    rejection((broken) => { broken.template.structure.sections[0].columns[0].label = 1; }),
+  );
+  check(
+    "a missing id says it is an id, not bad text",
+    /Missing or invalid id.*sections\[0\]/.test(
+      rejection((broken) => { delete broken.template.structure.sections[0].id; }),
+    ),
+    rejection((broken) => { delete broken.template.structure.sections[0].id; }),
+  );
+  check(
+    "an unexpected property is named",
+    /"colour"/.test(rejection((broken) => { broken.template.structure.sections[0].colour = "red"; })),
+    rejection((broken) => { broken.template.structure.sections[0].colour = "red"; }),
+  );
+  check(
+    "a bad source names its index",
+    /sources\[0\]/.test(rejection((broken) => { broken.sources[0].range = "nonsense"; })),
+    rejection((broken) => { broken.sources[0].range = "nonsense"; }),
+  );
+  check(
+    "a blank warning does not cost the whole layout",
+    parsed(JSON.stringify({ ...answer, warnings: [""] })).sources.length === 1,
+  );
+
+  check(
+    "a formula the model may not write is refused",
+    (() => {
+      const withFormula = structuredClone(answer) as typeof answer & { template: any };
+      withFormula.template.structure.sections[0].columns[0].field.calculation = { formula: "1+1" };
+      try {
+        parsed(JSON.stringify(withFormula));
+        return false;
+      } catch (error) {
+        return error instanceof ExcelValidationError;
+      }
+    })(),
+  );
+}
+
+section("Long layout answers are continued, not lost");
+{
+  const sse = (text: string, finishReason: string) =>
+    excelByteStream(excelEncoder.encode(excelWire(text, finishReason)), 17).stream;
+
+  const messages: ProviderMessage[] = [{ role: "user", content: "go" }];
+
+  {
+    const seen: ProviderMessage[][] = [];
+    const answer = await completeAnswer(messages, async (turn) => {
+      seen.push(turn);
+      return sse('{"template":{"name":"x"}}', "stop");
+    });
+    check("an answer that fits is taken as it is", answer.complete && answer.attempts === 1);
+    check("a single answer is not asked to continue", seen.length === 1 && seen[0].length === 1);
+  }
+
+  {
+    // The ceiling falls in the middle of the JSON, which is what made a large
+    // workbook fail: the pieces are only valid once joined.
+    const pieces = ['{"template":{"name":"Rea', 'dings","rows":[1,2', ",3]}}"];
+    const seen: ProviderMessage[][] = [];
+    const continuingFlags: boolean[] = [];
+    const signals: AbortSignal[] = [];
+    const answer = await completeAnswer(messages, async (turn, continuing, signal) => {
+      seen.push(turn);
+      continuingFlags.push(continuing);
+      signals.push(signal);
+      const index = seen.length - 1;
+      return sse(pieces[index], index === pieces.length - 1 ? "stop" : "length");
+    });
+    check("a cut-off answer is continued to the end", answer.complete && answer.text === pieces.join(""), answer.text);
+    check("continuing costs one call per piece", answer.attempts === 3, String(answer.attempts));
+    check("provider receives continuation flags and abort signals", continuingFlags.join() === "false,true,true" && signals.every((signal) => signal instanceof AbortSignal));
+    check(
+      "each continuation hands back the text so far as a prefix",
+      seen.slice(1).every((turn, index) => {
+        const last = turn[turn.length - 1];
+        return last.role === "assistant" && last.prefix === true && last.content === pieces.slice(0, index + 1).join("");
+      }),
+    );
+    check("the joined answer is valid JSON", JSON.parse(answer.text).template.rows.length === 3);
+  }
+
+  {
+    let calls = 0;
+    const answer = await completeAnswer(messages, async () => {
+      calls += 1;
+      return sse(calls === 1 ? '{"a":1' : "", "length");
+    });
+    check("a continuation that adds nothing stops the loop", !answer.complete && calls === 2, String(calls));
+    check("empty continuation reports no_progress", answer.failureReason === "no_progress" && answer.text === '{"a":1');
+  }
+
+  {
+    let calls = 0;
+    const answer = await completeAnswer(messages, async () => {
+      calls += 1;
+      return sse("x".repeat(64), "length");
+    }, 4);
+    check("continuing is bounded", !answer.complete && calls === 4, String(calls));
+    check("numeric attempt option reports attempt_limit without discarding repeats", answer.failureReason === "attempt_limit" && answer.text === "x".repeat(256));
+  }
+
+  await excelCheck("a length turn that ends exactly at the last character still completes", async () => {
+    // The ceiling can fall on the final "}" of a complete answer. The provider
+    // reports length, so the text cannot be trusted as finished until an empty
+    // continuation comes back with stop; treating length as failure here would
+    // reject a layout that is actually whole.
+    const whole = '{"template":{"name":"x"},"sources":[],"warnings":[]}';
+    let calls = 0;
+    const answer = await completeAnswer(messages, async () => sse(++calls === 1 ? whole : "", calls === 1 ? "length" : "stop"));
+    assert.equal(calls, 2);
+    assert.equal(answer.complete, true);
+    assert.equal(answer.finishReason, "stop");
+    assert.equal(answer.text, whole);
+    assert.equal(answer.failureReason, undefined);
+    assert.deepEqual(JSON.parse(answer.text).sources, []);
+  });
+
+  await excelCheck("an empty length continuation is not mistaken for that boundary", async () => {
+    let calls = 0;
+    const answer = await completeAnswer(messages, async () => sse(++calls === 1 ? '{"a":1}' : "", "length"));
+    assert.equal(answer.complete, false);
+    assert.equal(answer.failureReason, "no_progress");
+  });
+
+  await excelCheck("a provider that answers again instead of continuing is caught", async () => {
+    // Continuing from a prefix is a provider feature, not a guarantee. Joining
+    // an answer to a restart of the same answer parses as neither.
+    const whole = '{"template":{"name":"Readings","structure":{}},"sources":[]}';
+    let calls = 0;
+    const answer = await completeAnswer(messages, async () => sse(++calls === 1 ? whole.slice(0, 30) : whole, "length"));
+    assert.equal(answer.complete, false);
+    assert.equal(answer.failureReason, "did_not_continue");
+    assert.equal(answer.text, whole.slice(0, 30), "the restart is not appended");
+    try {
+      // The contract refuses before it looks at the request at all.
+      parseCompletedExcelResponse(answer, undefined as never);
+      assert.fail("a restart must not reach the layout parser");
+    } catch (error) {
+      assert.match(String((error as Error).message), /started its answer again/);
+    }
+  });
+
+  await excelCheck("a genuine continuation that looks similar is not mistaken for a restart", async () => {
+    const pieces = ['{"rows":[{"id":"r1"},', '{"id":"r2"}]}'];
+    let calls = 0;
+    const answer = await completeAnswer(messages, async () => sse(pieces[calls], ++calls === 2 ? "stop" : "length"));
+    assert.equal(answer.complete, true);
+    assert.equal(answer.text, pieces.join(""));
+  });
+
+  await excelCheck("JSON escapes and Unicode escapes survive continuation boundaries", async () => {
+    const pieces = ['{"label":"quote \\', '"; unicode \\uD8', '3D\\uDE', '00; café"}'];
+    let calls = 0;
+    const answer = await completeAnswer(messages, async (turn) => {
+      if (calls > 0) assert.equal(turn[turn.length - 1].content, pieces.slice(0, calls).join(""));
+      return sse(pieces[calls], ++calls === pieces.length ? "stop" : "length");
+    });
+    assert.equal(answer.complete, true);
+    assert.equal(answer.text, pieces.join(""));
+    assert.deepEqual(JSON.parse(answer.text), { label: 'quote "; unicode 😀; café' });
+  });
+
+  for (const reason of ["stop", "content_filter", "tool_calls"]) {
+    await excelCheck(`${reason} has explicit completion semantics`, async () => {
+      let calls = 0;
+      const answer = await completeAnswer(messages, async () => { calls += 1; return sse("{}", reason); });
+      assert.equal(calls, 1);
+      assert.equal(answer.complete, reason === "stop");
+      if (reason !== "stop") assert.equal(answer.failureReason, "unexpected_finish");
+    });
+  }
+  for (const reason of ["stop", "length"]) {
+    await excelCheck(`empty initial ${reason} reports no_progress`, async () => {
+      const answer = await completeAnswer(messages, async () => sse("", reason));
+      assert.equal(answer.complete, false);
+      assert.equal(answer.failureReason, "no_progress");
+      assert.equal(answer.attempts, 1);
+    });
+  }
+  for (const maxAttempts of [undefined, 2]) {
+    await excelCheck(`${maxAttempts === undefined ? "default eight" : "object-configured"} attempts are bounded`, async () => {
+      let calls = 0;
+      const answer = await completeAnswer(messages, async () => { calls += 1; return sse("é", "length"); },
+        maxAttempts === undefined ? undefined : { maxAttempts });
+      assert.equal(answer.complete, false);
+      assert.equal(answer.failureReason, "attempt_limit");
+      assert.equal(answer.attempts, maxAttempts ?? 8);
+      assert.equal(calls, answer.attempts);
+      assert.equal(answer.text, "é".repeat(calls));
+    });
+  }
+
+  for (const maxBytes of [6, 5]) {
+    await excelCheck(`aggregate UTF-8 budget ${maxBytes} includes the final stop`, async () => {
+      let calls = 0;
+      const work = completeAnswer(messages, async () => ++calls === 1 ? sse("é", "length") : sse("😀", "stop"), { maxBytes });
+      if (maxBytes === 6) {
+        const answer = await work;
+        assert.equal(answer.complete, true);
+        assert.equal(answer.text, "é😀");
+      } else {
+        await assert.rejects(work, excelError("response_limit"));
+      }
+      assert.equal(calls, 2, "neither individual turn exceeds the budget");
+    });
+  }
+  await excelCheck("aggregate limit stops a length turn before another provider call", async () => {
+    let calls = 0;
+    await assert.rejects(completeAnswer(messages, async () => { calls += 1; return sse("é", "length"); }, { maxBytes: 3 }), excelError("response_limit"));
+    assert.equal(calls, 2);
+  });
+  for (const extra of ["", "é"]) {
+    await excelCheck(`default ${EXCEL_LIMITS.responseBytes}-byte UTF-8 budget ${extra ? "rejects excess" : "accepts the exact boundary"}`, async () => {
+      const text = "é".repeat(Math.floor(EXCEL_LIMITS.responseBytes / 2)) + "a".repeat(EXCEL_LIMITS.responseBytes % 2) + extra;
+      assert.equal(excelEncoder.encode(text).length, EXCEL_LIMITS.responseBytes + excelEncoder.encode(extra).length);
+      const fixture = excelByteStream(excelEncoder.encode(excelWire(text, "stop")));
+      const work = completeAnswer(messages, async () => fixture.stream);
+      if (extra) await assert.rejects(work, excelError("response_limit"));
+      else {
+        const answer = await work;
+        assert.equal(answer.complete, true);
+        assert.equal(answer.text, text);
+      }
+      assert.equal(fixture.stream.locked, false);
+    });
+  }
+}
+
+section("Excel SSE framing, byte limits and cleanup");
+{
+  for (const [label, newline] of [["LF", "\n"], ["CRLF", "\r\n"], ["CR", "\r"]]) {
+    await excelCheck(`${label}: every UTF-8 byte, multiline data, comments and usage`, async () => {
+      const wire = [
+        ": keepalive", "", "data:", "", "event: message", "id: 1",
+        'data: {"choices":[',
+        'data: {"delta":{"content":"é😀","reasoning_content":"never include this"}}',
+        "data: ]}", "",
+        'data: {"choices":[{"delta":{"reasoning_content":"private reasoning"}}]}', "",
+        'data: {"choices":[{"delta":{"content":"終"},"finish_reason":"stop"}]}', "",
+        'data: {"choices":[],"usage":{"completion_tokens":999}}', "",
+        "data: [DONE]", "", "",
+      ].join(newline);
+      const fixture = excelByteStream(excelEncoder.encode(wire), 1, false);
+      const result = await excelDeadline(readStreamedAnswer(fixture.stream));
+      assert.deepEqual(result, { text: "é😀終", finishReason: "stop" });
+      assert.equal(fixture.cancellations, 1, "DONE cancels an otherwise open stream");
+      assert.equal(fixture.stream.locked, false);
+    });
+  }
+
+  const content = 'data: {"choices":[{"delta":{"content":"é"}}]}\n\n';
+  const finish = 'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n\n';
+  for (const [name, wire, code] of [
+    ["malformed JSON", 'data: {"choices":broken}\n\n', "invalid_stream"],
+    ["provider error envelope", 'data: {"error":{"message":"quota exceeded"}}\n\n', "provider_error"],
+    ["provider error event", 'event: error\ndata: {"message":"quota exceeded"}\n\n', "provider_error"],
+    ["content after finish", content + finish + content + "data: [DONE]\n\n", "invalid_stream"],
+    ["duplicate finish reason", content + finish + finish + "data: [DONE]\n\n", "invalid_stream"],
+    ["missing finish reason", content + "data: [DONE]\n\n", "stream_interrupted"],
+    ["missing DONE", content + finish, "stream_interrupted"],
+    ["missing both end markers", content, "stream_interrupted"],
+    ["empty EOF", "", "stream_interrupted"],
+    ["EOF in an event", content + 'data: {"choices":[', "stream_interrupted"],
+  ]) {
+    await excelCheck(`${name} rejects with ${code} and releases the reader`, async () => {
+      const fixture = excelByteStream(excelEncoder.encode(wire), 1);
+      await assert.rejects(readStreamedAnswer(fixture.stream), excelError(code));
+      assert.equal(fixture.stream.locked, false);
+    });
+  }
+  await excelCheck("reader failure is stream_interrupted and releases its lock", async () => {
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) { controller.enqueue(excelEncoder.encode(content)); },
+      pull(controller) { controller.error(new Error("socket reset")); },
+    });
+    await assert.rejects(readStreamedAnswer(stream), excelError("stream_interrupted"));
+    assert.equal(stream.locked, false);
+  });
+  for (const [wire, code] of [
+    ['data: {broken}\n\n', "invalid_stream"],
+    ['event: error\ndata: {"message":"failure"}\n\n', "provider_error"],
+  ]) {
+    await excelCheck(`${code} cancels a still-open stream`, async () => {
+      const fixture = excelByteStream(excelEncoder.encode(wire), 1, false);
+      await assert.rejects(excelDeadline(readStreamedAnswer(fixture.stream)), excelError(code));
+      assert.equal(fixture.cancellations, 1);
+      assert.equal(fixture.stream.locked, false);
+    });
+  }
+  for (const maxBytes of [6, 5]) {
+    await excelCheck(`per-turn UTF-8 budget ${maxBytes} counts deltas, not SSE overhead`, async () => {
+      const fixture = excelByteStream(excelEncoder.encode(content + excelWire("😀", "stop")), 1, false);
+      const work = excelDeadline(readStreamedAnswer(fixture.stream, { maxBytes }));
+      if (maxBytes === 6) assert.deepEqual(await work, { text: "é😀", finishReason: "stop" });
+      else await assert.rejects(work, excelError("response_limit"));
+      assert.equal(fixture.cancellations, 1);
+      assert.equal(fixture.stream.locked, false);
+    });
+  }
+}
+
+section("Excel deadlines and caller cancellation");
+{
+  await excelCheck("a stalled reader times out, aborts the provider signal and cancels", async () => {
+    const fixture = excelByteStream(excelEncoder.encode('data: {"choices":'), 1, false);
+    let signal: AbortSignal | undefined;
+    await assert.rejects(excelDeadline(completeAnswer([], async (_turn, _continuing, received) => {
+      signal = received;
+      return fixture.stream;
+    }, { timeoutMs: 20 })), excelError("timeout"));
+    assert.equal(signal?.aborted, true);
+    assert.equal(fixture.cancellations, 1);
+    assert.equal(fixture.stream.locked, false);
+  });
+  await excelCheck("timeout also bounds a provider that never returns a stream", async () => {
+    let signal: AbortSignal | undefined;
+    await assert.rejects(excelDeadline(completeAnswer([], (_turn, _continuing, received) => {
+      signal = received;
+      return new Promise<ReadableStream<Uint8Array>>(() => {});
+    }, { timeoutMs: 20 })), excelError("timeout"));
+    assert.equal(signal?.aborted, true);
+  });
+  for (const viaCompletion of [false, true]) {
+    await excelCheck(`caller abort cancels and releases ${viaCompletion ? "completeAnswer" : "readStreamedAnswer"}`, async () => {
+      const controller = new AbortController();
+      const fixture = excelByteStream(new Uint8Array(), 1, false);
+      let providerSignal: AbortSignal | undefined;
+      const work = viaCompletion
+        ? completeAnswer([], async (_turn, _continuing, signal) => {
+          providerSignal = signal;
+          setTimeout(() => controller.abort(), 0);
+          return fixture.stream;
+        }, { signal: controller.signal, timeoutMs: 100 })
+        : readStreamedAnswer(fixture.stream, { signal: controller.signal });
+      if (!viaCompletion) controller.abort();
+      await assert.rejects(excelDeadline<unknown>(work), (error: unknown) =>
+        error instanceof ExcelGenerationError && typeof error.code === "string" && error.code !== "timeout");
+      if (viaCompletion) assert.equal(providerSignal?.aborted, true);
+      assert.equal(fixture.cancellations, 1);
+      assert.equal(fixture.stream.locked, false);
+    });
+  }
+}
 
 section("Column width fitting");
 {

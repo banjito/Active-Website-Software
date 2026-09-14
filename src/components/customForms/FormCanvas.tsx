@@ -19,6 +19,7 @@ import {
   Trash2,
   Copy,
   Settings,
+  Sparkles,
   EyeOff,
   FileCode2,
 } from "lucide-react";
@@ -358,6 +359,8 @@ interface SortableSectionProps {
   onSelect: () => void;
   onDelete: () => void;
   onDuplicate: () => void;
+  /** Rebuild this section from a written instruction. Absent hides the control. */
+  onRegenerate?: (instruction: string) => Promise<void>;
   isFormulaEditing?: boolean;
   onCellFormulaChange?: (
     sectionId: string,
@@ -375,10 +378,31 @@ const SortableSection: React.FC<SortableSectionProps> = ({
   onSelect,
   onDelete,
   onDuplicate,
+  onRegenerate,
   isFormulaEditing = false,
   onCellFormulaChange,
   onRequestEditFormulas,
 }) => {
+  const [prompting, setPrompting] = React.useState(false);
+  const [instruction, setInstruction] = React.useState("");
+  const [rebuilding, setRebuilding] = React.useState(false);
+  const [rebuildError, setRebuildError] = React.useState<string | null>(null);
+
+  const runRegenerate = async () => {
+    if (!onRegenerate || rebuilding || !instruction.trim()) return;
+    setRebuilding(true);
+    setRebuildError(null);
+    try {
+      await onRegenerate(instruction);
+      setPrompting(false);
+      setInstruction("");
+    } catch (error) {
+      setRebuildError(error instanceof Error ? error.message : "Could not rebuild that section");
+    } finally {
+      setRebuilding(false);
+    }
+  };
+
   const {
     attributes,
     listeners,
@@ -451,6 +475,17 @@ const SortableSection: React.FC<SortableSectionProps> = ({
         </div>
 
         <div className="flex items-center gap-0.5 md:gap-1">
+          {onRegenerate && (
+            <button
+              onClick={() => setPrompting((open) => !open)}
+              className={`p-1.5 md:p-2 rounded hover:bg-neutral-100 dark:hover:bg-dark-100 ${
+                prompting ? "text-brand" : "text-neutral-400 hover:text-brand"
+              }`}
+              title="Rebuild this section from a description"
+            >
+              <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            </button>
+          )}
           <button
             onClick={onSelect}
             className="p-1.5 md:p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-dark-100 rounded"
@@ -477,6 +512,46 @@ const SortableSection: React.FC<SortableSectionProps> = ({
         </div>
       </div>
 
+      {prompting && onRegenerate && (
+        <div className="px-3 md:px-4 py-2 border-b border-neutral-200 dark:border-neutral-700 bg-orange-50/60 dark:bg-orange-900/10">
+          <div className="flex items-center gap-2">
+            <input
+              autoFocus
+              value={instruction}
+              disabled={rebuilding}
+              onChange={(event) => setInstruction(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") void runRegenerate();
+                if (event.key === "Escape") setPrompting(false);
+              }}
+              placeholder='What should this section be? e.g. "four columns: Function, Setting, Delay, I2t, with six rows"'
+              className="flex-1 min-w-0 px-2 py-1.5 text-xs border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand"
+            />
+            <button
+              onClick={() => void runRegenerate()}
+              disabled={rebuilding || !instruction.trim()}
+              className="shrink-0 px-2.5 py-1.5 text-xs rounded bg-brand text-white hover:bg-brand-dark disabled:opacity-50"
+            >
+              {rebuilding ? "Rebuilding…" : "Rebuild"}
+            </button>
+            <button
+              onClick={() => setPrompting(false)}
+              disabled={rebuilding}
+              className="shrink-0 px-2 py-1.5 text-xs text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          </div>
+          {rebuildError && (
+            <p className="mt-1 text-[11px] text-red-700 dark:text-red-300">{rebuildError}</p>
+          )}
+          <p className="mt-1 text-[10px] text-neutral-500 dark:text-neutral-400">
+            The section is replaced. Nothing else in the form changes, and any cell
+            values already saved against it will need checking.
+          </p>
+        </div>
+      )}
+
       <div className="p-3 md:p-4">
         <SectionPreview
           section={section}
@@ -496,6 +571,8 @@ interface FormCanvasProps {
   onSectionSelect: (sectionId: string) => void;
   onSectionDelete: (sectionId: string) => void;
   onSectionDuplicate: (sectionId: string) => void;
+  /** Replace a section with one rebuilt from a written instruction. */
+  onSectionRegenerate?: (sectionId: string, instruction: string) => Promise<void>;
   formulaEditingSectionId?: string | null;
   onCellFormulaChange?: (
     sectionId: string,
@@ -512,6 +589,7 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
   onSectionSelect,
   onSectionDelete,
   onSectionDuplicate,
+  onSectionRegenerate,
   formulaEditingSectionId = null,
   onCellFormulaChange,
   onRequestEditFormulas,
@@ -541,6 +619,11 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
                 }
               }}
               onDuplicate={() => onSectionDuplicate(section.id)}
+              onRegenerate={
+                onSectionRegenerate
+                  ? (instruction) => onSectionRegenerate(section.id, instruction)
+                  : undefined
+              }
               isFormulaEditing={section.id === formulaEditingSectionId}
               onCellFormulaChange={onCellFormulaChange}
               onRequestEditFormulas={onRequestEditFormulas}

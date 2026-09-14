@@ -67,6 +67,7 @@ import ThreeLowVoltageCableATSForm from "./components/reports/3-LowVoltageCableA
 import MediumVoltageVLFMTSReport from "./components/reports/MediumVoltageVLFMTSReport";
 import ProfileSetup from "./pages/ProfileSetup";
 import NotificationsPage from "./pages/NotificationsPage";
+import PrayerWall from "./pages/PrayerWall";
 import ReportsPage from "./app/[division]/reports/page";
 import AdminDashboardLayout, {
   AdminDashboardIndex,
@@ -2088,6 +2089,16 @@ function App() {
                       <RequireAuth>
                         <Layout>
                           <NotificationsPage />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/prayer-wall"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <PrayerWall />
                         </Layout>
                       </RequireAuth>
                     }

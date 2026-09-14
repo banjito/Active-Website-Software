@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell,
   User as UserIcon,
@@ -21,6 +21,7 @@ import {
   BookMarked,
   Search,
   Link2,
+  HeartHandshake,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { useTheme } from "@/components/theme/theme-provider";
@@ -136,6 +137,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   className,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, signOut } = useAuth();
   const { iconUrl } = useSiteLogos();
   const { isDemoMode, toggleDemoMode, maskJobTitle } = useDemoMode();
@@ -1280,6 +1282,18 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 </div>
               )}
             </div>
+            <Link
+              to="/prayer-wall"
+              aria-label="Prayer Wall"
+              {...tooltipHandlers("Prayer Wall")}
+              className={cn(
+                headerIconButtonClass,
+                location.pathname.startsWith("/prayer-wall") &&
+                  headerIconButtonActiveClass,
+              )}
+            >
+              <HeartHandshake className="h-5 w-5" />
+            </Link>
             {showNotificationBell && (
               <div
                 className="relative flex h-10 w-10 items-center justify-center"

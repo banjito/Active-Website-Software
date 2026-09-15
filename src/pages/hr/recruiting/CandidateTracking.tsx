@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Card, {
   CardContent,
   CardDescription,
@@ -151,6 +151,45 @@ export const CandidateTracking: React.FC = () => {
     fetchCandidates();
     fetchRequisitions();
   }, []);
+
+  // ?candidateId=… (from Talent Pool promotion) opens that candidate, even
+  // when it is not in the loaded list.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const deepLinkCandidateId = searchParams.get("candidateId");
+  useEffect(() => {
+    if (!deepLinkCandidateId || loading) return;
+    let cancelled = false;
+    const clearParam = () => {
+      const next = new URLSearchParams(searchParams);
+      next.delete("candidateId");
+      setSearchParams(next, { replace: true });
+    };
+    (async () => {
+      let candidate = candidates.find((c) => c.id === deepLinkCandidateId);
+      if (!candidate) {
+        try {
+          candidate = (await candidatesService.getById(deepLinkCandidateId)) ?? undefined;
+        } catch {
+          candidate = undefined;
+        }
+      }
+      if (cancelled) return;
+      clearParam();
+      if (candidate) {
+        openViewModal(candidate);
+      } else {
+        toast({
+          title: "Candidate unavailable",
+          description: "That candidate could not be opened.",
+          variant: "destructive",
+        });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deepLinkCandidateId, loading]);
 
   const fetchCandidates = async () => {
     try {

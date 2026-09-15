@@ -115,6 +115,7 @@ import { CareerPage } from "./pages/hr/recruiting/CareerPage";
 import { PublicCareerPage } from "./pages/hr/recruiting/PublicCareerPage";
 import { PublicOfferSigning } from "./pages/hr/offers/PublicOfferSigning";
 import { CandidateTracking } from "./pages/hr/recruiting/CandidateTracking";
+import { TalentPool } from "./pages/hr/recruiting/TalentPool";
 import { InterviewScheduling } from "./pages/hr/recruiting/InterviewScheduling";
 import { ResumeParsing } from "./pages/hr/recruiting/ResumeParsing";
 import { CandidateCommunication } from "./pages/hr/recruiting/CandidateCommunication";
@@ -1299,6 +1300,16 @@ function App() {
                       <RequireAuth>
                         <HrLayout>
                           <CareerPage />
+                        </HrLayout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/hr/recruiting/talent-pool"
+                    element={
+                      <RequireAuth>
+                        <HrLayout>
+                          <TalentPool />
                         </HrLayout>
                       </RequireAuth>
                     }

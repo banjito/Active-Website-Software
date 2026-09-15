@@ -39,6 +39,7 @@ import {
   BookOpen,
   PiggyBank,
   Search,
+  UserSearch,
   X,
 } from "lucide-react";
 import { HeaderBar } from "./HeaderBar";
@@ -364,6 +365,11 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
           path: "/hr/recruiting/career-page",
           label: "Career Page",
           icon: <Building2 className="mr-2 h-3.5 w-3.5" />,
+        },
+        {
+          path: "/hr/recruiting/talent-pool",
+          label: "Talent Pool",
+          icon: <UserSearch className="mr-2 h-3.5 w-3.5" />,
         },
         {
           path: "/hr/recruiting/candidate-tracking",

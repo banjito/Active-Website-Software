@@ -42,6 +42,10 @@ Editor) and run, in this order:
 
 ## After running
 
+> **Roles:** `protect_user_role` (end of `02_schema.sql`) ignores role changes made through the auth API,
+> including the Dashboard's user editor and `auth.admin.updateUserById`. Set roles with the SQL below
+> or the Admin Dashboard (`common.admin_update_user_role`).
+
 1. **Create the first admin user**: Dashboard → Authentication → Add user
    (email + password, auto-confirm). Then in SQL editor:
    ```sql

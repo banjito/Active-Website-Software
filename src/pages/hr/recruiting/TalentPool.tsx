@@ -34,6 +34,7 @@ import {
   ShieldCheck,
   StickyNote,
   Trash2,
+  Upload,
   UserPlus,
   Users,
   X,
@@ -57,6 +58,7 @@ import {
   JobRequisition,
 } from "@/services/hr/jobRequisitionsService";
 import { normalizeEmail, normalizeLinkedin } from "@/lib/talentPool/normalize";
+import { TalentPoolImportDialog } from "./TalentPoolImportDialog";
 
 const PAGE_SIZE = 50;
 
@@ -171,6 +173,7 @@ export const TalentPool: React.FC = () => {
   const [bulkBusy, setBulkBusy] = useState(false);
 
   const [formOpen, setFormOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [editing, setEditing] = useState<Prospect | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [promoteFor, setPromoteFor] = useState<Prospect | null>(null);
@@ -341,6 +344,15 @@ export const TalentPool: React.FC = () => {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {access.can_access && (
+            <Button
+              variant="outline"
+              onClick={() => setImportOpen(true)}
+              leftIcon={<Upload className="h-4 w-4" />}
+            >
+              Import CSV
+            </Button>
+          )}
           {access.can_access && (
             <Button
               className="bg-brand hover:bg-brand/90 text-white"
@@ -707,6 +719,10 @@ export const TalentPool: React.FC = () => {
             refresh();
           }}
         />
+      )}
+
+      {importOpen && (
+        <TalentPoolImportDialog members={members} onClose={() => setImportOpen(false)} onImported={load} />
       )}
 
       {detailId && (

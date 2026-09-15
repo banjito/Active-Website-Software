@@ -7,6 +7,7 @@ import {
   ProspectSource,
   ProspectStatus,
 } from '@/lib/talentPool/normalize';
+import type { ExistingProspect } from '@/lib/talentPool/csvImport';
 
 // Every call goes through a database function in the common schema. Clients
 // have no direct table access; see database/migrations/talent_pool.sql.
@@ -207,9 +208,12 @@ export const prospectsService = {
     return (await rpc<TalentPoolMember[]>('listMembers', 'talent_pool_members_list', {})) ?? [];
   },
 
-  /** Id is chosen here so a retried request returns the same prospect. */
-  async create(input: ProspectInput): Promise<Prospect> {
-    return rpcRetry('create', 'talent_pool_create', { p_id: crypto.randomUUID(), p: input });
+  /**
+   * Id is chosen client-side so a retried request returns the same prospect.
+   * The CSV import passes its own so re-running a partial import is safe too.
+   */
+  async create(input: ProspectInput, id: string = crypto.randomUUID()): Promise<Prospect> {
+    return rpcRetry('create', 'talent_pool_create', { p_id: id, p: input });
   },
 
   async update(id: string, input: ProspectInput, expectedUpdatedAt?: string): Promise<Prospect> {
@@ -256,10 +260,10 @@ export const prospectsService = {
 
   async addActivity(
     prospectId: string,
-    input: { type: 'note' | 'call' | 'text' | 'email'; body?: string | null; occurred_at?: string | null },
+    input: { type: 'note' | 'call' | 'text' | 'email'; body?: string | null; occurred_at?: string | null; id?: string },
   ): Promise<void> {
     await rpcRetry('addActivity', 'talent_pool_add_activity', {
-      p_id: crypto.randomUUID(),
+      p_id: input.id ?? crypto.randomUUID(),
       p_prospect_id: prospectId,
       p_type: input.type,
       p_body: input.body ?? null,
@@ -273,6 +277,18 @@ export const prospectsService = {
         p_email: input.email?.trim() || null,
         p_first_name: input.first_name?.trim() || null,
         p_last_name: input.last_name?.trim() || null,
+      })) ?? []
+    );
+  },
+
+  /** Existing prospects sharing an email, LinkedIn URL, or name key. Used by the CSV import preview. */
+  async findIdentityMatches(lookup: { emails: string[]; linkedinUrls: string[]; nameKeys: string[] }): Promise<ExistingProspect[]> {
+    if (!lookup.emails.length && !lookup.linkedinUrls.length && !lookup.nameKeys.length) return [];
+    return (
+      (await rpc<ExistingProspect[]>('findIdentityMatches', 'talent_pool_identity_matches', {
+        p_emails: lookup.emails,
+        p_linkedin_urls: lookup.linkedinUrls,
+        p_name_keys: lookup.nameKeys,
       })) ?? []
     );
   },

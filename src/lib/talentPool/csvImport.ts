@@ -10,6 +10,7 @@ import { ImportFormatError, parseCsv } from "@/lib/employeeIdImport";
 import {
   blankToNull,
   findDuplicates,
+  mapSheetStatus,
   mapSource,
   nameKey,
   normalizeEmail,
@@ -151,6 +152,7 @@ const STATUS_WORDS: Record<string, EditableStatus> = {
   "future roles": "future_roles",
   "future role": "future_roles",
   "not interested": "not_interested",
+  "future consideration": "future_roles",
 };
 const PIPELINE_WORDS = new Set(["promoted", "in pipeline"]);
 const SOURCE_WORDS = new Set<string>(["linkedin", "indeed", "referral", "other"]);
@@ -237,17 +239,28 @@ export function parseProspectCsv(text: string, members: ImportMember[]): CsvImpo
 
     const statusRaw = cell(raw, "status");
     let status: EditableStatus = "new";
+    // Hiring stages (Offered, Hired, ...) live in Candidate Tracking, so these
+    // come in as Interested and flagged, with the original stage kept as a note.
+    let hiringStage = false;
     if (statusRaw) {
       const key = words(statusRaw);
+      const sheet = mapSheetStatus(statusRaw);
       if (STATUS_WORDS[key]) status = STATUS_WORDS[key];
       else if (PIPELINE_WORDS.has(key))
         problems.push('"In pipeline" is set by Promote to Candidate; import with another status first');
+      else if (sheet.known && sheet.candidateStage) {
+        status = "interested";
+        hiringStage = true;
+        warnings.push(
+          `"${statusRaw}" is a hiring stage; imported as Interested and flagged for follow-up to move into Candidate Tracking`,
+        );
+      } else if (sheet.known) status = sheet.status;
       else warnings.push(`Status "${statusRaw}" not recognized; imported as New`);
     }
 
     const followRaw = cell(raw, "needs_follow_up");
-    const needs_follow_up = TRUE_WORDS.has(words(followRaw));
-    if (followRaw && !needs_follow_up && !FALSE_WORDS.has(words(followRaw))) {
+    const needs_follow_up = hiringStage || TRUE_WORDS.has(words(followRaw));
+    if (followRaw && !TRUE_WORDS.has(words(followRaw)) && !FALSE_WORDS.has(words(followRaw))) {
       warnings.push(`Follow-up "${followRaw}" not recognized; left off`);
     }
 
@@ -282,7 +295,12 @@ export function parseProspectCsv(text: string, members: ImportMember[]): CsvImpo
         problems.push(`${label} is longer than ${max} characters`);
       }
     }
-    const note = blankToNull(cell(raw, "notes"));
+    const csvNote = blankToNull(cell(raw, "notes"));
+    const note = hiringStage
+      ? [`Sheet status: ${statusRaw}. Move to Candidate Tracking to continue hiring.`, csvNote]
+          .filter(Boolean)
+          .join("\n\n")
+      : csvNote;
     if (note && note.length > 10000) problems.push("Notes are longer than 10000 characters");
 
     const base = {

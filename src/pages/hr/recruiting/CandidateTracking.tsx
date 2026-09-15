@@ -25,6 +25,7 @@ import {
   Mail,
   Phone,
   MapPin,
+  DollarSign,
   Calendar,
   FileText,
   TrendingUp,
@@ -573,6 +574,7 @@ export const CandidateTracking: React.FC = () => {
       fr_shirt_size: candidate.fr_shirt_size || "",
       fr_pant_size: candidate.fr_pant_size || "",
       fr_jacket_size: candidate.fr_jacket_size || "",
+      expected_compensation: candidate.expected_compensation || "",
     });
     setResumeFile(null);
     setCoverLetterFile(null);
@@ -1054,6 +1056,12 @@ export const CandidateTracking: React.FC = () => {
                           {candidate.location}
                         </span>
                       )}
+                      {candidate.expected_compensation && (
+                        <span className="flex items-center gap-1" title="Expected compensation">
+                          <DollarSign className="h-4 w-4" />
+                          {candidate.expected_compensation}
+                        </span>
+                      )}
                       <span className="flex items-center gap-1">
                         <FileText className="h-4 w-4" />
                         {candidate.position_applied}
@@ -1249,7 +1257,14 @@ export const CandidateTracking: React.FC = () => {
                     })),
                 ]}
               />
-              <div />
+              <Input
+                label="Expected Compensation"
+                name="expected_compensation"
+                value={formData.expected_compensation ?? ""}
+                onChange={handleInputChange}
+                placeholder="e.g. $38/hr or $85,000/yr"
+                maxLength={255}
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
@@ -1588,7 +1603,14 @@ export const CandidateTracking: React.FC = () => {
                     })),
                 ]}
               />
-              <div />
+              <Input
+                label="Expected Compensation"
+                name="expected_compensation"
+                value={formData.expected_compensation ?? ""}
+                onChange={handleInputChange}
+                placeholder="e.g. $38/hr or $85,000/yr"
+                maxLength={255}
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
@@ -1820,6 +1842,15 @@ export const CandidateTracking: React.FC = () => {
                     </label>
                     <p className="text-neutral-900 dark:text-white mt-1">
                       {selectedCandidate.location || "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
+                      <DollarSign className="h-4 w-4" />
+                      Expected Compensation
+                    </label>
+                    <p className="text-neutral-900 dark:text-white mt-1">
+                      {selectedCandidate.expected_compensation || "N/A"}
                     </p>
                   </div>
                   <div>

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Download, Upload } from "lucide-react";
+import { Download, ExternalLink, Mail, Phone, StickyNote, Upload } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import {
   Dialog,
@@ -10,7 +10,13 @@ import {
   DialogTitle,
 } from "../../../components/ui/Dialog";
 import { toast } from "../../../components/ui/toast";
-import { prospectsService, TalentPoolError, TalentPoolMember } from "@/services/hr/prospectsService";
+import {
+  prospectsService,
+  ProspectSource,
+  ProspectStatus,
+  TalentPoolError,
+  TalentPoolMember,
+} from "@/services/hr/prospectsService";
 import {
   classifyAgainstExisting,
   CSV_ROW_STATUS_LABELS,
@@ -25,6 +31,25 @@ import {
 const IMPORT_CONCURRENCY = 4;
 
 type Outcome = { ok: boolean; message?: string };
+
+const SOURCE_LABELS: Record<ProspectSource, string> = {
+  linkedin: "LinkedIn",
+  indeed: "Indeed",
+  referral: "Referral",
+  other: "Other",
+};
+
+const STATUS_LABELS: Record<ProspectStatus, string> = {
+  new: "New",
+  contacted: "Contacted",
+  interested: "Interested",
+  future_roles: "Future roles",
+  not_interested: "Not interested",
+  promoted: "In pipeline",
+};
+
+const mutedCell = "text-xs text-neutral-500 dark:text-neutral-400";
+const empty = <span className="text-neutral-400">-</span>;
 
 const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message : "Something went wrong. Please try again.";
@@ -62,6 +87,7 @@ export const TalentPoolImportDialog: React.FC<{
   const [outcomes, setOutcomes] = useState<Map<number, Outcome>>(new Map());
   const [dragging, setDragging] = useState(false);
   const busy = applying || checking;
+  const memberNames = new Map(members.map((m) => [m.user_id, m.name]));
 
   const willImport = (r: CsvImportRow) =>
     r.status === "ready" || (includePossible && r.status === "possible_duplicate");
@@ -165,7 +191,7 @@ export const TalentPoolImportDialog: React.FC<{
   return (
     <Dialog open onOpenChange={(open) => !open && !applying && onClose()}>
       <DialogContent
-        className="max-w-4xl max-h-[90vh] overflow-y-auto"
+        className="w-[95vw] max-w-7xl max-h-[90vh] overflow-y-auto"
         // A drop that misses the zone would otherwise open the file in the tab.
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => e.preventDefault()}
@@ -174,7 +200,8 @@ export const TalentPoolImportDialog: React.FC<{
           <DialogTitle>Import prospects from CSV</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        {/* min-w-0 lets the wide preview table scroll inside the grid instead of stretching the dialog. */}
+        <div className="space-y-4 py-2 min-w-0">
           <input
             ref={fileInputRef}
             type="file"
@@ -277,8 +304,13 @@ export const TalentPoolImportDialog: React.FC<{
                     <tr className="text-left">
                       <th className="px-3 py-2 font-medium">Line</th>
                       <th className="px-3 py-2 font-medium">Name</th>
+                      <th className="px-3 py-2 font-medium">Current Employer</th>
                       <th className="px-3 py-2 font-medium">Contact</th>
-                      <th className="px-3 py-2 font-medium">Result</th>
+                      <th className="px-3 py-2 font-medium">Location</th>
+                      <th className="px-3 py-2 font-medium">Source</th>
+                      <th className="px-3 py-2 font-medium">Status</th>
+                      <th className="px-3 py-2 font-medium">Owner</th>
+                      <th className="px-3 py-2 font-medium min-w-[16rem]">Result</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -302,13 +334,68 @@ export const TalentPoolImportDialog: React.FC<{
                           className="border-t border-neutral-200 dark:border-dark-200 align-top"
                         >
                           <td className="px-3 py-2 text-neutral-500 dark:text-neutral-400">{row.lineNumber}</td>
-                          <td className="px-3 py-2 whitespace-nowrap">{row.displayName}</td>
-                          <td className="px-3 py-2 max-w-[14rem] truncate text-neutral-500 dark:text-neutral-400">
-                            {row.contact}
+                          <td className="px-3 py-2 whitespace-nowrap">
+                            <div className="text-neutral-900 dark:text-white">
+                              {row.displayName}
+                              {row.fields.needs_follow_up && (
+                                <span className="ml-2 px-1.5 py-0.5 rounded-none text-[10px] font-medium bg-brand/10 text-brand">
+                                  Follow up
+                                </span>
+                              )}
+                            </div>
+                            {row.fields.job_title && (
+                              <div className={`${mutedCell} max-w-[14rem] truncate`}>{row.fields.job_title}</div>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 max-w-[12rem] truncate">{row.fields.current_org ?? empty}</td>
+                          <td className="px-3 py-2 whitespace-nowrap">
+                            {!row.fields.email && !row.fields.phone && !row.fields.linkedin_url && empty}
+                            {row.fields.email && (
+                              <div className="flex items-center gap-1.5 max-w-[16rem] truncate">
+                                <Mail className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
+                                {row.fields.email}
+                              </div>
+                            )}
+                            {row.fields.phone && (
+                              <div className="flex items-center gap-1.5">
+                                <Phone className="h-3.5 w-3.5 shrink-0 text-neutral-400" />
+                                {row.fields.phone}
+                              </div>
+                            )}
+                            {row.fields.linkedin_url && (
+                              <a
+                                href={row.fields.linkedin_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1.5 text-neutral-500 hover:text-brand"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                                LinkedIn
+                              </a>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 max-w-[10rem] truncate">{row.fields.location ?? empty}</td>
+                          <td className="px-3 py-2 whitespace-nowrap">{SOURCE_LABELS[row.fields.source]}</td>
+                          <td className="px-3 py-2 whitespace-nowrap">
+                            {STATUS_LABELS[row.fields.status]}
+                            {row.fields.availability && (
+                              <div className={`${mutedCell} max-w-[10rem] truncate`} title={row.fields.availability}>
+                                {row.fields.availability}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap">
+                            {(row.fields.owner_id && memberNames.get(row.fields.owner_id)) || empty}
                           </td>
                           <td className="px-3 py-2">
                             <span className={labelClass}>{label}</span>
                             {detail && <span className="text-neutral-500 dark:text-neutral-400"> {detail}</span>}
+                            {row.note && (
+                              <div className={`${mutedCell} flex items-start gap-1.5 mt-1`} title={row.note}>
+                                <StickyNote className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                                <span className="line-clamp-2">{row.note}</span>
+                              </div>
+                            )}
                             {!outcome && willImport(row) && row.warnings.length > 0 && (
                               <ul className="mt-1 text-xs text-amber-700 dark:text-amber-400">
                                 {row.warnings.map((w) => (

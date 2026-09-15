@@ -38,7 +38,6 @@ import {
   Mail,
   Phone,
   User,
-  Shirt,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -75,9 +74,7 @@ export const PublicCareerPage: React.FC = () => {
     eeo_race: "",
     eeo_veteran: false,
     eeo_disability: false,
-    fr_shirt_size: "",
-    fr_pant_size: "",
-    fr_jacket_size: "",
+    expected_compensation: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -186,9 +183,7 @@ export const PublicCareerPage: React.FC = () => {
       eeo_race: "",
       eeo_veteran: false,
       eeo_disability: false,
-      fr_shirt_size: "",
-      fr_pant_size: "",
-      fr_jacket_size: "",
+      expected_compensation: "",
     });
     setUploadProgress(0);
   };
@@ -254,6 +249,15 @@ export const PublicCareerPage: React.FC = () => {
       toast({
         title: "Validation Error",
         description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!applicationForm.expected_compensation.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter your expected compensation for this role",
         variant: "destructive",
       });
       return;
@@ -344,9 +348,7 @@ export const PublicCareerPage: React.FC = () => {
         source: "Career Page",
         resume_url: resumeUrl || undefined,
         cover_letter: applicationForm.cover_letter.trim() || undefined,
-        fr_shirt_size: applicationForm.fr_shirt_size.trim() || undefined,
-        fr_pant_size: applicationForm.fr_pant_size.trim() || undefined,
-        fr_jacket_size: applicationForm.fr_jacket_size.trim() || undefined,
+        expected_compensation: applicationForm.expected_compensation.trim(),
       };
 
       setUploadProgress(90);
@@ -431,9 +433,7 @@ export const PublicCareerPage: React.FC = () => {
         eeo_race: "",
         eeo_veteran: false,
         eeo_disability: false,
-        fr_shirt_size: "",
-        fr_pant_size: "",
-        fr_jacket_size: "",
+        expected_compensation: "",
       });
       setUploadProgress(0);
     } catch (error: any) {
@@ -776,6 +776,24 @@ export const PublicCareerPage: React.FC = () => {
                   />
                 </div>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                  What is your expected compensation for this role?{" "}
+                  <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  value={applicationForm.expected_compensation}
+                  onChange={(e) =>
+                    setApplicationForm({
+                      ...applicationForm,
+                      expected_compensation: e.target.value,
+                    })
+                  }
+                  placeholder="e.g. $38/hr or $85,000/yr"
+                  maxLength={255}
+                  required
+                />
+              </div>
             </div>
 
             {/* Resume Upload */}
@@ -1063,69 +1081,6 @@ export const PublicCareerPage: React.FC = () => {
                     I have a disability
                   </span>
                 </label>
-              </div>
-
-              {/* FR (Flame-Resistant) clothing sizes - optional; used for field roles */}
-              <div className="space-y-3 pt-4 border-t border-neutral-200 dark:border-neutral-700 mt-4">
-                <h4 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                  <Shirt className="h-4 w-4 text-brand" />
-                  FR clothing sizes (Required)
-                </h4>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  If this role may require flame-resistant (FR) clothing,
-                  provide your sizes. You can update these in your profile after
-                  hire if needed.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                      Shirt
-                    </label>
-                    <Input
-                      value={applicationForm.fr_shirt_size}
-                      onChange={(e) =>
-                        setApplicationForm({
-                          ...applicationForm,
-                          fr_shirt_size: e.target.value,
-                        })
-                      }
-                      placeholder="e.g. M, L, XL"
-                      className="bg-white dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                      Pants
-                    </label>
-                    <Input
-                      value={applicationForm.fr_pant_size}
-                      onChange={(e) =>
-                        setApplicationForm({
-                          ...applicationForm,
-                          fr_pant_size: e.target.value,
-                        })
-                      }
-                      placeholder="e.g. 32x30"
-                      className="bg-white dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                      Jacket
-                    </label>
-                    <Input
-                      value={applicationForm.fr_jacket_size}
-                      onChange={(e) =>
-                        setApplicationForm({
-                          ...applicationForm,
-                          fr_jacket_size: e.target.value,
-                        })
-                      }
-                      placeholder="e.g. L, XL"
-                      className="bg-white dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600"
-                    />
-                  </div>
-                </div>
               </div>
             </div>
 

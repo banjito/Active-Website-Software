@@ -4540,6 +4540,8 @@ CREATE TABLE common.candidates (
     cover_letter_url text,
     linked_user_id uuid,
     linked_user_email text,
+    expected_compensation text,
+    CONSTRAINT candidates_expected_compensation_len_check CHECK (((expected_compensation IS NULL) OR (char_length(expected_compensation) <= 255))),
     CONSTRAINT candidates_offer_status_check CHECK (((offer_status = ANY (ARRAY['pending'::text, 'accepted'::text, 'declined'::text, 'expired'::text])) OR (offer_status IS NULL))),
     CONSTRAINT candidates_status_check CHECK (((status)::text = ANY (ARRAY[('new'::character varying)::text, ('screening'::character varying)::text, ('interview'::character varying)::text, ('offer'::character varying)::text, ('offer_sent'::character varying)::text, ('offer_accepted'::character varying)::text, ('hired'::character varying)::text, ('rejected'::character varying)::text])))
 );
@@ -4571,6 +4573,13 @@ COMMENT ON COLUMN common.candidates.fr_pant_size IS 'FR pant size (e.g. 32x30). 
 --
 
 COMMENT ON COLUMN common.candidates.fr_jacket_size IS 'FR jacket/coat size. Updated by EE in profile.';
+
+
+--
+-- Name: COLUMN candidates.expected_compensation; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.candidates.expected_compensation IS 'Applicant''s expected compensation for the role, as entered on the careers page.';
 
 
 --

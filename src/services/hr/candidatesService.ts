@@ -27,6 +27,7 @@ export interface Candidate {
   fr_shirt_size?: string;
   fr_pant_size?: string;
   fr_jacket_size?: string;
+  expected_compensation?: string;
   created_at: string;
   updated_at: string;
 }
@@ -52,6 +53,7 @@ export interface CreateCandidateInput {
   fr_shirt_size?: string;
   fr_pant_size?: string;
   fr_jacket_size?: string;
+  expected_compensation?: string;
 }
 
 export const candidatesService = {

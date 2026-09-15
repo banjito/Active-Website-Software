@@ -1211,9 +1211,9 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
 
           {/* Comments */}
           <section
-            className={`p-0 mb-6 comments-section print:break-inside-avoid ${!comments?.trim() ? "print:hidden" : ""}`}
+            className={`p-0 mb-6 comments-section ${!comments?.trim() ? "print:hidden" : ""}`}
           >
-            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold print:break-after-avoid">
               Comments
             </h2>
             <textarea
@@ -1222,6 +1222,10 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
               readOnly={!isEditing}
               className={`form-textarea min-h-[120px] whitespace-pre-wrap break-words print:hidden ${!isEditing ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
             />
+            {/* Textareas don't grow in print, so render the full text as a block */}
+            <div className="hidden print:block whitespace-pre-wrap break-words text-sm text-black border border-black p-2">
+              {comments}
+            </div>
           </section>
 
           {/* Ground Test Equipment - table lookup at bottom like other reports */}

@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 
-export const MAX_SHORTCUTS = 8;
+// The header shows as many as fit; the rest go under its "See more" dropdown.
+export const MAX_SHORTCUTS = 30;
 
 export interface Shortcut {
   id?: string;

@@ -14,6 +14,7 @@ import {
   ClipboardCheck,
   Flag,
   ChevronLeft,
+  ChevronDown,
   ShieldCogCorner,
   Moon,
   Sun,
@@ -89,6 +90,7 @@ const CALIBRATION_SEEN_KEY = "notifSeenCalibrationIds";
 // Fired by either surface after any read/unread change so the other updates
 // instantly (no refetch, no poll wait).
 const NOTIF_UPDATED_EVENT = "notificationsUpdated";
+const HEADER_SHORTCUT_TABS = 8;
 
 function readStoredSet(key: string): Set<string> {
   try {
@@ -192,6 +194,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const [hiddenShortcutCount, setHiddenShortcutCount] = useState(0);
   const shortcutsBarRef = useRef<HTMLDivElement>(null);
   const shortcutMenuRef = useRef<HTMLDivElement>(null);
+  const [isMoreShortcutsOpen, setIsMoreShortcutsOpen] = useState(false);
+  const moreShortcutsRef = useRef<HTMLDivElement>(null);
   const reviewMenuRef = useRef<HTMLDivElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
@@ -317,6 +321,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         !shortcutMenuRef.current.contains(event.target as Node)
       ) {
         setIsShortcutMenuOpen(false);
+      }
+      if (
+        moreShortcutsRef.current &&
+        !moreShortcutsRef.current.contains(event.target as Node)
+      ) {
+        setIsMoreShortcutsOpen(false);
       }
       if (
         reviewMenuRef.current &&
@@ -487,6 +497,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const handleHeaderShortcutClick = (url: string) => {
     navigateFromShortcut(url, navigate, setDivision);
   };
+
+  // Tabs that fit in the bar stay inline; the rest (and anything past the tab cap) go under "See more".
+  const visibleShortcutTabs =
+    Math.min(HEADER_SHORTCUT_TABS, headerShortcuts.length) - hiddenShortcutCount;
+  const overflowShortcuts = headerShortcuts.slice(visibleShortcutTabs);
 
   // Refresh the header shortcut tabs whenever the dropdown closes (edits made inside it)
   useEffect(() => {
@@ -985,28 +1000,81 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           </Link>
 
           <div className="hidden sm:flex items-center justify-center flex-1 min-w-0 ml-4 border-none">
-            <div ref={shortcutsBarRef} className="flex items-center gap-0.5">
-              {headerShortcuts.slice(0, 8).map((shortcut) => (
-                <button
-                  key={shortcut.id}
-                  data-shortcut-tab
-                  onClick={() => handleHeaderShortcutClick(shortcut.url)}
-                  className="px-3 py-1.5 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-brand dark:hover:text-brand hover:bg-orange-50 dark:hover:bg-dark-200 rounded-none transition-colors whitespace-nowrap border border-transparent hover:border-orange-200 dark:hover:border-orange-900/30"
-                  title={shortcut.url}
-                >
-                  {shortcut.title}
-                </button>
-              ))}
-              {hiddenShortcutCount + Math.max(0, headerShortcuts.length - 8) >
-                0 && (
-                <span className="shrink-0 px-2 py-1 text-xs text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
-                  +
-                  {hiddenShortcutCount +
-                    Math.max(0, headerShortcuts.length - 8)}{" "}
-                  more
-                </span>
-              )}
+            <div
+              ref={shortcutsBarRef}
+              className="flex min-w-0 items-center gap-0.5 overflow-hidden"
+            >
+              {headerShortcuts
+                .slice(0, HEADER_SHORTCUT_TABS)
+                .map((shortcut, index) => (
+                  <button
+                    key={shortcut.id}
+                    data-shortcut-tab
+                    onClick={() => handleHeaderShortcutClick(shortcut.url)}
+                    className={cn(
+                      "shrink-0 px-3 py-1.5 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-brand dark:hover:text-brand hover:bg-orange-50 dark:hover:bg-dark-200 rounded-none transition-colors whitespace-nowrap border border-transparent hover:border-orange-200 dark:hover:border-orange-900/30",
+                      index >= visibleShortcutTabs && "invisible",
+                    )}
+                    title={shortcut.url}
+                  >
+                    {shortcut.title}
+                  </button>
+                ))}
             </div>
+            {overflowShortcuts.length > 0 && (
+              <div ref={moreShortcutsRef} className="relative shrink-0">
+                <button
+                  type="button"
+                  aria-haspopup="true"
+                  aria-expanded={isMoreShortcutsOpen}
+                  onClick={() => setIsMoreShortcutsOpen((open) => !open)}
+                  className={cn(
+                    "flex items-center gap-1 px-2 py-1.5 text-xs font-medium whitespace-nowrap rounded-none border border-transparent transition-colors",
+                    isMoreShortcutsOpen
+                      ? "text-brand bg-orange-50 border-orange-200 dark:bg-dark-200 dark:border-orange-900/30"
+                      : "text-neutral-500 dark:text-neutral-400 hover:text-brand dark:hover:text-brand hover:bg-orange-50 dark:hover:bg-dark-200",
+                  )}
+                >
+                  See more ({overflowShortcuts.length})
+                  <ChevronDown
+                    className={cn(
+                      "h-3.5 w-3.5 transition-transform",
+                      isMoreShortcutsOpen && "rotate-180",
+                    )}
+                  />
+                </button>
+                {isMoreShortcutsOpen && (
+                  <div className="absolute top-full right-0 mt-2 z-50 flex max-h-[24rem] w-64 flex-col overflow-hidden rounded-none bg-white shadow-xl ring-1 ring-black/5 dark:bg-dark-150 dark:ring-white/10">
+                    <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
+                      {overflowShortcuts.map((shortcut) => (
+                        <button
+                          key={shortcut.id}
+                          type="button"
+                          onClick={() => {
+                            setIsMoreShortcutsOpen(false);
+                            handleHeaderShortcutClick(shortcut.url);
+                          }}
+                          className="block w-full truncate rounded-none px-2.5 py-2 text-left text-sm font-medium text-neutral-700 hover:bg-neutral-50 hover:text-brand dark:text-neutral-200 dark:hover:bg-dark-200"
+                          title={shortcut.url}
+                        >
+                          {shortcut.title}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMoreShortcutsOpen(false);
+                        setIsShortcutMenuOpen(true);
+                      }}
+                      className="shrink-0 border-t border-neutral-100 px-3 py-2 text-left text-xs font-medium text-neutral-500 hover:bg-neutral-50 hover:text-brand dark:border-dark-200 dark:text-neutral-400 dark:hover:bg-dark-200"
+                    >
+                      Manage shortcuts
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div

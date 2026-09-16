@@ -3390,7 +3390,7 @@ export default function JobDetail() {
     } catch (e) {
       toast({
         title: "Error",
-        description: "Failed to update shortcut",
+        description: describeSupabaseError(e as { message?: string }),
         variant: "destructive",
       });
     } finally {

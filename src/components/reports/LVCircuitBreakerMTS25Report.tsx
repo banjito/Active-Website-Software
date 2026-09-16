@@ -15,6 +15,13 @@ import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
 import { openPendingReportTab } from "./common/openReportTab";
 import { ReportWrapper } from "./ReportWrapper";
 import { ReportHeader } from "./common/ReportHeader";
+import {
+  ReportJobInfoFields,
+  ReportNameplateFields,
+} from "./common/ReportAssetSections";
+import SaveToAssetButton from "./SaveToAssetButton";
+import { useReportAssetProfile } from "./useReportAssetProfile";
+import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
@@ -331,19 +338,7 @@ const tripTypeOptions = [
   "MF",
   "MA",
 ];
-const ratedVoltageOptions = ["", "250", "480", "600", "1000"];
-const operationOptions = ["", "Over-Center Handle", "Two-Step Stored Energy"];
-const mountingOptions = [
-  "",
-  "Bolt-In",
-  "Plug-in",
-  "Fixed-Mount",
-  "Bushing-Mount",
-  "Draw-out",
-];
-const zoneInterlockOptions = ["", "Yes", "No", "Enabled", "Disabled", "N/A"];
-const thermalMemoryOptions = ["", "Yes", "No", "Simulated", "Unknown", "N/A"];
-const breakerTypeOptions = ["", "molded case", "insulated case", "power"];
+// Nameplate dropdown options live in src/lib/reportAssetProfiles.ts, shared with the asset editor.
 // Display labels for breaker type (stored values stay lowercase for section lookups)
 const breakerTypeLabels: Record<string, string> = {
   "molded case": "Molded Case",
@@ -1043,6 +1038,16 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
     formDataRef.current = formData;
   }, [formData]);
 
+  // Opened from an asset: start from its breaker identity and nameplate, and link the
+  // report to it on first save.
+  const {
+    profile: assetProfile,
+    equipmentAssetIdRef,
+    linkedAsset,
+    setLinkedAsset,
+  } = useReportAssetProfile<FormData>(reportSlug, openReportId, setFormData,
+  );
+
   /**
    * Writes the report. Every save -- auto-save, the Save button, the copy
    * button -- goes through here, and they all write to one row.
@@ -1088,7 +1093,7 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
     if (error) throw error;
 
     if (!assetLinkedRef.current) {
-      await ensureReportAssetLink(
+      const reportAssetId = await ensureReportAssetLink(
         jobId,
         {
           name: getAssetName(reportSlug, currentFormData.breakerIdentifier),
@@ -1098,6 +1103,9 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
         },
         user?.id,
       );
+      if (equipmentAssetIdRef.current) {
+        await setReportAssetEquipmentLink(reportAssetId, equipmentAssetIdRef.current);
+      }
       assetLinkedRef.current = true;
     }
 
@@ -1964,6 +1972,15 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
         )}
 
         <ReportHeader
+          extraActions={
+            <SaveToAssetButton
+              asset={linkedAsset}
+              userId={user?.id}
+              profile={assetProfile}
+              form={formData}
+              onSaved={setLinkedAsset}
+            />
+          }
           title={`${NETA_MTS_SECTION} LV Circuit Breaker MTS 23`}
           isAutoSaving={isAutoSaving}
           isEditing={isEditing}
@@ -2019,73 +2036,20 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
-            {/* On-screen only: row1 = Customer, Address, Job#, Technicians, Date; row2 = Breaker, Sub, Eqpt Ident, Circuit, User; row3 = Temp, Celsius, Humidity, TCF; print uses table below */}
-            <div className="grid grid-cols-5 gap-x-10 gap-y-5 print:hidden">
-              <div className="flex flex-col min-w-0">
-                <label className="form-label">Customer:</label>
-                <input
-                  type="text"
-                  value={maskCustomerName(formData.customer)}
-                  readOnly
-                  className="form-input bg-neutral-100 dark:bg-dark-150 w-full min-w-0"
-                />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <label className="form-label">Address:</label>
-                <input
-                  type="text"
-                  value={maskCustomerAddress(formData.address)}
-                  onChange={(e) => handleChange("address", e.target.value)}
-                  readOnly={!isEditing}
-                  className={`form-input w-full min-w-0 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <label className="form-label">Job #:</label>
-                <input
-                  type="text"
-                  value={formData.jobNumber}
-                  readOnly
-                  className="form-input bg-neutral-100 dark:bg-dark-150 w-full"
-                />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <label className="form-label">Technicians:</label>
-                <input
-                  type="text"
-                  value={formData.technicians}
-                  onChange={(e) => handleChange("technicians", e.target.value)}
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <label className="form-label">Date:</label>
-                <input
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => handleChange("date", e.target.value)}
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              {/*
-                REMEMBERING FEATURE - Breaker Identifier Field
-                This input uses the HTML5 'list' attribute to connect to a <datalist> element
-                that provides autocomplete suggestions from past entries.
-                - list="breaker-identifier-options" connects to the datalist below
-                - onBlur saves the value to localStorage when user leaves the field
-                - Past values are loaded from localStorage on component mount
-              */}
-              <div className="flex flex-col min-w-0">
-                <label className="form-label">Breaker Identifier:</label>
-                <input
-                  type="text"
-                  value={formData.breakerIdentifier}
-                  onChange={(e) =>
-                    handleChange("breakerIdentifier", e.target.value)
-                  }
-                  onBlur={(e) => {
+            <ReportJobInfoFields
+              profile={assetProfile}
+              values={formData}
+              onChange={handleChange}
+              isEditing={isEditing}
+              displayValues={{
+                customer: maskCustomerName(formData.customer),
+                address: maskCustomerAddress(formData.address),
+              }}
+              fieldProps={{
+                // Remembered values: the datalists at the bottom of the report.
+                breakerIdentifier: {
+                  list: "breaker-identifier-options",
+                  onBlur: (e) => {
                     if (e.target.value.trim()) {
                       saveToRemember(
                         "identifiers",
@@ -2093,28 +2057,11 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
                         setPastBreakerIdentifiers,
                       );
                     }
-                  }}
-                  list="breaker-identifier-options"
-                  readOnly={!isEditing}
-                  className={`form-input w-full min-w-0 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              {/*
-                REMEMBERING FEATURE - Substation Field
-                This input uses the HTML5 'list' attribute to connect to a <datalist> element
-                that provides autocomplete suggestions from past entries.
-                - list="substation-options" connects to the datalist below
-                - onBlur saves the value to localStorage when user leaves the field
-                - Past values are loaded from localStorage on component mount
-                - CSS styles remove the default browser dropdown arrow for cleaner appearance
-              */}
-              <div className="flex flex-col min-w-0">
-                <label className="form-label">Substation:</label>
-                <input
-                  type="text"
-                  value={formData.substation}
-                  onChange={(e) => handleChange("substation", e.target.value)}
-                  onBlur={(e) => {
+                  },
+                },
+                substation: {
+                  list: "substation-options",
+                  onBlur: (e) => {
                     if (e.target.value.trim()) {
                       saveToRemember(
                         "substations",
@@ -2122,116 +2069,17 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
                         setPastSubstations,
                       );
                     }
-                  }}
-                  list="substation-options"
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  style={{
+                  },
+                  style: {
                     appearance: "none",
                     WebkitAppearance: "none",
                     MozAppearance: "textfield",
-                  }}
-                />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <label className="form-label">Eqpt. Identifier:</label>
-                <input
-                  type="text"
-                  value={formData.eqptIdentifier}
-                  onChange={(e) =>
-                    handleChange("eqptIdentifier", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full min-w-0 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <label className="form-label">Circuit / Cell No.:</label>
-                <input
-                  type="text"
-                  value={formData.circuitCellNo}
-                  onChange={(e) =>
-                    handleChange("circuitCellNo", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full min-w-0 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <label className="form-label">User:</label>
-                <input
-                  type="text"
-                  value={formData.user}
-                  onChange={(e) => handleChange("user", e.target.value)}
-                  readOnly={!isEditing}
-                  className={`form-input w-full min-w-0 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              {/* Bottom row: Temp, Celsius, Humidity, TCF — 4 wide inside full row */}
-              <div className="col-span-5 grid grid-cols-4 gap-x-10 gap-y-0 pt-1">
-                <div className="flex flex-col min-w-0">
-                  <label className="form-label">Temp:</label>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      value={
-                        formData.temperature.fahrenheit === 0
-                          ? ""
-                          : formData.temperature.fahrenheit || ""
-                      }
-                      onChange={handleFahrenheitChange}
-                      readOnly={!isEditing}
-                      className={`form-input w-10 text-sm py-1 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                    />
-                    <span className="text-xs">°F</span>
-                  </div>
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <label className="form-label">Celsius:</label>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      value={
-                        formData.temperature.celsius === 0
-                          ? ""
-                          : formData.temperature.celsius || ""
-                      }
-                      onChange={handleCelsiusChange}
-                      readOnly={!isEditing}
-                      className={`form-input w-10 text-sm py-1 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                    />
-                    <span className="text-xs">°C</span>
-                  </div>
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <label className="form-label">Humidity:</label>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      value={formData.temperature.humidity || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          "temperature.humidity",
-                          e.target.value === "" ? null : Number(e.target.value),
-                        )
-                      }
-                      readOnly={!isEditing}
-                      className={`form-input w-10 text-sm py-1 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                    />
-                    <span className="text-xs">%</span>
-                  </div>
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <label className="form-label">TCF:</label>
-                  <input
-                    type="number"
-                    value={formData.temperature.tcf}
-                    readOnly
-                    className="form-input bg-neutral-100 dark:bg-dark-150 w-10 text-sm py-1"
-                  />
-                </div>
-              </div>
-            </div>
+                  },
+                },
+              }}
+              onFahrenheitChange={handleFahrenheitChange}
+              onCelsiusChange={handleCelsiusChange}
+            />
 
             {/* Print-only compact job info table - Customer & Address wide; Temp, TCF, Job#, Humidity, Tech, Substation narrow */}
             <div className="hidden print:block">
@@ -2335,206 +2183,12 @@ const LVCircuitBreakerMTS25Report: React.FC = () => {
               <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
                 Nameplate Data
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="form-label">Manufacturer:</label>
-                  <input
-                    type="text"
-                    value={formData.manufacturer}
-                    onChange={(e) =>
-                      handleChange("manufacturer", e.target.value)
-                    }
-                    readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Catalog Number:</label>
-                  <input
-                    type="text"
-                    value={formData.catalogNumber}
-                    onChange={(e) =>
-                      handleChange("catalogNumber", e.target.value)
-                    }
-                    readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Serial Number:</label>
-                  <input
-                    type="text"
-                    value={formData.serialNumber}
-                    onChange={(e) =>
-                      handleChange("serialNumber", e.target.value)
-                    }
-                    readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Breaker Type:</label>
-                  <select
-                    value={formData.breakerType}
-                    onChange={(e) =>
-                      handleChange("breakerType", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  >
-                    {breakerTypeOptions.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt ? getBreakerTypeLabel(opt) : "Select..."}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="form-label">Trip Unit Type:</label>
-                  <input
-                    type="text"
-                    value={formData.tripUnitType}
-                    onChange={(e) =>
-                      handleChange("tripUnitType", e.target.value)
-                    }
-                    readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Frame Size (A):</label>
-                  <input
-                    type="text"
-                    value={formData.frameSize}
-                    onChange={(e) => handleChange("frameSize", e.target.value)}
-                    readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Rating Plug (A):</label>
-                  <input
-                    type="text"
-                    value={formData.ratingPlug}
-                    onChange={(e) => handleChange("ratingPlug", e.target.value)}
-                    readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Rated Voltage (V):</label>
-                  <select
-                    value={formData.ratedVoltage}
-                    onChange={(e) =>
-                      handleChange("ratedVoltage", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  >
-                    {ratedVoltageOptions.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt || "Select..."}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="form-label">Operating Voltage (V):</label>
-                  <input
-                    type="text"
-                    value={formData.operatingVoltage}
-                    onChange={(e) =>
-                      handleChange("operatingVoltage", e.target.value)
-                    }
-                    readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  />
-                </div>
-                <div>
-                  <label className="form-label">I.C. Rating (kA):</label>
-                  <input
-                    type="text"
-                    value={formData.icRating}
-                    onChange={(e) => handleChange("icRating", e.target.value)}
-                    readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Curve No.:</label>
-                  <input
-                    type="text"
-                    value={formData.curveNo}
-                    onChange={(e) => handleChange("curveNo", e.target.value)}
-                    readOnly={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Operation:</label>
-                  <select
-                    value={formData.operation}
-                    onChange={(e) => handleChange("operation", e.target.value)}
-                    disabled={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  >
-                    {operationOptions.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt || "Select..."}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="form-label">Mounting:</label>
-                  <select
-                    value={formData.mounting}
-                    onChange={(e) => handleChange("mounting", e.target.value)}
-                    disabled={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  >
-                    {mountingOptions.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt || "Select..."}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="form-label">Zone Interlock:</label>
-                  <select
-                    value={formData.zoneInterlock}
-                    onChange={(e) =>
-                      handleChange("zoneInterlock", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  >
-                    {zoneInterlockOptions.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt || "Select..."}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="form-label">Thermal Memory:</label>
-                  <select
-                    value={formData.thermalMemory}
-                    onChange={(e) =>
-                      handleChange("thermalMemory", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  >
-                    {thermalMemoryOptions.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt || "Select..."}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              <ReportNameplateFields
+                profile={assetProfile}
+                values={formData}
+                onChange={handleChange}
+                isEditing={isEditing}
+              />
             </div>
 
             {/* Print-only nameplate table */}

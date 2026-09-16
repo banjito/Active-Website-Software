@@ -48,6 +48,7 @@ const contactResistanceUnits = [
 const dielectricWithstandUnits = [
   { symbol: "µA", name: "Micro-Amps" },
   { symbol: "mA", name: "Milli-Amps" },
+  { symbol: "nA", name: "Nano-Amps" },
 ];
 
 const dielectricWithstandTestVoltages = [

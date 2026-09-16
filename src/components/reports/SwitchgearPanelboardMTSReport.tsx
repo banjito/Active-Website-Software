@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { ReportHeader } from "@/components/reports/common/ReportHeader";
 import {
+  ReportJobInfoFields,
+  ReportNameplateFields,
+} from "./common/ReportAssetSections";
+import SaveToAssetButton from "./SaveToAssetButton";
+import { useReportAssetProfile } from "./useReportAssetProfile";
+import { setReportAssetEquipmentLink } from "@/services/reportAssets";
+import { setPath } from "@/lib/reportAssetProfiles";
+import {
   useParams,
   useNavigate,
   useLocation,
@@ -187,7 +195,7 @@ const INSULATION_RESISTANCE_TEST_VOLTAGES = [
   "5000V",
 ];
 const CONTACT_RESISTANCE_UNITS = ["µΩ", "mΩ", "Ω"];
-const DIELECTRIC_WITHSTAND_UNITS = ["µA", "mA"];
+const DIELECTRIC_WITHSTAND_UNITS = ["µA", "mA", "nA"];
 const DIELECTRIC_WITHSTAND_TEST_VOLTAGES = [
   "1.6 kVAC",
   "2.2 kVAC",
@@ -939,6 +947,15 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
     });
   }, [formData.temperature.celsius, formData.measuredInsulationResistance]);
 
+  // Opened from an asset: start from its identity and nameplate, and link the report to it
+  // on first save.
+  const {
+    profile: assetProfile,
+    equipmentAssetIdRef,
+    linkedAsset,
+    setLinkedAsset,
+  } = useReportAssetProfile<FormData>(reportSlug, openReportId, setFormData);
+
   const ensureReportAsset = useCallback(
     async (savedReportId: string) => {
       if (!jobId || !user?.id) {
@@ -980,6 +997,9 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
 
         if (assetError) throw assetError;
         assetId = assetResult.id;
+        if (equipmentAssetIdRef.current) {
+          await setReportAssetEquipmentLink(assetId, equipmentAssetIdRef.current);
+        }
       } else {
         const assetUpdate: {
           name?: string;
@@ -1374,6 +1394,15 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
       <div className="p-6 flex justify-center report-body switchgear-panelboard-mts-report-body">
         <div className="max-w-7xl w-full space-y-6 switchgear-panelboard-mts-report-content">
           <ReportHeader
+            extraActions={
+              <SaveToAssetButton
+                asset={linkedAsset}
+                userId={user?.id}
+                profile={assetProfile}
+                form={formData}
+                onSaved={setLinkedAsset}
+              />
+            }
             title={reportName}
             isAutoSaving={isAutoSaving}
             isEditing={isEditing}
@@ -1433,186 +1462,16 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
               Job Information
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-2 print:hidden job-info-onscreen">
-              <div>
-                <label className="form-label">Customer:</label>
-                <input
-                  type="text"
-                  value={maskCustomerName(formData.customerName)}
-                  readOnly
-                  className="form-input bg-neutral-100 dark:bg-dark-150 w-full"
-                />
-              </div>
-              <div>
-                <label className="form-label">Job #:</label>
-                <input
-                  type="text"
-                  value={formData.jobNumber}
-                  readOnly
-                  className="form-input bg-neutral-100 dark:bg-dark-150 w-full"
-                />
-              </div>
-              <div>
-                <label htmlFor="technicians" className="form-label">
-                  Technicians:
-                </label>
-                <input
-                  id="technicians"
-                  type="text"
-                  value={formData.technicians}
-                  onChange={(e) =>
-                    handleInputChange("technicians", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div>
-                <label htmlFor="date" className="form-label">
-                  Date:
-                </label>
-                <input
-                  id="date"
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => handleInputChange("date", e.target.value)}
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div>
-                <label htmlFor="identifier" className="form-label">
-                  Identifier:
-                </label>
-                <input
-                  id="identifier"
-                  type="text"
-                  value={formData.identifier}
-                  onChange={(e) =>
-                    handleInputChange("identifier", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div>
-                <label htmlFor="temperature.fahrenheit" className="form-label">
-                  Temp:
-                </label>
-                <input
-                  id="temperature.fahrenheit"
-                  type="number"
-                  value={formData.temperature.fahrenheit}
-                  onChange={(e) =>
-                    handleFahrenheitChange(parseFloat(e.target.value))
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-20 ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-                <span className="ml-1">°F</span>
-              </div>
-              <div className="md:col-span-2">
-                <label htmlFor="temperature.celsius" className="form-label">
-                  Temp (°C):
-                </label>
-                <input
-                  id="temperature.celsius"
-                  type="number"
-                  value={formData.temperature.celsius}
-                  readOnly
-                  className="form-input w-32 min-w-[7rem] bg-neutral-100 dark:bg-dark-150"
-                />
-              </div>
-              <div>
-                <label htmlFor="temperature.tcf" className="form-label">
-                  TCF:
-                </label>
-                <input
-                  id="temperature.tcf"
-                  type="number"
-                  value={formData.temperature.tcf.toFixed(3)}
-                  readOnly
-                  className="form-input bg-neutral-100 dark:bg-dark-150 w-16"
-                />
-              </div>
-              <div>
-                <label htmlFor="substation" className="form-label">
-                  Substation:
-                </label>
-                <input
-                  id="substation"
-                  type="text"
-                  value={formData.substation}
-                  onChange={(e) =>
-                    handleInputChange("substation", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div>
-                <label htmlFor="eqptLocation" className="form-label">
-                  Eqpt. Location:
-                </label>
-                <input
-                  id="eqptLocation"
-                  type="text"
-                  value={formData.eqptLocation}
-                  onChange={(e) =>
-                    handleInputChange("eqptLocation", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label htmlFor="userName" className="form-label">
-                  User:
-                </label>
-                <input
-                  id="userName"
-                  type="text"
-                  value={formData.userName}
-                  onChange={(e) =>
-                    handleInputChange("userName", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div>
-                <label htmlFor="humidity" className="form-label">
-                  Humidity %:
-                </label>
-                <input
-                  id="humidity"
-                  type="number"
-                  value={formData.temperature.humidity || ""}
-                  onChange={(e) =>
-                    handleInputChange(
-                      "temperature.humidity",
-                      e.target.value === "" ? null : parseFloat(e.target.value),
-                    )
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  placeholder="Optional"
-                />
-              </div>
-              <div className="md:col-span-6">
-                <label htmlFor="customerLocation" className="form-label">
-                  Address:
-                </label>
-                <input
-                  id="customerLocation"
-                  type="text"
-                  value={formData.customerLocation}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, customerLocation: e.target.value }))}
-                  readOnly={!isEditing}
-                  className={`form-input w-full dark:bg-dark-150 ${!isEditing ? "bg-neutral-100" : ""}`}
-                />
-              </div>
-            </div>
+            <ReportJobInfoFields
+              profile={assetProfile}
+              values={formData}
+              onChange={(path, value) => setFormData((p) => setPath(p, path, value))}
+              isEditing={isEditing}
+              displayValues={{
+                customerName: maskCustomerName(formData.customerName),
+              }}
+              onFahrenheitChange={(e) => handleFahrenheitChange(parseFloat(e.target.value))}
+            />
             <JobInfoPrintTable
               data={{
                 customer: maskCustomerName(formData.customerName),
@@ -1641,137 +1500,12 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
               Nameplate Data
             </h2>
 
-            <div className="grid grid-cols-3 gap-4 print:hidden nameplate-onscreen">
-              <div>
-                <label className="form-label">Manufacturer:</label>
-                <input
-                  type="text"
-                  value={formData.nameplate.manufacturer}
-                  onChange={(e) =>
-                    handleInputChange("nameplate.manufacturer", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div>
-                <label className="form-label">Catalog Number:</label>
-                <input
-                  type="text"
-                  value={formData.nameplate.catalogNumber}
-                  onChange={(e) =>
-                    handleInputChange("nameplate.catalogNumber", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div>
-                <label className="form-label">Serial Number:</label>
-                <input
-                  type="text"
-                  value={formData.nameplate.serialNumber}
-                  onChange={(e) =>
-                    handleInputChange("nameplate.serialNumber", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4 mt-4 print:hidden nameplate-onscreen">
-              <div>
-                <label className="form-label">Series:</label>
-                <input
-                  type="text"
-                  value={formData.nameplate.series}
-                  onChange={(e) =>
-                    handleInputChange("nameplate.series", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div>
-                <label className="form-label">Type:</label>
-                <input
-                  type="text"
-                  value={formData.nameplate.type}
-                  onChange={(e) =>
-                    handleInputChange("nameplate.type", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div>
-                <label className="form-label">System Voltage:</label>
-                <input
-                  type="text"
-                  value={formData.nameplate.systemVoltage}
-                  onChange={(e) =>
-                    handleInputChange("nameplate.systemVoltage", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4 mt-4 print:hidden nameplate-onscreen">
-              <div>
-                <label className="form-label">Rated Voltage:</label>
-                <input
-                  type="text"
-                  value={formData.nameplate.ratedVoltage}
-                  onChange={(e) =>
-                    handleInputChange("nameplate.ratedVoltage", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div>
-                <label className="form-label">Rated Current:</label>
-                <input
-                  type="text"
-                  value={formData.nameplate.ratedCurrent}
-                  onChange={(e) =>
-                    handleInputChange("nameplate.ratedCurrent", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-              <div>
-                <label className="form-label">SCCR:</label>
-                <input
-                  type="text"
-                  value={formData.nameplate.aicRating}
-                  onChange={(e) =>
-                    handleInputChange("nameplate.aicRating", e.target.value)
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4 mt-4 print:hidden nameplate-onscreen">
-              <div>
-                <label className="form-label">Phase Configuration:</label>
-                <input
-                  type="text"
-                  value={formData.nameplate.phaseConfiguration}
-                  onChange={(e) =>
-                    handleInputChange(
-                      "nameplate.phaseConfiguration",
-                      e.target.value,
-                    )
-                  }
-                  readOnly={!isEditing}
-                  className={`form-input w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                />
-              </div>
-            </div>
+            <ReportNameplateFields
+              profile={assetProfile}
+              values={formData}
+              onChange={(path, value) => setFormData((p) => setPath(p, path, value))}
+              isEditing={isEditing}
+            />
             <NameplatePrintTable
               data={{
                 manufacturer: formData.nameplate.manufacturer,

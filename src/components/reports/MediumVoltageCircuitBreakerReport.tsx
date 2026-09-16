@@ -177,7 +177,7 @@ const visualInspectionOptions = [
 const insulationResistanceUnits = ["kΩ", "MΩ", "GΩ"];
 const insulationTestVoltages = ["250V", "500V", "1000V", "2500V", "5000V"];
 const contactResistanceUnits = ["μΩ", "mΩ", "Ω"];
-const dielectricWithstandUnits = ["μA", "mA"];
+const dielectricWithstandUnits = ["μA", "mA", "nA"];
 const equipmentEvaluationResults = ["PASS", "FAIL", "LIMITED SERVICE"];
 
 interface FormData {

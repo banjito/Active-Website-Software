@@ -111,6 +111,10 @@ export function DuplicateAssetDialog({
         manufacturer: asset.manufacturer ?? null,
         model: asset.model ?? null,
         serial_number: null, // serials are unique per unit — never copy them
+        // Same report form and nameplate: laying in CB-101 … CB-125 of one breaker model
+        // should not mean typing its nameplate 25 times.
+        report_template_slug: asset.report_template_slug ?? null,
+        report_data: asset.report_data ?? {},
         notes: asset.notes ?? null,
       }));
 

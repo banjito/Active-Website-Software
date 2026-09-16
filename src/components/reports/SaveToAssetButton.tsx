@@ -13,22 +13,33 @@ import { toast } from "react-hot-toast";
 import {
   applyReportDataToAsset,
   diffReportAgainstAsset,
+  diffReportFormAgainstAsset,
   type AssetFieldUpdate,
 } from "@/services/equipmentAssetsService";
 import { getNameplateSchema } from "@/lib/assetNameplateSchema";
+import type { ReportAssetProfile } from "@/lib/reportAssetProfiles";
 import type { EquipmentAsset } from "@/lib/types/assetTracking";
 
 interface SaveToAssetButtonProps {
   /** The asset this report describes. Null when the report isn't linked to one. */
   asset: EquipmentAsset | null;
-  /** What the report currently holds. Blank values are ignored, never written. */
-  values: {
+  /**
+   * What the report currently holds, for reports without a profile. Blank values are
+   * ignored, never written.
+   */
+  values?: {
     manufacturer?: string;
     model?: string;
     serialNumber?: string;
     /** Type-specific values keyed as in assetNameplateSchema.ts. */
     nameplate?: Record<string, string>;
   };
+  /**
+   * A report with a profile in reportAssetProfiles.ts passes it and its form state instead of
+   * `values`: every equipment-level field is compared under the report's own paths.
+   */
+  profile?: ReportAssetProfile;
+  form?: unknown;
   userId?: string;
   /** Lets the report refresh its idea of the asset after a write. */
   onSaved?: (asset: EquipmentAsset) => void;
@@ -50,6 +61,8 @@ interface SaveToAssetButtonProps {
 export function SaveToAssetButton({
   asset,
   values,
+  profile,
+  form,
   userId,
   onSaved,
   className,
@@ -67,8 +80,13 @@ export function SaveToAssetButton({
   }, [asset?.equipment_type]);
 
   const updates = useMemo(
-    () => (asset ? diffReportAgainstAsset(asset, values, labels) : []),
-    [asset, values, labels],
+    () => {
+      if (!asset) return [];
+      return profile
+        ? diffReportFormAgainstAsset(profile, asset, form)
+        : diffReportAgainstAsset(asset, values ?? {}, labels);
+    },
+    [asset, values, labels, profile, form],
   );
 
   const selected = useMemo(
@@ -83,7 +101,12 @@ export function SaveToAssetButton({
   const apply = async () => {
     setSaving(true);
     try {
-      const saved = await applyReportDataToAsset(asset, selected, userId);
+      const saved = await applyReportDataToAsset(
+        asset,
+        selected,
+        userId,
+        profile ? { reportForm: form, templateSlug: profile.slug } : {},
+      );
       toast.success(
         `${selected.length} field${selected.length === 1 ? "" : "s"} saved to ${asset.identifier}`,
       );

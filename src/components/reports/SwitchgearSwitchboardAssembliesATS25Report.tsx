@@ -12,6 +12,14 @@ import { ReportWrapper } from "./ReportWrapper";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import NameplatePrintTable from "./common/NameplatePrintTable";
 import { ReportHeader } from "./common/ReportHeader";
+import {
+  ReportJobInfoFields,
+  ReportNameplateFields,
+} from "./common/ReportAssetSections";
+import SaveToAssetButton from "./SaveToAssetButton";
+import { useReportAssetProfile } from "./useReportAssetProfile";
+import { setReportAssetEquipmentLink } from "@/services/reportAssets";
+import { setPath } from "@/lib/reportAssetProfiles";
 import { navigateAfterSave } from "./ReportUtils";
 import { getReportName, getAssetName } from "./reportMappings";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
@@ -45,20 +53,7 @@ const INSULATION_RESISTANCE_TEST_VOLTAGES = [
 ];
 const INSULATION_RESISTANCE_UNITS = ["kΩ", "MΩ", "GΩ"];
 const CONTACT_RESISTANCE_UNITS = ["µΩ", "mΩ", "Ω"];
-const DIELECTRIC_WITHSTAND_UNITS = ["µA", "mA"];
-const RATED_VOLTAGE_OPTIONS = [
-  "250",
-  "480",
-  "600",
-  "1000",
-  "2500",
-  "5000",
-  "8000",
-  "15000",
-  "25000",
-  "34500",
-  "46000",
-];
+const DIELECTRIC_WITHSTAND_UNITS = ["mA", "µA", "nA"];
 
 type StatusType = "PASS" | "FAIL" | "LIMITED SERVICE";
 
@@ -1053,6 +1048,15 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
     formDataRef.current = formData;
   }, [formData]);
 
+  // Opened from an asset: start from its identity and nameplate, and link the report to it
+  // on first save.
+  const {
+    profile: assetProfile,
+    equipmentAssetIdRef,
+    linkedAsset,
+    setLinkedAsset,
+  } = useReportAssetProfile<FormData>(reportSlug, openReportId, setFormData);
+
   /**
    * Writes the report and returns its id. Every save -- auto-save and the Save
    * button -- goes through here, and they all write to one row.
@@ -1135,7 +1139,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
     if (error) throw error;
 
     if (!assetLinkedRef.current) {
-      await ensureReportAssetLink(
+      const reportAssetId = await ensureReportAssetLink(
         jobId,
         {
           name: getAssetName(
@@ -1149,6 +1153,9 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
         },
         user.id,
       );
+      if (equipmentAssetIdRef.current) {
+        await setReportAssetEquipmentLink(reportAssetId, equipmentAssetIdRef.current);
+      }
       assetLinkedRef.current = true;
     }
 
@@ -1303,6 +1310,15 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
       <div className="p-6 flex justify-center">
         <div className="max-w-7xl w-full space-y-6">
           <ReportHeader
+            extraActions={
+              <SaveToAssetButton
+                asset={linkedAsset}
+                userId={user?.id}
+                profile={assetProfile}
+                form={formData}
+                onSaved={setLinkedAsset}
+              />
+            }
             title={reportName}
             isAutoSaving={isAutoSaving}
             isEditing={isEditing}
@@ -1337,219 +1353,16 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Job Information
             </h2>
-            <div className="grid grid-cols-2 gap-6 print:hidden job-info-onscreen">
-              {/* Left Column */}
-              <div>
-                <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
-                    Customer
-                  </label>
-                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
-                    <input
-                      type="text"
-                      value={maskCustomerName(formData.customerName)}
-                      readOnly
-                      className="w-full bg-transparent border-none focus:ring-0 cursor-default"
-                    />
-                  </div>
-                </div>
-                <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
-                    Site Address
-                  </label>
-                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
-                    <input
-                      type="text"
-                      value={formData.customerLocation}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, customerLocation: e.target.value }))}
-                      readOnly={!isEditing}
-                      className={`w-full bg-transparent border-none focus:ring-0 ${!isEditing ? "cursor-default" : ""}`}
-                    />
-                  </div>
-                </div>
-                <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
-                    User
-                  </label>
-                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
-                    <input
-                      type="text"
-                      value={formData.userName}
-                      onChange={(e) =>
-                        handleChange((p) => ({
-                          ...p,
-                          userName: e.target.value,
-                        }))
-                      }
-                      readOnly={!isEditing}
-                      className={`w-full bg-transparent border-none focus:ring-0 ${!isEditing ? "cursor-default" : ""}`}
-                    />
-                  </div>
-                </div>
-                <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
-                    Date
-                  </label>
-                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
-                    <input
-                      type="date"
-                      value={formData.date}
-                      onChange={(e) =>
-                        handleChange((p) => ({ ...p, date: e.target.value }))
-                      }
-                      readOnly={!isEditing}
-                      className={`w-full bg-transparent border-none focus:ring-0 ${!isEditing ? "cursor-default" : ""}`}
-                    />
-                  </div>
-                </div>
-                <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
-                    Identifier
-                  </label>
-                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
-                    <input
-                      type="text"
-                      value={formData.identifier}
-                      onChange={(e) =>
-                        handleChange((p) => ({
-                          ...p,
-                          identifier: e.target.value,
-                        }))
-                      }
-                      readOnly={!isEditing}
-                      placeholder="Enter an identifier for this cable"
-                      className={`w-full bg-transparent border-none focus:ring-0 ${!isEditing ? "cursor-default" : ""}`}
-                    />
-                  </div>
-                </div>
-              </div>
-              {/* Right Column */}
-              <div>
-                <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
-                    Job #
-                  </label>
-                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
-                    <input
-                      type="text"
-                      value={formData.jobNumber}
-                      readOnly
-                      className="w-full bg-transparent border-none focus:ring-0 cursor-default"
-                    />
-                  </div>
-                </div>
-                <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
-                    Technicians
-                  </label>
-                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
-                    <input
-                      type="text"
-                      value={formData.technicians}
-                      onChange={(e) =>
-                        handleChange((p) => ({
-                          ...p,
-                          technicians: e.target.value,
-                        }))
-                      }
-                      readOnly={!isEditing}
-                      className={`w-full bg-transparent border-none focus:ring-0 ${!isEditing ? "cursor-default" : ""}`}
-                    />
-                  </div>
-                </div>
-                <div className="mb-4 flex items-center">
-                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
-                    Temp.
-                  </label>
-                  <div className="flex-1 flex items-center">
-                    <div className="w-16 border-b border-neutral-300 dark:border-neutral-600">
-                      <input
-                        type="number"
-                        value={formData.temperature.fahrenheit}
-                        onChange={(e) => handleF(parseFloat(e.target.value))}
-                        readOnly={!isEditing}
-                        className={`w-full bg-transparent border-none focus:ring-0 ${!isEditing ? "cursor-default" : ""}`}
-                      />
-                    </div>
-                    <span className="mx-2">°F</span>
-                    <span className="mx-2">{formData.temperature.celsius}</span>
-                    <span className="mx-2">°C</span>
-                    <span className="mx-5">TCF</span>
-                    <div className="w-16 border-b border-neutral-300 dark:border-neutral-600">
-                      <input
-                        type="text"
-                        value={formData.temperature.tcf.toFixed(3)}
-                        readOnly
-                        className="w-full bg-transparent border-none focus:ring-0 cursor-default"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
-                    Humidity
-                  </label>
-                  <div className="flex items-center flex-1">
-                    <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
-                      <input
-                        type="number"
-                        value={formData.temperature.humidity || 0}
-                        onChange={(e) =>
-                          handleChange((p) => ({
-                            ...p,
-                            temperature: {
-                              ...p.temperature,
-                              humidity: Number(e.target.value),
-                            },
-                          }))
-                        }
-                        readOnly={!isEditing}
-                        className={`w-full bg-transparent border-none focus:ring-0 ${!isEditing ? "cursor-default" : ""}`}
-                      />
-                    </div>
-                    <span className="ml-2">%</span>
-                  </div>
-                </div>
-                <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
-                    Substation
-                  </label>
-                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
-                    <input
-                      type="text"
-                      value={formData.substation}
-                      onChange={(e) =>
-                        handleChange((p) => ({
-                          ...p,
-                          substation: e.target.value,
-                        }))
-                      }
-                      readOnly={!isEditing}
-                      className={`w-full bg-transparent border-none focus:ring-0 ${!isEditing ? "cursor-default" : ""}`}
-                    />
-                  </div>
-                </div>
-                <div className="mb-4 flex">
-                  <label className="inline-block w-24 font-medium text-neutral-700 dark:text-neutral-300">
-                    Eqpt. Location
-                  </label>
-                  <div className="flex-1 border-b border-neutral-300 dark:border-neutral-600">
-                    <input
-                      type="text"
-                      value={formData.eqptLocation}
-                      onChange={(e) =>
-                        handleChange((p) => ({
-                          ...p,
-                          eqptLocation: e.target.value,
-                        }))
-                      }
-                      readOnly={!isEditing}
-                      className={`w-full bg-transparent border-none focus:ring-0 ${!isEditing ? "cursor-default" : ""}`}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ReportJobInfoFields
+              profile={assetProfile}
+              values={formData}
+              onChange={(path, value) => handleChange((p) => setPath(p, path, value))}
+              isEditing={isEditing}
+              displayValues={{
+                customerName: maskCustomerName(formData.customerName),
+              }}
+              onFahrenheitChange={(e) => handleF(parseFloat(e.target.value))}
+            />
             <JobInfoPrintTable
               data={{
                 customer: maskCustomerName(formData.customerName),
@@ -1577,183 +1390,12 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Nameplate Data
             </h2>
-            <div className="grid grid-cols-3 gap-4 print:hidden">
-              <div>
-                <label className="form-label">Manufacturer</label>
-                <input
-                  className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  value={formData.nameplate.manufacturer}
-                  onChange={(e) =>
-                    handleChange((p) => ({
-                      ...p,
-                      nameplate: {
-                        ...p.nameplate,
-                        manufacturer: e.target.value,
-                      },
-                    }))
-                  }
-                  readOnly={!isEditing}
-                />
-              </div>
-              <div>
-                <label className="form-label">Catalog No.</label>
-                <input
-                  className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  value={formData.nameplate.catalogNumber}
-                  onChange={(e) =>
-                    handleChange((p) => ({
-                      ...p,
-                      nameplate: {
-                        ...p.nameplate,
-                        catalogNumber: e.target.value,
-                      },
-                    }))
-                  }
-                  readOnly={!isEditing}
-                />
-              </div>
-              <div>
-                <label className="form-label">Serial Number</label>
-                <input
-                  className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  value={formData.nameplate.serialNumber}
-                  onChange={(e) =>
-                    handleChange((p) => ({
-                      ...p,
-                      nameplate: {
-                        ...p.nameplate,
-                        serialNumber: e.target.value,
-                      },
-                    }))
-                  }
-                  readOnly={!isEditing}
-                />
-              </div>
-              <div>
-                <label className="form-label">Series</label>
-                <input
-                  className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  value={formData.nameplate.series}
-                  onChange={(e) =>
-                    handleChange((p) => ({
-                      ...p,
-                      nameplate: { ...p.nameplate, series: e.target.value },
-                    }))
-                  }
-                  readOnly={!isEditing}
-                />
-              </div>
-              <div>
-                <label className="form-label">Type</label>
-                <input
-                  className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  value={formData.nameplate.type}
-                  onChange={(e) =>
-                    handleChange((p) => ({
-                      ...p,
-                      nameplate: { ...p.nameplate, type: e.target.value },
-                    }))
-                  }
-                  readOnly={!isEditing}
-                />
-              </div>
-              <div>
-                <label className="form-label">System Voltage (V)</label>
-                <input
-                  className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  value={formData.nameplate.systemVoltage}
-                  onChange={(e) =>
-                    handleChange((p) => ({
-                      ...p,
-                      nameplate: {
-                        ...p.nameplate,
-                        systemVoltage: e.target.value,
-                      },
-                    }))
-                  }
-                  readOnly={!isEditing}
-                />
-              </div>
-              <div>
-                <label className="form-label">Rated Voltage (V)</label>
-                {isEditing ? (
-                  <select
-                    value={formData.nameplate.ratedVoltage}
-                    onChange={(e) =>
-                      handleChange((p) => ({
-                        ...p,
-                        nameplate: {
-                          ...p.nameplate,
-                          ratedVoltage: e.target.value,
-                        },
-                      }))
-                    }
-                    className="form-select"
-                  >
-                    <option value="">Select...</option>
-                    {RATED_VOLTAGE_OPTIONS.map((v) => (
-                      <option key={v} value={v}>
-                        {v}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    className={`form-input bg-neutral-100 dark:bg-dark-150`}
-                    value={formData.nameplate.ratedVoltage}
-                    readOnly
-                  />
-                )}
-              </div>
-              <div>
-                <label className="form-label">Rated Current (A)</label>
-                <input
-                  className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  value={formData.nameplate.ratedCurrent}
-                  onChange={(e) =>
-                    handleChange((p) => ({
-                      ...p,
-                      nameplate: {
-                        ...p.nameplate,
-                        ratedCurrent: e.target.value,
-                      },
-                    }))
-                  }
-                  readOnly={!isEditing}
-                />
-              </div>
-              <div>
-                <label className="form-label">SCCR (kA)</label>
-                <input
-                  className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  value={formData.nameplate.aicRating}
-                  onChange={(e) =>
-                    handleChange((p) => ({
-                      ...p,
-                      nameplate: { ...p.nameplate, aicRating: e.target.value },
-                    }))
-                  }
-                  readOnly={!isEditing}
-                />
-              </div>
-              <div>
-                <label className="form-label">Phase Configuration</label>
-                <input
-                  className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  value={formData.nameplate.phaseConfiguration}
-                  onChange={(e) =>
-                    handleChange((p) => ({
-                      ...p,
-                      nameplate: {
-                        ...p.nameplate,
-                        phaseConfiguration: e.target.value,
-                      },
-                    }))
-                  }
-                  readOnly={!isEditing}
-                />
-              </div>
-            </div>
+            <ReportNameplateFields
+              profile={assetProfile}
+              values={formData}
+              onChange={(path, value) => handleChange((p) => setPath(p, path, value))}
+              isEditing={isEditing}
+            />
             <NameplatePrintTable
               data={{
                 manufacturer: formData.nameplate.manufacturer,

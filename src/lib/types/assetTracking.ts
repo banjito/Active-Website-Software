@@ -46,6 +46,17 @@ export interface EquipmentAsset {
    * alike. Which keys apply is decided by equipment_type.
    */
   nameplate_data?: Record<string, string> | null;
+  /**
+   * The built-in report this equipment is meant to be tested with. When set, it replaces
+   * equipment_type as the thing that decides which fields the asset carries — see
+   * src/lib/reportAssetProfiles.ts.
+   */
+  report_template_slug?: string | null;
+  /**
+   * That report's equipment-level values, keyed by the report's own form path
+   * ("breakerType", "nameplate.series"). Manufacturer/model/serial stay in their columns.
+   */
+  report_data?: Record<string, string> | null;
   notes?: string | null;
   status: "active" | "removed";
   created_by?: string | null;
@@ -74,6 +85,8 @@ export type EquipmentAssetInput = Pick<
   | "model"
   | "serial_number"
   | "nameplate_data"
+  | "report_template_slug"
+  | "report_data"
   | "notes"
 >;
 

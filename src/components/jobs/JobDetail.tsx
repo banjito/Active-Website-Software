@@ -1930,11 +1930,28 @@ export default function JobDetail() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
-  const [selectedApprovedIds, setSelectedApprovedIds] = useState<Set<string>>(
-    new Set(),
-  );
   const [selectedAssetIds, setSelectedAssetIds] = useState<Set<string>>(
     new Set(),
+  );
+  // Print and mark-as-sent act on the approved, printable part of the one row
+  // selection. They used to have a second checkbox per row of their own, which
+  // read as a duplicate of the archive checkbox beside it.
+  const selectedApprovedIds = useMemo(
+    () =>
+      new Set(
+        jobAssets
+          .filter(
+            (asset) =>
+              selectedAssetIds.has(asset.id) &&
+              asset.status === "approved" &&
+              (asset.file_url?.startsWith("report:") ||
+                (asset.file_url &&
+                  !asset.file_url.startsWith("report:/") &&
+                  asset.file_url.toLowerCase().endsWith(".pdf"))),
+          )
+          .map((asset) => asset.id),
+      ),
+    [jobAssets, selectedAssetIds],
   );
   const [isArchiving, setIsArchiving] = useState(false);
   const [showMoveReportsDialog, setShowMoveReportsDialog] = useState(false);
@@ -6828,7 +6845,7 @@ export default function JobDetail() {
       publishSentReportsToPortal(selectedApprovedAssets);
 
       // Clear selections after successful operation
-      setSelectedApprovedIds(new Set());
+      setSelectedAssetIds(new Set());
 
       // Dispatch event to refresh other components
       window.dispatchEvent(
@@ -6934,15 +6951,6 @@ export default function JobDetail() {
       });
       return false;
     }
-  };
-
-  const handleToggleApprovedSelection = (assetId: string) => {
-    setSelectedApprovedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(assetId)) next.delete(assetId);
-      else next.add(assetId);
-      return next;
-    });
   };
 
   const handleToggleAssetSelection = (assetId: string) => {
@@ -11985,6 +11993,26 @@ export default function JobDetail() {
                                     />
                                   );
                                 })()}
+                                {selectedApprovedIds.size > 0 && (
+                                  <>
+                                    <Button
+                                      variant="secondary"
+                                      onClick={handlePrintSelectedApprovedReports}
+                                      disabled={isPrinting || isArchiving}
+                                      title="Print the approved reports in this selection"
+                                    >
+                                      {`Print (${selectedApprovedIds.size})`}
+                                    </Button>
+                                    <Button
+                                      variant="secondary"
+                                      onClick={handleMarkSelectedAsSent}
+                                      disabled={isPrinting || isArchiving}
+                                      title="Mark the approved reports in this selection as sent"
+                                    >
+                                      {`Mark as Sent (${selectedApprovedIds.size})`}
+                                    </Button>
+                                  </>
+                                )}
                                 <Button
                                   onClick={handleArchiveSelected}
                                   disabled={isArchiving}
@@ -12347,7 +12375,7 @@ export default function JobDetail() {
                                               <input
                                                 type="checkbox"
                                                 className="mr-2"
-                                                title="Select for archive"
+                                                title="Select"
                                                 checked={selectedAssetIds.has(
                                                   asset.id,
                                                 )}
@@ -12357,31 +12385,6 @@ export default function JobDetail() {
                                                   )
                                                 }
                                               />
-                                              {asset.status === "approved" &&
-                                                (asset.file_url?.startsWith(
-                                                  "report:",
-                                                ) ||
-                                                  (asset.file_url &&
-                                                    !asset.file_url.startsWith(
-                                                      "report:/",
-                                                    ) &&
-                                                    asset.file_url
-                                                      .toLowerCase()
-                                                      .endsWith(".pdf"))) && (
-                                                  <input
-                                                    type="checkbox"
-                                                    className="mr-2"
-                                                    title="Select for print/sent"
-                                                    checked={selectedApprovedIds.has(
-                                                      asset.id,
-                                                    )}
-                                                    onChange={() =>
-                                                      handleToggleApprovedSelection(
-                                                        asset.id,
-                                                      )
-                                                    }
-                                                  />
-                                                )}
                                               {getAssetParts(asset).reportType ||
                                                 "Untitled Report"}
                                             </TableCell>

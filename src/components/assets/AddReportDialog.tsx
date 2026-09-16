@@ -20,6 +20,7 @@ import {
   type ReportTemplateChoice,
 } from "./useReportTemplateChoices";
 import type { EquipmentAssetWithCounts } from "@/lib/types/assetTracking";
+import { relatedTemplateSlugs } from "@/lib/reportAssetProfiles";
 import type { ExistingReportAsset } from "./AdoptExistingReportsDialog";
 
 interface AddReportDialogProps {
@@ -86,6 +87,7 @@ export function AddReportDialog({
             <TabsContent value="new">
               <TemplateTab
                 open={open && tab === "new"}
+                templateSlug={asset?.report_template_slug}
                 onPick={(choice) => {
                   onPickTemplate(choice);
                   onClose();
@@ -109,6 +111,7 @@ export function AddReportDialog({
         ) : (
           <TemplateTab
             open={open}
+            templateSlug={asset?.report_template_slug}
             onPick={(choice) => {
               onPickTemplate(choice);
               onClose();
@@ -129,9 +132,12 @@ export function AddReportDialog({
  */
 function TemplateTab({
   open,
+  templateSlug,
   onPick,
 }: {
   open: boolean;
+  /** The asset's own report form, listed first with its ATS/MTS counterparts. */
+  templateSlug?: string | null;
   onPick: (choice: ReportTemplateChoice) => void;
 }) {
   const { choices } = useReportTemplateChoices(open);
@@ -141,10 +147,19 @@ function TemplateTab({
     if (open) setSearch("");
   }, [open]);
 
-  const groups = useMemo(
-    () => groupReportTemplates(choices, search),
-    [choices, search],
-  );
+  const groups = useMemo(() => {
+    const all = groupReportTemplates(choices, search);
+    const related = relatedTemplateSlugs(templateSlug);
+    if (related.length === 0) return all;
+    const term = search.trim().toLowerCase();
+    const items = related
+      .map((slug) => choices.find((c) => c.slug === slug))
+      .filter(
+        (c): c is ReportTemplateChoice =>
+          !!c && (!term || c.name.toLowerCase().includes(term)),
+      );
+    return items.length > 0 ? [{ label: "For this asset", items }, ...all] : all;
+  }, [choices, search, templateSlug]);
 
   return (
     <div className="pt-2">

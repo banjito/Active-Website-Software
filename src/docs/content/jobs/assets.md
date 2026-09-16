@@ -1,7 +1,7 @@
 ---
 title: Assets
 description: The equipment list on a job. Adding it, importing it, and hanging reports off it.
-keywords: [asset, equipment, transformer, breaker, bulk import, advanced import, bulk edit, nameplate, sub-asset]
+keywords: [asset, equipment, transformer, breaker, bulk import, advanced import, bulk edit, nameplate, sub-asset, report form, save to asset]
 ---
 
 An asset is one piece of equipment you tested. The **Assets** tab on a job is the list of them, and each one carries the report written against it.
@@ -18,6 +18,20 @@ If you are looking for a report, find its asset first.
 6. Save.
 
 The asset appears in the list with its report in `In progress`.
+
+## Report form and nameplate data
+
+Set the **Report form** on an asset to the report you intend to test it with. The asset editor then shows that report's **Job Information** and **Nameplate Data** sections, laid out exactly as they are on the report. Fill in the nameplate once here and every report opened from the asset starts with it.
+
+- **Greyed fields** (date, technicians, temperature, customer) change on every visit, so they are filled in on each report, not on the asset.
+- **ATS and MTS share fields.** An asset set up for *LV Circuit Breaker ATS 25* pre-fills the MTS breaker report too. Its related forms are listed first under **For this asset** when you add a report.
+- **Save to asset** on a report writes anything new from the report back onto the asset, such as a serial number read off the device. An asset with no report form picks up the form of the first report saved to it this way.
+
+Report forms available so far: LV Circuit Breaker ATS 25 and MTS, 7.1.1 Switchgear & Switchboard ATS 25, 7.1.2 Panelboard ATS 25, and Switchgear/Switchboard/Panelboard MTS. Other equipment still uses the **Equipment Type** nameplate fields.
+
+::: tip
+Choosing a report form for an asset that already has nameplate values moves every value that clearly matches a report field into that field. Anything without a match is added to the asset's **Notes**, so nothing is lost.
+:::
 
 ## Bulk import
 

@@ -98,7 +98,7 @@ const UNITS: Record<string, UnitDefinition> = {
     "μΩ": 1e-6,
   }),
   ...scaled("voltage", "V", { kV: 1e3, MV: 1e6, mV: 1e-3 }),
-  ...scaled("current", "A", { kA: 1e3, mA: 1e-3, "μA": 1e-6 }),
+  ...scaled("current", "A", { kA: 1e3, mA: 1e-3, "μA": 1e-6, nA: 1e-9 }),
   ...scaled("capacitance", "F", {
     mF: 1e-3,
     "μF": 1e-6,

@@ -50,6 +50,7 @@ const CONTACT_RESISTANCE_UNITS = [
 const DIELECTRIC_WITHSTAND_UNITS = [
   { value: "μA", label: "μA" },
   { value: "mA", label: "mA" },
+  { value: "nA", label: "nA" },
 ];
 
 const VLF_WITHSTAND_TEST_VOLTAGES = [

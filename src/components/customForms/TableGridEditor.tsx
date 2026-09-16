@@ -92,7 +92,7 @@ const UNIT_PRESETS: Record<string, string[]> = {
   None: [],
   "Resistance (Ω)": ["μΩ", "mΩ", "Ω", "kΩ", "MΩ", "GΩ"],
   "Voltage (V)": ["mV", "V", "kV"],
-  "Current (A)": ["μA", "mA", "A", "kA"],
+  "Current (A)": ["nA", "μA", "mA", "A", "kA"],
   "Capacitance (F)": ["pF", "nF", "μF", "F"],
   "Time (s)": ["ms", "s", "min", "hr", "cycles"],
 };

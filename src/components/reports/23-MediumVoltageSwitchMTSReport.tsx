@@ -1962,6 +1962,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                 >
                   <option value="mA">mA</option>
                   <option value="µA">µA</option>
+                  <option value="nA">nA</option>
                 </select>
               </td>
             </tr>

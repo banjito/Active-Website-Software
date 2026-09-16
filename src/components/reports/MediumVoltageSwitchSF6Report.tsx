@@ -204,7 +204,7 @@ const RESULT_OPTIONS: ResultOption[] = [
 const TEST_VOLTAGE_IR = ["250V", "500V", "1000V", "2500V", "5000V"];
 const IR_UNITS = ["kΩ", "MΩ", "GΩ"];
 const CONTACT_UNITS = ["μΩ", "mΩ", "Ω"];
-const DIELECTRIC_UNITS = ["μA", "mA"];
+const DIELECTRIC_UNITS = ["μA", "mA", "nA"];
 const TEST_VOLTAGE_DW = [
   "1.6 kVAC",
   "2.2 kVAC",

@@ -504,6 +504,7 @@ check("both micro signs mean the same unit", () => {
   // this codebase's unit lists.
   assert.equal(convertUnits(1, "μΩ", "µΩ", span), 1);
   assert.equal(convertUnits(1, "µA", "mA", span), 0.001);
+  assert.equal(convertUnits(1000, "nA", "µA", span), 1);
 });
 check("temperature converts affinely, not by a factor", () => {
   assert.equal(convertUnits(68, "°F", "°C", span), 20);

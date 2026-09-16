@@ -96,6 +96,7 @@ const insulationUnits = [
 const currentUnits = [
   { label: "Milliamps", symbol: "mA" },
   { label: "Microamps", symbol: "µA" },
+  { label: "Nanoamps", symbol: "nA" },
 ];
 // Capacitance units for withstand test
 const capacitanceUnits = [

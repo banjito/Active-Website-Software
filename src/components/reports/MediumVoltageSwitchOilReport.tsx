@@ -85,7 +85,7 @@ interface DielectricVFITestData {
   vacuumIntegrityA: string;
   vacuumIntegrityB: string;
   resultC: string;
-  unitsC: "mA" | "µA";
+  unitsC: "mA" | "µA" | "nA";
 }
 
 interface FormData {
@@ -231,7 +231,7 @@ const DIELECTRIC_TEST_VOLTAGE_OPTIONS = [
 
 const INSULATION_UNITS_OPTIONS = ["kΩ", "MΩ", "GΩ"];
 const CONTACT_RESISTANCE_UNITS_OPTIONS = ["μΩ", "mΩ", "Ω"];
-const DIELECTRIC_UNITS_OPTIONS = ["μA", "mA"];
+const DIELECTRIC_UNITS_OPTIONS = ["μA", "mA", "nA"];
 const EQUIPMENT_EVALUATION_OPTIONS = ["PASS", "FAIL", "LIMITED SERVICE"];
 
 // Complete TCF table with all values
@@ -1079,7 +1079,7 @@ export default function MediumVoltageSwitchOilReport() {
               vacuumIntegrityA: row.vacuumIntegrityA ?? row.a ?? "",
               vacuumIntegrityB: row.vacuumIntegrityB ?? row.b ?? "",
               resultC: row.resultC ?? row.c ?? "",
-              unitsC: (row.unitsC ?? row.units ?? "mA") as "mA" | "µA",
+              unitsC: (row.unitsC ?? row.units ?? "mA") as "mA" | "µA" | "nA",
             })),
 
             // Map test equipment to flat structure (support multiple key names)
@@ -2919,7 +2919,8 @@ export default function MediumVoltageSwitchOilReport() {
                             const newTests = [...formData.dielectricVFITests];
                             newTests[index].unitsC = e.target.value as
                               | "mA"
-                              | "µA";
+                              | "µA"
+                              | "nA";
                             handleChange("dielectricVFITests", newTests);
                           }}
                           disabled={!isEditMode}
@@ -2927,6 +2928,7 @@ export default function MediumVoltageSwitchOilReport() {
                         >
                           <option value="mA">mA</option>
                           <option value="µA">µA</option>
+                          <option value="nA">nA</option>
                         </select>
                       </td>
                     </tr>

@@ -1,4 +1,10 @@
 import { supabase } from "@/lib/supabase";
+import {
+  assetFieldsOf,
+  assetValueFor,
+  getPath,
+  type ReportAssetProfile,
+} from "@/lib/reportAssetProfiles";
 import type {
   EquipmentAsset,
   EquipmentAssetInput,
@@ -20,11 +26,15 @@ const BASE_ASSET_COLUMNS =
  * first so the most likely missing column is dropped on the first retry.
  */
 const OPTIONAL_ASSET_COLUMNS = [
+  { name: "report_template_slug", migration: "add_equipment_asset_report_template.sql" },
+  { name: "report_data", migration: "add_equipment_asset_report_template.sql" },
   { name: "nameplate_data", migration: "add_equipment_asset_nameplate_data.sql" },
   { name: "parent_asset_id", migration: "add_equipment_asset_parent.sql" },
 ];
 
 const columnSupported: Record<string, boolean> = {
+  report_template_slug: true,
+  report_data: true,
   nameplate_data: true,
   parent_asset_id: true,
 };
@@ -35,6 +45,11 @@ export function supportsSubAssets(): boolean {
 
 export function supportsNameplateData(): boolean {
   return columnSupported.nameplate_data;
+}
+
+/** False until add_equipment_asset_report_template.sql has been run on this instance. */
+export function supportsReportTemplates(): boolean {
+  return columnSupported.report_template_slug && columnSupported.report_data;
 }
 
 function assetColumns(): string {
@@ -250,6 +265,8 @@ function normalizeInput(input: EquipmentAssetInput) {
     site_id: input.site_id,
     parent_asset_id: input.parent_asset_id || null,
     nameplate_data: cleanNameplate(input.nameplate_data),
+    report_template_slug: input.report_template_slug?.trim() || null,
+    report_data: cleanNameplate(input.report_data),
     identifier: input.identifier.trim(),
     building_area: text(input.building_area),
     substation: text(input.substation),
@@ -706,6 +723,8 @@ export interface BulkAssetUpdate {
       | "serial_number"
       | "notes"
       | "nameplate_data"
+      | "report_template_slug"
+      | "report_data"
     >
   >;
 }
@@ -742,6 +761,9 @@ export async function bulkUpdateEquipmentAssets(
         ...update.patch,
         ...(update.patch.nameplate_data !== undefined
           ? { nameplate_data: cleanNameplate(update.patch.nameplate_data) }
+          : {}),
+        ...(update.patch.report_data !== undefined
+          ? { report_data: cleanNameplate(update.patch.report_data) }
           : {}),
         updated_by: userId ?? null,
       });
@@ -882,7 +904,10 @@ export async function linkReportDocumentToAsset(
 
 /** One value a report is offering to write onto its asset. */
 export interface AssetFieldUpdate {
-  /** Column name, or `nameplate:<key>` for a type-specific value. */
+  /**
+   * Column name, `nameplate:<key>` for an old type-specific value, or `report:<path>` for a
+   * value held under the report's own field path.
+   */
   field: string;
   label: string;
   /** What the asset holds today. Empty string when it holds nothing. */
@@ -939,15 +964,57 @@ export function diffReportAgainstAsset(
 }
 
 /**
+ * Asset columns a report may write back. Identifier and substation are left out on purpose:
+ * together with building they are the asset's unique key, and renaming equipment is the
+ * registry's job, not a side effect of a report.
+ */
+const REPORT_WRITABLE_COLUMNS = new Set(["equipment_location", "manufacturer", "model", "serial_number"]);
+
+/**
+ * `diffReportAgainstAsset` for a report with a profile in reportAssetProfiles.ts: compares
+ * every equipment-level field of the form, under the report's own paths.
+ */
+export function diffReportFormAgainstAsset(
+  profile: ReportAssetProfile,
+  asset: EquipmentAsset,
+  form: unknown,
+): AssetFieldUpdate[] {
+  const updates: AssetFieldUpdate[] = [];
+  for (const field of assetFieldsOf(profile)) {
+    if (field.column && !REPORT_WRITABLE_COLUMNS.has(field.column)) continue;
+    const raw = getPath(form, field.path);
+    const incoming = raw == null ? "" : String(raw).trim();
+    if (!incoming) continue;
+    const current = assetValueFor(asset, field);
+    if (current === incoming) continue;
+    const labelOf = (value: string) =>
+      field.options?.find((o) => o.value === value)?.label ?? value;
+    updates.push({
+      field: field.column ?? `report:${field.path}`,
+      label: field.label,
+      current: labelOf(current),
+      incoming: labelOf(incoming),
+      conflicts: current !== "",
+    });
+  }
+  return updates;
+}
+
+/**
  * Write the chosen updates onto the asset.
  *
- * Nameplate values are merged into the existing JSONB rather than replacing it, so a
- * report that knows three fields doesn't erase the other seven.
+ * Nameplate and report values are merged into the existing JSONB rather than replacing
+ * it, so a report that knows three fields doesn't erase the other seven.
+ *
+ * `reportForm` is the form the values came from. Dropdown fields show their label in the
+ * dialog, so the stored value is re-read from the form rather than from `incoming`. When
+ * `templateSlug` is given and the asset has no report form yet, it adopts this one.
  */
 export async function applyReportDataToAsset(
   asset: EquipmentAsset,
   updates: AssetFieldUpdate[],
   userId?: string,
+  options: { reportForm?: unknown; templateSlug?: string } = {},
 ): Promise<EquipmentAsset> {
   if (updates.length === 0) return asset;
 
@@ -955,12 +1022,26 @@ export async function applyReportDataToAsset(
   const nameplate: Record<string, string> = {
     ...((asset.nameplate_data as Record<string, string>) ?? {}),
   };
+  const reportData: Record<string, string> = {
+    ...((asset.report_data as Record<string, string>) ?? {}),
+  };
   let touchedNameplate = false;
+  let touchedReportData = false;
+
+  const storedValue = (update: AssetFieldUpdate, path: string) => {
+    if (options.reportForm === undefined) return update.incoming;
+    const raw = getPath(options.reportForm, path);
+    return raw == null ? update.incoming : String(raw).trim();
+  };
 
   for (const update of updates) {
     if (update.field.startsWith("nameplate:")) {
       nameplate[update.field.slice("nameplate:".length)] = update.incoming;
       touchedNameplate = true;
+    } else if (update.field.startsWith("report:")) {
+      const path = update.field.slice("report:".length);
+      reportData[path] = storedValue(update, path);
+      touchedReportData = true;
     } else {
       payload[update.field] = update.incoming;
     }
@@ -968,6 +1049,12 @@ export async function applyReportDataToAsset(
 
   if (touchedNameplate && columnSupported.nameplate_data) {
     payload.nameplate_data = nameplate;
+  }
+  if (touchedReportData && columnSupported.report_data) {
+    payload.report_data = reportData;
+  }
+  if (options.templateSlug && !asset.report_template_slug) {
+    payload.report_template_slug = options.templateSlug;
   }
 
   const { data, error } = await supabase

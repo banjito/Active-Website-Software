@@ -462,7 +462,7 @@ const INSULATION_RESISTANCE_TEST_VOLTAGES = [
   "5000V",
 ];
 const CONTACT_RESISTANCE_UNITS = ["μΩ", "mΩ", "Ω"];
-const DIELECTRIC_WITHSTAND_UNITS = ["μA", "mA"];
+const DIELECTRIC_WITHSTAND_UNITS = ["μA", "mA", "nA"];
 const VLF_WITHSTAND_TEST_VOLTAGES = [
   { cableRating: "5", testVoltage: "10" },
   { cableRating: "8", testVoltage: "13" },

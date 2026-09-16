@@ -11167,7 +11167,7 @@ export default function JobDetail() {
                               />
                             </div>
                           )}
-                          {/* order-last keeps Add Asset visually after the search box */}
+                          {/* order-last keeps Add Report visually after the search box */}
                           <div
                             className="relative shrink-0 order-last ml-1"
                             ref={dropdownRef}
@@ -11177,7 +11177,7 @@ export default function JobDetail() {
                           leftIcon={<Plus className="h-5 w-5 shrink-0" />}
                           className="h-10 whitespace-nowrap"
                         >
-                          Add Asset
+                          Add Report
                         </Button>
 
                         {isDropdownOpen && (

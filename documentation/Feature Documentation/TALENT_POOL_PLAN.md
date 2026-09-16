@@ -4,7 +4,7 @@
 
 **As built:**
 - Migration `database/migrations/talent_pool.sql` (mirrored at the end of `database/bootstrap/02_schema.sql`).
-- Role source: database access is an allowlist, `common.talent_pool_members`. Admins and Super Admins (role read from `auth.users`, not the token) and superusers (`common.is_superuser_email`) can manage it through the database functions, but the page has no access UI; add people with an SQL insert into `common.talent_pool_members`. Superusers are seeded as members. Members still need Admin / Super Admin to reach the HR page.
+- Access: every Admin, Super Admin, and superuser (`common.is_superuser_email`) can use Talent Pool; role is read from `auth.users`, not the token. `common.talent_pool_members` adds anyone else by SQL insert, though non-Admins still cannot open full HR pages. The page has no access UI.
 - Trusting Super Admin depends on `database/migrations/protect_user_role.sql`, which stops users from setting their own role through the auth API.
 - Clients have no table privileges; all reads/writes are `common.talent_pool_*` SECURITY DEFINER functions that re-check membership per call.
 - Promotion self-disables (`common.talent_pool_promotion_enabled()`) while `common.candidates` is readable by `anon` or by every signed-in user. Fixing that is the separate security task.

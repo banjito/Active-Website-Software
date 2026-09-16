@@ -5,8 +5,8 @@
 -- explicitly promotes one into Candidate Tracking.
 --
 -- Security model (enforced in the database, not the browser):
---   * Access is an allowlist (common.talent_pool_members). Admins, Super
---     Admins, and superusers (common.is_superuser_email) grant and revoke it.
+--   * Admins, Super Admins, and superusers (common.is_superuser_email) always
+--     have access. Anyone else needs a row in common.talent_pool_members.
 --     The role lives in auth user_metadata, which users could once edit about
 --     themselves; apply protect_user_role.sql with this migration.
 --   * Browser clients get no direct table access. Reads and writes go through
@@ -201,8 +201,8 @@ BEGIN
 
   IF NEW.owner_id IS NOT NULL
      AND (TG_OP = 'INSERT' OR NEW.owner_id IS DISTINCT FROM OLD.owner_id)
-     AND NOT EXISTS (SELECT 1 FROM common.talent_pool_members m WHERE m.user_id = NEW.owner_id) THEN
-    RAISE EXCEPTION 'Owner must be a Talent Pool member' USING ERRCODE = '23514';
+     AND NOT common.talent_pool_user_has_access(NEW.owner_id) THEN
+    RAISE EXCEPTION 'Owner must have Talent Pool access' USING ERRCODE = '23514';
   END IF;
 
   RETURN NEW;
@@ -264,12 +264,36 @@ CREATE TRIGGER recruiting_prospect_activity_before_write
 -- ---------------------------------------------------------------------------
 -- Authorization helpers
 -- ---------------------------------------------------------------------------
+-- Admins, Super Admins, and superusers always have access; anyone else needs a
+-- row in talent_pool_members. Role is read from auth.users (not the token) so
+-- a demotion applies immediately; protect_user_role.sql stops self-promotion.
+CREATE OR REPLACE FUNCTION common.talent_pool_user_has_access(p_user_id uuid) RETURNS boolean
+  LANGUAGE sql STABLE SECURITY DEFINER
+  SET search_path = ''
+  AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM auth.users u
+    WHERE u.id = p_user_id
+      AND u.deleted_at IS NULL
+      AND (u.banned_until IS NULL OR u.banned_until <= now())
+      AND (
+        EXISTS (SELECT 1 FROM common.talent_pool_members m WHERE m.user_id = u.id)
+        OR (
+          u.email_confirmed_at IS NOT NULL
+          AND (
+            common.is_superuser_email(u.email)
+            OR u.raw_user_meta_data ->> 'role' IN ('Admin', 'Super Admin')
+          )
+        )
+      )
+  );
+$$;
+
 CREATE OR REPLACE FUNCTION common.talent_pool_can_access() RETURNS boolean
   LANGUAGE sql STABLE SECURITY DEFINER
   SET search_path = ''
   AS $$
-  SELECT auth.uid() IS NOT NULL
-    AND EXISTS (SELECT 1 FROM common.talent_pool_members m WHERE m.user_id = auth.uid());
+  SELECT auth.uid() IS NOT NULL AND common.talent_pool_user_has_access(auth.uid());
 $$;
 
 CREATE OR REPLACE FUNCTION common.talent_pool_is_manager() RETURNS boolean
@@ -356,15 +380,15 @@ BEGIN
     RAISE EXCEPTION 'Not authorized for Talent Pool' USING ERRCODE = '42501';
   END IF;
   RETURN coalesce((
+    -- Everyone with access (members plus Admins); used for the owner picker.
     SELECT jsonb_agg(jsonb_build_object(
-      'user_id', m.user_id,
+      'user_id', u.id,
       'name', coalesce(nullif(btrim(pr.full_name), ''), u.email),
-      'email', u.email,
-      'created_at', m.created_at
+      'email', u.email
     ) ORDER BY lower(coalesce(nullif(btrim(pr.full_name), ''), u.email)))
-    FROM common.talent_pool_members m
-    JOIN auth.users u ON u.id = m.user_id
-    LEFT JOIN common.profiles pr ON pr.id = m.user_id
+    FROM auth.users u
+    LEFT JOIN common.profiles pr ON pr.id = u.id
+    WHERE common.talent_pool_user_has_access(u.id)
   ), '[]'::jsonb);
 END;
 $$;
@@ -1229,6 +1253,7 @@ BEGIN
     'common.talent_pool_normalize_linkedin(text)',
     'common.recruiting_prospects_before_write()',
     'common.recruiting_prospect_activity_before_write()',
+    'common.talent_pool_user_has_access(uuid)',
     'common.talent_pool_can_access()',
     'common.talent_pool_is_manager()',
     'common._talent_pool_require_access()',

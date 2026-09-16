@@ -23,6 +23,8 @@ import {
   reportIdFromUrl,
 } from "@/components/reports/common/reportIdentity";
 import { ensureReportAssetLink } from "@/components/reports/linkReportAsset";
+import { useEquipmentAssetPrefill } from "@/components/reports/useEquipmentAssetPrefill";
+import { applyAssetToCustomForm } from "@/lib/assetFormPrefill";
 import {
   CustomFormTemplate,
   CustomFormTemplateVersion,
@@ -91,6 +93,7 @@ export const CustomFormFiller: React.FC = () => {
   // The id minted for a form that has not been saved yet, kept stable so a
   // retried save overwrites its own row instead of creating a second one.
   const draftInstanceIdRef = useRef<string | null>(null);
+  const jobInfoSeededRef = useRef(false);
 
   // The version this form renders from and is pinned to.
   const [pinnedVersion, setPinnedVersion] =
@@ -110,6 +113,7 @@ export const CustomFormFiller: React.FC = () => {
   >({});
 
   useEffect(() => {
+    jobInfoSeededRef.current = false;
     if (templateId) loadTemplateAndInstance();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateId, instanceId]);
@@ -121,9 +125,10 @@ export const CustomFormFiller: React.FC = () => {
       (s) => s.componentType === "job-info",
     );
     if (!jobInfoSection?.fields?.length) return;
-    // Only seed a job-info block nobody has filled in. Checking the whole form
-    // instead used to lose job details whenever another section seeded first.
-    if (Object.keys(formData[jobInfoSection.id] ?? {}).length > 0) return;
+    // Seed once. Checking for an empty block instead lost the job details
+    // whenever the asset prefill wrote the identifier into it first.
+    if (jobInfoSeededRef.current) return;
+    jobInfoSeededRef.current = true;
 
     const today = new Date().toISOString().slice(0, 10);
     const initial: Record<string, any> = {};
@@ -165,12 +170,34 @@ export const CustomFormFiller: React.FC = () => {
     });
 
     if (Object.keys(initial).length > 0) {
-      setFormData((prev) => ({
-        ...prev,
-        [jobInfoSection.id]: { ...(prev[jobInfoSection.id] || {}), ...initial },
-      }));
+      // Anything already filled in the block (typed, or from the asset) stays.
+      setFormData((prev) => {
+        const block = { ...(prev[jobInfoSection.id] || {}) };
+        for (const [key, value] of Object.entries(initial)) {
+          if (block[key] == null || block[key] === "") block[key] = value;
+        }
+        return { ...prev, [jobInfoSection.id]: block };
+      });
     }
-  }, [template, jobDetails, jobId, user, existingInstanceId, formData]);
+  }, [template, jobDetails, jobId, user, existingInstanceId]);
+
+  // Opened from an asset in the Assets tab: fill the identifier, location and nameplate
+  // fields from it. The report links to the asset on first save (ensureReportAssetLink).
+  const { asset: equipmentAsset, shouldPrefill: shouldPrefillAsset } =
+    useEquipmentAssetPrefill(existingInstanceId ?? undefined);
+  const assetPrefilledRef = useRef(false);
+  useEffect(() => {
+    if (!template || !equipmentAsset || !shouldPrefillAsset) return;
+    if (assetPrefilledRef.current) return;
+    assetPrefilledRef.current = true;
+    // Test-equipment and table sections have their own serial numbers; leave them alone.
+    const sections = template.structure.sections
+      .filter((s) =>
+        ["job-info", "nameplate-data", "extended-nameplate"].includes(s.componentType),
+      )
+      .map((s) => ({ id: s.id, fieldIds: (s.fields ?? []).map((f) => f.id) }));
+    setFormData((prev) => applyAssetToCustomForm(equipmentAsset, sections, prev));
+  }, [template, equipmentAsset, shouldPrefillAsset]);
 
   // Contact-resistance sections open with their named rows already in place.
   useEffect(() => {

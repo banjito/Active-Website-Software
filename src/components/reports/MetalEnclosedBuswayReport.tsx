@@ -5,6 +5,7 @@ import {
   useLocation,
   useSearchParams,
 } from "react-router-dom";
+import { useAssetFormPrefill } from "./useAssetFormPrefill";
 import { useAuth } from "../../lib/AuthContext";
 import { useDemoMode } from "../../lib/DemoModeContext";
 import { supabase } from "../../lib/supabase";
@@ -486,6 +487,9 @@ const MetalEnclosedBuswayReport: React.FC = () => {
     dielectricPhaseB: "",
     dielectricPhaseC: "",
   });
+
+  // Started from an asset in the Assets tab: fill its identity and nameplate.
+  useAssetFormPrefill(reportId, setFormData);
 
   // Autofill the "User" header field with the signed-in employee's name (new reports only).
   useReportUserAutofill(setFormData, reportId, "user");

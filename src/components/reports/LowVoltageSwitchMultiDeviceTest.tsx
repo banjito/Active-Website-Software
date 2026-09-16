@@ -5,6 +5,8 @@ import {
   useSearchParams,
   useNavigate,
 } from "react-router-dom";
+import { useAssetFormPrefill } from "./useAssetFormPrefill";
+import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { ReportWrapper } from "./ReportWrapper";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import { ReportHeader } from "./common/ReportHeader";
@@ -465,6 +467,9 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
     },
     comments: "",
   });
+
+  // Started from an asset in the Assets tab: fill its identity and nameplate.
+  const equipmentAssetId = useAssetFormPrefill(reportId, setFormData);
 
   // Autofill the "User" header field with the signed-in employee's name (new reports only).
   useReportUserAutofill(setFormData, reportId, "user");
@@ -1051,6 +1056,9 @@ const LowVoltageSwitchMultiDeviceTest: React.FC = () => {
             .single();
           if (assetErr) throw assetErr;
           if (assetRow?.id) {
+            if (equipmentAssetId) {
+              await setReportAssetEquipmentLink(assetRow.id, equipmentAssetId);
+            }
             await supabase.schema("neta_ops").from("job_assets").insert({
               job_id: jobId,
               asset_id: assetRow.id,

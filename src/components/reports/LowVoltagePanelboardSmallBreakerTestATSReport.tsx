@@ -5,6 +5,8 @@ import {
   useLocation,
   useSearchParams,
 } from "react-router-dom";
+import { useAssetFormPrefill } from "./useAssetFormPrefill";
+import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
@@ -456,6 +458,9 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
         .map((_, i) => initialBreakerData(i + 1)),
     };
   });
+
+  // Started from an asset in the Assets tab: fill its identity and nameplate.
+  const equipmentAssetId = useAssetFormPrefill(reportId, setFormData);
 
   // Autofill the "User" header field with the signed-in employee's name (new reports only).
   useReportUserAutofill(setFormData, reportId, "user");
@@ -1058,6 +1063,9 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
           if (assetError) throw assetError;
 
           if (assetResult && (assetResult as any).id) {
+            if (equipmentAssetId) {
+              await setReportAssetEquipmentLink((assetResult as any).id, equipmentAssetId);
+            }
             await supabase
               .schema("neta_ops")
               .from("job_assets")

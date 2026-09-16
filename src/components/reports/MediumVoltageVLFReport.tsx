@@ -5,6 +5,8 @@ import {
   useLocation,
   useSearchParams,
 } from "react-router-dom";
+import { useAssetFormPrefill } from "./useAssetFormPrefill";
+import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { useUser } from "@supabase/auth-helpers-react"; // Keep this for now as we need the useUser hook
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
@@ -803,6 +805,9 @@ const MediumVoltageVLFReport: React.FC = () => {
     },
   });
 
+  // Started from an asset in the Assets tab: fill its identity and nameplate.
+  const equipmentAssetId = useAssetFormPrefill(reportId, setFormData);
+
   // Autofill the "User" header field from the job's User (new reports only).
   useReportUserAutofill(setFormData, reportId, "contactPerson");
 
@@ -1462,6 +1467,9 @@ const MediumVoltageVLFReport: React.FC = () => {
 
           console.log("Asset creation result:", assetResult);
           console.log("Linking asset to job...");
+          if (equipmentAssetId) {
+            await setReportAssetEquipmentLink(assetResult.id, equipmentAssetId);
+          }
           // Link asset to job
           const { data: linkResult, error: linkError } = await supabase
             .schema("neta_ops")

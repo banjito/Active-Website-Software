@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useAssetFormPrefill } from "./useAssetFormPrefill";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import { ReportHeader } from "./common/ReportHeader";
 import { supabase } from "@/lib/supabase";
@@ -579,6 +580,9 @@ const MediumVoltageSwitchSF6Report: React.FC = () => {
     },
     comments: "",
   });
+
+  // Started from an asset in the Assets tab: fill its identity and nameplate.
+  useAssetFormPrefill(openReportId, setFormData);
 
   // Autofill the "User" header field from the job's User (new reports only).
   useReportUserAutofill(setFormData, initialReportId, "user");

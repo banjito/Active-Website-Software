@@ -5,6 +5,8 @@ import {
   useLocation,
   useSearchParams,
 } from "react-router-dom";
+import { useAssetFormPrefill } from "./useAssetFormPrefill";
+import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { useUser } from "@supabase/auth-helpers-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
@@ -673,6 +675,9 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
     },
   });
 
+  // Started from an asset in the Assets tab: fill its identity and nameplate.
+  const equipmentAssetId = useAssetFormPrefill(reportId, setFormData);
+
   // Autofill the "User" header field from the job's User (new reports only).
   useReportUserAutofill(setFormData, reportId, "contactPerson");
 
@@ -921,6 +926,9 @@ const MediumVoltageVLFMTSReport: React.FC = () => {
 
           if (assetError) throw assetError;
 
+          if (equipmentAssetId) {
+            await setReportAssetEquipmentLink(assetResult.id, equipmentAssetId);
+          }
           await supabase.schema("neta_ops").from("job_assets").insert({
             job_id: effectiveJobId,
             asset_id: assetResult.id,

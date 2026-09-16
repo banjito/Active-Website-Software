@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useAssetFormPrefill } from "./useAssetFormPrefill";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
@@ -724,6 +725,9 @@ const PotentialTransformerATSReport: React.FC = () => {
 
     comments: "",
   });
+
+  // Started from an asset in the Assets tab: fill its identity and nameplate.
+  useAssetFormPrefill(openReportId, setFormData);
 
   // Autofill the "User" header field with the signed-in employee's name (new reports only).
   useReportUserAutofill(setFormData, initialReportId, "user");

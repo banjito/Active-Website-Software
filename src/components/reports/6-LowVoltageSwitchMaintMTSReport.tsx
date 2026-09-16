@@ -6,6 +6,7 @@ import {
   useLocation,
   useSearchParams,
 } from "react-router-dom";
+import { useAssetFormPrefill } from "./useAssetFormPrefill";
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { supabase } from "@/lib/supabase";
@@ -472,6 +473,9 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
 
     comments: "",
   });
+
+  // Started from an asset in the Assets tab: fill its identity and nameplate.
+  useAssetFormPrefill(openReportId, setFormData);
 
   // Autofill the "User" header field with the signed-in employee's name (new reports only).
   useReportUserAutofill(setFormData, initialReportId, "user");

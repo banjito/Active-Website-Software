@@ -5,6 +5,8 @@ import {
   useLocation,
   useSearchParams,
 } from "react-router-dom";
+import { useAssetFormPrefill } from "./useAssetFormPrefill";
+import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
@@ -679,6 +681,9 @@ const LiquidFilledTransformerReport: React.FC = () => {
     status: "PASS", // Default status
   });
 
+  // Started from an asset in the Assets tab: fill its identity and nameplate.
+  const equipmentAssetId = useAssetFormPrefill(reportId, setFormData);
+
   // Autofill the "User" header field with the signed-in employee's name (new reports only).
   useReportUserAutofill(setFormData, reportId, "userName");
 
@@ -1304,6 +1309,9 @@ const LiquidFilledTransformerReport: React.FC = () => {
           console.log("Asset created:", assetResult);
 
           console.log(`Linking asset ${assetResult.id} to job ${jobId}`);
+          if (equipmentAssetId) {
+            await setReportAssetEquipmentLink(assetResult.id, equipmentAssetId);
+          }
           const { error: linkError } = await supabase
             .schema("neta_ops")
             .from("job_assets")

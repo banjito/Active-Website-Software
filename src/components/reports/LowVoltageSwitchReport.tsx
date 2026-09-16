@@ -5,6 +5,7 @@ import {
   useLocation,
   useSearchParams,
 } from "react-router-dom";
+import { useAssetFormPrefill } from "./useAssetFormPrefill";
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { supabase } from "@/lib/supabase";
@@ -806,6 +807,9 @@ export default function LowVoltageSwitchReport() {
       enclosure: "",
     },
   });
+
+  // Started from an asset in the Assets tab: fill its identity and nameplate.
+  useAssetFormPrefill(reportId, setFormData);
 
   // Autofill the "User" header field from the job's User (new reports only).
   useReportUserAutofill(setFormData, reportId, "user");

@@ -5,6 +5,8 @@ import {
   useLocation,
   useSearchParams,
 } from "react-router-dom";
+import { useAssetFormPrefill } from "./useAssetFormPrefill";
+import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { supabase } from "@/lib/supabase";
@@ -636,6 +638,9 @@ export default function MediumVoltageSwitchOilReport() {
 
     comments: "",
   });
+
+  // Started from an asset in the Assets tab: fill its identity and nameplate.
+  const equipmentAssetId = useAssetFormPrefill(reportId, setFormData);
 
   // Load existing report data
   useEffect(() => {
@@ -1377,6 +1382,9 @@ export default function MediumVoltageSwitchOilReport() {
 
           console.log("Asset created:", assetResult);
 
+          if (equipmentAssetId) {
+            await setReportAssetEquipmentLink(assetResult.id, equipmentAssetId);
+          }
           // Link asset to job
           await supabase.schema("neta_ops").from("job_assets").insert({
             job_id: jobId,

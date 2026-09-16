@@ -22,6 +22,18 @@ export interface ReportAssetInput {
   template_type?: string | null;
   /** Only applied when the asset is first created; never overwrites workflow state. */
   status?: string | null;
+  /**
+   * The equipment asset this report tests. Applied only when the row is first created.
+   * Defaults to `?equipmentAssetId=` in the address bar, which is how the Assets tab
+   * opens a new report, so every report gets the link without passing it.
+   */
+  equipment_asset_id?: string | null;
+}
+
+/** The asset a new report was opened from, if the address bar still says so. */
+function equipmentAssetIdFromUrl(): string | null {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get("equipmentAssetId");
 }
 
 const RETRY_DELAYS_MS = [400, 1200, 3000];
@@ -79,18 +91,24 @@ async function linkOnce(
   let assetId = existing?.id as string | undefined;
 
   if (!assetId) {
-    const { data: created, error: insertError } = await supabase
-      .schema("neta_ops")
-      .from("assets")
-      .insert({
-        name: asset.name,
-        file_url: asset.file_url,
-        user_id: asset.user_id ?? userId ?? null,
-        template_type: asset.template_type ?? null,
-        status: asset.status ?? "in_progress",
-      })
-      .select("id")
-      .single();
+    const payload: Record<string, unknown> = {
+      name: asset.name,
+      file_url: asset.file_url,
+      user_id: asset.user_id ?? userId ?? null,
+      template_type: asset.template_type ?? null,
+      status: asset.status ?? "in_progress",
+    };
+    const equipmentAssetId = asset.equipment_asset_id ?? equipmentAssetIdFromUrl();
+    if (equipmentAssetId) payload.equipment_asset_id = equipmentAssetId;
+
+    const insert = () =>
+      supabase.schema("neta_ops").from("assets").insert(payload).select("id").single();
+    let { data: created, error: insertError } = await insert();
+    // 42703: equipment_asset_id isn't on this database yet. Save the report unlinked.
+    if (insertError?.code === "42703" && "equipment_asset_id" in payload) {
+      delete payload.equipment_asset_id;
+      ({ data: created, error: insertError } = await insert());
+    }
 
     if (insertError) throw insertError;
     assetId = created?.id as string | undefined;

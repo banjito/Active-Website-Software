@@ -5,6 +5,8 @@ import {
   useLocation,
   useSearchParams,
 } from "react-router-dom";
+import { useAssetFormPrefill } from "./useAssetFormPrefill";
+import { setReportAssetEquipmentLink } from "@/services/reportAssets";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
@@ -471,6 +473,9 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
     electricalTestComments: "",
     status: "PASS",
   });
+
+  // Started from an asset in the Assets tab: fill its identity and nameplate.
+  const equipmentAssetId = useAssetFormPrefill(reportId, setFormData);
 
   // Autofill the "User" header field with the signed-in employee's name (new reports only).
   useReportUserAutofill(setFormData, reportId, "user");
@@ -1405,6 +1410,9 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
             .single();
           if (assetError) throw assetError;
           if (assetResult) {
+            if (equipmentAssetId) {
+              await setReportAssetEquipmentLink(assetResult.id, equipmentAssetId);
+            }
             await supabase.schema("neta_ops").from("job_assets").insert({
               job_id: jobId,
               asset_id: assetResult.id,

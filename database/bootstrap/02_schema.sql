@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict VyPmt0j28ugZc47yYuSVtwLRrwZIitBfxKGOb8P6MXJe6EygHcEpaF15zT8hPeL
+\restrict rGJaXOxrwg43QLoNCTMOSwuVcJskW7ZIdUzV66aAbmVt44DE0n9WnA97vUcusPd
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 18.4
@@ -143,6 +143,305 @@ $$;
 
 
 --
+-- Name: _talent_pool_check_status(text); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common._talent_pool_check_status(p_status text) RETURNS void
+    LANGUAGE plpgsql IMMUTABLE
+    SET search_path TO ''
+    AS $$
+BEGIN
+  IF p_status IS NULL OR p_status NOT IN ('new', 'contacted', 'interested', 'future_roles', 'not_interested') THEN
+    RAISE EXCEPTION 'Invalid status: %', coalesce(p_status, '(blank)') USING ERRCODE = '22023';
+  END IF;
+END;
+$$;
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: recruiting_prospects; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.recruiting_prospects (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    first_name text NOT NULL,
+    last_name text,
+    email text,
+    phone text,
+    linkedin_url text,
+    job_title text,
+    current_org text,
+    location text,
+    source text DEFAULT 'other'::text NOT NULL,
+    status text DEFAULT 'new'::text NOT NULL,
+    availability text,
+    needs_follow_up boolean DEFAULT false NOT NULL,
+    owner_id uuid,
+    last_contact_date timestamp with time zone,
+    candidate_id uuid,
+    promoted_at timestamp with time zone,
+    import_refs jsonb DEFAULT '[]'::jsonb NOT NULL,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT recruiting_prospects_email_check CHECK (((email IS NULL) OR ((email = lower(btrim(email))) AND (email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'::text) AND (char_length(email) <= 255)))),
+    CONSTRAINT recruiting_prospects_first_name_check CHECK (((btrim(first_name) <> ''::text) AND (char_length(first_name) <= 100))),
+    CONSTRAINT recruiting_prospects_import_refs_check CHECK ((jsonb_typeof(import_refs) = 'array'::text)),
+    CONSTRAINT recruiting_prospects_last_name_check CHECK (((last_name IS NULL) OR (char_length(last_name) <= 100))),
+    CONSTRAINT recruiting_prospects_linkedin_check CHECK (((linkedin_url IS NULL) OR (linkedin_url ~ '^https://www\.linkedin\.com/in/[^/?#\s]+$'::text))),
+    CONSTRAINT recruiting_prospects_promotion_check CHECK ((((status = 'promoted'::text) AND (candidate_id IS NOT NULL) AND (promoted_at IS NOT NULL)) OR ((status <> 'promoted'::text) AND (candidate_id IS NULL) AND (promoted_at IS NULL)))),
+    CONSTRAINT recruiting_prospects_source_check CHECK ((source = ANY (ARRAY['linkedin'::text, 'indeed'::text, 'referral'::text, 'other'::text]))),
+    CONSTRAINT recruiting_prospects_status_check CHECK ((status = ANY (ARRAY['new'::text, 'contacted'::text, 'interested'::text, 'future_roles'::text, 'not_interested'::text, 'promoted'::text]))),
+    CONSTRAINT recruiting_prospects_text_len_check CHECK (((COALESCE(char_length(phone), 0) <= 50) AND (COALESCE(char_length(job_title), 0) <= 255) AND (COALESCE(char_length(current_org), 0) <= 255) AND (COALESCE(char_length(location), 0) <= 255) AND (COALESCE(char_length(availability), 0) <= 500)))
+);
+
+
+--
+-- Name: _talent_pool_filtered(text, text, uuid, boolean, boolean); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common._talent_pool_filtered(p_search text, p_source text, p_owner uuid, p_unassigned boolean, p_follow_up boolean) RETURNS SETOF common.recruiting_prospects
+    LANGUAGE sql STABLE
+    SET search_path TO ''
+    AS $$
+  WITH q AS (
+    SELECT
+      nullif(btrim(coalesce(p_search, '')), '') AS term,
+      '%' || replace(replace(replace(btrim(coalesce(p_search, '')), '\', '\\'), '%', '\%'), '_', '\_') || '%' AS pat,
+      regexp_replace(coalesce(p_search, ''), '\D', '', 'g') AS digits
+  )
+  SELECT p.*
+  FROM common.recruiting_prospects p, q
+  WHERE (
+      q.term IS NULL
+      OR (p.first_name || ' ' || coalesce(p.last_name, '')) ILIKE q.pat
+      OR p.email ILIKE q.pat
+      OR p.phone ILIKE q.pat
+      OR (char_length(q.digits) >= 3 AND regexp_replace(coalesce(p.phone, ''), '\D', '', 'g') LIKE '%' || q.digits || '%')
+      OR p.job_title ILIKE q.pat
+      OR p.current_org ILIKE q.pat
+      OR p.linkedin_url ILIKE q.pat
+      OR p.location ILIKE q.pat
+    )
+    AND (nullif(p_source, '') IS NULL OR p.source = p_source)
+    AND (p_owner IS NULL OR p.owner_id = p_owner)
+    AND (NOT coalesce(p_unassigned, false) OR p.owner_id IS NULL)
+    AND (NOT coalesce(p_follow_up, false) OR p.needs_follow_up);
+$$;
+
+
+--
+-- Name: _talent_pool_lock_bulk(uuid[]); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common._talent_pool_lock_bulk(p_ids uuid[]) RETURNS integer
+    LANGUAGE plpgsql
+    SET search_path TO ''
+    AS $$
+DECLARE
+  v_wanted integer := coalesce(array_length(ARRAY(SELECT DISTINCT unnest(p_ids)), 1), 0);
+  v_found integer;
+  v_promoted integer;
+BEGIN
+  IF v_wanted = 0 THEN
+    RAISE EXCEPTION 'Select at least one prospect' USING ERRCODE = '22023';
+  END IF;
+  IF v_wanted > 500 THEN
+    RAISE EXCEPTION 'Select 500 prospects or fewer' USING ERRCODE = '22023';
+  END IF;
+  PERFORM 1 FROM common.recruiting_prospects WHERE id = ANY (p_ids) ORDER BY id FOR UPDATE;
+  SELECT count(*), count(*) FILTER (WHERE status = 'promoted')
+    INTO v_found, v_promoted
+  FROM common.recruiting_prospects WHERE id = ANY (p_ids);
+  IF v_found <> v_wanted THEN
+    RAISE EXCEPTION '% of the selected prospects no longer exist. Reload and try again.', v_wanted - v_found USING ERRCODE = 'P0002';
+  END IF;
+  IF v_promoted > 0 THEN
+    RAISE EXCEPTION '% selected prospects are already in the pipeline and cannot be changed. Deselect them and try again.', v_promoted USING ERRCODE = 'P0001';
+  END IF;
+  RETURN v_wanted;
+END;
+$$;
+
+
+--
+-- Name: _talent_pool_log_system(uuid, text, text, uuid); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common._talent_pool_log_system(p_prospect_id uuid, p_type text, p_body text, p_actor uuid) RETURNS void
+    LANGUAGE plpgsql
+    SET search_path TO ''
+    AS $$
+BEGIN
+  PERFORM set_config('talent_pool.system_event', 'on', true);
+  INSERT INTO common.recruiting_prospect_activity (prospect_id, type, body, created_by)
+  VALUES (p_prospect_id, p_type, p_body, p_actor);
+  PERFORM set_config('talent_pool.system_event', 'off', true);
+END;
+$$;
+
+
+--
+-- Name: _talent_pool_promote(uuid, uuid, jsonb, text); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common._talent_pool_promote(p_actor uuid, p_prospect_id uuid, p jsonb, p_initial_status text) RETURNS jsonb
+    LANGUAGE plpgsql
+    SET search_path TO ''
+    AS $_$
+DECLARE
+  v common.recruiting_prospects;
+  v_first text := btrim(coalesce(p->>'first_name', ''));
+  v_last text := btrim(coalesce(p->>'last_name', ''));
+  v_email text := lower(btrim(coalesce(p->>'email', '')));
+  v_position text := btrim(coalesce(p->>'position_applied', ''));
+  v_source text := btrim(coalesce(p->>'source', ''));
+  v_phone text;
+  v_location text;
+  v_summary text := nullif(btrim(coalesce(p->>'summary', '')), '');
+  v_req uuid := nullif(p->>'requisition_id', '')::uuid;
+  v_existing uuid := nullif(p->>'existing_candidate_id', '')::uuid;
+  v_ack uuid[] := ARRAY(SELECT jsonb_array_elements_text(coalesce(p->'acknowledged_candidate_ids', '[]'::jsonb))::uuid);
+  v_conflicts jsonb;
+  v_candidate uuid;
+BEGIN
+  IF NOT common.talent_pool_promotion_enabled() THEN
+    RAISE EXCEPTION 'Promotion is disabled until candidate records are access-protected' USING ERRCODE = '42501';
+  END IF;
+
+  SELECT * INTO v FROM common.recruiting_prospects WHERE id = p_prospect_id FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Prospect not found' USING ERRCODE = 'P0002';
+  END IF;
+
+  -- Repeat calls, retries, and the loser of a race all land here.
+  IF v.status = 'promoted' THEN
+    RETURN jsonb_build_object('candidate_id', v.candidate_id, 'already_promoted', true);
+  END IF;
+
+  IF v_existing IS NOT NULL THEN
+    PERFORM 1 FROM common.candidates WHERE id = v_existing;
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'The selected application no longer exists' USING ERRCODE = 'P0002';
+    END IF;
+    v_candidate := v_existing; -- link only; never touch the application
+  ELSE
+    IF p_initial_status NOT IN ('screening', 'interview', 'offer', 'offer_sent', 'offer_accepted', 'hired') THEN
+      RAISE EXCEPTION 'Invalid initial candidate status' USING ERRCODE = '22023';
+    END IF;
+    IF v_first = '' OR v_last = '' OR v_email = '' OR v_position = '' OR v_source = '' THEN
+      RAISE EXCEPTION 'First name, last name, email, position, and source are all required' USING ERRCODE = '22023';
+    END IF;
+    IF v_email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' THEN
+      RAISE EXCEPTION 'Invalid email address' USING ERRCODE = '22023';
+    END IF;
+    IF char_length(v_first) > 100 OR char_length(v_last) > 100 THEN
+      RAISE EXCEPTION 'Names must be 100 characters or fewer' USING ERRCODE = '22001';
+    END IF;
+    IF char_length(v_email) > 255 OR char_length(v_position) > 255 THEN
+      RAISE EXCEPTION 'Email and position must be 255 characters or fewer' USING ERRCODE = '22001';
+    END IF;
+    IF char_length(v_source) > 100 THEN
+      RAISE EXCEPTION 'Source must be 100 characters or fewer' USING ERRCODE = '22001';
+    END IF;
+    IF v_req IS NOT NULL THEN
+      PERFORM 1 FROM common.job_requisitions r WHERE r.id = v_req AND r.status IN ('approved', 'posted');
+      IF NOT FOUND THEN
+        RAISE EXCEPTION 'The selected requisition is not open' USING ERRCODE = '22023';
+      END IF;
+    END IF;
+
+    -- Serialize promotions that share an email, then recheck for applications
+    -- the reviewer has not seen (including ones created seconds ago).
+    PERFORM pg_advisory_xact_lock(hashtextextended('talent_pool_promote:' || v_email, 0));
+    PERFORM pg_advisory_xact_lock(hashtextextended('talent_pool_promote_name:' || lower(v_first || ' ' || v_last), 0));
+    SELECT jsonb_agg(jsonb_build_object(
+      'id', c.id, 'first_name', c.first_name, 'last_name', c.last_name, 'email', c.email,
+      'position_applied', c.position_applied, 'status', c.status, 'applied_date', c.applied_date,
+      'match', CASE WHEN lower(c.email) = v_email THEN 'email' ELSE 'name' END))
+      INTO v_conflicts
+    FROM common.candidates c
+    WHERE (lower(c.email) = v_email
+           OR (lower(c.first_name) = lower(v_first) AND lower(c.last_name) = lower(v_last)))
+      AND NOT (c.id = ANY (v_ack));
+    IF v_conflicts IS NOT NULL THEN
+      RETURN jsonb_build_object('conflicts', v_conflicts);
+    END IF;
+
+    v_phone := CASE WHEN char_length(coalesce(nullif(btrim(p->>'phone'), ''), v.phone, '')) BETWEEN 1 AND 20
+                    THEN coalesce(nullif(btrim(p->>'phone'), ''), v.phone) END;
+    v_location := left(coalesce(nullif(btrim(p->>'location'), ''), v.location), 255);
+
+    INSERT INTO common.candidates (
+      first_name, last_name, email, phone, location, position_applied, requisition_id,
+      status, source, notes, applied_date, last_contact_date
+    ) VALUES (
+      v_first, v_last, v_email, v_phone, v_location, v_position, v_req,
+      p_initial_status, v_source,
+      concat_ws(E'\n\n', v_summary, 'Added from Talent Pool.'),
+      now(), v.last_contact_date
+    )
+    RETURNING id INTO v_candidate;
+  END IF;
+
+  PERFORM set_config('talent_pool.promoting', 'on', true);
+  UPDATE common.recruiting_prospects
+  SET status = 'promoted', candidate_id = v_candidate, promoted_at = now()
+  WHERE id = p_prospect_id;
+  PERFORM set_config('talent_pool.promoting', 'off', true);
+
+  PERFORM common._talent_pool_log_system(
+    p_prospect_id, 'promoted',
+    CASE WHEN v_existing IS NOT NULL THEN 'Linked to an existing application' ELSE 'Added to Candidate Tracking' END,
+    p_actor
+  );
+
+  RETURN jsonb_build_object('candidate_id', v_candidate, 'linked_existing', v_existing IS NOT NULL);
+END;
+$_$;
+
+
+--
+-- Name: _talent_pool_prospect_json(common.recruiting_prospects); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common._talent_pool_prospect_json(p common.recruiting_prospects) RETURNS jsonb
+    LANGUAGE sql STABLE
+    SET search_path TO ''
+    AS $$
+  SELECT to_jsonb(p)
+    || jsonb_build_object(
+      'owner_name', (
+        SELECT coalesce(nullif(btrim(pr.full_name), ''), pr.email)
+        FROM common.profiles pr WHERE pr.id = p.owner_id
+      ),
+      'has_import_refs', jsonb_array_length(p.import_refs) > 0
+    );
+$$;
+
+
+--
+-- Name: _talent_pool_require_access(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common._talent_pool_require_access() RETURNS uuid
+    LANGUAGE plpgsql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+BEGIN
+  IF NOT common.talent_pool_can_access() THEN
+    RAISE EXCEPTION 'Not authorized for Talent Pool' USING ERRCODE = '42501';
+  END IF;
+  RETURN auth.uid();
+END;
+$$;
+
+
+--
 -- Name: admin_delete_role(text); Type: FUNCTION; Schema: common; Owner: -
 --
 
@@ -156,10 +455,6 @@ BEGIN
 END;
 $$;
 
-
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
 
 --
 -- Name: custom_roles; Type: TABLE; Schema: common; Owner: -
@@ -472,6 +767,59 @@ $$;
 
 
 --
+-- Name: ampu_leaderboard(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.ampu_leaderboard() RETURNS TABLE(user_id uuid, full_name text, lessons_completed bigint, exams_passed bigint, units_completed bigint, last_activity timestamp with time zone)
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'common', 'public'
+    AS $$
+  WITH course_size AS (
+    SELECT l.course_id, count(*) AS total
+    FROM common.ampu_lessons l
+    JOIN common.ampu_courses c ON c.id = l.course_id AND c.is_active
+    GROUP BY l.course_id
+  ),
+  per_course AS (
+    SELECT p.user_id, p.course_id, count(*) FILTER (WHERE p.status = 'completed') AS done
+    FROM common.ampu_progress p
+    JOIN common.ampu_courses c ON c.id = p.course_id AND c.is_active
+    GROUP BY p.user_id, p.course_id
+  ),
+  totals AS (
+    SELECT
+      p.user_id,
+      count(*) FILTER (WHERE p.status = 'completed')            AS lessons_completed,
+      count(*) FILTER (WHERE p.passed)                          AS exams_passed,
+      max(p.updated_at)                                         AS last_activity
+    FROM common.ampu_progress p
+    JOIN common.ampu_courses c ON c.id = p.course_id AND c.is_active
+    GROUP BY p.user_id
+  ),
+  units AS (
+    SELECT pc.user_id, count(*) AS units_completed
+    FROM per_course pc
+    JOIN course_size cs ON cs.course_id = pc.course_id
+    WHERE pc.done >= cs.total AND cs.total > 0
+    GROUP BY pc.user_id
+  )
+  SELECT
+    t.user_id,
+    COALESCE(NULLIF(btrim(pr.full_name), ''), split_part(COALESCE(pr.email, ''), '@', 1), 'Unknown'),
+    t.lessons_completed,
+    t.exams_passed,
+    COALESCE(u.units_completed, 0),
+    t.last_activity
+  FROM totals t
+  LEFT JOIN units u ON u.user_id = t.user_id
+  LEFT JOIN common.profiles pr ON pr.id = t.user_id
+  WHERE common.is_employee_user()
+    AND COALESCE(pr.hidden, false) = false
+  ORDER BY COALESCE(u.units_completed, 0) DESC, t.lessons_completed DESC, t.last_activity ASC;
+$$;
+
+
+--
 -- Name: assign_feature_request_priority(); Type: FUNCTION; Schema: common; Owner: -
 --
 
@@ -558,6 +906,36 @@ begin
   end loop;
   tier := 5; level := 10; progress := 100; return next; return;
 end $$;
+
+
+--
+-- Name: can_manage_amp_contacts(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.can_manage_amp_contacts() RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'common', 'public'
+    AS $$
+  SELECT auth.role() = 'authenticated'
+    AND EXISTS (
+      SELECT 1
+      FROM unnest(ARRAY[
+        auth.jwt() -> 'user_metadata' ->> 'role',
+        auth.jwt() -> 'app_metadata'  ->> 'role',
+        (SELECT u.raw_user_meta_data ->> 'role' FROM auth.users u WHERE u.id = auth.uid()),
+        (SELECT u.raw_app_meta_data  ->> 'role' FROM auth.users u WHERE u.id = auth.uid())
+      ]) AS r
+      -- keep in sync with canEdit in src/components/office/AmpContactsManager.tsx
+      WHERE lower(coalesce(r, '')) IN ('hr rep', 'office admin', 'admin', 'super admin')
+    );
+$$;
+
+
+--
+-- Name: FUNCTION can_manage_amp_contacts(); Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON FUNCTION common.can_manage_amp_contacts() IS 'True when the current user may edit common.amp_contacts (HR Rep, Office Admin, Admin, Super Admin). Reads the role from the JWT, falling back to auth.users metadata.';
 
 
 --
@@ -821,6 +1199,64 @@ BEGIN
   END IF;
 END;
 $$;
+
+
+--
+-- Name: customer_substation_folders(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.customer_substation_folders() RETURNS TABLE(job_id uuid, substation_key text, folder_id uuid, folder_name text, folder_sort integer)
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'common', 'neta_ops', 'public'
+    AS $$
+  WITH visible_jobs AS (
+    SELECT j.id, j.site_id
+    FROM neta_ops.jobs j
+    WHERE j.customer_id = common.current_customer_id()
+      AND j.deleted_at IS NULL
+  ),
+  -- The substations the customer can actually see, normalised the same way the app does.
+  visible_substations AS (
+    SELECT DISTINCT
+      vj.id AS job_id,
+      vj.site_id,
+      lower(regexp_replace(btrim(a.substation), '\s+', ' ', 'g')) AS substation_key
+    FROM visible_jobs vj
+    JOIN neta_ops.job_assets ja ON ja.job_id = vj.id
+    JOIN neta_ops.assets a      ON a.id = ja.asset_id
+    WHERE lower(coalesce(a.status, '')) IN ('approved', 'sent')
+      AND btrim(coalesce(a.substation, '')) <> ''
+  ),
+  -- Job scope wins over site scope. Note this turns on whether the job row EXISTS, not on
+  -- whether its folder_id is non-null: a job row with a NULL folder means "deliberately
+  -- pulled out of the folder this job inherited", so COALESCE would be exactly wrong here
+  -- and would put the substation straight back into the folder it was dragged out of.
+  resolved AS (
+    SELECT
+      vs.job_id,
+      vs.substation_key,
+      CASE
+        WHEN jm.job_id IS NOT NULL THEN jm.folder_id
+        ELSE sm.folder_id
+      END AS folder_id
+    FROM visible_substations vs
+    LEFT JOIN neta_ops.substation_folder_assignments jm
+      ON jm.job_id = vs.job_id AND jm.substation_key = vs.substation_key
+    LEFT JOIN neta_ops.substation_folder_assignments sm
+      ON sm.site_id = vs.site_id AND sm.substation_key = vs.substation_key
+  )
+  SELECT r.job_id, r.substation_key, f.id, f.name, f.sort_order
+  FROM resolved r
+  JOIN neta_ops.substation_folders f ON f.id = r.folder_id
+  WHERE f.deleted_at IS NULL;
+$$;
+
+
+--
+-- Name: FUNCTION customer_substation_folders(); Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON FUNCTION common.customer_substation_folders() IS 'Portal-visible folder grouping for substations. Scoped to common.current_customer_id() and to folders that actually hold one of that customer''s visible substations; the folder tables themselves stay employee-only.';
 
 
 --
@@ -1636,6 +2072,26 @@ $$;
 
 
 --
+-- Name: is_ampu_registrar(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.is_ampu_registrar() RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'common', 'public'
+    AS $$
+  SELECT
+    auth.role() = 'authenticated'
+    AND (
+      COALESCE(auth.jwt() -> 'user_metadata' ->> 'role', '') IN ('Admin', 'Super Admin')
+      OR COALESCE(auth.jwt() -> 'app_metadata' ->> 'role', '') IN ('Admin', 'Super Admin')
+      OR lower(COALESCE(auth.jwt() ->> 'email', '')) IN (
+        'jack.lyons@ampqes.com'
+      )
+    );
+$$;
+
+
+--
 -- Name: is_employee_user(); Type: FUNCTION; Schema: common; Owner: -
 --
 
@@ -1646,17 +2102,16 @@ CREATE FUNCTION common.is_employee_user() RETURNS boolean
   SELECT
     auth.role() = 'authenticated'
     AND (
-      -- Employee email domains for this instance. New white-label instances:
-      -- replace this list (see database/bootstrap/README.md).
+      -- Employee email domains for this instance.
       lower(coalesce(auth.jwt() ->> 'email', '')) LIKE ANY (
         ARRAY['%@ampqes.com', '%@cedsi.com']
       )
-      OR lower(coalesce(auth.jwt() -> 'app_metadata' ->> 'account_type', '')) = 'employee'
+      OR lower(coalesce(auth.jwt() -> 'app_metadata'  ->> 'account_type', '')) = 'employee'
       OR lower(coalesce(auth.jwt() -> 'user_metadata' ->> 'account_type', '')) = 'employee'
-      OR lower(coalesce(auth.jwt() -> 'app_metadata' ->> 'user_type', '')) = 'employee'
-      OR lower(coalesce(auth.jwt() -> 'user_metadata' ->> 'user_type', '')) = 'employee'
-      OR lower(coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '')) IN (
-        -- canonical roles (src/lib/roles.ts) — keep in sync
+      OR lower(coalesce(auth.jwt() -> 'app_metadata'  ->> 'user_type', ''))    = 'employee'
+      OR lower(coalesce(auth.jwt() -> 'user_metadata' ->> 'user_type', ''))    = 'employee'
+      OR lower(coalesce(auth.jwt() -> 'app_metadata'  ->> 'role', '')) IN (
+        -- canonical roles (src/lib/roles.ts)
         'admin',
         'super admin',
         'neta technician',
@@ -1699,6 +2154,13 @@ CREATE FUNCTION common.is_employee_user() RETURNS boolean
       )
     );
 $$;
+
+
+--
+-- Name: FUNCTION is_employee_user(); Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON FUNCTION common.is_employee_user() IS 'True when the JWT belongs to staff: an employee email domain, an explicit employee account_type/user_type, or a staff role. Role list must stay in sync with src/lib/roles.ts. Gates ~66 RLS policies across common and neta_ops.';
 
 
 --
@@ -2049,6 +2511,281 @@ $_$;
 
 
 --
+-- Name: prayer_request_delete(uuid); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.prayer_request_delete(p_request_id uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'common', 'public'
+    AS $$
+BEGIN
+  IF NOT common.is_employee_user() THEN
+    RAISE EXCEPTION 'Not authorized.';
+  END IF;
+
+  DELETE FROM common.prayer_requests
+  WHERE id = p_request_id
+    AND author_id = auth.uid();
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Prayer request not found or not yours.';
+  END IF;
+END;
+$$;
+
+
+--
+-- Name: prayer_request_mark_answered(uuid, text); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.prayer_request_mark_answered(p_request_id uuid, p_note text DEFAULT NULL::text) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'common', 'public'
+    AS $$
+DECLARE
+  v_note text := NULLIF(btrim(coalesce(p_note, '')), '');
+BEGIN
+  IF NOT common.is_employee_user() THEN
+    RAISE EXCEPTION 'Not authorized.';
+  END IF;
+  IF v_note IS NOT NULL AND char_length(v_note) > 500 THEN
+    RAISE EXCEPTION 'Note must be 500 characters or fewer.';
+  END IF;
+
+  UPDATE common.prayer_requests
+  SET status = 'answered',
+      answered_note = v_note,
+      answered_at = now()
+  WHERE id = p_request_id
+    AND author_id = auth.uid();
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Prayer request not found or not yours.';
+  END IF;
+END;
+$$;
+
+
+--
+-- Name: prayer_request_post(text, text, boolean); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.prayer_request_post(p_body text, p_title text DEFAULT NULL::text, p_is_anonymous boolean DEFAULT false) RETURNS uuid
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'common', 'public'
+    AS $$
+DECLARE
+  v_id uuid;
+  v_body text := btrim(coalesce(p_body, ''));
+  v_title text := NULLIF(btrim(coalesce(p_title, '')), '');
+BEGIN
+  IF NOT common.is_employee_user() THEN
+    RAISE EXCEPTION 'Not authorized to post prayer requests.';
+  END IF;
+  IF char_length(v_body) = 0 THEN
+    RAISE EXCEPTION 'Prayer request body is required.';
+  END IF;
+  IF char_length(v_body) > 1000 THEN
+    RAISE EXCEPTION 'Prayer request body must be 1000 characters or fewer.';
+  END IF;
+
+  INSERT INTO common.prayer_requests (author_id, title, body, is_anonymous)
+  VALUES (auth.uid(), v_title, v_body, coalesce(p_is_anonymous, false))
+  RETURNING id INTO v_id;
+
+  RETURN v_id;
+END;
+$$;
+
+
+--
+-- Name: prayer_request_toggle_praying(uuid); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.prayer_request_toggle_praying(p_request_id uuid) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'common', 'public'
+    AS $$
+DECLARE
+  v_deleted int;
+BEGIN
+  IF NOT common.is_employee_user() THEN
+    RAISE EXCEPTION 'Not authorized.';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM common.prayer_requests WHERE id = p_request_id) THEN
+    RAISE EXCEPTION 'Prayer request not found.';
+  END IF;
+
+  DELETE FROM common.prayer_intercessions
+  WHERE request_id = p_request_id AND user_id = auth.uid();
+  GET DIAGNOSTICS v_deleted = ROW_COUNT;
+
+  IF v_deleted > 0 THEN
+    RETURN false;
+  END IF;
+
+  INSERT INTO common.prayer_intercessions (request_id, user_id)
+  VALUES (p_request_id, auth.uid())
+  ON CONFLICT DO NOTHING;
+  RETURN true;
+END;
+$$;
+
+
+--
+-- Name: protect_user_role(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.protect_user_role() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO ''
+    AS $$
+BEGIN
+  IF current_user <> 'supabase_auth_admin' THEN
+    RETURN NEW;
+  END IF;
+
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.raw_user_meta_data ? 'role' THEN
+      NEW.raw_user_meta_data := NEW.raw_user_meta_data - 'role';
+    END IF;
+    RETURN NEW;
+  END IF;
+
+  IF (NEW.raw_user_meta_data -> 'role') IS DISTINCT FROM (OLD.raw_user_meta_data -> 'role') THEN
+    IF OLD.raw_user_meta_data ? 'role' THEN
+      NEW.raw_user_meta_data := coalesce(NEW.raw_user_meta_data, '{}'::jsonb)
+        || jsonb_build_object('role', OLD.raw_user_meta_data -> 'role');
+    ELSE
+      NEW.raw_user_meta_data := NEW.raw_user_meta_data - 'role';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: FUNCTION protect_user_role(); Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON FUNCTION common.protect_user_role() IS 'Keeps auth user_metadata.role unchanged for writes made through the auth API. Change roles with common.admin_update_user_role().';
+
+
+--
+-- Name: recruiting_prospect_activity_before_write(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.recruiting_prospect_activity_before_write() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO ''
+    AS $$
+DECLARE
+  v_status text;
+BEGIN
+  IF TG_OP = 'UPDATE' THEN
+    -- The only change allowed: ON DELETE SET NULL when an auth user is removed.
+    IF NEW.created_by IS NULL
+       AND (to_jsonb(NEW) - 'created_by') = (to_jsonb(OLD) - 'created_by') THEN
+      RETURN NEW;
+    END IF;
+    RAISE EXCEPTION 'Prospect activity is append-only' USING ERRCODE = 'P0001';
+  END IF;
+  IF TG_OP = 'DELETE' THEN
+    -- Only allowed as the cascade from deleting the (unpromoted) prospect,
+    -- which is already gone by the time this fires.
+    IF EXISTS (SELECT 1 FROM common.recruiting_prospects p WHERE p.id = OLD.prospect_id) THEN
+      RAISE EXCEPTION 'Prospect activity is append-only' USING ERRCODE = 'P0001';
+    END IF;
+    RETURN OLD;
+  END IF;
+
+  IF NEW.type IN ('status_change', 'promoted')
+     AND coalesce(current_setting('talent_pool.system_event', true), '') <> 'on' THEN
+    RAISE EXCEPTION 'System activity cannot be added directly' USING ERRCODE = 'P0001';
+  END IF;
+
+  SELECT p.status INTO v_status FROM common.recruiting_prospects p WHERE p.id = NEW.prospect_id;
+  IF v_status = 'promoted' AND NEW.type <> 'promoted' THEN
+    RAISE EXCEPTION 'Promoted prospects are read-only' USING ERRCODE = 'P0001';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: recruiting_prospects_before_write(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.recruiting_prospects_before_write() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO ''
+    AS $_$
+DECLARE
+  v_linkedin text;
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    IF OLD.status = 'promoted' THEN
+      RAISE EXCEPTION 'Promoted prospects cannot be deleted' USING ERRCODE = 'P0001';
+    END IF;
+    RETURN OLD;
+  END IF;
+
+  IF TG_OP = 'UPDATE' AND OLD.status = 'promoted' THEN
+    -- The only change allowed: ON DELETE SET NULL when an auth user is removed.
+    IF (to_jsonb(NEW) - ARRAY['owner_id', 'created_by', 'updated_at'])
+         = (to_jsonb(OLD) - ARRAY['owner_id', 'created_by', 'updated_at'])
+       AND (NEW.owner_id IS NULL OR NEW.owner_id = OLD.owner_id)
+       AND (NEW.created_by IS NULL OR NEW.created_by = OLD.created_by) THEN
+      RETURN NEW;
+    END IF;
+    RAISE EXCEPTION 'Promoted prospects are read-only' USING ERRCODE = 'P0001';
+  END IF;
+
+  -- Promotion fields are set only inside the promotion function.
+  IF (NEW.status = 'promoted' OR NEW.candidate_id IS NOT NULL OR NEW.promoted_at IS NOT NULL)
+     AND coalesce(current_setting('talent_pool.promoting', true), '') <> 'on' THEN
+    RAISE EXCEPTION 'Use Promote to Candidate to move a prospect into the pipeline' USING ERRCODE = 'P0001';
+  END IF;
+
+  NEW.first_name   := btrim(coalesce(NEW.first_name, ''));
+  NEW.last_name    := nullif(btrim(NEW.last_name), '');
+  NEW.email        := nullif(lower(btrim(NEW.email)), '');
+  NEW.phone        := nullif(btrim(NEW.phone), '');
+  NEW.job_title    := nullif(btrim(NEW.job_title), '');
+  NEW.current_org  := nullif(btrim(NEW.current_org), '');
+  NEW.location     := nullif(btrim(NEW.location), '');
+  NEW.availability := nullif(btrim(NEW.availability), '');
+
+  IF NEW.first_name = '' THEN
+    RAISE EXCEPTION 'First name is required' USING ERRCODE = '23514';
+  END IF;
+  IF NEW.email IS NOT NULL AND NEW.email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' THEN
+    RAISE EXCEPTION 'Invalid email address' USING ERRCODE = '23514';
+  END IF;
+  IF nullif(btrim(NEW.linkedin_url), '') IS NOT NULL THEN
+    v_linkedin := common.talent_pool_normalize_linkedin(NEW.linkedin_url);
+    IF v_linkedin IS NULL THEN
+      RAISE EXCEPTION 'LinkedIn URL must be a profile link (linkedin.com/in/...)' USING ERRCODE = '23514';
+    END IF;
+    NEW.linkedin_url := v_linkedin;
+  ELSE
+    NEW.linkedin_url := NULL;
+  END IF;
+
+  IF NEW.owner_id IS NOT NULL
+     AND (TG_OP = 'INSERT' OR NEW.owner_id IS DISTINCT FROM OLD.owner_id)
+     AND NOT common.talent_pool_user_has_access(NEW.owner_id) THEN
+    RAISE EXCEPTION 'Owner must have Talent Pool access' USING ERRCODE = '23514';
+  END IF;
+
+  RETURN NEW;
+END;
+$_$;
+
+
+--
 -- Name: refresh_customer_satisfaction_scores(); Type: FUNCTION; Schema: common; Owner: -
 --
 
@@ -2111,6 +2848,30 @@ BEGIN
       resolution_comment = p_comment
   WHERE id = p_flag_id;
 END;
+$$;
+
+
+--
+-- Name: search_device_catalog(text, text, integer); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.search_device_catalog(p_query text, p_manufacturer text DEFAULT NULL::text, p_limit integer DEFAULT 20) RETURNS TABLE(id uuid, device_class text, manufacturer text, display_name text, rating text, series text, model_code text, ptw_category text)
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'common', 'public'
+    AS $$
+  SELECT dc.id, dc.device_class, dc.manufacturer, dc.display_name,
+         dc.rating, dc.series, dc.model_code, dc.ptw_category
+  FROM common.device_catalog dc
+  WHERE (p_manufacturer IS NULL OR dc.manufacturer ILIKE p_manufacturer)
+    AND (
+      coalesce(btrim(p_query), '') = ''
+      OR dc.display_name ILIKE '%' || p_query || '%'
+      OR dc.manufacturer ILIKE '%' || p_query || '%'
+      OR similarity(dc.display_name, p_query) > 0.15
+    )
+  ORDER BY similarity(dc.display_name, coalesce(p_query, '')) DESC,
+           dc.manufacturer, dc.display_name
+  LIMIT least(greatest(p_limit, 1), 100);
 $$;
 
 
@@ -2189,6 +2950,79 @@ $$;
 
 
 --
+-- Name: submit_application_answers(uuid, jsonb); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.submit_application_answers(p_candidate_id uuid, p_answers jsonb) RETURNS integer
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'common', 'public'
+    AS $$
+DECLARE
+  v_inserted integer;
+BEGIN
+  IF p_answers IS NULL OR jsonb_typeof(p_answers) <> 'array' THEN
+    RAISE EXCEPTION 'p_answers must be a JSON array';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM common.candidates c WHERE c.id = p_candidate_id) THEN
+    RAISE EXCEPTION 'Unknown candidate';
+  END IF;
+
+  -- Idempotent on purpose: a retried submit returns 0 instead of erroring, and
+  -- the grant cannot be used to append to someone else's application.
+  IF EXISTS (SELECT 1 FROM common.candidate_question_answers a WHERE a.candidate_id = p_candidate_id) THEN
+    RETURN 0;
+  END IF;
+
+  INSERT INTO common.candidate_question_answers (
+    candidate_id, question_id, question_label, question_type,
+    answer_text, answer_bool, answer_json, display_order
+  )
+  SELECT p_candidate_id,
+         q.id,
+         COALESCE(NULLIF(e->>'question_label',''), q.label, 'Question'),
+         COALESCE(NULLIF(e->>'question_type',''),  q.question_type, 'short_text'),
+         NULLIF(e->>'answer_text',''),
+         CASE WHEN e->>'answer_bool' IS NULL THEN NULL ELSE (e->>'answer_bool')::boolean END,
+         CASE WHEN jsonb_typeof(e->'answer_json') = 'array' THEN e->'answer_json' ELSE NULL END,
+         COALESCE((e->>'display_order')::int, 0)
+    FROM jsonb_array_elements(p_answers) AS e
+    -- Only questions that really belong to a live posting are accepted.
+    JOIN common.v_public_application_questions q
+      ON q.id = NULLIF(e->>'question_id','')::uuid;
+
+  GET DIAGNOSTICS v_inserted = ROW_COUNT;
+  RETURN v_inserted;
+END;
+$$;
+
+
+--
+-- Name: sync_profile_email(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.sync_profile_email() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'common', 'public'
+    AS $$
+BEGIN
+  IF NEW.email IS NOT NULL THEN
+    UPDATE common.profiles
+    SET email = NEW.email,
+        updated_at = now()
+    WHERE id = NEW.id
+      AND (email IS DISTINCT FROM NEW.email);
+  END IF;
+  RETURN NEW;
+EXCEPTION
+  -- Never let the mirror break signup or an email change.
+  WHEN OTHERS THEN
+    RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: system_rotate_key(); Type: FUNCTION; Schema: common; Owner: -
 --
 
@@ -2205,6 +3039,831 @@ BEGIN
   
   RETURN TRUE;
 END;
+$$;
+
+
+--
+-- Name: talent_pool_activity(uuid, integer, integer); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_activity(p_prospect_id uuid, p_limit integer DEFAULT 50, p_offset integer DEFAULT 0) RETURNS jsonb
+    LANGUAGE plpgsql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+BEGIN
+  PERFORM common._talent_pool_require_access();
+  RETURN jsonb_build_object(
+    'total', (SELECT count(*) FROM common.recruiting_prospect_activity a WHERE a.prospect_id = p_prospect_id),
+    'rows', coalesce((
+      SELECT jsonb_agg(to_jsonb(s) - 'ord' ORDER BY s.ord)
+      FROM (
+        SELECT a.id, a.type, a.body, a.occurred_at, a.original_author,
+               (a.import_ref IS NOT NULL) AS imported,
+               a.created_by, a.created_at,
+               (SELECT coalesce(nullif(btrim(pr.full_name), ''), pr.email) FROM common.profiles pr WHERE pr.id = a.created_by) AS created_by_name,
+               row_number() OVER (ORDER BY a.created_at DESC, a.id DESC) AS ord
+        FROM common.recruiting_prospect_activity a
+        WHERE a.prospect_id = p_prospect_id
+        ORDER BY a.created_at DESC, a.id DESC
+        LIMIT least(greatest(coalesce(p_limit, 50), 1), 200)
+        OFFSET greatest(coalesce(p_offset, 0), 0)
+      ) s
+    ), '[]'::jsonb)
+  );
+END;
+$$;
+
+
+--
+-- Name: talent_pool_add_activity(uuid, uuid, text, text, timestamp with time zone); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_add_activity(p_id uuid, p_prospect_id uuid, p_type text, p_body text, p_occurred_at timestamp with time zone) RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+DECLARE
+  v_actor uuid := common._talent_pool_require_access();
+  v_status text;
+  v_existing common.recruiting_prospect_activity;
+BEGIN
+  IF p_id IS NULL THEN
+    RAISE EXCEPTION 'Activity id is required' USING ERRCODE = '22023';
+  END IF;
+  SELECT * INTO v_existing FROM common.recruiting_prospect_activity WHERE id = p_id;
+  IF FOUND THEN
+    IF v_existing.prospect_id <> p_prospect_id OR v_existing.created_by IS DISTINCT FROM v_actor THEN
+      RAISE EXCEPTION 'Activity id already in use' USING ERRCODE = '23505';
+    END IF;
+    RETURN to_jsonb(v_existing);
+  END IF;
+
+  IF p_type NOT IN ('note', 'call', 'text', 'email') THEN
+    RAISE EXCEPTION 'Invalid activity type' USING ERRCODE = '22023';
+  END IF;
+  IF p_type = 'note' AND nullif(btrim(p_body), '') IS NULL THEN
+    RAISE EXCEPTION 'A note needs some text' USING ERRCODE = '22023';
+  END IF;
+  IF p_type <> 'note' THEN
+    IF p_occurred_at IS NULL THEN
+      RAISE EXCEPTION 'When did this % happen?', p_type USING ERRCODE = '22023';
+    END IF;
+    IF p_occurred_at > now() + interval '1 day' THEN
+      RAISE EXCEPTION 'Contact time cannot be in the future' USING ERRCODE = '22023';
+    END IF;
+  END IF;
+
+  SELECT status INTO v_status FROM common.recruiting_prospects WHERE id = p_prospect_id FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Prospect not found' USING ERRCODE = 'P0002';
+  END IF;
+  IF v_status = 'promoted' THEN
+    RAISE EXCEPTION 'Promoted prospects are read-only' USING ERRCODE = 'P0001';
+  END IF;
+
+  INSERT INTO common.recruiting_prospect_activity (id, prospect_id, type, body, occurred_at, created_by)
+  VALUES (p_id, p_prospect_id, p_type, nullif(btrim(p_body), ''),
+          CASE WHEN p_type = 'note' THEN NULL ELSE p_occurred_at END, v_actor)
+  RETURNING * INTO v_existing;
+
+  -- Only a dated call/text/email moves last contact, and never backward.
+  IF p_type <> 'note' THEN
+    UPDATE common.recruiting_prospects
+    SET last_contact_date = greatest(coalesce(last_contact_date, p_occurred_at), p_occurred_at)
+    WHERE id = p_prospect_id
+      AND (last_contact_date IS NULL OR last_contact_date < p_occurred_at);
+  END IF;
+
+  RETURN to_jsonb(v_existing);
+END;
+$$;
+
+
+--
+-- Name: talent_pool_bulk_owner(uuid[], uuid); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_bulk_owner(p_ids uuid[], p_owner_id uuid) RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+DECLARE
+  v_count integer;
+BEGIN
+  PERFORM common._talent_pool_require_access();
+  PERFORM common._talent_pool_lock_bulk(p_ids);
+  UPDATE common.recruiting_prospects SET owner_id = p_owner_id
+  WHERE id = ANY (p_ids) AND owner_id IS DISTINCT FROM p_owner_id;
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  RETURN jsonb_build_object('updated', v_count);
+END;
+$$;
+
+
+--
+-- Name: talent_pool_bulk_status(uuid[], text); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_bulk_status(p_ids uuid[], p_status text) RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+DECLARE
+  v_actor uuid := common._talent_pool_require_access();
+  v_count integer;
+  r record;
+BEGIN
+  PERFORM common._talent_pool_check_status(p_status);
+  PERFORM common._talent_pool_lock_bulk(p_ids);
+  v_count := 0;
+  FOR r IN
+    UPDATE common.recruiting_prospects p SET status = p_status
+    FROM (SELECT id, status AS old_status FROM common.recruiting_prospects WHERE id = ANY (p_ids)) o
+    WHERE p.id = o.id AND o.old_status <> p_status
+    RETURNING p.id, o.old_status
+  LOOP
+    PERFORM common._talent_pool_log_system(r.id, 'status_change', r.old_status || ' → ' || p_status, v_actor);
+    v_count := v_count + 1;
+  END LOOP;
+  RETURN jsonb_build_object('updated', v_count);
+END;
+$$;
+
+
+--
+-- Name: talent_pool_can_access(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_can_access() RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+  SELECT auth.uid() IS NOT NULL AND common.talent_pool_user_has_access(auth.uid());
+$$;
+
+
+--
+-- Name: talent_pool_candidate_matches(text, text, text); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_candidate_matches(p_email text, p_first_name text DEFAULT NULL::text, p_last_name text DEFAULT NULL::text) RETURNS jsonb
+    LANGUAGE plpgsql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+BEGIN
+  PERFORM common._talent_pool_require_access();
+  IF NOT common.talent_pool_promotion_enabled() THEN
+    RAISE EXCEPTION 'Promotion is disabled until candidate records are access-protected' USING ERRCODE = '42501';
+  END IF;
+  RETURN coalesce((
+    SELECT jsonb_agg(jsonb_build_object(
+      'id', c.id, 'first_name', c.first_name, 'last_name', c.last_name, 'email', c.email,
+      'position_applied', c.position_applied, 'status', c.status, 'applied_date', c.applied_date,
+      'match', CASE WHEN lower(c.email) = lower(btrim(p_email)) THEN 'email' ELSE 'name' END
+    ) ORDER BY c.applied_date DESC NULLS LAST)
+    FROM common.candidates c
+    WHERE (nullif(btrim(p_email), '') IS NOT NULL AND lower(c.email) = lower(btrim(p_email)))
+       OR (nullif(btrim(p_first_name), '') IS NOT NULL AND nullif(btrim(p_last_name), '') IS NOT NULL
+           AND lower(c.first_name) = lower(btrim(p_first_name))
+           AND lower(c.last_name) = lower(btrim(p_last_name)))
+  ), '[]'::jsonb);
+END;
+$$;
+
+
+--
+-- Name: talent_pool_counts(text, text, uuid, boolean, boolean); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_counts(p_search text DEFAULT NULL::text, p_source text DEFAULT NULL::text, p_owner uuid DEFAULT NULL::uuid, p_unassigned boolean DEFAULT false, p_follow_up boolean DEFAULT false) RETURNS jsonb
+    LANGUAGE plpgsql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+BEGIN
+  PERFORM common._talent_pool_require_access();
+  RETURN coalesce((
+    SELECT jsonb_object_agg(s.status, s.n)
+    FROM (
+      SELECT x.status, count(*) AS n
+      FROM common._talent_pool_filtered(p_search, p_source, p_owner, p_unassigned, p_follow_up) x
+      GROUP BY x.status
+    ) s
+  ), '{}'::jsonb);
+END;
+$$;
+
+
+--
+-- Name: talent_pool_create(uuid, jsonb); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_create(p_id uuid, p jsonb) RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+DECLARE
+  v_actor uuid := common._talent_pool_require_access();
+  v common.recruiting_prospects;
+  v_status text := coalesce(nullif(p->>'status', ''), 'new');
+BEGIN
+  IF p_id IS NULL THEN
+    RAISE EXCEPTION 'Prospect id is required' USING ERRCODE = '22023';
+  END IF;
+  SELECT * INTO v FROM common.recruiting_prospects WHERE id = p_id;
+  IF FOUND THEN
+    IF v.created_by IS DISTINCT FROM v_actor THEN
+      RAISE EXCEPTION 'Prospect id already in use' USING ERRCODE = '23505';
+    END IF;
+    RETURN common._talent_pool_prospect_json(v);
+  END IF;
+
+  PERFORM common._talent_pool_check_status(v_status);
+
+  INSERT INTO common.recruiting_prospects (
+    id, first_name, last_name, email, phone, linkedin_url, job_title, current_org,
+    location, source, status, availability, needs_follow_up, owner_id, created_by
+  ) VALUES (
+    p_id, p->>'first_name', p->>'last_name', p->>'email', p->>'phone', p->>'linkedin_url',
+    p->>'job_title', p->>'current_org', p->>'location', coalesce(nullif(p->>'source', ''), 'other'),
+    v_status, p->>'availability', coalesce((p->>'needs_follow_up')::boolean, false),
+    nullif(p->>'owner_id', '')::uuid, v_actor
+  )
+  RETURNING * INTO v;
+
+  RETURN common._talent_pool_prospect_json(v);
+END;
+$$;
+
+
+--
+-- Name: talent_pool_delete(uuid); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_delete(p_id uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+DECLARE
+  v_status text;
+BEGIN
+  PERFORM common._talent_pool_require_access();
+  SELECT status INTO v_status FROM common.recruiting_prospects WHERE id = p_id FOR UPDATE;
+  IF NOT FOUND THEN RETURN; END IF; -- already gone: repeat-safe
+  IF v_status = 'promoted' THEN
+    RAISE EXCEPTION 'Promoted prospects cannot be deleted' USING ERRCODE = 'P0001';
+  END IF;
+  DELETE FROM common.recruiting_prospects WHERE id = p_id;
+END;
+$$;
+
+
+--
+-- Name: talent_pool_get(uuid); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_get(p_id uuid) RETURNS jsonb
+    LANGUAGE plpgsql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+DECLARE
+  v common.recruiting_prospects;
+BEGIN
+  PERFORM common._talent_pool_require_access();
+  SELECT * INTO v FROM common.recruiting_prospects WHERE id = p_id;
+  IF NOT FOUND THEN RETURN NULL; END IF;
+  RETURN common._talent_pool_prospect_json(v);
+END;
+$$;
+
+
+--
+-- Name: talent_pool_grant_access(text); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_grant_access(p_email text) RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+DECLARE
+  v_user uuid;
+BEGIN
+  IF NOT common.talent_pool_is_manager() THEN
+    RAISE EXCEPTION 'Only an Admin can manage Talent Pool access' USING ERRCODE = '42501';
+  END IF;
+  SELECT u.id INTO v_user FROM auth.users u WHERE lower(u.email) = lower(btrim(p_email));
+  IF v_user IS NULL THEN
+    RAISE EXCEPTION 'No ampOS account uses that email' USING ERRCODE = 'P0002';
+  END IF;
+  INSERT INTO common.talent_pool_members (user_id, added_by)
+  VALUES (v_user, auth.uid())
+  ON CONFLICT (user_id) DO NOTHING;
+  RETURN jsonb_build_object('user_id', v_user);
+END;
+$$;
+
+
+--
+-- Name: talent_pool_identity_matches(text[], text[], text[]); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_identity_matches(p_emails text[], p_linkedin_urls text[], p_name_keys text[]) RETURNS jsonb
+    LANGUAGE plpgsql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+BEGIN
+  PERFORM common._talent_pool_require_access();
+  IF coalesce(cardinality(p_emails), 0) + coalesce(cardinality(p_linkedin_urls), 0)
+     + coalesce(cardinality(p_name_keys), 0) > 10000 THEN
+    RAISE EXCEPTION 'Too many rows to check at once' USING ERRCODE = '22023';
+  END IF;
+  RETURN coalesce((
+    SELECT jsonb_agg(jsonb_build_object(
+      'id', r.id, 'first_name', r.first_name, 'last_name', r.last_name,
+      'email', r.email, 'linkedin_url', r.linkedin_url, 'status', r.status
+    ))
+    FROM common.recruiting_prospects r
+    WHERE lower(r.email) = ANY (coalesce(p_emails, '{}'))
+       OR r.linkedin_url = ANY (coalesce(p_linkedin_urls, '{}'))
+       OR (r.last_name IS NOT NULL
+           AND regexp_replace(lower(r.first_name), '[^a-z]', '', 'g') || ' '
+               || regexp_replace(lower(r.last_name), '[^a-z]', '', 'g') = ANY (coalesce(p_name_keys, '{}')))
+  ), '[]'::jsonb);
+END;
+$$;
+
+
+--
+-- Name: talent_pool_import_apply(uuid, uuid, uuid, jsonb); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_import_apply(p_operator uuid, p_manifest_id uuid, p_run_id uuid, op jsonb) RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+DECLARE
+  v common.recruiting_prospects;
+  v_id uuid := (op->>'prospect_id')::uuid;
+  v_fields jsonb := coalesce(op->'fields', '{}'::jsonb);
+  v_refs jsonb := coalesce(op->'import_refs', '[]'::jsonb);
+  v_result text;
+  v_promote jsonb;
+  v_col text;
+  v_set jsonb := '{}'::jsonb;
+  a jsonb;
+  v_allowed text[] := ARRAY['first_name', 'last_name', 'email', 'phone', 'linkedin_url', 'job_title',
+                            'current_org', 'location', 'source', 'status', 'availability', 'needs_follow_up'];
+BEGIN
+  PERFORM 1 FROM common.talent_pool_import_runs
+  WHERE manifest_id = p_manifest_id AND run_id = p_run_id AND finished_at IS NULL;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Import run does not hold the manifest lock' USING ERRCODE = '55P03';
+  END IF;
+  UPDATE common.talent_pool_import_runs SET heartbeat_at = now() WHERE manifest_id = p_manifest_id;
+
+  PERFORM 1 FROM auth.users u WHERE u.id = p_operator;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Import operator not found' USING ERRCODE = 'P0002';
+  END IF;
+  IF jsonb_typeof(v_refs) <> 'array' OR jsonb_array_length(v_refs) = 0 THEN
+    RAISE EXCEPTION 'Import operations must carry their source row references' USING ERRCODE = '22023';
+  END IF;
+
+  SELECT * INTO v FROM common.recruiting_prospects WHERE id = v_id FOR UPDATE;
+
+  IF op->>'kind' = 'create' THEN
+    IF FOUND THEN
+      IF v.import_refs @> v_refs THEN
+        v_result := 'unchanged';
+      ELSE
+        RETURN jsonb_build_object('result', 'blocked', 'reason', 'Planned prospect id is already used by a different record');
+      END IF;
+    ELSE
+      IF coalesce(v_fields->>'status', 'new') = 'promoted' THEN
+        RAISE EXCEPTION 'Import cannot set promoted directly' USING ERRCODE = '22023';
+      END IF;
+      PERFORM common._talent_pool_check_status(coalesce(v_fields->>'status', 'new'));
+      INSERT INTO common.recruiting_prospects (
+        id, first_name, last_name, email, phone, linkedin_url, job_title, current_org,
+        location, source, status, availability, needs_follow_up, import_refs, created_by
+      ) VALUES (
+        v_id, v_fields->>'first_name', v_fields->>'last_name', v_fields->>'email', v_fields->>'phone',
+        v_fields->>'linkedin_url', v_fields->>'job_title', v_fields->>'current_org', v_fields->>'location',
+        coalesce(nullif(v_fields->>'source', ''), 'other'), coalesce(v_fields->>'status', 'new'),
+        v_fields->>'availability', coalesce((v_fields->>'needs_follow_up')::boolean, false),
+        v_refs, p_operator
+      )
+      RETURNING * INTO v;
+      v_result := 'created';
+    END IF;
+
+  ELSIF op->>'kind' = 'merge' THEN
+    IF NOT FOUND THEN
+      RETURN jsonb_build_object('result', 'blocked', 'reason', 'Merge target no longer exists');
+    END IF;
+    IF v.import_refs @> v_refs THEN
+      v_result := 'unchanged';
+    ELSIF v.status = 'promoted' THEN
+      RETURN jsonb_build_object('result', 'blocked', 'reason', 'Merge target is already in the pipeline');
+    ELSIF op->>'expected_updated_at' IS NULL
+       OR v.updated_at <> (op->>'expected_updated_at')::timestamptz THEN
+      RETURN jsonb_build_object('result', 'blocked', 'reason', 'Merge target was edited after review');
+    ELSE
+      -- Fill blanks by default; overwrite only fields HR explicitly approved.
+      FOR v_col IN SELECT jsonb_array_elements_text(coalesce(op->'fill_fields', '[]'::jsonb)) LOOP
+        IF v_col = ANY (v_allowed) AND v_fields ? v_col AND (to_jsonb(v)->v_col) IN ('null'::jsonb, 'false'::jsonb) THEN
+          v_set := v_set || jsonb_build_object(v_col, v_fields->v_col);
+        END IF;
+      END LOOP;
+      FOR v_col IN SELECT jsonb_array_elements_text(coalesce(op->'overwrite_fields', '[]'::jsonb)) LOOP
+        IF v_col = ANY (v_allowed) AND v_fields ? v_col THEN
+          v_set := v_set || jsonb_build_object(v_col, v_fields->v_col);
+        END IF;
+      END LOOP;
+      IF v_set ? 'status' AND v_set->>'status' <> 'new' THEN
+        PERFORM common._talent_pool_check_status(v_set->>'status');
+      ELSIF v_set ? 'status' THEN
+        v_set := v_set - 'status'; -- never reset an existing status to new
+      END IF;
+
+      UPDATE common.recruiting_prospects SET
+        first_name      = CASE WHEN v_set ? 'first_name' THEN v_set->>'first_name' ELSE first_name END,
+        last_name       = CASE WHEN v_set ? 'last_name' THEN v_set->>'last_name' ELSE last_name END,
+        email           = CASE WHEN v_set ? 'email' THEN v_set->>'email' ELSE email END,
+        phone           = CASE WHEN v_set ? 'phone' THEN v_set->>'phone' ELSE phone END,
+        linkedin_url    = CASE WHEN v_set ? 'linkedin_url' THEN v_set->>'linkedin_url' ELSE linkedin_url END,
+        job_title       = CASE WHEN v_set ? 'job_title' THEN v_set->>'job_title' ELSE job_title END,
+        current_org     = CASE WHEN v_set ? 'current_org' THEN v_set->>'current_org' ELSE current_org END,
+        location        = CASE WHEN v_set ? 'location' THEN v_set->>'location' ELSE location END,
+        source          = CASE WHEN v_set ? 'source' THEN coalesce(nullif(v_set->>'source', ''), 'other') ELSE source END,
+        status          = CASE WHEN v_set ? 'status' THEN v_set->>'status' ELSE status END,
+        availability    = CASE WHEN v_set ? 'availability' THEN v_set->>'availability' ELSE availability END,
+        needs_follow_up = CASE WHEN v_set ? 'needs_follow_up' THEN (v_set->>'needs_follow_up')::boolean ELSE needs_follow_up END,
+        import_refs     = import_refs || v_refs
+      WHERE id = v_id
+      RETURNING * INTO v;
+      v_result := 'merged';
+    END IF;
+  ELSE
+    RAISE EXCEPTION 'Unknown import operation kind' USING ERRCODE = '22023';
+  END IF;
+
+  -- Stable ids make re-runs skip notes that already landed.
+  FOR a IN SELECT * FROM jsonb_array_elements(coalesce(op->'activities', '[]'::jsonb)) LOOP
+    IF a->>'type' <> 'note' THEN
+      RAISE EXCEPTION 'Import only creates notes' USING ERRCODE = '22023';
+    END IF;
+    IF v.status = 'promoted' THEN
+      EXIT;
+    END IF;
+    INSERT INTO common.recruiting_prospect_activity (id, prospect_id, type, body, occurred_at, original_author, import_ref, created_by)
+    VALUES ((a->>'id')::uuid, v_id, 'note', a->>'body', nullif(a->>'occurred_at', '')::timestamptz,
+            a->>'original_author', a->'import_ref', p_operator)
+    ON CONFLICT (id) DO NOTHING;
+  END LOOP;
+
+  v_promote := op->'promote';
+  IF v_promote IS NOT NULL AND jsonb_typeof(v_promote) = 'object' THEN
+    v_promote := common._talent_pool_promote(p_operator, v_id, v_promote, coalesce(v_promote->>'initial_status', 'screening'));
+    IF v_promote ? 'conflicts' THEN
+      RAISE EXCEPTION 'Unreviewed candidate matches for this prospect: %', v_promote->'conflicts' USING ERRCODE = 'P0001';
+    END IF;
+    RETURN jsonb_build_object('result', v_result, 'candidate_id', v_promote->'candidate_id');
+  END IF;
+
+  RETURN jsonb_build_object('result', v_result);
+END;
+$$;
+
+
+--
+-- Name: talent_pool_import_claim(uuid, uuid, text); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_import_claim(p_manifest_id uuid, p_run_id uuid, p_target text) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+BEGIN
+  INSERT INTO common.talent_pool_import_runs (manifest_id, run_id, target)
+  VALUES (p_manifest_id, p_run_id, p_target)
+  ON CONFLICT (manifest_id) DO UPDATE
+    SET run_id = EXCLUDED.run_id, target = EXCLUDED.target,
+        heartbeat_at = now(), started_at = now(), finished_at = NULL
+    WHERE common.talent_pool_import_runs.run_id = EXCLUDED.run_id
+       OR common.talent_pool_import_runs.finished_at IS NOT NULL
+       OR common.talent_pool_import_runs.heartbeat_at < now() - interval '10 minutes';
+  RETURN EXISTS (
+    SELECT 1 FROM common.talent_pool_import_runs WHERE manifest_id = p_manifest_id AND run_id = p_run_id
+  );
+END;
+$$;
+
+
+--
+-- Name: talent_pool_import_release(uuid, uuid); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_import_release(p_manifest_id uuid, p_run_id uuid) RETURNS void
+    LANGUAGE sql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+  UPDATE common.talent_pool_import_runs SET finished_at = now(), heartbeat_at = now()
+  WHERE manifest_id = p_manifest_id AND run_id = p_run_id;
+$$;
+
+
+--
+-- Name: talent_pool_is_manager(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_is_manager() RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM auth.users u
+    WHERE u.id = auth.uid()
+      AND u.email_confirmed_at IS NOT NULL
+      AND (
+        common.is_superuser_email(u.email)
+        -- Read from auth.users, not the token, so a demotion applies at once.
+        -- Self-edits of role are blocked by database/migrations/protect_user_role.sql.
+        OR u.raw_user_meta_data ->> 'role' IN ('Admin', 'Super Admin')
+      )
+  );
+$$;
+
+
+--
+-- Name: talent_pool_list(text, text, text, uuid, boolean, boolean, text, boolean, integer, integer); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_list(p_search text DEFAULT NULL::text, p_status text DEFAULT NULL::text, p_source text DEFAULT NULL::text, p_owner uuid DEFAULT NULL::uuid, p_unassigned boolean DEFAULT false, p_follow_up boolean DEFAULT false, p_sort text DEFAULT 'created_at'::text, p_ascending boolean DEFAULT false, p_limit integer DEFAULT 50, p_offset integer DEFAULT 0) RETURNS jsonb
+    LANGUAGE plpgsql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $_$
+DECLARE
+  v_order text;
+  v_dir text := CASE WHEN p_ascending THEN 'ASC' ELSE 'DESC' END;
+  v_total bigint;
+  v_rows jsonb;
+BEGIN
+  PERFORM common._talent_pool_require_access();
+
+  -- Whitelisted sort expressions only; never interpolate caller text.
+  v_order := CASE p_sort
+    WHEN 'name' THEN format('lower(coalesce(x.last_name, x.first_name)) %1$s NULLS LAST, lower(x.first_name) %1$s', v_dir)
+    WHEN 'status' THEN format('x.status %s', v_dir)
+    WHEN 'source' THEN format('x.source %s', v_dir)
+    WHEN 'location' THEN format('lower(x.location) %s NULLS LAST', v_dir)
+    WHEN 'last_contact_date' THEN format('x.last_contact_date %s NULLS LAST', v_dir)
+    WHEN 'updated_at' THEN format('x.updated_at %s', v_dir)
+    ELSE format('x.created_at %s', v_dir)
+  END || format(', x.id %s', v_dir);
+
+  SELECT count(*) INTO v_total
+  FROM common._talent_pool_filtered(p_search, p_source, p_owner, p_unassigned, p_follow_up) x
+  WHERE CASE
+    WHEN p_status IS NULL OR p_status = '' THEN x.status <> 'promoted'
+    WHEN p_status = 'all' THEN true
+    ELSE x.status = p_status
+  END;
+
+  EXECUTE format($q$
+    SELECT coalesce(jsonb_agg(common._talent_pool_prospect_json(s.pr) ORDER BY s.ord), '[]'::jsonb)
+    FROM (
+      SELECT x AS pr, row_number() OVER (ORDER BY %1$s) AS ord
+      FROM common._talent_pool_filtered($1, $2, $3, $4, $5) x
+      WHERE CASE
+        WHEN $6 IS NULL OR $6 = '' THEN x.status <> 'promoted'
+        WHEN $6 = 'all' THEN true
+        ELSE x.status = $6
+      END
+      ORDER BY %1$s
+      LIMIT $7 OFFSET $8
+    ) s
+  $q$, v_order)
+  INTO v_rows
+  USING p_search, p_source, p_owner, p_unassigned, p_follow_up, p_status,
+        least(greatest(coalesce(p_limit, 50), 1), 200), greatest(coalesce(p_offset, 0), 0);
+
+  RETURN jsonb_build_object('total', v_total, 'rows', v_rows);
+END;
+$_$;
+
+
+--
+-- Name: talent_pool_members_list(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_members_list() RETURNS jsonb
+    LANGUAGE plpgsql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+BEGIN
+  IF NOT (common.talent_pool_can_access() OR common.talent_pool_is_manager()) THEN
+    RAISE EXCEPTION 'Not authorized for Talent Pool' USING ERRCODE = '42501';
+  END IF;
+  RETURN coalesce((
+    -- Everyone with access (members plus Admins); used for the owner picker.
+    SELECT jsonb_agg(jsonb_build_object(
+      'user_id', u.id,
+      'name', coalesce(nullif(btrim(pr.full_name), ''), u.email),
+      'email', u.email
+    ) ORDER BY lower(coalesce(nullif(btrim(pr.full_name), ''), u.email)))
+    FROM auth.users u
+    LEFT JOIN common.profiles pr ON pr.id = u.id
+    WHERE common.talent_pool_user_has_access(u.id)
+  ), '[]'::jsonb);
+END;
+$$;
+
+
+--
+-- Name: talent_pool_my_access(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_my_access() RETURNS jsonb
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+  SELECT jsonb_build_object(
+    'can_access', common.talent_pool_can_access(),
+    'can_manage', common.talent_pool_is_manager(),
+    'promotion_enabled', common.talent_pool_promotion_enabled()
+  );
+$$;
+
+
+--
+-- Name: talent_pool_normalize_linkedin(text); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_normalize_linkedin(p_url text) RETURNS text
+    LANGUAGE plpgsql IMMUTABLE
+    SET search_path TO ''
+    AS $_$
+DECLARE
+  v text := btrim(coalesce(p_url, ''));
+  m text[];
+BEGIN
+  IF v = '' THEN RETURN NULL; END IF;
+  IF v !~* '^https?://' THEN v := 'https://' || v; END IF;
+  v := regexp_replace(v, '[?#].*$', '');
+  m := regexp_match(v, '^https?://(?:[a-z]{2,3}\.)?linkedin\.com/in/([^/\s]+)/?.*$', 'i');
+  IF m IS NULL OR m[1] = '' THEN RETURN NULL; END IF;
+  RETURN 'https://www.linkedin.com/in/' || lower(m[1]);
+END;
+$_$;
+
+
+--
+-- Name: talent_pool_promote(uuid, jsonb); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_promote(p_prospect_id uuid, p jsonb) RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+DECLARE
+  v_actor uuid := common._talent_pool_require_access();
+BEGIN
+  RETURN common._talent_pool_promote(v_actor, p_prospect_id, p, 'screening');
+END;
+$$;
+
+
+--
+-- Name: talent_pool_promotion_enabled(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_promotion_enabled() RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+  WITH t AS (
+    SELECT c.oid, c.relrowsecurity
+    FROM pg_catalog.pg_class c
+    JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'common' AND c.relname = 'candidates'
+  ),
+  exposed AS (
+    SELECT r.rolname
+    FROM (VALUES ('anon'::name), ('authenticated'::name)) AS r(rolname)
+    CROSS JOIN t
+    WHERE pg_catalog.has_table_privilege(r.rolname, t.oid, 'SELECT')
+      AND (
+        NOT t.relrowsecurity
+        OR EXISTS (
+          SELECT 1 FROM pg_catalog.pg_policies p
+          WHERE p.schemaname = 'common' AND p.tablename = 'candidates'
+            AND p.cmd IN ('SELECT', 'ALL')
+            AND p.permissive = 'PERMISSIVE'
+            AND (r.rolname = ANY (p.roles) OR 'public' = ANY (p.roles))
+            AND btrim(coalesce(p.qual, 'true')) IN ('true', '(true)')
+        )
+      )
+  )
+  SELECT EXISTS (SELECT 1 FROM t) AND NOT EXISTS (SELECT 1 FROM exposed);
+$$;
+
+
+--
+-- Name: talent_pool_revoke_access(uuid); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_revoke_access(p_user_id uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+BEGIN
+  IF NOT common.talent_pool_is_manager() THEN
+    RAISE EXCEPTION 'Only an Admin can manage Talent Pool access' USING ERRCODE = '42501';
+  END IF;
+  DELETE FROM common.talent_pool_members WHERE user_id = p_user_id;
+END;
+$$;
+
+
+--
+-- Name: talent_pool_update(uuid, jsonb, timestamp with time zone); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_update(p_id uuid, p jsonb, p_expected_updated_at timestamp with time zone DEFAULT NULL::timestamp with time zone) RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+DECLARE
+  v_actor uuid := common._talent_pool_require_access();
+  v common.recruiting_prospects;
+  v_old_status text;
+  v_new_status text;
+BEGIN
+  SELECT * INTO v FROM common.recruiting_prospects WHERE id = p_id FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Prospect not found' USING ERRCODE = 'P0002';
+  END IF;
+  IF v.status = 'promoted' THEN
+    RAISE EXCEPTION 'Promoted prospects are read-only' USING ERRCODE = 'P0001';
+  END IF;
+  IF p_expected_updated_at IS NOT NULL AND v.updated_at <> p_expected_updated_at THEN
+    RAISE EXCEPTION 'This prospect was changed by someone else. Reload and try again.' USING ERRCODE = '40001';
+  END IF;
+
+  v_old_status := v.status;
+  v_new_status := CASE WHEN p ? 'status' THEN p->>'status' ELSE v.status END;
+  PERFORM common._talent_pool_check_status(v_new_status);
+
+  UPDATE common.recruiting_prospects SET
+    first_name      = CASE WHEN p ? 'first_name' THEN p->>'first_name' ELSE first_name END,
+    last_name       = CASE WHEN p ? 'last_name' THEN p->>'last_name' ELSE last_name END,
+    email           = CASE WHEN p ? 'email' THEN p->>'email' ELSE email END,
+    phone           = CASE WHEN p ? 'phone' THEN p->>'phone' ELSE phone END,
+    linkedin_url    = CASE WHEN p ? 'linkedin_url' THEN p->>'linkedin_url' ELSE linkedin_url END,
+    job_title       = CASE WHEN p ? 'job_title' THEN p->>'job_title' ELSE job_title END,
+    current_org     = CASE WHEN p ? 'current_org' THEN p->>'current_org' ELSE current_org END,
+    location        = CASE WHEN p ? 'location' THEN p->>'location' ELSE location END,
+    source          = CASE WHEN p ? 'source' THEN coalesce(nullif(p->>'source', ''), 'other') ELSE source END,
+    availability    = CASE WHEN p ? 'availability' THEN p->>'availability' ELSE availability END,
+    needs_follow_up = CASE WHEN p ? 'needs_follow_up' THEN coalesce((p->>'needs_follow_up')::boolean, false) ELSE needs_follow_up END,
+    owner_id        = CASE WHEN p ? 'owner_id' THEN nullif(p->>'owner_id', '')::uuid ELSE owner_id END,
+    status          = v_new_status
+  WHERE id = p_id
+  RETURNING * INTO v;
+
+  IF v_new_status <> v_old_status THEN
+    PERFORM common._talent_pool_log_system(p_id, 'status_change', v_old_status || ' → ' || v_new_status, v_actor);
+  END IF;
+
+  RETURN common._talent_pool_prospect_json(v);
+END;
+$$;
+
+
+--
+-- Name: talent_pool_user_has_access(uuid); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.talent_pool_user_has_access(p_user_id uuid) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO ''
+    AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM auth.users u
+    WHERE u.id = p_user_id
+      AND u.deleted_at IS NULL
+      AND (u.banned_until IS NULL OR u.banned_until <= now())
+      AND (
+        EXISTS (SELECT 1 FROM common.talent_pool_members m WHERE m.user_id = u.id)
+        OR (
+          u.email_confirmed_at IS NOT NULL
+          AND (
+            common.is_superuser_email(u.email)
+            OR u.raw_user_meta_data ->> 'role' IN ('Admin', 'Super Admin')
+          )
+        )
+      )
+  );
 $$;
 
 
@@ -2269,6 +3928,93 @@ $$;
 
 
 --
+-- Name: touch_ampu_updated_at(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.touch_ampu_updated_at() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'common', 'public'
+    AS $$
+BEGIN
+  NEW.updated_at := NOW();
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: trigger_approval_reminders(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.trigger_approval_reminders() RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'common', 'net', 'public'
+    AS $$
+DECLARE
+  base_url text := current_setting('app.settings.supabase_url', true);
+  service_key text := current_setting('app.settings.service_role_key', true);
+BEGIN
+  IF base_url IS NULL OR service_key IS NULL THEN
+    RAISE WARNING 'trigger_approval_reminders: app.settings.supabase_url / service_role_key not configured, skipping';
+    RETURN;
+  END IF;
+
+  PERFORM net.http_post(
+    url     := base_url || '/functions/v1/approval-reminders',
+    headers := jsonb_build_object(
+                 'Content-Type', 'application/json',
+                 'Authorization', 'Bearer ' || service_key
+               ),
+    body    := '{}'::jsonb
+  );
+END;
+$$;
+
+
+--
+-- Name: FUNCTION trigger_approval_reminders(); Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON FUNCTION common.trigger_approval_reminders() IS 'Invoked by pg_cron. Calls the approval-reminders edge function, which emails the current approver for any requisition or offer left pending too long.';
+
+
+--
+-- Name: trigger_monthly_calibration_report(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.trigger_monthly_calibration_report() RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'common', 'net', 'public'
+    AS $$
+DECLARE
+  base_url text := current_setting('app.settings.supabase_url', true);
+  service_key text := current_setting('app.settings.service_role_key', true);
+BEGIN
+  IF base_url IS NULL OR service_key IS NULL THEN
+    RAISE WARNING 'trigger_monthly_calibration_report: app.settings.supabase_url / service_role_key not configured, skipping';
+    RETURN;
+  END IF;
+
+  PERFORM net.http_post(
+    url     := base_url || '/functions/v1/monthly-calibration-due-report',
+    headers := jsonb_build_object(
+                 'Content-Type', 'application/json',
+                 'Authorization', 'Bearer ' || service_key
+               ),
+    body    := '{}'::jsonb
+  );
+END;
+$$;
+
+
+--
+-- Name: FUNCTION trigger_monthly_calibration_report(); Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON FUNCTION common.trigger_monthly_calibration_report() IS 'Invoked by pg_cron on the 1st of each month. Calls the monthly-calibration-due-report edge function, which emails equipment due for calibration within 60 days.';
+
+
+--
 -- Name: update_employee_certifications_updated_at(); Type: FUNCTION; Schema: common; Owner: -
 --
 
@@ -2315,6 +4061,34 @@ $$;
 --
 
 CREATE FUNCTION common.update_feature_request_timestamp() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: update_help_center_documents_updated_at(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.update_help_center_documents_updated_at() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: update_help_guides_updated_at(); Type: FUNCTION; Schema: common; Owner: -
+--
+
+CREATE FUNCTION common.update_help_guides_updated_at() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
@@ -2501,6 +4275,33 @@ $$;
 
 
 --
+-- Name: check_substation_folder_cycle(); Type: FUNCTION; Schema: neta_ops; Owner: -
+--
+
+CREATE FUNCTION neta_ops.check_substation_folder_cycle() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  cursor_id UUID := NEW.parent_folder_id;
+  hops INT := 0;
+BEGIN
+  WHILE cursor_id IS NOT NULL LOOP
+    IF cursor_id = NEW.id THEN
+      RAISE EXCEPTION 'Folder % cannot be nested inside itself', NEW.id;
+    END IF;
+    hops := hops + 1;
+    IF hops > 100 THEN
+      RAISE EXCEPTION 'Folder nesting is too deep or already contains a cycle';
+    END IF;
+    SELECT parent_folder_id INTO cursor_id
+      FROM neta_ops.substation_folders WHERE id = cursor_id;
+  END LOOP;
+  RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: cleanup_report_notifications(); Type: FUNCTION; Schema: neta_ops; Owner: -
 --
 
@@ -2630,6 +4431,94 @@ $$;
 
 
 --
+-- Name: custom_form_instance_bump_revision(); Type: FUNCTION; Schema: neta_ops; Owner: -
+--
+
+CREATE FUNCTION neta_ops.custom_form_instance_bump_revision() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.revision = OLD.revision THEN
+    NEW.revision := OLD.revision + 1;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: custom_form_version_is_immutable(); Type: FUNCTION; Schema: neta_ops; Owner: -
+--
+
+CREATE FUNCTION neta_ops.custom_form_version_is_immutable() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    RAISE EXCEPTION
+      'custom_form_template_versions rows are immutable; instances are pinned to them';
+  END IF;
+
+  IF NEW.template_id IS DISTINCT FROM OLD.template_id
+     OR NEW.version IS DISTINCT FROM OLD.version
+     OR NEW.schema_version IS DISTINCT FROM OLD.schema_version
+     OR NEW.structure::text IS DISTINCT FROM OLD.structure::text
+     OR NEW.checksum IS DISTINCT FROM OLD.checksum
+     OR NEW.name IS DISTINCT FROM OLD.name
+     OR NEW.neta_section IS DISTINCT FROM OLD.neta_section
+     OR NEW.published_at IS DISTINCT FROM OLD.published_at
+  THEN
+    RAISE EXCEPTION
+      'custom_form_template_versions payload is immutable (version % of template %)',
+      OLD.version, OLD.template_id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: enforce_single_asset_nesting(); Type: FUNCTION; Schema: neta_ops; Owner: -
+--
+
+CREATE FUNCTION neta_ops.enforce_single_asset_nesting() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  parent_of_parent UUID;
+  child_count      INTEGER;
+BEGIN
+  IF NEW.parent_asset_id IS NOT NULL THEN
+    IF NEW.parent_asset_id = NEW.id THEN
+      RAISE EXCEPTION 'An asset cannot be its own parent';
+    END IF;
+
+    -- The chosen parent must be a top-level asset.
+    SELECT parent_asset_id INTO parent_of_parent
+      FROM neta_ops.equipment_assets
+      WHERE id = NEW.parent_asset_id;
+
+    IF parent_of_parent IS NOT NULL THEN
+      RAISE EXCEPTION 'Sub-assets are limited to one layer: % is already a sub-asset and cannot be a parent', NEW.parent_asset_id;
+    END IF;
+
+    -- ...and this asset must not already have children of its own.
+    SELECT COUNT(*) INTO child_count
+      FROM neta_ops.equipment_assets
+      WHERE parent_asset_id = NEW.id AND deleted_at IS NULL;
+
+    IF child_count > 0 THEN
+      RAISE EXCEPTION 'Sub-assets are limited to one layer: this asset has % sub-asset(s) and cannot itself become one', child_count;
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: find_available_technicians(uuid, date, time without time zone, time without time zone, text); Type: FUNCTION; Schema: neta_ops; Owner: -
 --
 
@@ -2705,6 +4594,62 @@ begin
     execute format('create trigger trg_backup_%I after insert or update on neta_ops.%I for each row execute function neta_ops.fn_backup_row();', p_table, p_table);
   end if;
 end; $$;
+
+
+--
+-- Name: fn_attach_missing_report_snapshots(); Type: FUNCTION; Schema: neta_ops; Owner: -
+--
+
+CREATE FUNCTION neta_ops.fn_attach_missing_report_snapshots() RETURNS TABLE(table_name text, action text)
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  r record;
+  v_has_trigger boolean;
+begin
+  for r in
+    select c.relname::text as tbl
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'neta_ops'
+      and c.relkind = 'r'
+      and c.relname <> 'backup_reports'
+      -- Looks like a report: filed against a job, stores a JSON payload.
+      and exists (
+        select 1 from pg_attribute a
+        where a.attrelid = c.oid and a.attnum > 0 and not a.attisdropped
+          and a.attname = 'job_id'
+      )
+      and exists (
+        select 1 from pg_attribute a
+        join pg_type t on t.oid = a.atttypid
+        where a.attrelid = c.oid and a.attnum > 0 and not a.attisdropped
+          and t.typname = 'jsonb'
+      )
+    order by c.relname
+  loop
+    -- Match on the function the trigger calls, not on a name, because
+    -- fn_attach_report_snapshot hashes names longer than 63 bytes.
+    select exists (
+      select 1
+      from pg_trigger tg
+      join pg_class tc on tc.oid = tg.tgrelid
+      join pg_namespace tn on tn.oid = tc.relnamespace
+      where tn.nspname = 'neta_ops'
+        and tc.relname = r.tbl
+        and not tg.tgisinternal
+        and tg.tgfoid = 'neta_ops.fn_snapshot_report_json()'::regprocedure
+    ) into v_has_trigger;
+
+    if v_has_trigger then
+      table_name := r.tbl; action := 'already covered'; return next;
+    else
+      perform neta_ops.fn_attach_report_snapshot('neta_ops', r.tbl);
+      table_name := r.tbl; action := 'trigger attached'; return next;
+    end if;
+  end loop;
+end $$;
 
 
 --
@@ -2823,9 +4768,10 @@ declare
 begin
   for cmd in select * from pg_event_trigger_ddl_commands() loop
     if cmd.object_type = 'table' and cmd.schema_name = 'neta_ops' then
-      -- pg_event_trigger_ddl_commands() has no object_name column; resolve the
-      -- bare relation name from objid.
-      select c.relname into v_table from pg_class c where c.oid = cmd.objid;
+      select c.relname into v_table
+      from pg_class c
+      where c.oid = cmd.objid;
+
       if v_table is not null then
         perform neta_ops.fn_attach_report_snapshot(cmd.schema_name, v_table);
       end if;
@@ -2911,6 +4857,129 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+
+--
+-- Name: get_asset_test_dates(uuid[]); Type: FUNCTION; Schema: neta_ops; Owner: -
+--
+
+CREATE FUNCTION neta_ops.get_asset_test_dates(p_asset_ids uuid[]) RETURNS TABLE(asset_id uuid, test_date date)
+    LANGUAGE plpgsql
+    AS $_$
+DECLARE
+  v_union text;
+  v_sql   text;
+BEGIN
+  IF p_asset_ids IS NULL OR cardinality(p_asset_ids) = 0 THEN
+    RETURN;
+  END IF;
+
+  -- One SELECT per report table, ordered coalesce of every date container that
+  -- table actually has. Built from the catalog so new report tables need no
+  -- edit here.
+  WITH candidate(prio, required_column, required_type, expr) AS (
+    VALUES
+      ( 1, 'report_info', 'jsonb', $x$neta_ops.parse_report_date(report_info->>'date')$x$),
+      ( 2, 'report_info', 'jsonb', $x$neta_ops.parse_report_date(report_info->>'testDate')$x$),
+      ( 3, 'report_info', 'jsonb', $x$neta_ops.parse_report_date(report_info->>'test_date')$x$),
+      ( 4, 'report_info', 'jsonb', $x$neta_ops.parse_report_date(report_info->'reportInfo'->>'date')$x$),
+      ( 5, 'report_info', 'jsonb', $x$neta_ops.parse_report_date(report_info->>'date_prepared')$x$),
+      ( 6, 'report_data', 'jsonb', $x$neta_ops.parse_report_date(report_data->>'date')$x$),
+      ( 7, 'report_data', 'jsonb', $x$neta_ops.parse_report_date(report_data->>'testDate')$x$),
+      ( 8, 'report_data', 'jsonb', $x$neta_ops.parse_report_date(report_data->>'test_date')$x$),
+      ( 9, 'report_data', 'jsonb', $x$neta_ops.parse_report_date(report_data->'reportInfo'->>'date')$x$),
+      (10, 'data',        'jsonb', $x$neta_ops.parse_report_date(data->>'date')$x$),
+      (11, 'data',        'jsonb', $x$neta_ops.parse_report_date(data->>'testDate')$x$),
+      (12, 'data',        'jsonb', $x$neta_ops.parse_report_date(data->>'test_date')$x$),
+      (13, 'data',        'jsonb', $x$neta_ops.parse_report_date(data->'reportInfo'->>'date')$x$),
+      -- Custom form instances keep their fields in data.sections.{section}.{field}
+      (14, 'template_id', 'uuid',  $x$(
+             SELECT neta_ops.parse_report_date(fld.value #>> '{}')
+             FROM jsonb_each(CASE WHEN jsonb_typeof(data->'sections') = 'object'
+                                  THEN data->'sections' ELSE '{}'::jsonb END) AS sec(section_key, section_value),
+                  jsonb_each(CASE WHEN jsonb_typeof(sec.section_value) = 'object'
+                                  THEN sec.section_value ELSE '{}'::jsonb END) AS fld(field_key, value)
+             WHERE lower(fld.field_key) IN ('date', 'testdate', 'test_date', 'dateoftest', 'datetested')
+               AND neta_ops.parse_report_date(fld.value #>> '{}') IS NOT NULL
+             LIMIT 1)$x$),
+      -- Plain columns: NULL required_type means "whatever type, cast it to text"
+      (15, 'date',        NULL,    $x$neta_ops.parse_report_date("date"::text)$x$),
+      (16, 'report_date', NULL,    $x$neta_ops.parse_report_date(report_date::text)$x$),
+      (17, 'test_date',   NULL,    $x$neta_ops.parse_report_date(test_date::text)$x$)
+  ),
+  report_table AS (
+    SELECT c.table_name
+    FROM information_schema.columns c
+    WHERE c.table_schema = 'neta_ops'
+      AND c.table_name::text NOT IN (
+        -- job bookkeeping tables that also carry job_id and a date column
+        'assets', 'job_assets', 'job_comments', 'job_notes', 'job_pictures',
+        'job_costs', 'job_revenue', 'job_expenses', 'job_contracts',
+        'job_change_orders', 'job_notifications', 'deliverables',
+        'generated_documents', 'miscellaneous_documents', 'one_line_drawings',
+        'resource_allocations', 'technician_assignments', 'backup_reports'
+      )
+    GROUP BY c.table_name
+    HAVING bool_or(c.column_name::text = 'id' AND c.data_type::text = 'uuid')
+       AND bool_or(c.column_name::text = 'job_id')
+  )
+  SELECT string_agg(stmt, E'\n    UNION ALL ')
+  INTO v_union
+  FROM (
+    SELECT format(
+             'SELECT id AS report_id, job_id AS report_job_id, COALESCE(%s) AS test_date'
+             || ' FROM neta_ops.%I WHERE id IN (SELECT report_id FROM asset_report)',
+             string_agg(candidate.expr, ', ' ORDER BY candidate.prio),
+             report_table.table_name
+           ) AS stmt
+    FROM report_table
+    JOIN information_schema.columns col
+      ON col.table_schema = 'neta_ops'
+     AND col.table_name = report_table.table_name
+    JOIN candidate
+      ON candidate.required_column = col.column_name::text
+     AND (candidate.required_type IS NULL
+          OR candidate.required_type = col.data_type::text)
+    GROUP BY report_table.table_name
+  ) AS per_table;
+
+  IF v_union IS NULL THEN
+    RETURN;
+  END IF;
+
+  -- A handful of legacy rows were copied between report tables and share a
+  -- primary key, so prefer the copy whose job_id matches the job in file_url.
+  v_sql := format($q$
+    WITH asset_report AS (
+      SELECT a.id AS asset_id,
+             right(lower(a.file_url), 36)::uuid AS report_id,
+             substring(lower(a.file_url) from '/jobs/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/')::uuid AS job_id
+      FROM neta_ops.assets a
+      WHERE a.id = ANY($1)
+        AND lower(a.file_url) ~ '/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    ),
+    resolved_report AS (
+      %s
+    )
+    SELECT DISTINCT ON (ar.asset_id) ar.asset_id, rd.test_date
+    FROM asset_report ar
+    JOIN resolved_report rd ON rd.report_id = ar.report_id
+    WHERE rd.test_date IS NOT NULL
+    ORDER BY ar.asset_id,
+             (rd.report_job_id IS NOT DISTINCT FROM ar.job_id) DESC,
+             rd.test_date DESC
+  $q$, v_union);
+
+  RETURN QUERY EXECUTE v_sql USING p_asset_ids;
+END;
+$_$;
+
+
+--
+-- Name: FUNCTION get_asset_test_dates(p_asset_ids uuid[]); Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON FUNCTION neta_ops.get_asset_test_dates(p_asset_ids uuid[]) IS 'Returns the test date recorded inside each report asset, resolved from whichever report table the asset points at.';
 
 
 --
@@ -3060,6 +5129,201 @@ $$;
 
 
 --
+-- Name: log_field_equipment_assignment(); Type: FUNCTION; Schema: neta_ops; Owner: -
+--
+
+CREATE FUNCTION neta_ops.log_field_equipment_assignment() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'neta_ops', 'common', 'public'
+    AS $$
+BEGIN
+  IF TG_OP = 'UPDATE'
+     AND NEW.assigned_type      IS NOT DISTINCT FROM OLD.assigned_type
+     AND NEW.assigned_to        IS NOT DISTINCT FROM OLD.assigned_to
+     AND NEW.assigned_site_id   IS NOT DISTINCT FROM OLD.assigned_site_id
+     AND NEW.assigned_truck_id  IS NOT DISTINCT FROM OLD.assigned_truck_id
+     AND NEW.assigned_user_id   IS NOT DISTINCT FROM OLD.assigned_user_id
+  THEN
+    RETURN NULL;  -- nothing about the assignment changed
+  END IF;
+
+  UPDATE neta_ops.field_equipment_assignments
+     SET ended_at = now()
+   WHERE field_equipment_id = NEW.id
+     AND ended_at IS NULL;
+
+  IF NEW.assigned_type IS NOT NULL THEN
+    INSERT INTO neta_ops.field_equipment_assignments (
+      field_equipment_id, assigned_type, assigned_site_id, assigned_truck_id,
+      assigned_user_id, assigned_label, started_at, changed_by
+    ) VALUES (
+      NEW.id, NEW.assigned_type, NEW.assigned_site_id, NEW.assigned_truck_id,
+      NEW.assigned_user_id, NEW.assigned_to, now(), auth.uid()
+    );
+  END IF;
+
+  RETURN NULL;
+END;
+$$;
+
+
+--
+-- Name: move_report_assets_to_job(uuid[], uuid, uuid, text); Type: FUNCTION; Schema: neta_ops; Owner: -
+--
+
+CREATE FUNCTION neta_ops.move_report_assets_to_job(p_asset_ids uuid[], p_source_job_id uuid, p_target_job_id uuid, p_reason text DEFAULT NULL::text) RETURNS TABLE(asset_id uuid, asset_name text, new_file_url text, report_row_updated boolean)
+    LANGUAGE plpgsql
+    SET search_path TO 'neta_ops', 'common', 'public'
+    AS $_$
+DECLARE
+  v_asset_ids   uuid[];
+  v_report_ids  uuid[];
+  v_updated_ids uuid[] := ARRAY[]::uuid[];
+  v_batch       uuid[];
+  v_table       text;
+BEGIN
+  IF p_asset_ids IS NULL OR cardinality(p_asset_ids) = 0 THEN
+    RETURN;
+  END IF;
+
+  IF p_source_job_id IS NULL OR p_target_job_id IS NULL THEN
+    RAISE EXCEPTION 'Both a source job and a target job are required';
+  END IF;
+
+  IF p_source_job_id = p_target_job_id THEN
+    RAISE EXCEPTION 'The reports are already on that job';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM neta_ops.jobs j WHERE j.id = p_target_job_id) THEN
+    RAISE EXCEPTION 'Target job % does not exist', p_target_job_id;
+  END IF;
+
+  -- Only the assets genuinely linked to the source job are in play.
+  SELECT array_agg(ja.asset_id)
+  INTO v_asset_ids
+  FROM neta_ops.job_assets ja
+  WHERE ja.job_id = p_source_job_id
+    AND ja.asset_id = ANY(p_asset_ids);
+
+  IF v_asset_ids IS NULL OR cardinality(v_asset_ids) = 0 THEN
+    RETURN;
+  END IF;
+
+  -- The report row id is the last path segment of the file_url, for both
+  -- 'report:/jobs/{job}/{slug}/{reportId}' and the custom-form and grounding variants.
+  -- Uploaded documents (http URLs) have no report row and simply drop out here.
+  SELECT array_agg(DISTINCT right(lower(a.file_url), 36)::uuid)
+  INTO v_report_ids
+  FROM neta_ops.assets a
+  WHERE a.id = ANY(v_asset_ids)
+    AND lower(a.file_url) ~ '/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$';
+
+  -- 1. The job link. An asset already linked to the target job (someone linked it to both)
+  --    would collide on (job_id, asset_id), so drop the source link in that case instead.
+  DELETE FROM neta_ops.job_assets ja
+  WHERE ja.job_id = p_source_job_id
+    AND ja.asset_id = ANY(v_asset_ids)
+    AND EXISTS (
+      SELECT 1 FROM neta_ops.job_assets existing
+      WHERE existing.job_id = p_target_job_id
+        AND existing.asset_id = ja.asset_id
+    );
+
+  UPDATE neta_ops.job_assets ja
+  SET job_id = p_target_job_id
+  WHERE ja.job_id = p_source_job_id
+    AND ja.asset_id = ANY(v_asset_ids);
+
+  -- 2. The route stored in file_url. Only the /jobs/{id}/ segment changes: the slug, the
+  --    substation folder and the report id all stay exactly as they are.
+  UPDATE neta_ops.assets a
+  SET file_url = regexp_replace(
+        a.file_url,
+        '/jobs/' || p_source_job_id::text || '/',
+        '/jobs/' || p_target_job_id::text || '/',
+        'i'
+      )
+  WHERE a.id = ANY(v_asset_ids)
+    AND a.file_url ~* ('/jobs/' || p_source_job_id::text || '/');
+
+  -- 3. The report's own row. Every neta_ops table with a uuid `id` and a `job_id` is a
+  --    candidate; the job bookkeeping tables are excluded by name (same list as
+  --    neta_ops.get_asset_test_dates). Matching on job_id = source keeps the update from
+  --    touching an unrelated row that shares a primary key.
+  IF v_report_ids IS NOT NULL AND cardinality(v_report_ids) > 0 THEN
+    FOR v_table IN
+      SELECT c.table_name::text
+      FROM information_schema.columns c
+      -- Base tables only. A view with the same shape would be caught by the column test
+      -- below and then fail the UPDATE, taking the whole move down with it.
+      JOIN information_schema.tables t
+        ON t.table_schema = c.table_schema
+       AND t.table_name = c.table_name
+       AND t.table_type = 'BASE TABLE'
+      WHERE c.table_schema = 'neta_ops'
+        AND c.table_name::text NOT IN (
+          'assets', 'job_assets', 'job_comments', 'job_notes', 'job_pictures',
+          'job_costs', 'job_revenue', 'job_expenses', 'job_contracts',
+          'job_change_orders', 'job_notifications', 'deliverables',
+          'generated_documents', 'miscellaneous_documents', 'one_line_drawings',
+          'resource_allocations', 'technician_assignments', 'backup_reports',
+          'report_moves', 'substation_folders', 'substation_folder_assignments'
+        )
+      GROUP BY c.table_name
+      HAVING bool_or(c.column_name::text = 'id' AND c.data_type::text = 'uuid')
+         AND bool_or(c.column_name::text = 'job_id')
+    LOOP
+      EXECUTE format(
+        'WITH moved AS ('
+        || ' UPDATE neta_ops.%I SET job_id = $1'
+        || ' WHERE id = ANY($2) AND job_id = $3'
+        || ' RETURNING id'
+        || ') SELECT COALESCE(array_agg(id), ARRAY[]::uuid[]) FROM moved',
+        v_table
+      )
+      INTO v_batch
+      USING p_target_job_id, v_report_ids, p_source_job_id;
+
+      IF cardinality(v_batch) > 0 THEN
+        v_updated_ids := v_updated_ids || v_batch;
+      END IF;
+    END LOOP;
+  END IF;
+
+  -- 4. The log.
+  INSERT INTO neta_ops.report_moves (asset_id, from_job_id, to_job_id, moved_by, reason)
+  SELECT unnest(v_asset_ids), p_source_job_id, p_target_job_id, auth.uid(), NULLIF(btrim(p_reason), '');
+
+  RETURN QUERY
+  SELECT a.id,
+         a.name,
+         a.file_url,
+         -- CASE, not AND: the uuid cast has to be guarded by the pattern test, and only a
+         -- CASE guarantees the test runs first. False here means the link and the URL
+         -- moved but no report row did — an uploaded document, or a report whose own row
+         -- was already pointing at some other job.
+         COALESCE(
+           CASE
+             WHEN lower(a.file_url) ~ '/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+               THEN right(lower(a.file_url), 36)::uuid = ANY(v_updated_ids)
+           END,
+           false
+         ) AS report_row_updated
+  FROM neta_ops.assets a
+  WHERE a.id = ANY(v_asset_ids)
+  ORDER BY a.name;
+END;
+$_$;
+
+
+--
+-- Name: FUNCTION move_report_assets_to_job(p_asset_ids uuid[], p_source_job_id uuid, p_target_job_id uuid, p_reason text); Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON FUNCTION neta_ops.move_report_assets_to_job(p_asset_ids uuid[], p_source_job_id uuid, p_target_job_id uuid, p_reason text) IS 'Moves report assets between jobs: rewrites the job_assets link, the file_url route and the report row''s own job_id in one transaction.';
+
+
+--
 -- Name: parse_equipment_date(text); Type: FUNCTION; Schema: neta_ops; Owner: -
 --
 
@@ -3102,6 +5366,60 @@ BEGIN
   END;
 END;
 $_$;
+
+
+--
+-- Name: parse_report_date(text); Type: FUNCTION; Schema: neta_ops; Owner: -
+--
+
+CREATE FUNCTION neta_ops.parse_report_date(p_value text) RETURNS date
+    LANGUAGE plpgsql IMMUTABLE
+    AS $_$
+DECLARE
+  v_text text;
+  v_date date;
+BEGIN
+  IF p_value IS NULL THEN
+    RETURN NULL;
+  END IF;
+
+  v_text := btrim(p_value);
+  IF v_text = '' THEN
+    RETURN NULL;
+  END IF;
+
+  BEGIN
+    IF v_text ~ '^\d{4}-\d{1,2}-\d{1,2}' THEN
+      -- ISO, optionally followed by a time component we do not care about
+      v_date := to_date(substring(v_text from '^\d{4}-\d{1,2}-\d{1,2}'), 'YYYY-MM-DD');
+    ELSIF v_text ~ '^\d{1,2}/\d{1,2}/\d{4}$' THEN
+      v_date := to_date(v_text, 'FMMM/FMDD/YYYY');
+    ELSIF v_text ~ '^\d{1,2}/\d{1,2}/\d{2}$' THEN
+      v_date := to_date(v_text, 'FMMM/FMDD/YY');
+    ELSIF v_text ~ '^\d{1,2}-\d{1,2}-\d{4}$' THEN
+      v_date := to_date(v_text, 'FMMM-FMDD-YYYY');
+    ELSE
+      RETURN NULL;
+    END IF;
+  EXCEPTION WHEN OTHERS THEN
+    RETURN NULL;
+  END;
+
+  -- Reject typos that parse cleanly but cannot be a test date.
+  IF v_date < DATE '2000-01-01' OR v_date > (CURRENT_DATE + INTERVAL '1 year') THEN
+    RETURN NULL;
+  END IF;
+
+  RETURN v_date;
+END;
+$_$;
+
+
+--
+-- Name: FUNCTION parse_report_date(p_value text); Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON FUNCTION neta_ops.parse_report_date(p_value text) IS 'Normalizes a report test date (ISO or M/D/YYYY text) to a date; NULL when missing or implausible.';
 
 
 --
@@ -3168,6 +5486,22 @@ BEGIN
     RETURN result > 0;
 END;
 $_$;
+
+
+--
+-- Name: set_substation_folder_level(); Type: FUNCTION; Schema: neta_ops; Owner: -
+--
+
+CREATE FUNCTION neta_ops.set_substation_folder_level() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.level IS NULL THEN
+    NEW.level := CASE WHEN NEW.substation_key IS NULL THEN 'substation' ELSE 'item' END;
+  END IF;
+  RETURN NEW;
+END;
+$$;
 
 
 --
@@ -3274,6 +5608,20 @@ CREATE FUNCTION neta_ops.touch_low_voltage_switch_maint_mts_reports_updated_at()
 BEGIN
   NEW.updated_at := now();
   RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: update_energized_work_permit_reports_updated_at(); Type: FUNCTION; Schema: neta_ops; Owner: -
+--
+
+CREATE FUNCTION neta_ops.update_energized_work_permit_reports_updated_at() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
 END;
 $$;
 
@@ -3446,54 +5794,6 @@ CREATE FUNCTION neta_ops.update_updated_at_column() RETURNS trigger
     AS $$
 BEGIN
   NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$;
-
-
---
--- Name: custom_form_version_is_immutable(); Type: FUNCTION; Schema: neta_ops; Owner: -
---
-
-CREATE FUNCTION neta_ops.custom_form_version_is_immutable() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-  IF TG_OP = 'DELETE' THEN
-    RAISE EXCEPTION
-      'custom_form_template_versions rows are immutable; instances are pinned to them';
-  END IF;
-
-  IF NEW.template_id IS DISTINCT FROM OLD.template_id
-     OR NEW.version IS DISTINCT FROM OLD.version
-     OR NEW.schema_version IS DISTINCT FROM OLD.schema_version
-     OR NEW.structure::text IS DISTINCT FROM OLD.structure::text
-     OR NEW.checksum IS DISTINCT FROM OLD.checksum
-     OR NEW.name IS DISTINCT FROM OLD.name
-     OR NEW.neta_section IS DISTINCT FROM OLD.neta_section
-     OR NEW.published_at IS DISTINCT FROM OLD.published_at
-  THEN
-    RAISE EXCEPTION
-      'custom_form_template_versions payload is immutable (version % of template %)',
-      OLD.version, OLD.template_id;
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-
---
--- Name: custom_form_instance_bump_revision(); Type: FUNCTION; Schema: neta_ops; Owner: -
---
-
-CREATE FUNCTION neta_ops.custom_form_instance_bump_revision() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-  IF NEW.revision = OLD.revision THEN
-    NEW.revision := OLD.revision + 1;
-  END IF;
   RETURN NEW;
 END;
 $$;
@@ -4357,7 +6657,8 @@ CREATE TABLE common.amp_contacts (
     role character varying(500) DEFAULT ''::character varying NOT NULL,
     display_order integer DEFAULT 0 NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    updated_at timestamp with time zone DEFAULT now(),
+    profile_id uuid
 );
 
 
@@ -4366,6 +6667,102 @@ CREATE TABLE common.amp_contacts (
 --
 
 COMMENT ON TABLE common.amp_contacts IS 'AMP internal phone list; editable by HR/Office admin, viewable by all authenticated users';
+
+
+--
+-- Name: COLUMN amp_contacts.profile_id; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.amp_contacts.profile_id IS 'Pinned ampOS account for this contact. NULL = match automatically by email, then name.';
+
+
+--
+-- Name: ampu_courses; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.ampu_courses (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    course_code text NOT NULL,
+    title text NOT NULL,
+    description text DEFAULT ''::text NOT NULL,
+    department text DEFAULT 'OTHER'::text NOT NULL,
+    thumbnail text DEFAULT '📘'::text NOT NULL,
+    instructor text,
+    credits numeric(3,1) DEFAULT 1.0 NOT NULL,
+    estimated_duration_minutes integer DEFAULT 0 NOT NULL,
+    is_required boolean DEFAULT false NOT NULL,
+    sequential_unlock boolean DEFAULT false NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    sort_order integer DEFAULT 0 NOT NULL,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ampu_courses_department_check CHECK ((department = ANY (ARRAY['NFPA_70E'::text, 'NFPA_70B'::text, 'ONBOARDING'::text, 'OTHER'::text])))
+);
+
+
+--
+-- Name: TABLE ampu_courses; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON TABLE common.ampu_courses IS 'AMPu training catalog. One row per unit/course; lessons live in common.ampu_lessons.';
+
+
+--
+-- Name: ampu_lessons; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.ampu_lessons (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    course_id uuid NOT NULL,
+    title text NOT NULL,
+    lesson_type text DEFAULT 'VIDEO'::text NOT NULL,
+    duration_seconds integer,
+    video_url text,
+    youtube_id text,
+    quiz jsonb,
+    sort_order integer DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    document_url text,
+    document_name text,
+    CONSTRAINT ampu_lessons_lesson_type_check CHECK ((lesson_type = ANY (ARRAY['VIDEO'::text, 'QUIZ'::text, 'DOCUMENT'::text]))),
+    CONSTRAINT ampu_lessons_payload_present CHECK ((((lesson_type = 'VIDEO'::text) AND ((video_url IS NOT NULL) OR (youtube_id IS NOT NULL))) OR ((lesson_type = 'DOCUMENT'::text) AND (document_url IS NOT NULL)) OR ((lesson_type = 'QUIZ'::text) AND (quiz IS NOT NULL))))
+);
+
+
+--
+-- Name: TABLE ampu_lessons; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON TABLE common.ampu_lessons IS 'AMPu lessons. VIDEO rows carry video_url or youtube_id; DOCUMENT rows carry document_url (a PDF/Word file); QUIZ rows carry their questions in the quiz JSONB.';
+
+
+--
+-- Name: ampu_progress; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.ampu_progress (
+    user_id uuid NOT NULL,
+    lesson_id uuid NOT NULL,
+    course_id uuid NOT NULL,
+    status text DEFAULT 'in_progress'::text NOT NULL,
+    last_watched_seconds integer DEFAULT 0 NOT NULL,
+    attempt_count integer DEFAULT 0 NOT NULL,
+    best_score integer,
+    last_score integer,
+    passed boolean DEFAULT false NOT NULL,
+    completed_at timestamp with time zone,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT ampu_progress_status_check CHECK ((status = ANY (ARRAY['in_progress'::text, 'completed'::text])))
+);
+
+
+--
+-- Name: TABLE ampu_progress; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON TABLE common.ampu_progress IS 'AMPu learner progress, one row per (user, lesson). RLS scopes it to the owner; common.ampu_leaderboard() serves cross-user aggregates.';
 
 
 --
@@ -4432,7 +6829,8 @@ CREATE TABLE common.announcements (
     expires_at timestamp with time zone,
     attachments jsonb DEFAULT '[]'::jsonb,
     requires_acknowledgment boolean DEFAULT false,
-    acknowledgment_form_id uuid
+    acknowledgment_form_id uuid,
+    audience jsonb
 );
 
 
@@ -4507,6 +6905,31 @@ COMMENT ON TABLE common.candidate_communication_templates IS 'Email/message temp
 
 
 --
+-- Name: candidate_question_answers; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.candidate_question_answers (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    candidate_id uuid NOT NULL,
+    question_id uuid,
+    question_label text NOT NULL,
+    question_type text NOT NULL,
+    answer_text text,
+    answer_bool boolean,
+    answer_json jsonb,
+    display_order integer DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE candidate_question_answers; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON TABLE common.candidate_question_answers IS 'Applicant answers to custom application questions. question_label/question_type are snapshots taken at submit time so history survives question edits.';
+
+
+--
 -- Name: candidates; Type: TABLE; Schema: common; Owner: -
 --
 
@@ -4576,13 +6999,6 @@ COMMENT ON COLUMN common.candidates.fr_jacket_size IS 'FR jacket/coat size. Upda
 
 
 --
--- Name: COLUMN candidates.expected_compensation; Type: COMMENT; Schema: common; Owner: -
---
-
-COMMENT ON COLUMN common.candidates.expected_compensation IS 'Applicant''s expected compensation for the role, as entered on the careers page.';
-
-
---
 -- Name: COLUMN candidates.fr_sizes_updated_at; Type: COMMENT; Schema: common; Owner: -
 --
 
@@ -4594,6 +7010,13 @@ COMMENT ON COLUMN common.candidates.fr_sizes_updated_at IS 'When FR sizes were l
 --
 
 COMMENT ON COLUMN common.candidates.cover_letter_url IS 'URL to uploaded cover letter file (PDF/DOC/DOCX) in resumes storage bucket';
+
+
+--
+-- Name: COLUMN candidates.expected_compensation; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.candidates.expected_compensation IS 'Applicant''s expected compensation for the role, as entered on the careers page.';
 
 
 --
@@ -4826,8 +7249,8 @@ CREATE TABLE common.customers (
     brand_primary text,
     allowed_payment_terms text[],
     payment_terms_note text,
-    CONSTRAINT customers_brand_primary_hex CHECK (((brand_primary IS NULL) OR (brand_primary ~* '^#[0-9a-f]{6}$'::text))),
-    CONSTRAINT customers_allowed_payment_terms_values CHECK (((allowed_payment_terms IS NULL) OR (allowed_payment_terms <@ ARRAY['net30'::text, 'net60'::text, 'net90'::text])))
+    CONSTRAINT customers_allowed_payment_terms_values CHECK (((allowed_payment_terms IS NULL) OR (allowed_payment_terms <@ ARRAY['net30'::text, 'net60'::text, 'net90'::text]))),
+    CONSTRAINT customers_brand_primary_hex CHECK (((brand_primary IS NULL) OR (brand_primary ~* '^#[0-9a-f]{6}$'::text)))
 );
 
 
@@ -4850,6 +7273,20 @@ COMMENT ON COLUMN common.customers.logo_url IS 'Public URL of the customer porta
 --
 
 COMMENT ON COLUMN common.customers.brand_primary IS 'Customer portal primary color override as #RRGGBB.';
+
+
+--
+-- Name: COLUMN customers.allowed_payment_terms; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.customers.allowed_payment_terms IS 'Payment terms this customer may be offered (subset of net30/net60/net90). NULL/empty = no restriction. Surfaced to estimators on the estimate sheet and when generating a letter proposal.';
+
+
+--
+-- Name: COLUMN customers.payment_terms_note; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.customers.payment_terms_note IS 'Why the payment terms are restricted (e.g. paid-when-paid contracts, payment history). Shown to the estimator alongside the allowed terms.';
 
 
 --
@@ -4887,6 +7324,84 @@ CREATE TABLE common.customer_users (
     invited_by uuid,
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
+
+
+--
+-- Name: device_catalog; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.device_catalog (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    dedup_key text NOT NULL,
+    device_class text,
+    manufacturer text NOT NULL,
+    display_name text,
+    rating text,
+    series text,
+    model_code text,
+    notes text,
+    ptw_category text,
+    source text DEFAULT 'PTW.LIB'::text NOT NULL,
+    source_modified text,
+    raw_fields jsonb,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE device_catalog; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON TABLE common.device_catalog IS 'SKM PowerTools (PTW.LIB) protective-device library, ~11.3k devices; reference data for equipment/asset autofill. Loaded via scripts/load-device-catalog.mjs.';
+
+
+--
+-- Name: divisions; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.divisions (
+    id text NOT NULL,
+    label text NOT NULL,
+    sort_order integer DEFAULT 0 NOT NULL,
+    is_field_tech boolean DEFAULT true NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE divisions; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON TABLE common.divisions IS 'Every division the app knows about. neta_ops.jobs.division is a foreign key to this table, so adding a row here is all it takes to add a division.';
+
+
+--
+-- Name: COLUMN divisions.id; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.divisions.id IS 'Internal identifier, also the URL segment: /north_alabama/jobs. Never rename an id in place unless you mean it -- the jobs foreign key cascades the rename.';
+
+
+--
+-- Name: COLUMN divisions.label; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.divisions.label IS 'What users see in the division switcher, e.g. north_alabama displays as "Decatur".';
+
+
+--
+-- Name: COLUMN divisions.is_field_tech; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.divisions.is_field_tech IS 'True for the cities in the Field Technician Portal switcher; false for standalone portals (engineering, calibration, lab, hr).';
+
+
+--
+-- Name: COLUMN divisions.active; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.divisions.active IS 'Set false to retire a division instead of deleting it. Deleting one that still has jobs is blocked by the foreign key, which is the point.';
 
 
 --
@@ -5188,6 +7703,101 @@ CREATE TABLE common.feature_requests (
 
 
 --
+-- Name: help_center_documents; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.help_center_documents (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    name character varying(255) NOT NULL,
+    category character varying(50) DEFAULT 'general'::character varying NOT NULL,
+    file_path text NOT NULL,
+    file_url text NOT NULL,
+    file_size bigint NOT NULL,
+    file_type character varying(50) DEFAULT 'application/pdf'::character varying,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    view_count integer DEFAULT 0
+);
+
+
+--
+-- Name: TABLE help_center_documents; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON TABLE common.help_center_documents IS 'Stores PDF documents uploaded to the Help Center';
+
+
+--
+-- Name: COLUMN help_center_documents.category; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.help_center_documents.category IS 'Portal category: operations, sales, office-admin, engineering, hr, lab, field-tech, general';
+
+
+--
+-- Name: COLUMN help_center_documents.file_path; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.help_center_documents.file_path IS 'Storage path to the PDF file';
+
+
+--
+-- Name: COLUMN help_center_documents.file_url; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.help_center_documents.file_url IS 'Public URL to access the PDF file';
+
+
+--
+-- Name: help_guides; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.help_guides (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    title character varying(255) NOT NULL,
+    description text,
+    category character varying(50) DEFAULT 'general'::character varying NOT NULL,
+    tags text[] DEFAULT '{}'::text[],
+    content jsonb DEFAULT '{"blocks": [], "settings": {"allowComments": false, "showLastUpdated": true, "showTableOfContents": true}}'::jsonb NOT NULL,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    is_published boolean DEFAULT false,
+    view_count integer DEFAULT 0,
+    allowed_roles text[] DEFAULT '{}'::text[]
+);
+
+
+--
+-- Name: TABLE help_guides; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON TABLE common.help_guides IS 'Stores help center guides and documentation';
+
+
+--
+-- Name: COLUMN help_guides.category; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.help_guides.category IS 'Portal category: operations, sales, office-admin, engineering, hr, lab, field-tech, general';
+
+
+--
+-- Name: COLUMN help_guides.content; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.help_guides.content IS 'JSON structure containing blocks and settings for the guide content';
+
+
+--
+-- Name: COLUMN help_guides.allowed_roles; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.help_guides.allowed_roles IS 'Role names that can see this guide. Empty array = all roles.';
+
+
+--
 -- Name: hr_tasks; Type: TABLE; Schema: common; Owner: -
 --
 
@@ -5486,6 +8096,39 @@ COMMENT ON COLUMN common.it_equipment_tasks.is_template IS 'When true, task is a
 
 
 --
+-- Name: job_application_questions; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.job_application_questions (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    requisition_id uuid NOT NULL,
+    label text NOT NULL,
+    question_type text DEFAULT 'short_text'::text NOT NULL,
+    options jsonb DEFAULT '[]'::jsonb NOT NULL,
+    help_text text,
+    display_order integer DEFAULT 0 NOT NULL,
+    required boolean DEFAULT false NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT job_application_questions_question_type_check CHECK ((question_type = ANY (ARRAY['short_text'::text, 'long_text'::text, 'yes_no'::text, 'single_select'::text, 'multi_select'::text])))
+);
+
+
+--
+-- Name: TABLE job_application_questions; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON TABLE common.job_application_questions IS 'Custom questions HR attaches to a job requisition; rendered on the public application form.';
+
+
+--
+-- Name: COLUMN job_application_questions.options; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.job_application_questions.options IS 'Choice list for single_select/multi_select. JSON array of strings. Empty for other types.';
+
+
+--
 -- Name: job_notifications; Type: TABLE; Schema: common; Owner: -
 --
 
@@ -5511,7 +8154,6 @@ CREATE TABLE common.job_requisitions (
     department character varying(100) NOT NULL,
     location character varying(255) NOT NULL,
     employment_type character varying(50) NOT NULL,
-    pay_type character varying(10) DEFAULT 'salary'::character varying,
     salary_range_min numeric(10,2),
     salary_range_max numeric(10,2),
     salary_currency character varying(3) DEFAULT 'USD'::character varying,
@@ -5561,7 +8203,9 @@ CREATE TABLE common.job_requisitions (
     deleted_at timestamp with time zone,
     deleted_by uuid,
     current_approval_step integer DEFAULT 0,
+    pay_type character varying(10) DEFAULT 'salary'::character varying,
     CONSTRAINT job_requisitions_number_of_positions_check CHECK ((number_of_positions > 0)),
+    CONSTRAINT job_requisitions_pay_type_check CHECK (((pay_type)::text = ANY ((ARRAY['salary'::character varying, 'hourly'::character varying])::text[]))),
     CONSTRAINT job_requisitions_priority_check CHECK (((priority)::text = ANY (ARRAY[('low'::character varying)::text, ('medium'::character varying)::text, ('high'::character varying)::text, ('urgent'::character varying)::text]))),
     CONSTRAINT job_requisitions_status_check CHECK (((status)::text = ANY (ARRAY[('draft'::character varying)::text, ('pending_approval'::character varying)::text, ('approved'::character varying)::text, ('posted'::character varying)::text, ('closed'::character varying)::text, ('cancelled'::character varying)::text]))),
     CONSTRAINT job_requisitions_travel_percentage_check CHECK (((travel_percentage >= 0) AND (travel_percentage <= 100)))
@@ -6493,6 +9137,38 @@ CREATE TABLE common.permission_change_logs (
 
 
 --
+-- Name: prayer_intercessions; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.prayer_intercessions (
+    request_id uuid NOT NULL,
+    user_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: prayer_requests; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.prayer_requests (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    author_id uuid NOT NULL,
+    title text,
+    body text NOT NULL,
+    is_anonymous boolean DEFAULT false NOT NULL,
+    status text DEFAULT 'active'::text NOT NULL,
+    answered_note text,
+    answered_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT prayer_requests_body_len CHECK (((char_length(btrim(body)) >= 1) AND (char_length(btrim(body)) <= 1000))),
+    CONSTRAINT prayer_requests_note_len CHECK (((answered_note IS NULL) OR (char_length(answered_note) <= 500))),
+    CONSTRAINT prayer_requests_status_check CHECK ((status = ANY (ARRAY['active'::text, 'answered'::text]))),
+    CONSTRAINT prayer_requests_title_len CHECK (((title IS NULL) OR (char_length(title) <= 120)))
+);
+
+
+--
 -- Name: profiles; Type: TABLE; Schema: common; Owner: -
 --
 
@@ -6535,6 +9211,7 @@ CREATE TABLE common.profiles (
     is_active boolean DEFAULT true NOT NULL,
     deactivated_at timestamp with time zone,
     deactivated_by uuid,
+    employee_number text,
     CONSTRAINT profiles_employment_status_check CHECK (((employment_status = ANY (ARRAY['active'::text, 'inactive'::text, 'terminated'::text, 'leave'::text, 'other'::text])) OR (employment_status IS NULL))),
     CONSTRAINT profiles_labor_type_check CHECK (((labor_type = ANY (ARRAY['Direct Labor'::text, 'Indirect Labor'::text])) OR (labor_type IS NULL))),
     CONSTRAINT profiles_termination_type_check CHECK (((termination_type = ANY (ARRAY['voluntary'::text, 'involuntary'::text, 'retirement'::text, 'other'::text])) OR (termination_type IS NULL)))
@@ -6675,6 +9352,53 @@ COMMENT ON COLUMN common.profiles.division IS 'AMP division; may duplicate auth 
 
 
 --
+-- Name: COLUMN profiles.employee_number; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON COLUMN common.profiles.employee_number IS 'Human-readable employee ID / badge number from the company roster (e.g. 1001, 0034, S0002). Assigned manually, not auto-generated. Distinct from employee_id columns elsewhere, which are uuid FKs to profiles.id.';
+
+
+--
+-- Name: prayer_wall_feed; Type: VIEW; Schema: common; Owner: -
+--
+
+CREATE VIEW common.prayer_wall_feed WITH (security_barrier='true') AS
+ SELECT r.id,
+    r.title,
+    r.body,
+    r.is_anonymous,
+    r.status,
+    r.answered_note,
+    r.answered_at,
+    r.created_at,
+    (r.author_id = auth.uid()) AS is_mine,
+        CASE
+            WHEN (r.is_anonymous AND (r.author_id <> auth.uid())) THEN NULL::uuid
+            ELSE r.author_id
+        END AS author_id,
+        CASE
+            WHEN (r.is_anonymous AND (r.author_id <> auth.uid())) THEN NULL::text
+            ELSE COALESCE(NULLIF(btrim(p.full_name), ''::text), p.email, 'Unknown'::text)
+        END AS author_name,
+    (( SELECT count(*) AS count
+           FROM common.prayer_intercessions i
+          WHERE (i.request_id = r.id)))::integer AS praying_count,
+    (EXISTS ( SELECT 1
+           FROM common.prayer_intercessions i
+          WHERE ((i.request_id = r.id) AND (i.user_id = auth.uid())))) AS is_praying
+   FROM (common.prayer_requests r
+     LEFT JOIN common.profiles p ON ((p.id = r.author_id)))
+  WHERE common.is_employee_user();
+
+
+--
+-- Name: VIEW prayer_wall_feed; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON VIEW common.prayer_wall_feed IS 'Prayer Wall feed. author_id/author_name are NULL on anonymous rows unless the caller is the author. Only readable by employees.';
+
+
+--
 -- Name: quickbooks_integrations; Type: TABLE; Schema: common; Owner: -
 --
 
@@ -6733,6 +9457,27 @@ CREATE TABLE common.quickbooks_job_sync (
 --
 
 COMMENT ON TABLE common.quickbooks_job_sync IS 'Tracks QuickBooks estimates, invoices, and payments linked to jobs';
+
+
+--
+-- Name: recruiting_prospect_activity; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.recruiting_prospect_activity (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    prospect_id uuid NOT NULL,
+    type text NOT NULL,
+    body text,
+    occurred_at timestamp with time zone,
+    original_author text,
+    import_ref jsonb,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT recruiting_prospect_activity_body_len_check CHECK (((body IS NULL) OR (char_length(body) <= 10000))),
+    CONSTRAINT recruiting_prospect_activity_contact_time_check CHECK (((type <> ALL (ARRAY['call'::text, 'text'::text, 'email'::text])) OR (occurred_at IS NOT NULL))),
+    CONSTRAINT recruiting_prospect_activity_note_body_check CHECK (((type <> 'note'::text) OR ((body IS NOT NULL) AND (btrim(body) <> ''::text)))),
+    CONSTRAINT recruiting_prospect_activity_type_check CHECK ((type = ANY (ARRAY['note'::text, 'call'::text, 'text'::text, 'email'::text, 'status_change'::text, 'promoted'::text])))
+);
 
 
 --
@@ -6813,6 +9558,32 @@ CREATE TABLE common.role_change_logs (
     "timestamp" timestamp with time zone DEFAULT now(),
     created_at timestamp with time zone DEFAULT now()
 );
+
+
+--
+-- Name: sites; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.sites (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    name text NOT NULL,
+    address text,
+    city text,
+    state text,
+    notes text,
+    status text DEFAULT 'active'::text NOT NULL,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT sites_status_check CHECK ((status = ANY (ARRAY['active'::text, 'inactive'::text])))
+);
+
+
+--
+-- Name: TABLE sites; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON TABLE common.sites IS 'Customer facilities/jobsites (e.g. "QTS ATL2"). Deliberately has no customer FK: AMP works for multiple customers at the same site on the same equipment, so site identity is independent of who is paying.';
 
 
 --
@@ -6908,6 +9679,31 @@ CREATE TABLE common.system_logs (
     description text,
     metadata jsonb DEFAULT '{}'::jsonb,
     created_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: talent_pool_import_runs; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.talent_pool_import_runs (
+    manifest_id uuid NOT NULL,
+    run_id uuid NOT NULL,
+    target text NOT NULL,
+    heartbeat_at timestamp with time zone DEFAULT now() NOT NULL,
+    started_at timestamp with time zone DEFAULT now() NOT NULL,
+    finished_at timestamp with time zone
+);
+
+
+--
+-- Name: talent_pool_members; Type: TABLE; Schema: common; Owner: -
+--
+
+CREATE TABLE common.talent_pool_members (
+    user_id uuid NOT NULL,
+    added_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -7209,10 +10005,44 @@ CREATE VIEW common.v_posted_job_requisitions AS
     requisition_number,
     posted_at,
     application_deadline,
-    posting_end_date
+    posting_end_date,
+    pay_type
    FROM common.job_requisitions
-  WHERE ((deleted_at IS NULL) AND ((status)::text = 'posted'::text) AND ((posting_end_date IS NULL) OR (posting_end_date >= CURRENT_DATE)))
+  WHERE ((deleted_at IS NULL) AND (is_template IS NOT TRUE) AND ((status)::text = 'posted'::text) AND ((posting_end_date IS NULL) OR (posting_end_date >= CURRENT_DATE)))
   ORDER BY posted_at DESC;
+
+
+--
+-- Name: VIEW v_posted_job_requisitions; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON VIEW common.v_posted_job_requisitions IS 'Public contract for ampqes.com/careers. The sole definition of a publicly visible job posting. Read by the anon role at website build time. Changing the WHERE clause changes what the public sees; removing or reordering columns breaks the ampqes.com build by design. Coordinate with that repo.';
+
+
+--
+-- Name: v_public_application_questions; Type: VIEW; Schema: common; Owner: -
+--
+
+CREATE VIEW common.v_public_application_questions AS
+ SELECT q.id,
+    q.requisition_id,
+    q.label,
+    q.question_type,
+    q.options,
+    q.help_text,
+    q.display_order,
+    q.required
+   FROM (common.job_application_questions q
+     JOIN common.job_requisitions r ON ((r.id = q.requisition_id)))
+  WHERE ((r.deleted_at IS NULL) AND (r.is_template IS NOT TRUE) AND ((r.status)::text = ANY (ARRAY['approved'::text, 'posted'::text])) AND ((r.posting_end_date IS NULL) OR (r.posting_end_date >= CURRENT_DATE)))
+  ORDER BY q.display_order;
+
+
+--
+-- Name: VIEW v_public_application_questions; Type: COMMENT; Schema: common; Owner: -
+--
+
+COMMENT ON VIEW common.v_public_application_questions IS 'Questions visible to an applicant on the public careers form. Read by the anon role.';
 
 
 --
@@ -7671,7 +10501,6 @@ CREATE TABLE hr.job_requisitions (
     department character varying(100) NOT NULL,
     location character varying(255) NOT NULL,
     employment_type character varying(50) NOT NULL,
-    pay_type character varying(10) DEFAULT 'salary'::character varying,
     salary_range_min numeric(10,2),
     salary_range_max numeric(10,2),
     status character varying(20) DEFAULT 'draft'::character varying NOT NULL,
@@ -7720,6 +10549,7 @@ CREATE TABLE hr.job_requisitions (
     version integer DEFAULT 1,
     is_template boolean DEFAULT false,
     template_name character varying(255),
+    pay_type character varying(10) DEFAULT 'salary'::character varying,
     CONSTRAINT job_requisitions_priority_check CHECK (((priority)::text = ANY (ARRAY[('low'::character varying)::text, ('medium'::character varying)::text, ('high'::character varying)::text]))),
     CONSTRAINT job_requisitions_status_check CHECK (((status)::text = ANY (ARRAY[('draft'::character varying)::text, ('pending_approval'::character varying)::text, ('approved'::character varying)::text, ('posted'::character varying)::text, ('closed'::character varying)::text])))
 );
@@ -7989,6 +10819,53 @@ COMMENT ON COLUMN neta_ops.after_action_reports.time_allocation IS 'JSON array o
 
 
 --
+-- Name: amplify_reports; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.amplify_reports (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    batch_id uuid NOT NULL,
+    label text NOT NULL,
+    site_name text,
+    source_file text,
+    report_date text,
+    status text,
+    report jsonb NOT NULL,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    batch_index integer
+);
+
+
+--
+-- Name: TABLE amplify_reports; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.amplify_reports IS 'AMP-lify reports converted from technician Excel workbooks via LLM structuring. One row per unit under test; rows sharing a batch_id came from the same uploaded workbook.';
+
+
+--
+-- Name: COLUMN amplify_reports.report_date; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.amplify_reports.report_date IS 'Report date as printed in the workbook. Text, not a date: the workbooks are hand-formatted and a value that will not parse must still round-trip to the report exactly as the technician typed it.';
+
+
+--
+-- Name: COLUMN amplify_reports.status; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.amplify_reports.status IS 'Overall result as printed (e.g. "PASS", "Satisfactory"). Text, not an enum: the wording varies by workbook revision. See resultSeverity() in src/lib/amplifyReport.ts for how it maps to the shared severity scale.';
+
+
+--
+-- Name: COLUMN amplify_reports.batch_index; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.amplify_reports.batch_index IS 'Zero-based position of this report within its upload, in source-document order. NULL on rows saved before the column existed.';
+
+
+--
 -- Name: applied_voltage_test_ats_reports; Type: TABLE; Schema: neta_ops; Owner: -
 --
 
@@ -8058,6 +10935,7 @@ CREATE TABLE neta_ops.assets (
     approved_by uuid,
     sent_by uuid,
     published_pdf_path text,
+    equipment_asset_id uuid,
     CONSTRAINT assets_status_check CHECK ((status = ANY (ARRAY['not started'::text, 'in_progress'::text, 'ready_for_review'::text, 'approved'::text, 'issue'::text, 'sent'::text, 'archived'::text]))),
     CONSTRAINT assets_urgency_check CHECK ((urgency = ANY (ARRAY['normal'::text, 'critical'::text])))
 );
@@ -8141,6 +11019,13 @@ COMMENT ON COLUMN neta_ops.assets.sent_by IS 'User who marked the report as sent
 
 
 --
+-- Name: COLUMN assets.equipment_asset_id; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.assets.equipment_asset_id IS 'The physical equipment this report document describes. ON DELETE RESTRICT enforces "cannot delete an equipment asset that has linked reports".';
+
+
+--
 -- Name: automatic_transfer_switch_ats_reports; Type: TABLE; Schema: neta_ops; Owner: -
 --
 
@@ -8215,6 +11100,53 @@ CREATE TABLE neta_ops.backup_reports (
     edited_by uuid,
     CONSTRAINT backup_reports_action_check CHECK ((action = ANY (ARRAY['insert'::text, 'update'::text])))
 );
+
+
+--
+-- Name: building_folder_assignments; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.building_folder_assignments (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    site_id uuid,
+    job_id uuid,
+    building_key text NOT NULL,
+    building_label text NOT NULL,
+    folder_id uuid,
+    sort_order integer DEFAULT 0 NOT NULL,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT building_folder_assignments_one_scope CHECK ((num_nonnulls(site_id, job_id) = 1))
+);
+
+
+--
+-- Name: TABLE building_folder_assignments; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.building_folder_assignments IS 'Which Building / Area is in which folder. Keyed by normalised building NAME for the same reason the substation level is — Building / Area is free text on neta_ops.equipment_assets, not an entity.';
+
+
+--
+-- Name: COLUMN building_folder_assignments.building_key; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.building_folder_assignments.building_key IS 'lower(regexp_replace(btrim(name), ''\s+'', '' '', ''g'')). Computed client-side by groupKey() in src/utils/substationFolders.ts; both sides must agree.';
+
+
+--
+-- Name: COLUMN building_folder_assignments.building_label; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.building_folder_assignments.building_label IS 'The name as typed, kept for display so a folder can list a building that has no equipment on the current job.';
+
+
+--
+-- Name: COLUMN building_folder_assignments.folder_id; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.building_folder_assignments.folder_id IS 'NULL is meaningful on a job-scoped row: the building was deliberately pulled out of the folder the job inherited from its site.';
 
 
 --
@@ -8352,8 +11284,7 @@ CREATE TABLE neta_ops.custom_form_instances (
     template_checksum text,
     workflow_status text DEFAULT 'draft'::text NOT NULL,
     CONSTRAINT custom_form_instances_status_check CHECK ((status = ANY (ARRAY['PASS'::text, 'FAIL'::text, 'LIMITED SERVICE'::text, 'N/A'::text]))),
-    CONSTRAINT custom_form_instances_workflow_status_check CHECK ((workflow_status = ANY (ARRAY['draft'::text, 'ready_for_review'::text, 'in_review'::text, 'changes_requested'::text, 'approved'::text]))),
-    CONSTRAINT custom_form_instances_version_required CHECK (((template_id IS NULL) OR (template_version_id IS NOT NULL)))
+    CONSTRAINT custom_form_instances_workflow_status_check CHECK ((workflow_status = ANY (ARRAY['draft'::text, 'ready_for_review'::text, 'in_review'::text, 'changes_requested'::text, 'approved'::text])))
 );
 
 
@@ -8369,6 +11300,27 @@ COMMENT ON TABLE neta_ops.custom_form_instances IS 'Stores filled-out custom for
 --
 
 COMMENT ON COLUMN neta_ops.custom_form_instances.data IS 'JSONB containing all form data including job info and test results';
+
+
+--
+-- Name: COLUMN custom_form_instances.status; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.custom_form_instances.status IS 'RESULT status: PASS, FAIL, LIMITED SERVICE or N/A. Review state lives in workflow_status.';
+
+
+--
+-- Name: COLUMN custom_form_instances.schema_version; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.custom_form_instances.schema_version IS '1 = flat sections map. 2 = durable state with stable row instance ids.';
+
+
+--
+-- Name: COLUMN custom_form_instances.revision; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.custom_form_instances.revision IS 'Bumped on every save. A save that sends a stale revision is rejected by save_custom_form_instance.';
 
 
 --
@@ -8408,6 +11360,44 @@ COMMENT ON COLUMN neta_ops.custom_form_saved_components.section_config IS 'Full 
 
 
 --
+-- Name: custom_form_template_versions; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.custom_form_template_versions (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    template_id uuid NOT NULL,
+    version integer NOT NULL,
+    schema_version integer DEFAULT 1 NOT NULL,
+    name text NOT NULL,
+    description text,
+    neta_section text,
+    structure jsonb NOT NULL,
+    checksum text,
+    release_notes text,
+    origin text DEFAULT 'published'::text NOT NULL,
+    created_by uuid,
+    published_by uuid,
+    published_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT custom_form_template_versions_origin_check CHECK ((origin = ANY (ARRAY['published'::text, 'imported'::text])))
+);
+
+
+--
+-- Name: TABLE custom_form_template_versions; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.custom_form_template_versions IS 'Immutable published snapshots of a custom form template. Instances render from these, never from the mutable draft on custom_form_templates.';
+
+
+--
+-- Name: COLUMN custom_form_template_versions.origin; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.custom_form_template_versions.origin IS 'published = compiled from a draft by the builder. imported = created by the phase 0 backfill from a draft that had already been edited in place.';
+
+
+--
 -- Name: custom_form_templates; Type: TABLE; Schema: neta_ops; Owner: -
 --
 
@@ -8439,38 +11429,14 @@ COMMENT ON TABLE neta_ops.custom_form_templates IS 'Stores reusable custom form 
 -- Name: COLUMN custom_form_templates.structure; Type: COMMENT; Schema: neta_ops; Owner: -
 --
 
-COMMENT ON COLUMN neta_ops.custom_form_templates.structure IS 'JSONB containing form sections, components, and configuration';
+COMMENT ON COLUMN neta_ops.custom_form_templates.structure IS 'The editable DRAFT structure. Filled-in forms never read this; they read the version they are pinned to.';
 
 
 --
--- Name: custom_form_template_versions; Type: TABLE; Schema: neta_ops; Owner: -
+-- Name: COLUMN custom_form_templates.active_version_id; Type: COMMENT; Schema: neta_ops; Owner: -
 --
 
-CREATE TABLE neta_ops.custom_form_template_versions (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    template_id uuid NOT NULL,
-    version integer NOT NULL,
-    schema_version integer DEFAULT 1 NOT NULL,
-    name text NOT NULL,
-    description text,
-    neta_section text,
-    structure jsonb NOT NULL,
-    checksum text,
-    release_notes text,
-    origin text DEFAULT 'published'::text NOT NULL,
-    created_by uuid,
-    published_by uuid,
-    published_at timestamp with time zone DEFAULT now() NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT custom_form_template_versions_origin_check CHECK ((origin = ANY (ARRAY['published'::text, 'imported'::text])))
-);
-
-
---
--- Name: TABLE custom_form_template_versions; Type: COMMENT; Schema: neta_ops; Owner: -
---
-
-COMMENT ON TABLE neta_ops.custom_form_template_versions IS 'Immutable published snapshots of a custom form template. Instances render from these, never from the mutable draft on custom_form_templates.';
+COMMENT ON COLUMN neta_ops.custom_form_templates.active_version_id IS 'The published version new instances are created against.';
 
 
 --
@@ -8559,6 +11525,31 @@ CREATE TABLE neta_ops.emergency_systems_engine_generator_ats25 (
 
 
 --
+-- Name: energized_work_permit_reports; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.energized_work_permit_reports (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid NOT NULL,
+    user_id uuid NOT NULL,
+    report_info jsonb DEFAULT '{}'::jsonb NOT NULL,
+    shock_hazard jsonb DEFAULT '{}'::jsonb NOT NULL,
+    arc_flash jsonb DEFAULT '{}'::jsonb NOT NULL,
+    ppe jsonb DEFAULT '{}'::jsonb NOT NULL,
+    signatures jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE energized_work_permit_reports; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.energized_work_permit_reports IS 'Energized Electrical Work Permit internal form. Treated as an asset for the review workflow but rendered in the "Approved Internal Forms" tab once approved.';
+
+
+--
 -- Name: equipment; Type: TABLE; Schema: neta_ops; Owner: -
 --
 
@@ -8588,6 +11579,78 @@ CREATE TABLE neta_ops.equipment (
     CONSTRAINT equipment_condition_rating_check CHECK (((condition_rating >= 1) AND (condition_rating <= 5))),
     CONSTRAINT equipment_status_check CHECK ((status = ANY (ARRAY['available'::text, 'assigned'::text, 'maintenance'::text, 'retired'::text])))
 );
+
+
+--
+-- Name: equipment_assets; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.equipment_assets (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    site_id uuid NOT NULL,
+    building_area text,
+    substation text,
+    identifier text NOT NULL,
+    equipment_location text,
+    equipment_type text,
+    manufacturer text,
+    model text,
+    serial_number text,
+    notes text,
+    status text DEFAULT 'active'::text NOT NULL,
+    created_by uuid,
+    updated_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    deleted_at timestamp with time zone,
+    parent_asset_id uuid,
+    nameplate_data jsonb DEFAULT '{}'::jsonb NOT NULL,
+    report_template_slug text,
+    report_data jsonb DEFAULT '{}'::jsonb NOT NULL,
+    CONSTRAINT equipment_assets_status_check CHECK ((status = ANY (ARRAY['active'::text, 'removed'::text])))
+);
+
+
+--
+-- Name: TABLE equipment_assets; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.equipment_assets IS 'Physical equipment at a site. The real asset registry — distinct from neta_ops.assets (report documents) and neta_ops.equipment (AMP tool inventory). Can be created as a placeholder before any report exists.';
+
+
+--
+-- Name: COLUMN equipment_assets.building_area; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.equipment_assets.building_area IS 'Building / data hall / area within the site, e.g. "DC7". Free text, not a hierarchy level.';
+
+
+--
+-- Name: COLUMN equipment_assets.parent_asset_id; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.equipment_assets.parent_asset_id IS 'Parent equipment this asset is a component of. One layer only — a row with a parent cannot itself be a parent.';
+
+
+--
+-- Name: COLUMN equipment_assets.nameplate_data; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.equipment_assets.nameplate_data IS 'Equipment-type-specific nameplate values, keyed by the field definitions in src/lib/assetNameplateSchema.ts (e.g. {"kva":"1000","impedance":"5.75"}). Universal fields (manufacturer/model/serial_number) are real columns, not keys in here. Cleared for keys that do not carry over when an asset''s equipment_type changes.';
+
+
+--
+-- Name: COLUMN equipment_assets.report_template_slug; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.equipment_assets.report_template_slug IS 'Route slug of the built-in report this asset is meant to be tested with (a key of REPORT_NAMES in src/components/reports/reportMappings.ts). Decides which job information and nameplate fields the asset editor shows. Null = not chosen yet.';
+
+
+--
+-- Name: COLUMN equipment_assets.report_data; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.equipment_assets.report_data IS 'Equipment-level report field values keyed by the report''s own form path, e.g. {"breakerType":"molded case","nameplate.series":"PRL1"}. Manufacturer/model/serial_number are real columns, not keys in here.';
 
 
 --
@@ -8739,6 +11802,24 @@ COMMENT ON COLUMN neta_ops.equipment_trucks.name IS 'Display name / identifier o
 
 
 --
+-- Name: equipment_types; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.equipment_types (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    name text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE equipment_types; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.equipment_types IS 'Saved suggestions for the free-text equipment_type field on equipment_assets. Same pattern as neta_ops.neta_sections.';
+
+
+--
 -- Name: field_equipment; Type: TABLE; Schema: neta_ops; Owner: -
 --
 
@@ -8763,7 +11844,16 @@ CREATE TABLE neta_ops.field_equipment (
     assigned_type text,
     checked_out_by uuid,
     checked_out_at timestamp with time zone,
-    CONSTRAINT field_equipment_assigned_type_check CHECK (((assigned_type IS NULL) OR (assigned_type = ANY (ARRAY['user'::text, 'job_site'::text, 'truck'::text]))))
+    assigned_site_id uuid,
+    assigned_truck_id uuid,
+    assigned_user_id uuid,
+    calibration_interval_months integer,
+    maintenance_reason text,
+    out_of_service_at timestamp with time zone,
+    out_of_service_by uuid,
+    CONSTRAINT field_equipment_assigned_type_check CHECK (((assigned_type IS NULL) OR (assigned_type = ANY (ARRAY['user'::text, 'job_site'::text, 'truck'::text])))),
+    CONSTRAINT field_equipment_assignment_target_check CHECK ((((assigned_site_id IS NULL) OR (assigned_type = 'job_site'::text)) AND ((assigned_truck_id IS NULL) OR (assigned_type = 'truck'::text)) AND ((assigned_user_id IS NULL) OR (assigned_type = 'user'::text)) AND (num_nonnulls(assigned_site_id, assigned_truck_id, assigned_user_id) <= 1))),
+    CONSTRAINT field_equipment_calibration_interval_check CHECK (((calibration_interval_months IS NULL) OR ((calibration_interval_months >= 1) AND (calibration_interval_months <= 120))))
 );
 
 
@@ -8820,7 +11910,7 @@ COMMENT ON COLUMN neta_ops.field_equipment.category IS 'Category/type of equipme
 -- Name: COLUMN field_equipment.assigned_to; Type: COMMENT; Schema: neta_ops; Owner: -
 --
 
-COMMENT ON COLUMN neta_ops.field_equipment.assigned_to IS 'Identifier of the assignee. Interpretation depends on assigned_type: user UUID, job-site name, or truck name.';
+COMMENT ON COLUMN neta_ops.field_equipment.assigned_to IS 'Legacy display value: a user UUID, or a site/truck name. Superseded by assigned_site_id / assigned_truck_id / assigned_user_id, and kept as the fallback label for unresolved rows.';
 
 
 --
@@ -8884,6 +11974,119 @@ COMMENT ON COLUMN neta_ops.field_equipment.checked_out_by IS 'User who currently
 --
 
 COMMENT ON COLUMN neta_ops.field_equipment.checked_out_at IS 'Timestamp the equipment was checked out. NULL means it is not checked out.';
+
+
+--
+-- Name: COLUMN field_equipment.assigned_site_id; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.field_equipment.assigned_site_id IS 'Facility this equipment is assigned to (common.sites). Set when assigned_type = ''job_site''.';
+
+
+--
+-- Name: COLUMN field_equipment.assigned_truck_id; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.field_equipment.assigned_truck_id IS 'Truck this equipment is assigned to. Set when assigned_type = ''truck''.';
+
+
+--
+-- Name: COLUMN field_equipment.assigned_user_id; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.field_equipment.assigned_user_id IS 'Person this equipment is assigned to. Set when assigned_type = ''user''.';
+
+
+--
+-- Name: COLUMN field_equipment.calibration_interval_months; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.field_equipment.calibration_interval_months IS 'How often this item is calibrated, in months (12 is the common case). When set, saving a new calibration_date rolls calibration_due_date forward by this many months. NULL means the due date is maintained by hand.';
+
+
+--
+-- Name: COLUMN field_equipment.maintenance_reason; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.field_equipment.maintenance_reason IS 'Why this item is out of the field. Set when in_service goes false, cleared when it returns. Separate from notes, which is general free text about the equipment itself.';
+
+
+--
+-- Name: COLUMN field_equipment.out_of_service_at; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.field_equipment.out_of_service_at IS 'When it was taken out of service, so "how long has this been sitting" is answerable.';
+
+
+--
+-- Name: COLUMN field_equipment.out_of_service_by; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.field_equipment.out_of_service_by IS 'Who took it out of service.';
+
+
+--
+-- Name: field_equipment_assignments; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.field_equipment_assignments (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    field_equipment_id uuid NOT NULL,
+    assigned_type text NOT NULL,
+    assigned_site_id uuid,
+    assigned_truck_id uuid,
+    assigned_user_id uuid,
+    assigned_label text,
+    started_at timestamp with time zone DEFAULT now() NOT NULL,
+    ended_at timestamp with time zone,
+    changed_by uuid,
+    CONSTRAINT field_equipment_assignments_assigned_type_check CHECK ((assigned_type = ANY (ARRAY['user'::text, 'job_site'::text, 'truck'::text])))
+);
+
+
+--
+-- Name: TABLE field_equipment_assignments; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.field_equipment_assignments IS 'Where each piece of field equipment has been assigned over time. One open row (ended_at IS NULL) per item, maintained by trigger.';
+
+
+--
+-- Name: folder_item_assignments; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.folder_item_assignments (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    folder_id uuid NOT NULL,
+    asset_id uuid,
+    equipment_asset_id uuid,
+    sort_order integer DEFAULT 0 NOT NULL,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT folder_item_assignments_one_kind CHECK ((num_nonnulls(asset_id, equipment_asset_id) = 1))
+);
+
+
+--
+-- Name: TABLE folder_item_assignments; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.folder_item_assignments IS 'Reports and equipment assets filed into an in-substation folder. Keyed by real row ids, unlike the substation level which has only names to work with — so renaming an item cannot unfile it.';
+
+
+--
+-- Name: COLUMN folder_item_assignments.asset_id; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.folder_item_assignments.asset_id IS 'A report document (neta_ops.assets). Exactly one of asset_id/equipment_asset_id is set.';
+
+
+--
+-- Name: COLUMN folder_item_assignments.equipment_asset_id; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.folder_item_assignments.equipment_asset_id IS 'A piece of equipment (neta_ops.equipment_assets). Exactly one of asset_id/equipment_asset_id is set.';
 
 
 --
@@ -8974,13 +12177,13 @@ CREATE TABLE neta_ops.gfi_trip_test_reports (
     ground_fault_setting text,
     ground_fault_trip text,
     results text,
+    status text DEFAULT 'PASS'::text,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
     nameplate_data jsonb DEFAULT '{}'::jsonb,
     primary_injection jsonb DEFAULT '{}'::jsonb,
     setup_description text,
     comments text,
-    status text DEFAULT 'PASS'::text,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now(),
     CONSTRAINT gfi_trip_test_reports_status_check CHECK ((status = ANY (ARRAY['PASS'::text, 'FAIL'::text, 'LIMITED SERVICE'::text])))
 );
 
@@ -9149,6 +12352,26 @@ CREATE TABLE neta_ops.job_costs (
 
 
 --
+-- Name: job_equipment_assets; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.job_equipment_assets (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid NOT NULL,
+    equipment_asset_id uuid NOT NULL,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE job_equipment_assets; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.job_equipment_assets IS 'Which of a site''s equipment assets a given job covers — the project asset skeleton. Lets two jobs at the same site (even for different customers) share one asset list.';
+
+
+--
 -- Name: job_expenses; Type: TABLE; Schema: neta_ops; Owner: -
 --
 
@@ -9284,14 +12507,16 @@ CREATE TABLE neta_ops.jobs (
     estimated_man_hours numeric(10,2),
     quickbooks_project_id text,
     quickbooks_project_name text,
-    end_user text,
     job_number_numeric bigint GENERATED ALWAYS AS (
 CASE
     WHEN (job_number ~ '^[0-9]+$'::text) THEN (job_number)::bigint
     ELSE (NULLIF(regexp_replace(COALESCE(job_number, ''::text), '\D'::text, ''::text, 'g'::text), ''::text))::bigint
 END) STORED,
-    CONSTRAINT jobs_division_check CHECK ((division = ANY (ARRAY['north_alabama'::text, 'tennessee'::text, 'georgia'::text, 'virginia'::text, 'international'::text, 'engineering'::text, 'calibration'::text, 'armadillo'::text, 'scavenger'::text, 'lab'::text, 'field_tech'::text, 'hr'::text, 'Decatur'::text]))),
+    site_id uuid,
+    progress_billing_status text,
+    end_user text,
     CONSTRAINT jobs_priority_check CHECK ((priority = ANY (ARRAY['low'::text, 'medium'::text, 'high'::text]))),
+    CONSTRAINT jobs_progress_billing_status_check CHECK (((progress_billing_status IS NULL) OR (progress_billing_status = ANY (ARRAY['not_started'::text, 'in_progress'::text, 'completed'::text, 'on_hold'::text, 'cancelled'::text])))),
     CONSTRAINT jobs_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'in_progress'::text, 'completed'::text, 'ready_to_bill'::text, 'progress_billing'::text, 'billed'::text, 'on_hold'::text, 'cancelled'::text]))),
     CONSTRAINT jobs_submittal_job_type_check CHECK ((submittal_job_type = ANY (ARRAY['standard'::text, 'data_center'::text])))
 );
@@ -9301,7 +12526,7 @@ END) STORED,
 -- Name: COLUMN jobs.division; Type: COMMENT; Schema: neta_ops; Owner: -
 --
 
-COMMENT ON COLUMN neta_ops.jobs.division IS 'Division responsible for the job (north_alabama, tennessee, georgia, virginia, international)';
+COMMENT ON COLUMN neta_ops.jobs.division IS 'Division responsible for the job. Foreign key to common.divisions -- add a division there, not by editing a constraint.';
 
 
 --
@@ -9309,13 +12534,6 @@ COMMENT ON COLUMN neta_ops.jobs.division IS 'Division responsible for the job (n
 --
 
 COMMENT ON COLUMN neta_ops.jobs.tracking_plan IS 'Job asset tracking plan: { "<report-slug>": <targetQuantity>, ... }';
-
-
---
--- Name: COLUMN jobs.end_user; Type: COMMENT; Schema: neta_ops; Owner: -
---
-
-COMMENT ON COLUMN neta_ops.jobs.end_user IS 'Facility owner / end user shown in the "User" field of this job''s reports (e.g. Microsoft at FTY02). Not an app user; see jobs.user_id for that.';
 
 
 --
@@ -9393,6 +12611,20 @@ COMMENT ON COLUMN neta_ops.jobs.quickbooks_project_id IS 'QuickBooks Project Id 
 --
 
 COMMENT ON COLUMN neta_ops.jobs.quickbooks_project_name IS 'QuickBooks Project display name (denormalized for display)';
+
+
+--
+-- Name: COLUMN jobs.site_id; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.jobs.site_id IS 'Facility this job is at. Independent of customer_id — the same site can be worked for different customers.';
+
+
+--
+-- Name: COLUMN jobs.end_user; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.jobs.end_user IS 'Facility owner / end user shown in the "User" field of this job''s reports (e.g. Microsoft at FTY02). Not an app user; see jobs.user_id for that.';
 
 
 --
@@ -9481,6 +12713,27 @@ CREATE TABLE neta_ops.large_dry_type_transformer_mts_reports (
     comments text DEFAULT ''::text,
     deleted_at timestamp with time zone
 );
+
+
+--
+-- Name: large_dry_type_xfmr_mts23_reports; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.large_dry_type_xfmr_mts23_reports (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid,
+    user_id uuid,
+    report_data jsonb DEFAULT '{}'::jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE large_dry_type_xfmr_mts23_reports; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.large_dry_type_xfmr_mts23_reports IS 'Large Dry Type Transformer MTS 23 reports (NETA MTS 7.2.1.2): visual/mechanical, insulation resistance with DAR and polarization index, turns ratio, insulation power factor, excitation and winding resistance.';
 
 
 --
@@ -9574,6 +12827,48 @@ CREATE TABLE neta_ops.liquid_xfmr_visual_mts_reports (
     report_data jsonb DEFAULT '{}'::jsonb,
     deleted_at timestamp with time zone
 );
+
+
+--
+-- Name: low_voltage_air_switch_mts23_reports; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.low_voltage_air_switch_mts23_reports (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid,
+    user_id uuid,
+    report_data jsonb DEFAULT '{}'::jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE low_voltage_air_switch_mts23_reports; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.low_voltage_air_switch_mts23_reports IS 'Low Voltage Air Switch MTS 23 reports (NETA MTS 7.5.1.1): visual/mechanical, switch and fuse data, contact resistance for switch, fuse and switch + fuse, insulation resistance pole-to-pole, pole-to-frame and line-to-load.';
+
+
+--
+-- Name: low_voltage_cable_mts23_reports; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.low_voltage_cable_mts23_reports (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid,
+    user_id uuid,
+    report_data jsonb DEFAULT '{}'::jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE low_voltage_cable_mts23_reports; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.low_voltage_cable_mts23_reports IS 'Low Voltage Cable MTS 23 reports (NETA MTS 7.3.2): visual/mechanical, and up to 12 circuits with measured and 20°C corrected insulation resistance, continuity and pass/fail.';
 
 
 --
@@ -9835,6 +13130,48 @@ CREATE TABLE neta_ops.low_voltage_switch_reports (
 
 
 --
+-- Name: lv_circuit_breaker_mts23_reports; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.lv_circuit_breaker_mts23_reports (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid,
+    user_id uuid,
+    report_data jsonb DEFAULT '{}'::jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE lv_circuit_breaker_mts23_reports; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.lv_circuit_breaker_mts23_reports IS 'LV Circuit Breaker MTS 23 reports (NETA MTS 7.6.1.1 / 7.6.1.2): visual/mechanical, counter readings, device settings as-found/as-left, contact and insulation resistance, current sensing by primary or secondary injection.';
+
+
+--
+-- Name: lv_circuit_breaker_mts25; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.lv_circuit_breaker_mts25 (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid,
+    user_id uuid,
+    report_data jsonb DEFAULT '{}'::jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE lv_circuit_breaker_mts25; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.lv_circuit_breaker_mts25 IS 'LV Circuit Breaker MTS 25 reports (NETA MTS 7.6.1.2): visual/mechanical, device settings, contact and insulation resistance, secondary injection, primary verification.';
+
+
+--
 -- Name: lv_molded_case_circuit_breaker_ats25; Type: TABLE; Schema: neta_ops; Owner: -
 --
 
@@ -9867,6 +13204,27 @@ CREATE TABLE neta_ops.maintenance_records (
     created_by uuid,
     CONSTRAINT maintenance_records_maintenance_type_check CHECK ((maintenance_type = ANY (ARRAY['routine'::text, 'repair'::text, 'inspection'::text, 'certification'::text, 'calibration'::text, 'other'::text])))
 );
+
+
+--
+-- Name: medium_voltage_cable_vlf_tan_delta_mts23_reports; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid,
+    user_id uuid,
+    report_data jsonb DEFAULT '{}'::jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE medium_voltage_cable_vlf_tan_delta_mts23_reports; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports IS 'MV Cable VLF with Tan Delta MTS 23 reports (NETA MTS 7.3.3): visual/mechanical, shield continuity, insulation resistance pre/post test, VLF withstand, tan delta by voltage step.';
 
 
 --
@@ -10022,6 +13380,27 @@ CREATE TABLE neta_ops.medium_voltage_switch_sf6_reports (
 
 
 --
+-- Name: medium_voltage_vacuum_breaker_mts23_reports; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.medium_voltage_vacuum_breaker_mts23_reports (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid,
+    user_id uuid,
+    report_data jsonb DEFAULT '{}'::jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE medium_voltage_vacuum_breaker_mts23_reports; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.medium_voltage_vacuum_breaker_mts23_reports IS 'MV Vacuum Circuit Breaker MTS 23 reports (NETA MTS 7.6.3): visual/mechanical, counter and E-gap, contact timing, contact resistance, insulation resistance, dielectric withstand closed and vacuum integrity open.';
+
+
+--
 -- Name: medium_voltage_vlf_mts_reports; Type: TABLE; Schema: neta_ops; Owner: -
 --
 
@@ -10106,6 +13485,27 @@ CREATE TABLE neta_ops.meeting_todos (
 
 
 --
+-- Name: metal_enclosed_busway_mts23_reports; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.metal_enclosed_busway_mts23_reports (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid,
+    user_id uuid,
+    report_data jsonb DEFAULT '{}'::jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE metal_enclosed_busway_mts23_reports; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.metal_enclosed_busway_mts23_reports IS 'Metal-Enclosed Busway MTS 23 reports (NETA MTS 7.4): visual/mechanical, insulation resistance measured and temperature corrected with a 100/length limit, and dielectric withstand phase to ground.';
+
+
+--
 -- Name: metal_enclosed_busway_reports; Type: TABLE; Schema: neta_ops; Owner: -
 --
 
@@ -10163,6 +13563,38 @@ CREATE TABLE neta_ops.neta_sections (
 --
 
 COMMENT ON TABLE neta_ops.neta_sections IS 'Saved NETA section values for custom report NETA section input (e.g. 7.2.1.1, ATS 7.3.3)';
+
+
+--
+-- Name: oil_analysis_reports; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.oil_analysis_reports (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    batch_id uuid NOT NULL,
+    label text NOT NULL,
+    site_name text,
+    source_file text,
+    latest_sample_date text,
+    latest_condition text,
+    report jsonb NOT NULL,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE oil_analysis_reports; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.oil_analysis_reports IS 'Transformer oil analysis reports converted from third-party lab PDFs via OCR + LLM structuring. One row per transformer unit; rows sharing a batch_id came from the same uploaded file.';
+
+
+--
+-- Name: COLUMN oil_analysis_reports.latest_condition; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.oil_analysis_reports.latest_condition IS 'DGA condition of the newest sample, as printed by the lab (e.g. "Condition 2", "Status 2"). Text, not an enum: the wording changed between IEEE C57.104-2019 and C57.155-2014 and both still appear.';
 
 
 --
@@ -10346,6 +13778,21 @@ END) STORED,
 
 
 --
+-- Name: report_moves; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.report_moves (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    asset_id uuid NOT NULL,
+    from_job_id uuid,
+    to_job_id uuid,
+    moved_by uuid,
+    reason text,
+    moved_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: report_notifications; Type: TABLE; Schema: neta_ops; Owner: -
 --
 
@@ -10404,6 +13851,137 @@ CREATE TABLE neta_ops.resources (
 
 
 --
+-- Name: scheduled_test_batch_items; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.scheduled_test_batch_items (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    batch_id uuid NOT NULL,
+    scheduled_test_id uuid NOT NULL,
+    before_data jsonb,
+    after_data jsonb,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE scheduled_test_batch_items; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.scheduled_test_batch_items IS 'Per-row before/after snapshot for a batch. NULL before_data means the batch created the row, so undoing it deletes the row.';
+
+
+--
+-- Name: scheduled_test_batches; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.scheduled_test_batches (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    site_id uuid NOT NULL,
+    action text NOT NULL,
+    description text,
+    item_count integer DEFAULT 0 NOT NULL,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    undone_at timestamp with time zone,
+    undone_by uuid
+);
+
+
+--
+-- Name: TABLE scheduled_test_batches; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.scheduled_test_batches IS 'One bulk write (shift dates, set status, batch schedule), so it can be undone as a unit and shows in the audit log as a single action.';
+
+
+--
+-- Name: scheduled_tests; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.scheduled_tests (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    site_id uuid NOT NULL,
+    equipment_asset_id uuid NOT NULL,
+    job_id uuid,
+    report_slug text,
+    custom_form_template_id uuid,
+    work_scheduled_text text,
+    start_date date,
+    finish_date date,
+    equipment_status text,
+    testing_status text DEFAULT 'not_started'::text NOT NULL,
+    report_asset_id uuid,
+    result text,
+    notes text,
+    source text DEFAULT 'manual'::text NOT NULL,
+    external_activity_id text,
+    external_batch_id uuid,
+    has_date_constraint boolean DEFAULT false NOT NULL,
+    created_by uuid,
+    updated_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    deleted_at timestamp with time zone,
+    CONSTRAINT scheduled_tests_equipment_status_check CHECK ((equipment_status = ANY (ARRAY['not_installed'::text, 'ready_for_testing'::text, 'in_service'::text, 'out_of_service'::text]))),
+    CONSTRAINT scheduled_tests_finish_after_start CHECK (((start_date IS NULL) OR (finish_date IS NULL) OR (finish_date >= start_date))),
+    CONSTRAINT scheduled_tests_result_check CHECK ((result = ANY (ARRAY['pass'::text, 'fail'::text, 'limited_service'::text]))),
+    CONSTRAINT scheduled_tests_source_check CHECK ((source = ANY (ARRAY['manual'::text, 'p6_import'::text, 'template'::text]))),
+    CONSTRAINT scheduled_tests_testing_status_check CHECK ((testing_status = ANY (ARRAY['not_started'::text, 'in_progress'::text, 'complete'::text, 'on_hold'::text, 'retest_required'::text, 'not_required'::text]))),
+    CONSTRAINT scheduled_tests_work_present CHECK (((report_slug IS NOT NULL) OR (custom_form_template_id IS NOT NULL) OR (work_scheduled_text IS NOT NULL)))
+);
+
+
+--
+-- Name: TABLE scheduled_tests; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.scheduled_tests IS 'One equipment asset + one scope of work + one date window + status. The row behind the Project Tracker. Sits between the asset (Phase 1 registry) and the report that completes it.';
+
+
+--
+-- Name: COLUMN scheduled_tests.report_slug; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.scheduled_tests.report_slug IS 'Built-in report form, keyed by the route slug in src/components/reports/reportMappings.ts. Mutually exclusive with custom_form_template_id and work_scheduled_text.';
+
+
+--
+-- Name: COLUMN scheduled_tests.work_scheduled_text; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.scheduled_tests.work_scheduled_text IS 'Free-text scope, for work with no report form yet. The "Other — describe" option.';
+
+
+--
+-- Name: COLUMN scheduled_tests.start_date; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.scheduled_tests.start_date IS 'DATE, not a timestamp — a schedule is discussed in days, and timezone drift here puts a crew onsite on the wrong day. Nullable: unscheduled work and finish-only milestones are both real.';
+
+
+--
+-- Name: COLUMN scheduled_tests.equipment_status; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.scheduled_tests.equipment_status IS 'Physical state of the equipment. Nullable on purpose: blank means nobody has said yet, which the tracker treats differently from Not Installed.';
+
+
+--
+-- Name: COLUMN scheduled_tests.result; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.scheduled_tests.result IS 'PASS / FAIL / LIMITED SERVICE. Cached here rather than joined through report_asset_id because the tracker sorts and filters on it across hundreds of rows.';
+
+
+--
+-- Name: COLUMN scheduled_tests.has_date_constraint; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.scheduled_tests.has_date_constraint IS 'The customer fixed this date (a trailing "*" in their P6 export). Bulk shifts warn before overriding it.';
+
+
+--
 -- Name: signature_profiles; Type: TABLE; Schema: neta_ops; Owner: -
 --
 
@@ -10435,6 +14013,27 @@ COMMENT ON COLUMN neta_ops.signature_profiles.section_title IS 'Which section th
 
 
 --
+-- Name: small_dry_type_xfmr_mts23_reports; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.small_dry_type_xfmr_mts23_reports (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid,
+    user_id uuid,
+    report_data jsonb DEFAULT '{}'::jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE small_dry_type_xfmr_mts23_reports; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.small_dry_type_xfmr_mts23_reports IS 'Small Low Voltage Dry Type Transformer MTS 23 reports (NETA MTS 7.2.1.1): visual/mechanical, tap configuration, insulation resistance with dielectric absorption ratio, turns ratio.';
+
+
+--
 -- Name: small_lv_dry_type_transformer_ats25_reports; Type: TABLE; Schema: neta_ops; Owner: -
 --
 
@@ -10451,6 +14050,141 @@ CREATE TABLE neta_ops.small_lv_dry_type_transformer_ats25_reports (
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
+
+
+--
+-- Name: substation_folder_assignments; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.substation_folder_assignments (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    site_id uuid,
+    job_id uuid,
+    substation_key text NOT NULL,
+    substation_label text NOT NULL,
+    folder_id uuid,
+    sort_order integer DEFAULT 0 NOT NULL,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT substation_folder_assignments_one_scope CHECK ((num_nonnulls(site_id, job_id) = 1))
+);
+
+
+--
+-- Name: TABLE substation_folder_assignments; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.substation_folder_assignments IS 'Which substation is in which folder. Keyed by normalised substation NAME because substation is not an entity in this database — see the header of create_substation_folders.sql.';
+
+
+--
+-- Name: COLUMN substation_folder_assignments.substation_key; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.substation_folder_assignments.substation_key IS 'lower(regexp_replace(btrim(name), ''\s+'', '' '', ''g'')). Computed client-side by substationKey() in src/utils/substationFolders.ts; both sides must agree. No fuzzy matching: "Sub 3" and "Substation 3" stay two different substations, exactly as they are today.';
+
+
+--
+-- Name: COLUMN substation_folder_assignments.substation_label; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.substation_folder_assignments.substation_label IS 'The name as typed, kept for display so a folder can list a substation that has no reports on the current job.';
+
+
+--
+-- Name: COLUMN substation_folder_assignments.folder_id; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.substation_folder_assignments.folder_id IS 'NULL is meaningful on a job-scoped row: it means this substation was deliberately pulled out of the folder the job inherited from its site.';
+
+
+--
+-- Name: substation_folders; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.substation_folders (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    site_id uuid,
+    job_id uuid,
+    name text NOT NULL,
+    sort_order integer DEFAULT 0 NOT NULL,
+    created_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    deleted_at timestamp with time zone,
+    substation_key text,
+    parent_folder_id uuid,
+    level text NOT NULL,
+    building_key text,
+    CONSTRAINT substation_folders_building_key_check CHECK (((building_key IS NULL) OR (level = 'substation'::text))),
+    CONSTRAINT substation_folders_level_check CHECK ((level = ANY (ARRAY['building'::text, 'substation'::text, 'item'::text]))),
+    CONSTRAINT substation_folders_level_key_check CHECK (((level = 'item'::text) = (substation_key IS NOT NULL))),
+    CONSTRAINT substation_folders_one_scope CHECK ((num_nonnulls(site_id, job_id) = 1))
+);
+
+
+--
+-- Name: TABLE substation_folders; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.substation_folders IS 'One grouping level above substation: Folder -> Substation -> Report. Purely organisational, free-text names. Scoped to a site (inherited by that site''s jobs) or to a single job.';
+
+
+--
+-- Name: COLUMN substation_folders.site_id; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.substation_folders.site_id IS 'Site scope. Folders here are inherited by every job whose neta_ops.jobs.site_id matches. Exactly one of site_id/job_id is set.';
+
+
+--
+-- Name: COLUMN substation_folders.job_id; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.substation_folders.job_id IS 'Job scope. Folders here apply to that job only. Exactly one of site_id/job_id is set.';
+
+
+--
+-- Name: COLUMN substation_folders.sort_order; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.substation_folders.sort_order IS 'Display order, set by dragging folders. Ties broken by name.';
+
+
+--
+-- Name: COLUMN substation_folders.deleted_at; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.substation_folders.deleted_at IS 'Soft delete. Deleting a folder cascades its assignments away, so its substations fall back to ungrouped — it never touches a report or an asset.';
+
+
+--
+-- Name: COLUMN substation_folders.substation_key; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.substation_folders.substation_key IS 'NULL: a folder holding substations. Set: a folder living inside that substation, holding reports/equipment. Same normalisation as substation_folder_assignments.substation_key.';
+
+
+--
+-- Name: COLUMN substation_folders.parent_folder_id; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.substation_folders.parent_folder_id IS 'Nesting, to any depth, guarded against cycles by check_substation_folder_cycle(). NULL means top of its level.';
+
+
+--
+-- Name: COLUMN substation_folders.level; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.substation_folders.level IS 'What this folder holds: building (Building / Area names), substation (substation names), item (reports and equipment). Must agree with substation_key, which is set only on item folders. Filled from substation_key by set_substation_folder_level() when an older client omits it.';
+
+
+--
+-- Name: COLUMN substation_folders.building_key; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON COLUMN neta_ops.substation_folders.building_key IS 'Only on a substation-level folder: pins it inside that Building / Area so an empty one still has somewhere to render. NULL floats it above every building, which is what every folder created before this migration does.';
 
 
 --
@@ -10509,6 +14243,27 @@ CREATE TABLE neta_ops.switchgear_switchboard_ats25_reports (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
+
+
+--
+-- Name: switchgear_switchboard_mts23_reports; Type: TABLE; Schema: neta_ops; Owner: -
+--
+
+CREATE TABLE neta_ops.switchgear_switchboard_mts23_reports (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid,
+    user_id uuid,
+    report_data jsonb DEFAULT '{}'::jsonb,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE switchgear_switchboard_mts23_reports; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON TABLE neta_ops.switchgear_switchboard_mts23_reports IS 'Switchgear & Switchboard Assemblies MTS 23 reports (NETA MTS 7.1): visual/mechanical, contact resistance with deviation, insulation resistance measured and temperature corrected.';
 
 
 --
@@ -11095,6 +14850,34 @@ CREATE VIEW public.android_lab_jobs AS
 
 
 --
+-- Name: lead_contact; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.lead_contact (
+    id bigint NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    name text NOT NULL,
+    job text,
+    phone numeric,
+    email text
+);
+
+
+--
+-- Name: lead_contact_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.lead_contact ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.lead_contact_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
 -- Name: vendor_contacts; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -11314,6 +15097,30 @@ ALTER TABLE ONLY common.amp_contacts
 
 
 --
+-- Name: ampu_courses ampu_courses_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.ampu_courses
+    ADD CONSTRAINT ampu_courses_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ampu_lessons ampu_lessons_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.ampu_lessons
+    ADD CONSTRAINT ampu_lessons_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ampu_progress ampu_progress_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.ampu_progress
+    ADD CONSTRAINT ampu_progress_pkey PRIMARY KEY (user_id, lesson_id);
+
+
+--
 -- Name: announcements announcements_pkey; Type: CONSTRAINT; Schema: common; Owner: -
 --
 
@@ -11335,6 +15142,14 @@ ALTER TABLE ONLY common.app_settings
 
 ALTER TABLE ONLY common.candidate_communication_templates
     ADD CONSTRAINT candidate_communication_templates_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: candidate_question_answers candidate_question_answers_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.candidate_question_answers
+    ADD CONSTRAINT candidate_question_answers_pkey PRIMARY KEY (id);
 
 
 --
@@ -11482,6 +15297,30 @@ ALTER TABLE ONLY common.customers
 
 
 --
+-- Name: device_catalog device_catalog_dedup_key_key; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.device_catalog
+    ADD CONSTRAINT device_catalog_dedup_key_key UNIQUE (dedup_key);
+
+
+--
+-- Name: device_catalog device_catalog_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.device_catalog
+    ADD CONSTRAINT device_catalog_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: divisions divisions_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.divisions
+    ADD CONSTRAINT divisions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: documents documents_pkey; Type: CONSTRAINT; Schema: common; Owner: -
 --
 
@@ -11551,6 +15390,22 @@ ALTER TABLE ONLY common.encryption_audit_logs
 
 ALTER TABLE ONLY common.feature_requests
     ADD CONSTRAINT feature_requests_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: help_center_documents help_center_documents_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.help_center_documents
+    ADD CONSTRAINT help_center_documents_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: help_guides help_guides_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.help_guides
+    ADD CONSTRAINT help_guides_pkey PRIMARY KEY (id);
 
 
 --
@@ -11647,6 +15502,14 @@ ALTER TABLE ONLY common.issue_updates
 
 ALTER TABLE ONLY common.it_equipment_tasks
     ADD CONSTRAINT it_equipment_tasks_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: job_application_questions job_application_questions_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.job_application_questions
+    ADD CONSTRAINT job_application_questions_pkey PRIMARY KEY (id);
 
 
 --
@@ -12010,6 +15873,22 @@ ALTER TABLE ONLY common.permission_change_logs
 
 
 --
+-- Name: prayer_intercessions prayer_intercessions_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.prayer_intercessions
+    ADD CONSTRAINT prayer_intercessions_pkey PRIMARY KEY (request_id, user_id);
+
+
+--
+-- Name: prayer_requests prayer_requests_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.prayer_requests
+    ADD CONSTRAINT prayer_requests_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: profiles profiles_pkey; Type: CONSTRAINT; Schema: common; Owner: -
 --
 
@@ -12047,6 +15926,22 @@ ALTER TABLE ONLY common.quickbooks_job_sync
 
 ALTER TABLE ONLY common.quickbooks_job_sync
     ADD CONSTRAINT quickbooks_job_sync_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: recruiting_prospect_activity recruiting_prospect_activity_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.recruiting_prospect_activity
+    ADD CONSTRAINT recruiting_prospect_activity_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: recruiting_prospects recruiting_prospects_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.recruiting_prospects
+    ADD CONSTRAINT recruiting_prospects_pkey PRIMARY KEY (id);
 
 
 --
@@ -12098,6 +15993,14 @@ ALTER TABLE ONLY common.role_change_logs
 
 
 --
+-- Name: sites sites_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.sites
+    ADD CONSTRAINT sites_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: survey_questions survey_questions_pkey; Type: CONSTRAINT; Schema: common; Owner: -
 --
 
@@ -12143,6 +16046,22 @@ ALTER TABLE ONLY common.system_config
 
 ALTER TABLE ONLY common.system_logs
     ADD CONSTRAINT system_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: talent_pool_import_runs talent_pool_import_runs_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.talent_pool_import_runs
+    ADD CONSTRAINT talent_pool_import_runs_pkey PRIMARY KEY (manifest_id);
+
+
+--
+-- Name: talent_pool_members talent_pool_members_pkey; Type: CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.talent_pool_members
+    ADD CONSTRAINT talent_pool_members_pkey PRIMARY KEY (user_id);
 
 
 --
@@ -12554,6 +16473,14 @@ ALTER TABLE ONLY neta_ops.after_action_reports
 
 
 --
+-- Name: amplify_reports amplify_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.amplify_reports
+    ADD CONSTRAINT amplify_reports_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: applied_voltage_test_ats_reports applied_voltage_test_ats_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -12607,6 +16534,14 @@ ALTER TABLE ONLY neta_ops.automatic_transfer_switch_ats_reports
 
 ALTER TABLE ONLY neta_ops.backup_reports
     ADD CONSTRAINT backup_reports_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: building_folder_assignments building_folder_assignments_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.building_folder_assignments
+    ADD CONSTRAINT building_folder_assignments_pkey PRIMARY KEY (id);
 
 
 --
@@ -12666,19 +16601,19 @@ ALTER TABLE ONLY neta_ops.custom_form_instances
 
 
 --
+-- Name: custom_form_instances custom_form_instances_version_required; Type: CHECK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.custom_form_instances
+    ADD CONSTRAINT custom_form_instances_version_required CHECK (((template_id IS NULL) OR (template_version_id IS NOT NULL))) NOT VALID;
+
+
+--
 -- Name: custom_form_saved_components custom_form_saved_components_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
 ALTER TABLE ONLY neta_ops.custom_form_saved_components
     ADD CONSTRAINT custom_form_saved_components_pkey PRIMARY KEY (id);
-
-
---
--- Name: custom_form_templates custom_form_templates_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
---
-
-ALTER TABLE ONLY neta_ops.custom_form_templates
-    ADD CONSTRAINT custom_form_templates_pkey PRIMARY KEY (id);
 
 
 --
@@ -12698,6 +16633,14 @@ ALTER TABLE ONLY neta_ops.custom_form_template_versions
 
 
 --
+-- Name: custom_form_templates custom_form_templates_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.custom_form_templates
+    ADD CONSTRAINT custom_form_templates_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: deliverables deliverables_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -12711,6 +16654,22 @@ ALTER TABLE ONLY neta_ops.deliverables
 
 ALTER TABLE ONLY neta_ops.emergency_systems_engine_generator_ats25
     ADD CONSTRAINT emergency_systems_engine_generator_ats25_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: energized_work_permit_reports energized_work_permit_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.energized_work_permit_reports
+    ADD CONSTRAINT energized_work_permit_reports_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: equipment_assets equipment_assets_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.equipment_assets
+    ADD CONSTRAINT equipment_assets_pkey PRIMARY KEY (id);
 
 
 --
@@ -12810,11 +16769,43 @@ ALTER TABLE ONLY neta_ops.equipment_trucks
 
 
 --
+-- Name: equipment_types equipment_types_name_key; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.equipment_types
+    ADD CONSTRAINT equipment_types_name_key UNIQUE (name);
+
+
+--
+-- Name: equipment_types equipment_types_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.equipment_types
+    ADD CONSTRAINT equipment_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: field_equipment_assignments field_equipment_assignments_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.field_equipment_assignments
+    ADD CONSTRAINT field_equipment_assignments_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: field_equipment field_equipment_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
 ALTER TABLE ONLY neta_ops.field_equipment
     ADD CONSTRAINT field_equipment_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: folder_item_assignments folder_item_assignments_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.folder_item_assignments
+    ADD CONSTRAINT folder_item_assignments_pkey PRIMARY KEY (id);
 
 
 --
@@ -12914,6 +16905,22 @@ ALTER TABLE ONLY neta_ops.job_costs
 
 
 --
+-- Name: job_equipment_assets job_equipment_assets_job_id_equipment_asset_id_key; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.job_equipment_assets
+    ADD CONSTRAINT job_equipment_assets_job_id_equipment_asset_id_key UNIQUE (job_id, equipment_asset_id);
+
+
+--
+-- Name: job_equipment_assets job_equipment_assets_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.job_equipment_assets
+    ADD CONSTRAINT job_equipment_assets_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: job_expenses job_expenses_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -12978,6 +16985,14 @@ ALTER TABLE ONLY neta_ops.large_dry_type_transformer_mts_reports
 
 
 --
+-- Name: large_dry_type_xfmr_mts23_reports large_dry_type_xfmr_mts23_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.large_dry_type_xfmr_mts23_reports
+    ADD CONSTRAINT large_dry_type_xfmr_mts23_reports_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: large_dry_type_xfmr_mts_reports large_dry_type_xfmr_mts_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -13015,6 +17030,22 @@ ALTER TABLE ONLY neta_ops.liquid_filled_xfmr_ats25_reports
 
 ALTER TABLE ONLY neta_ops.liquid_xfmr_visual_mts_reports
     ADD CONSTRAINT liquid_xfmr_visual_mts_reports_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: low_voltage_air_switch_mts23_reports low_voltage_air_switch_mts23_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.low_voltage_air_switch_mts23_reports
+    ADD CONSTRAINT low_voltage_air_switch_mts23_reports_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: low_voltage_cable_mts23_reports low_voltage_cable_mts23_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.low_voltage_cable_mts23_reports
+    ADD CONSTRAINT low_voltage_cable_mts23_reports_pkey PRIMARY KEY (id);
 
 
 --
@@ -13122,6 +17153,22 @@ ALTER TABLE ONLY neta_ops.low_voltage_switch_reports
 
 
 --
+-- Name: lv_circuit_breaker_mts23_reports lv_circuit_breaker_mts23_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.lv_circuit_breaker_mts23_reports
+    ADD CONSTRAINT lv_circuit_breaker_mts23_reports_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: lv_circuit_breaker_mts25 lv_circuit_breaker_mts25_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.lv_circuit_breaker_mts25
+    ADD CONSTRAINT lv_circuit_breaker_mts25_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: lv_molded_case_circuit_breaker_ats25 lv_molded_case_circuit_breaker_ats25_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -13135,6 +17182,14 @@ ALTER TABLE ONLY neta_ops.lv_molded_case_circuit_breaker_ats25
 
 ALTER TABLE ONLY neta_ops.maintenance_records
     ADD CONSTRAINT maintenance_records_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: medium_voltage_cable_vlf_tan_delta_mts23_reports medium_voltage_cable_vlf_tan_delta_mts23_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports
+    ADD CONSTRAINT medium_voltage_cable_vlf_tan_delta_mts23_reports_pkey PRIMARY KEY (id);
 
 
 --
@@ -13202,6 +17257,14 @@ ALTER TABLE ONLY neta_ops.medium_voltage_switch_sf6_reports
 
 
 --
+-- Name: medium_voltage_vacuum_breaker_mts23_reports medium_voltage_vacuum_breaker_mts23_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.medium_voltage_vacuum_breaker_mts23_reports
+    ADD CONSTRAINT medium_voltage_vacuum_breaker_mts23_reports_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: medium_voltage_vlf_mts_reports medium_voltage_vlf_mts_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -13234,6 +17297,14 @@ ALTER TABLE ONLY neta_ops.meeting_todos
 
 
 --
+-- Name: metal_enclosed_busway_mts23_reports metal_enclosed_busway_mts23_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.metal_enclosed_busway_mts23_reports
+    ADD CONSTRAINT metal_enclosed_busway_mts23_reports_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: metal_enclosed_busway_reports metal_enclosed_busway_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -13263,6 +17334,14 @@ ALTER TABLE ONLY neta_ops.neta_sections
 
 ALTER TABLE ONLY neta_ops.neta_sections
     ADD CONSTRAINT neta_sections_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: oil_analysis_reports oil_analysis_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.oil_analysis_reports
+    ADD CONSTRAINT oil_analysis_reports_pkey PRIMARY KEY (id);
 
 
 --
@@ -13322,6 +17401,14 @@ ALTER TABLE ONLY neta_ops.quality_metrics
 
 
 --
+-- Name: report_moves report_moves_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.report_moves
+    ADD CONSTRAINT report_moves_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: report_notifications report_notifications_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -13354,6 +17441,30 @@ ALTER TABLE ONLY neta_ops.resources
 
 
 --
+-- Name: scheduled_test_batch_items scheduled_test_batch_items_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.scheduled_test_batch_items
+    ADD CONSTRAINT scheduled_test_batch_items_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: scheduled_test_batches scheduled_test_batches_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.scheduled_test_batches
+    ADD CONSTRAINT scheduled_test_batches_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: scheduled_tests scheduled_tests_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.scheduled_tests
+    ADD CONSTRAINT scheduled_tests_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: signature_profiles signature_profiles_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -13362,11 +17473,35 @@ ALTER TABLE ONLY neta_ops.signature_profiles
 
 
 --
+-- Name: small_dry_type_xfmr_mts23_reports small_dry_type_xfmr_mts23_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.small_dry_type_xfmr_mts23_reports
+    ADD CONSTRAINT small_dry_type_xfmr_mts23_reports_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: small_lv_dry_type_transformer_ats25_reports small_lv_dry_type_transformer_ats25_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
 ALTER TABLE ONLY neta_ops.small_lv_dry_type_transformer_ats25_reports
     ADD CONSTRAINT small_lv_dry_type_transformer_ats25_reports_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: substation_folder_assignments substation_folder_assignments_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.substation_folder_assignments
+    ADD CONSTRAINT substation_folder_assignments_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: substation_folders substation_folders_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.substation_folders
+    ADD CONSTRAINT substation_folders_pkey PRIMARY KEY (id);
 
 
 --
@@ -13391,6 +17526,14 @@ ALTER TABLE ONLY neta_ops.switchgear_reports
 
 ALTER TABLE ONLY neta_ops.switchgear_switchboard_ats25_reports
     ADD CONSTRAINT switchgear_switchboard_ats25_reports_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: switchgear_switchboard_mts23_reports switchgear_switchboard_mts23_reports_pkey; Type: CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.switchgear_switchboard_mts23_reports
+    ADD CONSTRAINT switchgear_switchboard_mts23_reports_pkey PRIMARY KEY (id);
 
 
 --
@@ -13519,6 +17662,14 @@ ALTER TABLE ONLY public.admin_notifications
 
 ALTER TABLE ONLY public.after_action_reports
     ADD CONSTRAINT after_action_reports_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: lead_contact lead_contact_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.lead_contact
+    ADD CONSTRAINT lead_contact_pkey PRIMARY KEY (id);
 
 
 --
@@ -13805,6 +17956,13 @@ CREATE INDEX admin_notifications_type_idx ON common.admin_notifications USING bt
 
 
 --
+-- Name: amp_contacts_profile_id_idx; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX amp_contacts_profile_id_idx ON common.amp_contacts USING btree (profile_id);
+
+
+--
 -- Name: idx_admin_notifications_created_at; Type: INDEX; Schema: common; Owner: -
 --
 
@@ -13819,10 +17977,52 @@ CREATE INDEX idx_amp_contacts_display_order ON common.amp_contacts USING btree (
 
 
 --
+-- Name: idx_ampu_courses_active; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_ampu_courses_active ON common.ampu_courses USING btree (is_active, sort_order);
+
+
+--
+-- Name: idx_ampu_courses_code_active; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_ampu_courses_code_active ON common.ampu_courses USING btree (upper(course_code)) WHERE is_active;
+
+
+--
+-- Name: idx_ampu_lessons_course; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_ampu_lessons_course ON common.ampu_lessons USING btree (course_id, sort_order);
+
+
+--
+-- Name: idx_ampu_progress_completed; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_ampu_progress_completed ON common.ampu_progress USING btree (status) WHERE (status = 'completed'::text);
+
+
+--
+-- Name: idx_ampu_progress_user_course; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_ampu_progress_user_course ON common.ampu_progress USING btree (user_id, course_id);
+
+
+--
 -- Name: idx_candidate_communication_templates_name; Type: INDEX; Schema: common; Owner: -
 --
 
 CREATE INDEX idx_candidate_communication_templates_name ON common.candidate_communication_templates USING btree (name);
+
+
+--
+-- Name: idx_candidate_question_answers_candidate; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_candidate_question_answers_candidate ON common.candidate_question_answers USING btree (candidate_id, display_order);
 
 
 --
@@ -14092,6 +18292,34 @@ CREATE INDEX idx_customers_user_id ON common.customers USING btree (user_id);
 
 
 --
+-- Name: idx_device_catalog_category; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_device_catalog_category ON common.device_catalog USING btree (ptw_category);
+
+
+--
+-- Name: idx_device_catalog_display_trgm; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_device_catalog_display_trgm ON common.device_catalog USING gin (display_name public.gin_trgm_ops);
+
+
+--
+-- Name: idx_device_catalog_manufacturer; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_device_catalog_manufacturer ON common.device_catalog USING btree (manufacturer);
+
+
+--
+-- Name: idx_device_catalog_manufacturer_trgm; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_device_catalog_manufacturer_trgm ON common.device_catalog USING gin (manufacturer public.gin_trgm_ops);
+
+
+--
 -- Name: idx_documents_category; Type: INDEX; Schema: common; Owner: -
 --
 
@@ -14295,6 +18523,55 @@ CREATE INDEX idx_feature_requests_type ON common.feature_requests USING btree (t
 
 
 --
+-- Name: idx_help_center_documents_category; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_help_center_documents_category ON common.help_center_documents USING btree (category);
+
+
+--
+-- Name: idx_help_center_documents_created_at; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_help_center_documents_created_at ON common.help_center_documents USING btree (created_at DESC);
+
+
+--
+-- Name: idx_help_center_documents_created_by; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_help_center_documents_created_by ON common.help_center_documents USING btree (created_by);
+
+
+--
+-- Name: idx_help_guides_category; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_help_guides_category ON common.help_guides USING btree (category);
+
+
+--
+-- Name: idx_help_guides_created_by; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_help_guides_created_by ON common.help_guides USING btree (created_by);
+
+
+--
+-- Name: idx_help_guides_is_published; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_help_guides_is_published ON common.help_guides USING btree (is_published);
+
+
+--
+-- Name: idx_help_guides_tags; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_help_guides_tags ON common.help_guides USING gin (tags);
+
+
+--
 -- Name: idx_hr_tasks_assigned_to; Type: INDEX; Schema: common; Owner: -
 --
 
@@ -14460,6 +18737,13 @@ CREATE INDEX idx_it_equipment_tasks_priority ON common.it_equipment_tasks USING 
 --
 
 CREATE INDEX idx_it_equipment_tasks_status ON common.it_equipment_tasks USING btree (status);
+
+
+--
+-- Name: idx_job_application_questions_requisition; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_job_application_questions_requisition ON common.job_application_questions USING btree (requisition_id, display_order);
 
 
 --
@@ -15100,6 +19384,20 @@ CREATE INDEX idx_role_change_logs_timestamp ON common.role_change_logs USING btr
 
 
 --
+-- Name: idx_sites_name; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX idx_sites_name ON common.sites USING btree (name);
+
+
+--
+-- Name: idx_sites_unique_name; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sites_unique_name ON common.sites USING btree (lower(name), lower(COALESCE(city, ''::text)), lower(COALESCE(state, ''::text)));
+
+
+--
 -- Name: idx_survey_questions_template_id; Type: INDEX; Schema: common; Owner: -
 --
 
@@ -15380,10 +19678,80 @@ CREATE INDEX idx_xp_entries_user_id ON common.xp_entries USING btree (user_id);
 
 
 --
+-- Name: prayer_requests_created_at_idx; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX prayer_requests_created_at_idx ON common.prayer_requests USING btree (created_at DESC, id DESC);
+
+
+--
+-- Name: prayer_requests_status_created_at_idx; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX prayer_requests_status_created_at_idx ON common.prayer_requests USING btree (status, created_at DESC, id DESC);
+
+
+--
+-- Name: profiles_employee_number_key; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE UNIQUE INDEX profiles_employee_number_key ON common.profiles USING btree (employee_number) WHERE (employee_number IS NOT NULL);
+
+
+--
 -- Name: profiles_is_active_idx; Type: INDEX; Schema: common; Owner: -
 --
 
 CREATE INDEX profiles_is_active_idx ON common.profiles USING btree (is_active) WHERE (is_active = true);
+
+
+--
+-- Name: recruiting_prospect_activity_log_idx; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX recruiting_prospect_activity_log_idx ON common.recruiting_prospect_activity USING btree (prospect_id, created_at, id);
+
+
+--
+-- Name: recruiting_prospect_activity_one_promotion; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE UNIQUE INDEX recruiting_prospect_activity_one_promotion ON common.recruiting_prospect_activity USING btree (prospect_id) WHERE (type = 'promoted'::text);
+
+
+--
+-- Name: recruiting_prospects_candidate_idx; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX recruiting_prospects_candidate_idx ON common.recruiting_prospects USING btree (candidate_id);
+
+
+--
+-- Name: recruiting_prospects_email_key; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE UNIQUE INDEX recruiting_prospects_email_key ON common.recruiting_prospects USING btree (lower(email)) WHERE (email IS NOT NULL);
+
+
+--
+-- Name: recruiting_prospects_linkedin_key; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE UNIQUE INDEX recruiting_prospects_linkedin_key ON common.recruiting_prospects USING btree (linkedin_url) WHERE (linkedin_url IS NOT NULL);
+
+
+--
+-- Name: recruiting_prospects_owner_idx; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX recruiting_prospects_owner_idx ON common.recruiting_prospects USING btree (owner_id);
+
+
+--
+-- Name: recruiting_prospects_status_idx; Type: INDEX; Schema: common; Owner: -
+--
+
+CREATE INDEX recruiting_prospects_status_idx ON common.recruiting_prospects USING btree (status);
 
 
 --
@@ -15555,6 +19923,27 @@ CREATE INDEX idx_salary_slips_employee ON hr.salary_slips USING btree (employee_
 
 
 --
+-- Name: amplify_reports_batch_idx; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX amplify_reports_batch_idx ON neta_ops.amplify_reports USING btree (batch_id);
+
+
+--
+-- Name: amplify_reports_batch_order_idx; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX amplify_reports_batch_order_idx ON neta_ops.amplify_reports USING btree (batch_id, batch_index);
+
+
+--
+-- Name: amplify_reports_created_at_idx; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX amplify_reports_created_at_idx ON neta_ops.amplify_reports USING btree (created_at DESC);
+
+
+--
 -- Name: ats_reports_job_id_idx; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
@@ -15667,6 +20056,13 @@ CREATE INDEX idx_assets_approved_at ON neta_ops.assets USING btree (approved_at)
 
 
 --
+-- Name: idx_assets_equipment_asset_id; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_assets_equipment_asset_id ON neta_ops.assets USING btree (equipment_asset_id) WHERE (equipment_asset_id IS NOT NULL);
+
+
+--
 -- Name: idx_assets_reviewed_at; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
@@ -15737,6 +20133,27 @@ CREATE INDEX idx_backup_reports_source ON neta_ops.backup_reports USING btree (s
 
 
 --
+-- Name: idx_bfa_folder; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_bfa_folder ON neta_ops.building_folder_assignments USING btree (folder_id) WHERE (folder_id IS NOT NULL);
+
+
+--
+-- Name: idx_bfa_job_building; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_bfa_job_building ON neta_ops.building_folder_assignments USING btree (job_id, building_key) WHERE (site_id IS NULL);
+
+
+--
+-- Name: idx_bfa_site_building; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_bfa_site_building ON neta_ops.building_folder_assignments USING btree (site_id, building_key) WHERE (job_id IS NULL);
+
+
+--
 -- Name: idx_current_transformer_test_ats_reports_deleted_at; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
@@ -15786,17 +20203,17 @@ CREATE INDEX idx_custom_form_instances_version ON neta_ops.custom_form_instances
 
 
 --
--- Name: idx_custom_form_template_versions_template; Type: INDEX; Schema: neta_ops; Owner: -
---
-
-CREATE INDEX idx_custom_form_template_versions_template ON neta_ops.custom_form_template_versions USING btree (template_id, version DESC);
-
-
---
 -- Name: idx_custom_form_saved_components_created_at; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
 CREATE INDEX idx_custom_form_saved_components_created_at ON neta_ops.custom_form_saved_components USING btree (created_at DESC);
+
+
+--
+-- Name: idx_custom_form_template_versions_template; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_custom_form_template_versions_template ON neta_ops.custom_form_template_versions USING btree (template_id, version DESC);
 
 
 --
@@ -15856,6 +20273,69 @@ CREATE INDEX idx_emergency_systems_engine_generator_ats25_user_id ON neta_ops.em
 
 
 --
+-- Name: idx_energized_work_permit_reports_job_id; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_energized_work_permit_reports_job_id ON neta_ops.energized_work_permit_reports USING btree (job_id);
+
+
+--
+-- Name: idx_energized_work_permit_reports_user_id; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_energized_work_permit_reports_user_id ON neta_ops.energized_work_permit_reports USING btree (user_id);
+
+
+--
+-- Name: idx_equipment_assets_nameplate_data; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_equipment_assets_nameplate_data ON neta_ops.equipment_assets USING gin (nameplate_data);
+
+
+--
+-- Name: idx_equipment_assets_parent; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_equipment_assets_parent ON neta_ops.equipment_assets USING btree (parent_asset_id) WHERE ((deleted_at IS NULL) AND (parent_asset_id IS NOT NULL));
+
+
+--
+-- Name: idx_equipment_assets_report_template_slug; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_equipment_assets_report_template_slug ON neta_ops.equipment_assets USING btree (report_template_slug) WHERE (report_template_slug IS NOT NULL);
+
+
+--
+-- Name: idx_equipment_assets_site_id; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_equipment_assets_site_id ON neta_ops.equipment_assets USING btree (site_id) WHERE (deleted_at IS NULL);
+
+
+--
+-- Name: idx_equipment_assets_substation; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_equipment_assets_substation ON neta_ops.equipment_assets USING btree (site_id, substation) WHERE (deleted_at IS NULL);
+
+
+--
+-- Name: idx_equipment_assets_type; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_equipment_assets_type ON neta_ops.equipment_assets USING btree (equipment_type) WHERE (deleted_at IS NULL);
+
+
+--
+-- Name: idx_equipment_assets_unique_identifier; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_equipment_assets_unique_identifier ON neta_ops.equipment_assets USING btree (site_id, COALESCE(building_area, ''::text), COALESCE(substation, ''::text), lower(identifier)) WHERE (deleted_at IS NULL);
+
+
+--
 -- Name: idx_equipment_categories_name; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
@@ -15905,10 +20385,45 @@ CREATE INDEX idx_equipment_trucks_name ON neta_ops.equipment_trucks USING btree 
 
 
 --
+-- Name: idx_fe_assignments_equipment; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_fe_assignments_equipment ON neta_ops.field_equipment_assignments USING btree (field_equipment_id, started_at DESC);
+
+
+--
+-- Name: idx_fe_assignments_one_open; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_fe_assignments_one_open ON neta_ops.field_equipment_assignments USING btree (field_equipment_id) WHERE (ended_at IS NULL);
+
+
+--
+-- Name: idx_fe_assignments_site; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_fe_assignments_site ON neta_ops.field_equipment_assignments USING btree (assigned_site_id) WHERE (assigned_site_id IS NOT NULL);
+
+
+--
+-- Name: idx_fe_assignments_truck; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_fe_assignments_truck ON neta_ops.field_equipment_assignments USING btree (assigned_truck_id) WHERE (assigned_truck_id IS NOT NULL);
+
+
+--
 -- Name: idx_field_equipment_amp_id; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
 CREATE INDEX idx_field_equipment_amp_id ON neta_ops.field_equipment USING btree (amp_id);
+
+
+--
+-- Name: idx_field_equipment_assigned_site_id; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_field_equipment_assigned_site_id ON neta_ops.field_equipment USING btree (assigned_site_id) WHERE (assigned_site_id IS NOT NULL);
 
 
 --
@@ -15919,10 +20434,24 @@ CREATE INDEX idx_field_equipment_assigned_to ON neta_ops.field_equipment USING b
 
 
 --
+-- Name: idx_field_equipment_assigned_truck_id; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_field_equipment_assigned_truck_id ON neta_ops.field_equipment USING btree (assigned_truck_id) WHERE (assigned_truck_id IS NOT NULL);
+
+
+--
 -- Name: idx_field_equipment_assigned_type; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
 CREATE INDEX idx_field_equipment_assigned_type ON neta_ops.field_equipment USING btree (assigned_type);
+
+
+--
+-- Name: idx_field_equipment_assigned_user_id; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_field_equipment_assigned_user_id ON neta_ops.field_equipment USING btree (assigned_user_id) WHERE (assigned_user_id IS NOT NULL);
 
 
 --
@@ -15968,10 +20497,38 @@ CREATE INDEX idx_field_equipment_location ON neta_ops.field_equipment USING btre
 
 
 --
+-- Name: idx_field_equipment_out_of_service; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_field_equipment_out_of_service ON neta_ops.field_equipment USING btree (out_of_service_at DESC) WHERE (in_service IS FALSE);
+
+
+--
 -- Name: idx_field_equipment_serial_number; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
 CREATE INDEX idx_field_equipment_serial_number ON neta_ops.field_equipment USING btree (serial_number);
+
+
+--
+-- Name: idx_folder_items_asset; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_folder_items_asset ON neta_ops.folder_item_assignments USING btree (asset_id) WHERE (asset_id IS NOT NULL);
+
+
+--
+-- Name: idx_folder_items_equipment_asset; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_folder_items_equipment_asset ON neta_ops.folder_item_assignments USING btree (equipment_asset_id) WHERE (equipment_asset_id IS NOT NULL);
+
+
+--
+-- Name: idx_folder_items_folder; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_folder_items_folder ON neta_ops.folder_item_assignments USING btree (folder_id);
 
 
 --
@@ -16122,6 +20679,20 @@ CREATE INDEX idx_job_costs_job_id ON neta_ops.job_costs USING btree (job_id);
 
 
 --
+-- Name: idx_job_equipment_assets_asset_id; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_job_equipment_assets_asset_id ON neta_ops.job_equipment_assets USING btree (equipment_asset_id);
+
+
+--
+-- Name: idx_job_equipment_assets_job_id; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_job_equipment_assets_job_id ON neta_ops.job_equipment_assets USING btree (job_id);
+
+
+--
 -- Name: idx_job_expenses_created_at; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
@@ -16266,6 +20837,13 @@ CREATE INDEX idx_jobs_job_number_numeric_desc ON neta_ops.jobs USING btree (job_
 --
 
 CREATE INDEX idx_jobs_opportunity_id ON neta_ops.jobs USING btree (opportunity_id);
+
+
+--
+-- Name: idx_jobs_site_id; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_jobs_site_id ON neta_ops.jobs USING btree (site_id) WHERE (site_id IS NOT NULL);
 
 
 --
@@ -16682,6 +21260,27 @@ CREATE INDEX idx_potential_transformer_ats_reports_deleted_at ON neta_ops.potent
 
 
 --
+-- Name: idx_report_moves_asset; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_report_moves_asset ON neta_ops.report_moves USING btree (asset_id);
+
+
+--
+-- Name: idx_report_moves_moved_at; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_report_moves_moved_at ON neta_ops.report_moves USING btree (moved_at DESC);
+
+
+--
+-- Name: idx_report_moves_to_job; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_report_moves_to_job ON neta_ops.report_moves USING btree (to_job_id);
+
+
+--
 -- Name: idx_report_notifications_asset; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
@@ -16724,6 +21323,83 @@ CREATE INDEX idx_resource_allocations_resource_id ON neta_ops.resource_allocatio
 
 
 --
+-- Name: idx_scheduled_test_batch_items_batch; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_scheduled_test_batch_items_batch ON neta_ops.scheduled_test_batch_items USING btree (batch_id);
+
+
+--
+-- Name: idx_scheduled_test_batches_site; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_scheduled_test_batches_site ON neta_ops.scheduled_test_batches USING btree (site_id, created_at DESC);
+
+
+--
+-- Name: idx_scheduled_tests_asset; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_scheduled_tests_asset ON neta_ops.scheduled_tests USING btree (equipment_asset_id) WHERE (deleted_at IS NULL);
+
+
+--
+-- Name: idx_scheduled_tests_external_activity; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_scheduled_tests_external_activity ON neta_ops.scheduled_tests USING btree (site_id, external_activity_id) WHERE ((external_activity_id IS NOT NULL) AND (deleted_at IS NULL));
+
+
+--
+-- Name: idx_scheduled_tests_job; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_scheduled_tests_job ON neta_ops.scheduled_tests USING btree (job_id) WHERE ((job_id IS NOT NULL) AND (deleted_at IS NULL));
+
+
+--
+-- Name: idx_scheduled_tests_report; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_scheduled_tests_report ON neta_ops.scheduled_tests USING btree (report_asset_id) WHERE (report_asset_id IS NOT NULL);
+
+
+--
+-- Name: idx_scheduled_tests_site_dates; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_scheduled_tests_site_dates ON neta_ops.scheduled_tests USING btree (site_id, finish_date, start_date) WHERE (deleted_at IS NULL);
+
+
+--
+-- Name: idx_scheduled_tests_testing_status; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_scheduled_tests_testing_status ON neta_ops.scheduled_tests USING btree (site_id, testing_status) WHERE (deleted_at IS NULL);
+
+
+--
+-- Name: idx_sfa_folder; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_sfa_folder ON neta_ops.substation_folder_assignments USING btree (folder_id) WHERE (folder_id IS NOT NULL);
+
+
+--
+-- Name: idx_sfa_job_substation; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sfa_job_substation ON neta_ops.substation_folder_assignments USING btree (job_id, substation_key) WHERE (site_id IS NULL);
+
+
+--
+-- Name: idx_sfa_site_substation; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_sfa_site_substation ON neta_ops.substation_folder_assignments USING btree (site_id, substation_key) WHERE (job_id IS NULL);
+
+
+--
 -- Name: idx_signature_profiles_created_by; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
@@ -16735,6 +21411,55 @@ CREATE INDEX idx_signature_profiles_created_by ON neta_ops.signature_profiles US
 --
 
 CREATE INDEX idx_signature_profiles_name ON neta_ops.signature_profiles USING btree (name);
+
+
+--
+-- Name: idx_substation_folders_building; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_substation_folders_building ON neta_ops.substation_folders USING btree (building_key) WHERE (building_key IS NOT NULL);
+
+
+--
+-- Name: idx_substation_folders_job; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_substation_folders_job ON neta_ops.substation_folders USING btree (job_id) WHERE ((job_id IS NOT NULL) AND (deleted_at IS NULL));
+
+
+--
+-- Name: idx_substation_folders_job_sibling_name; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_substation_folders_job_sibling_name ON neta_ops.substation_folders USING btree (job_id, level, COALESCE(building_key, ''::text), COALESCE(substation_key, ''::text), COALESCE(parent_folder_id, '00000000-0000-0000-0000-000000000000'::uuid), lower(name)) WHERE ((site_id IS NULL) AND (deleted_at IS NULL));
+
+
+--
+-- Name: idx_substation_folders_parent; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_substation_folders_parent ON neta_ops.substation_folders USING btree (parent_folder_id) WHERE (parent_folder_id IS NOT NULL);
+
+
+--
+-- Name: idx_substation_folders_site; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_substation_folders_site ON neta_ops.substation_folders USING btree (site_id) WHERE ((site_id IS NOT NULL) AND (deleted_at IS NULL));
+
+
+--
+-- Name: idx_substation_folders_site_sibling_name; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_substation_folders_site_sibling_name ON neta_ops.substation_folders USING btree (site_id, level, COALESCE(building_key, ''::text), COALESCE(substation_key, ''::text), COALESCE(parent_folder_id, '00000000-0000-0000-0000-000000000000'::uuid), lower(name)) WHERE ((job_id IS NULL) AND (deleted_at IS NULL));
+
+
+--
+-- Name: idx_substation_folders_substation; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_substation_folders_substation ON neta_ops.substation_folders USING btree (substation_key) WHERE (substation_key IS NOT NULL);
 
 
 --
@@ -16913,6 +21638,20 @@ CREATE INDEX idx_voltage_potential_transformer_mts_reports_deleted_at ON neta_op
 
 
 --
+-- Name: job_assets_job_id_asset_id_key; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE UNIQUE INDEX job_assets_job_id_asset_id_key ON neta_ops.job_assets USING btree (job_id, asset_id) WHERE (asset_id IS NOT NULL);
+
+
+--
+-- Name: INDEX job_assets_job_id_asset_id_key; Type: COMMENT; Schema: neta_ops; Owner: -
+--
+
+COMMENT ON INDEX neta_ops.job_assets_job_id_asset_id_key IS 'One link per (job, asset). Without it a racing save listed the same report on the job twice, sharing one id between both rows.';
+
+
+--
 -- Name: job_notifications_created_at_idx; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
@@ -16969,6 +21708,13 @@ CREATE INDEX large_dry_type_transformer_mts_reports_user_id_idx ON neta_ops.larg
 
 
 --
+-- Name: large_dry_type_xfmr_mts23_reports_job_id_idx; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX large_dry_type_xfmr_mts23_reports_job_id_idx ON neta_ops.large_dry_type_xfmr_mts23_reports USING btree (job_id);
+
+
+--
 -- Name: large_dry_type_xfmr_mts_reports_job_id_idx; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
@@ -17008,6 +21754,20 @@ CREATE INDEX liquid_xfmr_visual_mts_reports_job_id_idx ON neta_ops.liquid_xfmr_v
 --
 
 CREATE INDEX liquid_xfmr_visual_mts_reports_user_id_idx ON neta_ops.liquid_xfmr_visual_mts_reports USING btree (user_id);
+
+
+--
+-- Name: low_voltage_air_switch_mts23_reports_job_id_idx; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX low_voltage_air_switch_mts23_reports_job_id_idx ON neta_ops.low_voltage_air_switch_mts23_reports USING btree (job_id);
+
+
+--
+-- Name: low_voltage_cable_mts23_reports_job_id_idx; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX low_voltage_cable_mts23_reports_job_id_idx ON neta_ops.low_voltage_cable_mts23_reports USING btree (job_id);
 
 
 --
@@ -17053,6 +21813,20 @@ CREATE INDEX lv_cb_tm_ats_user_id_idx ON neta_ops.low_voltage_circuit_breaker_th
 
 
 --
+-- Name: lv_circuit_breaker_mts23_reports_job_id_idx; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX lv_circuit_breaker_mts23_reports_job_id_idx ON neta_ops.lv_circuit_breaker_mts23_reports USING btree (job_id);
+
+
+--
+-- Name: lv_circuit_breaker_mts25_job_id_idx; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX lv_circuit_breaker_mts25_job_id_idx ON neta_ops.lv_circuit_breaker_mts25 USING btree (job_id);
+
+
+--
 -- Name: lv_mcb_ats25_job_id_idx; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
@@ -17074,6 +21848,13 @@ CREATE INDEX lv_pb_sb_reports_user_id_idx ON neta_ops.low_voltage_panelboard_sma
 
 
 --
+-- Name: medium_voltage_cable_vlf_tan_delta_mts23_reports_job_id_idx; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX medium_voltage_cable_vlf_tan_delta_mts23_reports_job_id_idx ON neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports USING btree (job_id);
+
+
+--
 -- Name: medium_voltage_switch_oil_reports_job_id_idx; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
@@ -17085,6 +21866,13 @@ CREATE INDEX medium_voltage_switch_oil_reports_job_id_idx ON neta_ops.medium_vol
 --
 
 CREATE INDEX medium_voltage_switch_oil_reports_user_id_idx ON neta_ops.medium_voltage_switch_oil_reports USING btree (user_id);
+
+
+--
+-- Name: medium_voltage_vacuum_breaker_mts23_reports_job_id_idx; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX medium_voltage_vacuum_breaker_mts23_reports_job_id_idx ON neta_ops.medium_voltage_vacuum_breaker_mts23_reports USING btree (job_id);
 
 
 --
@@ -17106,6 +21894,13 @@ CREATE INDEX medium_voltage_vlf_reports_job_id_idx ON neta_ops.medium_voltage_vl
 --
 
 CREATE INDEX medium_voltage_vlf_reports_user_id_idx ON neta_ops.medium_voltage_vlf_reports USING btree (user_id);
+
+
+--
+-- Name: metal_enclosed_busway_mts23_reports_job_id_idx; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX metal_enclosed_busway_mts23_reports_job_id_idx ON neta_ops.metal_enclosed_busway_mts23_reports USING btree (job_id);
 
 
 --
@@ -17165,6 +21960,20 @@ CREATE INDEX mv_switch_mts_reports_user_id_idx ON neta_ops.medium_voltage_switch
 
 
 --
+-- Name: oil_analysis_reports_batch_idx; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX oil_analysis_reports_batch_idx ON neta_ops.oil_analysis_reports USING btree (batch_id);
+
+
+--
+-- Name: oil_analysis_reports_created_at_idx; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX oil_analysis_reports_created_at_idx ON neta_ops.oil_analysis_reports USING btree (created_at DESC);
+
+
+--
 -- Name: oil_inspection_reports_created_at_idx; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
@@ -17186,6 +21995,13 @@ CREATE INDEX oil_inspection_reports_user_id_idx ON neta_ops.oil_inspection_repor
 
 
 --
+-- Name: small_dry_type_xfmr_mts23_reports_job_id_idx; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX small_dry_type_xfmr_mts23_reports_job_id_idx ON neta_ops.small_dry_type_xfmr_mts23_reports USING btree (job_id);
+
+
+--
 -- Name: switchgear_panelboard_mts_reports_job_id_idx; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
@@ -17197,6 +22013,13 @@ CREATE INDEX switchgear_panelboard_mts_reports_job_id_idx ON neta_ops.switchgear
 --
 
 CREATE INDEX switchgear_panelboard_mts_reports_user_id_idx ON neta_ops.switchgear_panelboard_mts_reports USING btree (user_id);
+
+
+--
+-- Name: switchgear_switchboard_mts23_reports_job_id_idx; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX switchgear_switchboard_mts23_reports_job_id_idx ON neta_ops.switchgear_switchboard_mts23_reports USING btree (job_id);
 
 
 --
@@ -17333,6 +22156,13 @@ CREATE TRIGGER amp_contacts_updated_at BEFORE UPDATE ON common.amp_contacts FOR 
 
 
 --
+-- Name: job_requisitions ampos_requisitions_rebuild; Type: TRIGGER; Schema: common; Owner: -
+--
+
+CREATE TRIGGER ampos_requisitions_rebuild AFTER INSERT OR DELETE OR UPDATE ON common.job_requisitions FOR EACH ROW EXECUTE FUNCTION supabase_functions.http_request('https://api.vercel.com/v1/integrations/deploy/prj_UqfVzS4uZbAXsVHnIqqEGEAbCKAS/3g6Xd6AmU4', 'POST', '{"Content-type":"application/json"}', '{}', '5000');
+
+
+--
 -- Name: employee_certifications employee_certifications_updated_at; Type: TRIGGER; Schema: common; Owner: -
 --
 
@@ -17368,10 +22198,45 @@ CREATE TRIGGER handle_job_requisition_status_change BEFORE UPDATE ON common.job_
 
 
 --
+-- Name: help_center_documents help_center_documents_updated_at; Type: TRIGGER; Schema: common; Owner: -
+--
+
+CREATE TRIGGER help_center_documents_updated_at BEFORE UPDATE ON common.help_center_documents FOR EACH ROW EXECUTE FUNCTION common.update_help_center_documents_updated_at();
+
+
+--
+-- Name: help_guides help_guides_updated_at; Type: TRIGGER; Schema: common; Owner: -
+--
+
+CREATE TRIGGER help_guides_updated_at BEFORE UPDATE ON common.help_guides FOR EACH ROW EXECUTE FUNCTION common.update_help_guides_updated_at();
+
+
+--
 -- Name: issue_notes issue_notes_updated_at; Type: TRIGGER; Schema: common; Owner: -
 --
 
 CREATE TRIGGER issue_notes_updated_at BEFORE UPDATE ON common.issue_notes FOR EACH ROW EXECUTE FUNCTION common.issue_notes_updated_at();
+
+
+--
+-- Name: recruiting_prospect_activity recruiting_prospect_activity_before_write; Type: TRIGGER; Schema: common; Owner: -
+--
+
+CREATE TRIGGER recruiting_prospect_activity_before_write BEFORE INSERT OR DELETE OR UPDATE ON common.recruiting_prospect_activity FOR EACH ROW EXECUTE FUNCTION common.recruiting_prospect_activity_before_write();
+
+
+--
+-- Name: recruiting_prospects recruiting_prospects_before_write; Type: TRIGGER; Schema: common; Owner: -
+--
+
+CREATE TRIGGER recruiting_prospects_before_write BEFORE INSERT OR DELETE OR UPDATE ON common.recruiting_prospects FOR EACH ROW EXECUTE FUNCTION common.recruiting_prospects_before_write();
+
+
+--
+-- Name: recruiting_prospects recruiting_prospects_updated_at; Type: TRIGGER; Schema: common; Owner: -
+--
+
+CREATE TRIGGER recruiting_prospects_updated_at BEFORE UPDATE ON common.recruiting_prospects FOR EACH ROW EXECUTE FUNCTION common.update_updated_at_column();
 
 
 --
@@ -17389,10 +22254,38 @@ CREATE TRIGGER refresh_satisfaction_scores_on_customer_delete AFTER DELETE ON co
 
 
 --
+-- Name: sites set_updated_at_sites; Type: TRIGGER; Schema: common; Owner: -
+--
+
+CREATE TRIGGER set_updated_at_sites BEFORE UPDATE ON common.sites FOR EACH ROW EXECUTE FUNCTION common.update_updated_at_column();
+
+
+--
 -- Name: user_shortcuts tr_update_shortcuts_position; Type: TRIGGER; Schema: common; Owner: -
 --
 
 CREATE TRIGGER tr_update_shortcuts_position AFTER DELETE ON common.user_shortcuts FOR EACH ROW EXECUTE FUNCTION common.update_shortcuts_position();
+
+
+--
+-- Name: ampu_courses trg_ampu_courses_updated_at; Type: TRIGGER; Schema: common; Owner: -
+--
+
+CREATE TRIGGER trg_ampu_courses_updated_at BEFORE UPDATE ON common.ampu_courses FOR EACH ROW EXECUTE FUNCTION common.touch_ampu_updated_at();
+
+
+--
+-- Name: ampu_lessons trg_ampu_lessons_updated_at; Type: TRIGGER; Schema: common; Owner: -
+--
+
+CREATE TRIGGER trg_ampu_lessons_updated_at BEFORE UPDATE ON common.ampu_lessons FOR EACH ROW EXECUTE FUNCTION common.touch_ampu_updated_at();
+
+
+--
+-- Name: ampu_progress trg_ampu_progress_updated_at; Type: TRIGGER; Schema: common; Owner: -
+--
+
+CREATE TRIGGER trg_ampu_progress_updated_at BEFORE UPDATE ON common.ampu_progress FOR EACH ROW EXECUTE FUNCTION common.touch_ampu_updated_at();
 
 
 --
@@ -17676,6 +22569,13 @@ CREATE TRIGGER handle_job_requisition_status_change BEFORE UPDATE ON hr.job_requ
 
 
 --
+-- Name: substation_folders check_substation_folder_cycle; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER check_substation_folder_cycle BEFORE INSERT OR UPDATE OF parent_folder_id ON neta_ops.substation_folders FOR EACH ROW WHEN ((new.parent_folder_id IS NOT NULL)) EXECUTE FUNCTION neta_ops.check_substation_folder_cycle();
+
+
+--
 -- Name: assets cleanup_report_notifications_trigger; Type: TRIGGER; Schema: neta_ops; Owner: -
 --
 
@@ -17687,6 +22587,27 @@ CREATE TRIGGER cleanup_report_notifications_trigger AFTER DELETE ON neta_ops.ass
 --
 
 CREATE TRIGGER create_report_notifications_trigger AFTER INSERT OR UPDATE OF status ON neta_ops.assets FOR EACH ROW EXECUTE FUNCTION neta_ops.create_report_notifications();
+
+
+--
+-- Name: custom_form_instances custom_form_instances_bump_revision; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER custom_form_instances_bump_revision BEFORE UPDATE ON neta_ops.custom_form_instances FOR EACH ROW EXECUTE FUNCTION neta_ops.custom_form_instance_bump_revision();
+
+
+--
+-- Name: custom_form_template_versions custom_form_versions_immutable; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER custom_form_versions_immutable BEFORE DELETE OR UPDATE ON neta_ops.custom_form_template_versions FOR EACH ROW EXECUTE FUNCTION neta_ops.custom_form_version_is_immutable();
+
+
+--
+-- Name: energized_work_permit_reports energized_work_permit_reports_updated_at; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER energized_work_permit_reports_updated_at BEFORE UPDATE ON neta_ops.energized_work_permit_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.update_energized_work_permit_reports_updated_at();
 
 
 --
@@ -17722,6 +22643,13 @@ CREATE TRIGGER equipment_sub_component_items_updated_at BEFORE UPDATE ON neta_op
 --
 
 CREATE TRIGGER equipment_trucks_updated_at BEFORE UPDATE ON neta_ops.equipment_trucks FOR EACH ROW EXECUTE FUNCTION neta_ops.update_equipment_trucks_updated_at();
+
+
+--
+-- Name: field_equipment field_equipment_assignment_history; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER field_equipment_assignment_history AFTER INSERT OR UPDATE ON neta_ops.field_equipment FOR EACH ROW EXECUTE FUNCTION neta_ops.log_field_equipment_assignment();
 
 
 --
@@ -17790,6 +22718,13 @@ CREATE TRIGGER set_report_updated_at BEFORE UPDATE ON neta_ops.medium_voltage_mo
 
 
 --
+-- Name: substation_folders set_substation_folder_level; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_substation_folder_level BEFORE INSERT OR UPDATE OF level, substation_key ON neta_ops.substation_folders FOR EACH ROW EXECUTE FUNCTION neta_ops.set_substation_folder_level();
+
+
+--
 -- Name: tandelta_reports set_timestamp; Type: TRIGGER; Schema: neta_ops; Owner: -
 --
 
@@ -17839,10 +22774,31 @@ CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.large_dry_type_transform
 
 
 --
+-- Name: large_dry_type_xfmr_mts23_reports set_updated_at; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.large_dry_type_xfmr_mts23_reports FOR EACH ROW EXECUTE FUNCTION common.set_updated_at();
+
+
+--
 -- Name: large_dry_type_xfmr_mts_reports set_updated_at; Type: TRIGGER; Schema: neta_ops; Owner: -
 --
 
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.large_dry_type_xfmr_mts_reports FOR EACH ROW EXECUTE FUNCTION common.set_updated_at();
+
+
+--
+-- Name: low_voltage_air_switch_mts23_reports set_updated_at; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.low_voltage_air_switch_mts23_reports FOR EACH ROW EXECUTE FUNCTION common.set_updated_at();
+
+
+--
+-- Name: low_voltage_cable_mts23_reports set_updated_at; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.low_voltage_cable_mts23_reports FOR EACH ROW EXECUTE FUNCTION common.set_updated_at();
 
 
 --
@@ -17857,6 +22813,27 @@ CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.low_voltage_circuit_brea
 --
 
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.low_voltage_panelboard_small_breaker_reports FOR EACH ROW EXECUTE FUNCTION common.set_updated_at();
+
+
+--
+-- Name: lv_circuit_breaker_mts23_reports set_updated_at; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.lv_circuit_breaker_mts23_reports FOR EACH ROW EXECUTE FUNCTION common.set_updated_at();
+
+
+--
+-- Name: lv_circuit_breaker_mts25 set_updated_at; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.lv_circuit_breaker_mts25 FOR EACH ROW EXECUTE FUNCTION common.set_updated_at();
+
+
+--
+-- Name: medium_voltage_cable_vlf_tan_delta_mts23_reports set_updated_at; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports FOR EACH ROW EXECUTE FUNCTION common.set_updated_at();
 
 
 --
@@ -17888,10 +22865,31 @@ CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.medium_voltage_switch_mt
 
 
 --
+-- Name: medium_voltage_vacuum_breaker_mts23_reports set_updated_at; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.medium_voltage_vacuum_breaker_mts23_reports FOR EACH ROW EXECUTE FUNCTION common.set_updated_at();
+
+
+--
 -- Name: medium_voltage_vlf_reports set_updated_at; Type: TRIGGER; Schema: neta_ops; Owner: -
 --
 
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.medium_voltage_vlf_reports FOR EACH ROW EXECUTE FUNCTION common.set_updated_at();
+
+
+--
+-- Name: metal_enclosed_busway_mts23_reports set_updated_at; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.metal_enclosed_busway_mts23_reports FOR EACH ROW EXECUTE FUNCTION common.set_updated_at();
+
+
+--
+-- Name: small_dry_type_xfmr_mts23_reports set_updated_at; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.small_dry_type_xfmr_mts23_reports FOR EACH ROW EXECUTE FUNCTION common.set_updated_at();
 
 
 --
@@ -17902,10 +22900,59 @@ CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.switchgear_panelboard_mt
 
 
 --
+-- Name: switchgear_switchboard_mts23_reports set_updated_at; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at BEFORE UPDATE ON neta_ops.switchgear_switchboard_mts23_reports FOR EACH ROW EXECUTE FUNCTION common.set_updated_at();
+
+
+--
+-- Name: building_folder_assignments set_updated_at_building_folder_assignments; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at_building_folder_assignments BEFORE UPDATE ON neta_ops.building_folder_assignments FOR EACH ROW EXECUTE FUNCTION neta_ops.update_updated_at_column();
+
+
+--
+-- Name: equipment_assets set_updated_at_equipment_assets; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at_equipment_assets BEFORE UPDATE ON neta_ops.equipment_assets FOR EACH ROW EXECUTE FUNCTION neta_ops.update_updated_at_column();
+
+
+--
+-- Name: folder_item_assignments set_updated_at_folder_item_assignments; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at_folder_item_assignments BEFORE UPDATE ON neta_ops.folder_item_assignments FOR EACH ROW EXECUTE FUNCTION neta_ops.update_updated_at_column();
+
+
+--
 -- Name: liquid_xfmr_visual_mts_reports set_updated_at_liquid_xfmr_visual_mts; Type: TRIGGER; Schema: neta_ops; Owner: -
 --
 
 CREATE TRIGGER set_updated_at_liquid_xfmr_visual_mts BEFORE UPDATE ON neta_ops.liquid_xfmr_visual_mts_reports FOR EACH ROW EXECUTE FUNCTION common.set_updated_at();
+
+
+--
+-- Name: scheduled_tests set_updated_at_scheduled_tests; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at_scheduled_tests BEFORE UPDATE ON neta_ops.scheduled_tests FOR EACH ROW EXECUTE FUNCTION neta_ops.update_updated_at_column();
+
+
+--
+-- Name: substation_folder_assignments set_updated_at_substation_folder_assignments; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at_substation_folder_assignments BEFORE UPDATE ON neta_ops.substation_folder_assignments FOR EACH ROW EXECUTE FUNCTION neta_ops.update_updated_at_column();
+
+
+--
+-- Name: substation_folders set_updated_at_substation_folders; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER set_updated_at_substation_folders BEFORE UPDATE ON neta_ops.substation_folders FOR EACH ROW EXECUTE FUNCTION neta_ops.update_updated_at_column();
 
 
 --
@@ -18483,6 +23530,13 @@ CREATE TRIGGER trg_backup_voltage_potential_transformer_mts_reports AFTER INSERT
 
 
 --
+-- Name: equipment_assets trg_equipment_assets_single_nesting; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_equipment_assets_single_nesting BEFORE INSERT OR UPDATE OF parent_asset_id ON neta_ops.equipment_assets FOR EACH ROW EXECUTE FUNCTION neta_ops.enforce_single_asset_nesting();
+
+
+--
 -- Name: meeting_todos trg_meeting_todos_set_updated_at; Type: TRIGGER; Schema: neta_ops; Owner: -
 --
 
@@ -18501,6 +23555,20 @@ CREATE TRIGGER trg_set_updated_at_gfop BEFORE UPDATE ON neta_ops.grounding_fall_
 --
 
 CREATE TRIGGER trg_set_updated_at_gsmr BEFORE UPDATE ON neta_ops.grounding_system_master_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.set_updated_at_timestamp();
+
+
+--
+-- Name: medium_voltage_cable_vlf_tan_delta_mts23_reports trg_snapshot_05df68373bbf7b54_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_05df68373bbf7b54_ins AFTER INSERT ON neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: medium_voltage_cable_vlf_tan_delta_mts23_reports trg_snapshot_05df68373bbf7b54_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_05df68373bbf7b54_upd AFTER UPDATE ON neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
 
 
 --
@@ -18571,6 +23639,34 @@ CREATE TRIGGER trg_snapshot_7beeb85336efd986_ins AFTER INSERT ON neta_ops.low_vo
 --
 
 CREATE TRIGGER trg_snapshot_7beeb85336efd986_upd AFTER UPDATE ON neta_ops.low_voltage_circuit_breaker_electronic_trip_mts FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: after_action_reports trg_snapshot_after_action_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_after_action_reports_ins AFTER INSERT ON neta_ops.after_action_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: after_action_reports trg_snapshot_after_action_reports_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_after_action_reports_upd AFTER UPDATE ON neta_ops.after_action_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: applied_voltage_test_ats_reports trg_snapshot_applied_voltage_test_ats_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_applied_voltage_test_ats_reports_ins AFTER INSERT ON neta_ops.applied_voltage_test_ats_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: applied_voltage_test_ats_reports trg_snapshot_applied_voltage_test_ats_reports_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_applied_voltage_test_ats_reports_upd AFTER UPDATE ON neta_ops.applied_voltage_test_ats_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
 
 
 --
@@ -18686,6 +23782,48 @@ CREATE TRIGGER trg_snapshot_current_transformer_test_mts_reports_upd AFTER UPDAT
 
 
 --
+-- Name: custom_form_instances trg_snapshot_custom_form_instances_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_custom_form_instances_ins AFTER INSERT ON neta_ops.custom_form_instances FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: custom_form_instances trg_snapshot_custom_form_instances_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_custom_form_instances_upd AFTER UPDATE ON neta_ops.custom_form_instances FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: emergency_systems_engine_generator_ats25 trg_snapshot_emergency_systems_engine_generator_ats25_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_emergency_systems_engine_generator_ats25_ins AFTER INSERT ON neta_ops.emergency_systems_engine_generator_ats25 FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: emergency_systems_engine_generator_ats25 trg_snapshot_emergency_systems_engine_generator_ats25_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_emergency_systems_engine_generator_ats25_upd AFTER UPDATE ON neta_ops.emergency_systems_engine_generator_ats25 FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: energized_work_permit_reports trg_snapshot_energized_work_permit_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_energized_work_permit_reports_ins AFTER INSERT ON neta_ops.energized_work_permit_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: energized_work_permit_reports trg_snapshot_energized_work_permit_reports_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_energized_work_permit_reports_upd AFTER UPDATE ON neta_ops.energized_work_permit_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
 -- Name: equipment_assignments trg_snapshot_equipment_assignments_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
 --
 
@@ -18714,6 +23852,20 @@ CREATE TRIGGER trg_snapshot_equipment_upd AFTER UPDATE ON neta_ops.equipment FOR
 
 
 --
+-- Name: field_equipment_assignments trg_snapshot_field_equipment_assignments_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_field_equipment_assignments_ins AFTER INSERT ON neta_ops.field_equipment_assignments FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: field_equipment_assignments trg_snapshot_field_equipment_assignments_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_field_equipment_assignments_upd AFTER UPDATE ON neta_ops.field_equipment_assignments FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
 -- Name: generated_documents trg_snapshot_generated_documents_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
 --
 
@@ -18725,6 +23877,20 @@ CREATE TRIGGER trg_snapshot_generated_documents_ins AFTER INSERT ON neta_ops.gen
 --
 
 CREATE TRIGGER trg_snapshot_generated_documents_upd AFTER UPDATE ON neta_ops.generated_documents FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: gfi_trip_test_reports trg_snapshot_gfi_trip_test_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_gfi_trip_test_reports_ins AFTER INSERT ON neta_ops.gfi_trip_test_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: gfi_trip_test_reports trg_snapshot_gfi_trip_test_reports_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_gfi_trip_test_reports_upd AFTER UPDATE ON neta_ops.gfi_trip_test_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
 
 
 --
@@ -18812,6 +23978,20 @@ CREATE TRIGGER trg_snapshot_job_costs_upd AFTER UPDATE ON neta_ops.job_costs FOR
 
 
 --
+-- Name: job_hazard_analysis_reports trg_snapshot_job_hazard_analysis_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_job_hazard_analysis_reports_ins AFTER INSERT ON neta_ops.job_hazard_analysis_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: job_hazard_analysis_reports trg_snapshot_job_hazard_analysis_reports_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_job_hazard_analysis_reports_upd AFTER UPDATE ON neta_ops.job_hazard_analysis_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
 -- Name: job_notifications trg_snapshot_job_notifications_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
 --
 
@@ -18868,6 +24048,20 @@ CREATE TRIGGER trg_snapshot_large_dry_type_transformer_mts_reports_upd AFTER UPD
 
 
 --
+-- Name: large_dry_type_xfmr_mts23_reports trg_snapshot_large_dry_type_xfmr_mts23_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_large_dry_type_xfmr_mts23_reports_ins AFTER INSERT ON neta_ops.large_dry_type_xfmr_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: large_dry_type_xfmr_mts23_reports trg_snapshot_large_dry_type_xfmr_mts23_reports_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_large_dry_type_xfmr_mts23_reports_upd AFTER UPDATE ON neta_ops.large_dry_type_xfmr_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
 -- Name: large_dry_type_xfmr_mts_reports trg_snapshot_large_dry_type_xfmr_mts_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
 --
 
@@ -18910,6 +24104,20 @@ CREATE TRIGGER trg_snapshot_liquid_filled_transformer_reports_upd AFTER UPDATE O
 
 
 --
+-- Name: liquid_filled_xfmr_ats25_reports trg_snapshot_liquid_filled_xfmr_ats25_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_liquid_filled_xfmr_ats25_reports_ins AFTER INSERT ON neta_ops.liquid_filled_xfmr_ats25_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: liquid_filled_xfmr_ats25_reports trg_snapshot_liquid_filled_xfmr_ats25_reports_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_liquid_filled_xfmr_ats25_reports_upd AFTER UPDATE ON neta_ops.liquid_filled_xfmr_ats25_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
 -- Name: liquid_xfmr_visual_mts_reports trg_snapshot_liquid_xfmr_visual_mts_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
 --
 
@@ -18921,6 +24129,34 @@ CREATE TRIGGER trg_snapshot_liquid_xfmr_visual_mts_reports_ins AFTER INSERT ON n
 --
 
 CREATE TRIGGER trg_snapshot_liquid_xfmr_visual_mts_reports_upd AFTER UPDATE ON neta_ops.liquid_xfmr_visual_mts_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: low_voltage_air_switch_mts23_reports trg_snapshot_low_voltage_air_switch_mts23_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_low_voltage_air_switch_mts23_reports_ins AFTER INSERT ON neta_ops.low_voltage_air_switch_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: low_voltage_air_switch_mts23_reports trg_snapshot_low_voltage_air_switch_mts23_reports_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_low_voltage_air_switch_mts23_reports_upd AFTER UPDATE ON neta_ops.low_voltage_air_switch_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: low_voltage_cable_mts23_reports trg_snapshot_low_voltage_cable_mts23_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_low_voltage_cable_mts23_reports_ins AFTER INSERT ON neta_ops.low_voltage_cable_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: low_voltage_cable_mts23_reports trg_snapshot_low_voltage_cable_mts23_reports_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_low_voltage_cable_mts23_reports_upd AFTER UPDATE ON neta_ops.low_voltage_cable_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
 
 
 --
@@ -19050,6 +24286,48 @@ CREATE TRIGGER trg_snapshot_low_voltage_switch_reports_upd AFTER UPDATE ON neta_
 
 
 --
+-- Name: lv_circuit_breaker_mts23_reports trg_snapshot_lv_circuit_breaker_mts23_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_lv_circuit_breaker_mts23_reports_ins AFTER INSERT ON neta_ops.lv_circuit_breaker_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: lv_circuit_breaker_mts23_reports trg_snapshot_lv_circuit_breaker_mts23_reports_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_lv_circuit_breaker_mts23_reports_upd AFTER UPDATE ON neta_ops.lv_circuit_breaker_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: lv_circuit_breaker_mts25 trg_snapshot_lv_circuit_breaker_mts25_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_lv_circuit_breaker_mts25_ins AFTER INSERT ON neta_ops.lv_circuit_breaker_mts25 FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: lv_circuit_breaker_mts25 trg_snapshot_lv_circuit_breaker_mts25_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_lv_circuit_breaker_mts25_upd AFTER UPDATE ON neta_ops.lv_circuit_breaker_mts25 FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: lv_molded_case_circuit_breaker_ats25 trg_snapshot_lv_molded_case_circuit_breaker_ats25_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_lv_molded_case_circuit_breaker_ats25_ins AFTER INSERT ON neta_ops.lv_molded_case_circuit_breaker_ats25 FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: lv_molded_case_circuit_breaker_ats25 trg_snapshot_lv_molded_case_circuit_breaker_ats25_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_lv_molded_case_circuit_breaker_ats25_upd AFTER UPDATE ON neta_ops.lv_molded_case_circuit_breaker_ats25 FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
 -- Name: maintenance_records trg_snapshot_maintenance_records_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
 --
 
@@ -19176,6 +24454,20 @@ CREATE TRIGGER trg_snapshot_medium_voltage_switch_sf6_reports_upd AFTER UPDATE O
 
 
 --
+-- Name: medium_voltage_vacuum_breaker_mts23_reports trg_snapshot_medium_voltage_vacuum_breaker_mts23_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_medium_voltage_vacuum_breaker_mts23_reports_ins AFTER INSERT ON neta_ops.medium_voltage_vacuum_breaker_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: medium_voltage_vacuum_breaker_mts23_reports trg_snapshot_medium_voltage_vacuum_breaker_mts23_reports_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_medium_voltage_vacuum_breaker_mts23_reports_upd AFTER UPDATE ON neta_ops.medium_voltage_vacuum_breaker_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
 -- Name: medium_voltage_vlf_mts_reports trg_snapshot_medium_voltage_vlf_mts_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
 --
 
@@ -19229,6 +24521,20 @@ CREATE TRIGGER trg_snapshot_meeting_todos_ins AFTER INSERT ON neta_ops.meeting_t
 --
 
 CREATE TRIGGER trg_snapshot_meeting_todos_upd AFTER UPDATE ON neta_ops.meeting_todos FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: metal_enclosed_busway_mts23_reports trg_snapshot_metal_enclosed_busway_mts23_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_metal_enclosed_busway_mts23_reports_ins AFTER INSERT ON neta_ops.metal_enclosed_busway_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: metal_enclosed_busway_mts23_reports trg_snapshot_metal_enclosed_busway_mts23_reports_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_metal_enclosed_busway_mts23_reports_upd AFTER UPDATE ON neta_ops.metal_enclosed_busway_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
 
 
 --
@@ -19386,6 +24692,34 @@ CREATE TRIGGER trg_snapshot_resources_upd AFTER UPDATE ON neta_ops.resources FOR
 
 
 --
+-- Name: small_dry_type_xfmr_mts23_reports trg_snapshot_small_dry_type_xfmr_mts23_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_small_dry_type_xfmr_mts23_reports_ins AFTER INSERT ON neta_ops.small_dry_type_xfmr_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: small_dry_type_xfmr_mts23_reports trg_snapshot_small_dry_type_xfmr_mts23_reports_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_small_dry_type_xfmr_mts23_reports_upd AFTER UPDATE ON neta_ops.small_dry_type_xfmr_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: small_lv_dry_type_transformer_ats25_reports trg_snapshot_small_lv_dry_type_transformer_ats25_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_small_lv_dry_type_transformer_ats25_reports_ins AFTER INSERT ON neta_ops.small_lv_dry_type_transformer_ats25_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: small_lv_dry_type_transformer_ats25_reports trg_snapshot_small_lv_dry_type_transformer_ats25_reports_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_small_lv_dry_type_transformer_ats25_reports_upd AFTER UPDATE ON neta_ops.small_lv_dry_type_transformer_ats25_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
 -- Name: switchgear_panelboard_mts_reports trg_snapshot_switchgear_panelboard_mts_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
 --
 
@@ -19425,6 +24759,20 @@ CREATE TRIGGER trg_snapshot_switchgear_switchboard_ats25_reports_ins AFTER INSER
 --
 
 CREATE TRIGGER trg_snapshot_switchgear_switchboard_ats25_reports_upd AFTER UPDATE ON neta_ops.switchgear_switchboard_ats25_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: switchgear_switchboard_mts23_reports trg_snapshot_switchgear_switchboard_mts23_reports_ins; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_switchgear_switchboard_mts23_reports_ins AFTER INSERT ON neta_ops.switchgear_switchboard_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
+
+
+--
+-- Name: switchgear_switchboard_mts23_reports trg_snapshot_switchgear_switchboard_mts23_reports_upd; Type: TRIGGER; Schema: neta_ops; Owner: -
+--
+
+CREATE TRIGGER trg_snapshot_switchgear_switchboard_mts23_reports_upd AFTER UPDATE ON neta_ops.switchgear_switchboard_mts23_reports FOR EACH ROW EXECUTE FUNCTION neta_ops.fn_snapshot_report_json();
 
 
 --
@@ -19658,20 +25006,6 @@ CREATE TRIGGER update_custom_form_instances_updated_at BEFORE UPDATE ON neta_ops
 --
 
 CREATE TRIGGER update_custom_form_templates_updated_at BEFORE UPDATE ON neta_ops.custom_form_templates FOR EACH ROW EXECUTE FUNCTION neta_ops.update_updated_at_column();
-
-
---
--- Name: custom_form_template_versions custom_form_versions_immutable; Type: TRIGGER; Schema: neta_ops; Owner: -
---
-
-CREATE TRIGGER custom_form_versions_immutable BEFORE DELETE OR UPDATE ON neta_ops.custom_form_template_versions FOR EACH ROW EXECUTE FUNCTION neta_ops.custom_form_version_is_immutable();
-
-
---
--- Name: custom_form_instances custom_form_instances_bump_revision; Type: TRIGGER; Schema: neta_ops; Owner: -
---
-
-CREATE TRIGGER custom_form_instances_bump_revision BEFORE UPDATE ON neta_ops.custom_form_instances FOR EACH ROW EXECUTE FUNCTION neta_ops.custom_form_instance_bump_revision();
 
 
 --
@@ -19973,6 +25307,70 @@ ALTER TABLE ONLY business.subcontractor_agreements
 
 
 --
+-- Name: amp_contacts amp_contacts_profile_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.amp_contacts
+    ADD CONSTRAINT amp_contacts_profile_id_fkey FOREIGN KEY (profile_id) REFERENCES common.profiles(id) ON DELETE SET NULL;
+
+
+--
+-- Name: ampu_courses ampu_courses_created_by_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.ampu_courses
+    ADD CONSTRAINT ampu_courses_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: ampu_lessons ampu_lessons_course_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.ampu_lessons
+    ADD CONSTRAINT ampu_lessons_course_id_fkey FOREIGN KEY (course_id) REFERENCES common.ampu_courses(id) ON DELETE CASCADE;
+
+
+--
+-- Name: ampu_progress ampu_progress_course_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.ampu_progress
+    ADD CONSTRAINT ampu_progress_course_id_fkey FOREIGN KEY (course_id) REFERENCES common.ampu_courses(id) ON DELETE CASCADE;
+
+
+--
+-- Name: ampu_progress ampu_progress_lesson_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.ampu_progress
+    ADD CONSTRAINT ampu_progress_lesson_id_fkey FOREIGN KEY (lesson_id) REFERENCES common.ampu_lessons(id) ON DELETE CASCADE;
+
+
+--
+-- Name: ampu_progress ampu_progress_user_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.ampu_progress
+    ADD CONSTRAINT ampu_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: candidate_question_answers candidate_question_answers_candidate_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.candidate_question_answers
+    ADD CONSTRAINT candidate_question_answers_candidate_id_fkey FOREIGN KEY (candidate_id) REFERENCES common.candidates(id) ON DELETE CASCADE;
+
+
+--
+-- Name: candidate_question_answers candidate_question_answers_question_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.candidate_question_answers
+    ADD CONSTRAINT candidate_question_answers_question_id_fkey FOREIGN KEY (question_id) REFERENCES common.job_application_questions(id) ON DELETE SET NULL;
+
+
+--
 -- Name: candidates candidates_requisition_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
 --
 
@@ -20261,6 +25659,22 @@ ALTER TABLE ONLY common.user_shortcuts
 
 
 --
+-- Name: help_center_documents help_center_documents_created_by_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.help_center_documents
+    ADD CONSTRAINT help_center_documents_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: help_guides help_guides_created_by_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.help_guides
+    ADD CONSTRAINT help_guides_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id);
+
+
+--
 -- Name: hr_tasks hr_tasks_assigned_to_user_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
 --
 
@@ -20386,6 +25800,14 @@ ALTER TABLE ONLY common.it_equipment_tasks
 
 ALTER TABLE ONLY common.it_equipment_tasks
     ADD CONSTRAINT it_equipment_tasks_packet_id_fkey FOREIGN KEY (packet_id) REFERENCES common.new_hire_packets(id);
+
+
+--
+-- Name: job_application_questions job_application_questions_requisition_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.job_application_questions
+    ADD CONSTRAINT job_application_questions_requisition_id_fkey FOREIGN KEY (requisition_id) REFERENCES common.job_requisitions(id) ON DELETE CASCADE;
 
 
 --
@@ -20861,6 +26283,30 @@ ALTER TABLE ONLY common.org_chart_manager_group_members
 
 
 --
+-- Name: prayer_intercessions prayer_intercessions_request_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.prayer_intercessions
+    ADD CONSTRAINT prayer_intercessions_request_id_fkey FOREIGN KEY (request_id) REFERENCES common.prayer_requests(id) ON DELETE CASCADE;
+
+
+--
+-- Name: prayer_intercessions prayer_intercessions_user_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.prayer_intercessions
+    ADD CONSTRAINT prayer_intercessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: prayer_requests prayer_requests_author_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.prayer_requests
+    ADD CONSTRAINT prayer_requests_author_id_fkey FOREIGN KEY (author_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: profiles profiles_deactivated_by_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
 --
 
@@ -20890,6 +26336,46 @@ ALTER TABLE ONLY common.quickbooks_integrations
 
 ALTER TABLE ONLY common.quickbooks_job_sync
     ADD CONSTRAINT quickbooks_job_sync_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: recruiting_prospect_activity recruiting_prospect_activity_created_by_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.recruiting_prospect_activity
+    ADD CONSTRAINT recruiting_prospect_activity_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: recruiting_prospect_activity recruiting_prospect_activity_prospect_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.recruiting_prospect_activity
+    ADD CONSTRAINT recruiting_prospect_activity_prospect_id_fkey FOREIGN KEY (prospect_id) REFERENCES common.recruiting_prospects(id) ON DELETE CASCADE;
+
+
+--
+-- Name: recruiting_prospects recruiting_prospects_candidate_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.recruiting_prospects
+    ADD CONSTRAINT recruiting_prospects_candidate_id_fkey FOREIGN KEY (candidate_id) REFERENCES common.candidates(id) ON DELETE RESTRICT;
+
+
+--
+-- Name: recruiting_prospects recruiting_prospects_created_by_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.recruiting_prospects
+    ADD CONSTRAINT recruiting_prospects_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: recruiting_prospects recruiting_prospects_owner_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.recruiting_prospects
+    ADD CONSTRAINT recruiting_prospects_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 
 --
@@ -20933,6 +26419,14 @@ ALTER TABLE ONLY common.role_audit_logs
 
 
 --
+-- Name: sites sites_created_by_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.sites
+    ADD CONSTRAINT sites_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id);
+
+
+--
 -- Name: survey_questions survey_questions_template_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
 --
 
@@ -20954,6 +26448,22 @@ ALTER TABLE ONLY common.survey_responses
 
 ALTER TABLE ONLY common.survey_responses
     ADD CONSTRAINT survey_responses_survey_id_fkey FOREIGN KEY (survey_id) REFERENCES common.customer_surveys(id) ON DELETE CASCADE;
+
+
+--
+-- Name: talent_pool_members talent_pool_members_added_by_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.talent_pool_members
+    ADD CONSTRAINT talent_pool_members_added_by_fkey FOREIGN KEY (added_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: talent_pool_members talent_pool_members_user_id_fkey; Type: FK CONSTRAINT; Schema: common; Owner: -
+--
+
+ALTER TABLE ONLY common.talent_pool_members
+    ADD CONSTRAINT talent_pool_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 
 
 --
@@ -21453,6 +26963,14 @@ ALTER TABLE ONLY hr.salary_slips
 
 
 --
+-- Name: amplify_reports amplify_reports_created_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.amplify_reports
+    ADD CONSTRAINT amplify_reports_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
 -- Name: applied_voltage_test_ats_reports applied_voltage_test_ats_reports_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -21485,6 +27003,14 @@ ALTER TABLE ONLY neta_ops.asset_reviewers
 
 
 --
+-- Name: assets assets_equipment_asset_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.assets
+    ADD CONSTRAINT assets_equipment_asset_id_fkey FOREIGN KEY (equipment_asset_id) REFERENCES neta_ops.equipment_assets(id) ON DELETE RESTRICT;
+
+
+--
 -- Name: assets assets_user_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -21506,6 +27032,38 @@ ALTER TABLE ONLY neta_ops.automatic_transfer_switch_ats_reports
 
 ALTER TABLE ONLY neta_ops.automatic_transfer_switch_ats_reports
     ADD CONSTRAINT automatic_transfer_switch_ats_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id);
+
+
+--
+-- Name: building_folder_assignments building_folder_assignments_created_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.building_folder_assignments
+    ADD CONSTRAINT building_folder_assignments_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: building_folder_assignments building_folder_assignments_folder_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.building_folder_assignments
+    ADD CONSTRAINT building_folder_assignments_folder_id_fkey FOREIGN KEY (folder_id) REFERENCES neta_ops.substation_folders(id) ON DELETE CASCADE;
+
+
+--
+-- Name: building_folder_assignments building_folder_assignments_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.building_folder_assignments
+    ADD CONSTRAINT building_folder_assignments_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: building_folder_assignments building_folder_assignments_site_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.building_folder_assignments
+    ADD CONSTRAINT building_folder_assignments_site_id_fkey FOREIGN KEY (site_id) REFERENCES common.sites(id) ON DELETE CASCADE;
 
 
 --
@@ -21589,6 +27147,14 @@ ALTER TABLE ONLY neta_ops.custom_form_instances
 
 
 --
+-- Name: custom_form_instances custom_form_instances_template_version_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.custom_form_instances
+    ADD CONSTRAINT custom_form_instances_template_version_id_fkey FOREIGN KEY (template_version_id) REFERENCES neta_ops.custom_form_template_versions(id) ON DELETE RESTRICT;
+
+
+--
 -- Name: custom_form_instances custom_form_instances_user_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -21602,38 +27168,6 @@ ALTER TABLE ONLY neta_ops.custom_form_instances
 
 ALTER TABLE ONLY neta_ops.custom_form_saved_components
     ADD CONSTRAINT custom_form_saved_components_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
-
-
---
--- Name: custom_form_templates custom_form_templates_created_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
---
-
-ALTER TABLE ONLY neta_ops.custom_form_templates
-    ADD CONSTRAINT custom_form_templates_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
-
-
---
--- Name: custom_form_templates custom_form_templates_active_version_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
---
-
-ALTER TABLE ONLY neta_ops.custom_form_templates
-    ADD CONSTRAINT custom_form_templates_active_version_id_fkey FOREIGN KEY (active_version_id) REFERENCES neta_ops.custom_form_template_versions(id) ON DELETE SET NULL;
-
-
---
--- Name: custom_form_instances custom_form_instances_template_version_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
---
-
-ALTER TABLE ONLY neta_ops.custom_form_instances
-    ADD CONSTRAINT custom_form_instances_template_version_id_fkey FOREIGN KEY (template_version_id) REFERENCES neta_ops.custom_form_template_versions(id) ON DELETE RESTRICT;
-
-
---
--- Name: custom_form_template_versions custom_form_template_versions_template_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
---
-
-ALTER TABLE ONLY neta_ops.custom_form_template_versions
-    ADD CONSTRAINT custom_form_template_versions_template_id_fkey FOREIGN KEY (template_id) REFERENCES neta_ops.custom_form_templates(id) ON DELETE CASCADE;
 
 
 --
@@ -21653,6 +27187,30 @@ ALTER TABLE ONLY neta_ops.custom_form_template_versions
 
 
 --
+-- Name: custom_form_template_versions custom_form_template_versions_template_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.custom_form_template_versions
+    ADD CONSTRAINT custom_form_template_versions_template_id_fkey FOREIGN KEY (template_id) REFERENCES neta_ops.custom_form_templates(id) ON DELETE CASCADE;
+
+
+--
+-- Name: custom_form_templates custom_form_templates_active_version_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.custom_form_templates
+    ADD CONSTRAINT custom_form_templates_active_version_id_fkey FOREIGN KEY (active_version_id) REFERENCES neta_ops.custom_form_template_versions(id) ON DELETE SET NULL;
+
+
+--
+-- Name: custom_form_templates custom_form_templates_created_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.custom_form_templates
+    ADD CONSTRAINT custom_form_templates_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
 -- Name: emergency_systems_engine_generator_ats25 emergency_systems_engine_generator_ats25_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -21669,11 +27227,59 @@ ALTER TABLE ONLY neta_ops.emergency_systems_engine_generator_ats25
 
 
 --
+-- Name: energized_work_permit_reports energized_work_permit_reports_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.energized_work_permit_reports
+    ADD CONSTRAINT energized_work_permit_reports_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: energized_work_permit_reports energized_work_permit_reports_user_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.energized_work_permit_reports
+    ADD CONSTRAINT energized_work_permit_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE RESTRICT;
+
+
+--
 -- Name: equipment equipment_asset_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
 ALTER TABLE ONLY neta_ops.equipment
     ADD CONSTRAINT equipment_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES neta_ops.assets(id) ON DELETE SET NULL;
+
+
+--
+-- Name: equipment_assets equipment_assets_created_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.equipment_assets
+    ADD CONSTRAINT equipment_assets_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: equipment_assets equipment_assets_parent_asset_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.equipment_assets
+    ADD CONSTRAINT equipment_assets_parent_asset_id_fkey FOREIGN KEY (parent_asset_id) REFERENCES neta_ops.equipment_assets(id) ON DELETE SET NULL;
+
+
+--
+-- Name: equipment_assets equipment_assets_site_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.equipment_assets
+    ADD CONSTRAINT equipment_assets_site_id_fkey FOREIGN KEY (site_id) REFERENCES common.sites(id) ON DELETE RESTRICT;
+
+
+--
+-- Name: equipment_assets equipment_assets_updated_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.equipment_assets
+    ADD CONSTRAINT equipment_assets_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES auth.users(id);
 
 
 --
@@ -21693,6 +27299,70 @@ ALTER TABLE ONLY neta_ops.equipment
 
 
 --
+-- Name: field_equipment field_equipment_assigned_site_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.field_equipment
+    ADD CONSTRAINT field_equipment_assigned_site_id_fkey FOREIGN KEY (assigned_site_id) REFERENCES common.sites(id) ON DELETE SET NULL;
+
+
+--
+-- Name: field_equipment field_equipment_assigned_truck_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.field_equipment
+    ADD CONSTRAINT field_equipment_assigned_truck_id_fkey FOREIGN KEY (assigned_truck_id) REFERENCES neta_ops.equipment_trucks(id) ON DELETE SET NULL;
+
+
+--
+-- Name: field_equipment field_equipment_assigned_user_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.field_equipment
+    ADD CONSTRAINT field_equipment_assigned_user_id_fkey FOREIGN KEY (assigned_user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: field_equipment_assignments field_equipment_assignments_assigned_site_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.field_equipment_assignments
+    ADD CONSTRAINT field_equipment_assignments_assigned_site_id_fkey FOREIGN KEY (assigned_site_id) REFERENCES common.sites(id) ON DELETE SET NULL;
+
+
+--
+-- Name: field_equipment_assignments field_equipment_assignments_assigned_truck_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.field_equipment_assignments
+    ADD CONSTRAINT field_equipment_assignments_assigned_truck_id_fkey FOREIGN KEY (assigned_truck_id) REFERENCES neta_ops.equipment_trucks(id) ON DELETE SET NULL;
+
+
+--
+-- Name: field_equipment_assignments field_equipment_assignments_assigned_user_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.field_equipment_assignments
+    ADD CONSTRAINT field_equipment_assignments_assigned_user_id_fkey FOREIGN KEY (assigned_user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: field_equipment_assignments field_equipment_assignments_changed_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.field_equipment_assignments
+    ADD CONSTRAINT field_equipment_assignments_changed_by_fkey FOREIGN KEY (changed_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: field_equipment_assignments field_equipment_assignments_field_equipment_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.field_equipment_assignments
+    ADD CONSTRAINT field_equipment_assignments_field_equipment_id_fkey FOREIGN KEY (field_equipment_id) REFERENCES neta_ops.field_equipment(id) ON DELETE CASCADE;
+
+
+--
 -- Name: field_equipment field_equipment_checked_out_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -21706,6 +27376,14 @@ ALTER TABLE ONLY neta_ops.field_equipment
 
 ALTER TABLE ONLY neta_ops.field_equipment
     ADD CONSTRAINT field_equipment_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: field_equipment field_equipment_out_of_service_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.field_equipment
+    ADD CONSTRAINT field_equipment_out_of_service_by_fkey FOREIGN KEY (out_of_service_by) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 
 --
@@ -21730,6 +27408,38 @@ ALTER TABLE ONLY neta_ops.job_assets
 
 ALTER TABLE ONLY neta_ops.jobs
     ADD CONSTRAINT fk_job_customer FOREIGN KEY (customer_id) REFERENCES common.customers(id) ON DELETE CASCADE;
+
+
+--
+-- Name: folder_item_assignments folder_item_assignments_asset_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.folder_item_assignments
+    ADD CONSTRAINT folder_item_assignments_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES neta_ops.assets(id) ON DELETE CASCADE;
+
+
+--
+-- Name: folder_item_assignments folder_item_assignments_created_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.folder_item_assignments
+    ADD CONSTRAINT folder_item_assignments_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: folder_item_assignments folder_item_assignments_equipment_asset_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.folder_item_assignments
+    ADD CONSTRAINT folder_item_assignments_equipment_asset_id_fkey FOREIGN KEY (equipment_asset_id) REFERENCES neta_ops.equipment_assets(id) ON DELETE CASCADE;
+
+
+--
+-- Name: folder_item_assignments folder_item_assignments_folder_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.folder_item_assignments
+    ADD CONSTRAINT folder_item_assignments_folder_id_fkey FOREIGN KEY (folder_id) REFERENCES neta_ops.substation_folders(id) ON DELETE CASCADE;
 
 
 --
@@ -21837,6 +27547,30 @@ ALTER TABLE ONLY neta_ops.job_costs
 
 
 --
+-- Name: job_equipment_assets job_equipment_assets_created_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.job_equipment_assets
+    ADD CONSTRAINT job_equipment_assets_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: job_equipment_assets job_equipment_assets_equipment_asset_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.job_equipment_assets
+    ADD CONSTRAINT job_equipment_assets_equipment_asset_id_fkey FOREIGN KEY (equipment_asset_id) REFERENCES neta_ops.equipment_assets(id) ON DELETE CASCADE;
+
+
+--
+-- Name: job_equipment_assets job_equipment_assets_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.job_equipment_assets
+    ADD CONSTRAINT job_equipment_assets_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE CASCADE;
+
+
+--
 -- Name: job_expenses job_expenses_created_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -21941,11 +27675,27 @@ ALTER TABLE ONLY neta_ops.jobs
 
 
 --
+-- Name: jobs jobs_division_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.jobs
+    ADD CONSTRAINT jobs_division_fkey FOREIGN KEY (division) REFERENCES common.divisions(id) ON UPDATE CASCADE;
+
+
+--
 -- Name: jobs jobs_opportunity_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
 ALTER TABLE ONLY neta_ops.jobs
     ADD CONSTRAINT jobs_opportunity_id_fkey FOREIGN KEY (opportunity_id) REFERENCES business.opportunities(id) ON DELETE SET NULL;
+
+
+--
+-- Name: jobs jobs_site_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.jobs
+    ADD CONSTRAINT jobs_site_id_fkey FOREIGN KEY (site_id) REFERENCES common.sites(id);
 
 
 --
@@ -21970,6 +27720,22 @@ ALTER TABLE ONLY neta_ops.large_dry_type_transformer_mts_reports
 
 ALTER TABLE ONLY neta_ops.large_dry_type_transformer_mts_reports
     ADD CONSTRAINT large_dry_type_transformer_mts_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id);
+
+
+--
+-- Name: large_dry_type_xfmr_mts23_reports large_dry_type_xfmr_mts23_reports_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.large_dry_type_xfmr_mts23_reports
+    ADD CONSTRAINT large_dry_type_xfmr_mts23_reports_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: large_dry_type_xfmr_mts23_reports large_dry_type_xfmr_mts23_reports_user_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.large_dry_type_xfmr_mts23_reports
+    ADD CONSTRAINT large_dry_type_xfmr_mts23_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 
 --
@@ -22042,6 +27808,38 @@ ALTER TABLE ONLY neta_ops.liquid_xfmr_visual_mts_reports
 
 ALTER TABLE ONLY neta_ops.liquid_xfmr_visual_mts_reports
     ADD CONSTRAINT liquid_xfmr_visual_mts_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id);
+
+
+--
+-- Name: low_voltage_air_switch_mts23_reports low_voltage_air_switch_mts23_reports_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.low_voltage_air_switch_mts23_reports
+    ADD CONSTRAINT low_voltage_air_switch_mts23_reports_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: low_voltage_air_switch_mts23_reports low_voltage_air_switch_mts23_reports_user_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.low_voltage_air_switch_mts23_reports
+    ADD CONSTRAINT low_voltage_air_switch_mts23_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: low_voltage_cable_mts23_reports low_voltage_cable_mts23_reports_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.low_voltage_cable_mts23_reports
+    ADD CONSTRAINT low_voltage_cable_mts23_reports_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: low_voltage_cable_mts23_reports low_voltage_cable_mts23_reports_user_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.low_voltage_cable_mts23_reports
+    ADD CONSTRAINT low_voltage_cable_mts23_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 
 --
@@ -22253,6 +28051,38 @@ ALTER TABLE ONLY neta_ops.low_voltage_switch_reports
 
 
 --
+-- Name: lv_circuit_breaker_mts23_reports lv_circuit_breaker_mts23_reports_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.lv_circuit_breaker_mts23_reports
+    ADD CONSTRAINT lv_circuit_breaker_mts23_reports_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: lv_circuit_breaker_mts23_reports lv_circuit_breaker_mts23_reports_user_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.lv_circuit_breaker_mts23_reports
+    ADD CONSTRAINT lv_circuit_breaker_mts23_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: lv_circuit_breaker_mts25 lv_circuit_breaker_mts25_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.lv_circuit_breaker_mts25
+    ADD CONSTRAINT lv_circuit_breaker_mts25_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: lv_circuit_breaker_mts25 lv_circuit_breaker_mts25_user_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.lv_circuit_breaker_mts25
+    ADD CONSTRAINT lv_circuit_breaker_mts25_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
 -- Name: lv_molded_case_circuit_breaker_ats25 lv_molded_case_circuit_breaker_ats25_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -22274,6 +28104,22 @@ ALTER TABLE ONLY neta_ops.lv_molded_case_circuit_breaker_ats25
 
 ALTER TABLE ONLY neta_ops.maintenance_records
     ADD CONSTRAINT maintenance_records_equipment_id_fkey FOREIGN KEY (equipment_id) REFERENCES neta_ops.equipment(id) ON DELETE CASCADE;
+
+
+--
+-- Name: medium_voltage_cable_vlf_tan_delta_mts23_reports medium_voltage_cable_vlf_tan_delta_mts23_reports_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports
+    ADD CONSTRAINT medium_voltage_cable_vlf_tan_delta_mts23_reports_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: medium_voltage_cable_vlf_tan_delta_mts23_reports medium_voltage_cable_vlf_tan_delta_mts23_reports_user_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports
+    ADD CONSTRAINT medium_voltage_cable_vlf_tan_delta_mts23_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 
 --
@@ -22397,6 +28243,22 @@ ALTER TABLE ONLY neta_ops.medium_voltage_switch_sf6_reports
 
 
 --
+-- Name: medium_voltage_vacuum_breaker_mts23_reports medium_voltage_vacuum_breaker_mts23_reports_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.medium_voltage_vacuum_breaker_mts23_reports
+    ADD CONSTRAINT medium_voltage_vacuum_breaker_mts23_reports_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: medium_voltage_vacuum_breaker_mts23_reports medium_voltage_vacuum_breaker_mts23_reports_user_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.medium_voltage_vacuum_breaker_mts23_reports
+    ADD CONSTRAINT medium_voltage_vacuum_breaker_mts23_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
 -- Name: medium_voltage_vlf_mts_reports medium_voltage_vlf_mts_reports_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -22429,6 +28291,22 @@ ALTER TABLE ONLY neta_ops.medium_voltage_vlf_reports
 
 
 --
+-- Name: metal_enclosed_busway_mts23_reports metal_enclosed_busway_mts23_reports_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.metal_enclosed_busway_mts23_reports
+    ADD CONSTRAINT metal_enclosed_busway_mts23_reports_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: metal_enclosed_busway_mts23_reports metal_enclosed_busway_mts23_reports_user_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.metal_enclosed_busway_mts23_reports
+    ADD CONSTRAINT metal_enclosed_busway_mts23_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
 -- Name: metal_enclosed_busway_reports metal_enclosed_busway_reports_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -22450,6 +28328,14 @@ ALTER TABLE ONLY neta_ops.miscellaneous_documents
 
 ALTER TABLE ONLY neta_ops.miscellaneous_documents
     ADD CONSTRAINT miscellaneous_documents_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id);
+
+
+--
+-- Name: oil_analysis_reports oil_analysis_reports_created_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.oil_analysis_reports
+    ADD CONSTRAINT oil_analysis_reports_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 
 --
@@ -22541,6 +28427,38 @@ ALTER TABLE ONLY neta_ops.quality_metrics
 
 
 --
+-- Name: report_moves report_moves_asset_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.report_moves
+    ADD CONSTRAINT report_moves_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES neta_ops.assets(id) ON DELETE CASCADE;
+
+
+--
+-- Name: report_moves report_moves_from_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.report_moves
+    ADD CONSTRAINT report_moves_from_job_id_fkey FOREIGN KEY (from_job_id) REFERENCES neta_ops.jobs(id) ON DELETE SET NULL;
+
+
+--
+-- Name: report_moves report_moves_moved_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.report_moves
+    ADD CONSTRAINT report_moves_moved_by_fkey FOREIGN KEY (moved_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: report_moves report_moves_to_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.report_moves
+    ADD CONSTRAINT report_moves_to_job_id_fkey FOREIGN KEY (to_job_id) REFERENCES neta_ops.jobs(id) ON DELETE SET NULL;
+
+
+--
 -- Name: report_notifications report_notifications_asset_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -22573,6 +28491,110 @@ ALTER TABLE ONLY neta_ops.resource_allocations
 
 
 --
+-- Name: scheduled_test_batch_items scheduled_test_batch_items_batch_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.scheduled_test_batch_items
+    ADD CONSTRAINT scheduled_test_batch_items_batch_id_fkey FOREIGN KEY (batch_id) REFERENCES neta_ops.scheduled_test_batches(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scheduled_test_batches scheduled_test_batches_created_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.scheduled_test_batches
+    ADD CONSTRAINT scheduled_test_batches_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: scheduled_test_batches scheduled_test_batches_site_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.scheduled_test_batches
+    ADD CONSTRAINT scheduled_test_batches_site_id_fkey FOREIGN KEY (site_id) REFERENCES common.sites(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scheduled_test_batches scheduled_test_batches_undone_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.scheduled_test_batches
+    ADD CONSTRAINT scheduled_test_batches_undone_by_fkey FOREIGN KEY (undone_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: scheduled_tests scheduled_tests_created_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.scheduled_tests
+    ADD CONSTRAINT scheduled_tests_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: scheduled_tests scheduled_tests_custom_form_template_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.scheduled_tests
+    ADD CONSTRAINT scheduled_tests_custom_form_template_id_fkey FOREIGN KEY (custom_form_template_id) REFERENCES neta_ops.custom_form_templates(id) ON DELETE SET NULL;
+
+
+--
+-- Name: scheduled_tests scheduled_tests_equipment_asset_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.scheduled_tests
+    ADD CONSTRAINT scheduled_tests_equipment_asset_id_fkey FOREIGN KEY (equipment_asset_id) REFERENCES neta_ops.equipment_assets(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scheduled_tests scheduled_tests_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.scheduled_tests
+    ADD CONSTRAINT scheduled_tests_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE SET NULL;
+
+
+--
+-- Name: scheduled_tests scheduled_tests_report_asset_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.scheduled_tests
+    ADD CONSTRAINT scheduled_tests_report_asset_id_fkey FOREIGN KEY (report_asset_id) REFERENCES neta_ops.assets(id) ON DELETE SET NULL;
+
+
+--
+-- Name: scheduled_tests scheduled_tests_site_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.scheduled_tests
+    ADD CONSTRAINT scheduled_tests_site_id_fkey FOREIGN KEY (site_id) REFERENCES common.sites(id) ON DELETE RESTRICT;
+
+
+--
+-- Name: scheduled_tests scheduled_tests_updated_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.scheduled_tests
+    ADD CONSTRAINT scheduled_tests_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: small_dry_type_xfmr_mts23_reports small_dry_type_xfmr_mts23_reports_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.small_dry_type_xfmr_mts23_reports
+    ADD CONSTRAINT small_dry_type_xfmr_mts23_reports_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: small_dry_type_xfmr_mts23_reports small_dry_type_xfmr_mts23_reports_user_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.small_dry_type_xfmr_mts23_reports
+    ADD CONSTRAINT small_dry_type_xfmr_mts23_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
 -- Name: small_lv_dry_type_transformer_ats25_reports small_lv_dry_type_transformer_ats25_reports_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
 --
 
@@ -22586,6 +28608,70 @@ ALTER TABLE ONLY neta_ops.small_lv_dry_type_transformer_ats25_reports
 
 ALTER TABLE ONLY neta_ops.small_lv_dry_type_transformer_ats25_reports
     ADD CONSTRAINT small_lv_dry_type_transformer_ats25_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id);
+
+
+--
+-- Name: substation_folder_assignments substation_folder_assignments_created_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.substation_folder_assignments
+    ADD CONSTRAINT substation_folder_assignments_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: substation_folder_assignments substation_folder_assignments_folder_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.substation_folder_assignments
+    ADD CONSTRAINT substation_folder_assignments_folder_id_fkey FOREIGN KEY (folder_id) REFERENCES neta_ops.substation_folders(id) ON DELETE CASCADE;
+
+
+--
+-- Name: substation_folder_assignments substation_folder_assignments_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.substation_folder_assignments
+    ADD CONSTRAINT substation_folder_assignments_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: substation_folder_assignments substation_folder_assignments_site_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.substation_folder_assignments
+    ADD CONSTRAINT substation_folder_assignments_site_id_fkey FOREIGN KEY (site_id) REFERENCES common.sites(id) ON DELETE CASCADE;
+
+
+--
+-- Name: substation_folders substation_folders_created_by_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.substation_folders
+    ADD CONSTRAINT substation_folders_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: substation_folders substation_folders_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.substation_folders
+    ADD CONSTRAINT substation_folders_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: substation_folders substation_folders_parent_folder_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.substation_folders
+    ADD CONSTRAINT substation_folders_parent_folder_id_fkey FOREIGN KEY (parent_folder_id) REFERENCES neta_ops.substation_folders(id) ON DELETE CASCADE;
+
+
+--
+-- Name: substation_folders substation_folders_site_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.substation_folders
+    ADD CONSTRAINT substation_folders_site_id_fkey FOREIGN KEY (site_id) REFERENCES common.sites(id) ON DELETE CASCADE;
 
 
 --
@@ -22626,6 +28712,22 @@ ALTER TABLE ONLY neta_ops.switchgear_switchboard_ats25_reports
 
 ALTER TABLE ONLY neta_ops.switchgear_switchboard_ats25_reports
     ADD CONSTRAINT switchgear_switchboard_ats25_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: switchgear_switchboard_mts23_reports switchgear_switchboard_mts23_reports_job_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.switchgear_switchboard_mts23_reports
+    ADD CONSTRAINT switchgear_switchboard_mts23_reports_job_id_fkey FOREIGN KEY (job_id) REFERENCES neta_ops.jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: switchgear_switchboard_mts23_reports switchgear_switchboard_mts23_reports_user_id_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.switchgear_switchboard_mts23_reports
+    ADD CONSTRAINT switchgear_switchboard_mts23_reports_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 
 --
@@ -23568,6 +29670,13 @@ CREATE POLICY "Anyone can view all exceptions" ON common.technician_exceptions F
 
 
 --
+-- Name: help_center_documents Anyone can view help center documents; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Anyone can view help center documents" ON common.help_center_documents FOR SELECT USING ((auth.uid() IS NOT NULL));
+
+
+--
 -- Name: job_skill_requirements Anyone can view job skill requirements; Type: POLICY; Schema: common; Owner: -
 --
 
@@ -23579,6 +29688,13 @@ CREATE POLICY "Anyone can view job skill requirements" ON common.job_skill_requi
 --
 
 CREATE POLICY "Anyone can view published announcements" ON common.announcements FOR SELECT USING ((is_published = true));
+
+
+--
+-- Name: help_guides Anyone can view published guides; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Anyone can view published guides" ON common.help_guides FOR SELECT USING (((is_published = true) OR (auth.uid() = created_by)));
 
 
 --
@@ -23610,6 +29726,13 @@ CREATE POLICY "Authenticated full access to announcements" ON common.announcemen
 
 
 --
+-- Name: help_center_documents Authenticated users can create documents; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Authenticated users can create documents" ON common.help_center_documents FOR INSERT WITH CHECK ((auth.uid() IS NOT NULL));
+
+
+--
 -- Name: employee_certifications Authenticated users can create employee certifications; Type: POLICY; Schema: common; Owner: -
 --
 
@@ -23628,6 +29751,13 @@ CREATE POLICY "Authenticated users can create employee document folders" ON comm
 --
 
 CREATE POLICY "Authenticated users can create employee documents" ON common.employee_documents FOR INSERT WITH CHECK ((auth.uid() IS NOT NULL));
+
+
+--
+-- Name: help_guides Authenticated users can create guides; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Authenticated users can create guides" ON common.help_guides FOR INSERT WITH CHECK ((auth.uid() IS NOT NULL));
 
 
 --
@@ -23694,6 +29824,20 @@ CREATE POLICY "Authenticated users can view employee documents" ON common.employ
 
 
 --
+-- Name: prayer_requests Authors can delete own prayer requests; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Authors can delete own prayer requests" ON common.prayer_requests FOR DELETE USING ((author_id = auth.uid()));
+
+
+--
+-- Name: prayer_requests Authors can update own prayer requests; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Authors can update own prayer requests" ON common.prayer_requests FOR UPDATE USING ((author_id = auth.uid())) WITH CHECK ((author_id = auth.uid()));
+
+
+--
 -- Name: customer_users Customers can view own customer user link; Type: POLICY; Schema: common; Owner: -
 --
 
@@ -23729,6 +29873,55 @@ CREATE POLICY "Employees can manage report flags" ON common.report_flags USING (
 
 
 --
+-- Name: sites Employees can manage sites; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Employees can manage sites" ON common.sites USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
+
+
+--
+-- Name: prayer_requests Employees can post prayer requests; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Employees can post prayer requests" ON common.prayer_requests FOR INSERT WITH CHECK ((common.is_employee_user() AND (author_id = auth.uid())));
+
+
+--
+-- Name: ampu_lessons Employees can read AMPu lessons; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Employees can read AMPu lessons" ON common.ampu_lessons FOR SELECT USING (common.is_employee_user());
+
+
+--
+-- Name: device_catalog Employees can read device catalog; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Employees can read device catalog" ON common.device_catalog FOR SELECT USING (common.is_employee_user());
+
+
+--
+-- Name: prayer_intercessions Employees can read intercessions; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Employees can read intercessions" ON common.prayer_intercessions FOR SELECT USING (common.is_employee_user());
+
+
+--
+-- Name: prayer_requests Employees can read prayer requests; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Employees can read prayer requests" ON common.prayer_requests FOR SELECT USING (common.is_employee_user());
+
+
+--
+-- Name: ampu_courses Employees can read the AMPu catalog; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Employees can read the AMPu catalog" ON common.ampu_courses FOR SELECT USING (common.is_employee_user());
+
+
+--
 -- Name: one_on_one_checkins Employees can update their own signature; Type: POLICY; Schema: common; Owner: -
 --
 
@@ -23736,14 +29929,24 @@ CREATE POLICY "Employees can update their own signature" ON common.one_on_one_ch
 
 
 --
+-- Name: job_application_questions Employees manage application questions; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Employees manage application questions" ON common.job_application_questions USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
+
+
+--
+-- Name: candidate_question_answers Employees read application answers; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Employees read application answers" ON common.candidate_question_answers FOR SELECT USING (common.is_employee_user());
+
+
+--
 -- Name: amp_contacts HR and Office admins can manage amp_contacts; Type: POLICY; Schema: common; Owner: -
 --
 
-CREATE POLICY "HR and Office admins can manage amp_contacts" ON common.amp_contacts USING ((EXISTS ( SELECT 1
-   FROM common.profiles
-  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['HR Rep'::text, 'Office Admin'::text, 'Admin'::text, 'Super Admin'::text])))))) WITH CHECK ((EXISTS ( SELECT 1
-   FROM common.profiles
-  WHERE ((profiles.id = auth.uid()) AND (profiles.role = ANY (ARRAY['HR Rep'::text, 'Office Admin'::text, 'Admin'::text, 'Super Admin'::text]))))));
+CREATE POLICY "HR and Office admins can manage amp_contacts" ON common.amp_contacts TO authenticated USING (common.can_manage_amp_contacts()) WITH CHECK (common.can_manage_amp_contacts());
 
 
 --
@@ -23838,6 +30041,20 @@ CREATE POLICY "Only admins can view role audit logs" ON common.role_audit_logs F
 
 
 --
+-- Name: ampu_courses Registrar manages AMPu courses; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Registrar manages AMPu courses" ON common.ampu_courses USING (common.is_ampu_registrar()) WITH CHECK (common.is_ampu_registrar());
+
+
+--
+-- Name: ampu_lessons Registrar manages AMPu lessons; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Registrar manages AMPu lessons" ON common.ampu_lessons USING (common.is_ampu_registrar()) WITH CHECK (common.is_ampu_registrar());
+
+
+--
 -- Name: role_change_logs Service role can insert role changes; Type: POLICY; Schema: common; Owner: -
 --
 
@@ -23845,10 +30062,31 @@ CREATE POLICY "Service role can insert role changes" ON common.role_change_logs 
 
 
 --
+-- Name: recruiting_prospect_activity Talent Pool members read activity; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Talent Pool members read activity" ON common.recruiting_prospect_activity FOR SELECT TO authenticated USING (common.talent_pool_can_access());
+
+
+--
+-- Name: recruiting_prospects Talent Pool members read prospects; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Talent Pool members read prospects" ON common.recruiting_prospects FOR SELECT TO authenticated USING (common.talent_pool_can_access());
+
+
+--
 -- Name: chat_messages Users can add messages; Type: POLICY; Schema: common; Owner: -
 --
 
 CREATE POLICY "Users can add messages" ON common.chat_messages FOR INSERT TO authenticated WITH CHECK ((auth.uid() = user_id));
+
+
+--
+-- Name: prayer_intercessions Users can add own intercession; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Users can add own intercession" ON common.prayer_intercessions FOR INSERT WITH CHECK ((common.is_employee_user() AND (user_id = auth.uid())));
 
 
 --
@@ -23879,6 +30117,24 @@ CREATE POLICY "Users can delete customer surveys" ON common.customer_surveys FOR
 CREATE POLICY "Users can delete employee documents" ON common.employee_documents FOR DELETE USING (((auth.uid() = uploaded_by) OR (((auth.jwt() -> 'user_metadata'::text) ->> 'role'::text) = ANY (ARRAY['Admin'::text, 'Super Admin'::text])) OR (EXISTS ( SELECT 1
    FROM common.profiles
   WHERE ((profiles.id = auth.uid()) AND ((profiles.role = 'Admin'::text) OR (profiles.role = 'Super Admin'::text) OR (profiles.role = 'HR'::text)))))));
+
+
+--
+-- Name: help_center_documents Users can delete own documents; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Users can delete own documents" ON common.help_center_documents FOR DELETE USING (((auth.uid() = created_by) OR (EXISTS ( SELECT 1
+   FROM common.profiles
+  WHERE ((profiles.id = auth.uid()) AND ((profiles.role = 'Admin'::text) OR (profiles.role = 'Super Admin'::text)))))));
+
+
+--
+-- Name: help_guides Users can delete own guides; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Users can delete own guides" ON common.help_guides FOR DELETE USING (((auth.uid() = created_by) OR (EXISTS ( SELECT 1
+   FROM common.profiles
+  WHERE ((profiles.id = auth.uid()) AND ((profiles.role = 'Admin'::text) OR (profiles.role = 'Super Admin'::text)))))));
 
 
 --
@@ -24043,6 +30299,13 @@ CREATE POLICY "Users can read own role changes" ON common.role_change_logs FOR S
 
 
 --
+-- Name: prayer_intercessions Users can remove own intercession; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Users can remove own intercession" ON common.prayer_intercessions FOR DELETE USING ((user_id = auth.uid()));
+
+
+--
 -- Name: customer_interactions Users can update customer interactions; Type: POLICY; Schema: common; Owner: -
 --
 
@@ -24063,6 +30326,24 @@ CREATE POLICY "Users can update customer surveys" ON common.customer_surveys FOR
 CREATE POLICY "Users can update employee documents" ON common.employee_documents FOR UPDATE USING (((auth.uid() = uploaded_by) OR (((auth.jwt() -> 'user_metadata'::text) ->> 'role'::text) = ANY (ARRAY['Admin'::text, 'Super Admin'::text])) OR (EXISTS ( SELECT 1
    FROM common.profiles
   WHERE ((profiles.id = auth.uid()) AND ((profiles.role = 'Admin'::text) OR (profiles.role = 'Super Admin'::text) OR (profiles.role = 'HR'::text)))))));
+
+
+--
+-- Name: help_center_documents Users can update own documents; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Users can update own documents" ON common.help_center_documents FOR UPDATE USING (((auth.uid() = created_by) OR (EXISTS ( SELECT 1
+   FROM common.profiles
+  WHERE ((profiles.id = auth.uid()) AND ((profiles.role = 'Admin'::text) OR (profiles.role = 'Super Admin'::text)))))));
+
+
+--
+-- Name: help_guides Users can update own guides; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Users can update own guides" ON common.help_guides FOR UPDATE USING (((auth.uid() = created_by) OR (EXISTS ( SELECT 1
+   FROM common.profiles
+  WHERE ((profiles.id = auth.uid()) AND ((profiles.role = 'Admin'::text) OR (profiles.role = 'Super Admin'::text)))))));
 
 
 --
@@ -24264,6 +30545,13 @@ CREATE POLICY "Users can view their own time-off requests" ON common.technician_
 
 
 --
+-- Name: ampu_progress Users manage their own AMPu progress; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY "Users manage their own AMPu progress" ON common.ampu_progress USING ((user_id = auth.uid())) WITH CHECK ((user_id = auth.uid()));
+
+
+--
 -- Name: admin_notifications; Type: ROW SECURITY; Schema: common; Owner: -
 --
 
@@ -24318,6 +30606,24 @@ CREATE POLICY allow_authenticated_update_profiles ON common.profiles FOR UPDATE 
 ALTER TABLE common.amp_contacts ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: ampu_courses; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.ampu_courses ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: ampu_lessons; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.ampu_lessons ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: ampu_progress; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.ampu_progress ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: app_settings; Type: ROW SECURITY; Schema: common; Owner: -
 --
 
@@ -24364,6 +30670,12 @@ CREATE POLICY assignments_select_all ON common.technician_assignments FOR SELECT
 
 CREATE POLICY assignments_update_admin_scheduler ON common.technician_assignments FOR UPDATE TO authenticated USING (common.is_admin_or_scheduler()) WITH CHECK (common.is_admin_or_scheduler());
 
+
+--
+-- Name: candidate_question_answers; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.candidate_question_answers ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: chat_messages; Type: ROW SECURITY; Schema: common; Owner: -
@@ -24475,6 +30787,32 @@ CREATE POLICY customers_access ON common.customers USING ((auth.role() = 'authen
 
 
 --
+-- Name: device_catalog; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.device_catalog ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: divisions; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.divisions ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: divisions divisions_select_authenticated; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY divisions_select_authenticated ON common.divisions FOR SELECT TO authenticated USING (true);
+
+
+--
+-- Name: divisions divisions_write_admin; Type: POLICY; Schema: common; Owner: -
+--
+
+CREATE POLICY divisions_write_admin ON common.divisions TO authenticated USING (((((auth.jwt() -> 'user_metadata'::text) ->> 'role'::text) = ANY (ARRAY['Admin'::text, 'Super Admin'::text])) OR common.is_superuser_email((auth.jwt() ->> 'email'::text)))) WITH CHECK (((((auth.jwt() -> 'user_metadata'::text) ->> 'role'::text) = ANY (ARRAY['Admin'::text, 'Super Admin'::text])) OR common.is_superuser_email((auth.jwt() ->> 'email'::text))));
+
+
+--
 -- Name: documents; Type: ROW SECURITY; Schema: common; Owner: -
 --
 
@@ -24545,6 +30883,18 @@ CREATE POLICY feature_requests_all_access ON common.feature_requests TO authenti
 
 
 --
+-- Name: help_center_documents; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.help_center_documents ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: help_guides; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.help_guides ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: contacts import_contacts_insert; Type: POLICY; Schema: common; Owner: -
 --
 
@@ -24584,6 +30934,12 @@ CREATE POLICY issue_notes_select ON common.issue_notes FOR SELECT USING (((auth.
 
 CREATE POLICY issue_notes_update_own ON common.issue_notes FOR UPDATE USING ((auth.uid() = user_id)) WITH CHECK ((auth.uid() = user_id));
 
+
+--
+-- Name: job_application_questions; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.job_application_questions ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: job_notifications; Type: ROW SECURITY; Schema: common; Owner: -
@@ -24756,6 +31112,18 @@ CREATE POLICY permission_change_logs_select_admins ON common.permission_change_l
 
 
 --
+-- Name: prayer_intercessions; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.prayer_intercessions ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: prayer_requests; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.prayer_requests ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: quickbooks_integrations; Type: ROW SECURITY; Schema: common; Owner: -
 --
 
@@ -24766,6 +31134,18 @@ ALTER TABLE common.quickbooks_integrations ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE common.quickbooks_job_sync ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: recruiting_prospect_activity; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.recruiting_prospect_activity ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: recruiting_prospects; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.recruiting_prospects ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: report_flags; Type: ROW SECURITY; Schema: common; Owner: -
@@ -24805,6 +31185,12 @@ CREATE POLICY role_change_logs_select_admins ON common.role_change_logs FOR SELE
 
 CREATE POLICY role_change_logs_select_own ON common.role_change_logs FOR SELECT TO authenticated USING ((user_id = (auth.uid())::text));
 
+
+--
+-- Name: sites; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.sites ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: survey_questions; Type: ROW SECURITY; Schema: common; Owner: -
@@ -24849,6 +31235,18 @@ CREATE POLICY system_change_logs_select_admins ON common.system_change_logs FOR 
 --
 
 ALTER TABLE common.system_config ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: talent_pool_import_runs; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.talent_pool_import_runs ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: talent_pool_members; Type: ROW SECURITY; Schema: common; Owner: -
+--
+
+ALTER TABLE common.talent_pool_members ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: technician_assignments tech_assignments_select; Type: POLICY; Schema: common; Owner: -
@@ -25577,10 +31975,87 @@ CREATE POLICY "Authenticated users can delete all reports" ON neta_ops.emergency
 
 
 --
+-- Name: large_dry_type_xfmr_mts23_reports Authenticated users can delete all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can delete all reports" ON neta_ops.large_dry_type_xfmr_mts23_reports FOR DELETE TO authenticated USING (true);
+
+
+--
+-- Name: low_voltage_air_switch_mts23_reports Authenticated users can delete all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can delete all reports" ON neta_ops.low_voltage_air_switch_mts23_reports FOR DELETE TO authenticated USING (true);
+
+
+--
+-- Name: low_voltage_cable_mts23_reports Authenticated users can delete all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can delete all reports" ON neta_ops.low_voltage_cable_mts23_reports FOR DELETE TO authenticated USING (true);
+
+
+--
+-- Name: lv_circuit_breaker_mts23_reports Authenticated users can delete all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can delete all reports" ON neta_ops.lv_circuit_breaker_mts23_reports FOR DELETE TO authenticated USING (true);
+
+
+--
+-- Name: lv_circuit_breaker_mts25 Authenticated users can delete all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can delete all reports" ON neta_ops.lv_circuit_breaker_mts25 FOR DELETE TO authenticated USING (true);
+
+
+--
+-- Name: medium_voltage_cable_vlf_tan_delta_mts23_reports Authenticated users can delete all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can delete all reports" ON neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports FOR DELETE TO authenticated USING (true);
+
+
+--
+-- Name: medium_voltage_vacuum_breaker_mts23_reports Authenticated users can delete all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can delete all reports" ON neta_ops.medium_voltage_vacuum_breaker_mts23_reports FOR DELETE TO authenticated USING (true);
+
+
+--
+-- Name: metal_enclosed_busway_mts23_reports Authenticated users can delete all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can delete all reports" ON neta_ops.metal_enclosed_busway_mts23_reports FOR DELETE TO authenticated USING (true);
+
+
+--
+-- Name: small_dry_type_xfmr_mts23_reports Authenticated users can delete all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can delete all reports" ON neta_ops.small_dry_type_xfmr_mts23_reports FOR DELETE TO authenticated USING (true);
+
+
+--
+-- Name: switchgear_switchboard_mts23_reports Authenticated users can delete all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can delete all reports" ON neta_ops.switchgear_switchboard_mts23_reports FOR DELETE TO authenticated USING (true);
+
+
+--
 -- Name: equipment_categories Authenticated users can delete categories; Type: POLICY; Schema: neta_ops; Owner: -
 --
 
 CREATE POLICY "Authenticated users can delete categories" ON neta_ops.equipment_categories FOR DELETE USING ((auth.uid() IS NOT NULL));
+
+
+--
+-- Name: energized_work_permit_reports Authenticated users can delete energized work permits; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can delete energized work permits" ON neta_ops.energized_work_permit_reports FOR DELETE USING ((auth.uid() IS NOT NULL));
 
 
 --
@@ -25633,6 +32108,13 @@ CREATE POLICY "Authenticated users can delete trucks" ON neta_ops.equipment_truc
 
 
 --
+-- Name: energized_work_permit_reports Authenticated users can insert energized work permits; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can insert energized work permits" ON neta_ops.energized_work_permit_reports FOR INSERT WITH CHECK ((auth.uid() IS NOT NULL));
+
+
+--
 -- Name: global_equipment_selections Authenticated users can insert global equipment selections; Type: POLICY; Schema: neta_ops; Owner: -
 --
 
@@ -25654,6 +32136,83 @@ CREATE POLICY "Authenticated users can insert reports" ON neta_ops.emergency_sys
 
 
 --
+-- Name: large_dry_type_xfmr_mts23_reports Authenticated users can insert reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can insert reports" ON neta_ops.large_dry_type_xfmr_mts23_reports FOR INSERT TO authenticated WITH CHECK (true);
+
+
+--
+-- Name: low_voltage_air_switch_mts23_reports Authenticated users can insert reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can insert reports" ON neta_ops.low_voltage_air_switch_mts23_reports FOR INSERT TO authenticated WITH CHECK (true);
+
+
+--
+-- Name: low_voltage_cable_mts23_reports Authenticated users can insert reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can insert reports" ON neta_ops.low_voltage_cable_mts23_reports FOR INSERT TO authenticated WITH CHECK (true);
+
+
+--
+-- Name: lv_circuit_breaker_mts23_reports Authenticated users can insert reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can insert reports" ON neta_ops.lv_circuit_breaker_mts23_reports FOR INSERT TO authenticated WITH CHECK (true);
+
+
+--
+-- Name: lv_circuit_breaker_mts25 Authenticated users can insert reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can insert reports" ON neta_ops.lv_circuit_breaker_mts25 FOR INSERT TO authenticated WITH CHECK (true);
+
+
+--
+-- Name: medium_voltage_cable_vlf_tan_delta_mts23_reports Authenticated users can insert reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can insert reports" ON neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports FOR INSERT TO authenticated WITH CHECK (true);
+
+
+--
+-- Name: medium_voltage_vacuum_breaker_mts23_reports Authenticated users can insert reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can insert reports" ON neta_ops.medium_voltage_vacuum_breaker_mts23_reports FOR INSERT TO authenticated WITH CHECK (true);
+
+
+--
+-- Name: metal_enclosed_busway_mts23_reports Authenticated users can insert reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can insert reports" ON neta_ops.metal_enclosed_busway_mts23_reports FOR INSERT TO authenticated WITH CHECK (true);
+
+
+--
+-- Name: small_dry_type_xfmr_mts23_reports Authenticated users can insert reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can insert reports" ON neta_ops.small_dry_type_xfmr_mts23_reports FOR INSERT TO authenticated WITH CHECK (true);
+
+
+--
+-- Name: switchgear_switchboard_mts23_reports Authenticated users can insert reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can insert reports" ON neta_ops.switchgear_switchboard_mts23_reports FOR INSERT TO authenticated WITH CHECK (true);
+
+
+--
+-- Name: custom_form_template_versions Authenticated users can publish template versions; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can publish template versions" ON neta_ops.custom_form_template_versions FOR INSERT WITH CHECK ((auth.uid() IS NOT NULL));
+
+
+--
 -- Name: emergency_systems_engine_generator_ats25 Authenticated users can update all reports; Type: POLICY; Schema: neta_ops; Owner: -
 --
 
@@ -25661,10 +32220,87 @@ CREATE POLICY "Authenticated users can update all reports" ON neta_ops.emergency
 
 
 --
+-- Name: large_dry_type_xfmr_mts23_reports Authenticated users can update all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can update all reports" ON neta_ops.large_dry_type_xfmr_mts23_reports FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+
+--
+-- Name: low_voltage_air_switch_mts23_reports Authenticated users can update all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can update all reports" ON neta_ops.low_voltage_air_switch_mts23_reports FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+
+--
+-- Name: low_voltage_cable_mts23_reports Authenticated users can update all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can update all reports" ON neta_ops.low_voltage_cable_mts23_reports FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+
+--
+-- Name: lv_circuit_breaker_mts23_reports Authenticated users can update all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can update all reports" ON neta_ops.lv_circuit_breaker_mts23_reports FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+
+--
+-- Name: lv_circuit_breaker_mts25 Authenticated users can update all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can update all reports" ON neta_ops.lv_circuit_breaker_mts25 FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+
+--
+-- Name: medium_voltage_cable_vlf_tan_delta_mts23_reports Authenticated users can update all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can update all reports" ON neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+
+--
+-- Name: medium_voltage_vacuum_breaker_mts23_reports Authenticated users can update all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can update all reports" ON neta_ops.medium_voltage_vacuum_breaker_mts23_reports FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+
+--
+-- Name: metal_enclosed_busway_mts23_reports Authenticated users can update all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can update all reports" ON neta_ops.metal_enclosed_busway_mts23_reports FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+
+--
+-- Name: small_dry_type_xfmr_mts23_reports Authenticated users can update all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can update all reports" ON neta_ops.small_dry_type_xfmr_mts23_reports FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+
+--
+-- Name: switchgear_switchboard_mts23_reports Authenticated users can update all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can update all reports" ON neta_ops.switchgear_switchboard_mts23_reports FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+
+--
 -- Name: equipment_categories Authenticated users can update categories; Type: POLICY; Schema: neta_ops; Owner: -
 --
 
 CREATE POLICY "Authenticated users can update categories" ON neta_ops.equipment_categories FOR UPDATE USING ((auth.uid() IS NOT NULL));
+
+
+--
+-- Name: energized_work_permit_reports Authenticated users can update energized work permits; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can update energized work permits" ON neta_ops.energized_work_permit_reports FOR UPDATE USING ((auth.uid() IS NOT NULL));
 
 
 --
@@ -25731,10 +32367,94 @@ CREATE POLICY "Authenticated users can view all reports" ON neta_ops.emergency_s
 
 
 --
+-- Name: large_dry_type_xfmr_mts23_reports Authenticated users can view all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view all reports" ON neta_ops.large_dry_type_xfmr_mts23_reports FOR SELECT TO authenticated USING (true);
+
+
+--
+-- Name: low_voltage_air_switch_mts23_reports Authenticated users can view all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view all reports" ON neta_ops.low_voltage_air_switch_mts23_reports FOR SELECT TO authenticated USING (true);
+
+
+--
+-- Name: low_voltage_cable_mts23_reports Authenticated users can view all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view all reports" ON neta_ops.low_voltage_cable_mts23_reports FOR SELECT TO authenticated USING (true);
+
+
+--
+-- Name: lv_circuit_breaker_mts23_reports Authenticated users can view all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view all reports" ON neta_ops.lv_circuit_breaker_mts23_reports FOR SELECT TO authenticated USING (true);
+
+
+--
+-- Name: lv_circuit_breaker_mts25 Authenticated users can view all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view all reports" ON neta_ops.lv_circuit_breaker_mts25 FOR SELECT TO authenticated USING (true);
+
+
+--
+-- Name: medium_voltage_cable_vlf_tan_delta_mts23_reports Authenticated users can view all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view all reports" ON neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports FOR SELECT TO authenticated USING (true);
+
+
+--
+-- Name: medium_voltage_vacuum_breaker_mts23_reports Authenticated users can view all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view all reports" ON neta_ops.medium_voltage_vacuum_breaker_mts23_reports FOR SELECT TO authenticated USING (true);
+
+
+--
+-- Name: metal_enclosed_busway_mts23_reports Authenticated users can view all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view all reports" ON neta_ops.metal_enclosed_busway_mts23_reports FOR SELECT TO authenticated USING (true);
+
+
+--
+-- Name: small_dry_type_xfmr_mts23_reports Authenticated users can view all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view all reports" ON neta_ops.small_dry_type_xfmr_mts23_reports FOR SELECT TO authenticated USING (true);
+
+
+--
+-- Name: switchgear_switchboard_mts23_reports Authenticated users can view all reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view all reports" ON neta_ops.switchgear_switchboard_mts23_reports FOR SELECT TO authenticated USING (true);
+
+
+--
+-- Name: field_equipment_assignments Authenticated users can view assignment history; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view assignment history" ON neta_ops.field_equipment_assignments FOR SELECT USING ((auth.uid() IS NOT NULL));
+
+
+--
 -- Name: equipment_categories Authenticated users can view categories; Type: POLICY; Schema: neta_ops; Owner: -
 --
 
 CREATE POLICY "Authenticated users can view categories" ON neta_ops.equipment_categories FOR SELECT USING ((auth.uid() IS NOT NULL));
+
+
+--
+-- Name: energized_work_permit_reports Authenticated users can view energized work permits; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view energized work permits" ON neta_ops.energized_work_permit_reports FOR SELECT USING ((auth.uid() IS NOT NULL));
 
 
 --
@@ -25773,6 +32493,13 @@ CREATE POLICY "Authenticated users can view sub component items" ON neta_ops.equ
 
 
 --
+-- Name: custom_form_template_versions Authenticated users can view template versions; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Authenticated users can view template versions" ON neta_ops.custom_form_template_versions FOR SELECT USING ((auth.uid() IS NOT NULL));
+
+
+--
 -- Name: equipment_trucks Authenticated users can view trucks; Type: POLICY; Schema: neta_ops; Owner: -
 --
 
@@ -25808,6 +32535,20 @@ CREATE POLICY "Customers can view own company jobs" ON neta_ops.jobs FOR SELECT 
 
 
 --
+-- Name: report_moves Employees can log report moves; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Employees can log report moves" ON neta_ops.report_moves FOR INSERT WITH CHECK ((common.is_employee_user() AND (moved_by = auth.uid())));
+
+
+--
+-- Name: amplify_reports Employees can manage amplify reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Employees can manage amplify reports" ON neta_ops.amplify_reports USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
+
+
+--
 -- Name: asset_reports Employees can manage asset reports; Type: POLICY; Schema: neta_ops; Owner: -
 --
 
@@ -25822,6 +32563,41 @@ CREATE POLICY "Employees can manage assets" ON neta_ops.assets USING (common.is_
 
 
 --
+-- Name: building_folder_assignments Employees can manage building folder assignments; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Employees can manage building folder assignments" ON neta_ops.building_folder_assignments USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
+
+
+--
+-- Name: equipment_assets Employees can manage equipment assets; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Employees can manage equipment assets" ON neta_ops.equipment_assets USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
+
+
+--
+-- Name: equipment_types Employees can manage equipment types; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Employees can manage equipment types" ON neta_ops.equipment_types USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
+
+
+--
+-- Name: folder_item_assignments Employees can manage folder item assignments; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Employees can manage folder item assignments" ON neta_ops.folder_item_assignments USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
+
+
+--
+-- Name: job_equipment_assets Employees can manage job equipment assets; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Employees can manage job equipment assets" ON neta_ops.job_equipment_assets USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
+
+
+--
 -- Name: job_expenses Employees can manage job expenses; Type: POLICY; Schema: neta_ops; Owner: -
 --
 
@@ -25833,6 +32609,13 @@ CREATE POLICY "Employees can manage job expenses" ON neta_ops.job_expenses USING
 --
 
 CREATE POLICY "Employees can manage jobs" ON neta_ops.jobs USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
+
+
+--
+-- Name: oil_analysis_reports Employees can manage oil analysis reports; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Employees can manage oil analysis reports" ON neta_ops.oil_analysis_reports USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
 
 
 --
@@ -26200,10 +32983,52 @@ CREATE POLICY "Employees can manage records" ON neta_ops.voltage_potential_trans
 
 
 --
+-- Name: scheduled_test_batch_items Employees can manage scheduled test batch items; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Employees can manage scheduled test batch items" ON neta_ops.scheduled_test_batch_items USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
+
+
+--
+-- Name: scheduled_test_batches Employees can manage scheduled test batches; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Employees can manage scheduled test batches" ON neta_ops.scheduled_test_batches USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
+
+
+--
+-- Name: scheduled_tests Employees can manage scheduled tests; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Employees can manage scheduled tests" ON neta_ops.scheduled_tests USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
+
+
+--
+-- Name: substation_folder_assignments Employees can manage substation folder assignments; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Employees can manage substation folder assignments" ON neta_ops.substation_folder_assignments USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
+
+
+--
+-- Name: substation_folders Employees can manage substation folders; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Employees can manage substation folders" ON neta_ops.substation_folders USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
+
+
+--
 -- Name: technical_reports Employees can manage technical reports; Type: POLICY; Schema: neta_ops; Owner: -
 --
 
 CREATE POLICY "Employees can manage technical reports" ON neta_ops.technical_reports USING (common.is_employee_user()) WITH CHECK (common.is_employee_user());
+
+
+--
+-- Name: report_moves Employees can read report moves; Type: POLICY; Schema: neta_ops; Owner: -
+--
+
+CREATE POLICY "Employees can read report moves" ON neta_ops.report_moves FOR SELECT USING (common.is_employee_user());
 
 
 --
@@ -26466,27 +33291,6 @@ CREATE POLICY "Users can view form instances" ON neta_ops.custom_form_instances 
 
 
 --
--- Name: custom_form_template_versions; Type: ROW SECURITY; Schema: neta_ops; Owner: -
---
-
-ALTER TABLE neta_ops.custom_form_template_versions ENABLE ROW LEVEL SECURITY;
-
-
---
--- Name: custom_form_template_versions Authenticated users can view template versions; Type: POLICY; Schema: neta_ops; Owner: -
---
-
-CREATE POLICY "Authenticated users can view template versions" ON neta_ops.custom_form_template_versions FOR SELECT USING ((auth.uid() IS NOT NULL));
-
-
---
--- Name: custom_form_template_versions Authenticated users can publish template versions; Type: POLICY; Schema: neta_ops; Owner: -
---
-
-CREATE POLICY "Authenticated users can publish template versions" ON neta_ops.custom_form_template_versions FOR INSERT WITH CHECK ((auth.uid() IS NOT NULL));
-
-
---
 -- Name: global_equipment_selections Users can view global equipment selections; Type: POLICY; Schema: neta_ops; Owner: -
 --
 
@@ -26621,6 +33425,12 @@ CREATE POLICY allow_all_update_signature_profiles ON neta_ops.signature_profiles
 
 
 --
+-- Name: amplify_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.amplify_reports ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: applied_voltage_test_ats_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
 --
 
@@ -26656,6 +33466,12 @@ ALTER TABLE neta_ops.automatic_transfer_switch_ats_reports ENABLE ROW LEVEL SECU
 --
 
 ALTER TABLE neta_ops.backup_reports ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: building_folder_assignments; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.building_folder_assignments ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: current_transformer_test_ats_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
@@ -26738,10 +33554,28 @@ CREATE POLICY custom_form_saved_components_update ON neta_ops.custom_form_saved_
 
 
 --
+-- Name: custom_form_template_versions; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.custom_form_template_versions ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: energized_work_permit_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.energized_work_permit_reports ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: equipment; Type: ROW SECURITY; Schema: neta_ops; Owner: -
 --
 
 ALTER TABLE neta_ops.equipment ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: equipment_assets; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.equipment_assets ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: equipment_job_sites; Type: ROW SECURITY; Schema: neta_ops; Owner: -
@@ -26768,10 +33602,28 @@ ALTER TABLE neta_ops.equipment_sub_component_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE neta_ops.equipment_trucks ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: equipment_types; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.equipment_types ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: field_equipment; Type: ROW SECURITY; Schema: neta_ops; Owner: -
 --
 
 ALTER TABLE neta_ops.field_equipment ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: field_equipment_assignments; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.field_equipment_assignments ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: folder_item_assignments; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.folder_item_assignments ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: gfi_trip_test_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
@@ -26832,6 +33684,12 @@ CREATE POLICY job_costs_update_policy ON neta_ops.job_costs FOR UPDATE USING ((E
 
 
 --
+-- Name: job_equipment_assets; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.job_equipment_assets ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: job_expenses; Type: ROW SECURITY; Schema: neta_ops; Owner: -
 --
 
@@ -26890,6 +33748,12 @@ ALTER TABLE neta_ops.jobs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE neta_ops.large_dry_type_transformer_mts_reports ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: large_dry_type_xfmr_mts23_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.large_dry_type_xfmr_mts23_reports ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: large_dry_type_xfmr_mts_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
 --
 
@@ -26918,6 +33782,18 @@ ALTER TABLE neta_ops.liquid_filled_xfmr_ats25_reports ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE neta_ops.liquid_xfmr_visual_mts_reports ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: low_voltage_air_switch_mts23_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.low_voltage_air_switch_mts23_reports ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: low_voltage_cable_mts23_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.low_voltage_cable_mts23_reports ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: low_voltage_cable_test_12sets; Type: ROW SECURITY; Schema: neta_ops; Owner: -
@@ -26980,6 +33856,24 @@ ALTER TABLE neta_ops.low_voltage_switch_multi_device_test_reports ENABLE ROW LEV
 ALTER TABLE neta_ops.low_voltage_switch_reports ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: lv_circuit_breaker_mts23_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.lv_circuit_breaker_mts23_reports ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: lv_circuit_breaker_mts25; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.lv_circuit_breaker_mts25 ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: medium_voltage_cable_vlf_tan_delta_mts23_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: medium_voltage_cable_vlf_test; Type: ROW SECURITY; Schema: neta_ops; Owner: -
 --
 
@@ -27028,6 +33922,12 @@ ALTER TABLE neta_ops.medium_voltage_switch_oil_reports ENABLE ROW LEVEL SECURITY
 ALTER TABLE neta_ops.medium_voltage_switch_sf6_reports ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: medium_voltage_vacuum_breaker_mts23_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.medium_voltage_vacuum_breaker_mts23_reports ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: medium_voltage_vlf_mts_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
 --
 
@@ -27068,6 +33968,12 @@ CREATE POLICY meeting_todos_update_own ON neta_ops.meeting_todos FOR UPDATE USIN
 
 
 --
+-- Name: metal_enclosed_busway_mts23_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.metal_enclosed_busway_mts23_reports ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: metal_enclosed_busway_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
 --
 
@@ -27084,6 +33990,12 @@ ALTER TABLE neta_ops.miscellaneous_documents ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE neta_ops.neta_sections ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: oil_analysis_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.oil_analysis_reports ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: oil_inspection_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
@@ -27136,6 +34048,12 @@ CREATE POLICY private_todos_select_own ON neta_ops.meeting_private_todos FOR SEL
 
 CREATE POLICY private_todos_update_own ON neta_ops.meeting_private_todos FOR UPDATE USING ((user_id = auth.uid())) WITH CHECK ((user_id = auth.uid()));
 
+
+--
+-- Name: report_moves; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.report_moves ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: resource_allocations resource_allocations_delete_policy; Type: POLICY; Schema: neta_ops; Owner: -
@@ -27206,10 +34124,46 @@ CREATE POLICY resources_update_policy ON neta_ops.resources FOR UPDATE USING ((E
 
 
 --
+-- Name: scheduled_test_batch_items; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.scheduled_test_batch_items ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: scheduled_test_batches; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.scheduled_test_batches ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: scheduled_tests; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.scheduled_tests ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: small_dry_type_xfmr_mts23_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.small_dry_type_xfmr_mts23_reports ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: small_lv_dry_type_transformer_ats25_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
 --
 
 ALTER TABLE neta_ops.small_lv_dry_type_transformer_ats25_reports ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: substation_folder_assignments; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.substation_folder_assignments ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: substation_folders; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.substation_folders ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: switchgear_panelboard_mts_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
@@ -27228,6 +34182,12 @@ ALTER TABLE neta_ops.switchgear_reports ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE neta_ops.switchgear_switchboard_ats25_reports ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: switchgear_switchboard_mts23_reports; Type: ROW SECURITY; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE neta_ops.switchgear_switchboard_mts23_reports ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: tan_delta_test_mts; Type: ROW SECURITY; Schema: neta_ops; Owner: -
@@ -27346,6 +34306,12 @@ CREATE POLICY allow_all_after_action ON public.after_action_reports USING (true)
 
 
 --
+-- Name: lead_contact; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.lead_contact ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: SCHEMA business; Type: ACL; Schema: -; Owner: -
 --
 
@@ -27381,6 +34347,7 @@ GRANT ALL ON SCHEMA neta_ops TO service_role;
 --
 
 REVOKE USAGE ON SCHEMA public FROM PUBLIC;
+GRANT USAGE ON SCHEMA public TO service_role;
 
 
 --
@@ -27388,6 +34355,62 @@ REVOKE USAGE ON SCHEMA public FROM PUBLIC;
 --
 
 GRANT ALL ON FUNCTION business.soft_delete_opportunity_note(note_id uuid) TO authenticated;
+
+
+--
+-- Name: FUNCTION _talent_pool_check_status(p_status text); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common._talent_pool_check_status(p_status text) FROM PUBLIC;
+
+
+--
+-- Name: TABLE recruiting_prospects; Type: ACL; Schema: common; Owner: -
+--
+
+GRANT SELECT ON TABLE common.recruiting_prospects TO service_role;
+
+
+--
+-- Name: FUNCTION _talent_pool_filtered(p_search text, p_source text, p_owner uuid, p_unassigned boolean, p_follow_up boolean); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common._talent_pool_filtered(p_search text, p_source text, p_owner uuid, p_unassigned boolean, p_follow_up boolean) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION _talent_pool_lock_bulk(p_ids uuid[]); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common._talent_pool_lock_bulk(p_ids uuid[]) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION _talent_pool_log_system(p_prospect_id uuid, p_type text, p_body text, p_actor uuid); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common._talent_pool_log_system(p_prospect_id uuid, p_type text, p_body text, p_actor uuid) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION _talent_pool_promote(p_actor uuid, p_prospect_id uuid, p jsonb, p_initial_status text); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common._talent_pool_promote(p_actor uuid, p_prospect_id uuid, p jsonb, p_initial_status text) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION _talent_pool_prospect_json(p common.recruiting_prospects); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common._talent_pool_prospect_json(p common.recruiting_prospects) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION _talent_pool_require_access(); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common._talent_pool_require_access() FROM PUBLIC;
 
 
 --
@@ -27454,6 +34477,13 @@ GRANT ALL ON FUNCTION common.admin_update_user_role(user_id uuid, new_role text)
 
 
 --
+-- Name: FUNCTION ampu_leaderboard(); Type: ACL; Schema: common; Owner: -
+--
+
+GRANT ALL ON FUNCTION common.ampu_leaderboard() TO authenticated;
+
+
+--
 -- Name: FUNCTION award_ppe_testing_xp(p_user_id uuid, p_task_type text, p_report_id uuid, p_report_type text, p_job_id uuid); Type: ACL; Schema: common; Owner: -
 --
 
@@ -27465,6 +34495,13 @@ GRANT ALL ON FUNCTION common.award_ppe_testing_xp(p_user_id uuid, p_task_type te
 --
 
 GRANT ALL ON FUNCTION common.calculate_tier_and_level(total_xp integer) TO authenticated;
+
+
+--
+-- Name: FUNCTION can_manage_amp_contacts(); Type: ACL; Schema: common; Owner: -
+--
+
+GRANT ALL ON FUNCTION common.can_manage_amp_contacts() TO authenticated;
 
 
 --
@@ -27549,6 +34586,14 @@ GRANT ALL ON FUNCTION common.customer_report_flags(p_asset_id uuid) TO authentic
 --
 
 GRANT ALL ON FUNCTION common.customer_revoke_report_flag(p_flag_id uuid) TO authenticated;
+
+
+--
+-- Name: FUNCTION customer_substation_folders(); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.customer_substation_folders() FROM PUBLIC;
+GRANT ALL ON FUNCTION common.customer_substation_folders() TO authenticated;
 
 
 --
@@ -27699,6 +34744,13 @@ GRANT ALL ON FUNCTION common.hello_world() TO authenticated;
 
 
 --
+-- Name: FUNCTION is_ampu_registrar(); Type: ACL; Schema: common; Owner: -
+--
+
+GRANT ALL ON FUNCTION common.is_ampu_registrar() TO authenticated;
+
+
+--
 -- Name: FUNCTION is_employee_user(); Type: ACL; Schema: common; Owner: -
 --
 
@@ -27755,7 +34807,7 @@ GRANT ALL ON FUNCTION common.log_permission_access(p_user_id text, p_role text, 
 -- Name: FUNCTION make_user_admin(target_email text); Type: ACL; Schema: common; Owner: -
 --
 
-GRANT ALL ON FUNCTION common.make_user_admin(target_email text) TO authenticated;
+REVOKE ALL ON FUNCTION common.make_user_admin(target_email text) FROM PUBLIC;
 
 
 --
@@ -27773,6 +34825,59 @@ GRANT ALL ON FUNCTION common.merge_customers(p_primary_id uuid, p_duplicate_ids 
 
 
 --
+-- Name: FUNCTION prayer_request_delete(p_request_id uuid); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.prayer_request_delete(p_request_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.prayer_request_delete(p_request_id uuid) TO authenticated;
+
+
+--
+-- Name: FUNCTION prayer_request_mark_answered(p_request_id uuid, p_note text); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.prayer_request_mark_answered(p_request_id uuid, p_note text) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.prayer_request_mark_answered(p_request_id uuid, p_note text) TO authenticated;
+
+
+--
+-- Name: FUNCTION prayer_request_post(p_body text, p_title text, p_is_anonymous boolean); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.prayer_request_post(p_body text, p_title text, p_is_anonymous boolean) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.prayer_request_post(p_body text, p_title text, p_is_anonymous boolean) TO authenticated;
+
+
+--
+-- Name: FUNCTION prayer_request_toggle_praying(p_request_id uuid); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.prayer_request_toggle_praying(p_request_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.prayer_request_toggle_praying(p_request_id uuid) TO authenticated;
+
+
+--
+-- Name: FUNCTION protect_user_role(); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.protect_user_role() FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION recruiting_prospect_activity_before_write(); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.recruiting_prospect_activity_before_write() FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION recruiting_prospects_before_write(); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.recruiting_prospects_before_write() FROM PUBLIC;
+
+
+--
 -- Name: FUNCTION reorder_feature_requests(request_ids uuid[], new_orders integer[]); Type: ACL; Schema: common; Owner: -
 --
 
@@ -27787,12 +34892,225 @@ GRANT ALL ON FUNCTION common.resolve_report_flag(p_flag_id uuid, p_comment text)
 
 
 --
+-- Name: FUNCTION search_device_catalog(p_query text, p_manufacturer text, p_limit integer); Type: ACL; Schema: common; Owner: -
+--
+
+GRANT ALL ON FUNCTION common.search_device_catalog(p_query text, p_manufacturer text, p_limit integer) TO authenticated;
+
+
+--
+-- Name: FUNCTION submit_application_answers(p_candidate_id uuid, p_answers jsonb); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.submit_application_answers(p_candidate_id uuid, p_answers jsonb) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.submit_application_answers(p_candidate_id uuid, p_answers jsonb) TO anon;
+GRANT ALL ON FUNCTION common.submit_application_answers(p_candidate_id uuid, p_answers jsonb) TO authenticated;
+
+
+--
 -- Name: FUNCTION system_rotate_key(); Type: ACL; Schema: common; Owner: -
 --
 
 GRANT ALL ON FUNCTION common.system_rotate_key() TO authenticated;
 GRANT ALL ON FUNCTION common.system_rotate_key() TO anon;
 GRANT ALL ON FUNCTION common.system_rotate_key() TO service_role;
+
+
+--
+-- Name: FUNCTION talent_pool_activity(p_prospect_id uuid, p_limit integer, p_offset integer); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_activity(p_prospect_id uuid, p_limit integer, p_offset integer) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_activity(p_prospect_id uuid, p_limit integer, p_offset integer) TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_add_activity(p_id uuid, p_prospect_id uuid, p_type text, p_body text, p_occurred_at timestamp with time zone); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_add_activity(p_id uuid, p_prospect_id uuid, p_type text, p_body text, p_occurred_at timestamp with time zone) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_add_activity(p_id uuid, p_prospect_id uuid, p_type text, p_body text, p_occurred_at timestamp with time zone) TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_bulk_owner(p_ids uuid[], p_owner_id uuid); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_bulk_owner(p_ids uuid[], p_owner_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_bulk_owner(p_ids uuid[], p_owner_id uuid) TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_bulk_status(p_ids uuid[], p_status text); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_bulk_status(p_ids uuid[], p_status text) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_bulk_status(p_ids uuid[], p_status text) TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_can_access(); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_can_access() FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_can_access() TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_candidate_matches(p_email text, p_first_name text, p_last_name text); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_candidate_matches(p_email text, p_first_name text, p_last_name text) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_candidate_matches(p_email text, p_first_name text, p_last_name text) TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_counts(p_search text, p_source text, p_owner uuid, p_unassigned boolean, p_follow_up boolean); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_counts(p_search text, p_source text, p_owner uuid, p_unassigned boolean, p_follow_up boolean) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_counts(p_search text, p_source text, p_owner uuid, p_unassigned boolean, p_follow_up boolean) TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_create(p_id uuid, p jsonb); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_create(p_id uuid, p jsonb) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_create(p_id uuid, p jsonb) TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_delete(p_id uuid); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_delete(p_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_delete(p_id uuid) TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_get(p_id uuid); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_get(p_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_get(p_id uuid) TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_grant_access(p_email text); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_grant_access(p_email text) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_grant_access(p_email text) TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_identity_matches(p_emails text[], p_linkedin_urls text[], p_name_keys text[]); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_identity_matches(p_emails text[], p_linkedin_urls text[], p_name_keys text[]) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_identity_matches(p_emails text[], p_linkedin_urls text[], p_name_keys text[]) TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_import_apply(p_operator uuid, p_manifest_id uuid, p_run_id uuid, op jsonb); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_import_apply(p_operator uuid, p_manifest_id uuid, p_run_id uuid, op jsonb) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_import_apply(p_operator uuid, p_manifest_id uuid, p_run_id uuid, op jsonb) TO service_role;
+
+
+--
+-- Name: FUNCTION talent_pool_import_claim(p_manifest_id uuid, p_run_id uuid, p_target text); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_import_claim(p_manifest_id uuid, p_run_id uuid, p_target text) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_import_claim(p_manifest_id uuid, p_run_id uuid, p_target text) TO service_role;
+
+
+--
+-- Name: FUNCTION talent_pool_import_release(p_manifest_id uuid, p_run_id uuid); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_import_release(p_manifest_id uuid, p_run_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_import_release(p_manifest_id uuid, p_run_id uuid) TO service_role;
+
+
+--
+-- Name: FUNCTION talent_pool_is_manager(); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_is_manager() FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION talent_pool_list(p_search text, p_status text, p_source text, p_owner uuid, p_unassigned boolean, p_follow_up boolean, p_sort text, p_ascending boolean, p_limit integer, p_offset integer); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_list(p_search text, p_status text, p_source text, p_owner uuid, p_unassigned boolean, p_follow_up boolean, p_sort text, p_ascending boolean, p_limit integer, p_offset integer) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_list(p_search text, p_status text, p_source text, p_owner uuid, p_unassigned boolean, p_follow_up boolean, p_sort text, p_ascending boolean, p_limit integer, p_offset integer) TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_members_list(); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_members_list() FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_members_list() TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_my_access(); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_my_access() FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_my_access() TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_normalize_linkedin(p_url text); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_normalize_linkedin(p_url text) FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION talent_pool_promote(p_prospect_id uuid, p jsonb); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_promote(p_prospect_id uuid, p jsonb) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_promote(p_prospect_id uuid, p jsonb) TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_promotion_enabled(); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_promotion_enabled() FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_promotion_enabled() TO service_role;
+
+
+--
+-- Name: FUNCTION talent_pool_revoke_access(p_user_id uuid); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_revoke_access(p_user_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_revoke_access(p_user_id uuid) TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_update(p_id uuid, p jsonb, p_expected_updated_at timestamp with time zone); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_update(p_id uuid, p jsonb, p_expected_updated_at timestamp with time zone) FROM PUBLIC;
+GRANT ALL ON FUNCTION common.talent_pool_update(p_id uuid, p jsonb, p_expected_updated_at timestamp with time zone) TO authenticated;
+
+
+--
+-- Name: FUNCTION talent_pool_user_has_access(p_user_id uuid); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.talent_pool_user_has_access(p_user_id uuid) FROM PUBLIC;
 
 
 --
@@ -27810,10 +35128,65 @@ GRANT ALL ON FUNCTION common.test_room_visibility() TO authenticated;
 
 
 --
+-- Name: FUNCTION trigger_approval_reminders(); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.trigger_approval_reminders() FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION trigger_monthly_calibration_report(); Type: ACL; Schema: common; Owner: -
+--
+
+REVOKE ALL ON FUNCTION common.trigger_monthly_calibration_report() FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION fn_attach_missing_report_snapshots(); Type: ACL; Schema: neta_ops; Owner: -
+--
+
+REVOKE ALL ON FUNCTION neta_ops.fn_attach_missing_report_snapshots() FROM PUBLIC;
+GRANT ALL ON FUNCTION neta_ops.fn_attach_missing_report_snapshots() TO service_role;
+
+
+--
+-- Name: FUNCTION get_asset_test_dates(p_asset_ids uuid[]); Type: ACL; Schema: neta_ops; Owner: -
+--
+
+REVOKE ALL ON FUNCTION neta_ops.get_asset_test_dates(p_asset_ids uuid[]) FROM PUBLIC;
+GRANT ALL ON FUNCTION neta_ops.get_asset_test_dates(p_asset_ids uuid[]) TO authenticated;
+GRANT ALL ON FUNCTION neta_ops.get_asset_test_dates(p_asset_ids uuid[]) TO service_role;
+
+
+--
 -- Name: FUNCTION get_maintenance_due_equipment(days_threshold integer); Type: ACL; Schema: neta_ops; Owner: -
 --
 
 GRANT ALL ON FUNCTION neta_ops.get_maintenance_due_equipment(days_threshold integer) TO authenticated;
+
+
+--
+-- Name: FUNCTION log_field_equipment_assignment(); Type: ACL; Schema: neta_ops; Owner: -
+--
+
+REVOKE ALL ON FUNCTION neta_ops.log_field_equipment_assignment() FROM PUBLIC;
+
+
+--
+-- Name: FUNCTION move_report_assets_to_job(p_asset_ids uuid[], p_source_job_id uuid, p_target_job_id uuid, p_reason text); Type: ACL; Schema: neta_ops; Owner: -
+--
+
+REVOKE ALL ON FUNCTION neta_ops.move_report_assets_to_job(p_asset_ids uuid[], p_source_job_id uuid, p_target_job_id uuid, p_reason text) FROM PUBLIC;
+GRANT ALL ON FUNCTION neta_ops.move_report_assets_to_job(p_asset_ids uuid[], p_source_job_id uuid, p_target_job_id uuid, p_reason text) TO authenticated;
+GRANT ALL ON FUNCTION neta_ops.move_report_assets_to_job(p_asset_ids uuid[], p_source_job_id uuid, p_target_job_id uuid, p_reason text) TO service_role;
+
+
+--
+-- Name: FUNCTION parse_report_date(p_value text); Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT ALL ON FUNCTION neta_ops.parse_report_date(p_value text) TO authenticated;
+GRANT ALL ON FUNCTION neta_ops.parse_report_date(p_value text) TO service_role;
 
 
 --
@@ -27964,6 +35337,27 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.amp_contacts TO service_role;
 
 
 --
+-- Name: TABLE ampu_courses; Type: ACL; Schema: common; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.ampu_courses TO authenticated;
+
+
+--
+-- Name: TABLE ampu_lessons; Type: ACL; Schema: common; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.ampu_lessons TO authenticated;
+
+
+--
+-- Name: TABLE ampu_progress; Type: ACL; Schema: common; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.ampu_progress TO authenticated;
+
+
+--
 -- Name: TABLE android_lab_customers; Type: ACL; Schema: common; Owner: -
 --
 
@@ -28015,6 +35409,14 @@ GRANT SELECT ON TABLE common.available_technicians TO authenticated;
 
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE common.candidate_communication_templates TO authenticated;
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE common.candidate_communication_templates TO anon;
+
+
+--
+-- Name: TABLE candidate_question_answers; Type: ACL; Schema: common; Owner: -
+--
+
+GRANT SELECT ON TABLE common.candidate_question_answers TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.candidate_question_answers TO service_role;
 
 
 --
@@ -28135,6 +35537,21 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.customer_users TO service_role
 
 
 --
+-- Name: TABLE device_catalog; Type: ACL; Schema: common; Owner: -
+--
+
+GRANT SELECT ON TABLE common.device_catalog TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.device_catalog TO service_role;
+
+
+--
+-- Name: TABLE divisions; Type: ACL; Schema: common; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.divisions TO authenticated;
+
+
+--
 -- Name: TABLE documents; Type: ACL; Schema: common; Owner: -
 --
 
@@ -28208,6 +35625,20 @@ GRANT SELECT ON TABLE common.encryption_status TO service_role;
 --
 
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE common.feature_requests TO authenticated;
+
+
+--
+-- Name: TABLE help_center_documents; Type: ACL; Schema: common; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.help_center_documents TO authenticated;
+
+
+--
+-- Name: TABLE help_guides; Type: ACL; Schema: common; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.help_guides TO authenticated;
 
 
 --
@@ -28290,6 +35721,14 @@ GRANT SELECT ON TABLE common.issue_updates TO anon;
 
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE common.it_equipment_tasks TO authenticated;
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE common.it_equipment_tasks TO anon;
+
+
+--
+-- Name: TABLE job_application_questions; Type: ACL; Schema: common; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.job_application_questions TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.job_application_questions TO service_role;
 
 
 --
@@ -28556,6 +35995,13 @@ GRANT SELECT ON TABLE common.profiles TO service_role;
 
 
 --
+-- Name: TABLE prayer_wall_feed; Type: ACL; Schema: common; Owner: -
+--
+
+GRANT SELECT ON TABLE common.prayer_wall_feed TO authenticated;
+
+
+--
 -- Name: TABLE quickbooks_integrations; Type: ACL; Schema: common; Owner: -
 --
 
@@ -28598,6 +36044,14 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE common.ro
 --
 
 GRANT SELECT,INSERT ON TABLE common.role_change_logs TO authenticated;
+
+
+--
+-- Name: TABLE sites; Type: ACL; Schema: common; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.sites TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.sites TO service_role;
 
 
 --
@@ -28715,6 +36169,22 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE common.us
 
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE common.user_xp TO authenticated;
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE common.user_xp TO service_role;
+
+
+--
+-- Name: TABLE v_posted_job_requisitions; Type: ACL; Schema: common; Owner: -
+--
+
+GRANT SELECT ON TABLE common.v_posted_job_requisitions TO anon;
+GRANT SELECT ON TABLE common.v_posted_job_requisitions TO authenticated;
+
+
+--
+-- Name: TABLE v_public_application_questions; Type: ACL; Schema: common; Owner: -
+--
+
+GRANT SELECT ON TABLE common.v_public_application_questions TO anon;
+GRANT SELECT ON TABLE common.v_public_application_questions TO authenticated;
 
 
 --
@@ -28911,6 +36381,15 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.after_action_reports TO auth
 
 
 --
+-- Name: TABLE amplify_reports; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.amplify_reports TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.amplify_reports TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.amplify_reports TO service_role;
+
+
+--
 -- Name: TABLE applied_voltage_test_ats_reports; Type: ACL; Schema: neta_ops; Owner: -
 --
 
@@ -28979,6 +36458,15 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.
 
 
 --
+-- Name: TABLE building_folder_assignments; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.building_folder_assignments TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.building_folder_assignments TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.building_folder_assignments TO service_role;
+
+
+--
 -- Name: TABLE calibrations; Type: ACL; Schema: neta_ops; Owner: -
 --
 
@@ -29037,6 +36525,14 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.custom_form_saved_components
 
 
 --
+-- Name: TABLE custom_form_template_versions; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.custom_form_template_versions TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.custom_form_template_versions TO authenticated;
+
+
+--
 -- Name: TABLE custom_form_templates; Type: ACL; Schema: neta_ops; Owner: -
 --
 
@@ -29069,12 +36565,29 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.
 
 
 --
+-- Name: TABLE energized_work_permit_reports; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.energized_work_permit_reports TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.energized_work_permit_reports TO authenticated;
+
+
+--
 -- Name: TABLE equipment; Type: ACL; Schema: neta_ops; Owner: -
 --
 
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.equipment TO authenticated;
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.equipment TO service_role;
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.equipment TO anon;
+
+
+--
+-- Name: TABLE equipment_assets; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.equipment_assets TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.equipment_assets TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.equipment_assets TO service_role;
 
 
 --
@@ -29127,11 +36640,38 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.equipment_trucks TO authenti
 
 
 --
+-- Name: TABLE equipment_types; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.equipment_types TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.equipment_types TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.equipment_types TO service_role;
+
+
+--
 -- Name: TABLE field_equipment; Type: ACL; Schema: neta_ops; Owner: -
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.field_equipment TO anon;
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.field_equipment TO authenticated;
+
+
+--
+-- Name: TABLE field_equipment_assignments; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.field_equipment_assignments TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.field_equipment_assignments TO authenticated;
+GRANT ALL ON TABLE neta_ops.field_equipment_assignments TO service_role;
+
+
+--
+-- Name: TABLE folder_item_assignments; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.folder_item_assignments TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.folder_item_assignments TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.folder_item_assignments TO service_role;
 
 
 --
@@ -29221,6 +36761,15 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.
 
 
 --
+-- Name: TABLE job_equipment_assets; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.job_equipment_assets TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.job_equipment_assets TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.job_equipment_assets TO service_role;
+
+
+--
 -- Name: TABLE job_expenses; Type: ACL; Schema: neta_ops; Owner: -
 --
 
@@ -29301,6 +36850,15 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.
 
 
 --
+-- Name: TABLE large_dry_type_xfmr_mts23_reports; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.large_dry_type_xfmr_mts23_reports TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.large_dry_type_xfmr_mts23_reports TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.large_dry_type_xfmr_mts23_reports TO service_role;
+
+
+--
 -- Name: TABLE large_dry_type_xfmr_mts_reports; Type: ACL; Schema: neta_ops; Owner: -
 --
 
@@ -29345,6 +36903,24 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.
 
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.liquid_xfmr_visual_mts_reports TO authenticated;
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.liquid_xfmr_visual_mts_reports TO anon;
+
+
+--
+-- Name: TABLE low_voltage_air_switch_mts23_reports; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.low_voltage_air_switch_mts23_reports TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.low_voltage_air_switch_mts23_reports TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.low_voltage_air_switch_mts23_reports TO service_role;
+
+
+--
+-- Name: TABLE low_voltage_cable_mts23_reports; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.low_voltage_cable_mts23_reports TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.low_voltage_cable_mts23_reports TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.low_voltage_cable_mts23_reports TO service_role;
 
 
 --
@@ -29452,6 +37028,24 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.
 
 
 --
+-- Name: TABLE lv_circuit_breaker_mts23_reports; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.lv_circuit_breaker_mts23_reports TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.lv_circuit_breaker_mts23_reports TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.lv_circuit_breaker_mts23_reports TO service_role;
+
+
+--
+-- Name: TABLE lv_circuit_breaker_mts25; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.lv_circuit_breaker_mts25 TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.lv_circuit_breaker_mts25 TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.lv_circuit_breaker_mts25 TO service_role;
+
+
+--
 -- Name: TABLE lv_molded_case_circuit_breaker_ats25; Type: ACL; Schema: neta_ops; Owner: -
 --
 
@@ -29466,6 +37060,15 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.maintenance_records TO authenticated;
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.maintenance_records TO service_role;
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.maintenance_records TO anon;
+
+
+--
+-- Name: TABLE medium_voltage_cable_vlf_tan_delta_mts23_reports; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.medium_voltage_cable_vlf_tan_delta_mts23_reports TO service_role;
 
 
 --
@@ -29533,6 +37136,15 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.
 
 
 --
+-- Name: TABLE medium_voltage_vacuum_breaker_mts23_reports; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.medium_voltage_vacuum_breaker_mts23_reports TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.medium_voltage_vacuum_breaker_mts23_reports TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.medium_voltage_vacuum_breaker_mts23_reports TO service_role;
+
+
+--
 -- Name: TABLE medium_voltage_vlf_mts_reports; Type: ACL; Schema: neta_ops; Owner: -
 --
 
@@ -29565,6 +37177,15 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.
 
 
 --
+-- Name: TABLE metal_enclosed_busway_mts23_reports; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.metal_enclosed_busway_mts23_reports TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.metal_enclosed_busway_mts23_reports TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.metal_enclosed_busway_mts23_reports TO service_role;
+
+
+--
 -- Name: TABLE metal_enclosed_busway_reports; Type: ACL; Schema: neta_ops; Owner: -
 --
 
@@ -29587,6 +37208,15 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.neta_sections TO anon;
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.neta_sections TO authenticated;
+
+
+--
+-- Name: TABLE oil_analysis_reports; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.oil_analysis_reports TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.oil_analysis_reports TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.oil_analysis_reports TO service_role;
 
 
 --
@@ -29663,6 +37293,15 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.
 
 
 --
+-- Name: TABLE report_moves; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.report_moves TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.report_moves TO authenticated;
+GRANT SELECT,INSERT ON TABLE neta_ops.report_moves TO service_role;
+
+
+--
 -- Name: TABLE report_notifications; Type: ACL; Schema: neta_ops; Owner: -
 --
 
@@ -29689,6 +37328,33 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.
 
 
 --
+-- Name: TABLE scheduled_test_batch_items; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.scheduled_test_batch_items TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.scheduled_test_batch_items TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.scheduled_test_batch_items TO service_role;
+
+
+--
+-- Name: TABLE scheduled_test_batches; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.scheduled_test_batches TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.scheduled_test_batches TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.scheduled_test_batches TO service_role;
+
+
+--
+-- Name: TABLE scheduled_tests; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.scheduled_tests TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.scheduled_tests TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.scheduled_tests TO service_role;
+
+
+--
 -- Name: TABLE signature_profiles; Type: ACL; Schema: neta_ops; Owner: -
 --
 
@@ -29697,11 +37363,38 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.signature_profiles TO authen
 
 
 --
+-- Name: TABLE small_dry_type_xfmr_mts23_reports; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.small_dry_type_xfmr_mts23_reports TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.small_dry_type_xfmr_mts23_reports TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.small_dry_type_xfmr_mts23_reports TO service_role;
+
+
+--
 -- Name: TABLE small_lv_dry_type_transformer_ats25_reports; Type: ACL; Schema: neta_ops; Owner: -
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.small_lv_dry_type_transformer_ats25_reports TO anon;
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.small_lv_dry_type_transformer_ats25_reports TO authenticated;
+
+
+--
+-- Name: TABLE substation_folder_assignments; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.substation_folder_assignments TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.substation_folder_assignments TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.substation_folder_assignments TO service_role;
+
+
+--
+-- Name: TABLE substation_folders; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.substation_folders TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.substation_folders TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.substation_folders TO service_role;
 
 
 --
@@ -29729,6 +37422,15 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.
 
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.switchgear_switchboard_ats25_reports TO anon;
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.switchgear_switchboard_ats25_reports TO authenticated;
+
+
+--
+-- Name: TABLE switchgear_switchboard_mts23_reports; Type: ACL; Schema: neta_ops; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.switchgear_switchboard_mts23_reports TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.switchgear_switchboard_mts23_reports TO authenticated;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE neta_ops.switchgear_switchboard_mts23_reports TO service_role;
 
 
 --
@@ -29858,6 +37560,13 @@ GRANT SELECT ON TABLE public.android_lab_jobs TO authenticated;
 
 
 --
+-- Name: TABLE lead_contact; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT ON TABLE public.lead_contact TO service_role;
+
+
+--
 -- Name: TABLE vendor_contacts; Type: ACL; Schema: public; Owner: -
 --
 
@@ -29894,1435 +37603,8 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA neta_ops GRANT SELECT,INSER
 
 
 --
--- Role self-edit protection (mirrored from database/migrations/protect_user_role.sql; keep in sync)
---
-
--- Stop users from setting their own role.
---
--- Why: ampOS keeps each user's role in auth user_metadata, and the whole app
--- (HrLayout, usePermissions, dozens of RLS policies) trusts it. But any
--- signed-in user can write their own user_metadata through the auth API, e.g.
--- supabase.auth.updateUser({ data: { role: 'Super Admin' } }) from the browser
--- console. The app already calls updateUser for profile photos and names, so
--- the call is not blocked. Separately, common.make_user_admin() had no
--- permission check and was executable by every signed-in user.
---
--- Fix:
---   1. A trigger on auth.users keeps role unchanged whenever the write comes
---      from the auth API (Postgres role supabase_auth_admin): user self-updates,
---      sign-ups, and the service-role admin API. Role changes still work through
---      common.admin_update_user_role() (the Admin Dashboard) and the SQL editor,
---      which run as postgres. Edge functions must not set role via
---      auth.admin.updateUserById; call admin_update_user_role instead.
---   2. Unchecked role-granting functions are no longer executable by clients.
---   3. A review query (end of file) lists privileged users so anyone who
---      already promoted themselves can be spotted.
---
--- Profile saves are unaffected: they do not change role, and if a client sends
--- a different role the old value is silently kept rather than failing the save.
---
--- Safe to re-run.
-
-CREATE OR REPLACE FUNCTION common.protect_user_role() RETURNS trigger
-  LANGUAGE plpgsql
-  -- Deliberately not SECURITY DEFINER: current_user must be the writer.
-  SET search_path = ''
-  AS $$
-BEGIN
-  IF current_user <> 'supabase_auth_admin' THEN
-    RETURN NEW;
-  END IF;
-
-  IF TG_OP = 'INSERT' THEN
-    IF NEW.raw_user_meta_data ? 'role' THEN
-      NEW.raw_user_meta_data := NEW.raw_user_meta_data - 'role';
-    END IF;
-    RETURN NEW;
-  END IF;
-
-  IF (NEW.raw_user_meta_data -> 'role') IS DISTINCT FROM (OLD.raw_user_meta_data -> 'role') THEN
-    IF OLD.raw_user_meta_data ? 'role' THEN
-      NEW.raw_user_meta_data := coalesce(NEW.raw_user_meta_data, '{}'::jsonb)
-        || jsonb_build_object('role', OLD.raw_user_meta_data -> 'role');
-    ELSE
-      NEW.raw_user_meta_data := NEW.raw_user_meta_data - 'role';
-    END IF;
-  END IF;
-  RETURN NEW;
-END;
-$$;
-
-COMMENT ON FUNCTION common.protect_user_role() IS
-  'Keeps auth user_metadata.role unchanged for writes made through the auth API. Change roles with common.admin_update_user_role().';
-
-REVOKE ALL ON FUNCTION common.protect_user_role() FROM PUBLIC, anon, authenticated;
-
-DROP TRIGGER IF EXISTS protect_user_role ON auth.users;
-CREATE TRIGGER protect_user_role
-  BEFORE INSERT OR UPDATE OF raw_user_meta_data ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION common.protect_user_role();
-
--- Role-granting functions with no permission check.
-DO $$
-DECLARE
-  f text;
-BEGIN
-  FOREACH f IN ARRAY ARRAY[
-    'common.make_user_admin(text)',
-    'extensions.make_user_admin(text)',
-    'extensions.admin_update_user_role(uuid, text)',
-    'extensions.assign_lab_customer_role(uuid)'
-  ] LOOP
-    IF to_regprocedure(f) IS NOT NULL THEN
-      EXECUTE format('REVOKE ALL ON FUNCTION %s FROM PUBLIC, anon, authenticated', f);
-    END IF;
-  END LOOP;
-END;
-$$;
-
-
---
--- Talent Pool (mirrored from database/migrations/talent_pool.sql; keep in sync)
---
-
--- Talent Pool (recruiting prospects)
--- Plan: documentation/Feature Documentation/TALENT_POOL_PLAN.md
---
--- Sourced prospects live apart from applicants (common.candidates) until HR
--- explicitly promotes one into Candidate Tracking.
---
--- Security model (enforced in the database, not the browser):
---   * Admins, Super Admins, and superusers (common.is_superuser_email) always
---     have access. Anyone else needs a row in common.talent_pool_members.
---     The role lives in auth user_metadata, which users could once edit about
---     themselves; apply protect_user_role.sql with this migration.
---   * Browser clients get no direct table access. Reads and writes go through
---     SECURITY DEFINER functions that re-check access on every call, so a
---     revoked member loses access immediately, even with an old token.
---   * Triggers enforce the lifecycle regardless of caller: promoted prospects
---     are read-only and undeletable, promotion fields can only be set by the
---     promotion function, activity is append-only.
---   * Promotion refuses to run while common.candidates is readable by anon or
---     by every signed-in user (see talent_pool_promotion_enabled()).
---   * Import functions are executable by service_role only.
---
--- Safe to re-run.
-
--- ---------------------------------------------------------------------------
--- Tables
--- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS common.talent_pool_members (
-  user_id    uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  added_by   uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS common.recruiting_prospects (
-  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  first_name        text NOT NULL,
-  last_name         text,
-  email             text,
-  phone             text,
-  linkedin_url      text,
-  job_title         text,
-  current_org       text,
-  location          text,
-  source            text NOT NULL DEFAULT 'other',
-  status            text NOT NULL DEFAULT 'new',
-  availability      text,
-  needs_follow_up   boolean NOT NULL DEFAULT false,
-  owner_id          uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  last_contact_date timestamptz,
-  candidate_id      uuid REFERENCES common.candidates(id) ON DELETE RESTRICT,
-  promoted_at       timestamptz,
-  import_refs       jsonb NOT NULL DEFAULT '[]'::jsonb,
-  created_by        uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at        timestamptz NOT NULL DEFAULT now(),
-  updated_at        timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT recruiting_prospects_first_name_check CHECK (btrim(first_name) <> '' AND char_length(first_name) <= 100),
-  CONSTRAINT recruiting_prospects_last_name_check CHECK (last_name IS NULL OR char_length(last_name) <= 100),
-  CONSTRAINT recruiting_prospects_email_check CHECK (
-    email IS NULL OR (email = lower(btrim(email)) AND email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' AND char_length(email) <= 255)
-  ),
-  CONSTRAINT recruiting_prospects_linkedin_check CHECK (
-    linkedin_url IS NULL OR linkedin_url ~ '^https://www\.linkedin\.com/in/[^/?#\s]+$'
-  ),
-  CONSTRAINT recruiting_prospects_text_len_check CHECK (
-    coalesce(char_length(phone), 0) <= 50
-    AND coalesce(char_length(job_title), 0) <= 255
-    AND coalesce(char_length(current_org), 0) <= 255
-    AND coalesce(char_length(location), 0) <= 255
-    AND coalesce(char_length(availability), 0) <= 500
-  ),
-  CONSTRAINT recruiting_prospects_source_check CHECK (source IN ('linkedin', 'indeed', 'referral', 'other')),
-  CONSTRAINT recruiting_prospects_status_check CHECK (
-    status IN ('new', 'contacted', 'interested', 'future_roles', 'not_interested', 'promoted')
-  ),
-  CONSTRAINT recruiting_prospects_promotion_check CHECK (
-    (status = 'promoted' AND candidate_id IS NOT NULL AND promoted_at IS NOT NULL)
-    OR (status <> 'promoted' AND candidate_id IS NULL AND promoted_at IS NULL)
-  ),
-  CONSTRAINT recruiting_prospects_import_refs_check CHECK (jsonb_typeof(import_refs) = 'array')
-);
-
-CREATE UNIQUE INDEX IF NOT EXISTS recruiting_prospects_email_key
-  ON common.recruiting_prospects (lower(email)) WHERE email IS NOT NULL;
-CREATE UNIQUE INDEX IF NOT EXISTS recruiting_prospects_linkedin_key
-  ON common.recruiting_prospects (linkedin_url) WHERE linkedin_url IS NOT NULL;
-CREATE INDEX IF NOT EXISTS recruiting_prospects_status_idx ON common.recruiting_prospects (status);
-CREATE INDEX IF NOT EXISTS recruiting_prospects_owner_idx ON common.recruiting_prospects (owner_id);
-CREATE INDEX IF NOT EXISTS recruiting_prospects_candidate_idx ON common.recruiting_prospects (candidate_id);
-
-CREATE TABLE IF NOT EXISTS common.recruiting_prospect_activity (
-  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  prospect_id     uuid NOT NULL REFERENCES common.recruiting_prospects(id) ON DELETE CASCADE,
-  type            text NOT NULL,
-  body            text,
-  occurred_at     timestamptz,
-  original_author text,
-  import_ref      jsonb,
-  created_by      uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  created_at      timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT recruiting_prospect_activity_type_check CHECK (
-    type IN ('note', 'call', 'text', 'email', 'status_change', 'promoted')
-  ),
-  CONSTRAINT recruiting_prospect_activity_note_body_check CHECK (
-    type <> 'note' OR (body IS NOT NULL AND btrim(body) <> '')
-  ),
-  CONSTRAINT recruiting_prospect_activity_contact_time_check CHECK (
-    type NOT IN ('call', 'text', 'email') OR occurred_at IS NOT NULL
-  ),
-  CONSTRAINT recruiting_prospect_activity_body_len_check CHECK (body IS NULL OR char_length(body) <= 10000)
-);
-
-CREATE INDEX IF NOT EXISTS recruiting_prospect_activity_log_idx
-  ON common.recruiting_prospect_activity (prospect_id, created_at, id);
-CREATE UNIQUE INDEX IF NOT EXISTS recruiting_prospect_activity_one_promotion
-  ON common.recruiting_prospect_activity (prospect_id) WHERE type = 'promoted';
-
--- One apply of an import manifest at a time.
-CREATE TABLE IF NOT EXISTS common.talent_pool_import_runs (
-  manifest_id  uuid PRIMARY KEY,
-  run_id       uuid NOT NULL,
-  target       text NOT NULL,
-  heartbeat_at timestamptz NOT NULL DEFAULT now(),
-  started_at   timestamptz NOT NULL DEFAULT now(),
-  finished_at  timestamptz
-);
-
--- ---------------------------------------------------------------------------
--- Normalization helpers (mirrored in src/lib/talentPool/normalize.ts)
--- ---------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION common.talent_pool_normalize_linkedin(p_url text) RETURNS text
-  LANGUAGE plpgsql IMMUTABLE
-  SET search_path = ''
-  AS $$
-DECLARE
-  v text := btrim(coalesce(p_url, ''));
-  m text[];
-BEGIN
-  IF v = '' THEN RETURN NULL; END IF;
-  IF v !~* '^https?://' THEN v := 'https://' || v; END IF;
-  v := regexp_replace(v, '[?#].*$', '');
-  m := regexp_match(v, '^https?://(?:[a-z]{2,3}\.)?linkedin\.com/in/([^/\s]+)/?.*$', 'i');
-  IF m IS NULL OR m[1] = '' THEN RETURN NULL; END IF;
-  RETURN 'https://www.linkedin.com/in/' || lower(m[1]);
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION common.recruiting_prospects_before_write() RETURNS trigger
-  LANGUAGE plpgsql
-  SET search_path = ''
-  AS $$
-DECLARE
-  v_linkedin text;
-BEGIN
-  IF TG_OP = 'DELETE' THEN
-    IF OLD.status = 'promoted' THEN
-      RAISE EXCEPTION 'Promoted prospects cannot be deleted' USING ERRCODE = 'P0001';
-    END IF;
-    RETURN OLD;
-  END IF;
-
-  IF TG_OP = 'UPDATE' AND OLD.status = 'promoted' THEN
-    -- The only change allowed: ON DELETE SET NULL when an auth user is removed.
-    IF (to_jsonb(NEW) - ARRAY['owner_id', 'created_by', 'updated_at'])
-         = (to_jsonb(OLD) - ARRAY['owner_id', 'created_by', 'updated_at'])
-       AND (NEW.owner_id IS NULL OR NEW.owner_id = OLD.owner_id)
-       AND (NEW.created_by IS NULL OR NEW.created_by = OLD.created_by) THEN
-      RETURN NEW;
-    END IF;
-    RAISE EXCEPTION 'Promoted prospects are read-only' USING ERRCODE = 'P0001';
-  END IF;
-
-  -- Promotion fields are set only inside the promotion function.
-  IF (NEW.status = 'promoted' OR NEW.candidate_id IS NOT NULL OR NEW.promoted_at IS NOT NULL)
-     AND coalesce(current_setting('talent_pool.promoting', true), '') <> 'on' THEN
-    RAISE EXCEPTION 'Use Promote to Candidate to move a prospect into the pipeline' USING ERRCODE = 'P0001';
-  END IF;
-
-  NEW.first_name   := btrim(coalesce(NEW.first_name, ''));
-  NEW.last_name    := nullif(btrim(NEW.last_name), '');
-  NEW.email        := nullif(lower(btrim(NEW.email)), '');
-  NEW.phone        := nullif(btrim(NEW.phone), '');
-  NEW.job_title    := nullif(btrim(NEW.job_title), '');
-  NEW.current_org  := nullif(btrim(NEW.current_org), '');
-  NEW.location     := nullif(btrim(NEW.location), '');
-  NEW.availability := nullif(btrim(NEW.availability), '');
-
-  IF NEW.first_name = '' THEN
-    RAISE EXCEPTION 'First name is required' USING ERRCODE = '23514';
-  END IF;
-  IF NEW.email IS NOT NULL AND NEW.email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' THEN
-    RAISE EXCEPTION 'Invalid email address' USING ERRCODE = '23514';
-  END IF;
-  IF nullif(btrim(NEW.linkedin_url), '') IS NOT NULL THEN
-    v_linkedin := common.talent_pool_normalize_linkedin(NEW.linkedin_url);
-    IF v_linkedin IS NULL THEN
-      RAISE EXCEPTION 'LinkedIn URL must be a profile link (linkedin.com/in/...)' USING ERRCODE = '23514';
-    END IF;
-    NEW.linkedin_url := v_linkedin;
-  ELSE
-    NEW.linkedin_url := NULL;
-  END IF;
-
-  IF NEW.owner_id IS NOT NULL
-     AND (TG_OP = 'INSERT' OR NEW.owner_id IS DISTINCT FROM OLD.owner_id)
-     AND NOT common.talent_pool_user_has_access(NEW.owner_id) THEN
-    RAISE EXCEPTION 'Owner must have Talent Pool access' USING ERRCODE = '23514';
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-DROP TRIGGER IF EXISTS recruiting_prospects_before_write ON common.recruiting_prospects;
-CREATE TRIGGER recruiting_prospects_before_write
-  BEFORE INSERT OR UPDATE OR DELETE ON common.recruiting_prospects
-  FOR EACH ROW EXECUTE FUNCTION common.recruiting_prospects_before_write();
-
-DROP TRIGGER IF EXISTS recruiting_prospects_updated_at ON common.recruiting_prospects;
-CREATE TRIGGER recruiting_prospects_updated_at
-  BEFORE UPDATE ON common.recruiting_prospects
-  FOR EACH ROW EXECUTE FUNCTION common.update_updated_at_column();
-
-CREATE OR REPLACE FUNCTION common.recruiting_prospect_activity_before_write() RETURNS trigger
-  LANGUAGE plpgsql
-  SET search_path = ''
-  AS $$
-DECLARE
-  v_status text;
-BEGIN
-  IF TG_OP = 'UPDATE' THEN
-    -- The only change allowed: ON DELETE SET NULL when an auth user is removed.
-    IF NEW.created_by IS NULL
-       AND (to_jsonb(NEW) - 'created_by') = (to_jsonb(OLD) - 'created_by') THEN
-      RETURN NEW;
-    END IF;
-    RAISE EXCEPTION 'Prospect activity is append-only' USING ERRCODE = 'P0001';
-  END IF;
-  IF TG_OP = 'DELETE' THEN
-    -- Only allowed as the cascade from deleting the (unpromoted) prospect,
-    -- which is already gone by the time this fires.
-    IF EXISTS (SELECT 1 FROM common.recruiting_prospects p WHERE p.id = OLD.prospect_id) THEN
-      RAISE EXCEPTION 'Prospect activity is append-only' USING ERRCODE = 'P0001';
-    END IF;
-    RETURN OLD;
-  END IF;
-
-  IF NEW.type IN ('status_change', 'promoted')
-     AND coalesce(current_setting('talent_pool.system_event', true), '') <> 'on' THEN
-    RAISE EXCEPTION 'System activity cannot be added directly' USING ERRCODE = 'P0001';
-  END IF;
-
-  SELECT p.status INTO v_status FROM common.recruiting_prospects p WHERE p.id = NEW.prospect_id;
-  IF v_status = 'promoted' AND NEW.type <> 'promoted' THEN
-    RAISE EXCEPTION 'Promoted prospects are read-only' USING ERRCODE = 'P0001';
-  END IF;
-  RETURN NEW;
-END;
-$$;
-
-DROP TRIGGER IF EXISTS recruiting_prospect_activity_before_write ON common.recruiting_prospect_activity;
-CREATE TRIGGER recruiting_prospect_activity_before_write
-  BEFORE INSERT OR UPDATE OR DELETE ON common.recruiting_prospect_activity
-  FOR EACH ROW EXECUTE FUNCTION common.recruiting_prospect_activity_before_write();
-
--- ---------------------------------------------------------------------------
--- Authorization helpers
--- ---------------------------------------------------------------------------
--- Admins, Super Admins, and superusers always have access; anyone else needs a
--- row in talent_pool_members. Role is read from auth.users (not the token) so
--- a demotion applies immediately; protect_user_role.sql stops self-promotion.
-CREATE OR REPLACE FUNCTION common.talent_pool_user_has_access(p_user_id uuid) RETURNS boolean
-  LANGUAGE sql STABLE SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM auth.users u
-    WHERE u.id = p_user_id
-      AND u.deleted_at IS NULL
-      AND (u.banned_until IS NULL OR u.banned_until <= now())
-      AND (
-        EXISTS (SELECT 1 FROM common.talent_pool_members m WHERE m.user_id = u.id)
-        OR (
-          u.email_confirmed_at IS NOT NULL
-          AND (
-            common.is_superuser_email(u.email)
-            OR u.raw_user_meta_data ->> 'role' IN ('Admin', 'Super Admin')
-          )
-        )
-      )
-  );
-$$;
-
-CREATE OR REPLACE FUNCTION common.talent_pool_can_access() RETURNS boolean
-  LANGUAGE sql STABLE SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-  SELECT auth.uid() IS NOT NULL AND common.talent_pool_user_has_access(auth.uid());
-$$;
-
-CREATE OR REPLACE FUNCTION common.talent_pool_is_manager() RETURNS boolean
-  LANGUAGE sql STABLE SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM auth.users u
-    WHERE u.id = auth.uid()
-      AND u.email_confirmed_at IS NOT NULL
-      AND (
-        common.is_superuser_email(u.email)
-        -- Read from auth.users, not the token, so a demotion applies at once.
-        -- Self-edits of role are blocked by database/migrations/protect_user_role.sql.
-        OR u.raw_user_meta_data ->> 'role' IN ('Admin', 'Super Admin')
-      )
-  );
-$$;
-
-CREATE OR REPLACE FUNCTION common._talent_pool_require_access() RETURNS uuid
-  LANGUAGE plpgsql STABLE SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-BEGIN
-  IF NOT common.talent_pool_can_access() THEN
-    RAISE EXCEPTION 'Not authorized for Talent Pool' USING ERRCODE = '42501';
-  END IF;
-  RETURN auth.uid();
-END;
-$$;
-
--- True only when candidate records are not readable by anon or by every
--- signed-in user. A policy with a real condition counts as protected.
-CREATE OR REPLACE FUNCTION common.talent_pool_promotion_enabled() RETURNS boolean
-  LANGUAGE sql STABLE SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-  WITH t AS (
-    SELECT c.oid, c.relrowsecurity
-    FROM pg_catalog.pg_class c
-    JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-    WHERE n.nspname = 'common' AND c.relname = 'candidates'
-  ),
-  exposed AS (
-    SELECT r.rolname
-    FROM (VALUES ('anon'::name), ('authenticated'::name)) AS r(rolname)
-    CROSS JOIN t
-    WHERE pg_catalog.has_table_privilege(r.rolname, t.oid, 'SELECT')
-      AND (
-        NOT t.relrowsecurity
-        OR EXISTS (
-          SELECT 1 FROM pg_catalog.pg_policies p
-          WHERE p.schemaname = 'common' AND p.tablename = 'candidates'
-            AND p.cmd IN ('SELECT', 'ALL')
-            AND p.permissive = 'PERMISSIVE'
-            AND (r.rolname = ANY (p.roles) OR 'public' = ANY (p.roles))
-            AND btrim(coalesce(p.qual, 'true')) IN ('true', '(true)')
-        )
-      )
-  )
-  SELECT EXISTS (SELECT 1 FROM t) AND NOT EXISTS (SELECT 1 FROM exposed);
-$$;
-
-CREATE OR REPLACE FUNCTION common.talent_pool_my_access() RETURNS jsonb
-  LANGUAGE sql STABLE SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-  SELECT jsonb_build_object(
-    'can_access', common.talent_pool_can_access(),
-    'can_manage', common.talent_pool_is_manager(),
-    'promotion_enabled', common.talent_pool_promotion_enabled()
-  );
-$$;
-
--- ---------------------------------------------------------------------------
--- Members
--- ---------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION common.talent_pool_members_list() RETURNS jsonb
-  LANGUAGE plpgsql STABLE SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-BEGIN
-  IF NOT (common.talent_pool_can_access() OR common.talent_pool_is_manager()) THEN
-    RAISE EXCEPTION 'Not authorized for Talent Pool' USING ERRCODE = '42501';
-  END IF;
-  RETURN coalesce((
-    -- Everyone with access (members plus Admins); used for the owner picker.
-    SELECT jsonb_agg(jsonb_build_object(
-      'user_id', u.id,
-      'name', coalesce(nullif(btrim(pr.full_name), ''), u.email),
-      'email', u.email
-    ) ORDER BY lower(coalesce(nullif(btrim(pr.full_name), ''), u.email)))
-    FROM auth.users u
-    LEFT JOIN common.profiles pr ON pr.id = u.id
-    WHERE common.talent_pool_user_has_access(u.id)
-  ), '[]'::jsonb);
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION common.talent_pool_grant_access(p_email text) RETURNS jsonb
-  LANGUAGE plpgsql SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-DECLARE
-  v_user uuid;
-BEGIN
-  IF NOT common.talent_pool_is_manager() THEN
-    RAISE EXCEPTION 'Only an Admin can manage Talent Pool access' USING ERRCODE = '42501';
-  END IF;
-  SELECT u.id INTO v_user FROM auth.users u WHERE lower(u.email) = lower(btrim(p_email));
-  IF v_user IS NULL THEN
-    RAISE EXCEPTION 'No ampOS account uses that email' USING ERRCODE = 'P0002';
-  END IF;
-  INSERT INTO common.talent_pool_members (user_id, added_by)
-  VALUES (v_user, auth.uid())
-  ON CONFLICT (user_id) DO NOTHING;
-  RETURN jsonb_build_object('user_id', v_user);
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION common.talent_pool_revoke_access(p_user_id uuid) RETURNS void
-  LANGUAGE plpgsql SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-BEGIN
-  IF NOT common.talent_pool_is_manager() THEN
-    RAISE EXCEPTION 'Only an Admin can manage Talent Pool access' USING ERRCODE = '42501';
-  END IF;
-  DELETE FROM common.talent_pool_members WHERE user_id = p_user_id;
-END;
-$$;
-
--- ---------------------------------------------------------------------------
--- Reads
--- ---------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION common._talent_pool_filtered(
-  p_search text, p_source text, p_owner uuid, p_unassigned boolean, p_follow_up boolean
-) RETURNS SETOF common.recruiting_prospects
-  LANGUAGE sql STABLE
-  SET search_path = ''
-  AS $$
-  WITH q AS (
-    SELECT
-      nullif(btrim(coalesce(p_search, '')), '') AS term,
-      '%' || replace(replace(replace(btrim(coalesce(p_search, '')), '\', '\\'), '%', '\%'), '_', '\_') || '%' AS pat,
-      regexp_replace(coalesce(p_search, ''), '\D', '', 'g') AS digits
-  )
-  SELECT p.*
-  FROM common.recruiting_prospects p, q
-  WHERE (
-      q.term IS NULL
-      OR (p.first_name || ' ' || coalesce(p.last_name, '')) ILIKE q.pat
-      OR p.email ILIKE q.pat
-      OR p.phone ILIKE q.pat
-      OR (char_length(q.digits) >= 3 AND regexp_replace(coalesce(p.phone, ''), '\D', '', 'g') LIKE '%' || q.digits || '%')
-      OR p.job_title ILIKE q.pat
-      OR p.current_org ILIKE q.pat
-      OR p.linkedin_url ILIKE q.pat
-      OR p.location ILIKE q.pat
-    )
-    AND (nullif(p_source, '') IS NULL OR p.source = p_source)
-    AND (p_owner IS NULL OR p.owner_id = p_owner)
-    AND (NOT coalesce(p_unassigned, false) OR p.owner_id IS NULL)
-    AND (NOT coalesce(p_follow_up, false) OR p.needs_follow_up);
-$$;
-
-CREATE OR REPLACE FUNCTION common._talent_pool_prospect_json(p common.recruiting_prospects) RETURNS jsonb
-  LANGUAGE sql STABLE
-  SET search_path = ''
-  AS $$
-  SELECT to_jsonb(p)
-    || jsonb_build_object(
-      'owner_name', (
-        SELECT coalesce(nullif(btrim(pr.full_name), ''), pr.email)
-        FROM common.profiles pr WHERE pr.id = p.owner_id
-      ),
-      'has_import_refs', jsonb_array_length(p.import_refs) > 0
-    );
-$$;
-
-CREATE OR REPLACE FUNCTION common.talent_pool_list(
-  p_search text DEFAULT NULL,
-  p_status text DEFAULT NULL,   -- NULL: everything except promoted; 'all': everything
-  p_source text DEFAULT NULL,
-  p_owner uuid DEFAULT NULL,
-  p_unassigned boolean DEFAULT false,
-  p_follow_up boolean DEFAULT false,
-  p_sort text DEFAULT 'created_at',
-  p_ascending boolean DEFAULT false,
-  p_limit integer DEFAULT 50,
-  p_offset integer DEFAULT 0
-) RETURNS jsonb
-  LANGUAGE plpgsql STABLE SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-DECLARE
-  v_order text;
-  v_dir text := CASE WHEN p_ascending THEN 'ASC' ELSE 'DESC' END;
-  v_total bigint;
-  v_rows jsonb;
-BEGIN
-  PERFORM common._talent_pool_require_access();
-
-  -- Whitelisted sort expressions only; never interpolate caller text.
-  v_order := CASE p_sort
-    WHEN 'name' THEN format('lower(coalesce(x.last_name, x.first_name)) %1$s NULLS LAST, lower(x.first_name) %1$s', v_dir)
-    WHEN 'status' THEN format('x.status %s', v_dir)
-    WHEN 'source' THEN format('x.source %s', v_dir)
-    WHEN 'location' THEN format('lower(x.location) %s NULLS LAST', v_dir)
-    WHEN 'last_contact_date' THEN format('x.last_contact_date %s NULLS LAST', v_dir)
-    WHEN 'updated_at' THEN format('x.updated_at %s', v_dir)
-    ELSE format('x.created_at %s', v_dir)
-  END || format(', x.id %s', v_dir);
-
-  SELECT count(*) INTO v_total
-  FROM common._talent_pool_filtered(p_search, p_source, p_owner, p_unassigned, p_follow_up) x
-  WHERE CASE
-    WHEN p_status IS NULL OR p_status = '' THEN x.status <> 'promoted'
-    WHEN p_status = 'all' THEN true
-    ELSE x.status = p_status
-  END;
-
-  EXECUTE format($q$
-    SELECT coalesce(jsonb_agg(common._talent_pool_prospect_json(s.pr) ORDER BY s.ord), '[]'::jsonb)
-    FROM (
-      SELECT x AS pr, row_number() OVER (ORDER BY %1$s) AS ord
-      FROM common._talent_pool_filtered($1, $2, $3, $4, $5) x
-      WHERE CASE
-        WHEN $6 IS NULL OR $6 = '' THEN x.status <> 'promoted'
-        WHEN $6 = 'all' THEN true
-        ELSE x.status = $6
-      END
-      ORDER BY %1$s
-      LIMIT $7 OFFSET $8
-    ) s
-  $q$, v_order)
-  INTO v_rows
-  USING p_search, p_source, p_owner, p_unassigned, p_follow_up, p_status,
-        least(greatest(coalesce(p_limit, 50), 1), 200), greatest(coalesce(p_offset, 0), 0);
-
-  RETURN jsonb_build_object('total', v_total, 'rows', v_rows);
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION common.talent_pool_counts(
-  p_search text DEFAULT NULL,
-  p_source text DEFAULT NULL,
-  p_owner uuid DEFAULT NULL,
-  p_unassigned boolean DEFAULT false,
-  p_follow_up boolean DEFAULT false
-) RETURNS jsonb
-  LANGUAGE plpgsql STABLE SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-BEGIN
-  PERFORM common._talent_pool_require_access();
-  RETURN coalesce((
-    SELECT jsonb_object_agg(s.status, s.n)
-    FROM (
-      SELECT x.status, count(*) AS n
-      FROM common._talent_pool_filtered(p_search, p_source, p_owner, p_unassigned, p_follow_up) x
-      GROUP BY x.status
-    ) s
-  ), '{}'::jsonb);
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION common.talent_pool_get(p_id uuid) RETURNS jsonb
-  LANGUAGE plpgsql STABLE SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-DECLARE
-  v common.recruiting_prospects;
-BEGIN
-  PERFORM common._talent_pool_require_access();
-  SELECT * INTO v FROM common.recruiting_prospects WHERE id = p_id;
-  IF NOT FOUND THEN RETURN NULL; END IF;
-  RETURN common._talent_pool_prospect_json(v);
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION common.talent_pool_activity(
-  p_prospect_id uuid, p_limit integer DEFAULT 50, p_offset integer DEFAULT 0
-) RETURNS jsonb
-  LANGUAGE plpgsql STABLE SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-BEGIN
-  PERFORM common._talent_pool_require_access();
-  RETURN jsonb_build_object(
-    'total', (SELECT count(*) FROM common.recruiting_prospect_activity a WHERE a.prospect_id = p_prospect_id),
-    'rows', coalesce((
-      SELECT jsonb_agg(to_jsonb(s) - 'ord' ORDER BY s.ord)
-      FROM (
-        SELECT a.id, a.type, a.body, a.occurred_at, a.original_author,
-               (a.import_ref IS NOT NULL) AS imported,
-               a.created_by, a.created_at,
-               (SELECT coalesce(nullif(btrim(pr.full_name), ''), pr.email) FROM common.profiles pr WHERE pr.id = a.created_by) AS created_by_name,
-               row_number() OVER (ORDER BY a.created_at DESC, a.id DESC) AS ord
-        FROM common.recruiting_prospect_activity a
-        WHERE a.prospect_id = p_prospect_id
-        ORDER BY a.created_at DESC, a.id DESC
-        LIMIT least(greatest(coalesce(p_limit, 50), 1), 200)
-        OFFSET greatest(coalesce(p_offset, 0), 0)
-      ) s
-    ), '[]'::jsonb)
-  );
-END;
-$$;
-
--- ---------------------------------------------------------------------------
--- Writes
--- ---------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION common._talent_pool_log_system(
-  p_prospect_id uuid, p_type text, p_body text, p_actor uuid
-) RETURNS void
-  LANGUAGE plpgsql
-  SET search_path = ''
-  AS $$
-BEGIN
-  PERFORM set_config('talent_pool.system_event', 'on', true);
-  INSERT INTO common.recruiting_prospect_activity (prospect_id, type, body, created_by)
-  VALUES (p_prospect_id, p_type, p_body, p_actor);
-  PERFORM set_config('talent_pool.system_event', 'off', true);
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION common._talent_pool_check_status(p_status text) RETURNS void
-  LANGUAGE plpgsql IMMUTABLE
-  SET search_path = ''
-  AS $$
-BEGIN
-  IF p_status IS NULL OR p_status NOT IN ('new', 'contacted', 'interested', 'future_roles', 'not_interested') THEN
-    RAISE EXCEPTION 'Invalid status: %', coalesce(p_status, '(blank)') USING ERRCODE = '22023';
-  END IF;
-END;
-$$;
-
--- Creates with a client-chosen id so a retried request cannot duplicate.
-CREATE OR REPLACE FUNCTION common.talent_pool_create(p_id uuid, p jsonb) RETURNS jsonb
-  LANGUAGE plpgsql SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-DECLARE
-  v_actor uuid := common._talent_pool_require_access();
-  v common.recruiting_prospects;
-  v_status text := coalesce(nullif(p->>'status', ''), 'new');
-BEGIN
-  IF p_id IS NULL THEN
-    RAISE EXCEPTION 'Prospect id is required' USING ERRCODE = '22023';
-  END IF;
-  SELECT * INTO v FROM common.recruiting_prospects WHERE id = p_id;
-  IF FOUND THEN
-    IF v.created_by IS DISTINCT FROM v_actor THEN
-      RAISE EXCEPTION 'Prospect id already in use' USING ERRCODE = '23505';
-    END IF;
-    RETURN common._talent_pool_prospect_json(v);
-  END IF;
-
-  PERFORM common._talent_pool_check_status(v_status);
-
-  INSERT INTO common.recruiting_prospects (
-    id, first_name, last_name, email, phone, linkedin_url, job_title, current_org,
-    location, source, status, availability, needs_follow_up, owner_id, created_by
-  ) VALUES (
-    p_id, p->>'first_name', p->>'last_name', p->>'email', p->>'phone', p->>'linkedin_url',
-    p->>'job_title', p->>'current_org', p->>'location', coalesce(nullif(p->>'source', ''), 'other'),
-    v_status, p->>'availability', coalesce((p->>'needs_follow_up')::boolean, false),
-    nullif(p->>'owner_id', '')::uuid, v_actor
-  )
-  RETURNING * INTO v;
-
-  RETURN common._talent_pool_prospect_json(v);
-END;
-$$;
-
--- Partial update: only keys present in p change. p_expected_updated_at, when
--- given, rejects the save if someone else edited the prospect first.
-CREATE OR REPLACE FUNCTION common.talent_pool_update(
-  p_id uuid, p jsonb, p_expected_updated_at timestamptz DEFAULT NULL
-) RETURNS jsonb
-  LANGUAGE plpgsql SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-DECLARE
-  v_actor uuid := common._talent_pool_require_access();
-  v common.recruiting_prospects;
-  v_old_status text;
-  v_new_status text;
-BEGIN
-  SELECT * INTO v FROM common.recruiting_prospects WHERE id = p_id FOR UPDATE;
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Prospect not found' USING ERRCODE = 'P0002';
-  END IF;
-  IF v.status = 'promoted' THEN
-    RAISE EXCEPTION 'Promoted prospects are read-only' USING ERRCODE = 'P0001';
-  END IF;
-  IF p_expected_updated_at IS NOT NULL AND v.updated_at <> p_expected_updated_at THEN
-    RAISE EXCEPTION 'This prospect was changed by someone else. Reload and try again.' USING ERRCODE = '40001';
-  END IF;
-
-  v_old_status := v.status;
-  v_new_status := CASE WHEN p ? 'status' THEN p->>'status' ELSE v.status END;
-  PERFORM common._talent_pool_check_status(v_new_status);
-
-  UPDATE common.recruiting_prospects SET
-    first_name      = CASE WHEN p ? 'first_name' THEN p->>'first_name' ELSE first_name END,
-    last_name       = CASE WHEN p ? 'last_name' THEN p->>'last_name' ELSE last_name END,
-    email           = CASE WHEN p ? 'email' THEN p->>'email' ELSE email END,
-    phone           = CASE WHEN p ? 'phone' THEN p->>'phone' ELSE phone END,
-    linkedin_url    = CASE WHEN p ? 'linkedin_url' THEN p->>'linkedin_url' ELSE linkedin_url END,
-    job_title       = CASE WHEN p ? 'job_title' THEN p->>'job_title' ELSE job_title END,
-    current_org     = CASE WHEN p ? 'current_org' THEN p->>'current_org' ELSE current_org END,
-    location        = CASE WHEN p ? 'location' THEN p->>'location' ELSE location END,
-    source          = CASE WHEN p ? 'source' THEN coalesce(nullif(p->>'source', ''), 'other') ELSE source END,
-    availability    = CASE WHEN p ? 'availability' THEN p->>'availability' ELSE availability END,
-    needs_follow_up = CASE WHEN p ? 'needs_follow_up' THEN coalesce((p->>'needs_follow_up')::boolean, false) ELSE needs_follow_up END,
-    owner_id        = CASE WHEN p ? 'owner_id' THEN nullif(p->>'owner_id', '')::uuid ELSE owner_id END,
-    status          = v_new_status
-  WHERE id = p_id
-  RETURNING * INTO v;
-
-  IF v_new_status <> v_old_status THEN
-    PERFORM common._talent_pool_log_system(p_id, 'status_change', v_old_status || ' → ' || v_new_status, v_actor);
-  END IF;
-
-  RETURN common._talent_pool_prospect_json(v);
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION common.talent_pool_delete(p_id uuid) RETURNS void
-  LANGUAGE plpgsql SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-DECLARE
-  v_status text;
-BEGIN
-  PERFORM common._talent_pool_require_access();
-  SELECT status INTO v_status FROM common.recruiting_prospects WHERE id = p_id FOR UPDATE;
-  IF NOT FOUND THEN RETURN; END IF; -- already gone: repeat-safe
-  IF v_status = 'promoted' THEN
-    RAISE EXCEPTION 'Promoted prospects cannot be deleted' USING ERRCODE = 'P0001';
-  END IF;
-  DELETE FROM common.recruiting_prospects WHERE id = p_id;
-END;
-$$;
-
--- All-or-nothing: any missing or promoted id rejects the whole request.
-CREATE OR REPLACE FUNCTION common._talent_pool_lock_bulk(p_ids uuid[]) RETURNS integer
-  LANGUAGE plpgsql
-  SET search_path = ''
-  AS $$
-DECLARE
-  v_wanted integer := coalesce(array_length(ARRAY(SELECT DISTINCT unnest(p_ids)), 1), 0);
-  v_found integer;
-  v_promoted integer;
-BEGIN
-  IF v_wanted = 0 THEN
-    RAISE EXCEPTION 'Select at least one prospect' USING ERRCODE = '22023';
-  END IF;
-  IF v_wanted > 500 THEN
-    RAISE EXCEPTION 'Select 500 prospects or fewer' USING ERRCODE = '22023';
-  END IF;
-  PERFORM 1 FROM common.recruiting_prospects WHERE id = ANY (p_ids) ORDER BY id FOR UPDATE;
-  SELECT count(*), count(*) FILTER (WHERE status = 'promoted')
-    INTO v_found, v_promoted
-  FROM common.recruiting_prospects WHERE id = ANY (p_ids);
-  IF v_found <> v_wanted THEN
-    RAISE EXCEPTION '% of the selected prospects no longer exist. Reload and try again.', v_wanted - v_found USING ERRCODE = 'P0002';
-  END IF;
-  IF v_promoted > 0 THEN
-    RAISE EXCEPTION '% selected prospects are already in the pipeline and cannot be changed. Deselect them and try again.', v_promoted USING ERRCODE = 'P0001';
-  END IF;
-  RETURN v_wanted;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION common.talent_pool_bulk_status(p_ids uuid[], p_status text) RETURNS jsonb
-  LANGUAGE plpgsql SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-DECLARE
-  v_actor uuid := common._talent_pool_require_access();
-  v_count integer;
-  r record;
-BEGIN
-  PERFORM common._talent_pool_check_status(p_status);
-  PERFORM common._talent_pool_lock_bulk(p_ids);
-  v_count := 0;
-  FOR r IN
-    UPDATE common.recruiting_prospects p SET status = p_status
-    FROM (SELECT id, status AS old_status FROM common.recruiting_prospects WHERE id = ANY (p_ids)) o
-    WHERE p.id = o.id AND o.old_status <> p_status
-    RETURNING p.id, o.old_status
-  LOOP
-    PERFORM common._talent_pool_log_system(r.id, 'status_change', r.old_status || ' → ' || p_status, v_actor);
-    v_count := v_count + 1;
-  END LOOP;
-  RETURN jsonb_build_object('updated', v_count);
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION common.talent_pool_bulk_owner(p_ids uuid[], p_owner_id uuid) RETURNS jsonb
-  LANGUAGE plpgsql SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-DECLARE
-  v_count integer;
-BEGIN
-  PERFORM common._talent_pool_require_access();
-  PERFORM common._talent_pool_lock_bulk(p_ids);
-  UPDATE common.recruiting_prospects SET owner_id = p_owner_id
-  WHERE id = ANY (p_ids) AND owner_id IS DISTINCT FROM p_owner_id;
-  GET DIAGNOSTICS v_count = ROW_COUNT;
-  RETURN jsonb_build_object('updated', v_count);
-END;
-$$;
-
--- Notes and logged contacts. Retry-safe on p_id.
-CREATE OR REPLACE FUNCTION common.talent_pool_add_activity(
-  p_id uuid, p_prospect_id uuid, p_type text, p_body text, p_occurred_at timestamptz
-) RETURNS jsonb
-  LANGUAGE plpgsql SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-DECLARE
-  v_actor uuid := common._talent_pool_require_access();
-  v_status text;
-  v_existing common.recruiting_prospect_activity;
-BEGIN
-  IF p_id IS NULL THEN
-    RAISE EXCEPTION 'Activity id is required' USING ERRCODE = '22023';
-  END IF;
-  SELECT * INTO v_existing FROM common.recruiting_prospect_activity WHERE id = p_id;
-  IF FOUND THEN
-    IF v_existing.prospect_id <> p_prospect_id OR v_existing.created_by IS DISTINCT FROM v_actor THEN
-      RAISE EXCEPTION 'Activity id already in use' USING ERRCODE = '23505';
-    END IF;
-    RETURN to_jsonb(v_existing);
-  END IF;
-
-  IF p_type NOT IN ('note', 'call', 'text', 'email') THEN
-    RAISE EXCEPTION 'Invalid activity type' USING ERRCODE = '22023';
-  END IF;
-  IF p_type = 'note' AND nullif(btrim(p_body), '') IS NULL THEN
-    RAISE EXCEPTION 'A note needs some text' USING ERRCODE = '22023';
-  END IF;
-  IF p_type <> 'note' THEN
-    IF p_occurred_at IS NULL THEN
-      RAISE EXCEPTION 'When did this % happen?', p_type USING ERRCODE = '22023';
-    END IF;
-    IF p_occurred_at > now() + interval '1 day' THEN
-      RAISE EXCEPTION 'Contact time cannot be in the future' USING ERRCODE = '22023';
-    END IF;
-  END IF;
-
-  SELECT status INTO v_status FROM common.recruiting_prospects WHERE id = p_prospect_id FOR UPDATE;
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Prospect not found' USING ERRCODE = 'P0002';
-  END IF;
-  IF v_status = 'promoted' THEN
-    RAISE EXCEPTION 'Promoted prospects are read-only' USING ERRCODE = 'P0001';
-  END IF;
-
-  INSERT INTO common.recruiting_prospect_activity (id, prospect_id, type, body, occurred_at, created_by)
-  VALUES (p_id, p_prospect_id, p_type, nullif(btrim(p_body), ''),
-          CASE WHEN p_type = 'note' THEN NULL ELSE p_occurred_at END, v_actor)
-  RETURNING * INTO v_existing;
-
-  -- Only a dated call/text/email moves last contact, and never backward.
-  IF p_type <> 'note' THEN
-    UPDATE common.recruiting_prospects
-    SET last_contact_date = greatest(coalesce(last_contact_date, p_occurred_at), p_occurred_at)
-    WHERE id = p_prospect_id
-      AND (last_contact_date IS NULL OR last_contact_date < p_occurred_at);
-  END IF;
-
-  RETURN to_jsonb(v_existing);
-END;
-$$;
-
--- ---------------------------------------------------------------------------
--- Promotion
--- ---------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION common.talent_pool_candidate_matches(
-  p_email text, p_first_name text DEFAULT NULL, p_last_name text DEFAULT NULL
-) RETURNS jsonb
-  LANGUAGE plpgsql STABLE SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-BEGIN
-  PERFORM common._talent_pool_require_access();
-  IF NOT common.talent_pool_promotion_enabled() THEN
-    RAISE EXCEPTION 'Promotion is disabled until candidate records are access-protected' USING ERRCODE = '42501';
-  END IF;
-  RETURN coalesce((
-    SELECT jsonb_agg(jsonb_build_object(
-      'id', c.id, 'first_name', c.first_name, 'last_name', c.last_name, 'email', c.email,
-      'position_applied', c.position_applied, 'status', c.status, 'applied_date', c.applied_date,
-      'match', CASE WHEN lower(c.email) = lower(btrim(p_email)) THEN 'email' ELSE 'name' END
-    ) ORDER BY c.applied_date DESC NULLS LAST)
-    FROM common.candidates c
-    WHERE (nullif(btrim(p_email), '') IS NOT NULL AND lower(c.email) = lower(btrim(p_email)))
-       OR (nullif(btrim(p_first_name), '') IS NOT NULL AND nullif(btrim(p_last_name), '') IS NOT NULL
-           AND lower(c.first_name) = lower(btrim(p_first_name))
-           AND lower(c.last_name) = lower(btrim(p_last_name)))
-  ), '[]'::jsonb);
-END;
-$$;
-
--- Shared by the UI and the import. Not executable by any client role.
---
--- p keys: first_name, last_name, email, position_applied, source, phone,
---   location, requisition_id, summary, existing_candidate_id,
---   acknowledged_candidate_ids (uuid[] the reviewer already saw).
-CREATE OR REPLACE FUNCTION common._talent_pool_promote(
-  p_actor uuid, p_prospect_id uuid, p jsonb, p_initial_status text
-) RETURNS jsonb
-  LANGUAGE plpgsql
-  SET search_path = ''
-  AS $$
-DECLARE
-  v common.recruiting_prospects;
-  v_first text := btrim(coalesce(p->>'first_name', ''));
-  v_last text := btrim(coalesce(p->>'last_name', ''));
-  v_email text := lower(btrim(coalesce(p->>'email', '')));
-  v_position text := btrim(coalesce(p->>'position_applied', ''));
-  v_source text := btrim(coalesce(p->>'source', ''));
-  v_phone text;
-  v_location text;
-  v_summary text := nullif(btrim(coalesce(p->>'summary', '')), '');
-  v_req uuid := nullif(p->>'requisition_id', '')::uuid;
-  v_existing uuid := nullif(p->>'existing_candidate_id', '')::uuid;
-  v_ack uuid[] := ARRAY(SELECT jsonb_array_elements_text(coalesce(p->'acknowledged_candidate_ids', '[]'::jsonb))::uuid);
-  v_conflicts jsonb;
-  v_candidate uuid;
-BEGIN
-  IF NOT common.talent_pool_promotion_enabled() THEN
-    RAISE EXCEPTION 'Promotion is disabled until candidate records are access-protected' USING ERRCODE = '42501';
-  END IF;
-
-  SELECT * INTO v FROM common.recruiting_prospects WHERE id = p_prospect_id FOR UPDATE;
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Prospect not found' USING ERRCODE = 'P0002';
-  END IF;
-
-  -- Repeat calls, retries, and the loser of a race all land here.
-  IF v.status = 'promoted' THEN
-    RETURN jsonb_build_object('candidate_id', v.candidate_id, 'already_promoted', true);
-  END IF;
-
-  IF v_existing IS NOT NULL THEN
-    PERFORM 1 FROM common.candidates WHERE id = v_existing;
-    IF NOT FOUND THEN
-      RAISE EXCEPTION 'The selected application no longer exists' USING ERRCODE = 'P0002';
-    END IF;
-    v_candidate := v_existing; -- link only; never touch the application
-  ELSE
-    IF p_initial_status NOT IN ('screening', 'interview', 'offer', 'offer_sent', 'offer_accepted', 'hired') THEN
-      RAISE EXCEPTION 'Invalid initial candidate status' USING ERRCODE = '22023';
-    END IF;
-    IF v_first = '' OR v_last = '' OR v_email = '' OR v_position = '' OR v_source = '' THEN
-      RAISE EXCEPTION 'First name, last name, email, position, and source are all required' USING ERRCODE = '22023';
-    END IF;
-    IF v_email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' THEN
-      RAISE EXCEPTION 'Invalid email address' USING ERRCODE = '22023';
-    END IF;
-    IF char_length(v_first) > 100 OR char_length(v_last) > 100 THEN
-      RAISE EXCEPTION 'Names must be 100 characters or fewer' USING ERRCODE = '22001';
-    END IF;
-    IF char_length(v_email) > 255 OR char_length(v_position) > 255 THEN
-      RAISE EXCEPTION 'Email and position must be 255 characters or fewer' USING ERRCODE = '22001';
-    END IF;
-    IF char_length(v_source) > 100 THEN
-      RAISE EXCEPTION 'Source must be 100 characters or fewer' USING ERRCODE = '22001';
-    END IF;
-    IF v_req IS NOT NULL THEN
-      PERFORM 1 FROM common.job_requisitions r WHERE r.id = v_req AND r.status IN ('approved', 'posted');
-      IF NOT FOUND THEN
-        RAISE EXCEPTION 'The selected requisition is not open' USING ERRCODE = '22023';
-      END IF;
-    END IF;
-
-    -- Serialize promotions that share an email, then recheck for applications
-    -- the reviewer has not seen (including ones created seconds ago).
-    PERFORM pg_advisory_xact_lock(hashtextextended('talent_pool_promote:' || v_email, 0));
-    PERFORM pg_advisory_xact_lock(hashtextextended('talent_pool_promote_name:' || lower(v_first || ' ' || v_last), 0));
-    SELECT jsonb_agg(jsonb_build_object(
-      'id', c.id, 'first_name', c.first_name, 'last_name', c.last_name, 'email', c.email,
-      'position_applied', c.position_applied, 'status', c.status, 'applied_date', c.applied_date,
-      'match', CASE WHEN lower(c.email) = v_email THEN 'email' ELSE 'name' END))
-      INTO v_conflicts
-    FROM common.candidates c
-    WHERE (lower(c.email) = v_email
-           OR (lower(c.first_name) = lower(v_first) AND lower(c.last_name) = lower(v_last)))
-      AND NOT (c.id = ANY (v_ack));
-    IF v_conflicts IS NOT NULL THEN
-      RETURN jsonb_build_object('conflicts', v_conflicts);
-    END IF;
-
-    v_phone := CASE WHEN char_length(coalesce(nullif(btrim(p->>'phone'), ''), v.phone, '')) BETWEEN 1 AND 20
-                    THEN coalesce(nullif(btrim(p->>'phone'), ''), v.phone) END;
-    v_location := left(coalesce(nullif(btrim(p->>'location'), ''), v.location), 255);
-
-    INSERT INTO common.candidates (
-      first_name, last_name, email, phone, location, position_applied, requisition_id,
-      status, source, notes, applied_date, last_contact_date
-    ) VALUES (
-      v_first, v_last, v_email, v_phone, v_location, v_position, v_req,
-      p_initial_status, v_source,
-      concat_ws(E'\n\n', v_summary, 'Added from Talent Pool.'),
-      now(), v.last_contact_date
-    )
-    RETURNING id INTO v_candidate;
-  END IF;
-
-  PERFORM set_config('talent_pool.promoting', 'on', true);
-  UPDATE common.recruiting_prospects
-  SET status = 'promoted', candidate_id = v_candidate, promoted_at = now()
-  WHERE id = p_prospect_id;
-  PERFORM set_config('talent_pool.promoting', 'off', true);
-
-  PERFORM common._talent_pool_log_system(
-    p_prospect_id, 'promoted',
-    CASE WHEN v_existing IS NOT NULL THEN 'Linked to an existing application' ELSE 'Added to Candidate Tracking' END,
-    p_actor
-  );
-
-  RETURN jsonb_build_object('candidate_id', v_candidate, 'linked_existing', v_existing IS NOT NULL);
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION common.talent_pool_promote(p_prospect_id uuid, p jsonb) RETURNS jsonb
-  LANGUAGE plpgsql SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-DECLARE
-  v_actor uuid := common._talent_pool_require_access();
-BEGIN
-  RETURN common._talent_pool_promote(v_actor, p_prospect_id, p, 'screening');
-END;
-$$;
-
--- ---------------------------------------------------------------------------
--- One-time import (service_role only; scripts/talent-pool-import.ts)
--- ---------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION common.talent_pool_import_claim(
-  p_manifest_id uuid, p_run_id uuid, p_target text
-) RETURNS boolean
-  LANGUAGE plpgsql SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-BEGIN
-  INSERT INTO common.talent_pool_import_runs (manifest_id, run_id, target)
-  VALUES (p_manifest_id, p_run_id, p_target)
-  ON CONFLICT (manifest_id) DO UPDATE
-    SET run_id = EXCLUDED.run_id, target = EXCLUDED.target,
-        heartbeat_at = now(), started_at = now(), finished_at = NULL
-    WHERE common.talent_pool_import_runs.run_id = EXCLUDED.run_id
-       OR common.talent_pool_import_runs.finished_at IS NOT NULL
-       OR common.talent_pool_import_runs.heartbeat_at < now() - interval '10 minutes';
-  RETURN EXISTS (
-    SELECT 1 FROM common.talent_pool_import_runs WHERE manifest_id = p_manifest_id AND run_id = p_run_id
-  );
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION common.talent_pool_import_release(p_manifest_id uuid, p_run_id uuid) RETURNS void
-  LANGUAGE sql SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-  UPDATE common.talent_pool_import_runs SET finished_at = now(), heartbeat_at = now()
-  WHERE manifest_id = p_manifest_id AND run_id = p_run_id;
-$$;
-
--- Applies one reviewed manifest operation in a single transaction.
---
--- op: { op_id, kind: 'create' | 'merge', prospect_id, expected_updated_at,
---       fields: {...}, fill_fields: [..], overwrite_fields: [..],
---       import_refs: [..], activities: [{ id, type, body, original_author, import_ref }],
---       promote: { initial_status, first_name, last_name, email, position_applied,
---                  source, existing_candidate_id, acknowledged_candidate_ids } }
--- Returns { result: 'created' | 'merged' | 'unchanged' | 'blocked', reason?, candidate_id? }.
-CREATE OR REPLACE FUNCTION common.talent_pool_import_apply(
-  p_operator uuid, p_manifest_id uuid, p_run_id uuid, op jsonb
-) RETURNS jsonb
-  LANGUAGE plpgsql SECURITY DEFINER
-  SET search_path = ''
-  AS $$
-DECLARE
-  v common.recruiting_prospects;
-  v_id uuid := (op->>'prospect_id')::uuid;
-  v_fields jsonb := coalesce(op->'fields', '{}'::jsonb);
-  v_refs jsonb := coalesce(op->'import_refs', '[]'::jsonb);
-  v_result text;
-  v_promote jsonb;
-  v_col text;
-  v_set jsonb := '{}'::jsonb;
-  a jsonb;
-  v_allowed text[] := ARRAY['first_name', 'last_name', 'email', 'phone', 'linkedin_url', 'job_title',
-                            'current_org', 'location', 'source', 'status', 'availability', 'needs_follow_up'];
-BEGIN
-  PERFORM 1 FROM common.talent_pool_import_runs
-  WHERE manifest_id = p_manifest_id AND run_id = p_run_id AND finished_at IS NULL;
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Import run does not hold the manifest lock' USING ERRCODE = '55P03';
-  END IF;
-  UPDATE common.talent_pool_import_runs SET heartbeat_at = now() WHERE manifest_id = p_manifest_id;
-
-  PERFORM 1 FROM auth.users u WHERE u.id = p_operator;
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Import operator not found' USING ERRCODE = 'P0002';
-  END IF;
-  IF jsonb_typeof(v_refs) <> 'array' OR jsonb_array_length(v_refs) = 0 THEN
-    RAISE EXCEPTION 'Import operations must carry their source row references' USING ERRCODE = '22023';
-  END IF;
-
-  SELECT * INTO v FROM common.recruiting_prospects WHERE id = v_id FOR UPDATE;
-
-  IF op->>'kind' = 'create' THEN
-    IF FOUND THEN
-      IF v.import_refs @> v_refs THEN
-        v_result := 'unchanged';
-      ELSE
-        RETURN jsonb_build_object('result', 'blocked', 'reason', 'Planned prospect id is already used by a different record');
-      END IF;
-    ELSE
-      IF coalesce(v_fields->>'status', 'new') = 'promoted' THEN
-        RAISE EXCEPTION 'Import cannot set promoted directly' USING ERRCODE = '22023';
-      END IF;
-      PERFORM common._talent_pool_check_status(coalesce(v_fields->>'status', 'new'));
-      INSERT INTO common.recruiting_prospects (
-        id, first_name, last_name, email, phone, linkedin_url, job_title, current_org,
-        location, source, status, availability, needs_follow_up, import_refs, created_by
-      ) VALUES (
-        v_id, v_fields->>'first_name', v_fields->>'last_name', v_fields->>'email', v_fields->>'phone',
-        v_fields->>'linkedin_url', v_fields->>'job_title', v_fields->>'current_org', v_fields->>'location',
-        coalesce(nullif(v_fields->>'source', ''), 'other'), coalesce(v_fields->>'status', 'new'),
-        v_fields->>'availability', coalesce((v_fields->>'needs_follow_up')::boolean, false),
-        v_refs, p_operator
-      )
-      RETURNING * INTO v;
-      v_result := 'created';
-    END IF;
-
-  ELSIF op->>'kind' = 'merge' THEN
-    IF NOT FOUND THEN
-      RETURN jsonb_build_object('result', 'blocked', 'reason', 'Merge target no longer exists');
-    END IF;
-    IF v.import_refs @> v_refs THEN
-      v_result := 'unchanged';
-    ELSIF v.status = 'promoted' THEN
-      RETURN jsonb_build_object('result', 'blocked', 'reason', 'Merge target is already in the pipeline');
-    ELSIF op->>'expected_updated_at' IS NULL
-       OR v.updated_at <> (op->>'expected_updated_at')::timestamptz THEN
-      RETURN jsonb_build_object('result', 'blocked', 'reason', 'Merge target was edited after review');
-    ELSE
-      -- Fill blanks by default; overwrite only fields HR explicitly approved.
-      FOR v_col IN SELECT jsonb_array_elements_text(coalesce(op->'fill_fields', '[]'::jsonb)) LOOP
-        IF v_col = ANY (v_allowed) AND v_fields ? v_col AND (to_jsonb(v)->v_col) IN ('null'::jsonb, 'false'::jsonb) THEN
-          v_set := v_set || jsonb_build_object(v_col, v_fields->v_col);
-        END IF;
-      END LOOP;
-      FOR v_col IN SELECT jsonb_array_elements_text(coalesce(op->'overwrite_fields', '[]'::jsonb)) LOOP
-        IF v_col = ANY (v_allowed) AND v_fields ? v_col THEN
-          v_set := v_set || jsonb_build_object(v_col, v_fields->v_col);
-        END IF;
-      END LOOP;
-      IF v_set ? 'status' AND v_set->>'status' <> 'new' THEN
-        PERFORM common._talent_pool_check_status(v_set->>'status');
-      ELSIF v_set ? 'status' THEN
-        v_set := v_set - 'status'; -- never reset an existing status to new
-      END IF;
-
-      UPDATE common.recruiting_prospects SET
-        first_name      = CASE WHEN v_set ? 'first_name' THEN v_set->>'first_name' ELSE first_name END,
-        last_name       = CASE WHEN v_set ? 'last_name' THEN v_set->>'last_name' ELSE last_name END,
-        email           = CASE WHEN v_set ? 'email' THEN v_set->>'email' ELSE email END,
-        phone           = CASE WHEN v_set ? 'phone' THEN v_set->>'phone' ELSE phone END,
-        linkedin_url    = CASE WHEN v_set ? 'linkedin_url' THEN v_set->>'linkedin_url' ELSE linkedin_url END,
-        job_title       = CASE WHEN v_set ? 'job_title' THEN v_set->>'job_title' ELSE job_title END,
-        current_org     = CASE WHEN v_set ? 'current_org' THEN v_set->>'current_org' ELSE current_org END,
-        location        = CASE WHEN v_set ? 'location' THEN v_set->>'location' ELSE location END,
-        source          = CASE WHEN v_set ? 'source' THEN coalesce(nullif(v_set->>'source', ''), 'other') ELSE source END,
-        status          = CASE WHEN v_set ? 'status' THEN v_set->>'status' ELSE status END,
-        availability    = CASE WHEN v_set ? 'availability' THEN v_set->>'availability' ELSE availability END,
-        needs_follow_up = CASE WHEN v_set ? 'needs_follow_up' THEN (v_set->>'needs_follow_up')::boolean ELSE needs_follow_up END,
-        import_refs     = import_refs || v_refs
-      WHERE id = v_id
-      RETURNING * INTO v;
-      v_result := 'merged';
-    END IF;
-  ELSE
-    RAISE EXCEPTION 'Unknown import operation kind' USING ERRCODE = '22023';
-  END IF;
-
-  -- Stable ids make re-runs skip notes that already landed.
-  FOR a IN SELECT * FROM jsonb_array_elements(coalesce(op->'activities', '[]'::jsonb)) LOOP
-    IF a->>'type' <> 'note' THEN
-      RAISE EXCEPTION 'Import only creates notes' USING ERRCODE = '22023';
-    END IF;
-    IF v.status = 'promoted' THEN
-      EXIT;
-    END IF;
-    INSERT INTO common.recruiting_prospect_activity (id, prospect_id, type, body, occurred_at, original_author, import_ref, created_by)
-    VALUES ((a->>'id')::uuid, v_id, 'note', a->>'body', nullif(a->>'occurred_at', '')::timestamptz,
-            a->>'original_author', a->'import_ref', p_operator)
-    ON CONFLICT (id) DO NOTHING;
-  END LOOP;
-
-  v_promote := op->'promote';
-  IF v_promote IS NOT NULL AND jsonb_typeof(v_promote) = 'object' THEN
-    v_promote := common._talent_pool_promote(p_operator, v_id, v_promote, coalesce(v_promote->>'initial_status', 'screening'));
-    IF v_promote ? 'conflicts' THEN
-      RAISE EXCEPTION 'Unreviewed candidate matches for this prospect: %', v_promote->'conflicts' USING ERRCODE = 'P0001';
-    END IF;
-    RETURN jsonb_build_object('result', v_result, 'candidate_id', v_promote->'candidate_id');
-  END IF;
-
-  RETURN jsonb_build_object('result', v_result);
-END;
-$$;
-
--- ---------------------------------------------------------------------------
--- RLS and grants
--- ---------------------------------------------------------------------------
-ALTER TABLE common.talent_pool_members ENABLE ROW LEVEL SECURITY;
-ALTER TABLE common.recruiting_prospects ENABLE ROW LEVEL SECURITY;
-ALTER TABLE common.recruiting_prospect_activity ENABLE ROW LEVEL SECURITY;
-ALTER TABLE common.talent_pool_import_runs ENABLE ROW LEVEL SECURITY;
-
--- Defense-in-depth only: clients have no table privileges below.
-DROP POLICY IF EXISTS "Talent Pool members read prospects" ON common.recruiting_prospects;
-CREATE POLICY "Talent Pool members read prospects" ON common.recruiting_prospects
-  FOR SELECT TO authenticated USING (common.talent_pool_can_access());
-DROP POLICY IF EXISTS "Talent Pool members read activity" ON common.recruiting_prospect_activity;
-CREATE POLICY "Talent Pool members read activity" ON common.recruiting_prospect_activity
-  FOR SELECT TO authenticated USING (common.talent_pool_can_access());
-
-REVOKE ALL ON TABLE common.talent_pool_members FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON TABLE common.recruiting_prospects FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON TABLE common.recruiting_prospect_activity FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON TABLE common.talent_pool_import_runs FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON TABLE common.talent_pool_members FROM service_role;
-REVOKE ALL ON TABLE common.recruiting_prospects FROM service_role;
-REVOKE ALL ON TABLE common.recruiting_prospect_activity FROM service_role;
-REVOKE ALL ON TABLE common.talent_pool_import_runs FROM service_role;
--- The import dry run reads existing prospects to find matches.
-GRANT SELECT ON TABLE common.recruiting_prospects TO service_role;
-
-DO $$
-DECLARE
-  f text;
-BEGIN
-  -- Everything starts closed.
-  FOREACH f IN ARRAY ARRAY[
-    'common.talent_pool_normalize_linkedin(text)',
-    'common.recruiting_prospects_before_write()',
-    'common.recruiting_prospect_activity_before_write()',
-    'common.talent_pool_user_has_access(uuid)',
-    'common.talent_pool_can_access()',
-    'common.talent_pool_is_manager()',
-    'common._talent_pool_require_access()',
-    'common.talent_pool_promotion_enabled()',
-    'common.talent_pool_my_access()',
-    'common.talent_pool_members_list()',
-    'common.talent_pool_grant_access(text)',
-    'common.talent_pool_revoke_access(uuid)',
-    'common._talent_pool_filtered(text, text, uuid, boolean, boolean)',
-    'common._talent_pool_prospect_json(common.recruiting_prospects)',
-    'common.talent_pool_list(text, text, text, uuid, boolean, boolean, text, boolean, integer, integer)',
-    'common.talent_pool_counts(text, text, uuid, boolean, boolean)',
-    'common.talent_pool_get(uuid)',
-    'common.talent_pool_activity(uuid, integer, integer)',
-    'common._talent_pool_log_system(uuid, text, text, uuid)',
-    'common._talent_pool_check_status(text)',
-    'common.talent_pool_create(uuid, jsonb)',
-    'common.talent_pool_update(uuid, jsonb, timestamptz)',
-    'common.talent_pool_delete(uuid)',
-    'common._talent_pool_lock_bulk(uuid[])',
-    'common.talent_pool_bulk_status(uuid[], text)',
-    'common.talent_pool_bulk_owner(uuid[], uuid)',
-    'common.talent_pool_add_activity(uuid, uuid, text, text, timestamptz)',
-    'common.talent_pool_candidate_matches(text, text, text)',
-    'common._talent_pool_promote(uuid, uuid, jsonb, text)',
-    'common.talent_pool_promote(uuid, jsonb)',
-    'common.talent_pool_import_claim(uuid, uuid, text)',
-    'common.talent_pool_import_release(uuid, uuid)',
-    'common.talent_pool_import_apply(uuid, uuid, uuid, jsonb)'
-  ] LOOP
-    EXECUTE format('REVOKE ALL ON FUNCTION %s FROM PUBLIC, anon, authenticated, service_role', f);
-  END LOOP;
-
-  -- Browser-callable. Each re-checks membership itself.
-  FOREACH f IN ARRAY ARRAY[
-    'common.talent_pool_can_access()',
-    'common.talent_pool_my_access()',
-    'common.talent_pool_members_list()',
-    'common.talent_pool_grant_access(text)',
-    'common.talent_pool_revoke_access(uuid)',
-    'common.talent_pool_list(text, text, text, uuid, boolean, boolean, text, boolean, integer, integer)',
-    'common.talent_pool_counts(text, text, uuid, boolean, boolean)',
-    'common.talent_pool_get(uuid)',
-    'common.talent_pool_activity(uuid, integer, integer)',
-    'common.talent_pool_create(uuid, jsonb)',
-    'common.talent_pool_update(uuid, jsonb, timestamptz)',
-    'common.talent_pool_delete(uuid)',
-    'common.talent_pool_bulk_status(uuid[], text)',
-    'common.talent_pool_bulk_owner(uuid[], uuid)',
-    'common.talent_pool_add_activity(uuid, uuid, text, text, timestamptz)',
-    'common.talent_pool_candidate_matches(text, text, text)',
-    'common.talent_pool_promote(uuid, jsonb)'
-  ] LOOP
-    EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO authenticated', f);
-  END LOOP;
-
-  -- Import script only.
-  FOREACH f IN ARRAY ARRAY[
-    'common.talent_pool_promotion_enabled()',
-    'common.talent_pool_import_claim(uuid, uuid, text)',
-    'common.talent_pool_import_release(uuid, uuid)',
-    'common.talent_pool_import_apply(uuid, uuid, uuid, jsonb)'
-  ] LOOP
-    EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO service_role', f);
-  END LOOP;
-END;
-$$;
-
--- RLS policies call this as the querying role.
-GRANT EXECUTE ON FUNCTION common.talent_pool_can_access() TO authenticated;
-
--- Superusers start with access. Everyone else is added from the page.
-INSERT INTO common.talent_pool_members (user_id)
-SELECT u.id FROM auth.users u
-WHERE u.email_confirmed_at IS NOT NULL AND common.is_superuser_email(u.email)
-ON CONFLICT (user_id) DO NOTHING;
-
-
-
---
 -- PostgreSQL database dump complete
 --
 
-\unrestrict VyPmt0j28ugZc47yYuSVtwLRrwZIitBfxKGOb8P6MXJe6EygHcEpaF15zT8hPeL
+\unrestrict rGJaXOxrwg43QLoNCTMOSwuVcJskW7ZIdUzV66aAbmVt44DE0n9WnA97vUcusPd
 

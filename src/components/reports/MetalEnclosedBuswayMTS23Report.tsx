@@ -22,7 +22,11 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
-import { newReportId } from "./common/reportIdentity";
+import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 // Add dropdown option constants
 const INSPECTION_OPTIONS = [
@@ -376,7 +380,26 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
 
   useEffect(() => {
     setCurrentReportId(reportId);
+    if (reportId) reportIdRef.current = reportId;
   }, [reportId]);
+
+  // Which row this report writes to, decided before any request leaves the
+  // browser so two saves racing each other land on the same row. State alone
+  // is not enough here: auto-save can fire again before React has committed
+  // the id from the first save.
+  const reportIdRef = React.useRef<string | undefined>(
+    reportId || reportIdFromUrl(),
+  );
+  // The asset name the job list was last told; re-sent when the identifier
+  // changes, since auto-save creates the asset before anything is typed.
+  const linkedAssetNameRef = React.useRef<string | undefined>(
+    reportId ? "" : undefined,
+  );
+  const savingRef = React.useRef(false);
+  const saveAgainRef = React.useRef(false);
+  const loadFailedRef = React.useRef(false);
+  const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -521,6 +544,13 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
 
   // Started from an asset in the Assets tab: fill its identity and nameplate.
   useAssetFormPrefill(reportId, setFormData);
+
+  // Auto-save reads the form through a ref so an in-flight save never writes a
+  // stale copy back over what is being typed now.
+  const formDataRef = React.useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
 
   // Autofill the "User" header field with the signed-in employee's name (new reports only).
   useReportUserAutofill(setFormData, reportId, "user");
@@ -1114,9 +1144,11 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
           "MetalEnclosedBuswayMTS23Report - No data returned for id:",
           reportId,
         );
+        loadFailedRef.current = true;
       }
     } catch (error) {
       console.error("Error loading report:", error);
+      loadFailedRef.current = true;
       alert("Error loading report. Please try again.");
     } finally {
       setLoading(false);
@@ -1124,6 +1156,260 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
   };
 
   // Save report
+  /**
+   * Writes the report and returns its id. The Save button, Submit for Review
+   * and auto-save all go through here and all write to one row.
+   */
+  const persistReport = React.useCallback(async (): Promise<string> => {
+    if (!jobId || !user?.id) {
+      throw new Error("Missing required job ID or user ID");
+    }
+    if (loadFailedRef.current) {
+      throw new Error(
+        "This report could not be loaded, so it was not saved. Reload the page and try again.",
+      );
+    }
+    const formData = formDataRef.current;
+
+    const reportData: ReportData = {
+      job_id: jobId,
+      user_id: user.id,
+      report_info: {
+        customer: maskCustomerName(formData.customer),
+        address: maskCustomerAddress(formData.address),
+        user: formData.user,
+        date: formData.date,
+        identifier: formData.identifier,
+        jobNumber: formData.jobNumber,
+        technicians: formData.technicians,
+        substation: formData.substation,
+        equipment: formData.equipment,
+
+        temperature: formData.temperature,
+        fahrenheit: formData.fahrenheit,
+        tcf: formData.tcf,
+        humidity: formData.humidity,
+
+        manufacturer: formData.manufacturer,
+        catalogNumber: formData.catalogNumber,
+        serialNumber: formData.serialNumber,
+        fedFrom: formData.fedFrom,
+        conductorMaterial: formData.conductorMaterial,
+        ratedVoltage: formData.ratedVoltage,
+        operatingVoltage: formData.operatingVoltage,
+        ampacity: formData.ampacity,
+
+        netaResults: formData.netaResults,
+        busResistance: formData.busResistance,
+
+        testVoltage1: formData.testVoltage1,
+        insulationResistance: formData.insulationResistance,
+
+        insulationResistanceUnit: formData.insulationResistanceUnit,
+        buswayLength: formData.buswayLength,
+        insulationOverallResult: formData.insulationOverallResult,
+        dielectricTestVoltage: formData.dielectricTestVoltage,
+        dielectricTestDuration: formData.dielectricTestDuration,
+        dielectricResult: formData.dielectricResult,
+        contactResistanceUnit: formData.contactResistanceUnit,
+
+        megohmmeter: formData.megohmmeter,
+        megohmSerial: formData.megohmSerial,
+        megAmpId: formData.megAmpId,
+        megCalDate: formData.megCalDate,
+        lowResistanceOhmmeter: formData.lowResistanceOhmmeter,
+        lowResistanceSerial: formData.lowResistanceSerial,
+        lowResistanceAmpId: formData.lowResistanceAmpId,
+        lowResistanceCalDate: formData.lowResistanceCalDate,
+
+        status: formData.status,
+      },
+      comments: formData.comments,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Also populate dedicated JSONB columns for robust loads
+    const visualArray = Object.entries(formData.netaResults || {}).map(
+      ([id, result]) => ({ id, result }),
+    );
+    const insRes = {
+      testVoltage: formData.testVoltage1 || "",
+      units: formData.insulationResistanceUnit || "MΩ",
+      temperature: formData.temperature || "",
+      tcf: formData.tcf,
+      readings: {
+        aToB: formData.insulationResistance.aToB || "",
+        bToC: formData.insulationResistance.bToC || "",
+        cToA: formData.insulationResistance.cToA || "",
+        aToN: formData.insulationResistance.aToN || "",
+        bToN: formData.insulationResistance.bToN || "",
+        cToN: formData.insulationResistance.cToN || "",
+        aToG: formData.insulationResistance.aToG || "",
+        bToG: formData.insulationResistance.bToG || "",
+        cToG: formData.insulationResistance.cToG || "",
+        nToG: formData.insulationResistance.nToG || "",
+      },
+      correctedReadings: {
+        aToB: formData.correctedInsulationResistance.aToB || "",
+        bToC: formData.correctedInsulationResistance.bToC || "",
+        cToA: formData.correctedInsulationResistance.cToA || "",
+        aToN: formData.correctedInsulationResistance.aToN || "",
+        bToN: formData.correctedInsulationResistance.bToN || "",
+        cToN: formData.correctedInsulationResistance.cToN || "",
+        aToG: formData.correctedInsulationResistance.aToG || "",
+        bToG: formData.correctedInsulationResistance.bToG || "",
+        cToG: formData.correctedInsulationResistance.cToG || "",
+        nToG: formData.correctedInsulationResistance.nToG || "",
+      },
+    };
+    const testEquipment = {
+      megohmmeter: {
+        name: formData.megohmmeter || "",
+        serialNumber: formData.megohmSerial || "",
+        ampId: formData.megAmpId || "",
+        calDate: formData.megCalDate || "",
+      },
+      lowResistanceOhmmeter: {
+        name: formData.lowResistanceOhmmeter || "",
+        serialNumber: formData.lowResistanceSerial || "",
+        ampId: formData.lowResistanceAmpId || "",
+        calDate: formData.lowResistanceCalDate || "",
+      },
+    };
+
+    const upsertPayload: any = {
+      report_data: {
+        report_info: reportData.report_info,
+        comments: reportData.comments,
+        status: reportData.report_info.status,
+        visual_mechanical_inspection: visualArray,
+        insulation_resistance: insRes,
+        test_equipment: testEquipment,
+      },
+    };
+
+    // One id for the whole save, claimed synchronously so nothing else can
+    // now decide to create a row.
+    const isNewReport = !reportIdRef.current;
+    if (isNewReport) reportIdRef.current = newReportId();
+    const saveId = reportIdRef.current as string;
+
+    let result;
+    if (!isNewReport) {
+      // Update existing report. This stays a plain update: an upsert is an
+      // INSERT ... ON CONFLICT, and Postgres checks the proposed insert row
+      // first, so it would demand user_id -- which would mean overwriting the
+      // original author on every edit.
+      result = await supabase
+        .schema("neta_ops")
+        .from("metal_enclosed_busway_mts23_reports")
+        .update(upsertPayload)
+        .eq("id", saveId)
+        .select()
+        .single();
+    } else {
+      // New report: claim the id before the request goes out and upsert on
+      // it, so a save that runs twice overwrites the same row.
+      reportData.created_at = new Date().toISOString();
+      result = await supabase
+        .schema("neta_ops")
+        .from("metal_enclosed_busway_mts23_reports")
+        .upsert(
+          {
+            id: saveId,
+            job_id: jobId,
+            user_id: user.id,
+            ...upsertPayload,
+            created_at: reportData.created_at,
+            updated_at: reportData.updated_at,
+          },
+          { onConflict: "id" },
+        )
+        .select()
+        .single();
+    }
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    const savedId = (result.data?.id as string | undefined) || saveId;
+
+    const assetName = getAssetName(
+      reportSlug,
+      formData.identifier || formData.equipment || "",
+    );
+    if (linkedAssetNameRef.current !== assetName) {
+      await ensureReportAssetLink(
+        jobId,
+        {
+          name: assetName,
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${savedId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+      linkedAssetNameRef.current = assetName;
+    }
+
+    if (isNewReport) {
+      setCurrentReportId(savedId);
+      window.history.replaceState(
+        {},
+        "",
+        `/jobs/${jobId}/${reportSlug}/${savedId}`,
+      );
+    }
+    return savedId;
+  }, [jobId, user?.id, maskCustomerName, maskCustomerAddress, reportSlug]);
+
+  const autoSave = React.useCallback(async () => {
+    if (!jobId || !user?.id) return;
+
+    // One save at a time. Anything typed while this one is in flight is picked
+    // up by the follow-up pass below, which reads the form fresh.
+    if (savingRef.current) {
+      saveAgainRef.current = true;
+      return;
+    }
+    savingRef.current = true;
+
+    try {
+      setIsAutoSaving(true);
+      do {
+        saveAgainRef.current = false;
+        await persistReport();
+      } while (saveAgainRef.current);
+      reportSaveSucceeded();
+    } catch (error) {
+      console.error("Auto-save error:", error);
+      reportSaveFailed(error);
+    } finally {
+      savingRef.current = false;
+      saveAgainRef.current = false;
+      setIsAutoSaving(false);
+    }
+  }, [jobId, user?.id, persistReport]);
+
+  // Auto-save effect with debounce
+  useEffect(() => {
+    if (!isEditing || loading || locked) return;
+
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    autoSaveTimerRef.current = setTimeout(() => {
+      autoSave();
+    }, 500); // 500ms debounce
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, [formData, isEditing, loading, locked, autoSave]);
+
   const handleSave = async (options?: {
     closeAfterSave?: boolean;
     skipAlertAndNavigation?: boolean;
@@ -1136,199 +1422,21 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
 
     try {
       setIsSaving(true);
-
-      const reportData: ReportData = {
-        job_id: jobId,
-        user_id: user.id,
-        report_info: {
-          customer: maskCustomerName(formData.customer),
-          address: maskCustomerAddress(formData.address),
-          user: formData.user,
-          date: formData.date,
-          identifier: formData.identifier,
-          jobNumber: formData.jobNumber,
-          technicians: formData.technicians,
-          substation: formData.substation,
-          equipment: formData.equipment,
-
-          temperature: formData.temperature,
-          fahrenheit: formData.fahrenheit,
-          tcf: formData.tcf,
-          humidity: formData.humidity,
-
-          manufacturer: formData.manufacturer,
-          catalogNumber: formData.catalogNumber,
-          serialNumber: formData.serialNumber,
-          fedFrom: formData.fedFrom,
-          conductorMaterial: formData.conductorMaterial,
-          ratedVoltage: formData.ratedVoltage,
-          operatingVoltage: formData.operatingVoltage,
-          ampacity: formData.ampacity,
-
-          netaResults: formData.netaResults,
-          busResistance: formData.busResistance,
-
-          testVoltage1: formData.testVoltage1,
-          insulationResistance: formData.insulationResistance,
-
-          insulationResistanceUnit: formData.insulationResistanceUnit,
-          buswayLength: formData.buswayLength,
-          insulationOverallResult: formData.insulationOverallResult,
-          dielectricTestVoltage: formData.dielectricTestVoltage,
-          dielectricTestDuration: formData.dielectricTestDuration,
-          dielectricResult: formData.dielectricResult,
-          contactResistanceUnit: formData.contactResistanceUnit,
-
-          megohmmeter: formData.megohmmeter,
-          megohmSerial: formData.megohmSerial,
-          megAmpId: formData.megAmpId,
-          megCalDate: formData.megCalDate,
-          lowResistanceOhmmeter: formData.lowResistanceOhmmeter,
-          lowResistanceSerial: formData.lowResistanceSerial,
-          lowResistanceAmpId: formData.lowResistanceAmpId,
-          lowResistanceCalDate: formData.lowResistanceCalDate,
-
-          status: formData.status,
-        },
-        comments: formData.comments,
-        updated_at: new Date().toISOString(),
-      };
-
-      // Also populate dedicated JSONB columns for robust loads
-      const visualArray = Object.entries(formData.netaResults || {}).map(
-        ([id, result]) => ({ id, result }),
-      );
-      const insRes = {
-        testVoltage: formData.testVoltage1 || "",
-        units: formData.insulationResistanceUnit || "MΩ",
-        temperature: formData.temperature || "",
-        tcf: formData.tcf,
-        readings: {
-          aToB: formData.insulationResistance.aToB || "",
-          bToC: formData.insulationResistance.bToC || "",
-          cToA: formData.insulationResistance.cToA || "",
-          aToN: formData.insulationResistance.aToN || "",
-          bToN: formData.insulationResistance.bToN || "",
-          cToN: formData.insulationResistance.cToN || "",
-          aToG: formData.insulationResistance.aToG || "",
-          bToG: formData.insulationResistance.bToG || "",
-          cToG: formData.insulationResistance.cToG || "",
-          nToG: formData.insulationResistance.nToG || "",
-        },
-        correctedReadings: {
-          aToB: formData.correctedInsulationResistance.aToB || "",
-          bToC: formData.correctedInsulationResistance.bToC || "",
-          cToA: formData.correctedInsulationResistance.cToA || "",
-          aToN: formData.correctedInsulationResistance.aToN || "",
-          bToN: formData.correctedInsulationResistance.bToN || "",
-          cToN: formData.correctedInsulationResistance.cToN || "",
-          aToG: formData.correctedInsulationResistance.aToG || "",
-          bToG: formData.correctedInsulationResistance.bToG || "",
-          cToG: formData.correctedInsulationResistance.cToG || "",
-          nToG: formData.correctedInsulationResistance.nToG || "",
-        },
-      };
-      const testEquipment = {
-        megohmmeter: {
-          name: formData.megohmmeter || "",
-          serialNumber: formData.megohmSerial || "",
-          ampId: formData.megAmpId || "",
-          calDate: formData.megCalDate || "",
-        },
-        lowResistanceOhmmeter: {
-          name: formData.lowResistanceOhmmeter || "",
-          serialNumber: formData.lowResistanceSerial || "",
-          ampId: formData.lowResistanceAmpId || "",
-          calDate: formData.lowResistanceCalDate || "",
-        },
-      };
-
-      const upsertPayload: any = {
-        report_data: {
-          report_info: reportData.report_info,
-          comments: reportData.comments,
-          status: reportData.report_info.status,
-          visual_mechanical_inspection: visualArray,
-          insulation_resistance: insRes,
-          test_equipment: testEquipment,
-        },
-      };
-
-      // One id for the whole save. Saving with skipAlertAndNavigation used to
-      // write the id nowhere -- no URL, no state -- so the next save inserted a
-      // second report; keying on currentReportId closes that.
-      const isNewReport = !reportId && !currentReportId;
-      const saveId = reportId || currentReportId || newReportId();
-
-      let result;
-      if (!isNewReport) {
-        // Update existing report. This stays a plain update: an upsert is an
-        // INSERT ... ON CONFLICT, and Postgres checks the proposed insert row
-        // first, so it would demand user_id -- which would mean overwriting the
-        // original author on every edit.
-        result = await supabase
-          .schema("neta_ops")
-          .from("metal_enclosed_busway_mts23_reports")
-          .update(upsertPayload)
-          .eq("id", saveId)
-          .select()
-          .single();
-      } else {
-        // New report: claim the id before the request goes out and upsert on
-        // it, so a save that runs twice overwrites the same row.
-        reportData.created_at = new Date().toISOString();
-        result = await supabase
-          .schema("neta_ops")
-          .from("metal_enclosed_busway_mts23_reports")
-          .upsert(
-            {
-              id: saveId,
-              job_id: jobId,
-              user_id: user.id,
-              ...upsertPayload,
-              created_at: reportData.created_at,
-              updated_at: reportData.updated_at,
-            },
-            { onConflict: "id" },
-          )
-          .select()
-          .single();
-      }
-
-      if (result.error) {
-        throw result.error;
-      }
-
+      const wasExistingReport = Boolean(reportIdRef.current);
+      const savedId = await persistReport();
+      reportSaveSucceeded();
       setJustSaved(true);
-      const savedId = result.data?.id || saveId;
-
-      // If this was a new report, create and link an asset
-      if (isNewReport && result.data) {
-        // Create asset entry
-        const assetData = {
-          name: getAssetName(
-            reportSlug,
-            formData.identifier || formData.equipment || "",
-          ),
-          file_url: `report:/jobs/${jobId}/metal-enclosed-busway-mts23/${savedId}`,
-          user_id: user.id,
-        };
-
-        await ensureReportAssetLink(jobId, assetData, user.id);
-      }
-
-      // Remember the id on every path, including the ones that do not navigate.
-      setCurrentReportId(savedId);
 
       if (options?.closeAfterSave) {
         setIsEditing(false);
       }
-      if (!options?.skipAlertAndNavigation && !reportId) {
+      if (!options?.skipAlertAndNavigation && !wasExistingReport) {
         navigate(`/jobs/${jobId}/${reportSlug}/${savedId}`, { replace: true });
       }
-      return savedId || null;
+      return savedId;
     } catch (error) {
       console.error("Error saving report:", error);
+      reportSaveFailed(error);
       alert("Error saving report. Please try again.");
       setIsEditing(true); // Re-enable editing if save failed
       return null;
@@ -1397,7 +1505,7 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
   const renderHeader = () => (
     <ReportHeader
       title={reportName}
-      isAutoSaving={false}
+      isAutoSaving={isAutoSaving}
       isEditing={isEditing}
       justSaved={justSaved}
       isSaving={isSaving}

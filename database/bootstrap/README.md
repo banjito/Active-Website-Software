@@ -1,7 +1,7 @@
 # Database bootstrap — build an empty ampOS database from scratch
 
 Builds a brand-new Supabase project into a working, empty ampOS database.
-Exported from the AMP production instance on 2026-07-14 (246 tables, 521
+Exported from the AMP production instance on 2026-09-21 (283 tables, 591
 security policies, 13 storage buckets). **Never run this against an existing
 instance** — it is for fresh, empty projects only.
 

@@ -49,6 +49,12 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { ensureReportAssetLink } from "./linkReportAsset";
+import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 // Types
 const TestStatus = {
@@ -406,6 +412,18 @@ const MediumVoltageCableVLFTanDeltaMTS23Report = () => {
   const [justSaved, setJustSaved] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false); // Default to view mode
   const [error, setError] = useState(null);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+
+  // Which row this report writes to, decided before any request leaves the
+  // browser so two saves racing each other land on the same row.
+  const reportIdRef = useRef(reportIdFromUrl());
+  // The asset name the job list was last told; re-sent when the identifier
+  // changes, since auto-save creates the asset before anything is typed.
+  const linkedAssetNameRef = useRef(reportIdFromUrl() ? "" : undefined);
+  const savingRef = useRef(false);
+  const saveAgainRef = useRef(false);
+  const loadFailedRef = useRef(false);
+  const autoSaveTimerRef = useRef(null);
   // Always-visible kVAC options for MTS route (keep input editable)
   const [openKvacIndex, setOpenKvacIndex] = useState(null);
   const mtsKVACOptions = [
@@ -447,6 +465,7 @@ const MediumVoltageCableVLFTanDeltaMTS23Report = () => {
 
     setJobId(extractedJobId);
     setReportId(extractedReportId);
+    if (extractedReportId) reportIdRef.current = extractedReportId;
     setIsEditMode(!extractedReportId); // Set edit mode if no report ID is found
   }, [location.pathname]);
 
@@ -1287,217 +1306,164 @@ const MediumVoltageCableVLFTanDeltaMTS23Report = () => {
   };
 
   // Save report
-  const handleSave = async () => {
-    if (isSaving) return;
+  // Auto-save reads the form through a ref so an in-flight save never writes a
+  // stale copy back over what is being typed now.
+  const formDataRef = useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
 
-    console.log("Starting save operation");
-    setIsSaving(true);
-    const wasExistingReport = Boolean(reportId);
+  /**
+   * Writes the report and returns its id. The Save button and auto-save both
+   * go through here and both write to one row: the id is claimed up front and
+   * kept in `reportIdRef`, so a save that starts while another is in flight
+   * updates that row rather than inserting another copy.
+   */
+  const persistReport = React.useCallback(async () => {
+    const effectiveJobId = jobId || formDataRef.current.jobNumber;
+    if (!effectiveJobId) throw new Error("Job ID is required");
+    if (!user || !user.id) throw new Error("User is not logged in");
+    if (loadFailedRef.current) {
+      throw new Error(
+        "This report could not be loaded, so it was not saved. Reload the page and try again.",
+      );
+    }
+
+    const formData = formDataRef.current;
+    const isNewReport = !reportIdRef.current;
+    if (isNewReport) {
+      // Claimed synchronously: nothing else can now decide to create a row.
+      reportIdRef.current = newReportId();
+    }
+    const rowId = reportIdRef.current;
+
+    if (isNewReport) {
+      const { error } = await supabase
+        .schema("neta_ops")
+        .from("medium_voltage_cable_vlf_tan_delta_mts23_reports")
+        .upsert(
+          {
+            id: rowId,
+            job_id: effectiveJobId,
+            user_id: user.id,
+            report_data: formData,
+            created_at: new Date().toISOString(),
+          },
+          { onConflict: "id" },
+        );
+      if (error) throw error;
+    } else {
+      // A plain update keeps the original author on the row.
+      const { error } = await supabase
+        .schema("neta_ops")
+        .from("medium_voltage_cable_vlf_tan_delta_mts23_reports")
+        .update({
+          report_data: formData,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", rowId);
+      if (error) throw error;
+    }
+
+    const assetName = getAssetName(
+      reportSlug,
+      formData.identifier || formData.location || "",
+    );
+    if (linkedAssetNameRef.current !== assetName) {
+      await ensureReportAssetLink(
+        effectiveJobId,
+        {
+          name: assetName,
+          file_url: `report:/jobs/${effectiveJobId}/${reportSlug}/${rowId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+      linkedAssetNameRef.current = assetName;
+    }
+
+    if (isNewReport) {
+      setReportId(rowId);
+      window.history.replaceState(
+        {},
+        "",
+        `/jobs/${effectiveJobId}/${reportSlug}/${rowId}`,
+      );
+    }
+
+    return rowId;
+  }, [jobId, user?.id, reportSlug]);
+
+  const autoSave = React.useCallback(async () => {
+    if (!user?.id) return;
+
+    // One save at a time. Anything typed while this one is in flight is picked
+    // up by the follow-up pass below, which reads the form fresh.
+    if (savingRef.current) {
+      saveAgainRef.current = true;
+      return;
+    }
+    savingRef.current = true;
 
     try {
-      // Validate basic requirements
-      const effectiveJobId = jobId || formData.jobNumber;
-      if (!effectiveJobId) {
-        toast.error("Job ID is required");
-        setIsSaving(false);
-        return;
+      setIsAutoSaving(true);
+      do {
+        saveAgainRef.current = false;
+        await persistReport();
+      } while (saveAgainRef.current);
+      reportSaveSucceeded();
+    } catch (error) {
+      console.error("Auto-save error:", error);
+      reportSaveFailed(error);
+    } finally {
+      savingRef.current = false;
+      saveAgainRef.current = false;
+      setIsAutoSaving(false);
+    }
+  }, [user?.id, persistReport]);
+
+  // Auto-save effect with debounce
+  useEffect(() => {
+    if (!isEditMode || loading || !jobId) return;
+
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    autoSaveTimerRef.current = setTimeout(() => {
+      autoSave();
+    }, 500); // 500ms debounce
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
       }
+    };
+  }, [formData, isEditMode, loading, jobId, autoSave]);
 
-      if (!user || !user.id) {
-        toast.error("User is not logged in");
-        setIsSaving(false);
-        return;
-      }
+  const handleSave = async () => {
+    if (isSaving) return;
+    if (!isEditMode) {
+      toast.error("Edit mode is not active");
+      return;
+    }
+    setIsSaving(true);
+    const wasExistingReport = Boolean(reportIdRef.current);
 
-      if (!isEditMode) {
-        toast.error("Edit mode is not active");
-        setIsSaving(false);
-        return;
-      }
-
-      console.log("Saving with jobId:", effectiveJobId);
-      console.log("Saving with user.id:", user.id);
-      console.log("Form data to save:", formData);
-      console.log("Equipment data to save:", formData.equipment);
-
-      let result;
-      if (reportId) {
-        console.log(`Updating existing report with ID: ${reportId}`);
-        try {
-          const { data, error } = await supabase
-            .schema("neta_ops")
-            .from("medium_voltage_cable_vlf_tan_delta_mts23_reports")
-            .update({
-              report_data: formData,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", reportId);
-
-          result = { data, error };
-          console.log("Update result:", result);
-
-          if (error) {
-            console.error("Error updating report:", error);
-            console.error("Update error details:", JSON.stringify(error));
-            throw error;
-          }
-          console.log("Report updated successfully:", data);
-        } catch (updateError) {
-          console.error("Exception during update:", updateError);
-          throw updateError;
-        }
-      } else {
-        console.log("Creating new report");
-        try {
-          const { data, error } = await supabase
-            .schema("neta_ops")
-            .from("medium_voltage_cable_vlf_tan_delta_mts23_reports")
-            .insert({
-              job_id: effectiveJobId,
-              user_id: user.id,
-              report_data: formData,
-              created_at: new Date().toISOString(),
-            })
-            .select("id");
-
-          result = { data, error };
-          console.log("Creation result:", result);
-
-          if (error) {
-            console.error("Error creating report:", error);
-            console.error("Creation error details:", JSON.stringify(error));
-            throw error;
-          }
-          console.log("Report created successfully:", data);
-
-          // Only proceed with asset creation if we have result.data with a report ID
-          if (result.data && result.data[0]) {
-            console.log("Creating asset for the report:", result.data[0].id);
-
-            // Create the asset with correct structure
-            const assetData = {
-              name: getAssetName(
-                reportSlug,
-                formData.identifier || formData.location || "",
-              ),
-              file_url: `report:/jobs/${effectiveJobId}/${reportSlug}/${result.data[0].id}`,
-              user_id: user.id,
-            };
-
-            console.log("Asset data to create:", assetData);
-
-            const { data: assetResult, error: assetError } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .insert(assetData)
-              .select("id")
-              .single();
-
-            if (assetError) {
-              console.error("Error creating asset:", assetError);
-              console.error("Asset error details:", JSON.stringify(assetError));
-              if (assetError.message.includes("permission denied")) {
-                toast.error(
-                  "You do not have permission to create assets. Please contact your administrator.",
-                );
-                // We still saved the report, so consider it partial success
-                setIsEditMode(false);
-                toast.success(
-                  `Report saved successfully, but could not create an asset due to permissions.`,
-                );
-                const newId = result?.data?.[0]?.id;
-                if (newId) {
-                  setReportId(newId);
-                  navigate(`/jobs/${effectiveJobId}/${reportSlug}/${newId}`, {
-                    replace: true,
-                  });
-                }
-                return;
-              }
-              throw assetError;
-            }
-
-            console.log("Asset creation result:", assetResult);
-            console.log("Linking asset to job...");
-            // Link asset to job
-            const { data: linkResult, error: linkError } = await supabase
-              .schema("neta_ops")
-              .from("job_assets")
-              .insert({
-                job_id: effectiveJobId,
-                asset_id: assetResult.id,
-                user_id: user.id,
-              });
-
-            console.log("Job asset link response:", {
-              data: linkResult,
-              error: linkError,
-            });
-
-            if (linkError) {
-              console.error("Error linking asset to job:", linkError);
-              console.error("Link error details:", JSON.stringify(linkError));
-              if (linkError.message.includes("permission denied")) {
-                toast.error(
-                  "You do not have permission to link assets to jobs. Please contact your administrator.",
-                );
-                // We still saved the report and created the asset, so consider it partial success
-                setIsEditMode(false);
-                toast.success(
-                  `Report and asset saved, but could not link asset to job due to permissions.`,
-                );
-                const newId = result?.data?.[0]?.id;
-                if (newId) {
-                  setReportId(newId);
-                  navigate(`/jobs/${effectiveJobId}/${reportSlug}/${newId}`, {
-                    replace: true,
-                  });
-                }
-                return;
-              }
-              throw linkError;
-            }
-            console.log("Asset linked to job successfully");
-          }
-        } catch (createError) {
-          console.error("Exception during create:", createError);
-          throw createError;
-        }
-      }
-
-      // Fix the handleSave function to properly handle errors and results
-      if (result && result.error) {
-        console.error("Error in main report operation:", result.error);
-        console.error("Full error details:", JSON.stringify(result.error));
-        if (
-          result.error.message &&
-          result.error.message.includes("permission denied")
-        ) {
-          toast.error(
-            "You do not have permission to save this report. Please contact your administrator.",
-          );
-          return;
-        }
-        throw result.error;
-      }
-
-      // Add additional debugging for successful save
-      console.log("Save operation completed successfully:", result?.data);
-
+    try {
+      const savedId = await persistReport();
+      reportSaveSucceeded();
+      setJustSaved(true);
       if (!wasExistingReport) {
         setIsEditMode(false);
-        const newId = result?.data?.[0]?.id;
-        if (newId) {
-          setReportId(newId);
-          navigate(`/jobs/${effectiveJobId}/${reportSlug}/${newId}`, {
-            replace: true,
-          });
-        }
-      } else {
-        setJustSaved(true);
+        const effectiveJobId = jobId || formDataRef.current.jobNumber;
+        navigate(`/jobs/${effectiveJobId}/${reportSlug}/${savedId}`, {
+          replace: true,
+        });
       }
     } catch (error) {
       console.error("Error saving report:", error);
+      reportSaveFailed(error);
       if (error.message && error.message.includes("permission denied")) {
         toast.error(
           `Permission denied: You don't have the required access rights. Please contact your administrator.`,
@@ -1514,7 +1480,7 @@ const MediumVoltageCableVLFTanDeltaMTS23Report = () => {
 
   const handleSaveAndClose = async () => {
     await handleSave();
-    if (reportId) {
+    if (reportIdRef.current) {
       setIsEditMode(false);
     }
   };
@@ -1961,8 +1927,9 @@ const MediumVoltageCableVLFTanDeltaMTS23Report = () => {
       }
     } catch (error) {
       console.error("loadReport: CATCH block - Error loading report:", error);
-      // Error is already toasted inside the try block
-      // If loading fails, default to creating a new report
+      // Error is already toasted inside the try block. Editing stays on so the
+      // page is usable, but nothing is written over a row that never loaded.
+      loadFailedRef.current = true;
       setIsEditMode(true);
     } finally {
       console.log("loadReport: Finished, setting loading=false");
@@ -2092,7 +2059,7 @@ const MediumVoltageCableVLFTanDeltaMTS23Report = () => {
           {/* Header with title and buttons */}
           <ReportHeader
             title={reportName}
-            isAutoSaving={false}
+            isAutoSaving={isAutoSaving}
             isEditing={isEditMode}
             justSaved={justSaved}
             isSaving={isSaving}

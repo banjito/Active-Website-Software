@@ -1,0 +1,5844 @@
+import React, { useState, useEffect } from "react";
+import {
+  useParams,
+  useNavigate,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom";
+import { useAssetFormPrefill } from "./useAssetFormPrefill";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/AuthContext";
+import { useDemoMode } from "@/lib/DemoModeContext";
+import { navigateAfterSave } from "./ReportUtils";
+import { ReportHeader } from "./common/ReportHeader";
+import _ from "lodash";
+import JobInfoPrintTable from "./common/JobInfoPrintTable";
+import { getReportName, getAssetName } from "./reportMappings";
+import { ReportWrapper } from "./ReportWrapper";
+import { useReportLocked } from "./useReportLocked";
+import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
+import { formatLocalDateShort } from "@/utils/dateUtils";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { useReportUserAutofill } from "./useReportUserAutofill";
+import { ensureReportAssetLink } from "./linkReportAsset";
+import { numericReportIdFromUrl } from "./common/reportIdentity";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
+
+// Add type definitions for error handling
+type SupabaseError = {
+  message: string;
+  code?: string;
+};
+
+// Define table name constant
+const LARGE_DRY_XFMR_MTS23_TABLE = "large_dry_type_xfmr_mts23_reports" as const;
+
+// Scoped rules must outrank shared print CSS without changing other reports.
+const WINDING_RESISTANCE_PRINT_STYLES = `
+  @media print {
+    #report-container .large-dry-type-mts23-winding {
+      padding: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+    #report-container .large-dry-type-mts23-winding .wr-header {
+      display: grid !important;
+      grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      gap: 8px !important;
+      align-items: end !important;
+      margin-bottom: 8px !important;
+    }
+    #report-container .large-dry-type-mts23-winding .wr-header > div {
+      display: block !important;
+      min-width: 0 !important;
+    }
+    #report-container .large-dry-type-mts23-winding .wr-header label,
+    #report-container .large-dry-type-mts23-winding .wr-header input,
+    #report-container .large-dry-type-mts23-winding .wr-header select {
+      display: block !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      height: auto !important;
+      font-size: 9px !important;
+      line-height: 1.3 !important;
+      text-align: left !important;
+    }
+    #report-container .large-dry-type-mts23-winding table.wr-table {
+      table-layout: fixed !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      border-collapse: collapse !important;
+    }
+    #report-container .large-dry-type-mts23-winding .wr-table colgroup {
+      display: table-column-group !important;
+    }
+    #report-container .large-dry-type-mts23-winding .wr-table thead {
+      display: table-header-group !important;
+    }
+    #report-container .large-dry-type-mts23-winding .wr-table th,
+    #report-container .large-dry-type-mts23-winding .wr-table td {
+      display: table-cell !important;
+      width: auto !important;
+      min-width: 0 !important;
+      height: auto !important;
+      padding: 3px 2px !important;
+      border: 1px solid black !important;
+      font-size: 9px !important;
+      line-height: 1.3 !important;
+      text-align: center !important;
+      vertical-align: middle !important;
+      word-break: normal !important;
+      overflow-wrap: normal !important;
+    }
+    #report-container .large-dry-type-mts23-winding .wr-table th {
+      white-space: normal !important;
+    }
+    #report-container .large-dry-type-mts23-winding .wr-table th br {
+      display: inline !important;
+    }
+    #report-container .large-dry-type-mts23-winding .wr-table td {
+      white-space: nowrap !important;
+    }
+    #report-container .large-dry-type-mts23-winding .wr-table input {
+      display: block !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      height: auto !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+      background: transparent !important;
+      font: inherit !important;
+      text-align: center !important;
+    }
+  }
+`;
+
+// Temperature conversion and TCF tables (same as DryTypeTransformer)
+const tempConvTable = [
+  [-11.2, -24],
+  [-9.4, -23],
+  [-7.6, -22],
+  [-5.8, -21],
+  [-4, -20],
+  [-2.2, -19],
+  [1.4, -17],
+  [3.2, -16],
+  [5, -15],
+  [6.8, -14],
+  [8.6, -13],
+  [10.4, -12],
+  [12.2, -11],
+  [14, -10],
+  [15.8, -9],
+  [17.6, -8],
+  [19.4, -7],
+  [21.2, -6],
+  [23, -5],
+  [24.8, -4],
+  [26.6, -3],
+  [28.4, -2],
+  [30.2, -1],
+  [32, 0],
+  [33.8, 1],
+  [35.6, 2],
+  [37.4, 3],
+  [39.2, 4],
+  [41, 5],
+  [42.8, 6],
+  [44.6, 7],
+  [46.4, 8],
+  [48.2, 9],
+  [50, 10],
+  [51.8, 11],
+  [53.6, 12],
+  [55.4, 13],
+  [57.2, 14],
+  [59, 15],
+  [60.8, 16],
+  [62.6, 17],
+  [64.4, 18],
+  [66.2, 19],
+  [68, 20],
+  [70, 21],
+  [72, 22],
+  [73.4, 23],
+  [75.2, 24],
+  [77, 25],
+  [78.8, 26],
+  [80.6, 27],
+  [82.4, 28],
+  [84.2, 29],
+  [86, 30],
+  [87.8, 31],
+  [89.6, 32],
+  [91.4, 33],
+  [93.2, 34],
+  [95, 35],
+  [96.8, 36],
+  [98.6, 37],
+  [100.4, 38],
+  [102.2, 39],
+  [104, 40],
+  [105.8, 41],
+  [107.6, 42],
+  [109.4, 43],
+  [111.2, 44],
+  [113, 45],
+  [114.8, 46],
+  [116.6, 47],
+  [118.4, 48],
+  [120.2, 49],
+  [122, 50],
+  [123.8, 51],
+  [125.6, 52],
+  [127.4, 53],
+  [129.2, 54],
+  [131, 55],
+  [132.8, 56],
+  [134.6, 57],
+  [136.4, 58],
+  [138.2, 59],
+  [140, 60],
+  [141.8, 61],
+  [143.6, 62],
+  [145.4, 63],
+  [147.2, 64],
+  [149, 65],
+];
+
+const tcfTable = [
+  [-24, 0.054],
+  [-23, 0.068],
+  [-22, 0.082],
+  [-21, 0.096],
+  [-20, 0.11],
+  [-19, 0.124],
+  [-18, 0.138],
+  [-17, 0.152],
+  [-16, 0.166],
+  [-15, 0.18],
+  [-14, 0.194],
+  [-13, 0.208],
+  [-12, 0.222],
+  [-11, 0.236],
+  [-10, 0.25],
+  [-9, 0.264],
+  [-8, 0.278],
+  [-7, 0.292],
+  [-6, 0.306],
+  [-5, 0.32],
+  [-4, 0.336],
+  [-3, 0.352],
+  [-2, 0.368],
+  [-1, 0.384],
+  [0, 0.4],
+  [1, 0.42],
+  [2, 0.44],
+  [3, 0.46],
+  [4, 0.48],
+  [5, 0.5],
+  [6, 0.526],
+  [7, 0.552],
+  [8, 0.578],
+  [9, 0.604],
+  [10, 0.63],
+  [11, 0.666],
+  [12, 0.702],
+  [13, 0.738],
+  [14, 0.774],
+  [15, 0.81],
+  [16, 0.848],
+  [17, 0.886],
+  [18, 0.924],
+  [19, 0.962],
+  [20, 1.0],
+  [21, 1.05],
+  [22, 1.1],
+  [23, 1.15],
+  [24, 1.2],
+  [25, 1.25],
+  [26, 1.316],
+  [27, 1.382],
+  [28, 1.448],
+  [29, 1.514],
+  [30, 1.58],
+  [31, 1.664],
+  [32, 1.748],
+  [33, 1.832],
+  [34, 1.872],
+  [35, 2.0],
+  [36, 2.1],
+  [37, 2.2],
+  [38, 2.3],
+  [39, 2.4],
+  [40, 2.5],
+  [41, 2.628],
+  [42, 2.756],
+  [43, 2.884],
+  [44, 3.012],
+  [45, 3.15],
+  [46, 3.316],
+  [47, 3.482],
+  [48, 3.648],
+  [49, 3.814],
+  [50, 3.98],
+  [51, 4.184],
+  [52, 4.388],
+  [53, 4.592],
+  [54, 4.796],
+  [55, 5.0],
+  [56, 5.26],
+  [57, 5.52],
+  [58, 5.78],
+  [59, 6.04],
+  [60, 6.3],
+  [61, 6.62],
+  [62, 6.94],
+  [63, 7.26],
+  [64, 7.58],
+  [65, 7.9],
+  [66, 8.32],
+  [67, 8.74],
+  [68, 9.16],
+  [69, 9.58],
+  [70, 10.0],
+  [71, 10.52],
+  [72, 11.04],
+  [73, 11.56],
+  [74, 12.08],
+  [75, 12.6],
+  [76, 13.24],
+  [77, 13.88],
+  [78, 14.52],
+  [79, 15.16],
+  [80, 15.8],
+  [81, 16.64],
+  [82, 17.48],
+  [83, 18.32],
+  [84, 19.16],
+  [85, 20.0],
+  [86, 21.04],
+  [87, 22.08],
+  [88, 23.12],
+  [89, 24.16],
+  [90, 25.2],
+  [91, 26.45],
+  [92, 27.7],
+  [93, 28.95],
+  [94, 30.2],
+  [95, 31.6],
+  [96, 33.28],
+  [97, 34.96],
+  [98, 36.64],
+  [99, 38.32],
+  [100, 40.0],
+  [101, 42.08],
+  [102, 44.16],
+  [103, 46.24],
+  [104, 48.32],
+  [105, 50.4],
+  [106, 52.96],
+  [107, 55.52],
+  [108, 58.08],
+  [109, 60.64],
+  [110, 63.2],
+];
+
+// Dropdown options
+const visualInspectionOptions = [
+  "Select One",
+  "Satisfactory",
+  "Unsatisfactory",
+  "Cleaned",
+  "See Comments",
+  "Not Applicable",
+];
+
+const insulationResistanceUnits = [
+  { symbol: "kΩ", name: "Kilo-Ohms" },
+  { symbol: "MΩ", name: "Mega-Ohms" },
+  { symbol: "GΩ", name: "Giga-Ohms" },
+];
+
+const testVoltageOptions = [
+  "250V",
+  "500V",
+  "1000V",
+  "2500V",
+  "5000V",
+  "10000V",
+];
+
+// Interface for form data structure
+interface FormData {
+  // Job Information (matches DryTypeTransformer)
+  customer: string;
+  address: string;
+  date: string;
+  technicians: string;
+  jobNumber: string;
+  substation: string;
+  eqptLocation: string;
+  identifier: string;
+  userName: string;
+  temperature: {
+    ambient: number; // User inputs Fahrenheit
+    celsius: number; // Calculated
+    fahrenheit: number; // Same as ambient, kept for consistency/display
+    correctionFactor: number; // Looked up from tcfTable based on celsius
+    humidity: number | ""; // Optional
+  };
+
+  // Nameplate Data (matches screenshot)
+  nameplateData: {
+    manufacturer: string;
+    catalogNumber: string;
+    serialNumber: string; // Added based on common practice
+    kva: string;
+    tempRise: string;
+    impedance: string; // Added based on common practice
+    primary: {
+      volts: string; // Line-to-line
+      voltsSecondary: string; // Added second voltage field
+      connection: string; // 'Delta', 'Wye', 'Single Phase'
+      material: string; // 'Aluminum', 'Copper'
+    };
+    secondary: {
+      volts: string; // Line-to-line
+      voltsSecondary: string; // Added second voltage field
+      connection: string; // 'Delta', 'Wye', 'Single Phase'
+      material: string; // 'Aluminum', 'Copper'
+    };
+    tapConfiguration: {
+      // Based on screenshot
+      positions: number[];
+      voltages: string[]; // Array for 7 tap voltages
+      currentPosition: number; // Tap Position Left (first part)
+      currentPositionSecondary: string; // Tap Position Left (second part, often '/')
+      tapVoltsSpecific: string; // Volts box next to Tap Position Left
+      tapPercentSpecific: string; // Percent box next to Tap Position Left
+    };
+
+  };
+
+  // Visual Inspection (Updated with new NETA sections)
+  visualInspection: {
+    "7.2.1.2.A.1": string; // Dropdown result
+    "7.2.1.2.A.1_comments"?: string; // Optional comments field
+    "7.2.1.2.A.2": string;
+    "7.2.1.2.A.2_comments"?: string;
+    "7.2.1.2.A.3*": string;
+    "7.2.1.2.A.3*_comments"?: string;
+    "7.2.1.2.A.4": string;
+    "7.2.1.2.A.4_comments"?: string;
+    "7.2.1.2.A.5*": string;
+    "7.2.1.2.A.5*_comments"?: string;
+    "7.2.1.2.A.6": string;
+    "7.2.1.2.A.6_comments"?: string;
+    "7.2.1.2.A.7": string;
+    "7.2.1.2.A.7_comments"?: string;
+    "7.2.1.2.A.8": string;
+    "7.2.1.2.A.8_comments"?: string;
+    "7.2.1.2.A.9": string;
+    "7.2.1.2.A.9_comments"?: string;
+    "7.2.1.2.A.10": string;
+    "7.2.1.2.A.10_comments"?: string;
+    "7.2.1.2.A.11": string;
+    "7.2.1.2.A.11_comments"?: string;
+  };
+
+  // Insulation Resistance (Matches structure of DryTypeTransformer)
+  insulationResistance: {
+    temperature: string;
+    primaryToGround: {
+      testVoltage: string;
+      unit: string;
+      readings: {
+        halfMinute: string;
+        oneMinute: string;
+        tenMinute: string;
+      };
+      corrected: {
+        halfMinute: string;
+        oneMinute: string;
+        tenMinute: string;
+      };
+      dielectricAbsorption: string;
+      polarizationIndex: string;
+    };
+    secondaryToGround: {
+      testVoltage: string;
+      unit: string;
+      readings: {
+        halfMinute: string;
+        oneMinute: string;
+        tenMinute: string;
+      };
+      corrected: {
+        halfMinute: string;
+        oneMinute: string;
+        tenMinute: string;
+      };
+      dielectricAbsorption: string;
+      polarizationIndex: string;
+    };
+    primaryToSecondary: {
+      testVoltage: string;
+      unit: string;
+      readings: {
+        halfMinute: string;
+        oneMinute: string;
+        tenMinute: string;
+      };
+      corrected: {
+        halfMinute: string;
+        oneMinute: string;
+        tenMinute: string;
+      };
+      dielectricAbsorption: string;
+      polarizationIndex: string;
+    };
+    dielectricAbsorptionAcceptable: string;
+    polarizationIndexAcceptable: string;
+  };
+
+  // Test Equipment (Matches structure of DryTypeTransformer)
+  testEquipment: {
+    megohmmeter: {
+      name: string;
+      serialNumber: string;
+      ampId: string;
+      calDate: string;
+    };
+    ttrTestSet: {
+      name: string;
+      serialNumber: string;
+      ampId: string;
+      calDate: string;
+    };
+    windingResistanceTestSet: {
+      name: string;
+      serialNumber: string;
+      ampId: string;
+      calDate: string;
+    };
+    excitationTestSet: {
+      name: string;
+      serialNumber: string;
+      ampId: string;
+      calDate: string;
+    };
+    powerFactorTestSet: {
+      name: string;
+      serialNumber: string;
+      ampId: string;
+      calDate: string;
+    };
+  };
+
+  // Comments (Matches structure of DryTypeTransformer)
+  comments: string;
+  status: string; // 'PASS' or 'FAIL'
+
+  // Add to the FormData interface
+  turnsRatioTests: {
+    secondaryVoltage: string;
+    tests: {
+      tap: number;
+      nameplateVoltage: string;
+      calculatedRatio: string;
+      phaseA: {
+        ttr: string;
+        percentDev: string;
+      };
+      phaseB: {
+        ttr: string;
+        percentDev: string;
+      };
+      phaseC: {
+        ttr: string;
+        percentDev: string;
+      };
+      assessment: string;
+    }[];
+  };
+
+  // Add winding resistance test data
+  windingResistance: {
+    primary: {
+      testCurrent: string;
+      windingTemperature: string;
+      correctionTemperature: string;
+      windingMaterial: "Copper" | "Aluminum";
+      tempCorrectionFactor: string;
+      tests: Array<{
+        tap: number;
+        phaseA: {
+          rMeas: string;
+          rDev: string;
+          rCorr: string;
+        };
+        phaseB: {
+          rMeas: string;
+          rDev: string;
+          rCorr: string;
+        };
+        phaseC: {
+          rMeas: string;
+          rDev: string;
+          rCorr: string;
+        };
+        units: string;
+        smallestValueDeviation: string;
+        assessment: string;
+      }>;
+    };
+    secondary: {
+      testCurrent: string;
+      windingTemperature: string;
+      correctionTemperature: string;
+      windingMaterial: "Copper" | "Aluminum";
+      tempCorrectionFactor: string;
+      tests: Array<{
+        tap: number | "Fixed"; // UPDATED: Allow number for secondary taps
+        phaseA: {
+          rMeas: string;
+          rDev: string;
+          rCorr: string;
+        };
+        phaseB: {
+          rMeas: string;
+          rDev: string;
+          rCorr: string;
+        };
+        phaseC: {
+          rMeas: string;
+          rDev: string;
+          rCorr: string;
+        };
+        units: string;
+        smallestValueDeviation: string;
+        assessment: string;
+      }>;
+    };
+  };
+
+  // Add excitation test data
+  excitation: {
+    testVoltage: string;
+    referenceVoltage: string;
+    tests: Array<{
+      tap: number;
+      phaseA: {
+        iOut: string;
+        wattLosses: string;
+        reactance: string;
+      };
+      phaseB: {
+        iOut: string;
+        wattLosses: string;
+        reactance: string;
+      };
+      phaseC: {
+        iOut: string;
+        wattLosses: string;
+        reactance: string;
+      };
+      assessment: string;
+    }>;
+  };
+
+  // Add power factor test data
+  powerFactor: {
+    referenceVoltage: string;
+    windingTemperature: string;
+    primary: {
+      tests: Array<{
+        no: number | string; // UPDATED: Allow string for test number
+        measurement: string;
+        testMode: string;
+        frequency: string;
+        vOut: string;
+        iOut: string;
+        wattLosses: string;
+        pfMeas: string;
+        capMeas: string;
+        assessment: string;
+      }>;
+    };
+    secondary: {
+      tests: Array<{
+        no: number | string; // UPDATED: Allow string for test number
+        measurement: string;
+        testMode: string;
+        frequency: string;
+        vOut: string;
+        iOut: string;
+        wattLosses: string;
+        pfMeas: string;
+        capMeas: string;
+        assessment: string;
+      }>;
+    };
+  };
+}
+
+// Helper function to calculate corrected value (same as DryType)
+const calculateCorrectedValue = (readingStr: string, tcf: number): string => {
+  // Handle special cases like "> 2000" or "< 1" if necessary
+  if (
+    typeof readingStr === "string" &&
+    (readingStr.includes(">") || readingStr.includes("<"))
+  ) {
+    return readingStr; // Return non-numeric strings as is
+  }
+  const readingNum = parseFloat(readingStr);
+  if (isNaN(readingNum) || !isFinite(readingNum)) {
+    return ""; // Return empty if reading is not a valid number
+  }
+  const corrected = readingNum * tcf;
+  // Adjust precision based on magnitude or keep fixed? Using 2 for now.
+  return corrected.toFixed(2);
+};
+
+// Helper function to calculate DA/PI ratio (same as DryType)
+const calculateRatio = (
+  numeratorStr: string,
+  denominatorStr: string,
+): string => {
+  // Handle non-numeric inputs if corrected values can be non-numeric
+  if (
+    typeof numeratorStr === "string" &&
+    (numeratorStr.includes(">") || numeratorStr.includes("<"))
+  )
+    return "";
+  if (
+    typeof denominatorStr === "string" &&
+    (denominatorStr.includes(">") || denominatorStr.includes("<"))
+  )
+    return "";
+
+  const numerator = parseFloat(numeratorStr);
+  const denominator = parseFloat(denominatorStr);
+
+  if (
+    isNaN(numerator) ||
+    isNaN(denominator) ||
+    !isFinite(numerator) ||
+    !isFinite(denominator) ||
+    denominator === 0
+  ) {
+    return ""; // Return empty if inputs are invalid or denominator is zero
+  }
+
+  const ratio = numerator / denominator;
+  return ratio.toFixed(2); // Format to 2 decimal places
+};
+
+// Helper function to calculate TCF (same as DryTypeTransformer)
+const calculateTCF = (celsius: number): number => {
+  const match = tcfTable.find((item) => item[0] === celsius);
+  return match ? match[1] : 1;
+};
+
+// Helper function to calculate DA (same as DryTypeTransformer)
+const calculateDA = (readings: {
+  halfMinute: string;
+  oneMinute: string;
+  tenMinute: string;
+}): string => {
+  const halfMinute = parseFloat(readings.halfMinute);
+  const oneMinute = parseFloat(readings.oneMinute);
+  const tenMinute = parseFloat(readings.tenMinute);
+  const ratio = oneMinute / halfMinute;
+  return ratio.toFixed(2);
+};
+
+// Helper function to calculate PI (same as DryTypeTransformer)
+const calculatePI = (readings: {
+  halfMinute: string;
+  oneMinute: string;
+  tenMinute: string;
+}): string => {
+  const oneMinute = parseFloat(readings.oneMinute);
+  const tenMinute = parseFloat(readings.tenMinute);
+  const ratio = tenMinute / oneMinute;
+  return ratio.toFixed(2);
+};
+
+// Helper function to calculate corrected resistance
+const calculateCorrectedResistance = (
+  measured: string,
+  tcf: string,
+): string => {
+  const measuredValue = parseFloat(measured);
+  const tcfValue = parseFloat(tcf);
+
+  if (isNaN(measuredValue) || isNaN(tcfValue) || tcfValue === 0) {
+    return "";
+  }
+
+  // Corrected resistance = measured resistance * TCF
+  return (measuredValue * tcfValue).toFixed(7);
+};
+
+// Helper function to calculate resistance deviation
+const calculateResistanceDeviation = (
+  measured: string,
+  reference: string,
+): string => {
+  const measuredValue = parseFloat(measured);
+  const referenceValue = parseFloat(reference);
+
+  if (isNaN(measuredValue) || isNaN(referenceValue) || referenceValue === 0) {
+    return "";
+  }
+
+  // Deviation % = ((measured - reference) / reference) * 100
+  return (((measuredValue - referenceValue) / referenceValue) * 100).toFixed(2);
+};
+
+// Helper function to calculate smallest value deviation
+const calculateSmallestValueDeviation = (
+  phaseA: string,
+  phaseB: string,
+  phaseC: string,
+): string => {
+  const values = [phaseA, phaseB, phaseC]
+    .map((v) => parseFloat(v))
+    .filter((v) => !isNaN(v));
+
+  // Two phases are enough to show a spread; one is not. Requiring all three left
+  // the column blank on a part-filled row with no hint why.
+  if (values.length < 2) {
+    return "";
+  }
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const avg = values.reduce((a, b) => a + b, 0) / values.length;
+
+  // Smallest value deviation % = ((max - min) / avg) * 100
+  return (((max - min) / avg) * 100).toFixed(2) + "%";
+};
+
+// Helper function to calculate Reactance for Excitation test
+const calculateReactance = (
+  voltageOutput: string, // in kV
+  currentOutput: string, // in mA
+): string => {
+  const vOut = parseFloat(voltageOutput);
+  const iOut = parseFloat(currentOutput);
+
+  if (isNaN(vOut) || isNaN(iOut) || iOut === 0) {
+    return "";
+  }
+
+  // Reactance (kΩ) = V (kV) / I (mA) * 1000
+  const reactance = (vOut / iOut) * 1000;
+  return reactance.toFixed(3);
+};
+
+// Helper function to calculate Power Factor
+const calculatePowerFactor = (
+  wattLosses: string, // in mW
+  voltageOutput: string, // in kV
+  currentOutput: string, // in mA
+): string => {
+  const wLoss = parseFloat(wattLosses);
+  const vOut = parseFloat(voltageOutput);
+  const iOut = parseFloat(currentOutput);
+
+  if (isNaN(wLoss) || isNaN(vOut) || isNaN(iOut) || vOut === 0 || iOut === 0) {
+    return "";
+  }
+
+  // PF = Watt Losses (mW) / (V (kV) * I (mA) * 1000)
+  const powerFactor = wLoss / (vOut * iOut * 1000);
+  return (powerFactor * 100).toFixed(4) + "%";
+};
+
+const LargeDryTypeTransformerMTS23Report: React.FC = () => {
+  const { id: jobId, reportId: initialReportId } = useParams<{
+    id: string;
+    reportId: string;
+  }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+  const { maskCustomerName, maskCustomerAddress } = useDemoMode();
+  // Auto-save rewrites the URL with history.replaceState once it has created the
+  // report, and react-router's params never see that. Fall back to the address
+  // bar so a re-render or re-mount recognises the report already on screen
+  // instead of creating another one. This table's ids are serial numbers, not
+  // uuids, so the numeric form is what appears in the URL.
+  const openReportId = initialReportId ?? numericReportIdFromUrl();
+
+  const [currentReportId, setCurrentReportId] = useState<string | undefined>(
+    openReportId,
+  );
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(!openReportId);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const isAutoSaveCreatedRef = React.useRef(false);
+  const reportIdRef = React.useRef<string | undefined>(openReportId);
+  /** A save is in flight; a second one must not start alongside it. */
+  const savingRef = React.useRef(false);
+  /** Something changed mid-save; run once more when the current save lands. */
+  const saveAgainRef = React.useRef(false);
+  /** The row-creating insert, shared so only one save can ever run it. */
+  const createInFlightRef = React.useRef<Promise<string | undefined> | null>(
+    null,
+  );
+  /** The asset row + job link have been confirmed for this report. */
+  const assetLinkedRef = React.useRef(false);
+  /** An existing report failed to load; the form on screen is not its data. */
+  const loadFailedRef = React.useRef(false);
+
+  // Report slug/name — declared before use (passing reportSlug into
+  // useReportLocked before this line is a temporal-dead-zone crash).
+  const reportSlug = "large-dry-type-xfmr-mts23"; // This component handles the large-dry-type-xfmr-mts23 route
+  const reportName = getReportName(reportSlug);
+  const { locked } = useReportLocked(currentReportId, jobId, reportSlug);
+
+  // Print Mode Detection
+  const [searchParams] = useSearchParams();
+  const isPrintMode = searchParams.get("print") === "true";
+
+  // Determine which report type this is based on the URL path
+  const currentPath = location.pathname;
+  const [isOmicronMode, setIsOmicronMode] = useState(false); // <-- Add state for the toggle
+  const [status, setStatus] = useState<"PASS" | "FAIL">("PASS");
+
+  // Initialize form data with default values
+  const [formData, setFormData] = useState<FormData>({
+    customer: "",
+    address: "",
+    date: new Date().toISOString().split("T")[0],
+    technicians: "",
+    jobNumber: "",
+    substation: "",
+    eqptLocation: "",
+    identifier: "",
+    userName: "",
+    temperature: {
+      ambient: 72,
+      celsius: 22,
+      fahrenheit: 72,
+      correctionFactor: 1.152,
+      humidity: "",
+    },
+    nameplateData: {
+      manufacturer: "",
+      catalogNumber: "",
+      serialNumber: "",
+      kva: "",
+      tempRise: "",
+      impedance: "",
+      primary: {
+        volts: "",
+        voltsSecondary: "",
+        connection: "Delta",
+        material: "Aluminum",
+      },
+      secondary: {
+        volts: "",
+        voltsSecondary: "",
+        connection: "Wye",
+        material: "Aluminum",
+      },
+      tapConfiguration: {
+        positions: [1, 2, 3, 4, 5, 6, 7],
+        voltages: ["", "", "", "", "", "", ""],
+        currentPosition: 3,
+        currentPositionSecondary: "",
+        tapVoltsSpecific: "",
+        tapPercentSpecific: "",
+      },
+
+      // Initialize indicator gauge values
+    },
+    visualInspection: {
+      "7.2.1.2.A.1": "Select One",
+      "7.2.1.2.A.2": "Select One",
+      "7.2.1.2.A.3*": "Select One",
+      "7.2.1.2.A.4": "Select One",
+      "7.2.1.2.A.5*": "Select One",
+      "7.2.1.2.A.6": "Select One",
+      "7.2.1.2.A.7": "Select One",
+      "7.2.1.2.A.8": "Select One",
+      "7.2.1.2.A.9": "Select One",
+      "7.2.1.2.A.10": "Select One",
+      "7.2.1.2.A.11": "Select One",
+    },
+    insulationResistance: {
+      temperature: "",
+      primaryToGround: {
+        testVoltage: "5000V",
+        unit: "MΩ",
+        readings: { halfMinute: "", oneMinute: "", tenMinute: "" },
+        corrected: { halfMinute: "", oneMinute: "", tenMinute: "" },
+        dielectricAbsorption: "",
+        polarizationIndex: "",
+      },
+      secondaryToGround: {
+        testVoltage: "1000V",
+        unit: "MΩ",
+        readings: { halfMinute: "", oneMinute: "", tenMinute: "" },
+        corrected: { halfMinute: "", oneMinute: "", tenMinute: "" },
+        dielectricAbsorption: "",
+        polarizationIndex: "",
+      },
+      primaryToSecondary: {
+        testVoltage: "5000V",
+        unit: "MΩ",
+        readings: { halfMinute: "", oneMinute: "", tenMinute: "" },
+        corrected: { halfMinute: "", oneMinute: "", tenMinute: "" },
+        dielectricAbsorption: "",
+        polarizationIndex: "",
+      },
+      dielectricAbsorptionAcceptable: "",
+      polarizationIndexAcceptable: "",
+    },
+    testEquipment: {
+      megohmmeter: { name: "", serialNumber: "", ampId: "", calDate: "" },
+      ttrTestSet: { name: "", serialNumber: "", ampId: "", calDate: "" },
+      windingResistanceTestSet: {
+        name: "",
+        serialNumber: "",
+        ampId: "",
+        calDate: "",
+      },
+      excitationTestSet: { name: "", serialNumber: "", ampId: "", calDate: "" },
+      powerFactorTestSet: {
+        name: "",
+        serialNumber: "",
+        ampId: "",
+        calDate: "",
+      },
+    },
+    comments: "",
+    status: "PASS",
+    turnsRatioTests: {
+      secondaryVoltage: "",
+      tests: Array.from({ length: 7 }, (_, i) => ({
+        tap: i + 1,
+        nameplateVoltage: "",
+        calculatedRatio: "",
+        phaseA: { ttr: "", percentDev: "" },
+        phaseB: { ttr: "", percentDev: "" },
+        phaseC: { ttr: "", percentDev: "" },
+        assessment: "",
+      })),
+    },
+    windingResistance: {
+      primary: {
+        testCurrent: "",
+        windingTemperature: "30",
+        correctionTemperature: "75",
+        windingMaterial: "Copper",
+        tempCorrectionFactor: "1.170", // Recalculate this if temps change
+        tests: Array.from({ length: 7 }, (_, i) => ({
+          tap: i + 1,
+          phaseA: { rMeas: "", rDev: "", rCorr: "" },
+          phaseB: { rMeas: "", rDev: "", rCorr: "" },
+          phaseC: { rMeas: "", rDev: "", rCorr: "" },
+          units: "μΩ",
+          smallestValueDeviation: "",
+          assessment: "",
+        })),
+      },
+      secondary: {
+        testCurrent: "",
+        windingTemperature: "30",
+        correctionTemperature: "75",
+        windingMaterial: "Copper",
+        tempCorrectionFactor: "1.170", // Recalculate this if temps change
+        tests: Array.from({ length: 7 }, (_, i) => ({
+          // UPDATED: 7 taps instead of Fixed
+          tap: i + 1,
+          phaseA: { rMeas: "", rDev: "", rCorr: "" },
+          phaseB: { rMeas: "", rDev: "", rCorr: "" },
+          phaseC: { rMeas: "", rDev: "", rCorr: "" },
+          units: "μΩ",
+          smallestValueDeviation: "",
+          assessment: "",
+        })),
+      },
+    },
+    excitation: {
+      testVoltage: "10",
+      referenceVoltage: "10",
+      tests: Array.from({ length: 7 }, (_, i) => ({
+        tap: i + 1,
+        phaseA: { iOut: "", wattLosses: "", reactance: "" },
+        phaseB: { iOut: "", wattLosses: "", reactance: "" },
+        phaseC: { iOut: "", wattLosses: "", reactance: "" },
+        assessment: "",
+      })),
+    },
+    powerFactor: {
+      referenceVoltage: "10",
+      windingTemperature: "30",
+      primary: {
+        tests: [
+          // UPDATED: Only include tests 1, 2a, 3a
+          {
+            no: 1,
+            measurement: "ICH+ICHL",
+            testMode: "GST",
+            frequency: "60.00", // Changed to string
+            vOut: "10.00", // Changed to string
+            iOut: "", // Default empty
+            wattLosses: "", // Default empty
+            pfMeas: "",
+            capMeas: "",
+            assessment: "",
+          },
+          {
+            no: "2a", // Changed to string
+            measurement: "ICH",
+            testMode: "GSTg-A",
+            frequency: "60.00", // Changed to string
+            vOut: "10.00", // Changed to string
+            iOut: "", // Default empty
+            wattLosses: "", // Default empty
+            pfMeas: "",
+            capMeas: "",
+            assessment: "",
+          },
+          {
+            no: "3a", // Changed to string
+            measurement: "ICHL",
+            testMode: "UST-A",
+            frequency: "60.00", // Changed to string
+            vOut: "10.00", // Changed to string
+            iOut: "", // Default empty
+            wattLosses: "", // Default empty
+            pfMeas: "",
+            capMeas: "",
+            assessment: "",
+          },
+        ],
+      },
+      secondary: {
+        tests: [
+          // UPDATED: Only include tests 1, 2a, 3a
+          {
+            no: 1,
+            measurement: "ICL+ICLH",
+            testMode: "GST",
+            frequency: "60.00", // Changed to string
+            vOut: "0.10", // Changed to string
+            iOut: "", // Default empty
+            wattLosses: "", // Default empty
+            pfMeas: "",
+            capMeas: "",
+            assessment: "",
+          },
+          {
+            no: "2a", // Changed to string
+            measurement: "ICL",
+            testMode: "GSTg-A",
+            frequency: "60.00", // Changed to string
+            vOut: "0.10", // Changed to string
+            iOut: "", // Default empty
+            wattLosses: "", // Default empty
+            pfMeas: "",
+            capMeas: "",
+            assessment: "",
+          },
+          {
+            no: "3a", // Changed to string
+            measurement: "ICLH",
+            testMode: "UST-A",
+            frequency: "60.00", // Changed to string
+            vOut: "0.10", // Changed to string
+            iOut: "", // Default empty
+            wattLosses: "", // Default empty
+            pfMeas: "",
+            capMeas: "",
+            assessment: "",
+          },
+        ],
+      },
+    },
+  });
+
+  // Started from an asset in the Assets tab: fill its identity and nameplate.
+  useAssetFormPrefill(openReportId, setFormData);
+
+  // Autofill the "User" header field with the signed-in employee's name (new reports only).
+  useReportUserAutofill(setFormData, initialReportId, "userName");
+
+  // Helper function to get visual inspection description based on screenshot
+  const getVisualInspectionDescription = (id: string): string => {
+    // Use NETA section numbers from the screenshot (7.2.2.A.x)
+    const descriptions: { [key: string]: string } = {
+      "7.2.1.2.A.1": "Inspect physical and mechanical condition.",
+      "7.2.1.2.A.2": "Inspect anchorage, alignment, and grounding.",
+      "7.2.1.2.A.3*": "Prior to cleaning the unit, perform as-found tests.",
+      "7.2.1.2.A.4": "Clean the unit.",
+      "7.2.1.2.A.5*":
+        "Verify that control and alarm settings on temperature indicators are as specified.",
+      "7.2.1.2.A.6": "Verify that cooling fans operate correctly.",
+      "7.2.1.2.A.7":
+        "Inspect bolted electrical connections for high resistance using a low-resistance ohmmeter",
+      "7.2.1.2.A.8":
+        "Perform specific inspections and mechanical tests as recommended by the manufacturer.",
+      "7.2.1.2.A.9": "Perform as-left tests.",
+      "7.2.1.2.A.10": "Verify that as-left tap connections are as specified.",
+      "7.2.1.2.A.11": "Verify the presence of surge arresters.",
+    };
+    return descriptions[id] || `Unknown Section: ${id}`; // Fallback for missing keys
+  };
+
+  // Handle temperature changes (same logic as DryTypeTransformer)
+  const handleTemperatureChange = (fahrenheit: number) => {
+    // Find the closest match in the temperature conversion table
+    const closestMatch = tempConvTable.reduce((prev, curr) => {
+      return Math.abs(curr[0] - fahrenheit) < Math.abs(prev[0] - fahrenheit)
+        ? curr
+        : prev;
+    });
+
+    const celsius = closestMatch[1];
+
+    // Find the correction factor from the TCF table
+    const tcfMatch = tcfTable.find((item) => item[0] === celsius) || [0, 1]; // Default TCF to 1 if not found
+    const correctionFactor = tcfMatch[1];
+
+    setFormData((prev) => ({
+      ...prev,
+      temperature: {
+        ambient: fahrenheit, // Keep the user input F value
+        celsius, // Store calculated C value
+        fahrenheit: fahrenheit, // Store F value for display consistency
+        correctionFactor, // Store looked-up TCF
+      },
+    }));
+  };
+
+  // Handle form field changes (generic handlers, same as DryTypeTransformer)
+  const handleChange = (
+    section: keyof FormData | null,
+    field: string,
+    value: any,
+  ) => {
+    setJustSaved(false);
+    setFormData((prev) => {
+      if (section) {
+        // Check if the section exists before trying to spread it
+        const currentSection = prev[section];
+        if (typeof currentSection !== "object" || currentSection === null) {
+          console.error(
+            `Section "${section}" does not exist or is not an object in formData.`,
+          );
+          return prev; // Return previous state if section is invalid
+        }
+        return {
+          ...prev,
+          [section]: {
+            ...(currentSection as object), // Type assertion
+            [field]: value,
+          },
+        };
+      } else {
+        // Ensure the top-level field exists
+        if (!(field in prev)) {
+          console.error(
+            `Field "${field}" does not exist at the top level of formData.`,
+          );
+          return prev;
+        }
+        return {
+          ...prev,
+          [field]: value,
+        };
+      }
+    });
+  };
+
+  /** Taps the nameplate declares; rows past this are not part of this unit. */
+  const configuredTapCount = React.useMemo(() => {
+    const voltages = formData.nameplateData.tapConfiguration.voltages || [];
+    const lastFilled = voltages.reduce(
+      (last, v, i) => (String(v ?? "").trim() ? i : last),
+      -1,
+    );
+    return lastFilled + 1;
+  }, [formData.nameplateData.tapConfiguration.voltages]);
+
+  const handleNestedChange = (
+    section: keyof FormData,
+    subsection: string,
+    value: any,
+  ) => {
+    setJustSaved(false);
+    setFormData((prev) => {
+      const currentSection = prev[section];
+      if (typeof currentSection !== "object" || currentSection === null) {
+        console.error(
+          `Section "${section}" does not exist or is not an object.`,
+        );
+        return prev;
+      }
+      // Check if the subsection exists before trying to spread it
+      const currentSubsection = currentSection[subsection];
+      // Allow updating the entire subsection object directly
+      return {
+        ...prev,
+        [section]: {
+          ...(currentSection as object),
+          [subsection]: value, // Update the subsection directly
+        },
+      };
+    });
+  };
+
+  const handleDeepNestedChange = (
+    section: keyof FormData,
+    subsection: string,
+    nestedSection: string,
+    field: string,
+    value: any,
+  ) => {
+    setJustSaved(false);
+    setFormData((prev) => {
+      const currentSection = prev[section];
+      if (typeof currentSection !== "object" || currentSection === null) {
+        console.error(`Section "${section}" is invalid.`);
+        return prev;
+      }
+      const currentSubsection = currentSection[subsection];
+      if (typeof currentSubsection !== "object" || currentSubsection === null) {
+        console.error(`Subsection "${subsection}" in "${section}" is invalid.`);
+        return prev;
+      }
+      const currentNestedSection = currentSubsection[nestedSection];
+      if (
+        typeof currentNestedSection !== "object" ||
+        currentNestedSection === null
+      ) {
+        console.error(
+          `Nested section "${nestedSection}" in "${section}.${subsection}" is invalid.`,
+        );
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [section]: {
+          ...(currentSection as object),
+          [subsection]: {
+            ...(currentSubsection as object),
+            [nestedSection]: {
+              ...(currentNestedSection as object),
+              [field]: value,
+            },
+          },
+        },
+      };
+    });
+  };
+
+  // Handle specific changes for Visual Inspection comments
+  const handleVisualInspectionChange = (
+    id: string,
+    type: "result" | "comment",
+    value: string,
+  ) => {
+    const field = type === "result" ? id : `${id}_comments`;
+    handleNestedChange("visualInspection", field, value);
+  };
+
+  // useEffect to calculate corrected values, DA, and PI (same logic as DryTypeTransformer)
+  useEffect(() => {
+    const tcf = formData.temperature.correctionFactor;
+
+    const updateCalculatedValues = (
+      testId: keyof FormData["insulationResistance"],
+    ) => {
+      // Ensure testId refers to a structure with readings before accessing
+      if (
+        testId !== "primaryToGround" &&
+        testId !== "secondaryToGround" &&
+        testId !== "primaryToSecondary"
+      ) {
+        return {
+          corrected: { halfMinute: "", oneMinute: "", tenMinute: "" },
+          dielectricAbsorption: "",
+          polarizationIndex: "",
+        };
+      }
+
+      const testRecord = formData.insulationResistance[testId];
+      // Check if testRecord and readings exist
+      if (!testRecord || !testRecord.readings) {
+        console.warn(
+          `Insulation resistance data for ${testId} is missing or incomplete.`,
+        );
+        return {
+          corrected: { halfMinute: "", oneMinute: "", tenMinute: "" },
+          dielectricAbsorption: "",
+          polarizationIndex: "",
+        };
+      }
+      const readings = testRecord.readings;
+
+      const corrected = {
+        halfMinute: calculateCorrectedValue(readings.halfMinute, tcf),
+        oneMinute: calculateCorrectedValue(readings.oneMinute, tcf),
+        tenMinute: calculateCorrectedValue(readings.tenMinute, tcf),
+      };
+      // Use CORRECTED values for DA/PI calculations as per NETA/industry standard
+      const dielectricAbsorption = calculateRatio(
+        corrected.oneMinute,
+        corrected.halfMinute,
+      );
+      const polarizationIndex = calculateRatio(
+        corrected.tenMinute,
+        corrected.oneMinute,
+      );
+
+      return { corrected, dielectricAbsorption, polarizationIndex };
+    };
+
+    // Check if insulationResistance exists before trying to update
+    if (formData.insulationResistance) {
+      setFormData((prev) => {
+        if (!prev.insulationResistance) return prev;
+
+        const primaryCalcs = updateCalculatedValues("primaryToGround");
+        const secondaryCalcs = updateCalculatedValues("secondaryToGround");
+        const primarySecondaryCalcs =
+          updateCalculatedValues("primaryToSecondary");
+
+        const prevPrimary = prev.insulationResistance.primaryToGround;
+        const prevSecondary = prev.insulationResistance.secondaryToGround;
+        const prevPrimarySecondary =
+          prev.insulationResistance.primaryToSecondary;
+
+        const daValues = [
+          primaryCalcs.dielectricAbsorption,
+          secondaryCalcs.dielectricAbsorption,
+          primarySecondaryCalcs.dielectricAbsorption,
+        ].map((v) => parseFloat(v));
+        const daAcceptable =
+          daValues.some((v) => !isNaN(v)) &&
+          daValues.every((v) => isNaN(v) || v > 1.0)
+            ? "Yes"
+            : "No";
+
+        const piValues = [
+          primaryCalcs.polarizationIndex,
+          secondaryCalcs.polarizationIndex,
+          primarySecondaryCalcs.polarizationIndex,
+        ].map((v) => parseFloat(v));
+        const piAcceptable =
+          piValues.some((v) => !isNaN(v)) &&
+          piValues.every((v) => isNaN(v) || v > 1.0)
+            ? "Yes"
+            : "No";
+
+        if (
+          !_.isEqual(prevPrimary.corrected, primaryCalcs.corrected) ||
+          !_.isEqual(prevSecondary.corrected, secondaryCalcs.corrected) ||
+          !_.isEqual(
+            prevPrimarySecondary.corrected,
+            primarySecondaryCalcs.corrected,
+          ) ||
+          prevPrimary.dielectricAbsorption !==
+            primaryCalcs.dielectricAbsorption ||
+          prevSecondary.dielectricAbsorption !==
+            secondaryCalcs.dielectricAbsorption ||
+          prevPrimarySecondary.dielectricAbsorption !==
+            primarySecondaryCalcs.dielectricAbsorption ||
+          prevPrimary.polarizationIndex !== primaryCalcs.polarizationIndex ||
+          prevSecondary.polarizationIndex !==
+            secondaryCalcs.polarizationIndex ||
+          prevPrimarySecondary.polarizationIndex !==
+            primarySecondaryCalcs.polarizationIndex ||
+          prev.insulationResistance.dielectricAbsorptionAcceptable !==
+            daAcceptable ||
+          prev.insulationResistance.polarizationIndexAcceptable !== piAcceptable
+        ) {
+          return {
+            ...prev,
+            insulationResistance: {
+              ...prev.insulationResistance, // This preserves all existing fields including temperature
+              primaryToGround: {
+                ...prev.insulationResistance.primaryToGround,
+                corrected: primaryCalcs.corrected,
+                dielectricAbsorption: primaryCalcs.dielectricAbsorption,
+                polarizationIndex: primaryCalcs.polarizationIndex,
+              },
+              secondaryToGround: {
+                ...prev.insulationResistance.secondaryToGround,
+                corrected: secondaryCalcs.corrected,
+                dielectricAbsorption: secondaryCalcs.dielectricAbsorption,
+                polarizationIndex: secondaryCalcs.polarizationIndex,
+              },
+              primaryToSecondary: {
+                ...prev.insulationResistance.primaryToSecondary,
+                corrected: primarySecondaryCalcs.corrected,
+                dielectricAbsorption:
+                  primarySecondaryCalcs.dielectricAbsorption,
+                polarizationIndex: primarySecondaryCalcs.polarizationIndex,
+              },
+              dielectricAbsorptionAcceptable: daAcceptable,
+              polarizationIndexAcceptable: piAcceptable,
+            },
+          };
+        }
+        return prev;
+      });
+    }
+  }, [
+    // Dependencies: trigger recalculation when readings or TCF change
+    formData.insulationResistance?.primaryToGround?.readings,
+    formData.insulationResistance?.secondaryToGround?.readings,
+    formData.insulationResistance?.primaryToSecondary?.readings,
+    formData.temperature.correctionFactor,
+    // Add formData.insulationResistance itself to handle potential unit changes etc.
+    // Be cautious if this causes infinite loops, might need more specific dependencies.
+    // formData.insulationResistance
+  ]);
+
+  // Load job information (same logic as DryTypeTransformer)
+  const loadJobInfo = async () => {
+    if (!jobId) return;
+
+    try {
+      setLoading(true);
+      // First fetch job data from neta_ops schema - use correct query format
+      const { data: jobData, error: jobError } = await supabase
+        .schema("neta_ops")
+        .from("jobs")
+        .select(
+          `
+          title,
+          job_number,
+          customer_id,
+          site_address
+        `,
+        )
+        .eq("id", jobId)
+        .single();
+
+      if (jobError) throw jobError;
+
+      if (jobData) {
+        // Then fetch customer data from common schema
+        let customerName = "";
+        let customerAddress = "";
+
+        if (jobData.customer_id) {
+          const { data: customerData, error: customerError } = await supabase
+            .schema("common")
+            .from("customers")
+            .select(
+              `
+              name,
+              company_name,
+              address
+            `,
+            )
+            .eq("id", jobData.customer_id)
+            .single();
+
+          if (!customerError && customerData) {
+            customerName = customerData.company_name || customerData.name || "";
+            customerAddress = customerData.address || "";
+          }
+        }
+
+        setFormData((prev) => ({
+          ...prev,
+          jobNumber: jobData.job_number || "",
+          customer: maskCustomerName(customerName),
+          address: prev.address || maskCustomerAddress(customerAddress),
+        }));
+      }
+    } catch (error) {
+      const err = error as SupabaseError;
+      console.error("Error loading job info:", err);
+      alert(`Failed to load job info: ${err.message}`);
+    } finally {
+      // setLoading(false); // Loading finishes in loadReport or useEffect
+    }
+  };
+
+  // Load existing report
+  const loadReport = async () => {
+    // Don't reload if we just created the report via autosave
+    if (isAutoSaveCreatedRef.current) {
+      isAutoSaveCreatedRef.current = false;
+      setLoading(false);
+      return;
+    }
+
+    if (!currentReportId) {
+      setLoading(false);
+      setIsEditing(true);
+      return;
+    }
+
+    try {
+      console.log(
+        `Loading report from ${LARGE_DRY_XFMR_MTS23_TABLE} with ID: ${currentReportId}`,
+      );
+      const { data, error } = await supabase
+        .schema("neta_ops")
+        .from(`${LARGE_DRY_XFMR_MTS23_TABLE}`)
+        .select("*")
+        .eq("id", currentReportId) // Report ids are uuids, not numbers
+        .single();
+
+      if (error) {
+        if (error.code === "PGRST116") {
+          console.warn(
+            `Report with ID ${currentReportId} not found in ${LARGE_DRY_XFMR_MTS23_TABLE}. Starting new report.`,
+          );
+          setIsEditing(true);
+        } else {
+          throw error;
+        }
+      }
+
+      if (data) {
+        console.log("Loaded report data:", data);
+        setFormData((prev) => ({
+          ...prev,
+          ...(data.report_data ?? {}),
+          nameplateData: {
+            ...prev.nameplateData,
+            ...(data.report_data?.nameplateData ?? {}),
+          },
+          temperature: {
+            ...prev.temperature,
+            ...(data.report_data?.temperature ?? {}),
+          },
+          testEquipment: {
+            ...prev.testEquipment,
+            ...(data.report_data?.testEquipment ?? {}),
+          },
+        }));
+        setIsOmicronMode(data.report_data?.isOmicronMode ?? false);
+        setStatus(data.report_data?.status ?? "PASS");
+        setIsEditing(false);
+      }
+      loadFailedRef.current = false;
+    } catch (error) {
+      // The form is showing defaults, not this report. Auto-save must not push
+      // those defaults over the readings that are still in the database.
+      loadFailedRef.current = true;
+      const err = error as SupabaseError;
+      console.error(`Error loading report from ${LARGE_DRY_XFMR_MTS23_TABLE}:`, err);
+      alert(`Failed to load report: ${err.message}`);
+      setIsEditing(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Auto-save function
+  // Saves must send what is on screen *now*, not what was on screen when the
+  // save was queued. A queued save carrying an older snapshot used to land after
+  // a newer one and put a half-typed equipment name back on the report.
+  const saveStateRef = React.useRef({ formData, isOmicronMode });
+  useEffect(() => {
+    saveStateRef.current = { formData, isOmicronMode };
+  }, [formData, isOmicronMode]);
+
+  const buildReportPayload = React.useCallback(() => {
+    const { formData, isOmicronMode } = saveStateRef.current;
+    return {
+      job_id: jobId,
+      user_id: user?.id,
+      // One jsonb blob: the form's own shape, so a sheet change needs no migration.
+      report_data: {
+        ...formData,
+        customer: maskCustomerName(formData.customer),
+        address: maskCustomerAddress(formData.address),
+        isOmicronMode,
+      },
+    };
+  }, [jobId, user?.id, maskCustomerName, maskCustomerAddress]);
+
+  /**
+   * Writes the report and returns its id. Every save -- auto-save and the Save
+   * button -- goes through here, and they all write to one row.
+   *
+   * This table's `id` is a database serial, not a uuid, so the id cannot be
+   * claimed on the client the way the other reports do. Instead the very first
+   * insert is shared: a save that arrives while the insert is still in flight
+   * awaits that same promise and then updates the row it created, instead of
+   * inserting a second copy. Combined with recovering the id from the address
+   * bar, that closes the ways a re-mount or a racing save used to make the same
+   * transformer appear on the job twice.
+   */
+  const persistReport = React.useCallback(async () => {
+    if (!jobId || !user?.id) return undefined;
+    if (loadFailedRef.current) {
+      throw new Error(
+        "This report could not be loaded, so it was not saved. Reload the page and try again.",
+      );
+    }
+
+    let reportId = reportIdRef.current;
+    let iCreatedTheRow = false;
+
+    if (!reportId) {
+      if (!createInFlightRef.current) {
+        createInFlightRef.current = (async () => {
+          const { data, error } = await supabase
+            .schema("neta_ops")
+            .from(LARGE_DRY_XFMR_MTS23_TABLE)
+            .insert(buildReportPayload())
+            .select("id")
+            .single();
+          if (error) throw error;
+          const created = String(data.id);
+          reportIdRef.current = created;
+          return created;
+        })();
+        // Let a later save retry if this insert fails.
+        createInFlightRef.current.catch(() => {
+          createInFlightRef.current = null;
+        });
+        iCreatedTheRow = true;
+      }
+      reportId = await createInFlightRef.current;
+    }
+    if (!reportId) return undefined;
+
+    // Someone else's insert created this row, so it does not hold what is on
+    // screen now -- write that over it.
+    if (!iCreatedTheRow) {
+      const { error } = await supabase
+        .schema("neta_ops")
+        .from(LARGE_DRY_XFMR_MTS23_TABLE)
+        .update(buildReportPayload())
+        .eq("id", reportId);
+      if (error) throw error;
+    }
+
+    if (!assetLinkedRef.current) {
+      const { formData } = saveStateRef.current;
+      await ensureReportAssetLink(
+        jobId,
+        {
+          name: getAssetName(
+            reportSlug,
+            formData.identifier || formData.eqptLocation || "",
+          ),
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${reportId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+      assetLinkedRef.current = true;
+    }
+
+    if (iCreatedTheRow) {
+      setCurrentReportId(reportId);
+      isAutoSaveCreatedRef.current = true;
+      window.history.replaceState(
+        {},
+        "",
+        `/jobs/${jobId}/${reportSlug}/${reportId}`,
+      );
+    }
+
+    return reportId;
+  }, [jobId, user?.id, buildReportPayload, reportSlug]);
+
+  // Auto-save function
+  const autoSave = React.useCallback(async () => {
+    if (!jobId || !user?.id) return;
+
+    // One save at a time. Anything typed while this one is in flight is picked
+    // up by the follow-up pass below, which reads the form fresh.
+    if (savingRef.current) {
+      saveAgainRef.current = true;
+      return;
+    }
+    savingRef.current = true;
+
+    try {
+      setIsAutoSaving(true);
+      do {
+        saveAgainRef.current = false;
+        await persistReport();
+      } while (saveAgainRef.current);
+      reportSaveSucceeded();
+    } catch (error) {
+      console.error("Auto-save error:", error);
+      reportSaveFailed(error);
+    } finally {
+      savingRef.current = false;
+      saveAgainRef.current = false;
+      setIsAutoSaving(false);
+    }
+  }, [jobId, user?.id, persistReport]);
+
+  // Auto-save effect with debounce (placed after autoSave function definition)
+  useEffect(() => {
+    if (!isEditing || loading) return;
+
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    autoSaveTimerRef.current = setTimeout(() => {
+      autoSave();
+    }, 500); // 500ms debounce
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, [formData, isEditing, loading, autoSave]);
+
+  // Save report
+  // Save report
+  const handleSave = async () => {
+    if (!jobId || !user?.id || !isEditing) {
+      console.warn("Save condition not met:", {
+        jobId,
+        userId: user?.id,
+        isEditing,
+      });
+      return;
+    }
+    const wasExistingReport = Boolean(reportIdRef.current);
+
+    try {
+      const savedId = await persistReport();
+      reportSaveSucceeded();
+      setJustSaved(true);
+
+      if (!wasExistingReport && savedId) {
+        setIsEditing(false);
+        navigate(`/jobs/${jobId}/${reportSlug}/${savedId}`, { replace: true });
+      }
+    } catch (error: any) {
+      reportSaveFailed(error);
+      console.error(`Error saving to ${LARGE_DRY_XFMR_MTS23_TABLE}:`, error);
+      alert(`Failed to save report: ${error?.message || "Unknown error"}`);
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    await handleSave();
+    if (currentReportId) {
+      setIsEditing(false);
+    }
+  };
+
+  // useEffect to load data on initial mount or when jobId/currentReportId changes
+  useEffect(() => {
+    const fetchData = async () => {
+      await loadJobInfo(); // Load job info first
+      await loadReport(); // Then attempt to load the report
+    };
+    fetchData();
+  }, [jobId, currentReportId]); // Dependencies for loading data
+
+  // Add effect to sync status with formData.status
+  useEffect(() => {
+    setStatus(formData.status as "PASS" | "FAIL");
+  }, [formData.status]);
+
+  // Add effect to sync tap voltages to turns ratio test nameplate voltages
+  useEffect(() => {
+    if (formData.nameplateData.tapConfiguration.voltages.length > 0) {
+      const newTests = formData.turnsRatioTests.tests.map((test, index) => ({
+        ...test,
+        nameplateVoltage:
+          formData.nameplateData.tapConfiguration.voltages[index] || "",
+      }));
+
+      handleNestedChange("turnsRatioTests", "tests", newTests);
+    }
+  }, [formData.nameplateData.tapConfiguration.voltages]);
+
+  // Add effect to calculate turns ratios when nameplate voltages or secondary voltage changes
+  useEffect(() => {
+    if (formData.turnsRatioTests.secondaryVoltage) {
+      const secondaryVoltage = parseFloat(
+        formData.turnsRatioTests.secondaryVoltage,
+      );
+      if (!isNaN(secondaryVoltage) && secondaryVoltage !== 0) {
+        const newTests = formData.turnsRatioTests.tests.map((test) => {
+          let calculatedRatio = "";
+          const nameplateVoltage = parseFloat(test.nameplateVoltage);
+
+          // Always use single-phase calculation: Tap voltage ÷ Secondary voltage
+          if (!isNaN(nameplateVoltage)) {
+            calculatedRatio = (nameplateVoltage / secondaryVoltage).toFixed(3);
+          }
+
+          return {
+            ...test,
+            calculatedRatio,
+          };
+        });
+
+        handleNestedChange("turnsRatioTests", "tests", newTests);
+      }
+    }
+  }, [
+    formData.turnsRatioTests.secondaryVoltage,
+    formData.turnsRatioTests.tests.map((t) => t.nameplateVoltage).join(","),
+  ]);
+
+  // Add effect to sync secondary voltage from nameplate to turns ratio test
+  useEffect(() => {
+    if (formData.nameplateData.secondary.volts) {
+      handleNestedChange(
+        "turnsRatioTests",
+        "secondaryVoltage",
+        formData.nameplateData.secondary.volts,
+      );
+    }
+  }, [formData.nameplateData.secondary.volts]);
+
+  // Add helper function to calculate percentage deviation
+  const calculatePercentDeviation = (
+    calculatedRatio: string,
+    measuredTTR: string,
+  ): string => {
+    // Verify if there's a measured TTR value
+    if (!measuredTTR || measuredTTR.trim() === "") {
+      return "";
+    }
+
+    // Verify if there's a calculated ratio
+    const calcRatio = parseFloat(calculatedRatio);
+    const ttrValue = parseFloat(measuredTTR);
+
+    if (isNaN(calcRatio) || isNaN(ttrValue) || calcRatio === 0) {
+      return "";
+    }
+
+    // Calculate the deviation percentage:
+    // ((Calculated Ratio - Measured TTR) / Calculated Ratio) * 100
+    const difference = calcRatio - ttrValue;
+    const percentage = (difference / calcRatio) * 100;
+
+    // Return formatted percentage with 2 decimal places
+    return percentage.toFixed(2);
+  };
+
+  // Add event handler for TTR changes to update the deviation
+  const handleTTRChange = (
+    testIndex: number,
+    phase: "phaseA" | "phaseB" | "phaseC",
+    value: string,
+  ) => {
+    const newTests = [...formData.turnsRatioTests.tests];
+    const currentTest = newTests[testIndex];
+
+    // Update the TTR value
+    newTests[testIndex] = {
+      ...currentTest,
+      [phase]: {
+        ...currentTest[phase],
+        ttr: value,
+        // Calculate and update the deviation automatically
+        percentDev: calculatePercentDeviation(
+          currentTest.calculatedRatio,
+          value,
+        ),
+      },
+    };
+
+    handleNestedChange("turnsRatioTests", "tests", newTests);
+  };
+
+  // Add new constant for acceptable deviation limit
+  const ACCEPTABLE_DEVIATION_LIMIT = 0.5; // ±0.5%
+
+  // Add function to determine assessment based on deviation values
+  const determineAssessment = (
+    test: (typeof formData.turnsRatioTests.tests)[0],
+  ): string => {
+    // If any TTR value is missing, return empty assessment
+    if (!test.phaseA.ttr || !test.phaseB.ttr || !test.phaseC.ttr) {
+      return "";
+    }
+
+    // If any deviation field is empty, return empty assessment
+    if (
+      !test.phaseA.percentDev ||
+      !test.phaseB.percentDev ||
+      !test.phaseC.percentDev
+    ) {
+      return "";
+    }
+
+    // Parse deviation values
+    const phaseADev = parseFloat(test.phaseA.percentDev);
+    const phaseBDev = parseFloat(test.phaseB.percentDev);
+    const phaseCDev = parseFloat(test.phaseC.percentDev);
+
+    // Check if any value is NaN
+    if (isNaN(phaseADev) || isNaN(phaseBDev) || isNaN(phaseCDev)) {
+      return "";
+    }
+
+    // Check if all deviations are within acceptable limits (±0.5%)
+    if (
+      Math.abs(phaseADev) <= ACCEPTABLE_DEVIATION_LIMIT &&
+      Math.abs(phaseBDev) <= ACCEPTABLE_DEVIATION_LIMIT &&
+      Math.abs(phaseCDev) <= ACCEPTABLE_DEVIATION_LIMIT
+    ) {
+      return "Pass";
+    } else {
+      return "Fail";
+    }
+  };
+
+  // Effect to recalculate deviations when calculated ratios change
+  useEffect(() => {
+    const newTests = formData.turnsRatioTests.tests.map((test) => {
+      // Recalculate all deviations when calculated ratio changes
+      return {
+        ...test,
+        phaseA: {
+          ...test.phaseA,
+          percentDev: calculatePercentDeviation(
+            test.calculatedRatio,
+            test.phaseA.ttr,
+          ),
+        },
+        phaseB: {
+          ...test.phaseB,
+          percentDev: calculatePercentDeviation(
+            test.calculatedRatio,
+            test.phaseB.ttr,
+          ),
+        },
+        phaseC: {
+          ...test.phaseC,
+          percentDev: calculatePercentDeviation(
+            test.calculatedRatio,
+            test.phaseC.ttr,
+          ),
+        },
+      };
+    });
+
+    // Only update if there are actual changes to prevent infinite loops
+    const hasChanges = newTests.some((test, i) => {
+      const current = formData.turnsRatioTests.tests[i];
+      return (
+        test.phaseA.percentDev !== current.phaseA.percentDev ||
+        test.phaseB.percentDev !== current.phaseB.percentDev ||
+        test.phaseC.percentDev !== current.phaseC.percentDev
+      );
+    });
+
+    if (hasChanges) {
+      handleNestedChange("turnsRatioTests", "tests", newTests);
+    }
+  }, [formData.turnsRatioTests.tests.map((t) => t.calculatedRatio).join(",")]);
+
+  // Effect to calculate assessment when any deviation changes
+  useEffect(() => {
+    const newTests = formData.turnsRatioTests.tests.map((test) => {
+      return {
+        ...test,
+        assessment: determineAssessment(test),
+      };
+    });
+
+    // Only update if there are actual changes to prevent infinite loops
+    const hasChanges = newTests.some((test, i) => {
+      return test.assessment !== formData.turnsRatioTests.tests[i].assessment;
+    });
+
+    if (hasChanges) {
+      handleNestedChange("turnsRatioTests", "tests", newTests);
+    }
+  }, [
+    formData.turnsRatioTests.tests
+      .map(
+        (t) =>
+          `${t.phaseA.percentDev}|${t.phaseB.percentDev}|${t.phaseC.percentDev}`,
+      )
+      .join(","),
+  ]);
+
+  // Add effect for winding resistance calculations
+  useEffect(() => {
+    const updateWindingResistanceTests = (side: "primary" | "secondary") => {
+      const tests = formData.windingResistance[side].tests.map((test) => {
+        // Calculate corrected values
+        const phaseACorrected = calculateCorrectedResistance(
+          test.phaseA.rMeas,
+          formData.windingResistance[side].tempCorrectionFactor,
+        );
+        const phaseBCorrected = calculateCorrectedResistance(
+          test.phaseB.rMeas,
+          formData.windingResistance[side].tempCorrectionFactor,
+        );
+        const phaseCCorrected = calculateCorrectedResistance(
+          test.phaseC.rMeas,
+          formData.windingResistance[side].tempCorrectionFactor,
+        );
+
+        // Calculate deviations using first phase as reference
+        const phaseADev = "0.00"; // Reference phase
+        const phaseBDev = calculateResistanceDeviation(
+          test.phaseB.rMeas,
+          test.phaseA.rMeas,
+        );
+        const phaseCDev = calculateResistanceDeviation(
+          test.phaseC.rMeas,
+          test.phaseA.rMeas,
+        );
+
+        // Calculate smallest value deviation
+        const smallestValueDeviation = calculateSmallestValueDeviation(
+          test.phaseA.rMeas,
+          test.phaseB.rMeas,
+          test.phaseC.rMeas,
+        );
+
+        // Determine assessment (Pass if deviation is less than 3%)
+        const deviationValue = parseFloat(smallestValueDeviation);
+        const assessment = isNaN(deviationValue)
+          ? ""
+          : deviationValue <= 3
+            ? "Pass"
+            : "Fail";
+
+        return {
+          ...test,
+          phaseA: {
+            ...test.phaseA,
+            rCorr: phaseACorrected,
+            rDev: phaseADev,
+          },
+          phaseB: {
+            ...test.phaseB,
+            rCorr: phaseBCorrected,
+            rDev: phaseBDev,
+          },
+          phaseC: {
+            ...test.phaseC,
+            rCorr: phaseCCorrected,
+            rDev: phaseCDev,
+          },
+          smallestValueDeviation,
+          assessment,
+        };
+      });
+
+      handleNestedChange("windingResistance", side, {
+        ...formData.windingResistance[side],
+        tests,
+      });
+    };
+
+    // Update both primary and secondary winding resistance tests
+    updateWindingResistanceTests("primary");
+    updateWindingResistanceTests("secondary");
+  }, [
+    formData.windingResistance.primary.tests
+      .map((t) => `${t.phaseA.rMeas}|${t.phaseB.rMeas}|${t.phaseC.rMeas}`)
+      .join(","),
+    formData.windingResistance.secondary.tests
+      .map((t) => `${t.phaseA.rMeas}|${t.phaseB.rMeas}|${t.phaseC.rMeas}`)
+      .join(","),
+    formData.windingResistance.primary.tempCorrectionFactor,
+    formData.windingResistance.secondary.tempCorrectionFactor,
+  ]);
+
+  // Add effect for Excitation calculations (Reactance)
+  useEffect(() => {
+    const newTests = formData.excitation.tests.map((test) => {
+      const phaseAReactance = calculateReactance(
+        formData.excitation.testVoltage,
+        test.phaseA.iOut,
+      );
+      const phaseBReactance = calculateReactance(
+        formData.excitation.testVoltage,
+        test.phaseB.iOut,
+      );
+      const phaseCReactance = calculateReactance(
+        formData.excitation.testVoltage,
+        test.phaseC.iOut,
+      );
+
+      return {
+        ...test,
+        phaseA: { ...test.phaseA, reactance: phaseAReactance },
+        phaseB: { ...test.phaseB, reactance: phaseBReactance },
+        phaseC: { ...test.phaseC, reactance: phaseCReactance },
+        // Assessment logic can be added here if needed
+      };
+    });
+
+    // Only update if there are actual changes
+    if (!_.isEqual(newTests, formData.excitation.tests)) {
+      handleNestedChange("excitation", "tests", newTests);
+    }
+  }, [
+    formData.excitation.testVoltage,
+    formData.excitation.tests
+      .map((t) => `${t.phaseA.iOut}|${t.phaseB.iOut}|${t.phaseC.iOut}`)
+      .join(","),
+  ]);
+
+  // Add effect for Power Factor calculations (PF Meas.)
+  useEffect(() => {
+    const updatePowerFactorTests = (side: "primary" | "secondary") => {
+      const tests = formData.powerFactor[side].tests.map((test) => {
+        const pfMeas = calculatePowerFactor(
+          test.wattLosses,
+          test.vOut,
+          test.iOut,
+        );
+
+        return {
+          ...test,
+          pfMeas: pfMeas,
+          // capMeas calculation logic can be added here if needed
+          // Assessment logic can be added here if needed
+        };
+      });
+
+      // Only update if there are actual changes
+      if (!_.isEqual(tests, formData.powerFactor[side].tests)) {
+        handleNestedChange("powerFactor", side, {
+          ...formData.powerFactor[side],
+          tests,
+        });
+      }
+    };
+
+    updatePowerFactorTests("primary");
+    updatePowerFactorTests("secondary");
+  }, [
+    formData.powerFactor.primary.tests
+      .map((t) => `${t.wattLosses}|${t.vOut}|${t.iOut}`)
+      .join(","),
+    formData.powerFactor.secondary.tests
+      .map((t) => `${t.wattLosses}|${t.vOut}|${t.iOut}`)
+      .join(","),
+  ]);
+
+  // ADD NEW HANDLER for Winding Resistance Table Inputs
+  const handleWindingResistanceTestChange = (
+    side: "primary" | "secondary",
+    testIndex: number,
+    phase: "phaseA" | "phaseB" | "phaseC",
+    field: "rMeas", // Only rMeas is directly editable in this setup
+    value: string,
+  ) => {
+    setFormData((prev) => {
+      const updatedWindingResistance = _.cloneDeep(prev.windingResistance);
+      if (updatedWindingResistance[side]?.tests?.[testIndex]?.[phase]) {
+        updatedWindingResistance[side].tests[testIndex][phase][field] = value;
+
+        // TODO: Re-integrate calculation logic here or call a separate calculation function
+        // For now, just updating the value to fix the input binding
+        // Example: Recalculate dependent fields if needed
+        // const test = updatedWindingResistance[side].tests[testIndex];
+        // test.phaseA.rDev = calculateResistanceDeviation(test.phaseA.rMeas, /* reference */);
+        // test.phaseA.rCorr = calculateCorrectedResistance(test.phaseA.rMeas, /* tcf */);
+        // test.assessment = determineWindingResistanceAssessment(test);
+
+        return {
+          ...prev,
+          windingResistance: updatedWindingResistance,
+        };
+      }
+      return prev; // Return previous state if path is invalid
+    });
+    // Consider calling a function like updateWindingResistanceCalculations(side) here if complex updates are needed
+  };
+
+  // Loading indicator
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <LoadingSpinner size="md" />
+      </div>
+    );
+  }
+
+  // Render the form JSX
+  return (
+    <ReportWrapper isPrintMode={isPrintMode}>
+      {/* Print Header - Only visible when printing */}
+      <div className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6">
+        <img
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png"
+          alt="AMP Logo"
+          className="h-10 w-auto"
+          style={{ maxHeight: 40 }}
+        />
+        <div className="flex-1 text-center">
+          <h1 className="text-2xl font-bold text-black mb-1">{reportName}</h1>
+        </div>
+        <div
+          className="text-right font-extrabold text-xl"
+          style={{ color: "#1a4e7c" }}
+        >
+          NETA - ATS 7.2.1.1
+          <div className="mt-2">
+            <div
+              className={`pass-fail-status-box ${getPassFailBadgeClass(status)}`}
+              style={{
+                display: "inline-block",
+                padding: "4px 10px",
+                fontSize: "12px",
+                fontWeight: "bold",
+                textAlign: "center",
+                width: "fit-content",
+                borderRadius: "6px",
+                border:
+                  status === "PASS" ? "2px solid #16a34a" : "2px solid #dc2626",
+                backgroundColor: status === "PASS" ? "#22c55e" : "#ef4444",
+                color: "white",
+                WebkitPrintColorAdjust: "exact",
+                printColorAdjust: "exact",
+                boxSizing: "border-box",
+                minWidth: "50px",
+              }}
+            >
+              {status}
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* End Print Header */}
+      <div className="p-6 flex justify-center bg-neutral-50 dark:bg-dark-150">
+        <div className="max-w-7xl w-full space-y-6">
+          <ReportHeader
+            title={reportName}
+            isAutoSaving={isAutoSaving}
+            isEditing={isEditing}
+            justSaved={justSaved}
+            isSaving={loading}
+            status={status}
+            hasReport={!!currentReportId}
+            onStatusToggle={() => {
+              if (isEditing) {
+                const newStatus = status === "PASS" ? "FAIL" : "PASS";
+                setStatus(newStatus);
+                handleChange(null, "status", newStatus);
+              }
+            }}
+            onSave={handleSave}
+            onSaveAndClose={handleSaveAndClose}
+            onEdit={() => setIsEditing(true)}
+            onBack={() => navigate(`/jobs/${jobId}`)}
+            onPrint={() => window.print()}
+            isPrintMode={isPrintMode}
+            loading={loading}
+          />
+          {isEditing && (
+            <div className="flex justify-end mb-2">
+              <button
+                onClick={() => setIsOmicronMode(!isOmicronMode)}
+                className={`px-3 py-1.5 text-sm font-medium rounded-none focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  isOmicronMode
+                    ? "bg-purple-600 text-white focus:ring-purple-500"
+                    : "bg-blue-600 text-white focus:ring-blue-500"
+                } hover:opacity-90`}
+              >
+                {isOmicronMode ? "Omicron Result Entry" : "Manual Result Entry"}
+              </button>
+            </div>
+          )}
+
+          {/* Job Information */}
+          <section className="mb-6">
+            <div className="w-full h-1 bg-brand mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
+              Job Information
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-2 mb-8 print:hidden">
+              {/* Left Column */}
+              <div className="space-y-4 md:col-span-2">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Customer
+                  </label>
+                  <input
+                    type="text"
+                    value={maskCustomerName(formData.customer)}
+                    readOnly
+                    className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white cursor-not-allowed"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Address
+                  </label>
+                  <textarea
+                    value={maskCustomerAddress(formData.address)}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
+                    readOnly={!isEditing}
+                    rows={2}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-50 cursor-not-allowed" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    User
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.userName}
+                    onChange={(e) =>
+                      handleChange(null, "userName", e.target.value)
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    placeholder="Enter User Name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Identifier
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.identifier}
+                    onChange={(e) =>
+                      handleChange(null, "identifier", e.target.value)
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    placeholder="Transformer ID / Name"
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      Temp. °F
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.temperature.ambient}
+                      onChange={(e) =>
+                        handleTemperatureChange(Number(e.target.value))
+                      }
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      °C
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.temperature.celsius}
+                      readOnly
+                      className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      TCF
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.temperature.correctionFactor}
+                      readOnly
+                      className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+              </div>
+              {/* Right Column */}
+              <div className="space-y-4 md:col-span-2">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Job #
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.jobNumber}
+                    readOnly
+                    className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white cursor-not-allowed"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Technicians
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.technicians}
+                    onChange={(e) =>
+                      handleChange(null, "technicians", e.target.value)
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => handleChange(null, "date", e.target.value)}
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Substation
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.substation}
+                    onChange={(e) =>
+                      handleChange(null, "substation", e.target.value)
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Eqpt. Location
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.eqptLocation}
+                    onChange={(e) =>
+                      handleChange(null, "eqptLocation", e.target.value)
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Humidity %
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.temperature.humidity}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        temperature: {
+                          ...prev.temperature,
+                          humidity:
+                            e.target.value === "" ? "" : Number(e.target.value),
+                        },
+                      }))
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    placeholder="Optional"
+                  />
+                </div>
+              </div>
+            </div>
+            <JobInfoPrintTable
+              data={{
+                customer: formData.customer,
+                address: formData.address,
+                jobNumber: formData.jobNumber,
+                technicians: formData.technicians,
+                date: formData.date,
+                identifier: formData.identifier,
+                user: formData.userName,
+                substation: formData.substation,
+                eqptLocation: formData.eqptLocation,
+                temperature: {
+                  fahrenheit: formData.temperature.fahrenheit,
+                  celsius: formData.temperature.celsius,
+                  tcf: formData.temperature.correctionFactor,
+                  humidity: formData.temperature.humidity,
+                },
+              }}
+            />
+          </section>
+
+          {/* Nameplate Data */}
+          <section className="mb-6">
+            <div className="w-full h-1 bg-brand mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
+              Nameplate Data
+            </h2>
+            {/* Print reads as a table, like the other reports; the screen keeps
+                its editable grid. */}
+            <table className="hidden print:table w-full border-collapse border border-black text-[10px] mb-2">
+              <tbody>
+                {[
+                  ["Manufacturer", formData.nameplateData.manufacturer],
+                  ["Catalog Number", formData.nameplateData.catalogNumber],
+                  ["Serial Number", formData.nameplateData.serialNumber],
+                  ["KVA", formData.nameplateData.kva],
+                  ["Temp. Rise (°C)", formData.nameplateData.tempRise],
+                  ["Impedance (%)", formData.nameplateData.impedance],
+                ].map(([label, value]) => (
+                  <tr key={`np-${label}`}>
+                    <td className="border border-black px-2 py-1 font-medium w-1/4">
+                      {label}
+                    </td>
+                    <td className="border border-black px-2 py-1">{value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="grid grid-cols-3 gap-4 print:hidden">
+              {/* Row 1: Manufacturer, Catalog, Serial */}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                  Manufacturer
+                </label>
+                <input
+                  type="text"
+                  value={formData.nameplateData.manufacturer}
+                  onChange={(e) =>
+                    handleNestedChange(
+                      "nameplateData",
+                      "manufacturer",
+                      e.target.value,
+                    )
+                  }
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                  Catalog Number
+                </label>
+                <input
+                  type="text"
+                  value={formData.nameplateData.catalogNumber}
+                  onChange={(e) =>
+                    handleNestedChange(
+                      "nameplateData",
+                      "catalogNumber",
+                      e.target.value,
+                    )
+                  }
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                  Serial Number
+                </label>
+                <input
+                  type="text"
+                  value={formData.nameplateData.serialNumber}
+                  onChange={(e) =>
+                    handleNestedChange(
+                      "nameplateData",
+                      "serialNumber",
+                      e.target.value,
+                    )
+                  }
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 mt-4 print:hidden">
+              {/* Row 2: KVA, Temp Rise, Impedance */}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                  KVA
+                </label>
+                <input
+                  type="text"
+                  value={formData.nameplateData.kva}
+                  onChange={(e) =>
+                    handleNestedChange("nameplateData", "kva", e.target.value)
+                  }
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                  Temp. Rise (°C)
+                </label>
+                <input
+                  type="text"
+                  value={formData.nameplateData.tempRise}
+                  onChange={(e) =>
+                    handleNestedChange(
+                      "nameplateData",
+                      "tempRise",
+                      e.target.value,
+                    )
+                  }
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                  Impedance (%)
+                </label>
+                <input
+                  type="text"
+                  value={formData.nameplateData.impedance}
+                  onChange={(e) =>
+                    handleNestedChange(
+                      "nameplateData",
+                      "impedance",
+                      e.target.value,
+                    )
+                  }
+                  readOnly={!isEditing}
+                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                />
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <div className="grid grid-cols-[100px_1fr_1fr_1fr] gap-4 items-center nameplate-connections-grid print:hidden">
+                <div></div>
+                <div className="text-center text-sm font-medium text-neutral-700 dark:text-white">
+                  Volts
+                </div>
+                <div className="text-center text-sm font-medium text-neutral-700 dark:text-white">
+                  Connections
+                </div>
+                <div className="text-center text-sm font-medium text-neutral-700 dark:text-white">
+                  Winding Material
+                </div>
+
+                {/* Primary Row */}
+                <div className="text-sm font-medium text-neutral-700 dark:text-white">
+                  Primary
+                </div>
+                <div className="flex justify-center items-center space-x-2">
+                  <input
+                    type="text"
+                    value={formData.nameplateData.primary.volts}
+                    onChange={(e) =>
+                      handleNestedChange("nameplateData", "primary", {
+                        ...formData.nameplateData.primary,
+                        volts: e.target.value,
+                      })
+                    }
+                    readOnly={!isEditing}
+                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                  <span className="text-neutral-500 dark:text-white">/</span>
+                  <input
+                    type="text"
+                    value={formData.nameplateData.primary.voltsSecondary || ""}
+                    onChange={(e) =>
+                      handleNestedChange("nameplateData", "primary", {
+                        ...formData.nameplateData.primary,
+                        voltsSecondary: e.target.value,
+                      })
+                    }
+                    readOnly={!isEditing}
+                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div className="flex justify-center space-x-4">
+                  {["Delta", "Wye", "Single Phase"].map((conn) => (
+                    <label
+                      key={`pri-${conn}`}
+                      className="inline-flex items-center"
+                    >
+                      <input
+                        type="radio"
+                        name="primary-connection"
+                        value={conn}
+                        checked={
+                          formData.nameplateData.primary.connection === conn
+                        }
+                        onChange={() =>
+                          handleNestedChange("nameplateData", "primary", {
+                            ...formData.nameplateData.primary,
+                            connection: conn,
+                          })
+                        }
+                        disabled={!isEditing}
+                        className="form-radio h-4 w-4 text-brand border-neutral-300 dark:border-neutral-700 focus:ring-brand"
+                      />
+                      <span className="ml-2 text-sm text-neutral-700 dark:text-white">
+                        {conn}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex justify-center space-x-4">
+                  {["Aluminum", "Copper"].map((mat) => (
+                    <label
+                      key={`pri-${mat}`}
+                      className="inline-flex items-center"
+                    >
+                      <input
+                        type="radio"
+                        name="primary-material"
+                        value={mat}
+                        checked={
+                          formData.nameplateData.primary.material === mat
+                        }
+                        onChange={() =>
+                          handleNestedChange("nameplateData", "primary", {
+                            ...formData.nameplateData.primary,
+                            material: mat,
+                          })
+                        }
+                        disabled={!isEditing}
+                        className="form-radio h-4 w-4 text-brand border-neutral-300 dark:border-neutral-700 focus:ring-brand"
+                      />
+                      <span className="ml-2 text-sm text-neutral-700 dark:text-white">
+                        {mat}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+
+                {/* Secondary Row */}
+                <div className="text-sm font-medium text-neutral-700 dark:text-white">
+                  Secondary
+                </div>
+                <div className="flex justify-center items-center space-x-2">
+                  <input
+                    type="text"
+                    value={formData.nameplateData.secondary.volts}
+                    onChange={(e) =>
+                      handleNestedChange("nameplateData", "secondary", {
+                        ...formData.nameplateData.secondary,
+                        volts: e.target.value,
+                      })
+                    }
+                    readOnly={!isEditing}
+                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                  <span className="text-neutral-500 dark:text-white">/</span>
+                  <input
+                    type="text"
+                    value={
+                      formData.nameplateData.secondary.voltsSecondary || ""
+                    }
+                    onChange={(e) =>
+                      handleNestedChange("nameplateData", "secondary", {
+                        ...formData.nameplateData.secondary,
+                        voltsSecondary: e.target.value,
+                      })
+                    }
+                    readOnly={!isEditing}
+                    className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div className="flex justify-center space-x-4">
+                  {["Delta", "Wye", "Single Phase"].map((conn) => (
+                    <label
+                      key={`sec-${conn}`}
+                      className="inline-flex items-center"
+                    >
+                      <input
+                        type="radio"
+                        name="secondary-connection"
+                        value={conn}
+                        checked={
+                          formData.nameplateData.secondary.connection === conn
+                        }
+                        onChange={() =>
+                          handleNestedChange("nameplateData", "secondary", {
+                            ...formData.nameplateData.secondary,
+                            connection: conn,
+                          })
+                        }
+                        disabled={!isEditing}
+                        className="form-radio h-4 w-4 text-blue-600 border-neutral-300 focus:ring-blue-500"
+                      />
+                      <span className="ml-2 text-sm text-neutral-700 dark:text-white">
+                        {conn}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex justify-center space-x-4">
+                  {["Aluminum", "Copper"].map((mat) => (
+                    <label
+                      key={`sec-${mat}`}
+                      className="inline-flex items-center"
+                    >
+                      <input
+                        type="radio"
+                        name="secondary-material"
+                        value={mat}
+                        checked={
+                          formData.nameplateData.secondary.material === mat
+                        }
+                        onChange={() =>
+                          handleNestedChange("nameplateData", "secondary", {
+                            ...formData.nameplateData.secondary,
+                            material: mat,
+                          })
+                        }
+                        disabled={!isEditing}
+                        className="form-radio h-4 w-4 text-blue-600 border-neutral-300 focus:ring-blue-500"
+                      />
+                      <span className="ml-2 text-sm text-neutral-700 dark:text-white">
+                        {mat}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <table className="hidden print:table w-full border-collapse border border-black text-[10px] mt-2">
+              <thead>
+                <tr>
+                  <th className="border border-black px-2 py-1 text-left"></th>
+                  <th className="border border-black px-2 py-1">Volts</th>
+                  <th className="border border-black px-2 py-1">Connections</th>
+                  <th className="border border-black px-2 py-1">
+                    Winding Material
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {(["primary", "secondary"] as const).map((side) => {
+                  const winding = formData.nameplateData[side];
+                  return (
+                    <tr key={`print-${side}`}>
+                      <td className="border border-black px-2 py-1 font-medium capitalize">
+                        {side}
+                      </td>
+                      <td className="border border-black px-2 py-1 text-center">
+                        {winding.volts}
+                        {winding.voltsSecondary
+                          ? ` / ${winding.voltsSecondary}`
+                          : ""}
+                      </td>
+                      <td className="border border-black px-2 py-1 text-center">
+                        {winding.connection}
+                      </td>
+                      <td className="border border-black px-2 py-1 text-center">
+                        {winding.material}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            {/* Tap Configuration */}
+            <div className="mt-6 border-t dark:border-neutral-700 pt-4">
+              <h3 className="text-md font-semibold mb-4 text-neutral-800 dark:text-white">
+                Tap Configuration
+              </h3>
+
+              {/* Print: the taps as a table, with the position in service named
+                  rather than the whole row of position numbers. */}
+              <table className="hidden print:table w-full border-collapse border border-black text-[10px] mb-2">
+                <thead>
+                  <tr>
+                    <th className="border border-black px-2 py-1 text-left w-1/4">
+                      Tap Position
+                    </th>
+                    {formData.nameplateData.tapConfiguration.positions.map(
+                      (position) => (
+                        <th
+                          key={`print-tap-pos-${position}`}
+                          className="border border-black px-2 py-1"
+                        >
+                          {position}
+                        </th>
+                      ),
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-black px-2 py-1 font-medium">
+                      Tap Voltages
+                    </td>
+                    {formData.nameplateData.tapConfiguration.voltages.map(
+                      (voltage, index) => (
+                        <td
+                          key={`print-tap-volt-${index}`}
+                          className="border border-black px-2 py-1 text-center"
+                        >
+                          {voltage}
+                        </td>
+                      ),
+                    )}
+                  </tr>
+                  <tr>
+                    <td className="border border-black px-2 py-1 font-medium">
+                      Tap Position Left
+                    </td>
+                    <td
+                      className="border border-black px-2 py-1"
+                      colSpan={
+                        formData.nameplateData.tapConfiguration.positions
+                          .length || 1
+                      }
+                    >
+                      {formData.nameplateData.tapConfiguration.currentPosition}
+                      {formData.nameplateData.tapConfiguration
+                        .currentPositionSecondary
+                        ? ` / ${formData.nameplateData.tapConfiguration.currentPositionSecondary}`
+                        : ""}
+                      {formData.nameplateData.tapConfiguration.tapVoltsSpecific
+                        ? `  ·  Volts ${formData.nameplateData.tapConfiguration.tapVoltsSpecific}`
+                        : ""}
+                      {formData.nameplateData.tapConfiguration
+                        .tapPercentSpecific
+                        ? `  ·  Percent ${formData.nameplateData.tapConfiguration.tapPercentSpecific}`
+                        : ""}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div className="space-y-3 print:hidden">
+                <div className="flex items-center">
+                  <label className="w-32 text-sm font-medium text-neutral-700 dark:text-white">
+                    Tap Voltages
+                  </label>
+                  <div className="grid grid-cols-7 gap-2 flex-1">
+                    {formData.nameplateData.tapConfiguration.voltages.map(
+                      (voltage, index) => (
+                        <input
+                          key={`tap-volt-${index}`}
+                          type="text"
+                          value={voltage}
+                          onChange={(e) => {
+                            const newVoltages = [
+                              ...formData.nameplateData.tapConfiguration
+                                .voltages,
+                            ];
+                            newVoltages[index] = e.target.value;
+                            handleNestedChange(
+                              "nameplateData",
+                              "tapConfiguration",
+                              {
+                                ...formData.nameplateData.tapConfiguration,
+                                voltages: newVoltages,
+                              },
+                            );
+                          }}
+                          readOnly={!isEditing}
+                          className={`w-full text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          placeholder={index === 5 || index === 6 ? "-" : ""}
+                        />
+                      ),
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center print:hidden">
+                  <label className="w-32 text-sm font-medium text-neutral-700 dark:text-white">
+                    Tap Position
+                  </label>
+                  <div className="grid grid-cols-7 gap-2 flex-1">
+                    {formData.nameplateData.tapConfiguration.positions.map(
+                      (position) => (
+                        <div
+                          key={`tap-pos-${position}`}
+                          className="text-center text-sm text-neutral-700 dark:text-white font-medium"
+                        >
+                          {position}
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center">
+                  <label className="w-32 text-sm font-medium text-neutral-700 dark:text-white">
+                    Tap Position Left
+                  </label>
+                  <div className="flex items-center space-x-8">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="number"
+                        value={
+                          formData.nameplateData.tapConfiguration
+                            .currentPosition
+                        }
+                        onChange={(e) =>
+                          handleNestedChange(
+                            "nameplateData",
+                            "tapConfiguration",
+                            {
+                              ...formData.nameplateData.tapConfiguration,
+                              currentPosition: parseInt(e.target.value) || 0,
+                            },
+                          )
+                        }
+                        readOnly={!isEditing}
+                        className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      />
+                      <span className="text-neutral-500 dark:text-white">
+                        /
+                      </span>
+                      <input
+                        type="text"
+                        value={
+                          formData.nameplateData.tapConfiguration
+                            .currentPositionSecondary
+                        }
+                        onChange={(e) =>
+                          handleNestedChange(
+                            "nameplateData",
+                            "tapConfiguration",
+                            {
+                              ...formData.nameplateData.tapConfiguration,
+                              currentPositionSecondary: e.target.value,
+                            },
+                          )
+                        }
+                        readOnly={!isEditing}
+                        className={`w-16 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-neutral-700 dark:text-white">
+                        Volts
+                      </span>
+                      <input
+                        type="text"
+                        value={
+                          formData.nameplateData.tapConfiguration
+                            .tapVoltsSpecific
+                        }
+                        onChange={(e) =>
+                          handleNestedChange(
+                            "nameplateData",
+                            "tapConfiguration",
+                            {
+                              ...formData.nameplateData.tapConfiguration,
+                              tapVoltsSpecific: e.target.value,
+                            },
+                          )
+                        }
+                        readOnly={!isEditing}
+                        className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-neutral-700 dark:text-white">
+                        Percent
+                      </span>
+                      <input
+                        type="text"
+                        value={
+                          formData.nameplateData.tapConfiguration
+                            .tapPercentSpecific
+                        }
+                        onChange={(e) =>
+                          handleNestedChange(
+                            "nameplateData",
+                            "tapConfiguration",
+                            {
+                              ...formData.nameplateData.tapConfiguration,
+                              tapPercentSpecific: e.target.value,
+                            },
+                          )
+                        }
+                        readOnly={!isEditing}
+                        className={`w-24 text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Visual and Mechanical Inspection */}
+          <section className="mb-6 visual-mechanical-inspection">
+            <div className="w-full h-1 bg-brand mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
+              Visual and Mechanical Inspection
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
+                <thead className="bg-neutral-50 dark:bg-dark-150">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                      Section
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                      Description
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider w-40">
+                      Result
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                      Comments
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
+                  {Object.keys(formData.visualInspection)
+                    .filter((key) => !key.endsWith("_comments"))
+                    .sort((a, b) => {
+                      // Extract the numeric part from the section ID (e.g., "7.2.2.A.1" -> 1)
+                      const aNum = parseInt(a.split(".").pop() || "0");
+                      const bNum = parseInt(b.split(".").pop() || "0");
+                      return aNum - bNum;
+                    })
+                    .map((id) => (
+                      <tr key={id}>
+                        <td className="px-4 py-2 text-sm font-medium text-neutral-900 dark:text-white">
+                          {id}
+                        </td>
+                        <td className="px-4 py-2 text-sm text-neutral-700 dark:text-white">
+                          {getVisualInspectionDescription(id)}
+                        </td>
+                        <td className="px-4 py-2">
+                          <select
+                            value={formData.visualInspection[id]}
+                            onChange={(e) =>
+                              handleVisualInspectionChange(
+                                id,
+                                "result",
+                                e.target.value,
+                              )
+                            }
+                            disabled={!isEditing}
+                            className={`w-full text-sm rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          >
+                            {visualInspectionOptions.map((option) => (
+                              <option
+                                key={option}
+                                value={option}
+                                className="dark:bg-dark-150 dark:text-white"
+                              >
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-4 py-2">
+                          <span className="hidden print:inline text-sm">
+                            {formData.visualInspection[`${id}_comments`] || ""}
+                          </span>
+                          <input
+                            type="text"
+                            value={
+                              formData.visualInspection[`${id}_comments`] || ""
+                            }
+                            onChange={(e) =>
+                              handleVisualInspectionChange(
+                                id,
+                                "comment",
+                                e.target.value,
+                              )
+                            }
+                            readOnly={!isEditing}
+                            className={`print:hidden w-full text-sm rounded-none border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            placeholder="Optional comments"
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* Insulation Resistance Tests */}
+          <section className="mb-6">
+            <div className="w-full h-1 bg-brand mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
+              Electrical Tests - Insulation Resistance
+            </h2>
+            <div className="space-y-6">
+              {/* Grid container for side-by-side tables */}
+              <div className="grid grid-cols-2 gap-6">
+                {/* Insulation Resistance Values Table */}
+                <div>
+                  <table className="w-full border border-neutral-200 dark:border-neutral-700">
+                    <thead>
+                      <tr>
+                        <th
+                          colSpan={6}
+                          className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700"
+                        >
+                          Insulation Resistance Values
+                        </th>
+                      </tr>
+                      <tr>
+                        <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          Test
+                        </th>
+                        <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-20">
+                          kV
+                        </th>
+                        <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          0.5 Min.
+                        </th>
+                        <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          1 Min.
+                        </th>
+                        <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          10 Min.
+                        </th>
+                        <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 w-16">
+                          Unit
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
+                      {[
+                        { id: "primaryToGround", label: "Primary to Ground" },
+                        {
+                          id: "secondaryToGround",
+                          label: "Secondary to Ground",
+                        },
+                        {
+                          id: "primaryToSecondary",
+                          label: "Primary to Secondary",
+                        },
+                      ].map((test) => (
+                        <tr key={test.id}>
+                          <td className="px-2 py-1 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            {test.label}
+                          </td>
+                          <td className="px-1 py-1 border-r dark:border-neutral-700">
+                            <select
+                              value={
+                                formData.insulationResistance[test.id]
+                                  ?.testVoltage || ""
+                              }
+                              onChange={(e) =>
+                                handleNestedChange(
+                                  "insulationResistance",
+                                  test.id,
+                                  {
+                                    ...formData.insulationResistance[test.id],
+                                    testVoltage: e.target.value,
+                                  },
+                                )
+                              }
+                              disabled={!isEditing}
+                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            >
+                              {testVoltageOptions.map((voltage) => (
+                                <option
+                                  key={voltage}
+                                  value={voltage}
+                                  className="dark:bg-dark-150 dark:text-white"
+                                >
+                                  {voltage}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="px-1 py-1 border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={
+                                formData.insulationResistance[test.id]?.readings
+                                  ?.halfMinute || ""
+                              }
+                              onChange={(e) =>
+                                handleDeepNestedChange(
+                                  "insulationResistance",
+                                  test.id,
+                                  "readings",
+                                  "halfMinute",
+                                  e.target.value,
+                                )
+                              }
+                              readOnly={!isEditing}
+                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            />
+                          </td>
+                          <td className="px-1 py-1 border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={
+                                formData.insulationResistance[test.id]?.readings
+                                  ?.oneMinute || ""
+                              }
+                              onChange={(e) =>
+                                handleDeepNestedChange(
+                                  "insulationResistance",
+                                  test.id,
+                                  "readings",
+                                  "oneMinute",
+                                  e.target.value,
+                                )
+                              }
+                              readOnly={!isEditing}
+                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            />
+                          </td>
+                          <td className="px-1 py-1 border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={
+                                formData.insulationResistance[test.id]?.readings
+                                  ?.tenMinute || ""
+                              }
+                              onChange={(e) =>
+                                handleDeepNestedChange(
+                                  "insulationResistance",
+                                  test.id,
+                                  "readings",
+                                  "tenMinute",
+                                  e.target.value,
+                                )
+                              }
+                              readOnly={!isEditing}
+                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            />
+                          </td>
+                          <td className="px-1 py-1">
+                            <select
+                              value={
+                                formData.insulationResistance[test.id]?.unit ||
+                                "MΩ"
+                              }
+                              onChange={(e) =>
+                                handleNestedChange(
+                                  "insulationResistance",
+                                  test.id,
+                                  {
+                                    ...formData.insulationResistance[test.id],
+                                    unit: e.target.value,
+                                  },
+                                )
+                              }
+                              disabled={!isEditing}
+                              className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            >
+                              {insulationResistanceUnits.map((unit) => (
+                                <option
+                                  key={unit.symbol}
+                                  value={unit.symbol}
+                                  className="dark:bg-dark-150 dark:text-white"
+                                >
+                                  {unit.symbol}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Temperature Corrected Values Table */}
+                <div>
+                  <table className="w-full border border-neutral-200 dark:border-neutral-700">
+                    <thead>
+                      <tr>
+                        <th
+                          colSpan={5}
+                          className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700"
+                        >
+                          Temperature Corrected Values
+                        </th>
+                      </tr>
+                      <tr>
+                        <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          Test
+                        </th>
+                        <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          0.5 Min.
+                        </th>
+                        <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          1 Min.
+                        </th>
+                        <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          10 Min.
+                        </th>
+                        <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700">
+                          Unit
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
+                      {[
+                        { id: "primaryToGround", label: "Primary to Ground" },
+                        { id: "secondaryToGround", label: "Secondary to Ground" },
+                        { id: "primaryToSecondary", label: "Primary to Secondary" },
+                      ].map((test) => (
+                        <tr key={`${test.id}-corr`}>
+                          <td className="px-2 py-1 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            {test.label}
+                          </td>
+                          <td className="px-1 py-1 border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={
+                                formData.insulationResistance[test.id]
+                                  ?.corrected?.halfMinute || ""
+                              }
+                              readOnly
+                              className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                            />
+                          </td>
+                          <td className="px-1 py-1 border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={
+                                formData.insulationResistance[test.id]
+                                  ?.corrected?.oneMinute || ""
+                              }
+                              readOnly
+                              className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                            />
+                          </td>
+                          <td className="px-1 py-1 border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={
+                                formData.insulationResistance[test.id]
+                                  ?.corrected?.tenMinute || ""
+                              }
+                              readOnly
+                              className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                            />
+                          </td>
+                          <td className="px-1 py-1">
+                            <input
+                              type="text"
+                              value={
+                                formData.insulationResistance[test.id]?.unit ||
+                                "MΩ"
+                              }
+                              readOnly
+                              className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Dielectric Absorption and Polarization Index Table */}
+              <table className="w-full border border-neutral-200 dark:border-neutral-700">
+                <thead className="bg-neutral-50 dark:bg-dark-150">
+                  <tr>
+                    <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-1/3">
+                      Calculated Values
+                    </th>
+                    <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                      Primary
+                    </th>
+                    <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                      Secondary
+                    </th>
+                    <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                      Pri-Sec
+                    </th>
+                    <th className="px-2 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700">
+                      Acceptable
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
+                  <tr>
+                    <td className="px-2 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                      Dielectric Absorption
+                      <div className="text-xs text-neutral-500 dark:text-white dark:text-white">
+                        (Ratio of 1 Min. to 0.5 Minute Result)
+                      </div>
+                    </td>
+                    <td className="px-1 py-1 border-r dark:border-neutral-700">
+                      <input
+                        type="text"
+                        value={
+                          formData.insulationResistance.primaryToGround
+                            ?.dielectricAbsorption || ""
+                        }
+                        readOnly
+                        className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                      />
+                    </td>
+                    <td className="px-1 py-1 border-r dark:border-neutral-700">
+                      <input
+                        type="text"
+                        value={
+                          formData.insulationResistance.secondaryToGround
+                            ?.dielectricAbsorption || ""
+                        }
+                        readOnly
+                        className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                      />
+                    </td>
+                    <td className="px-1 py-1 border-r dark:border-neutral-700">
+                      <input
+                        type="text"
+                        value={
+                          formData.insulationResistance.primaryToSecondary
+                            ?.dielectricAbsorption || ""
+                        }
+                        readOnly
+                        className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                      />
+                    </td>
+                    <td className="px-1 py-1">
+                      <input
+                        type="text"
+                        value={
+                          formData.insulationResistance
+                            .dielectricAbsorptionAcceptable
+                        }
+                        readOnly
+                        className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm ${
+                          formData.insulationResistance
+                            .dielectricAbsorptionAcceptable === "Yes"
+                            ? "text-green-600 dark:text-green-400 font-medium"
+                            : formData.insulationResistance
+                                  .dielectricAbsorptionAcceptable === "No"
+                              ? "text-red-600 dark:text-red-400 font-medium"
+                              : "text-neutral-900 dark:text-white"
+                        }`}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-2 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                      Polarization Index
+                      <div className="text-xs text-neutral-500 dark:text-white dark:text-white">
+                        (Ratio of 10 Min. to 1 Min. Result)
+                      </div>
+                    </td>
+                    <td className="px-1 py-1 border-r dark:border-neutral-700">
+                      <input
+                        type="text"
+                        value={
+                          formData.insulationResistance.primaryToGround
+                            ?.polarizationIndex || ""
+                        }
+                        readOnly
+                        className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                      />
+                    </td>
+                    <td className="px-1 py-1 border-r dark:border-neutral-700">
+                      <input
+                        type="text"
+                        value={
+                          formData.insulationResistance.secondaryToGround
+                            ?.polarizationIndex || ""
+                        }
+                        readOnly
+                        className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                      />
+                    </td>
+                    <td className="px-1 py-1 border-r dark:border-neutral-700">
+                      <input
+                        type="text"
+                        value={
+                          formData.insulationResistance.primaryToSecondary
+                            ?.polarizationIndex || ""
+                        }
+                        readOnly
+                        className="w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white"
+                      />
+                    </td>
+                    <td className="px-1 py-1">
+                      <input
+                        type="text"
+                        value={
+                          formData.insulationResistance
+                            .polarizationIndexAcceptable
+                        }
+                        readOnly
+                        className={`w-full text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm ${
+                          formData.insulationResistance
+                            .polarizationIndexAcceptable === "Yes"
+                            ? "text-green-600 dark:text-green-400 font-medium"
+                            : formData.insulationResistance
+                                  .polarizationIndexAcceptable === "No"
+                              ? "text-red-600 dark:text-red-400 font-medium"
+                              : "text-neutral-900 dark:text-white"
+                        }`}
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* Conditionally Rendered Sections */}
+          {!isOmicronMode && (
+            <>
+              {/* Turns Ratio Tests Section */}
+              <section className="mb-6 manual-section">
+                <div className="w-full h-1 bg-brand mb-4"></div>
+                <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
+                  Turns Ratio Tests (TTR)
+                </h2>
+                <div className="space-y-4">
+                  {/* Secondary Voltage Input */}
+                  <div className="flex items-center space-x-2">
+                    <label className="text-sm font-medium text-neutral-700 dark:text-white">
+                      Secondary Winding Voltage (L-N for Wye, L-L for Delta):
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.turnsRatioTests.secondaryVoltage}
+                      readOnly={true}
+                      className="w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white bg-neutral-100 dark:bg-dark-150 cursor-not-allowed"
+                    />
+                    <span className="text-sm text-neutral-700 dark:text-white">
+                      V
+                    </span>
+                  </div>
+
+                  {/* Table of turns ratio tests */}
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
+                      <thead>
+                        <tr>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                            Tap
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                            Nameplate Voltage
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                            Calculated Ratio
+                          </th>
+                          <th
+                            colSpan={2}
+                            className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
+                          >
+                            Phase A
+                          </th>
+                          <th
+                            colSpan={2}
+                            className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
+                          >
+                            Phase B
+                          </th>
+                          <th
+                            colSpan={2}
+                            className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
+                          >
+                            Phase C
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                            Assessment
+                          </th>
+                        </tr>
+                        <tr>
+                          <th className="px-3 py-2"></th>
+                          <th className="px-3 py-2"></th>
+                          <th className="px-3 py-2"></th>
+                          <th className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-white">
+                            TTR
+                          </th>
+                          <th className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-white">
+                            % Dev.
+                          </th>
+                          <th className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-white">
+                            TTR
+                          </th>
+                          <th className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-white">
+                            % Dev.
+                          </th>
+                          <th className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-white">
+                            TTR
+                          </th>
+                          <th className="px-3 py-2 text-center text-xs font-medium text-neutral-500 dark:text-white">
+                            % Dev.
+                          </th>
+                          <th className="px-3 py-2"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
+                        {formData.turnsRatioTests.tests.map((test, index) => (
+                          <tr key={index}>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white">
+                              {test.tap}
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="text"
+                                value={test.nameplateVoltage}
+                                onChange={(e) => {
+                                  const newTests = [
+                                    ...formData.turnsRatioTests.tests,
+                                  ];
+                                  newTests[index] = {
+                                    ...test,
+                                    nameplateVoltage: e.target.value,
+                                  };
+                                  handleNestedChange(
+                                    "turnsRatioTests",
+                                    "tests",
+                                    newTests,
+                                  );
+                                }}
+                                readOnly={!isEditing}
+                                className={`w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="text"
+                                value={test.calculatedRatio}
+                                onChange={(e) => {
+                                  const newTests = [
+                                    ...formData.turnsRatioTests.tests,
+                                  ];
+                                  newTests[index] = {
+                                    ...test,
+                                    calculatedRatio: e.target.value,
+                                  };
+                                  handleNestedChange(
+                                    "turnsRatioTests",
+                                    "tests",
+                                    newTests,
+                                  );
+                                }}
+                                readOnly={!isEditing}
+                                className={`w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="text"
+                                value={test.phaseA.ttr}
+                                onChange={(e) =>
+                                  handleTTRChange(
+                                    index,
+                                    "phaseA",
+                                    e.target.value,
+                                  )
+                                }
+                                readOnly={!isEditing}
+                                className={`w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="text"
+                                value={test.phaseA.percentDev}
+                                readOnly={true}
+                                className="w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white bg-neutral-100 dark:bg-dark-150 cursor-not-allowed"
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="text"
+                                value={test.phaseB.ttr}
+                                onChange={(e) =>
+                                  handleTTRChange(
+                                    index,
+                                    "phaseB",
+                                    e.target.value,
+                                  )
+                                }
+                                readOnly={!isEditing}
+                                className={`w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="text"
+                                value={test.phaseB.percentDev}
+                                readOnly={true}
+                                className="w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white bg-neutral-100 dark:bg-dark-150 cursor-not-allowed"
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="text"
+                                value={test.phaseC.ttr}
+                                onChange={(e) =>
+                                  handleTTRChange(
+                                    index,
+                                    "phaseC",
+                                    e.target.value,
+                                  )
+                                }
+                                readOnly={!isEditing}
+                                className={`w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="text"
+                                value={test.phaseC.percentDev}
+                                readOnly={true}
+                                className="w-24 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white bg-neutral-100 dark:bg-dark-150 cursor-not-allowed"
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="text"
+                                value={test.assessment}
+                                readOnly={true}
+                                className={`w-32 text-sm text-center rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white bg-neutral-100 dark:bg-dark-150 cursor-not-allowed ${test.assessment === "Pass" ? "text-green-600 dark:text-green-400 font-medium" : test.assessment === "Fail" ? "text-red-600 dark:text-red-400 font-medium" : ""}`}
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+
+              {/* Winding Resistance Primary Section */}
+              <div className="large-dry-type-mts23-winding bg-white dark:bg-dark-150 rounded-none shadow p-6">
+                <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
+                  Electrical Tests - Winding Resistance - Primary Side
+                </h2>
+                <div className="grid grid-cols-5 gap-4 mb-4 items-end wr-header">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      Test Current (A)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.windingResistance.primary.testCurrent}
+                      onChange={(e) =>
+                        handleNestedChange("windingResistance", "primary", {
+                          ...formData.windingResistance.primary,
+                          testCurrent: e.target.value,
+                        })
+                      }
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      Winding Temperature (°C)
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        formData.windingResistance.primary.windingTemperature
+                      }
+                      onChange={(e) =>
+                        handleNestedChange("windingResistance", "primary", {
+                          ...formData.windingResistance.primary,
+                          windingTemperature: e.target.value,
+                        })
+                      }
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      Correction Temperature (°C)
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        formData.windingResistance.primary.correctionTemperature
+                      }
+                      onChange={(e) =>
+                        handleNestedChange("windingResistance", "primary", {
+                          ...formData.windingResistance.primary,
+                          correctionTemperature: e.target.value,
+                        })
+                      }
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      Winding Material
+                    </label>
+                    <select
+                      value={formData.windingResistance.primary.windingMaterial}
+                      onChange={(e) =>
+                        handleNestedChange("windingResistance", "primary", {
+                          ...formData.windingResistance.primary,
+                          windingMaterial: e.target.value as
+                            | "Copper"
+                            | "Aluminum",
+                        })
+                      }
+                      disabled={!isEditing}
+                      className={`mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                    >
+                      <option value="Copper">Copper</option>
+                      <option value="Aluminum">Aluminum</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      Temp. Correction Factor
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        formData.windingResistance.primary.tempCorrectionFactor
+                      }
+                      onChange={(e) =>
+                        handleNestedChange("windingResistance", "primary", {
+                          ...formData.windingResistance.primary,
+                          tempCorrectionFactor: e.target.value,
+                        })
+                      }
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                    />
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="wr-table min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 border border-neutral-200 dark:border-neutral-700">
+                    {/* Give corrected values room without letting the spanning headers squeeze the phases. */}
+                    <colgroup className="hidden print:table-column-group">
+                      {[4, 7.5, 5, 10, 7.5, 5, 10, 7.5, 5, 10, 5.5, 12, 11].map(
+                        (width, index) => <col key={index} style={{ width: width + "%" }} />,
+                      )}
+                    </colgroup>
+                    <thead className="bg-neutral-50 dark:bg-dark-150">
+                      <tr>
+                        <th
+                          rowSpan={2}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-16"
+                        >
+                          TAP
+                        </th>
+                        <th
+                          colSpan={3}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700"
+                        >
+                          Phase A
+                        </th>
+                        <th
+                          colSpan={3}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700"
+                        >
+                          Phase B
+                        </th>
+                        <th
+                          colSpan={3}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700"
+                        >
+                          Phase C
+                        </th>
+                        <th
+                          rowSpan={2}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-32"
+                        >
+                          Units
+                        </th>
+                        <th
+                          rowSpan={2}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-32"
+                        >
+                          Smallest
+                          <br />
+                          Value
+                          <br />
+                          Deviation
+                        </th>
+                        <th
+                          rowSpan={2}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 w-24"
+                        >
+                          Assess-
+                          <br />
+                          ment
+                        </th>
+                      </tr>
+                      <tr>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Meas.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Dev.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Corr.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Meas.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Dev.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Corr.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Meas.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Dev.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Corr.
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
+                      {formData.windingResistance.primary.tests.map(
+                        (test, index) => (
+                          <tr key={index}>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.tap}
+                            </td>
+
+                            {/* Phase A */}
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                              <input
+                                type="text"
+                                value={test.phaseA.rMeas}
+                                onChange={(e) =>
+                                  handleWindingResistanceTestChange(
+                                    "primary",
+                                    index,
+                                    "phaseA",
+                                    "rMeas",
+                                    e.target.value,
+                                  )
+                                }
+                                readOnly={!isEditing || index >= configuredTapCount}
+                                className={`w-full min-w-[4.5rem] p-1 text-center border border-neutral-300 dark:border-neutral-600 rounded text-neutral-900 dark:text-white ${!isEditing || index >= configuredTapCount ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.phaseA.rDev}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.phaseA.rCorr}
+                            </td>
+
+                            {/* Phase B */}
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                              <input
+                                type="text"
+                                value={test.phaseB.rMeas}
+                                onChange={(e) =>
+                                  handleWindingResistanceTestChange(
+                                    "primary",
+                                    index,
+                                    "phaseB",
+                                    "rMeas",
+                                    e.target.value,
+                                  )
+                                }
+                                readOnly={!isEditing || index >= configuredTapCount}
+                                className={`w-full min-w-[4.5rem] p-1 text-center border border-neutral-300 dark:border-neutral-600 rounded text-neutral-900 dark:text-white ${!isEditing || index >= configuredTapCount ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.phaseB.rDev}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.phaseB.rCorr}
+                            </td>
+
+                            {/* Phase C */}
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                              <input
+                                type="text"
+                                value={test.phaseC.rMeas}
+                                onChange={(e) =>
+                                  handleWindingResistanceTestChange(
+                                    "primary",
+                                    index,
+                                    "phaseC",
+                                    "rMeas",
+                                    e.target.value,
+                                  )
+                                }
+                                readOnly={!isEditing || index >= configuredTapCount}
+                                className={`w-full min-w-[4.5rem] p-1 text-center border border-neutral-300 dark:border-neutral-600 rounded text-neutral-900 dark:text-white ${!isEditing || index >= configuredTapCount ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.phaseC.rDev}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.phaseC.rCorr}
+                            </td>
+
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.units}
+                            </td>
+                            {(() => {
+                              const deviation = calculateSmallestValueDeviation(
+                                test.phaseA.rMeas,
+                                test.phaseB.rMeas,
+                                test.phaseC.rMeas,
+                              );
+                              const deviationNumber = parseFloat(deviation);
+                              const assessment = isNaN(deviationNumber)
+                                ? ""
+                                : deviationNumber <= 3
+                                  ? "Pass"
+                                  : "Fail";
+                              return (
+                                <>
+                                  <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                                    {deviation}
+                                  </td>
+                                  <td
+                                    className={`px-3 py-2 text-sm border-r dark:border-neutral-700 text-center ${
+                                      assessment === "Pass"
+                                        ? "text-green-600 dark:text-green-400"
+                                        : assessment === "Fail"
+                                          ? "text-red-600 dark:text-red-400"
+                                          : "text-neutral-900 dark:text-white"
+                                    }`}
+                                  >
+                                    {assessment}
+                                  </td>
+                                </>
+                              );
+                            })()}
+                          </tr>
+                        ),
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Secondary Winding Resistance */}
+              <section className="large-dry-type-mts23-winding mb-6 manual-section">
+                <div className="w-full h-1 bg-brand mb-4"></div>
+                <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
+                  Electrical Tests - Winding Resistance - Secondary Side
+                </h2>
+                <div className="grid grid-cols-5 gap-4 mb-4 items-end wr-header">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      Test Current (A)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.windingResistance.secondary.testCurrent}
+                      onChange={(e) =>
+                        handleNestedChange("windingResistance", "secondary", {
+                          ...formData.windingResistance.secondary,
+                          testCurrent: e.target.value,
+                        })
+                      }
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      Winding Temperature (°C)
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        formData.windingResistance.secondary.windingTemperature
+                      }
+                      onChange={(e) =>
+                        handleNestedChange("windingResistance", "secondary", {
+                          ...formData.windingResistance.secondary,
+                          windingTemperature: e.target.value,
+                        })
+                      }
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      Correction Temperature (°C)
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        formData.windingResistance.secondary
+                          .correctionTemperature
+                      }
+                      onChange={(e) =>
+                        handleNestedChange("windingResistance", "secondary", {
+                          ...formData.windingResistance.secondary,
+                          correctionTemperature: e.target.value,
+                        })
+                      }
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      Winding Material
+                    </label>
+                    <select
+                      value={
+                        formData.windingResistance.secondary.windingMaterial
+                      }
+                      onChange={(e) =>
+                        handleNestedChange("windingResistance", "secondary", {
+                          ...formData.windingResistance.secondary,
+                          windingMaterial: e.target.value as
+                            | "Copper"
+                            | "Aluminum",
+                        })
+                      }
+                      disabled={!isEditing}
+                      className={`mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                    >
+                      <option value="Copper">Copper</option>
+                      <option value="Aluminum">Aluminum</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      Temp. Correction Factor
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        formData.windingResistance.secondary
+                          .tempCorrectionFactor
+                      }
+                      onChange={(e) =>
+                        handleNestedChange("windingResistance", "secondary", {
+                          ...formData.windingResistance.secondary,
+                          tempCorrectionFactor: e.target.value,
+                        })
+                      }
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                    />
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="wr-table min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 border border-neutral-200 dark:border-neutral-700">
+                    {/* Give corrected values room without letting the spanning headers squeeze the phases. */}
+                    <colgroup className="hidden print:table-column-group">
+                      {[4, 7.5, 5, 10, 7.5, 5, 10, 7.5, 5, 10, 5.5, 12, 11].map(
+                        (width, index) => <col key={index} style={{ width: width + "%" }} />,
+                      )}
+                    </colgroup>
+                    <thead className="bg-neutral-50 dark:bg-dark-150">
+                      <tr>
+                        <th
+                          rowSpan={2}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-16"
+                        >
+                          TAP
+                        </th>
+                        <th
+                          colSpan={3}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700"
+                        >
+                          Phase A
+                        </th>
+                        <th
+                          colSpan={3}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700"
+                        >
+                          Phase B
+                        </th>
+                        <th
+                          colSpan={3}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700"
+                        >
+                          Phase C
+                        </th>
+                        <th
+                          rowSpan={2}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-32"
+                        >
+                          Units
+                        </th>
+                        <th
+                          rowSpan={2}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-32"
+                        >
+                          Smallest
+                          <br />
+                          Value
+                          <br />
+                          Deviation
+                        </th>
+                        <th
+                          rowSpan={2}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 w-24"
+                        >
+                          Assess-
+                          <br />
+                          ment
+                        </th>
+                      </tr>
+                      <tr>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Meas.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Dev.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Corr.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Meas.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Dev.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Corr.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Meas.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Dev.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          R Corr.
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
+                      {formData.windingResistance.secondary.tests.map(
+                        (test, index) => (
+                          <tr key={index}>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {typeof test.tap === "number"
+                                ? test.tap
+                                : "Fixed"}
+                            </td>
+
+                            {/* Phase A */}
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                              <input
+                                type="text"
+                                value={test.phaseA.rMeas}
+                                onChange={(e) =>
+                                  handleWindingResistanceTestChange(
+                                    "secondary",
+                                    index,
+                                    "phaseA",
+                                    "rMeas",
+                                    e.target.value,
+                                  )
+                                }
+                                readOnly={!isEditing || index >= configuredTapCount}
+                                className={`w-full min-w-[4.5rem] p-1 text-center border border-neutral-300 dark:border-neutral-600 rounded text-neutral-900 dark:text-white ${!isEditing || index >= configuredTapCount ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.phaseA.rDev}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.phaseA.rCorr}
+                            </td>
+
+                            {/* Phase B */}
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                              <input
+                                type="text"
+                                value={test.phaseB.rMeas}
+                                onChange={(e) =>
+                                  handleWindingResistanceTestChange(
+                                    "secondary",
+                                    index,
+                                    "phaseB",
+                                    "rMeas",
+                                    e.target.value,
+                                  )
+                                }
+                                readOnly={!isEditing || index >= configuredTapCount}
+                                className={`w-full min-w-[4.5rem] p-1 text-center border border-neutral-300 dark:border-neutral-600 rounded text-neutral-900 dark:text-white ${!isEditing || index >= configuredTapCount ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.phaseB.rDev}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.phaseB.rCorr}
+                            </td>
+
+                            {/* Phase C */}
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                              <input
+                                type="text"
+                                value={test.phaseC.rMeas}
+                                onChange={(e) =>
+                                  handleWindingResistanceTestChange(
+                                    "secondary",
+                                    index,
+                                    "phaseC",
+                                    "rMeas",
+                                    e.target.value,
+                                  )
+                                }
+                                readOnly={!isEditing || index >= configuredTapCount}
+                                className={`w-full min-w-[4.5rem] p-1 text-center border border-neutral-300 dark:border-neutral-600 rounded text-neutral-900 dark:text-white ${!isEditing || index >= configuredTapCount ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.phaseC.rDev}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.phaseC.rCorr}
+                            </td>
+
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.units}
+                            </td>
+                            {(() => {
+                              const deviation = calculateSmallestValueDeviation(
+                                test.phaseA.rMeas,
+                                test.phaseB.rMeas,
+                                test.phaseC.rMeas,
+                              );
+                              const deviationNumber = parseFloat(deviation);
+                              const assessment = isNaN(deviationNumber)
+                                ? ""
+                                : deviationNumber <= 3
+                                  ? "Pass"
+                                  : "Fail";
+                              return (
+                                <>
+                                  <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                                    {deviation}
+                                  </td>
+                                  <td
+                                    className={`px-3 py-2 text-sm border-r dark:border-neutral-700 text-center ${
+                                      assessment === "Pass"
+                                        ? "text-green-600 dark:text-green-400"
+                                        : assessment === "Fail"
+                                          ? "text-red-600 dark:text-red-400"
+                                          : "text-neutral-900 dark:text-white"
+                                    }`}
+                                  >
+                                    {assessment}
+                                  </td>
+                                </>
+                              );
+                            })()}
+                          </tr>
+                        ),
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              {/* Excitation Tests Section */}
+              <section className="mb-6 manual-section">
+                <div className="w-full h-1 bg-brand mb-4"></div>
+                <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
+                  Excitation Tests
+                </h2>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      Test Voltage (kV)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.excitation.testVoltage}
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "excitation",
+                          "testVoltage",
+                          e.target.value,
+                        )
+                      }
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      *Reference Voltage (kV)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.excitation.referenceVoltage}
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "excitation",
+                          "referenceVoltage",
+                          e.target.value,
+                        )
+                      }
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                    />
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="exc-table min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 border border-neutral-200 dark:border-neutral-700">
+                    <thead className="bg-neutral-50 dark:bg-dark-150">
+                      <tr>
+                        <th
+                          rowSpan={2}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-16"
+                        >
+                          TAP
+                        </th>
+                        <th
+                          colSpan={3}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700"
+                        >
+                          Phase A
+                        </th>
+                        <th
+                          colSpan={3}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700"
+                        >
+                          Phase B
+                        </th>
+                        <th
+                          colSpan={3}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-sm font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700"
+                        >
+                          Phase C
+                        </th>
+                        <th
+                          rowSpan={2}
+                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24"
+                        >
+                          Assessment
+                        </th>
+                      </tr>
+                      <tr>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          * I out (mA)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          * Watt losses (W)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          Reactance (kΩ)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          * I out (mA)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          * Watt losses (W)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          Reactance (kΩ)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          * I out (mA)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          * Watt losses (W)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700 w-24">
+                          Reactance (kΩ)
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
+                      {formData.excitation.tests.map((test, index) => (
+                        <tr key={index}>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                            {test.tap}
+                          </td>
+                          {/* Phase A */}
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={test.phaseA.iOut}
+                              onChange={(e) => {
+                                const newTests = [...formData.excitation.tests];
+                                newTests[index].phaseA.iOut = e.target.value;
+                                handleNestedChange(
+                                  "excitation",
+                                  "tests",
+                                  newTests,
+                                );
+                              }}
+                              readOnly={!isEditing || index >= configuredTapCount}
+                              className={`mt-1 block w-full rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing || index >= configuredTapCount ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                            />
+                          </td>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={test.phaseA.wattLosses}
+                              onChange={(e) => {
+                                const newTests = [...formData.excitation.tests];
+                                newTests[index].phaseA.wattLosses =
+                                  e.target.value;
+                                handleNestedChange(
+                                  "excitation",
+                                  "tests",
+                                  newTests,
+                                );
+                              }}
+                              readOnly={!isEditing || index >= configuredTapCount}
+                              className={`mt-1 block w-full rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing || index >= configuredTapCount ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                            />
+                          </td>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={test.phaseA.reactance}
+                              readOnly
+                              className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white text-center cursor-not-allowed"
+                            />
+                          </td>
+                          {/* Phase B */}
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={test.phaseB.iOut}
+                              onChange={(e) => {
+                                const newTests = [...formData.excitation.tests];
+                                newTests[index].phaseB.iOut = e.target.value;
+                                handleNestedChange(
+                                  "excitation",
+                                  "tests",
+                                  newTests,
+                                );
+                              }}
+                              readOnly={!isEditing || index >= configuredTapCount}
+                              className={`mt-1 block w-full rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing || index >= configuredTapCount ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                            />
+                          </td>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={test.phaseB.wattLosses}
+                              onChange={(e) => {
+                                const newTests = [...formData.excitation.tests];
+                                newTests[index].phaseB.wattLosses =
+                                  e.target.value;
+                                handleNestedChange(
+                                  "excitation",
+                                  "tests",
+                                  newTests,
+                                );
+                              }}
+                              readOnly={!isEditing || index >= configuredTapCount}
+                              className={`mt-1 block w-full rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing || index >= configuredTapCount ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                            />
+                          </td>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={test.phaseB.reactance}
+                              readOnly
+                              className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white text-center cursor-not-allowed"
+                            />
+                          </td>
+                          {/* Phase C */}
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={test.phaseC.iOut}
+                              onChange={(e) => {
+                                const newTests = [...formData.excitation.tests];
+                                newTests[index].phaseC.iOut = e.target.value;
+                                handleNestedChange(
+                                  "excitation",
+                                  "tests",
+                                  newTests,
+                                );
+                              }}
+                              readOnly={!isEditing || index >= configuredTapCount}
+                              className={`mt-1 block w-full rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing || index >= configuredTapCount ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                            />
+                          </td>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={test.phaseC.wattLosses}
+                              onChange={(e) => {
+                                const newTests = [...formData.excitation.tests];
+                                newTests[index].phaseC.wattLosses =
+                                  e.target.value;
+                                handleNestedChange(
+                                  "excitation",
+                                  "tests",
+                                  newTests,
+                                );
+                              }}
+                              readOnly={!isEditing || index >= configuredTapCount}
+                              className={`mt-1 block w-full rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing || index >= configuredTapCount ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                            />
+                          </td>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={test.phaseC.reactance}
+                              readOnly
+                              className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white text-center cursor-not-allowed"
+                            />
+                          </td>
+                          {/* Assessment */}
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            <select
+                              value={test.assessment}
+                              onChange={(e) => {
+                                const tests = [...formData.excitation.tests];
+                                tests[index] = {
+                                  ...tests[index],
+                                  assessment: e.target.value,
+                                };
+                                handleNestedChange(
+                                  "excitation",
+                                  "tests",
+                                  tests,
+                                );
+                              }}
+                              disabled={!isEditing}
+                              className={`mt-1 block w-full rounded-none border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-dark-150 shadow-sm text-center ${test.assessment === "Pass" ? "text-green-600 dark:text-green-400 font-medium" : test.assessment === "Fail" ? "text-red-600 dark:text-red-400 font-medium" : "text-neutral-900 dark:text-white"} ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            >
+                              {["", "Pass", "Fail", "Investigate"].map((o) => (
+                                <option key={o} value={o}>
+                                  {o}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              {/* Power Factor Tests Section */}
+              <section className="mb-6">
+                <div className="w-full h-1 bg-brand mb-4"></div>
+                <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
+                  Power Factor Tests
+                </h2>
+                <div className="grid grid-cols-2 gap-4 mb-2">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      *Reference Voltage (kV)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.powerFactor.referenceVoltage}
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "powerFactor",
+                          "referenceVoltage",
+                          e.target.value,
+                        )
+                      }
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                      Winding Temperature (°C)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.powerFactor.windingTemperature}
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "powerFactor",
+                          "windingTemperature",
+                          e.target.value,
+                        )
+                      }
+                      readOnly={!isEditing}
+                      className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                    />
+                  </div>
+                </div>
+                <p className="text-sm text-neutral-600 dark:text-white mb-4">
+                  Calculations: PF meas. = Cosine Theta = Watt Losses / (V out x
+                  I out)
+                </p>
+
+                {/* Injection at Primary Table */}
+                <h3 className="text-lg font-semibold mb-2 text-neutral-800 dark:text-white">
+                  Injection at Primary
+                </h3>
+                <div className="overflow-x-auto mb-6">
+                  <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 border border-neutral-200 dark:border-neutral-700">
+                    <thead className="bg-neutral-50 dark:bg-dark-150">
+                      <tr>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          No.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          Meas.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          Test Mode
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          Freq.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          V out (kV)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          *I out (mA)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          *Watt Losses (mW)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          PF Meas.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          Cap meas. (pF)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          Assessment
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
+                      {formData.powerFactor.primary.tests.map((test, index) => (
+                        <tr key={index}>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                            {test.no}
+                          </td>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            {test.measurement}
+                          </td>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            {test.testMode}
+                          </td>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            {test.frequency}
+                          </td>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            {test.vOut}
+                          </td>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={test.iOut}
+                              onChange={(e) => {
+                                const newTests = [
+                                  ...formData.powerFactor.primary.tests,
+                                ];
+                                newTests[index].iOut = e.target.value;
+                                handleNestedChange("powerFactor", "primary", {
+                                  ...formData.powerFactor.primary,
+                                  tests: newTests,
+                                });
+                              }}
+                              readOnly={!isEditing || index >= configuredTapCount}
+                              className={`mt-1 block w-full rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing || index >= configuredTapCount ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                            />
+                          </td>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={test.wattLosses}
+                              onChange={(e) => {
+                                const newTests = [
+                                  ...formData.powerFactor.primary.tests,
+                                ];
+                                newTests[index].wattLosses = e.target.value;
+                                handleNestedChange("powerFactor", "primary", {
+                                  ...formData.powerFactor.primary,
+                                  tests: newTests,
+                                });
+                              }}
+                              readOnly={!isEditing || index >= configuredTapCount}
+                              className={`mt-1 block w-full rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing || index >= configuredTapCount ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : "bg-white dark:bg-dark-150"}`}
+                            />
+                          </td>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={test.pfMeas}
+                              readOnly
+                              className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white text-center cursor-not-allowed"
+                            />
+                          </td>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            <input
+                              type="text"
+                              value={test.capMeas}
+                              readOnly
+                              className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white text-center cursor-not-allowed"
+                            />
+                          </td>
+                          <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                            <select
+                              value={test.assessment}
+                              onChange={(e) => {
+                                const tests = [...formData.powerFactor.primary.tests];
+                                tests[index] = {
+                                  ...tests[index],
+                                  assessment: e.target.value,
+                                };
+                                handleNestedChange("powerFactor", "primary", {
+                                  ...formData.powerFactor.primary,
+                                  tests,
+                                });
+                              }}
+                              disabled={!isEditing}
+                              className={`mt-1 block w-full rounded-none border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-dark-150 shadow-sm text-center ${test.assessment === "Pass" ? "text-green-600 dark:text-green-400 font-medium" : test.assessment === "Fail" ? "text-red-600 dark:text-red-400 font-medium" : "text-neutral-900 dark:text-white"} ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            >
+                              {["", "Pass", "Fail", "Investigate"].map((o) => (
+                                <option key={o} value={o}>
+                                  {o}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                      {/* Placeholder for Cross Check Row */}
+                      <tr className="bg-neutral-50 dark:bg-dark-150">
+                        <td
+                          colSpan={3}
+                          className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 font-medium"
+                        >
+                          Calculated Cross Check for ICHL
+                        </td>
+                        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700"></td>
+                        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                          10.00
+                        </td>
+                        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                          1.84
+                        </td>
+                        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                          112.11
+                        </td>
+                        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                          0.6093%
+                        </td>
+                        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700"></td>
+                        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Injection at Secondary Table */}
+                <h3 className="text-lg font-semibold mb-2 text-neutral-800 dark:text-white">
+                  Injection at Secondary
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 border border-neutral-200 dark:border-neutral-700">
+                    <thead className="bg-neutral-50 dark:bg-dark-150">
+                      <tr>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          No.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          Meas.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          Test Mode
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          Freq.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          V out (kV)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          *I out (mA)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          *Watt Losses (mW)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          PF Meas.
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          Cap meas. (pF)
+                        </th>
+                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white border-b dark:border-neutral-700 border-r dark:border-neutral-700">
+                          Assessment
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
+                      {formData.powerFactor.secondary.tests.map(
+                        (test, index) => (
+                          <tr key={index}>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                              {test.no}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                              {test.measurement}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                              {test.testMode}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                              {test.frequency}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                              {test.vOut}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                              <input
+                                type="text"
+                                value={test.iOut}
+                                onChange={(e) => {
+                                  const newTests = [
+                                    ...formData.powerFactor.secondary.tests,
+                                  ];
+                                  newTests[index].iOut = e.target.value;
+                                  handleNestedChange(
+                                    "powerFactor",
+                                    "secondary",
+                                    {
+                                      ...formData.powerFactor.secondary,
+                                      tests: newTests,
+                                    },
+                                  );
+                                }}
+                                readOnly={!isEditing}
+                                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                              <input
+                                type="text"
+                                value={test.wattLosses}
+                                onChange={(e) => {
+                                  const newTests = [
+                                    ...formData.powerFactor.secondary.tests,
+                                  ];
+                                  newTests[index].wattLosses = e.target.value;
+                                  handleNestedChange(
+                                    "powerFactor",
+                                    "secondary",
+                                    {
+                                      ...formData.powerFactor.secondary,
+                                      tests: newTests,
+                                    },
+                                  );
+                                }}
+                                readOnly={!isEditing}
+                                className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                              <input
+                                type="text"
+                                value={test.pfMeas}
+                                readOnly
+                                className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white text-center cursor-not-allowed"
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                              <input
+                                type="text"
+                                value={test.capMeas}
+                                readOnly
+                                className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-dark-150 shadow-sm text-neutral-900 dark:text-white text-center cursor-not-allowed"
+                              />
+                            </td>
+                            <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700">
+                              <select
+                                value={test.assessment}
+                                onChange={(e) => {
+                                  const tests = [...formData.powerFactor.secondary.tests];
+                                  tests[index] = {
+                                    ...tests[index],
+                                    assessment: e.target.value,
+                                  };
+                                  handleNestedChange("powerFactor", "secondary", {
+                                    ...formData.powerFactor.secondary,
+                                    tests,
+                                  });
+                                }}
+                                disabled={!isEditing}
+                                className={`mt-1 block w-full rounded-none border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-dark-150 shadow-sm text-center ${test.assessment === "Pass" ? "text-green-600 dark:text-green-400 font-medium" : test.assessment === "Fail" ? "text-red-600 dark:text-red-400 font-medium" : "text-neutral-900 dark:text-white"} ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                              >
+                                {["", "Pass", "Fail", "Investigate"].map((o) => (
+                                  <option key={o} value={o}>
+                                    {o}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                          </tr>
+                        ),
+                      )}
+                      {/* Placeholder for Cross Check Row */}
+                      <tr className="bg-neutral-50 dark:bg-dark-150">
+                        <td
+                          colSpan={3}
+                          className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 font-medium"
+                        >
+                          Calculated Cross Check for ICLH
+                        </td>
+                        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700"></td>
+                        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                          0.10
+                        </td>
+                        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                          27.53
+                        </td>
+                        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                          2097.8
+                        </td>
+                        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700 text-center">
+                          0.7620%
+                        </td>
+                        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700"></td>
+                        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white border-r dark:border-neutral-700"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </>
+          )}
+
+          {/* Test Equipment Used */}
+          <div className="bg-white dark:bg-dark-150 rounded-none shadow p-6">
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
+              Test Equipment Used
+            </h2>
+            <div className="grid grid-cols-1 gap-6 print:hidden test-eqpt-onscreen">
+              {/* Megohmmeter Section */}
+              <div className="grid grid-cols-4 gap-4 border-b dark:border-neutral-700 pb-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Megohmmeter
+                  </label>
+                  <EquipmentAutocomplete
+                    value={formData.testEquipment.megohmmeter.name}
+                    onChange={(value) =>
+                      handleNestedChange("testEquipment", "megohmmeter", {
+                        ...formData.testEquipment.megohmmeter,
+                        name: value,
+                      })
+                    }
+                    onSelect={(equipment) => {
+                      const formatDate = (
+                        dateString: string | null,
+                      ): string => {
+                        if (!dateString) return "";
+                        try {
+                          const date = new Date(dateString);
+                          return date.toLocaleDateString("en-US", {
+                            month: "2-digit",
+                            day: "2-digit",
+                            year: "numeric",
+                          });
+                        } catch {
+                          return dateString;
+                        }
+                      };
+                      handleNestedChange("testEquipment", "megohmmeter", {
+                        name: equipment.equipment_name,
+                        serialNumber: equipment.serial_number || "",
+                        ampId: equipment.amp_id || "",
+                        calDate: formatLocalDateShort(
+                          equipment.calibration_date,
+                        ),
+                      });
+                    }}
+                    readOnly={!isEditing}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Serial Number
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.megohmmeter.serialNumber}
+                    onChange={(e) =>
+                      handleNestedChange("testEquipment", "megohmmeter", {
+                        ...formData.testEquipment.megohmmeter,
+                        serialNumber: e.target.value,
+                      })
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    AMP ID
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.megohmmeter.ampId}
+                    onChange={(e) =>
+                      handleNestedChange("testEquipment", "megohmmeter", {
+                        ...formData.testEquipment.megohmmeter,
+                        ampId: e.target.value,
+                      })
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Cal Date
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.megohmmeter.calDate}
+                    onChange={(e) =>
+                      handleNestedChange("testEquipment", "megohmmeter", {
+                        ...formData.testEquipment.megohmmeter,
+                        calDate: e.target.value,
+                      })
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+              </div>
+              {/* TTR Test Set Section */}
+              <div className="grid grid-cols-4 gap-4 border-b dark:border-neutral-700 pb-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    TTR Test Set
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.ttrTestSet.name}
+                    onChange={(e) =>
+                      handleNestedChange("testEquipment", "ttrTestSet", {
+                        ...formData.testEquipment.ttrTestSet,
+                        name: e.target.value,
+                      })
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Serial Number
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.ttrTestSet.serialNumber}
+                    onChange={(e) =>
+                      handleNestedChange("testEquipment", "ttrTestSet", {
+                        ...formData.testEquipment.ttrTestSet,
+                        serialNumber: e.target.value,
+                      })
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    AMP ID
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.ttrTestSet.ampId}
+                    onChange={(e) =>
+                      handleNestedChange("testEquipment", "ttrTestSet", {
+                        ...formData.testEquipment.ttrTestSet,
+                        ampId: e.target.value,
+                      })
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Cal Date
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.ttrTestSet.calDate}
+                    onChange={(e) =>
+                      handleNestedChange("testEquipment", "ttrTestSet", {
+                        ...formData.testEquipment.ttrTestSet,
+                        calDate: e.target.value,
+                      })
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+              </div>
+              {/* Winding Resistance Test Set Section */}
+              <div className="grid grid-cols-4 gap-4 border-b dark:border-neutral-700 pb-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Winding Resistance Test Set
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.windingResistanceTestSet.name}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "testEquipment",
+                        "windingResistanceTestSet",
+                        {
+                          ...formData.testEquipment.windingResistanceTestSet,
+                          name: e.target.value,
+                        },
+                      )
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Serial Number
+                  </label>
+                  <input
+                    type="text"
+                    value={
+                      formData.testEquipment.windingResistanceTestSet
+                        .serialNumber
+                    }
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "testEquipment",
+                        "windingResistanceTestSet",
+                        {
+                          ...formData.testEquipment.windingResistanceTestSet,
+                          serialNumber: e.target.value,
+                        },
+                      )
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    AMP ID
+                  </label>
+                  <input
+                    type="text"
+                    value={
+                      formData.testEquipment.windingResistanceTestSet.ampId
+                    }
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "testEquipment",
+                        "windingResistanceTestSet",
+                        {
+                          ...formData.testEquipment.windingResistanceTestSet,
+                          ampId: e.target.value,
+                        },
+                      )
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Cal Date
+                  </label>
+                  <input
+                    type="text"
+                    value={
+                      formData.testEquipment.windingResistanceTestSet.calDate
+                    }
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "testEquipment",
+                        "windingResistanceTestSet",
+                        {
+                          ...formData.testEquipment.windingResistanceTestSet,
+                          calDate: e.target.value,
+                        },
+                      )
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+              </div>
+              {/* Excitation Test Set Section */}
+              <div className="grid grid-cols-4 gap-4 border-b dark:border-neutral-700 pb-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Excitation Test Set
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.excitationTestSet.name}
+                    onChange={(e) =>
+                      handleNestedChange("testEquipment", "excitationTestSet", {
+                        ...formData.testEquipment.excitationTestSet,
+                        name: e.target.value,
+                      })
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Serial Number
+                  </label>
+                  <input
+                    type="text"
+                    value={
+                      formData.testEquipment.excitationTestSet.serialNumber
+                    }
+                    onChange={(e) =>
+                      handleNestedChange("testEquipment", "excitationTestSet", {
+                        ...formData.testEquipment.excitationTestSet,
+                        serialNumber: e.target.value,
+                      })
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    AMP ID
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.excitationTestSet.ampId}
+                    onChange={(e) =>
+                      handleNestedChange("testEquipment", "excitationTestSet", {
+                        ...formData.testEquipment.excitationTestSet,
+                        ampId: e.target.value,
+                      })
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Cal Date
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.excitationTestSet.calDate}
+                    onChange={(e) =>
+                      handleNestedChange("testEquipment", "excitationTestSet", {
+                        ...formData.testEquipment.excitationTestSet,
+                        calDate: e.target.value,
+                      })
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+              </div>
+              {/* Power Factor Test Set Section */}
+              <div className="grid grid-cols-4 gap-4 border-b dark:border-neutral-700 pb-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Power Factor Test Set
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.powerFactorTestSet.name}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "testEquipment",
+                        "powerFactorTestSet",
+                        {
+                          ...formData.testEquipment.powerFactorTestSet,
+                          name: e.target.value,
+                        },
+                      )
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Serial Number
+                  </label>
+                  <input
+                    type="text"
+                    value={
+                      formData.testEquipment.powerFactorTestSet.serialNumber
+                    }
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "testEquipment",
+                        "powerFactorTestSet",
+                        {
+                          ...formData.testEquipment.powerFactorTestSet,
+                          serialNumber: e.target.value,
+                        },
+                      )
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    AMP ID
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.powerFactorTestSet.ampId}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "testEquipment",
+                        "powerFactorTestSet",
+                        {
+                          ...formData.testEquipment.powerFactorTestSet,
+                          ampId: e.target.value,
+                        },
+                      )
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white">
+                    Cal Date
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.testEquipment.powerFactorTestSet.calDate}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "testEquipment",
+                        "powerFactorTestSet",
+                        {
+                          ...formData.testEquipment.powerFactorTestSet,
+                          calDate: e.target.value,
+                        },
+                      )
+                    }
+                    readOnly={!isEditing}
+                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm focus:border-brand focus:ring-brand text-neutral-900 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  />
+                </div>
+              </div>
+            </div>
+            {/* Print-only equipment table */}
+            <div className="hidden print:block">
+              <table className="w-full border border-neutral-300 print:border-black">
+                <thead>
+                  <tr>
+                    <th className="p-2 border border-neutral-300 print:border-black bg-neutral-50 print:bg-neutral-100 text-left">
+                      Equipment
+                    </th>
+                    <th className="p-2 border border-neutral-300 print:border-black bg-neutral-50 print:bg-neutral-100 text-left">
+                      Make/Model
+                    </th>
+                    <th className="p-2 border border-neutral-300 print:border-black bg-neutral-50 print:bg-neutral-100 text-left">
+                      Serial Number
+                    </th>
+                    <th className="p-2 border border-neutral-300 print:border-black bg-neutral-50 print:bg-neutral-100 text-left">
+                      AMP ID
+                    </th>
+                    <th className="p-2 border border-neutral-300 print:border-black bg-neutral-50 print:bg-neutral-100 text-left">
+                      Cal Date
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="p-2 border border-neutral-300 print:border-black font-semibold">
+                      Megohmmeter
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.megohmmeter.name || ""}
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.megohmmeter.serialNumber || ""}
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.megohmmeter.ampId || ""}
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.megohmmeter.calDate || ""}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 border border-neutral-300 print:border-black font-semibold">
+                      TTR Test Set
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.ttrTestSet.name || ""}
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.ttrTestSet.serialNumber || ""}
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.ttrTestSet.ampId || ""}
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.ttrTestSet.calDate || ""}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 border border-neutral-300 print:border-black font-semibold">
+                      Winding Resistance Test Set
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.windingResistanceTestSet.name ||
+                        ""}
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.windingResistanceTestSet
+                        .serialNumber || ""}
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.windingResistanceTestSet.ampId ||
+                        ""}
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.windingResistanceTestSet
+                        .calDate || ""}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 border border-neutral-300 print:border-black font-semibold">
+                      Excitation Test Set
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.excitationTestSet.name || ""}
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.excitationTestSet.serialNumber ||
+                        ""}
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.excitationTestSet.ampId || ""}
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.excitationTestSet.calDate || ""}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="p-2 border border-neutral-300 print:border-black font-semibold">
+                      Power Factor Test Set
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.powerFactorTestSet.name || ""}
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.powerFactorTestSet.serialNumber ||
+                        ""}
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.powerFactorTestSet.ampId || ""}
+                    </td>
+                    <td className="p-2 border border-neutral-300 print:border-black">
+                      {formData.testEquipment.powerFactorTestSet.calDate || ""}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {/* Comments */}
+          <section
+            className={`mb-6 comments-section print:break-inside-avoid ${!formData.comments?.trim() ? "print:hidden" : ""}`}
+          >
+            <div className="w-full h-1 bg-brand mb-4"></div>
+            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
+              Comments
+            </h2>
+            <textarea
+              value={formData.comments}
+              onChange={(e) => handleChange(null, "comments", e.target.value)}
+              rows={6}
+              readOnly={!isEditing}
+              className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white resize-vertical print:hidden ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+            />
+          </section>
+        </div>
+      </div>{" "}
+      {/* Mark Ready to Review Button */}
+      {!isPrintMode && isEditing && (
+        <div className="mb-6 print:hidden flex justify-center">
+          <button
+            onClick={async () => {
+              if (!jobId || !user?.id) return;
+
+              try {
+                // Save the report first
+                await handleSave();
+                await new Promise((resolve) => setTimeout(resolve, 500));
+
+                // Get the report ID (may have been created by save)
+                const savedReportId =
+                  currentReportId || window.location.pathname.split("/").pop();
+                if (!savedReportId) throw new Error("Failed to save report");
+
+                // Update asset status to ready_for_review
+                const fileUrl = `report:/jobs/${jobId}/${reportSlug}/${savedReportId}`;
+                const { error } = await supabase
+                  .schema("neta_ops")
+                  .from("assets")
+                  .update({
+                    status: "ready_for_review",
+                    submitted_at: new Date().toISOString(),
+                  })
+                  .eq("file_url", fileUrl);
+
+                if (error) throw error;
+
+                alert("Report marked as ready for review!");
+              } catch (error: any) {
+                console.error("Error marking report as ready:", error);
+                alert(
+                  `Failed to mark as ready: ${error?.message || "Unknown error"}`,
+                );
+              }
+            }}
+            className="px-6 py-3 text-base font-medium text-white bg-blue-600 rounded-none hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Mark Ready to Review
+          </button>
+        </div>
+      )}
+      <style data-report-print>{WINDING_RESISTANCE_PRINT_STYLES}</style>
+    </ReportWrapper>
+  );
+
+};
+
+export default LargeDryTypeTransformerMTS23Report;

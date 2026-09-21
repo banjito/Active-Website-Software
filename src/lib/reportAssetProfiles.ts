@@ -320,6 +320,7 @@ const ASSEMBLY_MTS_JOB_INFO: ReportField[] = [
 
 export const REPORT_ASSET_PROFILES: Record<string, ReportAssetProfile> = {
   "lv-molded-case-circuit-breaker-ats25": breaker25("lv-molded-case-circuit-breaker-ats25"),
+  "lv-circuit-breaker-mts23": breaker25("lv-circuit-breaker-mts23"),
   "lv-circuit-breaker-mts25": breaker25("lv-circuit-breaker-mts25"),
   // Same component, older route; the report saves under this slug.
   "lv-circuit-breaker-mts": breaker25("lv-circuit-breaker-mts"),
@@ -343,6 +344,16 @@ export const REPORT_ASSET_PROFILES: Record<string, ReportAssetProfile> = {
     jobInfo: ASSEMBLY_25_JOB_INFO,
     nameplate: assemblyNameplate(true, ASSEMBLY_RATED_VOLTAGES),
   },
+  "switchgear-switchboard-mts23": {
+    slug: "switchgear-switchboard-mts23",
+    family: "lv-assembly",
+    equipmentType: "Switchgear",
+    jobInfoLayout: "two-column",
+    nameplateGridClassName: "grid grid-cols-3 gap-4",
+    labelColon: false,
+    jobInfo: ASSEMBLY_25_JOB_INFO,
+    nameplate: assemblyNameplate(true, ASSEMBLY_RATED_VOLTAGES),
+  },
   "switchgear-panelboard-mts-report": {
     slug: "switchgear-panelboard-mts-report",
     family: "lv-assembly",
@@ -356,15 +367,15 @@ export const REPORT_ASSET_PROFILES: Record<string, ReportAssetProfile> = {
 };
 
 /**
- * Report forms an asset can be set up for, in picker order. The older duplicate route for
- * the MTS breaker report is left out so it isn't listed twice.
+ * Report forms an asset can be set up for, in picker order. The retired MTS breaker
+ * routes (lv-circuit-breaker-mts / -mts25) are left out: new work goes on MTS 23.
  */
 export const ASSET_TEMPLATE_SLUGS = [
   "lv-molded-case-circuit-breaker-ats25",
-  "lv-circuit-breaker-mts",
+  "lv-circuit-breaker-mts23",
   "panelboard-assemblies-ats25",
   "switchgear-switchboard-assemblies-ats25",
-  "switchgear-panelboard-mts-report",
+  "switchgear-switchboard-mts23",
 ];
 
 export function getReportAssetProfile(

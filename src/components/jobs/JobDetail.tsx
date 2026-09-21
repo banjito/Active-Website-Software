@@ -508,6 +508,7 @@ const reportRoutes = {
   "LV Breaker Electronic Trip ATS Report":
     "low-voltage-circuit-breaker-electronic-trip-ats-report",
   "35-Automatic Transfer Switch ATS": "automatic-transfer-switch-ats-report",
+  "7.2.1.2 Large Dry Type Transformer Test Sheet MTS 23": "large-dry-type-xfmr-mts23",
   "2-Large Dry Type Xfmr. Insp. & Test MTS 23":
     "large-dry-type-transformer-mts-report",
   "2-Large Dry Type Xfmr. Visual, Mechanical, Insulation Resistance Test MTS":
@@ -823,7 +824,16 @@ export default function JobDetail() {
     "",
   );
   const [assetSortField, setAssetSortField] = usePersistentState<
-    "name" | "identifier" | "created" | "submitted" | "approved" | null
+    | "name"
+    | "identifier"
+    | "created"
+    | "submitted"
+    | "approved"
+    | "sent"
+    | "urgency"
+    | "status"
+    | "result"
+    | null
   >(reportsListKey && `${reportsListKey}:sortField`, null);
   const [assetSortDirection, setAssetSortDirection] = usePersistentState<
     "asc" | "desc"
@@ -1571,15 +1581,21 @@ export default function JobDetail() {
       const slugToTable: Record<string, string> = {
         "panelboard-report": "panelboard_reports",
         "liquid-xfmr-visual-mts-report": "liquid_xfmr_visual_mts_reports",
+        "small-dry-type-xfmr-mts23": "small_dry_type_xfmr_mts23_reports",
         "two-small-dry-typer-xfmr-mts-report":
           "two_small_dry_type_xfmr_mts_reports",
         "two-small-dry-typer-xfmr-ats-report":
           "two_small_dry_type_xfmr_ats_reports",
+        "switchgear-switchboard-mts23": "switchgear_switchboard_mts23_reports",
         "switchgear-panelboard-mts-report": "switchgear_panelboard_mts_reports",
         "potential-transformer-ats-report": "potential_transformer_ats_reports",
+        "medium-voltage-cable-vlf-tan-delta-mts23":
+          "medium_voltage_cable_vlf_tan_delta_mts23_reports",
         "medium-voltage-vlf-mts-report": "medium_voltage_vlf_mts_reports",
         "medium-voltage-circuit-breaker-report":
           "medium_voltage_circuit_breaker_reports",
+        "medium-voltage-vacuum-breaker-mts23":
+          "medium_voltage_vacuum_breaker_mts23_reports",
         "medium-voltage-circuit-breaker-mts-report":
           "medium_voltage_circuit_breaker_mts_reports",
         "medium-voltage-switch-oil-report": "medium_voltage_switch_oil_reports",
@@ -1597,10 +1613,12 @@ export default function JobDetail() {
           "low_voltage_circuit_breaker_thermal_magnetic_mts_reports",
         "lv-molded-case-circuit-breaker-ats25":
           "lv_molded_case_circuit_breaker_ats25",
+        "lv-circuit-breaker-mts23": "lv_circuit_breaker_mts23_reports",
         "lv-circuit-breaker-mts25": "lv_circuit_breaker_mts25",
         "lv-circuit-breaker-mts": "lv_circuit_breaker_mts25",
         "emergency-systems-engine-generator-ats25":
           "emergency_systems_engine_generator_ats25",
+        "low-voltage-air-switch-mts23": "low_voltage_air_switch_mts23_reports",
         "6-low-voltage-switch-maint-mts-report":
           "low_voltage_switch_maint_mts_reports",
         "current-transformer-test-ats-report":
@@ -1613,12 +1631,14 @@ export default function JobDetail() {
           "voltage_potential_transformer_mts_reports",
         "3-low-voltage-cable-mts": "low_voltage_cable_mts_reports",
         "3-low-voltage-cable-ats": "low_voltage_cable_ats_reports",
+        "large-dry-type-xfmr-mts23": "large_dry_type_xfmr_mts23_reports",
         "large-dry-type-transformer-mts-report":
           "large_dry_type_transformer_mts_reports",
         "large-dry-type-transformer-report":
           "large_dry_type_transformer_reports",
         "large-dry-type-xfmr-mts-report": "large_dry_type_xfmr_mts_reports",
         "liquid-filled-transformer-report": "liquid_filled_transformer_reports",
+        "metal-enclosed-busway-mts23": "metal_enclosed_busway_mts23_reports",
         "metal-enclosed-busway-report": "metal_enclosed_busway_reports",
         "automatic-transfer-switch-ats-report":
           "automatic_transfer_switch_ats_reports",
@@ -1638,6 +1658,8 @@ export default function JobDetail() {
         "medium-voltage-vlf-mts-report": "Medium Voltage Cable Test Reports",
         "medium-voltage-circuit-breaker-report":
           "Medium Voltage Circuit Breaker Reports",
+        "medium-voltage-vacuum-breaker-mts23":
+          "Medium Voltage Circuit Breaker Test Reports",
         "medium-voltage-circuit-breaker-mts-report":
           "Medium Voltage Circuit Breaker Test Reports",
         "low-voltage-circuit-breaker-electronic-trip-ats-report":
@@ -1648,6 +1670,7 @@ export default function JobDetail() {
           "Low Voltage Circuit Breaker Test Reports",
         "low-voltage-circuit-breaker-thermal-magnetic-mts-report":
           "Low Voltage Circuit Breaker Test Reports",
+        "low-voltage-air-switch-mts23": "Low Voltage Switch Test Reports",
         "6-low-voltage-switch-maint-mts-report":
           "Low Voltage Switch Test Reports",
         "current-transformer-test-ats-report":
@@ -1660,9 +1683,11 @@ export default function JobDetail() {
           "Voltage / Potential Transformer Test Reports",
         "liquid-filled-transformer-report": "Transformer Test Reports",
         "liquid-xfmr-visual-mts-report": "Transformer Test Reports",
+        "large-dry-type-xfmr-mts23": "Transformer Test Reports",
         "large-dry-type-transformer-mts-report": "Transformer Test Reports",
         "large-dry-type-transformer-report": "Transformer Test Reports",
         "large-dry-type-xfmr-mts-report": "Transformer Test Reports",
+        "metal-enclosed-busway-mts23": "Metal Enclosed Busway Reports",
         "metal-enclosed-busway-report": "Metal Enclosed Busway Reports",
         "automatic-transfer-switch-ats-report":
           "Automatic Transfer Switch Test Reports",
@@ -2702,10 +2727,38 @@ export default function JobDetail() {
   const deprecatedReportTemplateIds = new Set([
     "switchgear-inspection-report",
     "panelboard-inspection-report",
+    // Superseded by the MTS 23 sheet (lv-circuit-breaker-mts23), which covers
+    // molded-case, insulated-case and power breakers in one report.
+    "lv-circuit-breaker-mts",
+    "low-voltage-circuit-breaker-electronic-trip-mts-report",
+    "low-voltage-circuit-breaker-thermal-magnetic-mts-report",
+    // Superseded by the MTS 23 sheet (switchgear-switchboard-mts23).
+    "switchgear-panelboard-mts",
+    // Superseded by the MTS 23 sheet (small-dry-type-xfmr-mts23).
+    "two-small-dry-typer-xfmr-mts-report",
+    // Superseded by the MTS 23 sheet (medium-voltage-cable-vlf-tan-delta-mts23).
+    "medium-voltage-cable-vlf-test-mts",
+    "medium-voltage-vlf-mts-report",
+    // Superseded by the MTS 23 sheet (medium-voltage-vacuum-breaker-mts23).
+    "medium-voltage-circuit-breaker-mts-report",
+    // Superseded by the MTS 23 sheet (low-voltage-air-switch-mts23).
+    "6-low-voltage-switch-maint-mts-report",
+    // Superseded by the MTS 23 sheet (low-voltage-cable-mts23).
+    "low-voltage-cable-test-3sets-mts",
+    // Superseded by the MTS 23 sheet (large-dry-type-xfmr-mts23).
+    "large-dry-type-transformer-mts-report",
+    "large-dry-type-xfmr-mts-report",
   ]);
 
   // Default assets that are always available
   const defaultAssets: Asset[] = [
+    {
+      id: "switchgear-switchboard-mts23",
+      name: "7.1 Switchgear & Switchboard Assemblies Test Sheet MTS 23",
+      file_url: `report:/jobs/${id}/switchgear-switchboard-mts23?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: "MTS",
+    },
     {
       id: "switchgear-panelboard-mts",
       name: "1-Switchgear, Switchboard, Panelboard Inspection & Test Report MTS",
@@ -2749,8 +2802,15 @@ export default function JobDetail() {
       template_type: "ATS",
     },
     {
+      id: "lv-circuit-breaker-mts23",
+      name: "7.6.1 Low Voltage Circuit Breaker Test Sheet MTS 23",
+      file_url: `report:/jobs/${id}/lv-circuit-breaker-mts23?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: "MTS",
+    },
+    {
       id: "lv-circuit-breaker-mts",
-      name: "LV Circuit Breaker MTS 23",
+      name: "LV Circuit Breaker MTS (retired)",
       file_url: `report:/jobs/${id}/lv-circuit-breaker-mts?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: "MTS",
@@ -2777,6 +2837,13 @@ export default function JobDetail() {
       template_type: "ATS",
     },
     {
+      id: "large-dry-type-xfmr-mts23",
+      name: "7.2.1.2 Large Dry Type Transformer Test Sheet MTS 23",
+      file_url: `report:/jobs/${id}/large-dry-type-xfmr-mts23?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: "MTS",
+    },
+    {
       id: "large-dry-type-transformer-mts-report",
       name: "2-Large Dry Type Xfmr. Inspection and Test MTS 23",
       file_url: `report:/jobs/${id}/large-dry-type-transformer-mts-report?returnToAssets=true`,
@@ -2794,6 +2861,13 @@ export default function JobDetail() {
       id: "liquid-xfmr-visual-mts-report",
       name: "2-Liquid Filled Xfmr. Visual, Mechanical, Insulation Resistance Test MTS",
       file_url: `report:/jobs/${id}/liquid-xfmr-visual-mts-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: "MTS",
+    },
+    {
+      id: "low-voltage-cable-mts23",
+      name: "7.3.2 Low Voltage Cable Test Sheet MTS 23 (up to 12 sets)",
+      file_url: `report:/jobs/${id}/low-voltage-cable-mts23?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: "MTS",
     },
@@ -2867,6 +2941,13 @@ export default function JobDetail() {
       file_url: `report:/jobs/${id}/medium-voltage-cable-vlf-test?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: "ATS",
+    },
+    {
+      id: "metal-enclosed-busway-mts23",
+      name: "7.4 Metal-Enclosed Busway Test Sheet MTS 23",
+      file_url: `report:/jobs/${id}/metal-enclosed-busway-mts23?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: "MTS",
     },
     {
       id: "metal-enclosed-busway",
@@ -2974,9 +3055,23 @@ export default function JobDetail() {
       template_type: "MTS",
     },
     {
+      id: "medium-voltage-cable-vlf-tan-delta-mts23",
+      name: "7.3.3 Medium Voltage Cable VLF Test With Tan Delta MTS 23",
+      file_url: `report:/jobs/${id}/medium-voltage-cable-vlf-tan-delta-mts23?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: "MTS",
+    },
+    {
       id: "medium-voltage-cable-vlf-test-mts",
       name: "4-Medium Voltage Cable VLF Test With Tan Delta MTS",
       file_url: `report:/jobs/${id}/medium-voltage-cable-vlf-test-mts?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: "MTS",
+    },
+    {
+      id: "low-voltage-air-switch-mts23",
+      name: "7.5.1.1 Switches, Air, Low-Voltage Test Sheet MTS 23",
+      file_url: `report:/jobs/${id}/low-voltage-air-switch-mts23?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: "MTS",
     },
@@ -2998,6 +3093,13 @@ export default function JobDetail() {
       id: "low-voltage-circuit-breaker-thermal-magnetic-mts-report",
       name: "8-Low Voltage Circuit Breaker Thermal-Magnetic MTS",
       file_url: `report:/jobs/${id}/low-voltage-circuit-breaker-thermal-magnetic-mts-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: "MTS",
+    },
+    {
+      id: "medium-voltage-vacuum-breaker-mts23",
+      name: "7.6.3 Medium Voltage Vacuum Circuit Breaker Test Sheet MTS 23",
+      file_url: `report:/jobs/${id}/medium-voltage-vacuum-breaker-mts23?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: "MTS",
     },
@@ -3033,6 +3135,13 @@ export default function JobDetail() {
       id: "23-medium-voltage-switch-mts-report",
       name: "23-Medium Voltage Switch MTS",
       file_url: `report:/jobs/${id}/23-medium-voltage-switch-mts-report?returnToAssets=true`,
+      created_at: new Date().toISOString(),
+      template_type: "MTS",
+    },
+    {
+      id: "small-dry-type-xfmr-mts23",
+      name: "7.2.1.1 Small Low Voltage Dry Type Transformer Test Sheet MTS 23",
+      file_url: `report:/jobs/${id}/small-dry-type-xfmr-mts23?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: "MTS",
     },
@@ -3431,12 +3540,15 @@ export default function JobDetail() {
   // back to the asset's own columns (same precedence as the audit table).
   function getAssetDate(
     asset: Asset,
-    field: "created" | "submitted" | "approved",
+    field: "created" | "submitted" | "approved" | "sent",
   ): string | null {
     if (field === "created") return asset.created_at || null;
     const audit = reportTimestampsByAsset[asset.id] || {};
     if (field === "submitted") {
       return audit.submitted_at || asset.submitted_at || null;
+    }
+    if (field === "sent") {
+      return audit.sent_at || asset.sent_at || null;
     }
     return (
       audit.issued_at || audit.approved_at || asset.approved_at || null
@@ -3629,6 +3741,43 @@ export default function JobDetail() {
         if (assetSortField === "identifier") {
           return compareAssetParts(a, b) * direction;
         }
+        if (assetSortField === "urgency") {
+          // Critical first when descending, which is what someone scanning for
+          // trouble means by "sort by urgency".
+          const rank = (asset: Asset) => (asset.urgency === "critical" ? 1 : 0);
+          const byUrgency = rank(a) - rank(b);
+          if (byUrgency !== 0) return byUrgency * direction;
+          return compareAssetParts(a, b);
+        }
+        if (assetSortField === "status") {
+          const order = [
+            "in_progress",
+            "ready_for_review",
+            "approved",
+            "sent",
+            "issue",
+            "archived",
+          ];
+          const rank = (asset: Asset) => {
+            const i = order.indexOf(String(asset.status ?? ""));
+            return i === -1 ? order.length : i;
+          };
+          const byStatus = rank(a) - rank(b);
+          if (byStatus !== 0) return byStatus * direction;
+          return compareAssetParts(a, b);
+        }
+        if (assetSortField === "result") {
+          const order = ["PASS", "LIMITED SERVICE", "FAIL"];
+          const rank = (asset: Asset) => {
+            const i = order.indexOf(
+              String(assetEvaluations[asset.id] ?? "").toUpperCase(),
+            );
+            return i === -1 ? order.length : i;
+          };
+          const byResult = rank(a) - rank(b);
+          if (byResult !== 0) return byResult * direction;
+          return compareAssetParts(a, b);
+        }
         // Missing dates always sort to the bottom
         const aRaw = getAssetDate(a, assetSortField);
         const bRaw = getAssetDate(b, assetSortField);
@@ -3661,6 +3810,7 @@ export default function JobDetail() {
     reportTimestampsByAsset,
     getAssetParts,
     compareAssetParts,
+    assetEvaluations,
   ]);
 
   function clearAssetDateFilter() {
@@ -3671,6 +3821,47 @@ export default function JobDetail() {
 
   // Single-choice option list used by the sort/filter dropdowns; clicking the
   // selected option deselects it.
+  /**
+   * Column header that sorts the reports list. First click sorts ascending,
+   * second flips to descending, third clears back to the fetched order.
+   */
+  function SortableAssetHeader({
+    field,
+    label,
+    className = "",
+  }: {
+    field: NonNullable<typeof assetSortField>;
+    label: string;
+    className?: string;
+  }) {
+    const isActive = assetSortField === field;
+    const arrow = !isActive ? "" : assetSortDirection === "asc" ? "↑" : "↓";
+    return (
+      <TableHead className={className}>
+        <button
+          type="button"
+          onClick={() => {
+            if (!isActive) {
+              setAssetSortField(field);
+              setAssetSortDirection("asc");
+            } else if (assetSortDirection === "asc") {
+              setAssetSortDirection("desc");
+            } else {
+              setAssetSortField(null);
+            }
+          }}
+          className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-neutral-700 dark:hover:text-neutral-300"
+          aria-label={`Sort by ${label}`}
+        >
+          {label}
+          <span aria-hidden className="text-[10px]">
+            {arrow}
+          </span>
+        </button>
+      </TableHead>
+    );
+  }
+
   function renderAssetToggleOptions<T extends string>(
     options: Array<{ value: T; label: string }>,
     selectedValue: T | null,
@@ -5476,6 +5667,7 @@ export default function JobDetail() {
       "large-dry-type-transformer-mts-report":
         "large-dry-type-transformer-mts-report",
       "large-dry-type-xfmr-mts-report": "large-dry-type-xfmr-mts-report",
+      "switchgear-switchboard-mts23": "switchgear-switchboard-mts23",
       "switchgear-panelboard-mts-report": "switchgear-panelboard-mts-report",
       "liquid-xfmr-visual-mts-report": "liquid-xfmr-visual-mts-report",
       "switchgear-report": "switchgear-report",
@@ -5492,11 +5684,13 @@ export default function JobDetail() {
       "oil-inspection": "oil-inspection",
       "low-voltage-cable-test-12sets": "low-voltage-cable-test-12sets",
       "low-voltage-cable-test-20sets": "low-voltage-cable-test-20sets",
+      "low-voltage-cable-mts23": "low-voltage-cable-mts23",
       "low-voltage-cable-test-3sets": "low-voltage-cable-test-3sets",
       "medium-voltage-vlf-tan-delta": "medium-voltage-vlf-tan-delta",
       "medium-voltage-vlf-tan-delta-mts": "medium-voltage-vlf-tan-delta-mts",
       "medium-voltage-vlf": "medium-voltage-vlf",
       "medium-voltage-cable-vlf-test": "medium-voltage-cable-vlf-test",
+      "metal-enclosed-busway-mts23": "metal-enclosed-busway-mts23",
       "metal-enclosed-busway": "metal-enclosed-busway",
       "low-voltage-switch-report": "low-voltage-switch-report",
       "medium-voltage-switch-oil-report": "medium-voltage-switch-oil-report",
@@ -5511,10 +5705,12 @@ export default function JobDetail() {
         "low-voltage-circuit-breaker-thermal-magnetic-mts-report",
       "lv-molded-case-circuit-breaker-ats25":
         "lv-molded-case-circuit-breaker-ats25",
+      "lv-circuit-breaker-mts23": "lv-circuit-breaker-mts23",
       "lv-circuit-breaker-mts25": "lv-circuit-breaker-mts25",
       "lv-circuit-breaker-mts": "lv-circuit-breaker-mts",
       "emergency-systems-engine-generator-ats25":
         "emergency-systems-engine-generator-ats25",
+      "low-voltage-air-switch-mts23": "low-voltage-air-switch-mts23",
       "6-low-voltage-switch-maint-mts-report":
         "6-low-voltage-switch-maint-mts-report",
       "low-voltage-panelboard-small-breaker-report":
@@ -5533,7 +5729,10 @@ export default function JobDetail() {
       "medium-voltage-vlf-mts-report": "medium-voltage-vlf-mts-report",
       "electrical-tan-delta-test-mts-form":
         "electrical-tan-delta-test-mts-form",
+      "medium-voltage-cable-vlf-tan-delta-mts23":
+        "medium-voltage-cable-vlf-tan-delta-mts23",
       "medium-voltage-cable-vlf-test-mts": "medium-voltage-cable-vlf-test-mts",
+      "medium-voltage-vacuum-breaker-mts23": "medium-voltage-vacuum-breaker-mts23",
       "medium-voltage-circuit-breaker-mts-report":
         "medium-voltage-circuit-breaker-mts-report",
       "12-current-transformer-test-mts-report":
@@ -5544,6 +5743,8 @@ export default function JobDetail() {
         "23-medium-voltage-motor-starter-mts-report",
       "23-medium-voltage-switch-mts-report":
         "23-medium-voltage-switch-mts-report",
+      "small-dry-type-xfmr-mts23": "small-dry-type-xfmr-mts23",
+      "large-dry-type-xfmr-mts23": "large-dry-type-xfmr-mts23",
       "two-small-dry-typer-xfmr-mts-report":
         "two-small-dry-typer-xfmr-mts-report",
       "gfi-trip-test-report": "gfi-trip-test-report",
@@ -5637,6 +5838,7 @@ export default function JobDetail() {
         "dry-type-transformer": "transformer_reports",
         "large-dry-type-transformer-report": "large_transformer_reports",
         "large-dry-type-transformer": "large_transformer_reports",
+        "large-dry-type-xfmr-mts23": "large_dry_type_xfmr_mts23_reports",
         "large-dry-type-transformer-mts-report":
           "large_dry_type_transformer_mts_reports",
         "large-dry-type-xfmr-mts-report":
@@ -5651,8 +5853,12 @@ export default function JobDetail() {
           "low_voltage_panelboard_small_breaker_reports",
         "medium-voltage-circuit-breaker-report":
           "medium_voltage_circuit_breaker_reports",
+        "medium-voltage-vacuum-breaker-mts23":
+          "medium_voltage_vacuum_breaker_mts23_reports",
         "medium-voltage-circuit-breaker-mts-report":
           "medium_voltage_circuit_breaker_mts_reports",
+        "medium-voltage-cable-vlf-tan-delta-mts23":
+          "medium_voltage_cable_vlf_tan_delta_mts23_reports",
         "medium-voltage-vlf-mts-report": "medium_voltage_vlf_mts_reports",
         "medium-voltage-cable-vlf-test-mts": "medium_voltage_vlf_mts_reports",
         "medium-voltage-vlf": "medium_voltage_vlf_mts_reports",
@@ -5672,11 +5878,13 @@ export default function JobDetail() {
           "medium_voltage_motor_starter_mts_reports",
         "23-medium-voltage-switch-mts-report":
           "medium_voltage_switch_mts_reports",
+        "metal-enclosed-busway-mts23": "metal_enclosed_busway_mts23_reports",
         "metal-enclosed-busway": "metal_enclosed_busway_reports",
         "low-voltage-circuit-breaker-thermal-magnetic-mts-report":
           "low_voltage_circuit_breaker_thermal_magnetic_mts_reports",
         "lv-molded-case-circuit-breaker-ats25":
           "lv_molded_case_circuit_breaker_ats25",
+        "lv-circuit-breaker-mts23": "lv_circuit_breaker_mts23_reports",
         "lv-circuit-breaker-mts25": "lv_circuit_breaker_mts25",
         "lv-circuit-breaker-mts": "lv_circuit_breaker_mts25",
         "emergency-systems-engine-generator-ats25":
@@ -5697,9 +5905,11 @@ export default function JobDetail() {
           "low_voltage_circuit_breaker_electronic_trip_mts",
         "low-voltage-circuit-breaker-electronic-trip-unit-mts":
           "low_voltage_circuit_breaker_electronic_trip_mts",
+        "small-dry-type-xfmr-mts23": "small_dry_type_xfmr_mts23_reports",
         "two-small-dry-typer-xfmr-mts-report":
           "two_small_dry_type_xfmr_mts_reports",
         // Best-effort mappings for cable reports stored in legacy tables
+        "low-voltage-cable-mts23": "low_voltage_cable_mts23_reports",
         "low-voltage-cable-test-3sets": "low_voltage_cable_test_3sets",
         "low-voltage-cable-test-12sets": "low_voltage_cable_test_12sets",
         "low-voltage-cable-test-20sets": "transformer_reports",
@@ -5707,6 +5917,7 @@ export default function JobDetail() {
           "low_voltage_switch_multi_device_reports",
         "two-small-dry-typer-xfmr-ats-report":
           "two_small_dry_type_xfmr_ats_reports",
+        "switchgear-switchboard-mts23": "switchgear_switchboard_mts23_reports",
         "switchgear-panelboard-mts-report": "switchgear_panelboard_mts_reports",
         "liquid-filled-transformer": "liquid_filled_transformer_reports",
         "oil-inspection": "oil_inspection_reports",
@@ -5714,6 +5925,7 @@ export default function JobDetail() {
         "grounding-fall-of-potential-slope-method-test":
           "grounding_fall_of_potential_slope_method_test_reports",
         "standard-report": "standard_reports",
+        "low-voltage-air-switch-mts23": "low_voltage_air_switch_mts23_reports",
         "6-low-voltage-switch-maint-mts-report":
           "low_voltage_switch_maint_mts_reports",
         "applied-voltage-test-ats-report": "applied_voltage_test_ats_reports",
@@ -5901,6 +6113,7 @@ export default function JobDetail() {
             pickIdentifier(data.report_info, formKeys) ||
             pickIdentifier(data.report_data, formKeys) ||
             pickIdentifier(data.report_data?.reportInfo, formKeys) ||
+            pickIdentifier(data.report_data?.report_info, formKeys) ||
             pickIdentifier(data.data, formKeys) ||
             pickIdentifier(data.data?.reportInfo, formKeys) ||
             "";
@@ -5929,11 +6142,16 @@ export default function JobDetail() {
                     data.report_info.jobInfo.substation))) ||
               (data.report_data &&
                 (data.report_data.substation ||
+                  // The VLF report names this field "location".
+                  data.report_data.location ||
                   (data.report_data.jobInfo &&
                     data.report_data.jobInfo.substation) ||
                   (data.report_data.reportInfo &&
                     (data.report_data.reportInfo.substation ||
-                      data.report_data.reportInfo.location)))) ||
+                      data.report_data.reportInfo.location)) ||
+                  (data.report_data.report_info &&
+                    (data.report_data.report_info.substation ||
+                      data.report_data.report_info.location)))) ||
               (data.data &&
                 (data.data.substation ||
                   data.data.location ||
@@ -12257,15 +12475,42 @@ export default function JobDetail() {
                                         loudest thing on a page of twenty. */}
                                     <TableHeader>
                                       <TableRow className="border-b border-neutral-100 hover:bg-transparent dark:border-neutral-800 dark:hover:bg-transparent [&>th]:h-auto [&>th]:px-3 [&>th]:py-2 [&>th]:text-[10px] [&>th]:font-medium [&>th]:uppercase [&>th]:tracking-wider [&>th]:text-neutral-400 dark:[&>th]:text-neutral-500">
-                                        <TableHead>Report Type</TableHead>
-                                        <TableHead>Identifier</TableHead>
-                                        <TableHead>Urgency</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Result</TableHead>
-                                        <TableHead>Date Added</TableHead>
-                                        <TableHead>Submitted</TableHead>
-                                        <TableHead>Approved</TableHead>
-                                        <TableHead>Sent</TableHead>
+                                        <SortableAssetHeader
+                                          field="name"
+                                          label="Report Type"
+                                        />
+                                        <SortableAssetHeader
+                                          field="identifier"
+                                          label="Identifier"
+                                        />
+                                        <SortableAssetHeader
+                                          field="urgency"
+                                          label="Urgency"
+                                        />
+                                        <SortableAssetHeader
+                                          field="status"
+                                          label="Status"
+                                        />
+                                        <SortableAssetHeader
+                                          field="result"
+                                          label="Result"
+                                        />
+                                        <SortableAssetHeader
+                                          field="created"
+                                          label="Date Added"
+                                        />
+                                        <SortableAssetHeader
+                                          field="submitted"
+                                          label="Submitted"
+                                        />
+                                        <SortableAssetHeader
+                                          field="approved"
+                                          label="Approved"
+                                        />
+                                        <SortableAssetHeader
+                                          field="sent"
+                                          label="Sent"
+                                        />
                                         <TableHead className="text-right">
                                           Open
                                         </TableHead>

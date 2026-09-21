@@ -200,7 +200,7 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
   return (
     <div ref={containerRef} className={`relative ${className}`}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400 print:hidden" />
+        <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-neutral-400 print:hidden" />
         <input
           ref={inputRef}
           type="text"
@@ -219,7 +219,7 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
           // A text input defaults to about twenty characters wide, which in a
           // table forces its column wide and squeezes the ones after it.
           size={1}
-          className={`w-full min-w-0 pl-10 print:pl-2 pr-10 print:pr-2 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand ${readOnly ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+          className={`w-full min-w-0 pl-8 print:pl-2 pr-7 print:pr-2 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand ${readOnly ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
         />
         {searchQuery && !readOnly && (
           <button
@@ -230,9 +230,9 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
               setShowSuggestions(false);
               inputRef.current?.focus();
             }}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 print:hidden"
+            className="absolute right-1.5 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 print:hidden"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </button>
         )}
       </div>
@@ -248,7 +248,9 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
               position: "absolute",
               top: dropdownPos.top,
               left: dropdownPos.left,
-              width: dropdownPos.width,
+              // Match the field, but never get so narrow that an equipment name
+              // wraps mid-word — in a table cell the field can be ~80px.
+              width: Math.max(dropdownPos.width, 280),
               zIndex: 99999,
             }}
             className="bg-white dark:bg-dark-150 border border-neutral-200 dark:border-dark-200 rounded-none shadow-lg max-h-60 overflow-y-auto"

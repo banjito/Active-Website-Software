@@ -838,6 +838,7 @@ export function ReportApprovalWorkflow({
             "liquid-filled-xfmr-ats25": "liquid_filled_xfmr_ats25_reports",
             "lv-molded-case-circuit-breaker-ats25":
               "lv_molded_case_circuit_breaker_ats25",
+            "lv-circuit-breaker-mts23": "lv_circuit_breaker_mts23_reports",
             "lv-circuit-breaker-mts25": "lv_circuit_breaker_mts25",
             "lv-circuit-breaker-mts": "lv_circuit_breaker_mts25",
             "emergency-systems-engine-generator-ats25":
@@ -848,6 +849,7 @@ export function ReportApprovalWorkflow({
             "dry-type-transformer": "transformer_reports",
             "large-dry-type-transformer-report": "large_transformer_reports",
             "large-dry-type-transformer": "large_transformer_reports",
+            "large-dry-type-xfmr-mts23": "large_dry_type_xfmr_mts23_reports",
             "large-dry-type-transformer-mts-report":
               "large_dry_type_transformer_mts_reports",
             "large-dry-type-xfmr-mts-report":
@@ -865,8 +867,12 @@ export function ReportApprovalWorkflow({
               "low_voltage_panelboard_small_breaker_reports",
             "medium-voltage-circuit-breaker-report":
               "medium_voltage_circuit_breaker_reports",
+            "medium-voltage-vacuum-breaker-mts23":
+              "medium_voltage_vacuum_breaker_mts23_reports",
             "medium-voltage-circuit-breaker-mts-report":
               "medium_voltage_circuit_breaker_mts_reports",
+            "medium-voltage-cable-vlf-tan-delta-mts23":
+              "medium_voltage_cable_vlf_tan_delta_mts23_reports",
             "medium-voltage-vlf-mts-report": "medium_voltage_vlf_mts_reports",
             "medium-voltage-cable-vlf-test-mts":
               "medium_voltage_vlf_mts_reports",
@@ -887,6 +893,7 @@ export function ReportApprovalWorkflow({
               "medium_voltage_motor_starter_mts_reports",
             "23-medium-voltage-switch-mts-report":
               "medium_voltage_switch_mts_reports",
+            "metal-enclosed-busway-mts23": "metal_enclosed_busway_mts23_reports",
             "metal-enclosed-busway": "metal_enclosed_busway_reports",
             "low-voltage-circuit-breaker-thermal-magnetic-mts-report":
               "low_voltage_circuit_breaker_thermal_magnetic_mts_reports",
@@ -905,15 +912,19 @@ export function ReportApprovalWorkflow({
               "low_voltage_circuit_breaker_electronic_trip_mts",
             "low-voltage-circuit-breaker-electronic-trip-unit-mts":
               "low_voltage_circuit_breaker_electronic_trip_mts",
+            "small-dry-type-xfmr-mts23": "small_dry_type_xfmr_mts23_reports",
             "two-small-dry-typer-xfmr-mts-report":
               "two_small_dry_type_xfmr_mts_reports",
             "low-voltage-cable-test-3sets": "low_voltage_cable_test_3sets",
+            "low-voltage-cable-mts23": "low_voltage_cable_mts23_reports",
             "low-voltage-cable-test-12sets": "low_voltage_cable_test_12sets",
             "low-voltage-cable-test-20sets": "transformer_reports",
             "low-voltage-switch-multi-device-test":
               "low_voltage_switch_multi_device_reports",
             "two-small-dry-typer-xfmr-ats-report":
               "two_small_dry_type_xfmr_ats_reports",
+            "switchgear-switchboard-mts23":
+              "switchgear_switchboard_mts23_reports",
             "switchgear-panelboard-mts-report":
               "switchgear_panelboard_mts_reports",
             "liquid-filled-transformer": "liquid_filled_transformer_reports",
@@ -922,6 +933,7 @@ export function ReportApprovalWorkflow({
             "grounding-fall-of-potential-slope-method-test":
               "grounding_fall_of_potential_slope_method_test_reports",
             "standard-report": "standard_reports",
+            "low-voltage-air-switch-mts23": "low_voltage_air_switch_mts23_reports",
             "6-low-voltage-switch-maint-mts-report":
               "low_voltage_switch_maint_mts_reports",
           };

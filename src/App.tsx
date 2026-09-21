@@ -244,6 +244,7 @@ import LowVoltageCircuitBreakerThermalMagneticATSReport from "./components/repor
 import LowVoltageCircuitBreakerThermalMagneticMTSReport from "./components/reports/LowVoltageCircuitBreakerThermalMagneticMTSReport";
 import LVMoldedCaseCircuitBreakerATS25Report from "./components/reports/LVMoldedCaseCircuitBreakerATS25Report";
 import LVCircuitBreakerMTS25Report from "./components/reports/LVCircuitBreakerMTS25Report";
+import LVCircuitBreakerMTS23Report from "./components/reports/LVCircuitBreakerMTS23Report";
 import EmergencySystemsEngineGeneratorATS25Report from "./components/reports/EmergencySystemsEngineGeneratorATS25Report";
 import LowVoltageSwitchMaintMTSReport from "./components/reports/6-LowVoltageSwitchMaintMTSReport";
 
@@ -285,6 +286,14 @@ import AutomaticTransferSwitchATSReport from "@/components/reports/AutomaticTran
 // Import Applied Voltage Test ATS Report
 import AppliedVoltageTestATSReport from "@/components/reports/AppliedVoltageTestATSReport";
 import SwitchgearSwitchboardAssembliesATS25Report from "@/components/reports/SwitchgearSwitchboardAssembliesATS25Report";
+import SwitchgearSwitchboardMTS23Report from "@/components/reports/SwitchgearSwitchboardMTS23Report";
+import SmallDryTypeTransformerMTS23Report from "@/components/reports/SmallDryTypeTransformerMTS23Report";
+import MediumVoltageCableVLFTanDeltaMTS23Report from "@/components/reports/MediumVoltageCableVLFTanDeltaMTS23Report";
+import MediumVoltageVacuumBreakerMTS23Report from "@/components/reports/MediumVoltageVacuumBreakerMTS23Report";
+import LowVoltageAirSwitchMTS23Report from "@/components/reports/LowVoltageAirSwitchMTS23Report";
+import LowVoltageCableMTS23Report from "@/components/reports/LowVoltageCableMTS23Report";
+import MetalEnclosedBuswayMTS23Report from "@/components/reports/MetalEnclosedBuswayMTS23Report";
+import LargeDryTypeTransformerMTS23Report from "@/components/reports/LargeDryTypeTransformerMTS23Report";
 import PanelboardAssembliesATS25Report from "@/components/reports/PanelboardAssembliesATS25Report";
 import SmallLowVoltageDryTypeTransformerATS25Report from "@/components/reports/SmallLowVoltageDryTypeTransformerATS25Report";
 import LiquidFilledXfmrATS25Report from "@/components/reports/LiquidFilledXfmrATS25Report";
@@ -2319,6 +2328,16 @@ function App() {
                     }
                   />
                   <Route
+                    path="/jobs/:id/large-dry-type-xfmr-mts23/:reportId?"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <LargeDryTypeTransformerMTS23Report />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
                     path="/jobs/:id/large-dry-type-transformer-mts-report/:reportId?"
                     element={
                       <RequireAuth>
@@ -2399,6 +2418,16 @@ function App() {
                     }
                   />
                   <Route
+                    path="/jobs/:id/low-voltage-cable-mts23/:reportId?"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <LowVoltageCableMTS23Report />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
                     path="/jobs/:id/low-voltage-cable-test-3sets/:reportId?"
                     element={
                       <RequireAuth>
@@ -2464,6 +2493,16 @@ function App() {
                       <RequireAuth>
                         <Layout>
                           <MediumVoltageCableVLFTest />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/jobs/:id/metal-enclosed-busway-mts23/:reportId?"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <MetalEnclosedBuswayMTS23Report />
                         </Layout>
                       </RequireAuth>
                     }
@@ -2568,6 +2607,18 @@ function App() {
                       </RequireAuth>
                     }
                   />
+                  {/* MTS 23 sheet: what new LV breaker reports use. The two
+                      routes below stay for reports saved on the older sheets. */}
+                  <Route
+                    path="/jobs/:id/lv-circuit-breaker-mts23/:reportId?"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <LVCircuitBreakerMTS23Report />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
                   <Route
                     path="/jobs/:id/lv-circuit-breaker-mts/:reportId?"
                     element={
@@ -2595,6 +2646,16 @@ function App() {
                       <RequireAuth>
                         <Layout>
                           <EmergencySystemsEngineGeneratorATS25Report />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/jobs/:id/low-voltage-air-switch-mts23/:reportId?"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <LowVoltageAirSwitchMTS23Report />
                         </Layout>
                       </RequireAuth>
                     }
@@ -2746,6 +2807,16 @@ function App() {
                     }
                   />
                   <Route
+                    path="/jobs/:id/small-dry-type-xfmr-mts23/:reportId?"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <SmallDryTypeTransformerMTS23Report />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
                     path="/jobs/:id/small-lv-dry-type-transformer-ats25/:reportId?"
                     element={
                       <RequireAuth>
@@ -2801,6 +2872,16 @@ function App() {
                   />
 
                   {/* Added route for SwitchgearPanelboardMTSReport */}
+                  <Route
+                    path="/jobs/:id/switchgear-switchboard-mts23/:reportId?"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <SwitchgearSwitchboardMTS23Report />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
                   <Route
                     path="/jobs/:id/switchgear-panelboard-mts-report/:reportId?"
                     element={
@@ -2908,6 +2989,16 @@ function App() {
                     }
                   />
 
+                  <Route
+                    path="/jobs/:id/medium-voltage-cable-vlf-tan-delta-mts23/:reportId?"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <MediumVoltageCableVLFTanDeltaMTS23Report />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
                   {/* Added route for Medium Voltage Cable VLF Test MTS */}
                   <Route
                     path="/jobs/:id/medium-voltage-cable-vlf-test-mts/:reportId?"
@@ -2915,6 +3006,16 @@ function App() {
                       <RequireAuth>
                         <Layout>
                           <MediumVoltageCableVLFTest />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/jobs/:id/medium-voltage-vacuum-breaker-mts23/:reportId?"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <MediumVoltageVacuumBreakerMTS23Report />
                         </Layout>
                       </RequireAuth>
                     }

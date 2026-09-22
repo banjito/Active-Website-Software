@@ -44,6 +44,11 @@ const INSULATION_RESISTANCE_TEST_VOLTAGES = [
 ];
 const INSULATION_RESISTANCE_UNITS = ["kΩ", "MΩ", "GΩ"];
 const WINDING_CONNECTIONS = ["Delta", "Wye", "Single Phase"];
+// Turns ratio "Primary Winding" labels follow the nameplate primary connection.
+const PRIMARY_WINDING_LABELS: Record<string, string[]> = {
+  Delta: ["H1-H2", "H2-H3", "H3-H1"],
+  Wye: ["H0-H1", "H0-H2", "H0-H3"],
+};
 const WINDING_MATERIALS = ["", "Copper", "Aluminum"];
 const TAP_POSITIONS = ["1", "2", "3", "4", "5", "6", "7"];
 
@@ -2204,7 +2209,7 @@ const SmallDryTypeTransformerMTS23Report: React.FC = () => {
                     {formData.turnsRatio.rows.map((row, idx) => (
                       <tr key={idx}>
                         <td className="px-2 py-1 text-center text-sm border border-neutral-200 dark:border-neutral-700">
-                          {row.primaryWinding}
+                          {PRIMARY_WINDING_LABELS[formData.nameplate.primaryWindingConnection]?.[idx] ?? row.primaryWinding}
                         </td>
                         <td className="px-2 py-1 border border-neutral-200 dark:border-neutral-700">
                           <div className="print:hidden">

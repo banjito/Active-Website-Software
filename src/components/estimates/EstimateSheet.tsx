@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Tab, Dialog } from "@headlessui/react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
   X,
   GripHorizontal,
@@ -12,6 +13,7 @@ import {
   Save,
   Check,
   LogOut,
+  Plus,
   Trash,
   Edit,
   BookOpen,
@@ -976,6 +978,15 @@ export default function EstimateSheet({
     "sov" | "nonSov" | null
   >(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  // Inline row-insert affordance (the "+" bubble between SOV rows)
+  const [sovInsertHoverIndex, setSovInsertHoverIndex] = useState<number | null>(
+    null,
+  );
+  const [sovInsertMenuIndex, setSovInsertMenuIndex] = useState<number | null>(
+    null,
+  );
+  const sovInsertPortalRef = useRef<HTMLDivElement>(null);
 
   // Tab drag and drop state
   const [draggedTabIndex, setDraggedTabIndex] = useState<number | null>(null);
@@ -4446,6 +4457,117 @@ export default function EstimateSheet({
     setIsDirty(true);
   };
 
+  // Insert a row at a specific position instead of only appending at the bottom.
+  const handleInsertLine = (
+    section: "sov" | "nonSov",
+    index: number,
+    rowType: EstimateLineItemRowType = "item",
+  ) => {
+    const itemsKey = section === "sov" ? "sovItems" : "nonSovItems";
+    const nextItem =
+      section === "sov"
+        ? createLineItemForRowType(rowType)
+        : createEmptyLineItem();
+    setData((prev) => {
+      const items = [...prev[itemsKey]];
+      const at = Math.max(0, Math.min(index, items.length));
+      items.splice(at, 0, nextItem);
+      return { ...prev, [itemsKey]: items };
+    });
+    if (section === "sov") {
+      // Keep existing selections pointing at the same rows after the shift.
+      setSelectedSovItemIndexes((prev) =>
+        prev.map((selectedIndex) =>
+          selectedIndex >= index ? selectedIndex + 1 : selectedIndex,
+        ),
+      );
+    }
+    setSovInsertMenuIndex(null);
+    setSovInsertHoverIndex(null);
+    setIsDirty(true);
+  };
+
+  const renderSovInsertHandle = (index: number) => {
+    if (isViewMode) return null;
+    const menuOpen = sovInsertMenuIndex === index;
+    const visible = sovInsertHoverIndex === index || menuOpen;
+    const options: Array<{ label: string; rowType: EstimateLineItemRowType }> = [
+      { label: "SOV line", rowType: "item" },
+      { label: "Blank row", rowType: "blank" },
+      { label: "Section", rowType: "section" },
+      { label: "Sub-section", rowType: "subsection" },
+    ];
+    // Anchor to the cell border, not its contents, so every row height aligns.
+    return (
+      <div
+        className="print:hidden"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          transform: "translate(-50%, -50%)",
+          zIndex: menuOpen ? 50 : 30,
+        }}
+      >
+        <DropdownMenu.Root
+          open={menuOpen}
+          modal={false}
+          onOpenChange={(open) =>
+            setSovInsertMenuIndex((current) =>
+              open ? index : current === index ? null : current,
+            )
+          }
+        >
+          <DropdownMenu.Trigger asChild>
+            <button
+              type="button"
+              title="Insert a row here"
+              aria-label="Insert a row here"
+              className={`flex h-6 w-6 items-center justify-center rounded-none border bg-[var(--cell-bg)] p-0 shadow-sm transition-colors hover:border-[var(--brand)] hover:bg-[var(--brand)] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand)] ${
+                visible
+                  ? "border-[var(--brand)] text-[var(--brand)]"
+                  : "border-[var(--border-color)] text-[var(--muted-fg)]"
+              }`}
+            >
+              <Plus size={14} strokeWidth={2} aria-hidden="true" />
+            </button>
+          </DropdownMenu.Trigger>
+          {/* Escape table clipping without leaving the estimate dialog's focus boundary. */}
+          <DropdownMenu.Portal container={sovInsertPortalRef.current}>
+            <DropdownMenu.Content
+              align="start"
+              sideOffset={4}
+              collisionPadding={12}
+              className="p-1 outline-none print:hidden"
+              style={{
+                zIndex: 60,
+                minWidth: 160,
+                borderRadius: 0,
+                border: "1px solid var(--border-color)",
+                backgroundColor: "var(--cell-bg)",
+                color: "var(--text-color)",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              }}
+            >
+              {/* Legacy report CSS hides classes containing "header"; use explicit hover colors. */}
+              {options.map((option) => (
+                <DropdownMenu.Item
+                  key={option.rowType}
+                  className="cursor-pointer select-none rounded-none px-3 py-2 text-left text-xs outline-none data-[highlighted]:bg-neutral-100 dark:data-[highlighted]:bg-neutral-800"
+                  onSelect={() =>
+                    handleInsertLine("sov", index, option.rowType)
+                  }
+                >
+                  {option.label}
+                </DropdownMenu.Item>
+              ))}
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
+      </div>
+    );
+  };
+
   const handleClearRow = (section: "sov" | "nonSov", index: number) => {
     const itemsKey = section === "sov" ? "sovItems" : "nonSovItems";
     const newItems = data[itemsKey].filter((_, i) => i !== index);
@@ -7661,7 +7783,10 @@ export default function EstimateSheet({
         <div className="flex items-center justify-center min-h-screen">
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
 
-          <div className="relative bg-white dark:bg-dark-150 rounded-none w-[98%] h-[95vh] mx-auto p-6 shadow-xl my-4 estimate-form">
+          <div
+            ref={sovInsertPortalRef}
+            className="relative bg-white dark:bg-dark-150 rounded-none w-[98%] h-[95vh] mx-auto p-6 shadow-xl my-4 estimate-form"
+          >
             <div className="absolute top-0 right-3 pt-4 pr-4 flex items-center gap-3">
               {isViewMode &&
               quotes.length === 0 &&
@@ -8338,7 +8463,12 @@ export default function EstimateSheet({
                     {/* SOV table always visible in the editor; the toggle only
                         controls whether items appear in the generated proposal */}
                       <div
-                        style={styles.tableContainer}
+                        style={{
+                          ...styles.tableContainer,
+                          // Keep the overhanging handles inside the scroll area.
+                          paddingLeft: isViewMode ? 0 : 16,
+                          marginLeft: isViewMode ? 0 : -16,
+                        }}
                         onMouseMove={onMouseMove}
                         onMouseUp={onMouseUp}
                         onMouseLeave={onMouseUp}
@@ -8419,6 +8549,14 @@ export default function EstimateSheet({
                                     onDragOver={(e) => handleDragOver(e, index)}
                                     onDragLeave={handleDragLeave}
                                     onDrop={(e) => handleDrop(e, index, "sov")}
+                                    onMouseEnter={() =>
+                                      setSovInsertHoverIndex(index)
+                                    }
+                                    onMouseLeave={() =>
+                                      setSovInsertHoverIndex((prev) =>
+                                        prev === index ? null : prev,
+                                      )
+                                    }
                                     style={{
                                       backgroundColor:
                                         dragOverIndex === index &&
@@ -8436,8 +8574,11 @@ export default function EstimateSheet({
                                       style={{
                                         ...styles.tableCell,
                                         backgroundColor: structuralBg,
+                                        position: "relative",
                                       }}
-                                    />
+                                    >
+                                      {renderSovInsertHandle(index)}
+                                    </td>
                                     <td
                                       colSpan={10}
                                       style={{
@@ -8660,6 +8801,14 @@ export default function EstimateSheet({
                                   onDragOver={(e) => handleDragOver(e, index)}
                                   onDragLeave={handleDragLeave}
                                   onDrop={(e) => handleDrop(e, index, "sov")}
+                                  onMouseEnter={() =>
+                                    setSovInsertHoverIndex(index)
+                                  }
+                                  onMouseLeave={() =>
+                                    setSovInsertHoverIndex((prev) =>
+                                      prev === index ? null : prev,
+                                    )
+                                  }
                                   style={{
                                     backgroundColor:
                                       dragOverIndex === index &&
@@ -8678,8 +8827,10 @@ export default function EstimateSheet({
                                       ...styles.tableCell,
                                       width: "44px",
                                       minWidth: "44px",
+                                      position: "relative",
                                     }}
                                   >
+                                    {renderSovInsertHandle(index)}
                                     <input
                                       type="checkbox"
                                       checked={selectedSovItemIndexes.includes(

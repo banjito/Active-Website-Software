@@ -1265,7 +1265,9 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
         { section: "Phase to Ground", p1: "", p2: "", p3: "" },
         { section: "Phase to Neutral", p1: "", p2: "", p3: "" },
       ];
-      const defaultInsulationUnit = "MΩ";
+      // Insulation set-up carries over; Table 100.1 criteria is recomputed
+      // from the copied rated voltage below, not copied.
+      const defaultInsulationUnit = formData.insulationUnit || "MΩ";
       const copiedRatedVoltage = parseInt(
         String(formData.nameplate.ratedVoltage || "").replace(/[^0-9]/g, ""),
         10,
@@ -1299,25 +1301,40 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
         })),
         insulationMeasured: defaultInsulationMeasured,
         insulationUnit: defaultInsulationUnit,
-        insulationTestVoltage: "1000V",
-        insulationDuration: "1 min",
+        insulationTestVoltage: formData.insulationTestVoltage || "1000V",
+        insulationDuration: formData.insulationDuration || "1 min",
         tempCorrected: defaultInsulationMeasured.map((row) => ({ ...row })),
         criteriaValue: defaultCriteriaValue,
         criteriaUnits: defaultInsulationUnit,
-        contactResistance: [
-          {
-            busSection: "Panelboard",
-            aPhase: "",
-            bPhase: "",
-            cPhase: "",
-            neutral: "",
-            ground: "",
-          },
-        ],
-        contactUnit: "µΩ",
-        contactEvaluation: [
-          { deviation: "N/A", criteria: "<50%", result: "N/A" },
-        ],
+        // Same number of sections with the same titles; readings cleared.
+        contactResistance: formData.contactResistance.length
+          ? formData.contactResistance.map((row) => ({
+              busSection: row.busSection,
+              aPhase: "",
+              bPhase: "",
+              cPhase: "",
+              neutral: "",
+              ground: "",
+            }))
+          : [
+              {
+                busSection: "Panelboard",
+                aPhase: "",
+                bPhase: "",
+                cPhase: "",
+                neutral: "",
+                ground: "",
+              },
+            ],
+        contactUnit: formData.contactUnit || "µΩ",
+        contactEvaluation: (formData.contactResistance.length
+          ? formData.contactResistance
+          : [null]
+        ).map((_, i) => ({
+          deviation: "N/A",
+          criteria: formData.contactEvaluation[i]?.criteria || "<50%",
+          result: "N/A" as const,
+        })),
         contactNeutral: { criteria: "N/A", result: "N/A" },
         contactGround: { criteria: "N/A", result: "N/A" },
         dielectricWithstand: [

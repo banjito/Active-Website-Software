@@ -1616,7 +1616,8 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
         date: new Date().toISOString().split("T")[0],
         breakerIdentifier: "",
         technicians: "",
-        temperature: { fahrenheit: 68, celsius: 20, tcf: 1, humidity: 0 },
+        // Kept so the insulation temperature (synced from this) carries over.
+        temperature: { ...formData.temperature },
         substation: "",
         eqptIdentifier: "",
         circuitCellNo: "",
@@ -1640,7 +1641,9 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
         visualInspectionItems: getVisualInspectionItems(
           formData.breakerType || "molded case",
         ),
-        tripType: "",
+        // Trip type, as-left settings and coordination study carry over too:
+        // a sister breaker is almost always set the same way.
+        tripType: formData.tripType,
         deviceSettings: {
           asFound: {
             longTime: { setting: "", delay: "", i2t: "" },
@@ -1650,19 +1653,8 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
             instantaneous: { setting: "", delay: "", i2t: "" },
             groundFault: { setting: "", delay: "", i2t: "" },
           },
-          asLeft: {
-            longTime: { setting: "", delay: "", i2t: "" },
-            shortTime: { setting: "", delay: "", i2t: "" },
-            thermal: { setting: "", delay: "", i2t: "" },
-            magnetic: { setting: "", delay: "", i2t: "" },
-            instantaneous: { setting: "", delay: "", i2t: "" },
-            groundFault: { setting: "", delay: "", i2t: "" },
-          },
-          coordinationStudy: {
-            noId: "",
-            rev: "",
-            date: "",
-          },
+          asLeft: JSON.parse(JSON.stringify(formData.deviceSettings.asLeft)),
+          coordinationStudy: { ...formData.deviceSettings.coordinationStudy },
         },
         contactResistance: {
           pole1: "",
@@ -1674,10 +1666,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           result: "",
         },
         insulationResistance: {
-          temperature: 68,
-          tcf: 0.176,
-          testVoltage: "1000V",
-          testDuration: "1 min",
+          // Set-up fields carry over; the readings below start blank.
+          temperature: formData.insulationResistance.temperature,
+          tcf: formData.insulationResistance.tcf,
+          testVoltage: formData.insulationResistance.testVoltage,
+          testDuration: formData.insulationResistance.testDuration,
           poleToPole: {
             breakerPosition: "Closed",
             measured: { p1: "", p2: "", p3: "" },
@@ -1706,16 +1699,23 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
             result: "",
           },
         },
+        // Current sensing set-up carries over; only the pole readings and
+        // pass/fail results start blank.
         currentSensing: {
-          testType: "Primary Injection",
-          ltpuIndicator: "Yes",
-          testedSettings: {
-            longTime: { setting: "Fixed", delay: "", i2t: "" },
-            shortTime: { setting: "21", delay: "N/a", i2t: "" },
-            instantaneous: { setting: "", delay: "", i2t: "" },
-            groundFault: { setting: "", delay: "", i2t: "" },
-          },
-          tests: [
+          testType: formData.currentSensing.testType,
+          ltpuIndicator: formData.currentSensing.ltpuIndicator,
+          testedSettings: JSON.parse(
+            JSON.stringify(formData.currentSensing.testedSettings),
+          ),
+          tests: formData.currentSensing.tests?.length
+            ? formData.currentSensing.tests.map((t) => ({
+                ...t,
+                pole1: "",
+                pole2: "",
+                pole3: "",
+                result: "",
+              }))
+            : [
             {
               function: "LTD",
               settingAmpere: "",
@@ -4393,25 +4393,47 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                 Electrical Tests - Current Sensing
               </h2>
 
-              {/* Header row with Test Type, Tested Settings, and LTPU Indicator */}
+              {/* Header row: Test Type + LTPU Indicator, then Tested Settings */}
               <div className="flex flex-wrap gap-4 mb-4 items-start">
-                {/* Test Type */}
-                <div className="flex-shrink-0">
-                  <label className="form-label">Test Type</label>
-                  <select
-                    value={formData.currentSensing.testType}
-                    onChange={(e) =>
-                      handleChange("currentSensing.testType", e.target.value)
-                    }
-                    disabled={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  >
-                    <option value="">Select...</option>
-                    <option value="Primary Injection">Primary Injection</option>
-                    <option value="Secondary Injection">
-                      Secondary Injection
-                    </option>
-                  </select>
+                {/* Test Type, with LTPU Indicator stacked under it */}
+                <div className="flex-shrink-0 flex flex-col gap-3">
+                  <div>
+                    <label className="form-label">Test Type</label>
+                    <select
+                      value={formData.currentSensing.testType}
+                      onChange={(e) =>
+                        handleChange("currentSensing.testType", e.target.value)
+                      }
+                      disabled={!isEditing}
+                      className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    >
+                      <option value="">Select...</option>
+                      <option value="Primary Injection">Primary Injection</option>
+                      <option value="Secondary Injection">
+                        Secondary Injection
+                      </option>
+                    </select>
+                  </div>
+                  {/* LTPU Indicator (stacked under Test Type) */}
+                  <div>
+                    <label className="form-label">LTPU Indicator?</label>
+                    <select
+                      value={formData.currentSensing.ltpuIndicator}
+                      onChange={(e) =>
+                        handleChange(
+                          "currentSensing.ltpuIndicator",
+                          e.target.value,
+                        )
+                      }
+                      disabled={!isEditing}
+                      className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    >
+                      <option value="">Select...</option>
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                      <option value="N/A">N/A</option>
+                    </select>
+                  </div>
                 </div>
 
                 {/* Tested Settings Table */}
@@ -5087,26 +5109,6 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                   })()}
                 </div>
 
-                {/* LTPU Indicator */}
-                <div className="flex-shrink-0">
-                  <label className="form-label">LTPU Indicator?</label>
-                  <select
-                    value={formData.currentSensing.ltpuIndicator}
-                    onChange={(e) =>
-                      handleChange(
-                        "currentSensing.ltpuIndicator",
-                        e.target.value,
-                      )
-                    }
-                    disabled={!isEditing}
-                    className={`form-input ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                  >
-                    <option value="">Select...</option>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                    <option value="N/A">N/A</option>
-                  </select>
-                </div>
               </div>
 
               {/* Current Sensing Tests Tables - Side by Side - align at bottom so GFPU / A. row lines up */}
@@ -5134,7 +5136,8 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                         </tr>
                       ) : (
                         <>
-                          <tr>
+                          {/* Two h-7 rows = the h-14 header on the Poles table beside it. */}
+                          <tr className="h-7">
                             <th
                               className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-16"
                               rowSpan={2}
@@ -5171,7 +5174,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                               Tolerance
                             </th>
                           </tr>
-                          <tr>
+                          <tr className="h-7">
                             <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-16">
                               Min
                             </th>
@@ -5611,7 +5614,8 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                           </th>
                         </tr>
                       ) : (
-                        <tr>
+                        // Matches the two-row header on the table to the left.
+                        <tr className="h-14">
                           <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-20">
                             Pole 1
                           </th>

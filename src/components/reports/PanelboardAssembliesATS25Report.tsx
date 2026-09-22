@@ -543,6 +543,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
         const ir = data.insulation_resistance?.tests || [];
         const corr = data.insulation_resistance?.correctedTests || [];
         const cr = data.contact_resistance?.tests || [];
+        const ce = data.contact_resistance?.evaluation || [];
         const dw = data.contact_resistance?.dielectricTests || [];
         const dUnit = data.contact_resistance?.dielectricUnit || undefined;
         const dVolt =
@@ -595,6 +596,8 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
           criteriaUnits:
             data.insulation_resistance?.criteriaUnits || prev.criteriaUnits,
           contactResistance: cr.length ? cr : prev.contactResistance,
+          contactUnit: data.contact_resistance?.unit || prev.contactUnit,
+          contactEvaluation: ce.length ? ce : prev.contactEvaluation,
           dielectricWithstand: dw.length ? dw : prev.dielectricWithstand,
           dielectricUnit: dUnit ?? prev.dielectricUnit,
           dielectricTestVoltage: dVolt ?? prev.dielectricTestVoltage,
@@ -731,18 +734,31 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
     return m ? parseFloat(m[1]) : null;
   };
 
+  const autoDeviationResult = (
+    deviation: string,
+    criteria: string,
+  ): StatusType | "N/A" => {
+    const threshold = parseCriteriaPercent(criteria);
+    if (deviation === "N/A" || threshold === null) return "N/A";
+    const v = parseFloat(deviation.replace("%", ""));
+    return v <= threshold ? "PASS" : "FAIL";
+  };
+
   useEffect(() => {
     setFormData((prev) => {
       const updated = prev.contactResistance.map((r, idx) => {
         const deviation = computeDeviation(r.aPhase, r.bPhase, r.cPhase);
-        const criteria = prev.contactEvaluation[idx]?.criteria || "<50%";
-        const threshold = parseCriteriaPercent(criteria);
-        let result: StatusType | "N/A" = "N/A";
-        if (deviation !== "N/A" && threshold !== null) {
-          const v = parseFloat(deviation.replace("%", ""));
-          result = v <= threshold ? "PASS" : "FAIL";
+        const existing = prev.contactEvaluation[idx];
+        const criteria = existing?.criteria || "<50%";
+        // Keep a saved or hand-picked result until the readings change it
+        if (existing && existing.deviation === deviation) {
+          return { ...existing, criteria };
         }
-        return { deviation, criteria, result };
+        return {
+          deviation,
+          criteria,
+          result: autoDeviationResult(deviation, criteria),
+        };
       });
       return {
         ...prev,
@@ -1002,6 +1018,8 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
       },
       contact_resistance: {
         tests: formData.contactResistance,
+        unit: formData.contactUnit,
+        evaluation: formData.contactEvaluation,
         dielectricTests: formData.dielectricWithstand,
         dielectricUnit: formData.dielectricUnit,
         dielectricTestVoltage: formData.dielectricTestVoltage,
@@ -1392,6 +1410,8 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
         },
         contact_resistance: {
           tests: newFormData.contactResistance,
+          unit: newFormData.contactUnit,
+          evaluation: newFormData.contactEvaluation,
           dielectricTests: newFormData.dielectricWithstand,
           dielectricUnit: newFormData.dielectricUnit,
           dielectricTestVoltage: newFormData.dielectricTestVoltage,
@@ -2159,12 +2179,14 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                             }
                             onChange={(e) => {
                               const list = [...formData.contactEvaluation];
+                              const deviation = list[i]?.deviation || "N/A";
                               list[i] = {
-                                ...(list[i] || {
-                                  deviation: "N/A",
-                                  result: "N/A",
-                                }),
+                                deviation,
                                 criteria: e.target.value,
+                                result: autoDeviationResult(
+                                  deviation,
+                                  e.target.value,
+                                ),
                               };
                               handleChange((p) => ({
                                 ...p,
@@ -2174,7 +2196,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                             disabled={contactFieldsLocked}
                             className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${contactFieldClass}`}
                           >
-                            {["<10%", "<25%", "<50%", "<75%", "<100%"].map(
+                            {["<10%", "<25%", "<50%", "<75%", "<100%", "N/A"].map(
                               (c) => (
                                 <option key={c} value={c}>
                                   {c}

@@ -1446,13 +1446,9 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
   useEffect(() => {
     const style = document.createElement("style");
     style.textContent = `@media print { body { margin:0; padding:20px; font-family: Arial, Helvetica, sans-serif !important; } html, body { font-size:9px !important; color:black !important; background:white !important; line-height:1 !important; } header, nav, .navigation, [class*="nav"], [class*="header"], .print\\:hidden { display:none !important; } * { border:none !important; box-shadow:none !important; outline:none !important; } table { border-collapse:collapse !important; width:100% !important; margin:1px 0 !important; font-size:8px !important; } thead { display:table-header-group !important; } tr { page-break-inside: avoid !important; break-inside: avoid !important; } table, th, td, thead, tbody, tr { border:1px solid black !important; } th, td { padding:2px 3px !important; text-align:center !important; height:12px !important; line-height:1 !important; } th { background:#f0f0f0 !important; font-weight:bold !important; } input, select, textarea { background:white !important; border:1px solid black !important; color:black !important; padding:2px !important; font-size:10px !important; -webkit-appearance:none !important; appearance:none !important; } select { background-image:none !important; padding-right:8px !important; } input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none !important; margin:0 !important; } input[type="number"] { -moz-appearance:textfield !important; } button:not(.print-visible) { display:none !important; } section { break-inside: avoid !important; margin-bottom:20px !important; } * { color:black !important; }
-    /* Make the Phase Value Deviation block readable in print */
+    /* Contact resistance + deviation share one wide table; let it use the full width */
     .overflow-x-auto { overflow: visible !important; }
-    table.phase-deviation-table { table-layout: fixed !important; }
-    table.phase-deviation-table th, table.phase-deviation-table td { height:auto !important; line-height:1.2 !important; font-size:9px !important; vertical-align:top !important; }
-    table.phase-deviation-table .text-xs { font-size:9px !important; }
-    table.phase-deviation-table td:first-child { text-align:left !important; }
-    table.phase-deviation-table td:first-child span.text-xs:first-child { display:inline-block !important; padding-left:5ch !important; }
+    table.contact-resistance-table { table-layout: fixed !important; }
     /* Keep the whole sheet on one Letter page. At the shared 16px section gap
        this report runs 1005px against 998px of printable height, so Test
        Equipment Used spills onto a second page carrying nothing else. 10px
@@ -2001,59 +1997,114 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-start">
-              {/* Resistance Measurements */}
-              <div className="md:col-span-2 overflow-x-auto">
-                <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 table-fixed">
-                  <colgroup>
-                    <col style={{ width: "16%" }} />
-                    <col style={{ width: "14%" }} />
-                    <col style={{ width: "14%" }} />
-                    <col style={{ width: "14%" }} />
-                    <col style={{ width: "14%" }} />
-                    <col style={{ width: "14%" }} />
-                    <col style={{ width: "14%" }} />
-                  </colgroup>
-                  <thead>
-                    <tr>
+            {/* Resistance Measurements + Phase Value Deviation, one row per section */}
+            <div className="overflow-x-auto">
+              <table className="contact-resistance-table min-w-full border-collapse border border-neutral-200 dark:border-neutral-700 table-fixed">
+                <colgroup>
+                  <col style={{ width: "12%" }} />
+                  <col style={{ width: "9%" }} />
+                  <col style={{ width: "9%" }} />
+                  <col style={{ width: "9%" }} />
+                  <col style={{ width: "9%" }} />
+                  <col style={{ width: "9%" }} />
+                  <col style={{ width: "9%" }} />
+                  <col style={{ width: "10%" }} />
+                  <col style={{ width: "10%" }} />
+                  <col style={{ width: "14%" }} />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th
+                      className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700"
+                      colSpan={7}
+                    >
+                      Resistance Measurements
+                    </th>
+                    <th
+                      className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700"
+                      colSpan={3}
+                    >
+                      Phase Value Deviation
+                    </th>
+                  </tr>
+                  <tr>
+                    {[
+                      "Section",
+                      "A-Phase",
+                      "B-Phase",
+                      "C-Phase",
+                      "Neutral",
+                      "Ground",
+                      "Units",
+                      "Measured",
+                      "Criteria",
+                      "Result",
+                    ].map((h) => (
                       <th
-                        className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase"
-                        colSpan={7}
+                        key={h}
+                        className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider border border-neutral-200 dark:border-neutral-700"
                       >
-                        Resistance Measurements
+                        {h}
                       </th>
-                    </tr>
-                    <tr>
-                      {[
-                        "Section",
-                        "A-Phase",
-                        "B-Phase",
-                        "C-Phase",
-                        "Neutral",
-                        "Ground",
-                        "Units",
-                      ].map((h) => (
-                        <th
-                          key={h}
-                          className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
-                    {formData.contactResistance.map((row, i) => (
-                      <tr key={i}>
-                        <td className="px-3 py-2">
-                          <div className="print:hidden flex items-center gap-1">
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-dark-150">
+                  {formData.contactResistance.map((row, i) => (
+                    <tr key={i}>
+                      <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
+                        <div className="print:hidden flex items-center gap-1">
+                          <input
+                            value={row.busSection}
+                            onChange={(e) => {
+                              const list = [...formData.contactResistance];
+                              list[i] = {
+                                ...list[i],
+                                busSection: e.target.value,
+                              };
+                              handleChange((p) => ({
+                                ...p,
+                                contactResistance: list,
+                              }));
+                            }}
+                            readOnly={contactFieldsLocked}
+                            className={`block flex-1 min-w-0 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-sm ${contactFieldClass}`}
+                          />
+                          {isEditing &&
+                            !contactResistanceNA &&
+                            formData.contactResistance.length > 1 && (
+                              <button
+                                onClick={() => removeContactResistanceRow(i)}
+                                className="px-2 py-1 text-xs text-white bg-red-600 hover:bg-red-700 rounded-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                type="button"
+                                title="Remove row"
+                              >
+                                ×
+                              </button>
+                            )}
+                        </div>
+                        <div className={`hidden print:block text-center ${contactPrintClass}`}>
+                          {row.busSection}
+                        </div>
+                      </td>
+                      {(
+                        [
+                          "aPhase",
+                          "bPhase",
+                          "cPhase",
+                          "neutral",
+                          "ground",
+                        ] as const
+                      ).map((key) => (
+                        <td key={key} className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
+                          <div className="print:hidden">
                             <input
-                              value={row.busSection}
+                              value={row[key]}
                               onChange={(e) => {
                                 const list = [...formData.contactResistance];
                                 list[i] = {
                                   ...list[i],
-                                  busSection: e.target.value,
+                                  [key]: e.target.value,
                                 };
                                 handleChange((p) => ({
                                   ...p,
@@ -2061,227 +2112,120 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                                 }));
                               }}
                               readOnly={contactFieldsLocked}
-                              className={`block flex-1 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-sm ${contactFieldClass}`}
-                            />
-                            {isEditing &&
-                              !contactResistanceNA &&
-                              formData.contactResistance.length > 1 && (
-                                <button
-                                  onClick={() => removeContactResistanceRow(i)}
-                                  className="px-2 py-1 text-xs text-white bg-red-600 hover:bg-red-700 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                                  type="button"
-                                  title="Remove row"
-                                >
-                                  ×
-                                </button>
-                              )}
-                          </div>
-                          <div className={`hidden print:block text-center ${contactPrintClass}`}>
-                            {row.busSection}
-                          </div>
-                        </td>
-                        {(
-                          [
-                            "aPhase",
-                            "bPhase",
-                            "cPhase",
-                            "neutral",
-                            "ground",
-                          ] as const
-                        ).map((key) => (
-                          <td key={key} className="px-3 py-2">
-                            <div className="print:hidden">
-                              <input
-                                value={row[key]}
-                                onChange={(e) => {
-                                  const list = [...formData.contactResistance];
-                                  list[i] = {
-                                    ...list[i],
-                                    [key]: e.target.value,
-                                  };
-                                  handleChange((p) => ({
-                                    ...p,
-                                    contactResistance: list,
-                                  }));
-                                }}
-                                readOnly={contactFieldsLocked}
-                                className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${contactFieldClass}`}
-                              />
-                            </div>
-                            <div className={`hidden print:block text-center ${contactPrintClass}`}>
-                              {row[key]}
-                            </div>
-                          </td>
-                        ))}
-                        <td className="px-3 py-2">
-                          <div className="print:hidden">
-                            <select
-                              value={formData.contactUnit}
-                              onChange={(e) =>
-                                handleChange((p) => ({
-                                  ...p,
-                                  contactUnit: e.target.value,
-                                }))
-                              }
-                              disabled={contactFieldsLocked}
                               className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${contactFieldClass}`}
-                            >
-                              {CONTACT_RESISTANCE_UNITS.map((u) => (
-                                <option key={u} value={u}>
-                                  {u}
-                                </option>
-                              ))}
-                            </select>
+                            />
                           </div>
                           <div className={`hidden print:block text-center ${contactPrintClass}`}>
-                            {formData.contactUnit}
+                            {row[key]}
                           </div>
                         </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Phase Value Deviation + Result */}
-              <div className="overflow-x-auto">
-                <table className="phase-deviation-table min-w-full border-collapse border border-neutral-200 dark:border-neutral-700 table-fixed">
-                  <colgroup>
-                    <col style={{ width: "50%" }} />
-                    <col style={{ width: "50%" }} />
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white">
-                        Phase Value Deviation
-                      </th>
-                      <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white">
-                        Result
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {formData.contactResistance.map((row, i) => (
-                      <React.Fragment key={i}>
-                        {formData.contactResistance.length > 1 && (
-                          <tr>
-                            <td
-                              className="p-1 px-2 text-xs font-semibold bg-neutral-50 dark:bg-dark-150"
-                              colSpan={2}
-                            >
-                              {row.busSection}
-                            </td>
-                          </tr>
-                        )}
-                        <tr>
-                          <td className="p-2 align-top">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs">Measured</span>
-                              <span className={`text-sm font-semibold ${contactPrintClass}`}>
-                                {formData.contactEvaluation[i]?.deviation ||
-                                  "-"}
-                              </span>
-                            </div>
-                          </td>
-                          <td
-                            className="p-2 align-middle text-center font-extrabold uppercase"
-                            rowSpan={2}
+                      ))}
+                      <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700">
+                        <div className="print:hidden">
+                          <select
+                            value={formData.contactUnit}
+                            onChange={(e) =>
+                              handleChange((p) => ({
+                                ...p,
+                                contactUnit: e.target.value,
+                              }))
+                            }
+                            disabled={contactFieldsLocked}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${contactFieldClass}`}
                           >
-                            <div className="print:hidden">
-                              <select
-                                value={
-                                  formData.contactEvaluation[i]?.result || "N/A"
-                                }
-                                onChange={(e) => {
-                                  const list = [...formData.contactEvaluation];
-                                  list[i] = {
-                                    ...(list[i] || {
-                                      deviation: "N/A",
-                                      criteria: "<50%",
-                                    }),
-                                    result: e.target.value as any,
-                                  };
-                                  handleChange((p) => ({
-                                    ...p,
-                                    contactEvaluation: list,
-                                  }));
-                                }}
-                                disabled={contactFieldsLocked}
-                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${contactFieldClass}`}
-                              >
-                                {(
-                                  [
-                                    "PASS",
-                                    "FAIL",
-                                    "LIMITED SERVICE",
-                                    "N/A",
-                                  ] as const
-                                ).map((r) => (
-                                  <option key={r} value={r}>
-                                    {r}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <div className={`hidden print:block ${contactPrintClass}`}>
-                              {formData.contactEvaluation[i]?.result || "-"}
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className="p-2 align-top">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs">Criteria</span>
-                              <div className="print:hidden">
-                                <select
-                                  value={
-                                    formData.contactEvaluation[i]?.criteria ||
-                                    "<50%"
-                                  }
-                                  onChange={(e) => {
-                                    const list = [
-                                      ...formData.contactEvaluation,
-                                    ];
-                                    list[i] = {
-                                      ...(list[i] || {
-                                        deviation: "N/A",
-                                        result: "N/A",
-                                      }),
-                                      criteria: e.target.value,
-                                    };
-                                    handleChange((p) => ({
-                                      ...p,
-                                      contactEvaluation: list,
-                                    }));
-                                  }}
-                                  disabled={contactFieldsLocked}
-                                  className={`rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${contactFieldClass}`}
-                                >
-                                  {[
-                                    "<10%",
-                                    "<25%",
-                                    "<50%",
-                                    "<75%",
-                                    "<100%",
-                                  ].map((c) => (
-                                    <option key={c} value={c}>
-                                      {c}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                              <span className={`hidden print:block ${contactPrintClass}`}>
-                                {formData.contactEvaluation[i]?.criteria ||
-                                  "<50%"}
-                              </span>
-                            </div>
-                          </td>
-                        </tr>
-                      </React.Fragment>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                            {CONTACT_RESISTANCE_UNITS.map((u) => (
+                              <option key={u} value={u}>
+                                {u}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className={`hidden print:block text-center ${contactPrintClass}`}>
+                          {formData.contactUnit}
+                        </div>
+                      </td>
+                      {/* Phase Value Deviation: Measured */}
+                      <td className="px-3 py-2 text-center border border-neutral-200 dark:border-neutral-700">
+                        <span className={`text-sm font-semibold dark:text-white ${contactPrintClass}`}>
+                          {formData.contactEvaluation[i]?.deviation || "-"}
+                        </span>
+                      </td>
+                      {/* Phase Value Deviation: Criteria */}
+                      <td className="px-3 py-2 text-center border border-neutral-200 dark:border-neutral-700">
+                        <div className="print:hidden">
+                          <select
+                            value={
+                              formData.contactEvaluation[i]?.criteria || "<50%"
+                            }
+                            onChange={(e) => {
+                              const list = [...formData.contactEvaluation];
+                              list[i] = {
+                                ...(list[i] || {
+                                  deviation: "N/A",
+                                  result: "N/A",
+                                }),
+                                criteria: e.target.value,
+                              };
+                              handleChange((p) => ({
+                                ...p,
+                                contactEvaluation: list,
+                              }));
+                            }}
+                            disabled={contactFieldsLocked}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${contactFieldClass}`}
+                          >
+                            {["<10%", "<25%", "<50%", "<75%", "<100%"].map(
+                              (c) => (
+                                <option key={c} value={c}>
+                                  {c}
+                                </option>
+                              ),
+                            )}
+                          </select>
+                        </div>
+                        <div className={`hidden print:block text-center ${contactPrintClass}`}>
+                          {formData.contactEvaluation[i]?.criteria || "<50%"}
+                        </div>
+                      </td>
+                      {/* Phase Value Deviation: Result */}
+                      <td className="px-3 py-2 text-center font-extrabold uppercase border border-neutral-200 dark:border-neutral-700">
+                        <div className="print:hidden">
+                          <select
+                            value={formData.contactEvaluation[i]?.result || "N/A"}
+                            onChange={(e) => {
+                              const list = [...formData.contactEvaluation];
+                              list[i] = {
+                                ...(list[i] || {
+                                  deviation: "N/A",
+                                  criteria: "<50%",
+                                }),
+                                result: e.target.value as any,
+                              };
+                              handleChange((p) => ({
+                                ...p,
+                                contactEvaluation: list,
+                              }));
+                            }}
+                            disabled={contactFieldsLocked}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${contactFieldClass}`}
+                          >
+                            {(
+                              ["PASS", "FAIL", "LIMITED SERVICE", "N/A"] as const
+                            ).map((r) => (
+                              <option key={r} value={r}>
+                                {r}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className={`hidden print:block ${contactPrintClass}`}>
+                          {formData.contactEvaluation[i]?.result || "-"}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 

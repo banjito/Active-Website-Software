@@ -61,6 +61,7 @@ import {
 import { useUserPreferences } from "../../hooks/useUserPreferences";
 import { ProposalScopeNotesModal } from "./ProposalScopeNotesModal";
 import ScopeLibraryPickerModal from "./ScopeLibraryPickerModal";
+import EstimateNumberInput from "@/components/estimates/EstimateNumberInput";
 import CopyEstimateToOpportunityModal, {
   CopyTargetOpportunity,
 } from "./CopyEstimateToOpportunityModal";
@@ -967,10 +968,6 @@ export default function EstimateSheet({
     return defaults;
   });
 
-  // Track fields temporarily displayed as blank (for backspace over 0)
-  const [blankingKeys, setBlankingKeys] = useState<Set<string>>(new Set());
-  const makeKey = (section: "sov" | "nonSov", index: number, field: string) =>
-    `${section}:${index}:${field}`;
 
   // Drag and drop state
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
@@ -3774,28 +3771,9 @@ export default function EstimateSheet({
     const itemsKey = section === "sov" ? "sovItems" : "nonSovItems";
     const newItems = [...data[itemsKey]];
 
-    // For numeric fields, parse value but preserve trailing decimal point for typing
-    let parsedValue: string | number = value;
-    if (field !== "item" && field !== "notes") {
-      const strValue = String(value);
-      // If user is still typing a decimal (ends with . or has trailing zeros after decimal)
-      if (
-        strValue === "" ||
-        strValue === "." ||
-        strValue.endsWith(".") ||
-        /\.\d*0+$/.test(strValue)
-      ) {
-        // Keep as string to preserve decimal point during typing, but use 0 for empty
-        parsedValue = strValue === "" ? 0 : strValue;
-      } else {
-        // Convert to number for completed values
-        parsedValue = parseFloat(strValue) || 0;
-      }
-    }
-
     newItems[index] = {
       ...newItems[index],
-      [field]: parsedValue,
+      [field]: value,
     };
 
     setData((prev) => {
@@ -3822,13 +3800,6 @@ export default function EstimateSheet({
       return newData;
     });
     setIsDirty(true);
-    // Clear blanking state for this field when user types something
-    const key = makeKey(section, index, field);
-    if (blankingKeys.has(key)) {
-      const copy = new Set(blankingKeys);
-      copy.delete(key);
-      setBlankingKeys(copy);
-    }
   };
 
   const applyScopeLibraryItemToRow = (
@@ -3871,13 +3842,6 @@ export default function EstimateSheet({
       return newData;
     });
 
-    setBlankingKeys((prev) => {
-      const next = new Set(prev);
-      ["quantity", "materialPrice", "laborMen", "laborHours"].forEach((field) =>
-        next.delete(makeKey(section, index, field)),
-      );
-      return next;
-    });
     setIsDirty(true);
   };
 
@@ -4138,20 +4102,9 @@ export default function EstimateSheet({
   };
 
   // Handler for Saturday labor hours changes
-  const handleSaturdayHoursChange = (field: string, value: string) => {
+  const handleSaturdayHoursChange = (field: string, value: number) => {
     if (isViewMode) return;
     setIsManualSaturdayHours(true);
-    let parsedValue: number | string;
-    if (
-      value === "" ||
-      value === "." ||
-      value.endsWith(".") ||
-      /\.\d*0+$/.test(value)
-    ) {
-      parsedValue = value === "" ? 0 : value;
-    } else {
-      parsedValue = parseFloat(value) || 0;
-    }
     setData((prev) => ({
       ...prev,
       saturdayHoursSummary: {
@@ -4162,27 +4115,16 @@ export default function EstimateSheet({
         travelOvertimeHours: 0,
         travelDoubleTimeHours: 0,
         ...(prev.saturdayHoursSummary || {}),
-        [field]: parsedValue,
+        [field]: value,
       },
     }));
     setIsDirty(true);
   };
 
   // Handler for Sunday/Holiday labor hours changes
-  const handleSundayHoursChange = (field: string, value: string) => {
+  const handleSundayHoursChange = (field: string, value: number) => {
     if (isViewMode) return;
     setIsManualSundayHours(true);
-    let parsedValue: number | string;
-    if (
-      value === "" ||
-      value === "." ||
-      value.endsWith(".") ||
-      /\.\d*0+$/.test(value)
-    ) {
-      parsedValue = value === "" ? 0 : value;
-    } else {
-      parsedValue = parseFloat(value) || 0;
-    }
     setData((prev) => ({
       ...prev,
       sundayHoursSummary: {
@@ -4193,13 +4135,13 @@ export default function EstimateSheet({
         travelOvertimeHours: 0,
         travelDoubleTimeHours: 0,
         ...(prev.sundayHoursSummary || {}),
-        [field]: parsedValue,
+        [field]: value,
       },
     }));
     setIsDirty(true);
   };
 
-  const handleHoursSummaryChange = (field: string, value: string) => {
+  const handleHoursSummaryChange = (field: string, value: number) => {
     if (isViewMode) return;
     console.log("handleHoursSummaryChange called:", { field, value });
 
@@ -4218,26 +4160,12 @@ export default function EstimateSheet({
       setIsManualTravelLaborHours(true);
     }
 
-    // Preserve decimal point during typing
-    let parsedValue: number | string;
-    if (
-      value === "" ||
-      value === "." ||
-      value.endsWith(".") ||
-      /\.\d*0+$/.test(value)
-    ) {
-      // Keep as string to preserve decimal point during typing
-      parsedValue = value === "" ? 0 : value;
-    } else {
-      parsedValue = parseFloat(value) || 0;
-    }
-
     setData((prev) => {
       const newData = {
         ...prev,
         hoursSummary: {
           ...prev.hoursSummary,
-          [field]: parsedValue,
+          [field]: value,
         },
       };
 
@@ -8959,51 +8887,26 @@ export default function EstimateSheet({
                                     </div>
                                   </td>
                                   <td style={styles.tableCell}>
-                                    <input
-                                      type="text"
-                                      inputMode="decimal"
+                                    <EstimateNumberInput
                                       style={styles.tableInput}
-                                      value={
-                                        blankingKeys.has(
-                                          makeKey("sov", index, "quantity"),
-                                        )
-                                          ? ""
-                                          : String(item.quantity ?? "")
-                                      }
-                                      onChange={(e) =>
+                                      value={item.quantity}
+                                      onValueChange={(value) =>
                                         handleItemChange(
                                           "sov",
                                           index,
                                           "quantity",
-                                          e.target.value,
+                                          value,
                                         )
                                       }
-                                      onKeyDown={(e) => {
+                                      onKeyDown={(e) =>
                                         handleEstimateCellKeyDown(
                                           e,
                                           "sov",
                                           index,
                                           1,
                                           data.sovItems.length,
-                                        );
-                                        if (
-                                          e.key === "Backspace" &&
-                                          String(item.quantity) === "0"
-                                        ) {
-                                          const copy = new Set(blankingKeys);
-                                          copy.add(
-                                            makeKey("sov", index, "quantity"),
-                                          );
-                                          setBlankingKeys(copy);
-                                          e.preventDefault();
-                                          handleItemChange(
-                                            "sov",
-                                            index,
-                                            "quantity",
-                                            "",
-                                          );
-                                        }
-                                      }}
+                                        )
+                                      }
                                       data-estimate-table="sov"
                                       data-estimate-row={index}
                                       data-estimate-col={1}
@@ -9011,59 +8914,26 @@ export default function EstimateSheet({
                                     />
                                   </td>
                                   <td style={styles.tableCell}>
-                                    <input
-                                      type="text"
-                                      inputMode="decimal"
+                                    <EstimateNumberInput
                                       style={styles.tableInput}
-                                      value={
-                                        blankingKeys.has(
-                                          makeKey(
-                                            "sov",
-                                            index,
-                                            "materialPrice",
-                                          ),
-                                        )
-                                          ? ""
-                                          : String(item.materialPrice ?? "")
-                                      }
-                                      onChange={(e) =>
+                                      value={item.materialPrice}
+                                      onValueChange={(value) =>
                                         handleItemChange(
                                           "sov",
                                           index,
                                           "materialPrice",
-                                          e.target.value,
+                                          value,
                                         )
                                       }
-                                      onKeyDown={(e) => {
+                                      onKeyDown={(e) =>
                                         handleEstimateCellKeyDown(
                                           e,
                                           "sov",
                                           index,
                                           2,
                                           data.sovItems.length,
-                                        );
-                                        if (
-                                          e.key === "Backspace" &&
-                                          String(item.materialPrice) === "0"
-                                        ) {
-                                          const copy = new Set(blankingKeys);
-                                          copy.add(
-                                            makeKey(
-                                              "sov",
-                                              index,
-                                              "materialPrice",
-                                            ),
-                                          );
-                                          setBlankingKeys(copy);
-                                          e.preventDefault();
-                                          handleItemChange(
-                                            "sov",
-                                            index,
-                                            "materialPrice",
-                                            "",
-                                          );
-                                        }
-                                      }}
+                                        )
+                                      }
                                       data-estimate-table="sov"
                                       data-estimate-row={index}
                                       data-estimate-col={2}
@@ -9079,53 +8949,26 @@ export default function EstimateSheet({
                                     {formatCurrency(materialExtension)}
                                   </td>
                                   <td style={styles.tableCell}>
-                                    <input
-                                      type="text"
-                                      inputMode="decimal"
+                                    <EstimateNumberInput
                                       style={styles.tableInput}
-                                      value={
-                                        blankingKeys.has(
-                                          makeKey("sov", index, "laborMen"),
-                                        )
-                                          ? ""
-                                          : Number.isNaN(Number(item.laborMen))
-                                            ? ""
-                                            : String(item.laborMen ?? "")
-                                      }
-                                      onChange={(e) =>
+                                      value={item.laborMen}
+                                      onValueChange={(value) =>
                                         handleItemChange(
                                           "sov",
                                           index,
                                           "laborMen",
-                                          e.target.value,
+                                          value,
                                         )
                                       }
-                                      onKeyDown={(e) => {
+                                      onKeyDown={(e) =>
                                         handleEstimateCellKeyDown(
                                           e,
                                           "sov",
                                           index,
                                           6,
                                           data.sovItems.length,
-                                        );
-                                        if (
-                                          e.key === "Backspace" &&
-                                          String(item.laborMen) === "0"
-                                        ) {
-                                          const copy = new Set(blankingKeys);
-                                          copy.add(
-                                            makeKey("sov", index, "laborMen"),
-                                          );
-                                          setBlankingKeys(copy);
-                                          e.preventDefault();
-                                          handleItemChange(
-                                            "sov",
-                                            index,
-                                            "laborMen",
-                                            "",
-                                          );
-                                        }
-                                      }}
+                                        )
+                                      }
                                       data-estimate-table="sov"
                                       data-estimate-row={index}
                                       data-estimate-col={6}
@@ -9133,55 +8976,26 @@ export default function EstimateSheet({
                                     />
                                   </td>
                                   <td style={styles.tableCell}>
-                                    <input
-                                      type="text"
-                                      inputMode="decimal"
+                                    <EstimateNumberInput
                                       style={styles.tableInput}
-                                      value={
-                                        blankingKeys.has(
-                                          makeKey("sov", index, "laborHours"),
-                                        )
-                                          ? ""
-                                          : Number.isNaN(
-                                                Number(item.laborHours),
-                                              )
-                                            ? ""
-                                            : String(item.laborHours ?? "")
-                                      }
-                                      onChange={(e) =>
+                                      value={item.laborHours}
+                                      onValueChange={(value) =>
                                         handleItemChange(
                                           "sov",
                                           index,
                                           "laborHours",
-                                          e.target.value,
+                                          value,
                                         )
                                       }
-                                      onKeyDown={(e) => {
+                                      onKeyDown={(e) =>
                                         handleEstimateCellKeyDown(
                                           e,
                                           "sov",
                                           index,
                                           7,
                                           data.sovItems.length,
-                                        );
-                                        if (
-                                          e.key === "Backspace" &&
-                                          String(item.laborHours) === "0"
-                                        ) {
-                                          const copy = new Set(blankingKeys);
-                                          copy.add(
-                                            makeKey("sov", index, "laborHours"),
-                                          );
-                                          setBlankingKeys(copy);
-                                          e.preventDefault();
-                                          handleItemChange(
-                                            "sov",
-                                            index,
-                                            "laborHours",
-                                            "",
-                                          );
-                                        }
-                                      }}
+                                        )
+                                      }
                                       data-estimate-table="sov"
                                       data-estimate-row={index}
                                       data-estimate-col={7}
@@ -9894,16 +9708,15 @@ export default function EstimateSheet({
                                   </div>
                                 </td>
                                 <td style={styles.tableCell}>
-                                  <input
-                                    type="number"
+                                  <EstimateNumberInput
                                     style={styles.tableInput}
                                     value={item.quantity}
-                                    onChange={(e) =>
+                                    onValueChange={(value) =>
                                       handleItemChange(
                                         "nonSov",
                                         index,
                                         "quantity",
-                                        e.target.value,
+                                        value,
                                       )
                                     }
                                     onKeyDown={(e) =>
@@ -9922,17 +9735,15 @@ export default function EstimateSheet({
                                   />
                                 </td>
                                 <td style={styles.tableCell}>
-                                  <input
-                                    type="number"
-                                    step="0.01"
+                                  <EstimateNumberInput
                                     style={styles.tableInput}
                                     value={item.materialPrice}
-                                    onChange={(e) =>
+                                    onValueChange={(value) =>
                                       handleItemChange(
                                         "nonSov",
                                         index,
                                         "materialPrice",
-                                        e.target.value,
+                                        value,
                                       )
                                     }
                                     onKeyDown={(e) =>
@@ -9959,21 +9770,15 @@ export default function EstimateSheet({
                                   {formatCurrency(materialExtension)}
                                 </td>
                                 <td style={styles.tableCell}>
-                                  <input
-                                    type="number"
-                                    step="0.01"
+                                  <EstimateNumberInput
                                     style={styles.tableInput}
-                                    value={
-                                      Number.isNaN(Number(item.laborMen))
-                                        ? ""
-                                        : item.laborMen
-                                    }
-                                    onChange={(e) =>
+                                    value={item.laborMen}
+                                    onValueChange={(value) =>
                                       handleItemChange(
                                         "nonSov",
                                         index,
                                         "laborMen",
-                                        e.target.value,
+                                        value,
                                       )
                                     }
                                     onKeyDown={(e) =>
@@ -9992,21 +9797,15 @@ export default function EstimateSheet({
                                   />
                                 </td>
                                 <td style={styles.tableCell}>
-                                  <input
-                                    type="number"
-                                    step="0.01"
+                                  <EstimateNumberInput
                                     style={styles.tableInput}
-                                    value={
-                                      Number.isNaN(Number(item.laborHours))
-                                        ? ""
-                                        : item.laborHours
-                                    }
-                                    onChange={(e) =>
+                                    value={item.laborHours}
+                                    onValueChange={(value) =>
                                       handleItemChange(
                                         "nonSov",
                                         index,
                                         "laborHours",
-                                        e.target.value,
+                                        value,
                                       )
                                     }
                                     onKeyDown={(e) =>
@@ -10758,23 +10557,21 @@ export default function EstimateSheet({
                                   padding: "12px 8px",
                                 }}
                               >
-                                <input
-                                  type="number"
+                                <EstimateNumberInput
                                   style={{
                                     ...styles.tableInput,
                                     width: "100%",
                                   }}
                                   value={materialMarkup}
-                                  onChange={(e) => {
+                                  onValueChange={(value) => {
                                     const markup =
-                                      parseFloat(e.target.value) ||
+                                      value ||
                                       DEFAULT_ESTIMATING_PRESETS.default_markup_factor;
                                     setMaterialMarkup(markup);
                                   }}
                                   step="0.1"
                                   min="0"
                                   readOnly={isViewMode}
-                                  placeholder="1.3"
                                 />
                               </td>
                               <td
@@ -10906,18 +10703,17 @@ export default function EstimateSheet({
                                   padding: "12px 8px",
                                 }}
                               >
-                                <input
-                                  type="number"
+                                <EstimateNumberInput
                                   step="0.01"
                                   style={{
                                     ...styles.tableInput,
                                     width: "100%",
                                   }}
                                   value={data.hoursSummary.men}
-                                  onChange={(e) =>
+                                  onValueChange={(value) =>
                                     handleHoursSummaryChange(
                                       "men",
-                                      e.target.value,
+                                      value,
                                     )
                                   }
                                   readOnly={isViewMode}
@@ -10940,18 +10736,17 @@ export default function EstimateSheet({
                                   padding: "12px 8px",
                                 }}
                               >
-                                <input
-                                  type="number"
+                                <EstimateNumberInput
                                   step="0.01"
                                   style={{
                                     ...styles.tableInput,
                                     width: "100%",
                                   }}
                                   value={data.hoursSummary.hoursPerDay}
-                                  onChange={(e) =>
+                                  onValueChange={(value) =>
                                     handleHoursSummaryChange(
                                       "hoursPerDay",
-                                      e.target.value,
+                                      value,
                                     )
                                   }
                                   readOnly={isViewMode}
@@ -11279,24 +11074,20 @@ export default function EstimateSheet({
                                   padding: "12px 8px",
                                 }}
                               >
-                                <input
-                                  type="number"
+                                <EstimateNumberInput
                                   step="0.01"
                                   style={{
                                     ...styles.tableInput,
                                     width: "100%",
                                   }}
-                                  value={
-                                    data.hoursSummary.straightTimeHours || ""
-                                  }
-                                  onChange={(e) =>
+                                  value={data.hoursSummary.straightTimeHours}
+                                  onValueChange={(value) =>
                                     handleHoursSummaryChange(
                                       "straightTimeHours",
-                                      e.target.value,
+                                      value,
                                     )
                                   }
                                   readOnly={isViewMode}
-                                  placeholder="0"
                                 />
                               </td>
                               <td
@@ -11306,24 +11097,21 @@ export default function EstimateSheet({
                                   padding: "12px 8px",
                                 }}
                               >
-                                <input
-                                  type="number"
+                                <EstimateNumberInput
                                   style={{
                                     ...styles.tableInput,
                                     width: "100%",
                                   }}
-                                  value={hourlyRates.straightTime || ""}
-                                  onChange={(e) => {
+                                  value={hourlyRates.straightTime}
+                                  onValueChange={(value) => {
                                     setHourlyRates((prev) => ({
                                       ...prev,
-                                      straightTime:
-                                        parseFloat(e.target.value) || 0,
+                                      straightTime: value,
                                     }));
                                   }}
                                   step="0.01"
                                   min="0"
                                   readOnly={isViewMode}
-                                  placeholder="240.00"
                                 />
                               </td>
                               <td
@@ -11357,22 +11145,20 @@ export default function EstimateSheet({
                                   padding: "12px 8px",
                                 }}
                               >
-                                <input
-                                  type="number"
+                                <EstimateNumberInput
                                   step="0.01"
                                   style={{
                                     ...styles.tableInput,
                                     width: "100%",
                                   }}
-                                  value={data.hoursSummary.overtimeHours || ""}
-                                  onChange={(e) =>
+                                  value={data.hoursSummary.overtimeHours}
+                                  onValueChange={(value) =>
                                     handleHoursSummaryChange(
                                       "overtimeHours",
-                                      e.target.value,
+                                      value,
                                     )
                                   }
                                   readOnly={isViewMode}
-                                  placeholder="0"
                                 />
                               </td>
                               <td
@@ -11382,23 +11168,21 @@ export default function EstimateSheet({
                                   padding: "12px 8px",
                                 }}
                               >
-                                <input
-                                  type="number"
+                                <EstimateNumberInput
                                   style={{
                                     ...styles.tableInput,
                                     width: "100%",
                                   }}
-                                  value={hourlyRates.overtime || ""}
-                                  onChange={(e) => {
+                                  value={hourlyRates.overtime}
+                                  onValueChange={(value) => {
                                     setHourlyRates((prev) => ({
                                       ...prev,
-                                      overtime: parseFloat(e.target.value) || 0,
+                                      overtime: value,
                                     }));
                                   }}
                                   step="0.01"
                                   min="0"
                                   readOnly={isViewMode}
-                                  placeholder="360.00"
                                 />
                               </td>
                               <td
@@ -11432,24 +11216,20 @@ export default function EstimateSheet({
                                   padding: "12px 8px",
                                 }}
                               >
-                                <input
-                                  type="number"
+                                <EstimateNumberInput
                                   step="0.01"
                                   style={{
                                     ...styles.tableInput,
                                     width: "100%",
                                   }}
-                                  value={
-                                    data.hoursSummary.doubleTimeHours || ""
-                                  }
-                                  onChange={(e) =>
+                                  value={data.hoursSummary.doubleTimeHours}
+                                  onValueChange={(value) =>
                                     handleHoursSummaryChange(
                                       "doubleTimeHours",
-                                      e.target.value,
+                                      value,
                                     )
                                   }
                                   readOnly={isViewMode}
-                                  placeholder="0"
                                 />
                               </td>
                               <td
@@ -11459,24 +11239,21 @@ export default function EstimateSheet({
                                   padding: "12px 8px",
                                 }}
                               >
-                                <input
-                                  type="number"
+                                <EstimateNumberInput
                                   style={{
                                     ...styles.tableInput,
                                     width: "100%",
                                   }}
-                                  value={hourlyRates.doubleTime || ""}
-                                  onChange={(e) => {
+                                  value={hourlyRates.doubleTime}
+                                  onValueChange={(value) => {
                                     setHourlyRates((prev) => ({
                                       ...prev,
-                                      doubleTime:
-                                        parseFloat(e.target.value) || 0,
+                                      doubleTime: value,
                                     }));
                                   }}
                                   step="0.01"
                                   min="0"
                                   readOnly={isViewMode}
-                                  placeholder="480.00"
                                 />
                               </td>
                               <td
@@ -11699,25 +11476,22 @@ export default function EstimateSheet({
                                       padding: "12px 8px",
                                     }}
                                   >
-                                    <input
-                                      type="number"
+                                    <EstimateNumberInput
                                       step="0.01"
                                       style={{
                                         ...styles.tableInput,
                                         width: "100%",
                                       }}
                                       value={
-                                        data.hoursSummary
-                                          .travelStraightTimeHours || ""
+                                        data.hoursSummary.travelStraightTimeHours
                                       }
-                                      onChange={(e) =>
+                                      onValueChange={(value) =>
                                         handleHoursSummaryChange(
                                           "travelStraightTimeHours",
-                                          e.target.value,
+                                          value,
                                         )
                                       }
                                       readOnly={isViewMode}
-                                      placeholder="0"
                                     />
                                   </td>
                                   <td
@@ -11762,25 +11536,22 @@ export default function EstimateSheet({
                                       padding: "12px 8px",
                                     }}
                                   >
-                                    <input
-                                      type="number"
+                                    <EstimateNumberInput
                                       step="0.01"
                                       style={{
                                         ...styles.tableInput,
                                         width: "100%",
                                       }}
                                       value={
-                                        data.hoursSummary.travelOvertimeHours ||
-                                        ""
+                                        data.hoursSummary.travelOvertimeHours
                                       }
-                                      onChange={(e) =>
+                                      onValueChange={(value) =>
                                         handleHoursSummaryChange(
                                           "travelOvertimeHours",
-                                          e.target.value,
+                                          value,
                                         )
                                       }
                                       readOnly={isViewMode}
-                                      placeholder="0"
                                     />
                                   </td>
                                   <td
@@ -11824,25 +11595,22 @@ export default function EstimateSheet({
                                       padding: "12px 8px",
                                     }}
                                   >
-                                    <input
-                                      type="number"
+                                    <EstimateNumberInput
                                       step="0.01"
                                       style={{
                                         ...styles.tableInput,
                                         width: "100%",
                                       }}
                                       value={
-                                        data.hoursSummary
-                                          .travelDoubleTimeHours || ""
+                                        data.hoursSummary.travelDoubleTimeHours
                                       }
-                                      onChange={(e) =>
+                                      onValueChange={(value) =>
                                         handleHoursSummaryChange(
                                           "travelDoubleTimeHours",
-                                          e.target.value,
+                                          value,
                                         )
                                       }
                                       readOnly={isViewMode}
-                                      placeholder="0"
                                     />
                                   </td>
                                   <td
@@ -12083,8 +11851,7 @@ export default function EstimateSheet({
                                     padding: "12px 8px",
                                   }}
                                 >
-                                  <input
-                                    type="number"
+                                  <EstimateNumberInput
                                     step="0.01"
                                     style={{
                                       ...styles.tableInput,
@@ -12092,16 +11859,15 @@ export default function EstimateSheet({
                                     }}
                                     value={
                                       data.saturdayHoursSummary
-                                        ?.straightTimeHours || ""
+                                        ?.straightTimeHours
                                     }
-                                    onChange={(e) =>
+                                    onValueChange={(value) =>
                                       handleSaturdayHoursChange(
                                         "straightTimeHours",
-                                        e.target.value,
+                                        value,
                                       )
                                     }
                                     readOnly={isViewMode}
-                                    placeholder="0"
                                   />
                                 </td>
                                 <td
@@ -12146,25 +11912,22 @@ export default function EstimateSheet({
                                     padding: "12px 8px",
                                   }}
                                 >
-                                  <input
-                                    type="number"
+                                  <EstimateNumberInput
                                     step="0.01"
                                     style={{
                                       ...styles.tableInput,
                                       width: "100%",
                                     }}
                                     value={
-                                      data.saturdayHoursSummary
-                                        ?.overtimeHours || ""
+                                      data.saturdayHoursSummary?.overtimeHours
                                     }
-                                    onChange={(e) =>
+                                    onValueChange={(value) =>
                                       handleSaturdayHoursChange(
                                         "overtimeHours",
-                                        e.target.value,
+                                        value,
                                       )
                                     }
                                     readOnly={isViewMode}
-                                    placeholder="0"
                                   />
                                 </td>
                                 <td
@@ -12208,25 +11971,22 @@ export default function EstimateSheet({
                                     padding: "12px 8px",
                                   }}
                                 >
-                                  <input
-                                    type="number"
+                                  <EstimateNumberInput
                                     step="0.01"
                                     style={{
                                       ...styles.tableInput,
                                       width: "100%",
                                     }}
                                     value={
-                                      data.saturdayHoursSummary
-                                        ?.doubleTimeHours || ""
+                                      data.saturdayHoursSummary?.doubleTimeHours
                                     }
-                                    onChange={(e) =>
+                                    onValueChange={(value) =>
                                       handleSaturdayHoursChange(
                                         "doubleTimeHours",
-                                        e.target.value,
+                                        value,
                                       )
                                     }
                                     readOnly={isViewMode}
-                                    placeholder="0"
                                   />
                                 </td>
                                 <td
@@ -12415,8 +12175,7 @@ export default function EstimateSheet({
                                         padding: "12px 8px",
                                       }}
                                     >
-                                      <input
-                                        type="number"
+                                      <EstimateNumberInput
                                         step="0.01"
                                         style={{
                                           ...styles.tableInput,
@@ -12424,16 +12183,15 @@ export default function EstimateSheet({
                                         }}
                                         value={
                                           data.saturdayHoursSummary
-                                            ?.travelStraightTimeHours || ""
+                                            ?.travelStraightTimeHours
                                         }
-                                        onChange={(e) =>
+                                        onValueChange={(value) =>
                                           handleSaturdayHoursChange(
                                             "travelStraightTimeHours",
-                                            e.target.value,
+                                            value,
                                           )
                                         }
                                         readOnly={isViewMode}
-                                        placeholder="0"
                                       />
                                     </td>
                                     <td
@@ -12478,8 +12236,7 @@ export default function EstimateSheet({
                                         padding: "12px 8px",
                                       }}
                                     >
-                                      <input
-                                        type="number"
+                                      <EstimateNumberInput
                                         step="0.01"
                                         style={{
                                           ...styles.tableInput,
@@ -12487,16 +12244,15 @@ export default function EstimateSheet({
                                         }}
                                         value={
                                           data.saturdayHoursSummary
-                                            ?.travelOvertimeHours || ""
+                                            ?.travelOvertimeHours
                                         }
-                                        onChange={(e) =>
+                                        onValueChange={(value) =>
                                           handleSaturdayHoursChange(
                                             "travelOvertimeHours",
-                                            e.target.value,
+                                            value,
                                           )
                                         }
                                         readOnly={isViewMode}
-                                        placeholder="0"
                                       />
                                     </td>
                                     <td
@@ -12541,8 +12297,7 @@ export default function EstimateSheet({
                                         padding: "12px 8px",
                                       }}
                                     >
-                                      <input
-                                        type="number"
+                                      <EstimateNumberInput
                                         step="0.01"
                                         style={{
                                           ...styles.tableInput,
@@ -12550,16 +12305,15 @@ export default function EstimateSheet({
                                         }}
                                         value={
                                           data.saturdayHoursSummary
-                                            ?.travelDoubleTimeHours || ""
+                                            ?.travelDoubleTimeHours
                                         }
-                                        onChange={(e) =>
+                                        onValueChange={(value) =>
                                           handleSaturdayHoursChange(
                                             "travelDoubleTimeHours",
-                                            e.target.value,
+                                            value,
                                           )
                                         }
                                         readOnly={isViewMode}
-                                        placeholder="0"
                                       />
                                     </td>
                                     <td
@@ -12825,25 +12579,22 @@ export default function EstimateSheet({
                                     padding: "12px 8px",
                                   }}
                                 >
-                                  <input
-                                    type="number"
+                                  <EstimateNumberInput
                                     step="0.01"
                                     style={{
                                       ...styles.tableInput,
                                       width: "100%",
                                     }}
                                     value={
-                                      data.sundayHoursSummary
-                                        ?.straightTimeHours || ""
+                                      data.sundayHoursSummary?.straightTimeHours
                                     }
-                                    onChange={(e) =>
+                                    onValueChange={(value) =>
                                       handleSundayHoursChange(
                                         "straightTimeHours",
-                                        e.target.value,
+                                        value,
                                       )
                                     }
                                     readOnly={isViewMode}
-                                    placeholder="0"
                                   />
                                 </td>
                                 <td
@@ -12888,25 +12639,22 @@ export default function EstimateSheet({
                                     padding: "12px 8px",
                                   }}
                                 >
-                                  <input
-                                    type="number"
+                                  <EstimateNumberInput
                                     step="0.01"
                                     style={{
                                       ...styles.tableInput,
                                       width: "100%",
                                     }}
                                     value={
-                                      data.sundayHoursSummary?.overtimeHours ||
-                                      ""
+                                      data.sundayHoursSummary?.overtimeHours
                                     }
-                                    onChange={(e) =>
+                                    onValueChange={(value) =>
                                       handleSundayHoursChange(
                                         "overtimeHours",
-                                        e.target.value,
+                                        value,
                                       )
                                     }
                                     readOnly={isViewMode}
-                                    placeholder="0"
                                   />
                                 </td>
                                 <td
@@ -12950,25 +12698,22 @@ export default function EstimateSheet({
                                     padding: "12px 8px",
                                   }}
                                 >
-                                  <input
-                                    type="number"
+                                  <EstimateNumberInput
                                     step="0.01"
                                     style={{
                                       ...styles.tableInput,
                                       width: "100%",
                                     }}
                                     value={
-                                      data.sundayHoursSummary
-                                        ?.doubleTimeHours || ""
+                                      data.sundayHoursSummary?.doubleTimeHours
                                     }
-                                    onChange={(e) =>
+                                    onValueChange={(value) =>
                                       handleSundayHoursChange(
                                         "doubleTimeHours",
-                                        e.target.value,
+                                        value,
                                       )
                                     }
                                     readOnly={isViewMode}
-                                    placeholder="0"
                                   />
                                 </td>
                                 <td
@@ -13156,8 +12901,7 @@ export default function EstimateSheet({
                                         padding: "12px 8px",
                                       }}
                                     >
-                                      <input
-                                        type="number"
+                                      <EstimateNumberInput
                                         step="0.01"
                                         style={{
                                           ...styles.tableInput,
@@ -13165,16 +12909,15 @@ export default function EstimateSheet({
                                         }}
                                         value={
                                           data.sundayHoursSummary
-                                            ?.travelStraightTimeHours || ""
+                                            ?.travelStraightTimeHours
                                         }
-                                        onChange={(e) =>
+                                        onValueChange={(value) =>
                                           handleSundayHoursChange(
                                             "travelStraightTimeHours",
-                                            e.target.value,
+                                            value,
                                           )
                                         }
                                         readOnly={isViewMode}
-                                        placeholder="0"
                                       />
                                     </td>
                                     <td
@@ -13219,8 +12962,7 @@ export default function EstimateSheet({
                                         padding: "12px 8px",
                                       }}
                                     >
-                                      <input
-                                        type="number"
+                                      <EstimateNumberInput
                                         step="0.01"
                                         style={{
                                           ...styles.tableInput,
@@ -13228,16 +12970,15 @@ export default function EstimateSheet({
                                         }}
                                         value={
                                           data.sundayHoursSummary
-                                            ?.travelOvertimeHours || ""
+                                            ?.travelOvertimeHours
                                         }
-                                        onChange={(e) =>
+                                        onValueChange={(value) =>
                                           handleSundayHoursChange(
                                             "travelOvertimeHours",
-                                            e.target.value,
+                                            value,
                                           )
                                         }
                                         readOnly={isViewMode}
-                                        placeholder="0"
                                       />
                                     </td>
                                     <td
@@ -13282,8 +13023,7 @@ export default function EstimateSheet({
                                         padding: "12px 8px",
                                       }}
                                     >
-                                      <input
-                                        type="number"
+                                      <EstimateNumberInput
                                         step="0.01"
                                         style={{
                                           ...styles.tableInput,
@@ -13291,16 +13031,15 @@ export default function EstimateSheet({
                                         }}
                                         value={
                                           data.sundayHoursSummary
-                                            ?.travelDoubleTimeHours || ""
+                                            ?.travelDoubleTimeHours
                                         }
-                                        onChange={(e) =>
+                                        onValueChange={(value) =>
                                           handleSundayHoursChange(
                                             "travelDoubleTimeHours",
-                                            e.target.value,
+                                            value,
                                           )
                                         }
                                         readOnly={isViewMode}
-                                        placeholder="0"
                                       />
                                     </td>
                                     <td
@@ -13450,8 +13189,7 @@ export default function EstimateSheet({
                                     padding: "12px 8px",
                                   }}
                                 >
-                                  <input
-                                    type="number"
+                                  <EstimateNumberInput
                                     step="0.01"
                                     min="0"
                                     style={{
@@ -13460,9 +13198,7 @@ export default function EstimateSheet({
                                       textAlign: "center",
                                     }}
                                     value={paymentTermFactors.net30}
-                                    onChange={(e) => {
-                                      const value =
-                                        parseFloat(e.target.value) || 0;
+                                    onValueChange={(value) => {
                                       setPaymentTermFactors((prev) => ({
                                         ...prev,
                                         net30: value,
@@ -13516,8 +13252,7 @@ export default function EstimateSheet({
                                     padding: "12px 8px",
                                   }}
                                 >
-                                  <input
-                                    type="number"
+                                  <EstimateNumberInput
                                     step="0.01"
                                     min="0"
                                     style={{
@@ -13526,9 +13261,7 @@ export default function EstimateSheet({
                                       textAlign: "center",
                                     }}
                                     value={paymentTermFactors.net60}
-                                    onChange={(e) => {
-                                      const value =
-                                        parseFloat(e.target.value) || 0;
+                                    onValueChange={(value) => {
                                       setPaymentTermFactors((prev) => ({
                                         ...prev,
                                         net60: value,
@@ -13582,8 +13315,7 @@ export default function EstimateSheet({
                                     padding: "12px 8px",
                                   }}
                                 >
-                                  <input
-                                    type="number"
+                                  <EstimateNumberInput
                                     step="0.01"
                                     min="0"
                                     style={{
@@ -13592,9 +13324,7 @@ export default function EstimateSheet({
                                       textAlign: "center",
                                     }}
                                     value={paymentTermFactors.net90}
-                                    onChange={(e) => {
-                                      const value =
-                                        parseFloat(e.target.value) || 0;
+                                    onValueChange={(value) => {
                                       setPaymentTermFactors((prev) => ({
                                         ...prev,
                                         net90: value,
@@ -13699,8 +13429,7 @@ export default function EstimateSheet({
                                     padding: "12px 8px",
                                   }}
                                 >
-                                  <input
-                                    type="number"
+                                  <EstimateNumberInput
                                     step="0.01"
                                     min="0"
                                     style={{
@@ -13709,9 +13438,7 @@ export default function EstimateSheet({
                                       textAlign: "center",
                                     }}
                                     value={mobilizationFactors.base}
-                                    onChange={(e) => {
-                                      const value =
-                                        parseFloat(e.target.value) || 0;
+                                    onValueChange={(value) => {
                                       setMobilizationFactors((prev) => ({
                                         ...prev,
                                         base: value,
@@ -13753,8 +13480,7 @@ export default function EstimateSheet({
                                     padding: "12px 8px",
                                   }}
                                 >
-                                  <input
-                                    type="number"
+                                  <EstimateNumberInput
                                     step="0.01"
                                     min="0"
                                     style={{
@@ -13763,9 +13489,7 @@ export default function EstimateSheet({
                                       textAlign: "center",
                                     }}
                                     value={mobilizationFactors.over100k}
-                                    onChange={(e) => {
-                                      const value =
-                                        parseFloat(e.target.value) || 0;
+                                    onValueChange={(value) => {
                                       setMobilizationFactors((prev) => ({
                                         ...prev,
                                         over100k: value,
@@ -13811,8 +13535,7 @@ export default function EstimateSheet({
                                     padding: "12px 8px",
                                   }}
                                 >
-                                  <input
-                                    type="number"
+                                  <EstimateNumberInput
                                     step="0.01"
                                     min="0"
                                     style={{
@@ -13821,9 +13544,7 @@ export default function EstimateSheet({
                                       textAlign: "center",
                                     }}
                                     value={mobilizationFactors.over500k}
-                                    onChange={(e) => {
-                                      const value =
-                                        parseFloat(e.target.value) || 0;
+                                    onValueChange={(value) => {
                                       setMobilizationFactors((prev) => ({
                                         ...prev,
                                         over500k: value,
@@ -13871,8 +13592,7 @@ export default function EstimateSheet({
                                     padding: "12px 8px",
                                   }}
                                 >
-                                  <input
-                                    type="number"
+                                  <EstimateNumberInput
                                     step="0.01"
                                     min="0"
                                     style={{
@@ -13881,9 +13601,7 @@ export default function EstimateSheet({
                                       textAlign: "center",
                                     }}
                                     value={mobilizationFactors.over1m}
-                                    onChange={(e) => {
-                                      const value =
-                                        parseFloat(e.target.value) || 0;
+                                    onValueChange={(value) => {
                                       setMobilizationFactors((prev) => ({
                                         ...prev,
                                         over1m: value,

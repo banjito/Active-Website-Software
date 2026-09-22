@@ -868,6 +868,23 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
     }));
   };
 
+  const moveContactResistanceRow = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    handleChange((prev) => {
+      if (target < 0 || target >= prev.contactResistance.length) return prev;
+      const swap = <T,>(arr: T[]) => {
+        const list = [...arr];
+        [list[index], list[target]] = [list[target], list[index]];
+        return list;
+      };
+      return {
+        ...prev,
+        contactResistance: swap(prev.contactResistance),
+        contactEvaluation: swap(prev.contactEvaluation),
+      };
+    });
+  };
+
   const addDielectricWithstandRow = () => {
     setFormData((prev) => {
       const newIndex = prev.dielectricWithstand.length + 1;
@@ -1502,13 +1519,13 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
               {/* Measured table */}
               <table className="min-w-[720px] divide-y divide-neutral-200 dark:divide-neutral-700 table-fixed">
                 <colgroup>
+                  <col style={{ width: "16%" }} />
+                  <col style={{ width: "14.4%" }} />
+                  <col style={{ width: "14.4%" }} />
+                  <col style={{ width: "14.4%" }} />
+                  <col style={{ width: "14.4%" }} />
+                  <col style={{ width: "14.4%" }} />
                   <col style={{ width: "12%" }} />
-                  <col style={{ width: "17.6%" }} />
-                  <col style={{ width: "17.6%" }} />
-                  <col style={{ width: "17.6%" }} />
-                  <col style={{ width: "17.6%" }} />
-                  <col style={{ width: "17.6%" }} />
-                  <col style={{ width: "8%" }} />
                 </colgroup>
                 <thead>
                   <tr>
@@ -1556,6 +1573,31 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                             readOnly={!isEditing}
                             className={`block flex-1 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
+                          {isEditing &&
+                            formData.contactResistance.length > 1 && (
+                              <>
+                                <button
+                                  onClick={() => moveContactResistanceRow(i, -1)}
+                                  disabled={i === 0}
+                                  className="px-2 py-1 text-xs text-neutral-700 dark:text-neutral-200 bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 rounded-none disabled:opacity-40 disabled:cursor-not-allowed"
+                                  type="button"
+                                  title="Move row up"
+                                >
+                                  ▲
+                                </button>
+                                <button
+                                  onClick={() => moveContactResistanceRow(i, 1)}
+                                  disabled={
+                                    i === formData.contactResistance.length - 1
+                                  }
+                                  className="px-2 py-1 text-xs text-neutral-700 dark:text-neutral-200 bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 rounded-none disabled:opacity-40 disabled:cursor-not-allowed"
+                                  type="button"
+                                  title="Move row down"
+                                >
+                                  ▼
+                                </button>
+                              </>
+                            )}
                           {isEditing &&
                             formData.contactResistance.length > 1 && (
                               <button

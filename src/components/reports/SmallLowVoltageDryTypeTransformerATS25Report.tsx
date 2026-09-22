@@ -21,6 +21,7 @@ import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
 import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
+import { openPendingReportTab } from "./common/openReportTab";
 import {
   reportSaveFailed,
   reportSaveSucceeded,
@@ -960,6 +961,167 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
       setIsEditing(false);
     }
   };
+
+  // Save the report on screen, then open a fresh one carrying only the
+  // nameplate: the next transformer in the same lineup is usually identical
+  // apart from its serial number and test results.
+  const copyNameplateDataToNewReport = React.useCallback(async () => {
+    if (!jobId || !user?.id) {
+      alert("Unable to create new report. Missing job or user information.");
+      return;
+    }
+
+    // Claim the tab while the click is still fresh; the saves below take long
+    // enough that a later window.open reads as a popup.
+    const copyTab = openPendingReportTab();
+
+    try {
+      setIsSaving(true);
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = null;
+      }
+
+      const savedCurrentReportId = await persistReport();
+      if (!savedCurrentReportId) {
+        throw new Error("Failed to save current report.");
+      }
+
+      const formData = formDataRef.current;
+      const makeEmptyTestEquipment = () => ({
+        name: "",
+        serialNumber: "",
+        ampId: "",
+        calDate: "",
+      });
+
+      // Customer, crew, substation and location carry over with the nameplate:
+      // the next unit is tested by the same crew, in the same room, the same
+      // day. Only the unit's own identity and its readings are cleared.
+      const newFormData: FormData = {
+        ...formData,
+        date: new Date().toISOString().split("T")[0],
+        identifier: "",
+        temperature: { fahrenheit: 68, celsius: 20, tcf: 1, humidity: null },
+        status: "PASS",
+        nameplate: {
+          ...formData.nameplate,
+          serialNumber: "",
+        },
+        visualInspectionItems: formData.visualInspectionItems.map((item) => ({
+          id: item.id,
+          description: item.description,
+          result: "Select One",
+        })),
+        insulationTemperature: "",
+        insulationTestVoltage: "1000V",
+        insulationDuration: "1 min",
+        insulationUnit: "MΩ",
+        insulationRows: formData.insulationRows.map((row) => ({
+          windingUnderTest: row.windingUnderTest,
+          measured05Min: "",
+          measured1Min: "",
+          corrected05Min: "",
+          corrected1Min: "",
+        })),
+        insulationCriteriaValue: "≥ 500",
+        insulationCriteriaUnits: "MΩ",
+        dielectricAbsorptionRatio: {
+          priToGnd: "",
+          secToGnd: "",
+          priToSec: "",
+          criteria: "≥ 1.00",
+          result: "",
+        },
+        turnsRatio: {
+          ...formData.turnsRatio,
+          rows: formData.turnsRatio.rows.map((row) => ({
+            primaryWinding: row.primaryWinding,
+            measuredRatio: "",
+            percentDeviation: "",
+            result: "",
+          })),
+          differenceBetweenMR: "",
+          differenceResult: "",
+        },
+        testEquipment: {
+          megohmmeter: makeEmptyTestEquipment(),
+          ttrTestSet: makeEmptyTestEquipment(),
+        },
+        comments: "",
+      };
+
+      const copyReportId = newReportId();
+      const { error: newReportError } = await supabase
+        .schema("neta_ops")
+        .from("small_lv_dry_type_transformer_ats25_reports")
+        .upsert(
+          {
+            id: copyReportId,
+            job_id: jobId,
+            user_id: user.id,
+            report_info: {
+              customer: maskCustomerName(newFormData.customerName),
+              address: maskCustomerAddress(newFormData.customerLocation),
+              userName: newFormData.userName,
+              date: newFormData.date,
+              identifier: newFormData.identifier,
+              technicians: newFormData.technicians,
+              substation: newFormData.substation,
+              eqptLocation: newFormData.eqptLocation,
+              temperature: newFormData.temperature,
+              status: newFormData.status,
+              nameplate: newFormData.nameplate,
+            },
+            visual_mechanical: { items: newFormData.visualInspectionItems },
+            insulation_resistance: {
+              insulationTemperature: newFormData.insulationTemperature,
+              testVoltage: newFormData.insulationTestVoltage,
+              duration: newFormData.insulationDuration,
+              unit: newFormData.insulationUnit,
+              rows: newFormData.insulationRows,
+              criteriaValue: newFormData.insulationCriteriaValue,
+              criteriaUnits: newFormData.insulationCriteriaUnits,
+              dielectricAbsorptionRatio: newFormData.dielectricAbsorptionRatio,
+            },
+            turns_ratio: newFormData.turnsRatio,
+            test_equipment: newFormData.testEquipment,
+            comments: newFormData.comments,
+          },
+          { onConflict: "id" },
+        );
+      if (newReportError) throw newReportError;
+
+      await ensureReportAssetLink(
+        jobId,
+        {
+          name: getAssetName(reportSlug, ""),
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${copyReportId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+
+      // The copy opens in its own tab. This one stays on the finished report so
+      // it can go on serving as the template, so no ref here may move.
+      copyTab.go(`/jobs/${jobId}/${reportSlug}/${copyReportId}`);
+    } catch (error: any) {
+      copyTab.cancel();
+      console.error("Error creating new transformer report:", error);
+      alert(
+        `Failed to create new report: ${error?.message || "Unknown error"}`,
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }, [
+    jobId,
+    maskCustomerAddress,
+    maskCustomerName,
+    persistReport,
+    reportSlug,
+    user?.id,
+  ]);
 
   // Print styles
   useEffect(() => {
@@ -2645,6 +2807,18 @@ const SmallLowVoltageDryTypeTransformerATS25Report: React.FC = () => {
         </div>
       </div>
 
+      {/* Copy Nameplate Data Button */}
+      {!isPrintMode && isEditing && (
+        <div className="mb-4 print:hidden flex justify-center">
+          <button
+            onClick={copyNameplateDataToNewReport}
+            disabled={isSaving}
+            className="px-6 py-3 text-base font-medium text-white bg-green-600 rounded-none hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            Copy Nameplate data to new report (opens in a new tab)
+          </button>
+        </div>
+      )}
       {/* Mark Ready to Review Button */}
       {!isPrintMode && isEditing && (
         <div className="mb-6 print:hidden flex justify-center">

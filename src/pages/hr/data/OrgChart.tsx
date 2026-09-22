@@ -2094,14 +2094,22 @@ export const OrgChart: React.FC = () => {
         grid_column: 0,
       });
 
-      // Job title lives on the profile, so the chart and the profile page agree
+      // Job title lives on the profile, so the chart and the profile page agree.
+      // Upsert: some people have no profile row yet (title came from auth
+      // metadata), and a plain update would silently change nothing.
       if (newJobTitle !== (editingPerson.job_title || "")) {
-        const { error: titleError } = await supabase
+        const { data: savedRows, error: titleError } = await supabase
           .schema("common")
           .from("profiles")
-          .update({ job_title: newJobTitle || null })
-          .eq("id", userId);
+          .upsert(
+            { id: userId, job_title: newJobTitle || null },
+            { onConflict: "id" },
+          )
+          .select("id");
         if (titleError) throw titleError;
+        if (!savedRows || savedRows.length === 0) {
+          throw new Error("Job title was not saved. Please try again.");
+        }
       }
 
       // Update local state immediately for instant feedback

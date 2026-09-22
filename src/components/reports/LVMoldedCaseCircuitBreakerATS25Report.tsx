@@ -547,6 +547,8 @@ interface FormData {
     deviation: string;
     criteria: string;
     result: string;
+    // true = poles can't be compared (ground/neutral test etc.), so no deviation or pass/fail
+    skipDeviation?: boolean;
   };
 
   // Electrical Tests - Insulation Resistance
@@ -943,6 +945,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
       deviation: "",
       criteria: "<50%",
       result: "",
+      skipDeviation: false,
     },
     insulationResistance: {
       temperature: 68,
@@ -1664,6 +1667,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           deviation: "",
           criteria: "<50%",
           result: "",
+          skipDeviation: false,
         },
         insulationResistance: {
           // Set-up fields carry over; the readings below start blank.
@@ -2437,7 +2441,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
   // Calculate contact resistance deviation and result
   const calculateContactResistance = () => {
-    const { pole1, pole2, pole3 } = formData.contactResistance;
+    const { pole1, pole2, pole3, skipDeviation } = formData.contactResistance;
+    if (skipDeviation) {
+      return { deviation: "N/A", result: "N/A" };
+    }
     const p1 = parseFloat(pole1) || 0;
     const p2 = parseFloat(pole2) || 0;
     const p3 = parseFloat(pole3) || 0;
@@ -3725,6 +3732,23 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Contact/Pole Resistance
             </h2>
+            <label
+              className={`flex items-center gap-2 mb-3 text-sm text-neutral-700 dark:text-neutral-300 ${formData.contactResistance.skipDeviation ? "" : "print:hidden"}`}
+            >
+              <input
+                type="checkbox"
+                checked={!!formData.contactResistance.skipDeviation}
+                onChange={(e) =>
+                  handleChange(
+                    "contactResistance.skipDeviation",
+                    e.target.checked,
+                  )
+                }
+                disabled={!isEditing}
+                className="rounded-none"
+              />
+              Skip phase deviation comparison (e.g. ground or neutral test)
+            </label>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600">
                 <thead className="bg-neutral-50 dark:bg-dark-150">
@@ -3836,7 +3860,9 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       {contactResResults.deviation}
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm text-neutral-900 dark:text-white">
-                      &lt;50%
+                      {formData.contactResistance.skipDeviation
+                        ? "N/A"
+                        : "<50%"}
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center">
                       <span

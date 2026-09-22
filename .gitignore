@@ -45,3 +45,22 @@ public/assets/offline-software.zip
 # SKM PowerTools device library (120MB) + generated catalog data
 PTW.LIB
 *.ndjson
+
+# Local docs (not committed)
+documentation/
+
+# More env files (keep the example template)
+.env.*
+!.env.example
+
+# Supabase CLI local cache
+supabase/.temp/
+
+# Claude Code personal settings
+.claude/settings.local.json
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# Scratch scripts
+tmp-*

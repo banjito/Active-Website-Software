@@ -2009,9 +2009,9 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                     <tr>
                       {[
                         "Section",
-                        "Pole 1",
-                        "Pole 2",
-                        "Pole 3",
+                        "A-Phase",
+                        "B-Phase",
+                        "C-Phase",
                         "Neutral",
                         "Ground",
                         "Units",

@@ -198,6 +198,8 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   );
   // Employee ID (badge number). Assigned by HR, so employees see it read-only.
   const [employeeNumber, setEmployeeNumber] = useState("");
+  // Hire date. Same rule as employee ID: only admins can change it.
+  const [hireDate, setHireDate] = useState("");
   const viewerRole = user?.user_metadata?.role || "";
   const canEditEmployeeNumber =
     viewerRole === "Admin" ||
@@ -339,7 +341,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         // Only real columns. common.profiles has avatar_url but no
         // profile_image / cover_image; asking for those made the whole request
         // fail with a 400, which silently skipped the hydration below.
-        .select("job_title, department, employee_number, avatar_url")
+        .select("job_title, department, employee_number, hire_date, avatar_url")
         .eq("id", editingUserId)
         .single();
       // Only hydrate job_title/department from profiles once per open, and only
@@ -351,6 +353,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
         // profiles is the only home for employee_number, so hydrate it even
         // when empty. There is no metadata copy to fall back on.
         setEmployeeNumber(data.employee_number || "");
+        setHireDate(data.hire_date ? String(data.hire_date).slice(0, 10) : "");
         profilesHydratedRef.current = true;
       }
       // Backfill: if user has profile/cover in metadata but profiles doesn't, sync so others can see
@@ -1040,6 +1043,7 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
       // means a normal profile save can never blank someone's assigned ID.
       if (canEditEmployeeNumber) {
         profilesRow.employee_number = employeeNumber.trim() || null;
+        profilesRow.hire_date = hireDate || null;
       }
       // avatar_url is the only image column that exists here. Writing
       // profile_image / cover_image rejected the whole row with a 400, which
@@ -1339,6 +1343,32 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
                                   administrator.
                                 </p>
                               </>
+                            )}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
+                              Hire Date
+                            </label>
+                            {canEditEmployeeNumber ? (
+                              <input
+                                type="date"
+                                value={hireDate}
+                                onChange={(e) => setHireDate(e.target.value)}
+                                className="w-full px-3 py-2 border border-neutral-300 dark:border-dark-300 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
+                              />
+                            ) : (
+                              <p className="w-full px-3 py-2 border border-neutral-200 dark:border-dark-600 bg-neutral-100 dark:bg-dark-800 rounded-none text-neutral-700 dark:text-white">
+                                {hireDate
+                                  ? new Date(
+                                      hireDate + "T00:00:00Z",
+                                    ).toLocaleDateString("en-US", {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                      timeZone: "UTC",
+                                    })
+                                  : "Not set"}
+                              </p>
                             )}
                           </div>
                         </div>

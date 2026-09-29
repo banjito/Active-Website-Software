@@ -933,7 +933,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         .schema("common")
         .from("profiles")
         .select(
-          "job_title, department, current_compensation_amount, current_pay_type, current_pay_frequency, fr_shirt_size, fr_pant_size, fr_jacket_size, fr_sizes_updated_at",
+          "job_title, department, current_compensation_amount, current_pay_type, current_pay_frequency, hire_date, fr_shirt_size, fr_pant_size, fr_jacket_size, fr_sizes_updated_at",
         )
         .eq("id", profileIdToFetch)
         .single()
@@ -988,6 +988,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         row.current_compensation_amount,
                       current_pay_type: row.current_pay_type,
                       current_pay_frequency: row.current_pay_frequency,
+                      hire_date: row.hire_date,
                     },
                   }
                 : null,
@@ -1022,7 +1023,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         .schema("common")
         .from("profiles")
         .select(
-          "job_title, department, current_compensation_amount, current_pay_type, current_pay_frequency, fr_shirt_size, fr_pant_size, fr_jacket_size, fr_sizes_updated_at",
+          "job_title, department, current_compensation_amount, current_pay_type, current_pay_frequency, hire_date, fr_shirt_size, fr_pant_size, fr_jacket_size, fr_sizes_updated_at",
         )
         .eq("id", profileIdToFetch)
         .single()
@@ -1074,6 +1075,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   current_compensation_amount: row.current_compensation_amount,
                   current_pay_type: row.current_pay_type,
                   current_pay_frequency: row.current_pay_frequency,
+                  hire_date: row.hire_date,
                 },
               }
             : null,
@@ -1788,17 +1790,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             </p>
                           </div>
                         </div>
-                        {formattedHireDate && (
-                          <div className="flex items-center text-neutral-700 dark:text-white">
-                            <CalendarDays className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
-                            <div>
-                              <p className="text-sm text-neutral-500 dark:text-white">
-                                Hire Date
-                              </p>
-                              <p>{formattedHireDate}</p>
-                            </div>
-                          </div>
-                        )}
                         {!limitedView && formattedBirthday && (
                           <div className="flex items-center text-neutral-700 dark:text-white">
                             <MapPin className="mr-2 h-4 w-4 text-neutral-500 dark:text-white" />
@@ -2054,6 +2045,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                     </div>
                   ) : (
                     <div className="space-y-6">
+                      <div>
+                        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
+                          <CalendarDays className="h-4 w-4 text-brand" />
+                          Hire date
+                        </h3>
+                        <p
+                          className={
+                            formattedHireDate
+                              ? "text-sm text-neutral-700 dark:text-neutral-200"
+                              : "text-sm text-muted-foreground"
+                          }
+                        >
+                          {formattedHireDate || "No hire date on file."}
+                        </p>
+                      </div>
                       <div>
                         <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-2">
                           <History className="h-4 w-4 text-brand" />

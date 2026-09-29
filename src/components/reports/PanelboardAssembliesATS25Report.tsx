@@ -780,47 +780,6 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
     ? "!text-neutral-400 dark:!text-neutral-500"
     : "";
 
-  const neutralDeviation = computeDeviation(
-    formData.contactResistance[0]?.neutral || "",
-    formData.contactResistance[0]?.neutral || "",
-    formData.contactResistance[0]?.neutral || "",
-  );
-  const groundDeviation = computeDeviation(
-    formData.contactResistance[0]?.ground || "",
-    formData.contactResistance[0]?.ground || "",
-    formData.contactResistance[0]?.ground || "",
-  );
-
-  useEffect(() => {
-    setFormData((prev) => {
-      const nCrit = prev.contactNeutral.criteria || "N/A";
-      const gCrit = prev.contactGround.criteria || "N/A";
-      const nThr = parseCriteriaPercent(nCrit);
-      const gThr = parseCriteriaPercent(gCrit);
-      let nRes: StatusType | "N/A" = prev.contactNeutral.result;
-      let gRes: StatusType | "N/A" = prev.contactGround.result;
-      if (neutralDeviation !== "N/A" && nThr !== null) {
-        const v = parseFloat(neutralDeviation.replace("%", ""));
-        nRes = v <= nThr ? "PASS" : "FAIL";
-      }
-      if (groundDeviation !== "N/A" && gThr !== null) {
-        const v = parseFloat(groundDeviation.replace("%", ""));
-        gRes = v <= gThr ? "PASS" : "FAIL";
-      }
-      return {
-        ...prev,
-        contactNeutral: { ...prev.contactNeutral, result: nRes },
-        contactGround: { ...prev.contactGround, result: gRes },
-      };
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    neutralDeviation,
-    groundDeviation,
-    formData.contactNeutral.criteria,
-    formData.contactGround.criteria,
-  ]);
-
   // Add/remove row functions (mirrors 7.11 Switchgear/Switchboard Assemblies sheet)
   const addInsulationResistanceRow = () => {
     setFormData((prev) => {

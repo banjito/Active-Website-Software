@@ -275,13 +275,7 @@ const TCF_TABLE: { [k: string]: number } = {
 const getTCF = (celsius: number): number =>
   TCF_TABLE[Math.round(celsius).toString()] ?? 1;
 
-const defaultBus = [
-  "Section 1",
-  "Section 2",
-  "Section 3",
-  "Section 4",
-  "Section 5",
-];
+const defaultBus = ["Section 1"];
 
 const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
   const { id: jobId, reportId: initialReportId } = useParams<{
@@ -495,13 +489,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
     })),
     criteriaValue: "≥ 25",
     criteriaUnits: "MΩ",
-    contactResistance: [
-      "Section 1",
-      "Section 2",
-      "Section 3",
-      "Section 4",
-      "Section 5",
-    ].map((b) => ({
+    contactResistance: defaultBus.map((b) => ({
       busSection: b,
       aPhase: "",
       bPhase: "",
@@ -620,6 +608,8 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
           data.insulation_resistance?.criteriaUnit ||
           undefined;
         const cr = data.contact_resistance?.tests || [];
+        const ce = data.contact_resistance?.evaluation || [];
+        const crUnit = data.contact_resistance?.unit || undefined;
         const dw = data.contact_resistance?.dielectricTests || [];
         const dUnit = data.contact_resistance?.dielectricUnit || undefined;
         const dVolt =
@@ -663,6 +653,8 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
           criteriaValue: criteriaValue ?? prev.criteriaValue,
           criteriaUnits: criteriaUnits ?? irUnit ?? prev.criteriaUnits,
           contactResistance: cr.length ? cr : prev.contactResistance,
+          contactUnit: crUnit ?? prev.contactUnit,
+          contactEvaluation: ce.length ? ce : prev.contactEvaluation,
           dielectricWithstand: dw.length ? dw : prev.dielectricWithstand,
           dielectricUnit: dUnit ?? prev.dielectricUnit,
           dielectricTestVoltage: dVolt ?? prev.dielectricTestVoltage,
@@ -812,7 +804,12 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
     setFormData((prev) => {
       const updated = prev.contactResistance.map((r, idx) => {
         const deviation = computeDeviation(r.aPhase, r.bPhase, r.cPhase);
-        const criteria = prev.contactEvaluation[idx]?.criteria || "<50%";
+        const existing = prev.contactEvaluation[idx];
+        const criteria = existing?.criteria || "<50%";
+        // Keep a saved or hand-picked result until the readings change it
+        if (existing && existing.deviation === deviation) {
+          return { ...existing, criteria };
+        }
         const threshold = parseCriteriaPercent(criteria);
         let result: StatusType | "N/A" = "N/A";
         if (deviation !== "N/A" && threshold !== null) {
@@ -958,60 +955,6 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
     }));
   };
 
-  // Compute Neutral/Ground deviation across all rows (ignore 0/non-numeric)
-  const computeColumnDeviation = (key: "neutral" | "ground"): string => {
-    const values = formData.contactResistance
-      .map((r) => parseFloat(String((r as any)[key] ?? "").trim()))
-      .filter((n) => !isNaN(n) && isFinite(n) && n > 0);
-    if (values.length < 2) return "N/A";
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    if (min === 0) return "N/A";
-    const dev = (max / min - 1) * 100;
-    return `${dev.toFixed(2)}%`;
-  };
-
-  const neutralDeviation = computeColumnDeviation("neutral");
-  const groundDeviation = computeColumnDeviation("ground");
-
-  // Auto-evaluate Neutral/Ground based on criteria
-  useEffect(() => {
-    setFormData((prev) => {
-      const nCrit = prev.contactNeutral.criteria || "N/A";
-      const gCrit = prev.contactGround.criteria || "N/A";
-      const nd = neutralDeviation;
-      const gd = groundDeviation;
-      let nRes: StatusType | "N/A" = prev.contactNeutral.result;
-      let gRes: StatusType | "N/A" = prev.contactGround.result;
-      const nThr = parseCriteriaPercent(nCrit);
-      const gThr = parseCriteriaPercent(gCrit);
-      if (nd !== "N/A" && nThr !== null) {
-        const v = parseFloat(nd.replace("%", ""));
-        nRes = v <= nThr ? "PASS" : "FAIL";
-      }
-      if (gd !== "N/A" && gThr !== null) {
-        const v = parseFloat(gd.replace("%", ""));
-        gRes = v <= gThr ? "PASS" : "FAIL";
-      }
-      if (
-        nRes === prev.contactNeutral.result &&
-        gRes === prev.contactGround.result
-      )
-        return prev;
-      return {
-        ...prev,
-        contactNeutral: { ...prev.contactNeutral, result: nRes },
-        contactGround: { ...prev.contactGround, result: gRes },
-      };
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    neutralDeviation,
-    groundDeviation,
-    formData.contactNeutral.criteria,
-    formData.contactGround.criteria,
-  ]);
-
   // Table 100.1 Criteria auto-calculation based on test voltage and unit (MΩ/GΩ)
   const computeCriteriaFromVoltage = (
     volts: number,
@@ -1144,6 +1087,8 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
           },
           contact_resistance: {
             tests: formData.contactResistance,
+            unit: formData.contactUnit,
+            evaluation: formData.contactEvaluation,
             dielectricTests: formData.dielectricWithstand,
             dielectricUnit: formData.dielectricUnit,
             dielectricTestVoltage: formData.dielectricTestVoltage,
@@ -1517,15 +1462,18 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
             </div>
             <div className="overflow-x-auto">
               {/* Measured table */}
-              <table className="min-w-[720px] divide-y divide-neutral-200 dark:divide-neutral-700 table-fixed">
+              <table className="w-full min-w-[1000px] divide-y divide-neutral-200 dark:divide-neutral-700 table-fixed">
                 <colgroup>
-                  <col style={{ width: "16%" }} />
-                  <col style={{ width: "14.4%" }} />
-                  <col style={{ width: "14.4%" }} />
-                  <col style={{ width: "14.4%" }} />
-                  <col style={{ width: "14.4%" }} />
-                  <col style={{ width: "14.4%" }} />
-                  <col style={{ width: "12%" }} />
+                  <col style={{ width: "17%" }} />
+                  <col style={{ width: "8.5%" }} />
+                  <col style={{ width: "8.5%" }} />
+                  <col style={{ width: "8.5%" }} />
+                  <col style={{ width: "8.5%" }} />
+                  <col style={{ width: "8.5%" }} />
+                  <col style={{ width: "8%" }} />
+                  <col style={{ width: "9%" }} />
+                  <col style={{ width: "9.5%" }} />
+                  <col style={{ width: "14%" }} />
                 </colgroup>
                 <thead>
                   <tr>
@@ -1549,6 +1497,15 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                     </th>
                     <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Units
+                    </th>
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                      Value Deviation
+                    </th>
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                      Criteria
+                    </th>
+                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                      Results
                     </th>
                   </tr>
                 </thead>
@@ -1668,251 +1625,72 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                           {formData.contactUnit}
                         </div>
                       </td>
+                      <td className="px-3 py-2 text-center text-sm text-neutral-900 dark:text-white">
+                        {formData.contactEvaluation[i]?.deviation ?? "N/A"}
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="print:hidden">
+                          <select
+                            value={formData.contactEvaluation[i]?.criteria ?? "<50%"}
+                            onChange={(e) => {
+                              const list = [...formData.contactEvaluation];
+                              list[i] = { ...list[i], criteria: e.target.value };
+                              handleChange((p) => ({
+                                ...p,
+                                contactEvaluation: list,
+                              }));
+                            }}
+                            disabled={!isEditing}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          >
+                            {["<10%", "<25%", "<50%", "<75%", "<100%"].map(
+                              (c) => (
+                                <option key={c} value={c}>
+                                  {c}
+                                </option>
+                              ),
+                            )}
+                          </select>
+                        </div>
+                        <div className="hidden print:block text-center">
+                          {formData.contactEvaluation[i]?.criteria}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="print:hidden">
+                          <select
+                            value={formData.contactEvaluation[i]?.result ?? "N/A"}
+                            onChange={(e) => {
+                              const list = [...formData.contactEvaluation];
+                              list[i] = {
+                                ...list[i],
+                                result: e.target.value as any,
+                              };
+                              handleChange((p) => ({
+                                ...p,
+                                contactEvaluation: list,
+                              }));
+                            }}
+                            disabled={!isEditing}
+                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          >
+                            {(
+                              ["PASS", "FAIL", "LIMITED SERVICE", "N/A"] as const
+                            ).map((r) => (
+                              <option key={r} value={r}>
+                                {r}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="hidden print:block text-center">
+                          {formData.contactEvaluation[i]?.result}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-
-              {/* Side-by-side evaluation and neutral/ground tables with table styling */}
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 items-start max-w-[100%]">
-                {/* Phases evaluation table */}
-                <div className="w-full">
-                  <table className="w-full table-fixed border-collapse border border-neutral-200 dark:border-neutral-700">
-                    <colgroup>
-                      <col style={{ width: "40%" }} />
-                      <col style={{ width: "30%" }} />
-                      <col style={{ width: "30%" }} />
-                    </colgroup>
-                    <thead>
-                      <tr>
-                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white">
-                          Value Deviation
-                        </th>
-                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white">
-                          Criteria
-                        </th>
-                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white">
-                          Results
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {formData.contactEvaluation.map((ev, idx) => (
-                        <tr
-                          key={idx}
-                          className="border-t border-neutral-200 dark:border-neutral-700"
-                        >
-                          <td className="px-3 py-2">Phase: {ev.deviation}</td>
-                          <td className="px-3 py-2">
-                            <div className="print:hidden">
-                              <select
-                                value={ev.criteria}
-                                onChange={(e) => {
-                                  const list = [...formData.contactEvaluation];
-                                  list[idx] = {
-                                    ...list[idx],
-                                    criteria: e.target.value,
-                                  };
-                                  handleChange((p) => ({
-                                    ...p,
-                                    contactEvaluation: list,
-                                  }));
-                                }}
-                                disabled={!isEditing}
-                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                              >
-                                {["<10%", "<25%", "<50%", "<75%", "<100%"].map(
-                                  (c) => (
-                                    <option key={c} value={c}>
-                                      {c}
-                                    </option>
-                                  ),
-                                )}
-                              </select>
-                            </div>
-                            <div className="hidden print:block text-center">
-                              {ev.criteria}
-                            </div>
-                          </td>
-                          <td className="px-3 py-2">
-                            <div className="print:hidden">
-                              <select
-                                value={ev.result}
-                                onChange={(e) => {
-                                  const list = [...formData.contactEvaluation];
-                                  list[idx] = {
-                                    ...list[idx],
-                                    result: e.target.value as any,
-                                  };
-                                  handleChange((p) => ({
-                                    ...p,
-                                    contactEvaluation: list,
-                                  }));
-                                }}
-                                disabled={!isEditing}
-                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                              >
-                                {(
-                                  [
-                                    "PASS",
-                                    "FAIL",
-                                    "LIMITED SERVICE",
-                                    "N/A",
-                                  ] as const
-                                ).map((r) => (
-                                  <option key={r} value={r}>
-                                    {r}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <div className="hidden print:block text-center">
-                              {ev.result}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Neutral/Ground evaluation table */}
-                <div className="w-full">
-                  <table className="w-full table-fixed border-collapse border border-neutral-200 dark:border-neutral-700">
-                    <colgroup>
-                      <col style={{ width: "40%" }} />
-                      <col style={{ width: "30%" }} />
-                      <col style={{ width: "30%" }} />
-                    </colgroup>
-                    <thead>
-                      <tr>
-                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-700 dark:text-white">
-                          Value Deviation
-                        </th>
-                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white">
-                          Criteria
-                        </th>
-                        <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white">
-                          Results
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(["Neutral", "Ground"] as const).map((label, i) => (
-                        <tr
-                          key={label}
-                          className="border-t border-neutral-200 dark:border-neutral-700"
-                        >
-                          <td className="px-3 py-2">
-                            {label} :{" "}
-                            {i === 0 ? neutralDeviation : groundDeviation}
-                          </td>
-                          <td className="px-3 py-2">
-                            <div className="print:hidden">
-                              <select
-                                value={
-                                  i === 0
-                                    ? formData.contactNeutral.criteria
-                                    : formData.contactGround.criteria
-                                }
-                                onChange={(e) =>
-                                  handleChange((p) =>
-                                    i === 0
-                                      ? {
-                                          ...p,
-                                          contactNeutral: {
-                                            ...p.contactNeutral,
-                                            criteria: e.target.value,
-                                          },
-                                        }
-                                      : {
-                                          ...p,
-                                          contactGround: {
-                                            ...p.contactGround,
-                                            criteria: e.target.value,
-                                          },
-                                        },
-                                  )
-                                }
-                                disabled={!isEditing}
-                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                              >
-                                {[
-                                  "N/A",
-                                  "<10%",
-                                  "<25%",
-                                  "<50%",
-                                  "<75%",
-                                  "<100%",
-                                ].map((c) => (
-                                  <option key={c} value={c}>
-                                    {c}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <div className="hidden print:block text-center">
-                              {i === 0
-                                ? formData.contactNeutral.criteria
-                                : formData.contactGround.criteria}
-                            </div>
-                          </td>
-                          <td className="px-3 py-2">
-                            <div className="print:hidden">
-                              <select
-                                value={
-                                  i === 0
-                                    ? formData.contactNeutral.result
-                                    : formData.contactGround.result
-                                }
-                                onChange={(e) =>
-                                  handleChange((p) =>
-                                    i === 0
-                                      ? {
-                                          ...p,
-                                          contactNeutral: {
-                                            ...p.contactNeutral,
-                                            result: e.target.value as any,
-                                          },
-                                        }
-                                      : {
-                                          ...p,
-                                          contactGround: {
-                                            ...p.contactGround,
-                                            result: e.target.value as any,
-                                          },
-                                        },
-                                  )
-                                }
-                                disabled={!isEditing}
-                                className={`w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                              >
-                                {(
-                                  [
-                                    "N/A",
-                                    "PASS",
-                                    "FAIL",
-                                    "LIMITED SERVICE",
-                                  ] as const
-                                ).map((r) => (
-                                  <option key={r} value={r}>
-                                    {r}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <div className="hidden print:block text-center">
-                              {i === 0
-                                ? formData.contactNeutral.result
-                                : formData.contactGround.result}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
             </div>
           </div>
 

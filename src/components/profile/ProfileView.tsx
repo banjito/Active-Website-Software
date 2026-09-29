@@ -19,6 +19,7 @@ import {
   ClipboardList,
   TrendingUp,
   Shirt,
+  CalendarDays,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { supabase } from "@/lib/supabase";
@@ -65,6 +66,7 @@ interface UserData extends SupabaseUser {
     bio?: string;
     division?: string;
     birthday?: string;
+    hire_date?: string | null;
     job_title?: string;
     department?: string;
     employee_number?: string;
@@ -331,6 +333,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 bio: profileData.bio || userMetadata.bio,
                 division: profileData.division || userMetadata.division,
                 birthday: profileData.birthday || userMetadata.birthday,
+                hire_date: profileData.hire_date,
                 job_title: profileData.job_title || userMetadata.job_title,
                 department: profileData.department || userMetadata.department,
                 employee_number: profileData.employee_number,
@@ -465,6 +468,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       bio: profileData.bio,
                       division: profileData.division,
                       birthday: profileData.birthday,
+                      hire_date: profileData.hire_date,
                       job_title: profileData.job_title,
                       department: profileData.department,
                       employee_number: profileData.employee_number,
@@ -1377,6 +1381,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     bio,
     division,
     birthday,
+    hire_date: hireDate,
     job_title: jobTitle,
     department,
     employee_number: employeeNumber,
@@ -1447,6 +1452,32 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         timeZone: "UTC", // Force UTC to prevent date shifting
       })
     : null;
+
+  // Format hire date with tenure, e.g. "Mar 3, 2021 (4 yrs 6 mo)"
+  const formattedHireDate = (() => {
+    if (!hireDate) return null;
+    const d = new Date(String(hireDate).slice(0, 10) + "T00:00:00Z");
+    if (isNaN(d.getTime())) return null;
+    const label = d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+    const now = new Date();
+    let months =
+      (now.getUTCFullYear() - d.getUTCFullYear()) * 12 +
+      (now.getUTCMonth() - d.getUTCMonth());
+    if (now.getUTCDate() < d.getUTCDate()) months -= 1;
+    if (months < 0) return label;
+    const yrs = Math.floor(months / 12);
+    const mo = months % 12;
+    const parts = [
+      yrs > 0 ? `${yrs} yr${yrs === 1 ? "" : "s"}` : "",
+      mo > 0 ? `${mo} mo` : "",
+    ].filter(Boolean);
+    return `${label} (${parts.length ? parts.join(" ") : "new"})`;
+  })();
 
   const handlePhotoClick = (e: React.MouseEvent, photoSrc: string) => {
     e.stopPropagation(); // Prevent closing ProfileView if clicking on image inside
@@ -1757,6 +1788,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             </p>
                           </div>
                         </div>
+                        {formattedHireDate && (
+                          <div className="flex items-center text-neutral-700 dark:text-white">
+                            <CalendarDays className="mr-2 h-4 w-4 text-neutral-500 dark:text-white flex-shrink-0" />
+                            <div>
+                              <p className="text-sm text-neutral-500 dark:text-white">
+                                Hire Date
+                              </p>
+                              <p>{formattedHireDate}</p>
+                            </div>
+                          </div>
+                        )}
                         {!limitedView && formattedBirthday && (
                           <div className="flex items-center text-neutral-700 dark:text-white">
                             <MapPin className="mr-2 h-4 w-4 text-neutral-500 dark:text-white" />

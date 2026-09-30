@@ -22,6 +22,10 @@ import {
   Building2,
   FilePlus2,
   Check,
+  Calculator,
+  Zap,
+  Mail,
+  Layers,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -5747,63 +5751,106 @@ export default function OpportunityDetail() {
                 <h3 className="text-lg font-medium text-neutral-900 dark:text-dark-900 mb-3">
                   Estimate
                 </h3>
-                <div className="bg-white dark:bg-dark-150 p-4 rounded-none text-center">
-                  {/* Always show the action buttons horizontally */}
-                  <div className="flex flex-row justify-center gap-4 mb-4">
-                    <button
-                      onClick={() => {
-                        setActiveEstimateId(null);
-                        setShowEstimate("new");
-                        setEstimateOpenSignal((s) => s + 1);
-                      }}
-                      className="bg-brand text-white hover:bg-brand/90 px-4 py-2 rounded-none font-medium transition-colors"
-                    >
-                      Generate Estimate
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowEstimate(false);
-                        setShowSimpleEstimate(true);
-                      }}
-                      className="bg-brand text-white hover:bg-brand/90 px-4 py-2 rounded-none font-medium transition-colors"
-                    >
-                      Generate Simple Estimate
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowEstimate("view");
-                        setEstimateOpenSignal((s) => s + 1);
-                      }}
-                      className="bg-brand text-white hover:bg-brand/90 px-4 py-2 rounded-none font-medium transition-colors"
-                    >
-                      Show Estimates
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowEstimate((current) =>
-                          current === "letters" ? current : "letters",
-                        );
-                      }}
-                      className="bg-brand text-white hover:bg-brand/90 px-4 py-2 rounded-none font-medium transition-colors"
-                    >
-                      Show Letter Proposals
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowEstimate("letter");
-                      }}
-                      className="bg-brand text-white hover:bg-brand/90 px-4 py-2 rounded-none font-medium transition-colors"
-                    >
-                      Generate Letter Proposal
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowEstimate("combined-letter");
-                      }}
-                      className="bg-brand text-white hover:bg-brand/90 px-4 py-2 rounded-none font-medium transition-colors"
-                    >
-                      Generate Combined Letter Proposal
-                    </button>
+                <div className="bg-white dark:bg-dark-150 p-4 rounded-none">
+                  {/* Two groups: estimates (pricing) and letter proposals
+                      (what the customer sees). Create = solid, view = outline. */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="border border-neutral-200 dark:border-dark-300 rounded-none p-4 flex flex-col">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-brand/10 text-brand rounded-none">
+                          <Calculator className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-neutral-900 dark:text-dark-900">
+                            Estimates
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                        <button
+                          onClick={() => {
+                            setActiveEstimateId(null);
+                            setShowEstimate("new");
+                            setEstimateOpenSignal((s) => s + 1);
+                          }}
+                          className="flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 px-3 py-2 rounded-none font-medium transition-colors"
+                        >
+                          <FilePlus2 className="h-4 w-4 shrink-0" />
+                          <span>New Full Estimate</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowEstimate(false);
+                            setShowSimpleEstimate(true);
+                          }}
+                          className="flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 px-3 py-2 rounded-none font-medium transition-colors"
+                        >
+                          <Zap className="h-4 w-4 shrink-0" />
+                          <span>New Simple Estimate</span>
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowEstimate("view");
+                          setEstimateOpenSignal((s) => s + 1);
+                        }}
+                        className={`mt-auto flex items-center justify-center gap-2 px-3 py-2 rounded-none font-medium transition-colors border ${
+                          showEstimate === "view"
+                            ? "border-brand bg-brand/10 text-brand"
+                            : "border-neutral-300 dark:border-dark-300 text-neutral-700 dark:text-dark-900 hover:border-brand hover:text-brand"
+                        }`}
+                      >
+                        <Eye className="h-4 w-4 shrink-0" />
+                        <span>View Saved Estimates</span>
+                      </button>
+                    </div>
+
+                    <div className="border border-neutral-200 dark:border-dark-300 rounded-none p-4 flex flex-col">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-brand/10 text-brand rounded-none">
+                          <Mail className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-neutral-900 dark:text-dark-900">
+                            Letter Proposals
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                        <button
+                          onClick={() => {
+                            setShowEstimate("letter");
+                          }}
+                          className="flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 px-3 py-2 rounded-none font-medium transition-colors"
+                        >
+                          <FileText className="h-4 w-4 shrink-0" />
+                          <span>New Letter</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowEstimate("combined-letter");
+                          }}
+                          title="One letter covering several estimates"
+                          className="flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 px-3 py-2 rounded-none font-medium transition-colors"
+                        >
+                          <Layers className="h-4 w-4 shrink-0" />
+                          <span>New Combined Letter</span>
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowEstimate("letters");
+                        }}
+                        className={`mt-auto flex items-center justify-center gap-2 px-3 py-2 rounded-none font-medium transition-colors border ${
+                          showEstimate === "letters"
+                            ? "border-brand bg-brand/10 text-brand"
+                            : "border-neutral-300 dark:border-dark-300 text-neutral-700 dark:text-dark-900 hover:border-brand hover:text-brand"
+                        }`}
+                      >
+                        <Eye className="h-4 w-4 shrink-0" />
+                        <span>View Saved Letters</span>
+                      </button>
+                    </div>
                   </div>
                   {/* New Simple Estimate: line items + markup + travel. Once
                       saved it opens in the estimates view, where the letter

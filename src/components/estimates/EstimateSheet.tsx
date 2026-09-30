@@ -930,10 +930,17 @@ export default function EstimateSheet({
   const theme = window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
     : "light";
-  const [isOpen, setIsOpen] = useState(true);
+  // Start in the state the requested mode needs. Defaulting to "open, new
+  // estimate" flashed the full editor for a frame before the mode effect ran.
+  const [isOpen, setIsOpen] = useState(
+    () => mode === undefined || mode === "new" || mode === "view",
+  );
   const [quotes, setQuotes] = useState<QuoteData[]>([]);
   const [selectedQuoteIndex, setSelectedQuoteIndex] = useState<number>(-1);
-  const [isNewQuote, setIsNewQuote] = useState(true);
+  const [isNewQuote, setIsNewQuote] = useState(() => mode !== "view");
+  // False until the first estimates fetch returns, so "view" shows a spinner
+  // instead of flashing an empty form before "No Estimates Saved".
+  const [estimatesLoaded, setEstimatesLoaded] = useState(false);
   const [hasQuote, setHasQuote] = useState(false);
   const [estimateStatus, setEstimateStatus] = useState<
     | "in_progress"
@@ -1754,6 +1761,8 @@ export default function EstimateSheet({
       }
     } catch (err) {
       console.error("Catch block error fetching estimates:", err);
+    } finally {
+      setEstimatesLoaded(true);
     }
   }
 
@@ -5036,6 +5045,7 @@ export default function EstimateSheet({
   }
   const [isLetterProposalOpen, setIsLetterProposalOpen] = useState(false);
   const [isLettersListOpen, setIsLettersListOpen] = useState(false);
+  const [lettersLoading, setLettersLoading] = useState(false);
   const [letters, setLetters] = useState<
     Array<{
       id: string;
@@ -5237,7 +5247,9 @@ export default function EstimateSheet({
     first_name: string;
     last_name: string;
   } | null>(null);
-  const [isViewMode, setIsViewMode] = useState<boolean>(false);
+  const [isViewMode, setIsViewMode] = useState<boolean>(
+    () => mode === "view",
+  );
   const [netaStandard, setNetaStandard] = useState<string>("");
   const [letterProposalName, setLetterProposalName] = useState<string>("");
 
@@ -7648,6 +7660,9 @@ export default function EstimateSheet({
       setIsOpen(false);
       setIsLetterProposalOpen(false);
       setIsLetterDirty(false);
+      // Open the list right away and fill it in when the fetch returns.
+      setLettersLoading(true);
+      setIsLettersListOpen(true);
       (async () => {
         try {
           const { data, error } = await supabase
@@ -7664,7 +7679,7 @@ export default function EstimateSheet({
         } catch {
           setLetters([]);
         }
-        setIsLettersListOpen(true);
+        setLettersLoading(false);
       })();
     }
     // If mode is undefined, do nothing (default behavior)
@@ -8144,7 +8159,11 @@ export default function EstimateSheet({
             </Dialog.Title>
 
             {/* Prompt when user opened "Show Estimates" but none exist */}
-            {isViewMode && quotes.length === 0 && isNewQuote ? (
+            {isViewMode && !estimatesLoaded ? (
+              <div className="h-[calc(95vh-120px)] flex items-center justify-center">
+                <LoadingSpinner size="md" />
+              </div>
+            ) : isViewMode && quotes.length === 0 && isNewQuote ? (
               <div className="h-[calc(95vh-120px)] flex items-center justify-center">
                 <div className="text-center max-w-md">
                   <FileText className="mx-auto h-16 w-16 text-neutral-300 dark:text-dark-400 mb-4" />
@@ -15311,7 +15330,11 @@ export default function EstimateSheet({
             <h2 className="text-lg font-bold mb-4 dark:text-white">
               Saved Letter Proposals
             </h2>
-            {letters.length === 0 ? (
+            {lettersLoading && letters.length === 0 ? (
+              <div className="text-sm text-neutral-500 dark:text-neutral-400">
+                Loading...
+              </div>
+            ) : letters.length === 0 ? (
               <div className="text-sm text-neutral-500 dark:text-neutral-400">
                 No saved letters yet.
               </div>

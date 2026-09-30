@@ -24,6 +24,8 @@ import {
 } from "./LetterImageHandler";
 import { supabase } from "../../lib/supabase";
 import { Button } from "../ui/Button";
+import { confirmDialog } from "../ui/confirmDialog";
+import { toast } from "../ui/toast";
 import SimpleEstimateEditor, {
   isSimpleEstimateData,
 } from "./SimpleEstimateEditor";
@@ -2462,7 +2464,13 @@ export default function EstimateSheet({
 
   async function deleteQuoteById(quoteId: string) {
     if (!quoteId) return;
-    if (!confirm("Delete this estimate? This cannot be undone.")) return;
+    const ok = await confirmDialog({
+      title: "Delete this estimate?",
+      description: "This cannot be undone.",
+      confirmLabel: "Delete",
+      destructive: true,
+    });
+    if (!ok) return;
     try {
       const { error } = await supabase
         .schema("business")
@@ -2470,22 +2478,27 @@ export default function EstimateSheet({
         .delete()
         .eq("id", quoteId);
       if (error) throw error;
-      // Update local state
-      setQuotes((prev) => prev.filter((q) => q.id !== quoteId));
-      // Adjust selected index if needed
-      setSelectedQuoteIndex((prevIdx) => {
-        const nextLen = quotes.length - 1;
-        if (nextLen <= 0) {
-          setIsNewQuote(true);
-          setEstimateStatus(null); // Reset status for new quote
-          return -1;
-        }
-        return Math.max(0, Math.min(prevIdx, nextLen - 1));
-      });
-      alert("Estimate deleted");
+      // Update local state, then load the estimate that now takes the
+      // selected slot. Without the load, the deleted estimate's data stayed on
+      // screen under the next tab (and could be saved over it).
+      const remaining = quotes.filter((q) => q.id !== quoteId);
+      setQuotes(remaining);
+      if (remaining.length === 0) {
+        setIsNewQuote(true);
+        setEstimateStatus(null); // Reset status for new quote
+        setSelectedQuoteIndex(-1);
+      } else {
+        const nextIdx = Math.max(
+          0,
+          Math.min(selectedQuoteIndex, remaining.length - 1),
+        );
+        setSelectedQuoteIndex(nextIdx);
+        loadQuoteData(remaining[nextIdx]);
+      }
+      toast({ title: "Estimate deleted", variant: "success" });
     } catch (e) {
       console.error("Error deleting estimate:", e);
-      alert("Failed to delete estimate");
+      toast({ title: "Failed to delete estimate", variant: "destructive" });
     }
   }
 
@@ -5528,7 +5541,7 @@ export default function EstimateSheet({
 
   function applyNetaTextByValue(value: string) {
     try {
-      const option = NETA_OPTIONS.find((o) => o.value === value);
+      const option = NETA_OPTIONS.find((o) => o.value && o.value === value);
       const newText = option?.text || "[Select NETA Standard]";
 
       // 1) Update the visible text in the editor DOM — nothing else
@@ -6417,7 +6430,7 @@ export default function EstimateSheet({
         ? ", " + opportunityData.jobsite_location
         : "",
       netaStandardText:
-        NETA_OPTIONS.find((o) => o.value === netaStandard)?.text ||
+        NETA_OPTIONS.find((o) => o.value && o.value === netaStandard)?.text ||
         "[Select NETA Standard]",
       currentYear: String(new Date().getFullYear()),
       alternateRatesNote:
@@ -7027,7 +7040,7 @@ export default function EstimateSheet({
         ? ", " + opportunityData.jobsite_location
         : "",
       netaStandardText:
-        NETA_OPTIONS.find((o) => o.value === netaStandard)?.text ||
+        NETA_OPTIONS.find((o) => o.value && o.value === netaStandard)?.text ||
         "[Select NETA Standard]",
       currentYear: String(new Date().getFullYear()),
       alternateRatesNote:
@@ -8010,13 +8023,8 @@ export default function EstimateSheet({
                       <Button
                         type="button"
                         onClick={() => {
-                          if (
-                            confirm(
-                              "Delete this estimate? This cannot be undone.",
-                            )
-                          ) {
-                            deleteQuoteById(quotes[selectedQuoteIndex].id);
-                          }
+                          // deleteQuoteById asks for confirmation itself.
+                          deleteQuoteById(quotes[selectedQuoteIndex].id);
                         }}
                         className="h-10 w-10 p-0 rounded-none bg-red-600 text-white hover:bg-red-700 transition-colors"
                       >
@@ -8074,13 +8082,8 @@ export default function EstimateSheet({
                     <>
                       <Button
                         onClick={() => {
-                          if (
-                            confirm(
-                              "Delete this estimate? This cannot be undone.",
-                            )
-                          ) {
-                            deleteQuoteById(quotes[selectedQuoteIndex].id);
-                          }
+                          // deleteQuoteById asks for confirmation itself.
+                          deleteQuoteById(quotes[selectedQuoteIndex].id);
                         }}
                         className="h-10 w-10 p-0 rounded-none bg-red-600 text-white hover:bg-red-700 transition-colors"
                       >
@@ -8163,8 +8166,9 @@ export default function EstimateSheet({
                       Generate Estimate
                     </Button>
                     <Button
+                      variant="outline"
                       onClick={handleClose}
-                      className="bg-neutral-200 text-neutral-700 hover:bg-neutral-300 dark:bg-dark-200 dark:text-dark-700 dark:hover:bg-dark-300 transition-colors px-6 py-2"
+                      className="px-6 py-2"
                     >
                       Cancel
                     </Button>

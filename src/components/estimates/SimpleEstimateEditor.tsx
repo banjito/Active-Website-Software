@@ -14,6 +14,7 @@ import { Plus, Trash2, FileText, Save } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/Button";
+import { toast } from "@/components/ui/toast";
 
 export interface SimpleLineItem {
   item: string;
@@ -135,11 +136,11 @@ export default function SimpleEstimateEditor({
 
   async function handleSave() {
     if (!user) {
-      alert("You must be logged in to save an estimate.");
+      toast({ title: "You must be logged in to save an estimate.", variant: "destructive" });
       return;
     }
     if (!opportunityId) {
-      alert("Cannot save: opportunity is missing.");
+      toast({ title: "Cannot save: opportunity is missing.", variant: "destructive" });
       return;
     }
     const cleanItems = items.filter(
@@ -246,6 +247,7 @@ export default function SimpleEstimateEditor({
         row = created;
       }
       setDirty(false);
+      toast({ title: "Estimate saved", variant: "success" });
       window.dispatchEvent(
         new CustomEvent("estimateSaved", {
           detail: { opportunityId, estimateId: row.id },
@@ -254,7 +256,11 @@ export default function SimpleEstimateEditor({
       onSaved?.(row);
     } catch (err: any) {
       console.error("Error saving simple estimate:", err);
-      alert(`Failed to save estimate: ${err?.message || "Unknown error"}`);
+      toast({
+        title: "Failed to save estimate",
+        description: err?.message || "Unknown error",
+        variant: "destructive",
+      });
     } finally {
       setSaving(false);
     }
@@ -262,7 +268,11 @@ export default function SimpleEstimateEditor({
 
   const handleLetter = () => {
     if (dirty) {
-      alert("Save the estimate first so the letter uses the latest numbers.");
+      toast({
+        title: "Save the estimate first",
+        description: "So the letter uses the latest numbers.",
+        variant: "warning",
+      });
       return;
     }
     onGenerateLetter?.();

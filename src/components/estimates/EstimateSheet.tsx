@@ -656,6 +656,20 @@ function getMobilizationFactorsForCombinedScope(parsedData: any): {
   return { ...DEFAULT_MOBILIZATION_FACTORS };
 }
 
+/**
+ * Optional final markup (1.05 = +5%) applied on top of FINAL, after the
+ * estimator is happy with the price. NET prices and mobilization are both
+ * worked out from FINAL, so they pick it up too. Missing / bad values = 1.
+ */
+function getFinalMarkupMultiplier(source: any): number {
+  const n = Number(source?.finalMarkupMultiplier);
+  return Number.isFinite(n) && n > 0 ? n : 1;
+}
+
+function applyFinalMarkup(value: number, multiplier: number): number {
+  return multiplier === 1 ? value : Math.ceil(value * multiplier);
+}
+
 /** Pure mobilization-factor lookup that works with any factors object (not just component state). */
 function computeMobilizationFactor(
   finalValue: number,
@@ -757,7 +771,9 @@ function summarizeEstimateSnapshot(
       : Math.ceil(
           (matExpBase + workLabor + travelLabor + travelNonLabor) / divisor,
         );
-  const finalValue = Number.isFinite(rawFinal) ? rawFinal : 0;
+  const finalValue = Number.isFinite(rawFinal)
+    ? applyFinalMarkup(rawFinal, getFinalMarkupMultiplier(parsedData))
+    : 0;
 
   return {
     finalValue,
@@ -1008,6 +1024,10 @@ export default function EstimateSheet({
   // being derived from materials/labor/markup. Everything downstream (NET terms,
   // mobilization, SOV item prices, letter proposal) is computed from this value.
   const [manualPriceOverride, setManualPriceOverride] = useState<boolean>(false);
+  // Optional final markup multiplier on FINAL (1 = none). See getFinalMarkupMultiplier.
+  const [finalMarkupMultiplier, setFinalMarkupMultiplier] = useState<number>(1);
+  // What's typed in the box, so "0." or an empty box can sit there mid-edit.
+  const [finalMarkupInput, setFinalMarkupInput] = useState<string | null>(null);
   const [manualPriceValue, setManualPriceValue] = useState<number>(0);
 
   // Explicit mobilization amount. Set when a pricing group is split, so the
@@ -1404,6 +1424,7 @@ export default function EstimateSheet({
         // Restore manual price override if present in draft
         setManualPriceOverride(!!savedDraft.manualPriceOverride);
         setManualPriceValue(toNum(savedDraft.manualPriceValue));
+        setFinalMarkupMultiplier(getFinalMarkupMultiplier(savedDraft));
         setMobilizationOverride(!!savedDraft.mobilizationOverride);
         setMobilizationValue(toNum(savedDraft.mobilizationValue));
         setTravelNonLaborOverride(!!savedDraft.travelNonLaborOverride);
@@ -1428,6 +1449,7 @@ export default function EstimateSheet({
         netTermsOnly,
         manualPriceOverride,
         manualPriceValue,
+        finalMarkupMultiplier,
         mobilizationOverride,
         mobilizationValue,
         travelNonLaborOverride,
@@ -1446,6 +1468,7 @@ export default function EstimateSheet({
     netTermsOnly,
     manualPriceOverride,
     manualPriceValue,
+    finalMarkupMultiplier,
     mobilizationOverride,
     mobilizationValue,
     travelNonLaborOverride,
@@ -1907,6 +1930,7 @@ export default function EstimateSheet({
       // Restore manual price override (exact FINAL value)
       setManualPriceOverride(!!parsedData.manualPriceOverride);
       setManualPriceValue(toNum(parsedData.manualPriceValue));
+      setFinalMarkupMultiplier(getFinalMarkupMultiplier(parsedData));
       setMobilizationOverride(!!parsedData.mobilizationOverride);
       setMobilizationValue(toNum(parsedData.mobilizationValue));
       setTravelNonLaborOverride(!!parsedData.travelNonLaborOverride);
@@ -2106,6 +2130,7 @@ export default function EstimateSheet({
       netTermsOnly: netTermsOnly,
       manualPriceOverride: manualPriceOverride,
       manualPriceValue: manualPriceValue,
+      finalMarkupMultiplier: finalMarkupMultiplier,
       mobilizationOverride: mobilizationOverride,
       mobilizationValue: mobilizationValue,
       travelNonLaborOverride: travelNonLaborOverride,
@@ -3563,8 +3588,8 @@ export default function EstimateSheet({
     );
   };
 
-  // Helper function to get the exact FINAL value (G54) as shown in UI — Monday-Friday scenario
-  const getFinalValue = () => {
+  // FINAL before the optional final markup — Monday-Friday scenario
+  const getBaseFinalValue = () => {
     if (manualPriceOverride) {
       return Math.max(0, toNum(manualPriceValue));
     }
@@ -3576,6 +3601,10 @@ export default function EstimateSheet({
         finalMarkupDivisor,
     );
   };
+
+  // Helper function to get the exact FINAL value (G54) as shown in UI — Monday-Friday scenario
+  const getFinalValue = () =>
+    applyFinalMarkup(getBaseFinalValue(), finalMarkupMultiplier);
 
   // FINAL value for Saturday scenario
   const getSaturdayFinalValue = () => {
@@ -3590,12 +3619,15 @@ export default function EstimateSheet({
       toNum(sat.travelStraightTimeHours) * toNum(hourlyRates.straightTime) +
       toNum(sat.travelOvertimeHours) * toNum(hourlyRates.overtime) +
       toNum(sat.travelDoubleTimeHours) * toNum(hourlyRates.doubleTime);
-    return Math.ceil(
-      (getMaterialExpenseBase() +
-        workLabor +
-        travelLabor +
-        getTravelNonLaborCost()) /
-        finalMarkupDivisor,
+    return applyFinalMarkup(
+      Math.ceil(
+        (getMaterialExpenseBase() +
+          workLabor +
+          travelLabor +
+          getTravelNonLaborCost()) /
+          finalMarkupDivisor,
+      ),
+      finalMarkupMultiplier,
     );
   };
 
@@ -3612,12 +3644,15 @@ export default function EstimateSheet({
       toNum(sun.travelStraightTimeHours) * toNum(hourlyRates.straightTime) +
       toNum(sun.travelOvertimeHours) * toNum(hourlyRates.overtime) +
       toNum(sun.travelDoubleTimeHours) * toNum(hourlyRates.doubleTime);
-    return Math.ceil(
-      (getMaterialExpenseBase() +
-        workLabor +
-        travelLabor +
-        getTravelNonLaborCost()) /
-        finalMarkupDivisor,
+    return applyFinalMarkup(
+      Math.ceil(
+        (getMaterialExpenseBase() +
+          workLabor +
+          travelLabor +
+          getTravelNonLaborCost()) /
+          finalMarkupDivisor,
+      ),
+      finalMarkupMultiplier,
     );
   };
 
@@ -3626,7 +3661,9 @@ export default function EstimateSheet({
   // produce the FINAL value, so the three rows add up to the NET 30 FINAL price (before mobilization).
   const getNet30Breakdown = () => {
     const markup = (v: number) =>
-      (v / finalMarkupDivisor) * paymentTermFactors.net30;
+      (v / finalMarkupDivisor) *
+      finalMarkupMultiplier *
+      paymentTermFactors.net30;
     const materials = markup(getMaterialExpenseBase());
     const labor = markup(getWorkLaborCost());
     const travel = markup(getTotalTravelCost());
@@ -6033,15 +6070,19 @@ export default function EstimateSheet({
     const travelNonLabor = getParsedTravelNonLaborCost();
     // Manual price override forces the FINAL value to the exact saved amount.
     const parsedManualOverride = !!parsedData.manualPriceOverride;
-    const baseFinalValue = parsedManualOverride
-      ? Math.max(0, toNum(parsedData.manualPriceValue))
-      : Math.ceil(
-          (matExpBase +
-            getWorkLaborCostParsed(hs) +
-            getTravelLaborCostParsed(hs) +
-            travelNonLabor) /
-            parsedFinalMarkupDivisor,
-        );
+    const parsedFinalMarkup = getFinalMarkupMultiplier(parsedData);
+    const baseFinalValue = applyFinalMarkup(
+      parsedManualOverride
+        ? Math.max(0, toNum(parsedData.manualPriceValue))
+        : Math.ceil(
+            (matExpBase +
+              getWorkLaborCostParsed(hs) +
+              getTravelLaborCostParsed(hs) +
+              travelNonLabor) /
+              parsedFinalMarkupDivisor,
+          ),
+      parsedFinalMarkup,
+    );
     const finalValue = baseFinalValue * (singleLetterScopeQuantity || 1);
 
     // Saturday/Sunday final values (if applicable)
@@ -6051,23 +6092,29 @@ export default function EstimateSheet({
     const hasSundayPricing = !!parsedData.showSundayHours && !!sunHS;
     const satBaseFinalValue =
       hasSaturdayPricing && !parsedManualOverride
-        ? Math.ceil(
-            (matExpBase +
-              getWorkLaborCostParsed(satHS) +
-              getTravelLaborCostParsed(satHS) +
-              travelNonLabor) /
-              parsedFinalMarkupDivisor,
+        ? applyFinalMarkup(
+            Math.ceil(
+              (matExpBase +
+                getWorkLaborCostParsed(satHS) +
+                getTravelLaborCostParsed(satHS) +
+                travelNonLabor) /
+                parsedFinalMarkupDivisor,
+            ),
+            parsedFinalMarkup,
           )
         : baseFinalValue;
     const satFinalValue = satBaseFinalValue * (singleLetterScopeQuantity || 1);
     const sunBaseFinalValue =
       hasSundayPricing && !parsedManualOverride
-        ? Math.ceil(
-            (matExpBase +
-              getWorkLaborCostParsed(sunHS) +
-              getTravelLaborCostParsed(sunHS) +
-              travelNonLabor) /
-              parsedFinalMarkupDivisor,
+        ? applyFinalMarkup(
+            Math.ceil(
+              (matExpBase +
+                getWorkLaborCostParsed(sunHS) +
+                getTravelLaborCostParsed(sunHS) +
+                travelNonLabor) /
+                parsedFinalMarkupDivisor,
+            ),
+            parsedFinalMarkup,
           )
         : baseFinalValue;
     const sunFinalValue = sunBaseFinalValue * (singleLetterScopeQuantity || 1);
@@ -6397,6 +6444,10 @@ export default function EstimateSheet({
           : !!parsedData.netTermsOnly;
       const scopeTaxFactor = scopeNetTermsOnly ? 1.0 : 1.09;
       const scopeFinalMarkupDivisor = scopeNetTermsOnly ? 1.0 : 0.96;
+      const scopeFinalMarkup =
+        originalQuoteIndex === selectedQuoteIndex && selectedQuoteIndex >= 0
+          ? finalMarkupMultiplier
+          : getFinalMarkupMultiplier(parsedData);
 
       // Per-scope manual price override; use live form state only for the active tab.
       // When set (not null), the FINAL value is forced to this exact amount.
@@ -6476,13 +6527,15 @@ export default function EstimateSheet({
       );
       const travelNonLaborSafe = Math.max(0, travelNonLabor);
 
-      const finalValue =
+      const finalValue = applyFinalMarkup(
         scopeManualOverride != null
           ? scopeManualOverride
           : Math.ceil(
               (matExpBase + workLabor + travelLabor + travelNonLaborSafe) /
                 scopeFinalMarkupDivisor,
-            );
+            ),
+        scopeFinalMarkup,
+      );
       const validFinalValue =
         isNaN(finalValue) || !isFinite(finalValue) ? 0 : finalValue;
 
@@ -6502,8 +6555,12 @@ export default function EstimateSheet({
             quoteHourlyRates.straightTime +
           (dayHS?.travelOvertimeHours || 0) * quoteHourlyRates.overtime +
           (dayHS?.travelDoubleTimeHours || 0) * quoteHourlyRates.doubleTime;
-        return Math.ceil(
-          (matExpBase + wl + tl + travelNonLaborSafe) / scopeFinalMarkupDivisor,
+        return applyFinalMarkup(
+          Math.ceil(
+            (matExpBase + wl + tl + travelNonLaborSafe) /
+              scopeFinalMarkupDivisor,
+          ),
+          scopeFinalMarkup,
         );
       };
 
@@ -13764,7 +13821,7 @@ export default function EstimateSheet({
                                         e.target.checked &&
                                         toNum(manualPriceValue) <= 0
                                       ) {
-                                        setManualPriceValue(getFinalValue());
+                                        setManualPriceValue(getBaseFinalValue());
                                       }
                                       setIsDirty(true);
                                     }}
@@ -13821,6 +13878,71 @@ export default function EstimateSheet({
                                     />
                                   </div>
                                 )}
+                              </div>
+                              <div
+                                style={{
+                                  flex: "1 1 320px",
+                                  minWidth: "280px",
+                                  maxWidth: "460px",
+                                  padding: "10px 12px",
+                                  border: "1px solid var(--border, #e5e5e5)",
+                                  borderRadius: 0,
+                                  fontSize: "13px",
+                                  lineHeight: 1.4,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                  }}
+                                >
+                                  <strong>Final markup ×</strong>
+                                  <input
+                                    type="number"
+                                    min={0.01}
+                                    step="0.01"
+                                    value={
+                                      finalMarkupInput ?? finalMarkupMultiplier
+                                    }
+                                    onChange={(e) => {
+                                      if (isViewMode) return;
+                                      setFinalMarkupInput(e.target.value);
+                                      const n = parseFloat(e.target.value);
+                                      setFinalMarkupMultiplier(
+                                        Number.isFinite(n) && n > 0 ? n : 1,
+                                      );
+                                      setIsDirty(true);
+                                    }}
+                                    onBlur={() => setFinalMarkupInput(null)}
+                                    disabled={isViewMode}
+                                    className="form-input"
+                                    style={{
+                                      width: "90px",
+                                      textAlign: "right",
+                                    }}
+                                  />
+                                  {finalMarkupMultiplier !== 1 && (
+                                    <span style={{ fontWeight: "bold" }}>
+                                      {finalMarkupMultiplier > 1 ? "+" : ""}
+                                      {Math.round(
+                                        (finalMarkupMultiplier - 1) * 10000,
+                                      ) / 100}
+                                      %
+                                    </span>
+                                  )}
+                                </div>
+                                <div
+                                  style={{
+                                    color: "var(--muted, #737373)",
+                                    marginTop: "6px",
+                                  }}
+                                >
+                                  Optional. Marks up the FINAL price, so every
+                                  NET price and mobilization go up with it.
+                                  1.05 = +5%. Leave at 1 for none.
+                                </div>
                               </div>
                             </div>
 

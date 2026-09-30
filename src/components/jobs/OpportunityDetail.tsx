@@ -313,7 +313,13 @@ function calculateEstimateNet30Amount(estimateData: any): number | null {
     materialExpenseBase + workLabor + travelLabor + travelNonLabor;
   if (baseValue <= 0) return parseMoneyValue(calculatedValues.grandTotal);
 
-  const finalValue = Math.ceil(baseValue / 0.96);
+  // Optional final markup (1 = none), same rule as the estimate sheet.
+  const finalMarkup = toNumber(estimateData.finalMarkupMultiplier);
+  const baseFinal = Math.ceil(baseValue / 0.96);
+  const finalValue =
+    finalMarkup > 0 && finalMarkup !== 1
+      ? Math.ceil(baseFinal * finalMarkup)
+      : baseFinal;
   const net30Factor = toNumber(paymentTermFactors.net30) || 1;
   const mobilization = Math.ceil(
     finalValue * getEstimateMobilizationFactor(finalValue, estimateData),

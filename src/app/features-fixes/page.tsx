@@ -710,6 +710,33 @@ const FeaturesFixesPage: React.FC = () => {
     }
   };
 
+  const handleReopen = async (issue: Issue) => {
+    if (!confirm(`Reopen "${issue.title}"?`)) return;
+    try {
+      await updateIssue(issue.id, {
+        status: "open",
+        resolved_at: null,
+      });
+      if (user?.id) {
+        supabase
+          .schema("common")
+          .from("issue_updates")
+          .insert({
+            issue_id: issue.id,
+            updater_id: user.id,
+            new_status: "open",
+            note: "Reopened",
+          })
+          .then(({ error }) => {
+            if (error) console.error("Failed to save reopen timeline note", error);
+          });
+      }
+    } catch (e: any) {
+      console.error("Failed to reopen issue", e);
+      alert(e?.message || "Failed to reopen issue");
+    }
+  };
+
   const getReporterName = (reporterId: string | null): string => {
     if (!reporterId) return "Unknown";
     const profile = userProfiles[reporterId];
@@ -2336,6 +2363,19 @@ const FeaturesFixesPage: React.FC = () => {
                           className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-none font-medium"
                         >
                           Mark Resolved
+                        </button>
+                      )}
+                    {hasIssueOpsAccess &&
+                      (selectedIssue.status === "resolved" ||
+                        selectedIssue.status === "closed") && (
+                        <button
+                          onClick={() => {
+                            handleReopen(selectedIssue);
+                            closeModal();
+                          }}
+                          className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-none font-medium"
+                        >
+                          Reopen
                         </button>
                       )}
                   </div>

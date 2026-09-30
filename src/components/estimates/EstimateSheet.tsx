@@ -24,6 +24,9 @@ import {
 } from "./LetterImageHandler";
 import { supabase } from "../../lib/supabase";
 import { Button } from "../ui/Button";
+import SimpleEstimateEditor, {
+  isSimpleEstimateData,
+} from "./SimpleEstimateEditor";
 import { Switch } from "../ui/Switch";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { useAuth } from "../../lib/AuthContext";
@@ -7507,6 +7510,28 @@ export default function EstimateSheet({
     }
   }, [isOpen, isNewQuote, quotes, selectedQuoteIndex]);
 
+  // The saved quote currently shown in view mode, when it is a Simple Estimate.
+  const selectedSimpleQuote =
+    !isNewQuote &&
+    selectedQuoteIndex >= 0 &&
+    isSimpleEstimateData(quotes[selectedQuoteIndex]?.data)
+      ? quotes[selectedQuoteIndex]
+      : null;
+  const isSimpleSelected = !!selectedSimpleQuote;
+
+  // Same reset the "letter" mode does, then jump straight to this quote's letter.
+  const openLetterForSimpleQuote = (index: number) => {
+    setIsOpen(false);
+    clearLetterProposalState();
+    setIsLetterProposalOpen(false);
+    setIsQuoteSelectOpen(false);
+    setLetterHtml("");
+    savedLetterHtmlRef.current = "";
+    setIsLetterDirty(false);
+    setCurrentLetterId(null);
+    setTimeout(() => handleSelectQuoteForLetter(index), 50);
+  };
+
   // Respond to mode prop
   useEffect(() => {
     if (mode === "new") {
@@ -7969,15 +7994,17 @@ export default function EstimateSheet({
                 </Button>
               ) : isViewMode ? (
                 <>
-                  <Button
-                    onClick={() => {
-                      setJustSaved(false);
-                      setIsViewMode(false);
-                    }}
-                    className="h-10 w-10 p-0 bg-brand text-white hover:bg-brand/90 transition-colors"
-                  >
-                    <Edit className="h-6 w-6" />
-                  </Button>
+                  {!isSimpleSelected && (
+                    <Button
+                      onClick={() => {
+                        setJustSaved(false);
+                        setIsViewMode(false);
+                      }}
+                      className="h-10 w-10 p-0 bg-brand text-white hover:bg-brand/90 transition-colors"
+                    >
+                      <Edit className="h-6 w-6" />
+                    </Button>
+                  )}
                   {selectedQuoteIndex >= 0 && quotes[selectedQuoteIndex] && (
                     <>
                       <Button
@@ -8023,7 +8050,7 @@ export default function EstimateSheet({
                   <button
                     onClick={saveQuote}
                     disabled={isSaving}
-                    className={`flex h-10 w-10 items-center justify-center rounded-none text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`${isSimpleSelected ? "hidden" : "flex"} h-10 w-10 items-center justify-center rounded-none text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                       justSaved
                         ? "bg-green-600 hover:bg-green-700 focus:ring-green-500"
                         : "bg-brand hover:bg-brand/90 focus:ring-brand"
@@ -8223,7 +8250,27 @@ export default function EstimateSheet({
                   </Tab.Group>
                 ) : null}
 
-                <div className="mt-4">
+                {/* Simple estimates get their own small editor instead of the full sheet. */}
+                {isSimpleSelected && selectedSimpleQuote && (
+                  <div className="mt-4">
+                    <SimpleEstimateEditor
+                      key={selectedSimpleQuote.id}
+                      opportunityId={opportunityId}
+                      estimate={selectedSimpleQuote}
+                      onSaved={(row) => {
+                        setQuotes((prev) =>
+                          prev.map((q) => (q.id === row.id ? row : q)),
+                        );
+                        loadQuoteData(row);
+                      }}
+                      onGenerateLetter={() =>
+                        openLetterForSimpleQuote(selectedQuoteIndex)
+                      }
+                    />
+                  </div>
+                )}
+
+                <div className={isSimpleSelected ? "hidden" : "mt-4"}>
                   <div style={styles.app}>
                     {/* Status and Page Numbering Row */}
                     <div

@@ -305,6 +305,31 @@ interface Customer {
   company_name: string;
 }
 
+// Uploaded files keep "Report Type - Identifier" in `name`, the same shape
+// generated reports use, so the reports list splits them into its two columns.
+const UPLOADED_NAME_SEPARATOR = " - ";
+const UPLOADED_REPORT_DEFAULT_TYPE = "Uploaded Report";
+
+const joinUploadedReportName = (reportType: string, identifier: string) =>
+  [reportType.trim(), identifier.trim()]
+    .filter(Boolean)
+    .join(UPLOADED_NAME_SEPARATOR);
+
+/** Older uploads have no type in their name: the whole name is the identifier. */
+const splitUploadedReportName = (name: string) => {
+  const trimmed = (name || "").trim();
+  const sep = trimmed.lastIndexOf(UPLOADED_NAME_SEPARATOR);
+  return sep > 0
+    ? {
+        reportType: trimmed.slice(0, sep).trim(),
+        identifier: trimmed.slice(sep + UPLOADED_NAME_SEPARATOR.length).trim(),
+      }
+    : { reportType: "", identifier: trimmed };
+};
+
+const isUploadedFileAsset = (asset: { file_url?: string | null }) =>
+  /^https?:\/\//i.test(asset.file_url || "");
+
 interface Asset {
   id: string;
   name: string;
@@ -2016,6 +2041,7 @@ export default function JobDetail() {
     useState(false);
   const [pdfReportFile, setPdfReportFile] = useState<File | null>(null);
   const [pdfReportName, setPdfReportName] = useState("");
+  const [pdfReportType, setPdfReportType] = useState("");
   const [pdfReportSubstation, setPdfReportSubstation] = useState("");
   const [isUploadingPdfReport, setIsUploadingPdfReport] = useState(false);
   const [pdfUploadProgress, setPdfUploadProgress] = useState(0);
@@ -2023,6 +2049,7 @@ export default function JobDetail() {
   const [showEditPdfReportDialog, setShowEditPdfReportDialog] = useState(false);
   const [editingPdfReport, setEditingPdfReport] = useState<Asset | null>(null);
   const [editPdfReportName, setEditPdfReportName] = useState("");
+  const [editPdfReportType, setEditPdfReportType] = useState("");
   const [editPdfReportSubstation, setEditPdfReportSubstation] = useState("");
   // Basic manual tracker state
   type TrackingItem = {
@@ -3590,11 +3617,21 @@ export default function JobDetail() {
   // project view shows the two halves separately so that several reports on the
   // same piece of equipment read as one asset instead of several.
   const getAssetParts = React.useCallback(
-    (asset: Asset): AssetNameParts =>
-      splitAssetName(
+    (asset: Asset): AssetNameParts => {
+      if (isUploadedFileAsset(asset)) {
+        const { reportType, identifier } = splitUploadedReportName(
+          asset.name || "",
+        );
+        return {
+          reportType: reportType || UPLOADED_REPORT_DEFAULT_TYPE,
+          assetIdentifier: identifier,
+        };
+      }
+      return splitAssetName(
         dynamicAssetNames[asset.id] || asset.name || "",
         getReportSlugFromFileUrl(asset.file_url),
-      ),
+      );
+    },
     [dynamicAssetNames],
   );
 
@@ -5020,7 +5057,7 @@ export default function JobDetail() {
         .schema("neta_ops")
         .from("assets")
         .insert({
-          name: pdfReportName.trim(),
+          name: joinUploadedReportName(pdfReportType, pdfReportName),
           file_url: publicUrl,
           substation: pdfReportSubstation.trim() || null,
           created_at: now,
@@ -5056,6 +5093,7 @@ export default function JobDetail() {
       // 6. Reset form
       setPdfReportFile(null);
       setPdfReportName("");
+      setPdfReportType("");
       setPdfReportSubstation("");
       setShowPdfReportUploadDialog(false);
       toast({
@@ -5098,7 +5136,9 @@ export default function JobDetail() {
       asset.file_url.toLowerCase().endsWith(".pdf")
     ) {
       setEditingPdfReport(asset);
-      setEditPdfReportName(asset.name);
+      const parts = splitUploadedReportName(asset.name);
+      setEditPdfReportType(parts.reportType);
+      setEditPdfReportName(parts.identifier);
       // Get substation from asset if available, or from assetSubstations state
       setEditPdfReportSubstation(assetSubstations[asset.id] || "");
       setShowEditPdfReportDialog(true);
@@ -5114,7 +5154,7 @@ export default function JobDetail() {
         .schema("neta_ops")
         .from("assets")
         .update({
-          name: editPdfReportName.trim(),
+          name: joinUploadedReportName(editPdfReportType, editPdfReportName),
           substation: editPdfReportSubstation.trim() || null,
           updated_at: new Date().toISOString(),
         })
@@ -13557,6 +13597,18 @@ export default function JobDetail() {
 
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
+              <label htmlFor="pdf-report-type" className="text-sm font-medium">
+                Report Type
+              </label>
+              <Input
+                id="pdf-report-type"
+                value={pdfReportType}
+                onChange={(e) => setPdfReportType(e.target.value)}
+                placeholder="e.g., CT Test Report"
+              />
+            </div>
+
+            <div className="space-y-2">
               <label htmlFor="pdf-report-name" className="text-sm font-medium">
                 Name / Identifier *
               </label>
@@ -13564,7 +13616,7 @@ export default function JobDetail() {
                 id="pdf-report-name"
                 value={pdfReportName}
                 onChange={(e) => setPdfReportName(e.target.value)}
-                placeholder="e.g., Transformer Test Report - Unit 1"
+                placeholder="e.g., TADG-PMDC-002-04 A-Phase CT"
               />
             </div>
 
@@ -13627,6 +13679,7 @@ export default function JobDetail() {
                 setShowPdfReportUploadDialog(false);
                 setPdfReportFile(null);
                 setPdfReportName("");
+                setPdfReportType("");
                 setPdfReportSubstation("");
               }}
               disabled={isUploadingPdfReport}
@@ -13655,23 +13708,38 @@ export default function JobDetail() {
           <DialogHeader>
             <DialogTitle>Edit PDF Report</DialogTitle>
             <DialogDescription>
-              Update the report name and substation assignment.
+              Update the report type, name and substation.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <label
+                htmlFor="edit-pdf-report-type"
+                className="text-sm font-medium"
+              >
+                Report Type
+              </label>
+              <Input
+                id="edit-pdf-report-type"
+                value={editPdfReportType}
+                onChange={(e) => setEditPdfReportType(e.target.value)}
+                placeholder="e.g., CT Test Report"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
                 htmlFor="edit-pdf-report-name"
                 className="text-sm font-medium"
               >
-                Report Name / Identifier *
+                Name / Identifier *
               </label>
               <Input
                 id="edit-pdf-report-name"
                 value={editPdfReportName}
                 onChange={(e) => setEditPdfReportName(e.target.value)}
-                placeholder="e.g., Transformer Test Report - Unit 1"
+                placeholder="e.g., TADG-PMDC-002-04 A-Phase CT"
               />
             </div>
 
@@ -13698,6 +13766,7 @@ export default function JobDetail() {
                 setShowEditPdfReportDialog(false);
                 setEditingPdfReport(null);
                 setEditPdfReportName("");
+                setEditPdfReportType("");
                 setEditPdfReportSubstation("");
               }}
             >

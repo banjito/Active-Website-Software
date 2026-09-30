@@ -46,6 +46,7 @@ import {
   SubcontractorAgreement,
 } from "../../lib/types/index";
 import EstimateSheet from "../estimates/EstimateSheet";
+import SimpleEstimateEditor from "../estimates/SimpleEstimateEditor";
 import { Button } from "@/components/ui/Button";
 import { useJobDetails } from "../../lib/hooks/useJobDetails";
 import { DivisionAnalyticsDialog } from "../analytics/DivisionAnalyticsDialog";
@@ -776,6 +777,7 @@ export default function OpportunityDetail() {
     "new" | "view" | "letter" | "letters" | "combined-letter" | false
   >(false);
   const [activeEstimateId, setActiveEstimateId] = useState<string | null>(null);
+  const [showSimpleEstimate, setShowSimpleEstimate] = useState(false);
   const [isDraft, setIsDraft] = useState(false);
   // Keep a ref in sync so the (id, showEstimate)-scoped estimateSaved listener
   // can read the latest draft state without re-subscribing on every toggle.
@@ -5760,6 +5762,15 @@ export default function OpportunityDetail() {
                     </button>
                     <button
                       onClick={() => {
+                        setShowEstimate(false);
+                        setShowSimpleEstimate(true);
+                      }}
+                      className="bg-brand text-white hover:bg-brand/90 px-4 py-2 rounded-none font-medium transition-colors"
+                    >
+                      Generate Simple Estimate
+                    </button>
+                    <button
+                      onClick={() => {
                         setShowEstimate("view");
                         setEstimateOpenSignal((s) => s + 1);
                       }}
@@ -5794,6 +5805,35 @@ export default function OpportunityDetail() {
                       Generate Combined Letter Proposal
                     </button>
                   </div>
+                  {/* New Simple Estimate: line items + markup + travel. Once
+                      saved it opens in the estimates view, where the letter
+                      proposal can be generated. */}
+                  <Dialog
+                    open={showSimpleEstimate}
+                    onClose={() => setShowSimpleEstimate(false)}
+                    className="fixed inset-0 z-50 overflow-y-auto"
+                  >
+                    <div className="flex items-center justify-center min-h-screen p-4">
+                      <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+                      <div className="relative bg-white dark:bg-dark-150 rounded-none w-full max-w-4xl p-6 shadow-xl">
+                        <Dialog.Title className="text-lg font-semibold text-neutral-900 dark:text-dark-900 mb-4">
+                          New Simple Estimate
+                        </Dialog.Title>
+                        {showSimpleEstimate && (
+                          <SimpleEstimateEditor
+                            opportunityId={id || ""}
+                            onCancel={() => setShowSimpleEstimate(false)}
+                            onSaved={(row) => {
+                              setShowSimpleEstimate(false);
+                              setActiveEstimateId(row.id);
+                              setShowEstimate("view");
+                              setEstimateOpenSignal((s) => s + 1);
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </Dialog>
                   {/* Show EstimateSheet only if an action is selected */}
                   {showEstimate !== false && (
                     <EstimateSheet

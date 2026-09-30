@@ -311,10 +311,38 @@ interface FormData {
   status: string; // PASS, FAIL, LIMITED SERVICE
 }
 
+// Keeps a leading ">", "<", "≥" or "≤" so an over-range reading like ">2200"
+// corrects to ">2200.00" instead of blanking out.
 const calculateTempCorrected = (reading: string, tcf: number): string => {
-  const numericReading = parseFloat(reading);
+  const match = String(reading ?? "")
+    .trim()
+    .match(/^([<>≤≥]=?)?\s*(-?\d*\.?\d+)/);
+  if (!match) return "";
+  const numericReading = parseFloat(match[2]);
   if (isNaN(numericReading)) return "";
-  return (numericReading * tcf).toFixed(2);
+  return `${match[1] ?? ""}${(numericReading * tcf).toFixed(2)}`;
+};
+
+// "200" or "200:5" -> the ratio as one number (200, 40).
+const parseRatio = (value: string): number | null => {
+  const parts = String(value ?? "")
+    .split(":")
+    .map((p) => parseFloat(p.trim()));
+  if (parts.some((p) => isNaN(p))) return null;
+  if (parts.length === 1) return parts[0];
+  if (parts.length === 2 && parts[1] !== 0) return parts[0] / parts[1];
+  return null;
+};
+
+// Ratio deviation % = (measured - expected) / expected x 100
+const calculateRatioDeviation = (
+  ratio: string,
+  measuredRatio: string,
+): string | null => {
+  const expected = parseRatio(ratio);
+  const measured = parseRatio(measuredRatio);
+  if (expected === null || measured === null || expected === 0) return null;
+  return String(parseFloat((((measured - expected) / expected) * 100).toFixed(3)));
 };
 
 const CurrentTransformerTestATSReport: React.FC = () => {
@@ -1114,6 +1142,17 @@ const CurrentTransformerTestATSReport: React.FC = () => {
     setFormData((prev) => {
       const newItems = [...prev.electricalTests.ratioPolarity];
       newItems[index] = { ...newItems[index], [field]: value };
+      // Ratio or measured ratio changed: fill in the deviation. It stays
+      // editable, and is left alone until both numbers are entered.
+      if (field === "ratio" || field === "measuredRatio") {
+        const deviation = calculateRatioDeviation(
+          newItems[index].ratio,
+          newItems[index].measuredRatio,
+        );
+        if (deviation !== null) {
+          newItems[index] = { ...newItems[index], ratioDev: deviation };
+        }
+      }
       return {
         ...prev,
         electricalTests: { ...prev.electricalTests, ratioPolarity: newItems },

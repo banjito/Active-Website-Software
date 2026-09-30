@@ -432,6 +432,8 @@ const visualInspectionResultsOptions = [
   "By Others",
 ];
 const contactResistanceUnitsOptions = ["µΩ", "mΩ", "Ω"];
+const POLE_COUNT_OPTIONS = [1, 2, 3, 4, 5, 6];
+const BREAKER_POSITION_OPTIONS = ["Closed", "Open"];
 const insulationResistanceUnitsOptions = ["kΩ", "MΩ", "GΩ"];
 const insulationTestVoltageOptions = [
   "250V",
@@ -543,6 +545,11 @@ interface FormData {
     pole1: string;
     pole2: string;
     pole3: string;
+    // Poles 4-6 only exist on breakers set to more than 3 poles (e.g. 6-pole = 2 per phase)
+    pole4?: string;
+    pole5?: string;
+    pole6?: string;
+    poleCount?: number; // 1-6, missing on older reports = 3
     units: string;
     deviation: string;
     criteria: string;
@@ -1667,7 +1674,8 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           deviation: "",
           criteria: "<50%",
           result: "",
-          skipDeviation: false,
+          skipDeviation: !!formData.contactResistance.skipDeviation,
+          poleCount: formData.contactResistance.poleCount ?? 3,
         },
         insulationResistance: {
           // Set-up fields carry over; the readings below start blank.
@@ -1676,7 +1684,8 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           testVoltage: formData.insulationResistance.testVoltage,
           testDuration: formData.insulationResistance.testDuration,
           poleToPole: {
-            breakerPosition: "Closed",
+            breakerPosition:
+              formData.insulationResistance.poleToPole.breakerPosition || "Closed",
             measured: { p1: "", p2: "", p3: "" },
             corrected: { p1: "", p2: "", p3: "" },
             units: "MΩ",
@@ -1685,7 +1694,8 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
             result: "",
           },
           poleToFrame: {
-            breakerPosition: "Closed",
+            breakerPosition:
+              formData.insulationResistance.poleToFrame.breakerPosition || "Closed",
             measured: { p1: "", p2: "", p3: "" },
             corrected: { p1: "", p2: "", p3: "" },
             units: "MΩ",
@@ -1694,7 +1704,8 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
             result: "",
           },
           lineToLoad: {
-            breakerPosition: "Open",
+            breakerPosition:
+              formData.insulationResistance.lineToLoad.breakerPosition || "Open",
             measured: { p1: "", p2: "", p3: "" },
             corrected: { p1: "", p2: "", p3: "" },
             units: "MΩ",
@@ -2441,19 +2452,14 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
 
   // Calculate contact resistance deviation and result
   const calculateContactResistance = () => {
-    const { pole1, pole2, pole3, skipDeviation } = formData.contactResistance;
-    if (skipDeviation) {
+    if (formData.contactResistance.skipDeviation) {
       return { deviation: "N/A", result: "N/A" };
     }
-    const p1 = parseFloat(pole1) || 0;
-    const p2 = parseFloat(pole2) || 0;
-    const p3 = parseFloat(pole3) || 0;
-
-    if (p1 === 0 && p2 === 0 && p3 === 0) {
-      return { deviation: "-", result: "-" };
-    }
-
-    const values = [p1, p2, p3].filter((v) => v > 0);
+    // Every pole is compared against every other, so a 6-pole breaker is
+    // judged on its highest vs. lowest reading, same as a 3-pole one.
+    const values = contactPoleKeys
+      .map((k) => parseFloat(formData.contactResistance[k] || "") || 0)
+      .filter((v) => v > 0);
     if (values.length < 2) {
       return { deviation: "-", result: "-" };
     }
@@ -2479,6 +2485,10 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
     );
   }
 
+  const contactPoleCount = formData.contactResistance.poleCount ?? 3;
+  const contactPoleKeys = (
+    ["pole1", "pole2", "pole3", "pole4", "pole5", "pole6"] as const
+  ).slice(0, contactPoleCount);
   const contactResResults = calculateContactResistance();
 
   return (
@@ -3732,22 +3742,25 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Contact/Pole Resistance
             </h2>
-            <label
-              className={`flex items-center gap-2 mb-3 text-sm text-neutral-700 dark:text-neutral-300 ${formData.contactResistance.skipDeviation ? "" : "print:hidden"}`}
-            >
-              <input
-                type="checkbox"
-                checked={!!formData.contactResistance.skipDeviation}
+            <label className="flex items-center gap-2 mb-3 text-sm text-neutral-700 dark:text-neutral-300 print:hidden">
+              Number of poles
+              <select
+                value={contactPoleCount}
                 onChange={(e) =>
                   handleChange(
-                    "contactResistance.skipDeviation",
-                    e.target.checked,
+                    "contactResistance.poleCount",
+                    parseInt(e.target.value, 10),
                   )
                 }
                 disabled={!isEditing}
-                className="rounded-none"
-              />
-              Skip phase deviation comparison (e.g. ground or neutral test)
+                className={`p-1 border border-neutral-300 dark:border-neutral-600 rounded-none dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
+              >
+                {POLE_COUNT_OPTIONS.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
             </label>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600">
@@ -3755,7 +3768,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                   <tr>
                     <th
                       className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white"
-                      colSpan={4}
+                      colSpan={contactPoleCount + 1}
                     >
                       Resistance Measurements
                     </th>
@@ -3770,15 +3783,14 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     </th>
                   </tr>
                   <tr>
-                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
-                      Pole 1
-                    </th>
-                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
-                      Pole 2
-                    </th>
-                    <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
-                      Pole 3
-                    </th>
+                    {contactPoleKeys.map((_, i) => (
+                      <th
+                        key={i}
+                        className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white"
+                      >
+                        Pole {i + 1}
+                      </th>
+                    ))}
                     <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm font-medium text-neutral-900 dark:text-white">
                       Units
                     </th>
@@ -3795,48 +3807,25 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150">
                   <tr>
-                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
-                      <input
-                        type="text"
-                        value={formData.contactResistance.pole1}
-                        onChange={(e) =>
-                          handleChange(
-                            "contactResistance.pole1",
-                            e.target.value,
-                          )
-                        }
-                        readOnly={!isEditing}
-                        className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded text-center dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
-                      />
-                    </td>
-                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
-                      <input
-                        type="text"
-                        value={formData.contactResistance.pole2}
-                        onChange={(e) =>
-                          handleChange(
-                            "contactResistance.pole2",
-                            e.target.value,
-                          )
-                        }
-                        readOnly={!isEditing}
-                        className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded text-center dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
-                      />
-                    </td>
-                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
-                      <input
-                        type="text"
-                        value={formData.contactResistance.pole3}
-                        onChange={(e) =>
-                          handleChange(
-                            "contactResistance.pole3",
-                            e.target.value,
-                          )
-                        }
-                        readOnly={!isEditing}
-                        className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded text-center dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
-                      />
-                    </td>
+                    {contactPoleKeys.map((key) => (
+                      <td
+                        key={key}
+                        className="border border-neutral-300 dark:border-neutral-600 px-2 py-1"
+                      >
+                        <input
+                          type="text"
+                          value={formData.contactResistance[key] || ""}
+                          onChange={(e) =>
+                            handleChange(
+                              `contactResistance.${key}`,
+                              e.target.value,
+                            )
+                          }
+                          readOnly={!isEditing}
+                          className={`w-full p-1 border border-neutral-300 dark:border-neutral-600 rounded-none text-center dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
+                        />
+                      </td>
+                    ))}
                     <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
                       <select
                         value={formData.contactResistance.units}
@@ -3859,10 +3848,26 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                     <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm text-neutral-900 dark:text-white">
                       {contactResResults.deviation}
                     </td>
-                    <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center text-sm text-neutral-900 dark:text-white">
-                      {formData.contactResistance.skipDeviation
-                        ? "N/A"
-                        : "<50%"}
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-sm text-neutral-900 dark:text-white">
+                      {/* N/A = poles aren't compared (manufacturer criteria, ground/neutral test) */}
+                      <select
+                        value={
+                          formData.contactResistance.skipDeviation
+                            ? "N/A"
+                            : "<50%"
+                        }
+                        onChange={(e) =>
+                          handleChange(
+                            "contactResistance.skipDeviation",
+                            e.target.value === "N/A",
+                          )
+                        }
+                        disabled={!isEditing}
+                        className={`w-full py-1 pl-1 pr-6 bg-[position:right_0.1rem_center] border border-neutral-300 dark:border-neutral-600 rounded-none text-center dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
+                      >
+                        <option value="<50%">{"<50%"}</option>
+                        <option value="N/A">N/A</option>
+                      </select>
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-center">
                       <span
@@ -3955,13 +3960,13 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
               <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600 text-xs table-fixed">
                 <colgroup>
                   <col style={{ width: "10%" }} />
-                  <col style={{ width: "8%" }} />
-                  <col style={{ width: "13%" }} />
-                  <col style={{ width: "13%" }} />
-                  <col style={{ width: "13%" }} />
-                  <col style={{ width: "13%" }} />
-                  <col style={{ width: "13%" }} />
-                  <col style={{ width: "13%" }} />
+                  <col style={{ width: "11%" }} />
+                  <col style={{ width: "12.5%" }} />
+                  <col style={{ width: "12.5%" }} />
+                  <col style={{ width: "12.5%" }} />
+                  <col style={{ width: "12.5%" }} />
+                  <col style={{ width: "12.5%" }} />
+                  <col style={{ width: "12.5%" }} />
                   <col style={{ width: "4%" }} />
                 </colgroup>
                 <thead className="bg-neutral-50 dark:bg-dark-150">
@@ -4026,7 +4031,23 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       Pole to Pole
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs text-neutral-900 dark:text-white">
-                      {formData.insulationResistance.poleToPole.breakerPosition}
+                      <select
+                        value={formData.insulationResistance.poleToPole.breakerPosition}
+                        onChange={(e) =>
+                          handleChange(
+                            "insulationResistance.poleToPole.breakerPosition",
+                            e.target.value,
+                          )
+                        }
+                        disabled={!isEditing}
+                        className={`w-full py-1 pl-1 pr-6 bg-[position:right_0.1rem_center] border border-neutral-300 dark:border-neutral-600 rounded-none text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
+                      >
+                        {BREAKER_POSITION_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                       <input
@@ -4119,10 +4140,23 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       Pole to Frame
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs text-neutral-900 dark:text-white">
-                      {
-                        formData.insulationResistance.poleToFrame
-                          .breakerPosition
-                      }
+                      <select
+                        value={formData.insulationResistance.poleToFrame.breakerPosition}
+                        onChange={(e) =>
+                          handleChange(
+                            "insulationResistance.poleToFrame.breakerPosition",
+                            e.target.value,
+                          )
+                        }
+                        disabled={!isEditing}
+                        className={`w-full py-1 pl-1 pr-6 bg-[position:right_0.1rem_center] border border-neutral-300 dark:border-neutral-600 rounded-none text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
+                      >
+                        {BREAKER_POSITION_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                       <input
@@ -4215,7 +4249,23 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                       Line to Load
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center text-xs text-neutral-900 dark:text-white">
-                      {formData.insulationResistance.lineToLoad.breakerPosition}
+                      <select
+                        value={formData.insulationResistance.lineToLoad.breakerPosition}
+                        onChange={(e) =>
+                          handleChange(
+                            "insulationResistance.lineToLoad.breakerPosition",
+                            e.target.value,
+                          )
+                        }
+                        disabled={!isEditing}
+                        className={`w-full py-1 pl-1 pr-6 bg-[position:right_0.1rem_center] border border-neutral-300 dark:border-neutral-600 rounded-none text-center text-xs dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100" : ""}`}
+                      >
+                        {BREAKER_POSITION_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-1 py-1">
                       <input

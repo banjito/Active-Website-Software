@@ -5748,9 +5748,6 @@ export default function OpportunityDetail() {
 
               {/* Add Estimate Sheet section */}
               <div className="mt-8">
-                <h3 className="text-lg font-medium text-neutral-900 dark:text-dark-900 mb-3">
-                  Estimate
-                </h3>
                 <div className="bg-white dark:bg-dark-150 p-4 rounded-none">
                   {/* Two groups: estimates (pricing) and letter proposals
                       (what the customer sees). Create = solid, view = outline. */}

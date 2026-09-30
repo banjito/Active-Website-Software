@@ -321,9 +321,21 @@ function calculateEstimateNet30Amount(estimateData: any): number | null {
       ? Math.ceil(baseFinal * finalMarkup)
       : baseFinal;
   const net30Factor = toNumber(paymentTermFactors.net30) || 1;
-  const mobilization = Math.ceil(
+  // Only mobilization "added to price" goes on top; baked-in groups are
+  // already inside FINAL (same rule as the estimate sheet).
+  const tieredMobilization = Math.ceil(
     finalValue * getEstimateMobilizationFactor(finalValue, estimateData),
   );
+  let mobilization =
+    estimateData.mobilizationMode === "baked" ? 0 : tieredMobilization;
+  if (Array.isArray(estimateData.mobilizationGroups)) {
+    for (const group of estimateData.mobilizationGroups) {
+      const pct = toNumber(group?.percent);
+      if (pct > 0 && group?.mode !== "baked") {
+        mobilization += Math.ceil((finalValue * pct) / 100);
+      }
+    }
+  }
 
   return parseMoneyValue(Math.ceil(finalValue * net30Factor) + mobilization);
 }

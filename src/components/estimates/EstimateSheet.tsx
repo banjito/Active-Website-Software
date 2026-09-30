@@ -701,6 +701,73 @@ function resolveMobilizationAmount(
   return Math.ceil(finalValue * computeMobilizationFactor(finalValue, factors));
 }
 
+type MobilizationMode = "added" | "baked";
+interface MobilizationGroup {
+  id: string;
+  percent: number;
+  mode: MobilizationMode;
+}
+
+/** Extra mobilization groups saved on an estimate; drops anything malformed. */
+function sanitizeMobilizationGroups(raw: unknown): MobilizationGroup[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((g) => g && typeof g === "object")
+    .map((g: any, i) => {
+      const pct = Number(g.percent);
+      return {
+        id: String(g.id || `mob-${i}`),
+        percent: Number.isFinite(pct) && pct > 0 ? pct : 0,
+        mode: (g.mode === "baked" ? "baked" : "added") as MobilizationMode,
+      };
+    });
+}
+
+/**
+ * Mobilization in two parts:
+ * - total: what the proposal quotes as "Mobilization costs of ..."
+ * - added: the part added on top of the price. "Baked in" groups raise the
+ *   mobilization without raising the price ($100k scope + 5% baked in =
+ *   $100k total with $5k mobilization).
+ * The tiered amount is the main group; extra groups are a flat % of FINAL.
+ * A split's fixed amount replaces all groups, with its own added part.
+ * `tierValue` picks the tier when FINAL is already multiplied by a quantity.
+ */
+function resolveMobilizationBreakdown(
+  finalValue: number,
+  factors: { base: number; over100k: number; over500k: number; over1m: number },
+  source?: {
+    mobilizationOverride?: boolean;
+    mobilizationValue?: any;
+    mobilizationAddedValue?: any;
+    mobilizationMode?: any;
+    mobilizationGroups?: any;
+  } | null,
+  tierValue: number = finalValue,
+): { total: number; added: number } {
+  if (source?.mobilizationOverride) {
+    const total = resolveMobilizationAmount(finalValue, factors, source);
+    const rawAdded = source.mobilizationAddedValue;
+    const addedNum = Number(rawAdded);
+    const added =
+      rawAdded != null && rawAdded !== "" && Number.isFinite(addedNum)
+        ? Math.min(total, Math.max(0, Math.round(addedNum)))
+        : total;
+    return { total, added };
+  }
+  const main = Math.ceil(
+    finalValue * computeMobilizationFactor(tierValue, factors),
+  );
+  let total = main;
+  let added = source?.mobilizationMode === "baked" ? 0 : main;
+  for (const g of sanitizeMobilizationGroups(source?.mobilizationGroups)) {
+    const amount = Math.ceil((finalValue * g.percent) / 100);
+    total += amount;
+    if (g.mode !== "baked") added += amount;
+  }
+  return { total, added };
+}
+
 /**
  * Travel non-labor dollars for one scope. A split allocates travel as an
  * amount rather than as trips, because trips and flights don't divide: you
@@ -775,9 +842,12 @@ function summarizeEstimateSnapshot(
     ? applyFinalMarkup(rawFinal, getFinalMarkupMultiplier(parsedData))
     : 0;
 
+  const mob = resolveMobilizationBreakdown(finalValue, factors, parsedData);
+
   return {
     finalValue,
-    mobilization: resolveMobilizationAmount(finalValue, factors, parsedData),
+    mobilization: mob.total,
+    mobilizationAdded: mob.added,
     travelNonLabor,
     workLabor,
     travelLabor,
@@ -1035,6 +1105,17 @@ export default function EstimateSheet({
   const [mobilizationOverride, setMobilizationOverride] =
     useState<boolean>(false);
   const [mobilizationValue, setMobilizationValue] = useState<number>(0);
+  // Part of a split's fixed mobilization that's added to the price (null = all of it).
+  const [mobilizationAddedValue, setMobilizationAddedValue] = useState<
+    number | null
+  >(null);
+  // Tiered mobilization: added on top of the price, or baked into it.
+  const [mobilizationMode, setMobilizationMode] =
+    useState<MobilizationMode>("added");
+  // Extra flat-% mobilization groups, summed with the tiered amount.
+  const [mobilizationGroups, setMobilizationGroups] = useState<
+    MobilizationGroup[]
+  >([]);
 
   // Travel non-labor dollars allocated to this scope by a split, in place of
   // whatever its own trip inputs would compute.
@@ -1427,6 +1508,17 @@ export default function EstimateSheet({
         setFinalMarkupMultiplier(getFinalMarkupMultiplier(savedDraft));
         setMobilizationOverride(!!savedDraft.mobilizationOverride);
         setMobilizationValue(toNum(savedDraft.mobilizationValue));
+        setMobilizationAddedValue(
+          savedDraft.mobilizationAddedValue != null
+            ? toNum(savedDraft.mobilizationAddedValue)
+            : null,
+        );
+        setMobilizationMode(
+          savedDraft.mobilizationMode === "baked" ? "baked" : "added",
+        );
+        setMobilizationGroups(
+          sanitizeMobilizationGroups(savedDraft.mobilizationGroups),
+        );
         setTravelNonLaborOverride(!!savedDraft.travelNonLaborOverride);
         setTravelNonLaborValue(toNum(savedDraft.travelNonLaborValue));
 
@@ -1452,6 +1544,9 @@ export default function EstimateSheet({
         finalMarkupMultiplier,
         mobilizationOverride,
         mobilizationValue,
+        mobilizationAddedValue,
+        mobilizationMode,
+        mobilizationGroups,
         travelNonLaborOverride,
         travelNonLaborValue,
       };
@@ -1471,6 +1566,9 @@ export default function EstimateSheet({
     finalMarkupMultiplier,
     mobilizationOverride,
     mobilizationValue,
+    mobilizationAddedValue,
+    mobilizationMode,
+    mobilizationGroups,
     travelNonLaborOverride,
     travelNonLaborValue,
     isOpen,
@@ -1933,6 +2031,17 @@ export default function EstimateSheet({
       setFinalMarkupMultiplier(getFinalMarkupMultiplier(parsedData));
       setMobilizationOverride(!!parsedData.mobilizationOverride);
       setMobilizationValue(toNum(parsedData.mobilizationValue));
+      setMobilizationAddedValue(
+        parsedData.mobilizationAddedValue != null
+          ? toNum(parsedData.mobilizationAddedValue)
+          : null,
+      );
+      setMobilizationMode(
+        parsedData.mobilizationMode === "baked" ? "baked" : "added",
+      );
+      setMobilizationGroups(
+        sanitizeMobilizationGroups(parsedData.mobilizationGroups),
+      );
       setTravelNonLaborOverride(!!parsedData.travelNonLaborOverride);
       setTravelNonLaborValue(toNum(parsedData.travelNonLaborValue));
 
@@ -2133,6 +2242,9 @@ export default function EstimateSheet({
       finalMarkupMultiplier: finalMarkupMultiplier,
       mobilizationOverride: mobilizationOverride,
       mobilizationValue: mobilizationValue,
+      mobilizationAddedValue: mobilizationAddedValue,
+      mobilizationMode: mobilizationMode,
+      mobilizationGroups: mobilizationGroups,
       travelNonLaborOverride: travelNonLaborOverride,
       travelNonLaborValue: travelNonLaborValue,
     };
@@ -3123,6 +3235,9 @@ export default function EstimateSheet({
 
     const sourceFinal = getFinalValue();
     const sourceMob = getMobilizationAmount(sourceFinal);
+    // Share of the moved mobilization that's added to the price; the rest was baked in.
+    const sourceMobAddedShare =
+      sourceMob > 0 ? getMobilizationAdded(sourceFinal) / sourceMob : 1;
     const hs = data.hoursSummary;
 
     const plan = planRedistribution({
@@ -3171,6 +3286,8 @@ export default function EstimateSheet({
       overheads: plan.sourceOverheads,
       existingTravelNonLabor: 0,
       existingMobilization: 0,
+      existingMobilizationAdded: 0,
+      mobilizationAddedShare: sourceMobAddedShare,
       mergeWithExisting: false,
       travelData,
     });
@@ -3198,6 +3315,9 @@ export default function EstimateSheet({
       // across both groups does not move.
       existingTravelNonLabor: targetBefore.travelNonLabor,
       existingMobilization: targetBefore.mobilization,
+      existingMobilizationAdded:
+        (targetBefore as any).mobilizationAdded ?? targetBefore.mobilization,
+      mobilizationAddedShare: sourceMobAddedShare,
       mergeWithExisting: !!targetParsed,
       // An existing target keeps its own non-SOV rows and gains the allocated
       // slice as separate labeled rows, so where the cost came from stays
@@ -3287,6 +3407,8 @@ export default function EstimateSheet({
     };
     existingTravelNonLabor: number;
     existingMobilization: number;
+    existingMobilizationAdded: number;
+    mobilizationAddedShare: number;
     /** True when writing into an estimate that already has work of its own,
      *  so its hours are kept and the allocated slice is added on top. */
     mergeWithExisting: boolean;
@@ -3300,6 +3422,8 @@ export default function EstimateSheet({
       overheads,
       existingTravelNonLabor,
       existingMobilization,
+      existingMobilizationAdded,
+      mobilizationAddedShare,
       mergeWithExisting,
       extraNonSovItems,
       travelData: sideTravel,
@@ -3350,6 +3474,10 @@ export default function EstimateSheet({
           existingTravelNonLabor + overheads.travelNonLaborCost,
         mobilizationOverride: true,
         mobilizationValue: existingMobilization + overheads.mobilization,
+        mobilizationAddedValue: Math.round(
+          existingMobilizationAdded +
+            overheads.mobilization * mobilizationAddedShare,
+        ),
       },
       sideTravel || undefined,
     );
@@ -3675,7 +3803,7 @@ export default function EstimateSheet({
     const f = getFinalValue();
     const mob = (v: number) => getMobilizationAmount(v);
     const termAmt = (v: number, factor: number) =>
-      Math.ceil(v * factor) + mob(v);
+      Math.ceil(v * factor) + getMobilizationAdded(v);
     const lines: string[] = [];
     const block = (label: string, factor: number) => {
       lines.push(`${label}:`);
@@ -6123,12 +6251,18 @@ export default function EstimateSheet({
     const parsedMobSource = {
       mobilizationOverride: !!parsedData.mobilizationOverride,
       mobilizationValue: parsedData.mobilizationValue,
+      mobilizationAddedValue: parsedData.mobilizationAddedValue,
+      mobilizationMode: parsedData.mobilizationMode,
+      mobilizationGroups: parsedData.mobilizationGroups,
     };
-    const mobilizationRaw = resolveMobilizationAmount(
+    const mobBreakdown = resolveMobilizationBreakdown(
       finalValue,
       mobilizationFactors,
       parsedMobSource,
     );
+    // Total is what the letter quotes; added is what goes on top of the price.
+    const mobilizationRaw = mobBreakdown.total;
+    const mobilizationAddedRaw = mobBreakdown.added;
     const mobilization = formatCurrency(mobilizationRaw);
     const showMobilizationInLetter =
       mobilizationRaw > 0 || includeMobilizationWhenZero;
@@ -6139,20 +6273,20 @@ export default function EstimateSheet({
     const showSunInLetter = letterIncludeSunday && hasSundayPricing;
 
     // Mobilization amounts per scenario
-    const satMobRaw = hasSaturdayPricing
-      ? resolveMobilizationAmount(
+    const satMobAddedRaw = hasSaturdayPricing
+      ? resolveMobilizationBreakdown(
           satFinalValue,
           mobilizationFactors,
           parsedMobSource,
-        )
-      : mobilizationRaw;
-    const sunMobRaw = hasSundayPricing
-      ? resolveMobilizationAmount(
+        ).added
+      : mobilizationAddedRaw;
+    const sunMobAddedRaw = hasSundayPricing
+      ? resolveMobilizationBreakdown(
           sunFinalValue,
           mobilizationFactors,
           parsedMobSource,
-        )
-      : mobilizationRaw;
+        ).added
+      : mobilizationAddedRaw;
 
     // Determine which payment terms to render
     const termsToRender: { key: string; label: string; factor: number }[] =
@@ -6190,10 +6324,10 @@ export default function EstimateSheet({
             ? sunFinalValue
             : finalValue;
         const baseMob = showSatInLetter
-          ? satMobRaw
+          ? satMobAddedRaw
           : showSunInLetter
-            ? sunMobRaw
-            : mobilizationRaw;
+            ? sunMobAddedRaw
+            : mobilizationAddedRaw;
         const option1 = formatCurrency(
           Math.ceil(baseValue * paymentTermFactors.net30) + baseMob,
         );
@@ -6215,22 +6349,22 @@ export default function EstimateSheet({
           const lines: string[] = [];
           if (showMFInLetter) {
             lines.push(
-              `<li>Work performed Monday - Friday: <b>${formatCurrency(Math.ceil(finalValue * term.factor) + mobilizationRaw)}</b></li>`,
+              `<li>Work performed Monday - Friday: <b>${formatCurrency(Math.ceil(finalValue * term.factor) + mobilizationAddedRaw)}</b></li>`,
             );
           }
           if (showSatInLetter) {
             lines.push(
-              `<li>Work performed on Saturday: <b>${formatCurrency(Math.ceil(satFinalValue * term.factor) + satMobRaw)}</b></li>`,
+              `<li>Work performed on Saturday: <b>${formatCurrency(Math.ceil(satFinalValue * term.factor) + satMobAddedRaw)}</b></li>`,
             );
           }
           if (showSunInLetter) {
             lines.push(
-              `<li>Work performed on Sunday / Holiday: <b>${formatCurrency(Math.ceil(sunFinalValue * term.factor) + sunMobRaw)}</b></li>`,
+              `<li>Work performed on Sunday / Holiday: <b>${formatCurrency(Math.ceil(sunFinalValue * term.factor) + sunMobAddedRaw)}</b></li>`,
             );
           }
           if (lines.length === 0) {
             lines.push(
-              `<li>Total: <b>${formatCurrency(Math.ceil(finalValue * term.factor) + mobilizationRaw)}</b></li>`,
+              `<li>Total: <b>${formatCurrency(Math.ceil(finalValue * term.factor) + mobilizationAddedRaw)}</b></li>`,
             );
           }
           // Single term selected (no "all"): use simpler header without "Option N"
@@ -6588,6 +6722,15 @@ export default function EstimateSheet({
         mobSource: {
           mobilizationOverride: !!parsedData.mobilizationOverride,
           mobilizationValue: parsedData.mobilizationValue,
+          mobilizationAddedValue: parsedData.mobilizationAddedValue,
+          // Live form state for the open estimate, saved data for the rest.
+          ...(originalQuoteIndex === selectedQuoteIndex &&
+          selectedQuoteIndex >= 0
+            ? { mobilizationMode, mobilizationGroups }
+            : {
+                mobilizationMode: parsedData.mobilizationMode,
+                mobilizationGroups: parsedData.mobilizationGroups,
+              }),
         },
         quoteNumber:
           (opportunityData as any)?.quote_number ||
@@ -6619,19 +6762,39 @@ export default function EstimateSheet({
     // Mobilization for one scope at a given quantity. An override is a fixed
     // amount per performance, so quantity multiplies it; without one this is
     // the original tier math, untouched.
-    const scopeMobAtQty = (q: any, value: number, qty: number) =>
-      q.mobSource?.mobilizationOverride
-        ? Math.round(toNum(q.mobSource.mobilizationValue)) * qty
-        : Math.ceil(
-            value * qty * computeMobilizationFactor(value, q.scopeMobFactors),
-          );
+    const scopeMobAtQty = (q: any, value: number, qty: number) => {
+      if (q.mobSource?.mobilizationOverride) {
+        const fixed = resolveMobilizationBreakdown(
+          value,
+          q.scopeMobFactors,
+          q.mobSource,
+        );
+        return { total: fixed.total * qty, added: fixed.added * qty };
+      }
+      return resolveMobilizationBreakdown(
+        value * qty,
+        q.scopeMobFactors,
+        q.mobSource,
+        value,
+      );
+    };
+    // Sum one part (total or added) of every scope's mobilization.
+    const sumScopeMob = (
+      pick: (q: any) => number,
+      part: "total" | "added",
+    ) =>
+      processedQuotes.reduce((sum, q, index) => {
+        const originalQuoteIndex = selectedQuotesForCombined[index];
+        const scopeQty = scopeQuantities[originalQuoteIndex] || 1;
+        return sum + scopeMobAtQty(q, pick(q), scopeQty)[part];
+      }, 0);
 
     // Sum per-scope mobilizations using each scope's own saved factors
-    const combinedMobilizationRaw = processedQuotes.reduce((sum, q, index) => {
-      const originalQuoteIndex = selectedQuotesForCombined[index];
-      const scopeQty = scopeQuantities[originalQuoteIndex] || 1;
-      return sum + scopeMobAtQty(q, q.finalValue, scopeQty);
-    }, 0);
+    const combinedMobilizationRaw = sumScopeMob((q) => q.finalValue, "total");
+    const combinedMobilizationAddedRaw = sumScopeMob(
+      (q) => q.finalValue,
+      "added",
+    );
     const combinedMobilization = formatCurrency(combinedMobilizationRaw);
 
     // Saturday combined final value
@@ -6640,11 +6803,10 @@ export default function EstimateSheet({
       const scopeQty = scopeQuantities[originalQuoteIndex] || 1;
       return sum + (q.satFinalValue || q.finalValue) * scopeQty;
     }, 0);
-    const combinedSatMobRaw = processedQuotes.reduce((sum, q, index) => {
-      const originalQuoteIndex = selectedQuotesForCombined[index];
-      const scopeQty = scopeQuantities[originalQuoteIndex] || 1;
-      return sum + scopeMobAtQty(q, q.satFinalValue || q.finalValue, scopeQty);
-    }, 0);
+    const combinedSatMobAddedRaw = sumScopeMob(
+      (q) => q.satFinalValue || q.finalValue,
+      "added",
+    );
 
     // Sunday combined final value
     const combinedSunFinalValue = processedQuotes.reduce((sum, q, index) => {
@@ -6652,11 +6814,10 @@ export default function EstimateSheet({
       const scopeQty = scopeQuantities[originalQuoteIndex] || 1;
       return sum + (q.sunFinalValue || q.finalValue) * scopeQty;
     }, 0);
-    const combinedSunMobRaw = processedQuotes.reduce((sum, q, index) => {
-      const originalQuoteIndex = selectedQuotesForCombined[index];
-      const scopeQty = scopeQuantities[originalQuoteIndex] || 1;
-      return sum + scopeMobAtQty(q, q.sunFinalValue || q.finalValue, scopeQty);
-    }, 0);
+    const combinedSunMobAddedRaw = sumScopeMob(
+      (q) => q.sunFinalValue || q.finalValue,
+      "added",
+    );
 
     const anyScopeHasSat = processedQuotes.some((q) => q.hasSat);
     const anyScopeHasSun = processedQuotes.some((q) => q.hasSun);
@@ -6680,31 +6841,33 @@ export default function EstimateSheet({
           letterIncludeSovNotes,
         );
 
-        const scopeMobilizationRaw = resolveMobilizationAmount(
+        const scopeMobBreakdown = resolveMobilizationBreakdown(
           processedQuote.finalValue,
           processedQuote.scopeMobFactors,
           processedQuote.mobSource,
         );
+        const scopeMobilizationRaw = scopeMobBreakdown.total;
+        const scopeMobilizationAddedRaw = scopeMobBreakdown.added;
         const showScopeMobilization =
           scopeMobilizationRaw > 0 || includeMobilizationWhenZero;
         const showScopesMF = letterIncludeMF;
         const showScopesSat = letterIncludeSaturday && processedQuote.hasSat;
         const showScopesSun = letterIncludeSunday && processedQuote.hasSun;
 
-        const satScopeMobRaw = processedQuote.hasSat
-          ? resolveMobilizationAmount(
+        const satScopeMobAddedRaw = processedQuote.hasSat
+          ? resolveMobilizationBreakdown(
               processedQuote.satFinalValue,
               processedQuote.scopeMobFactors,
               processedQuote.mobSource,
-            )
-          : scopeMobilizationRaw;
-        const sunScopeMobRaw = processedQuote.hasSun
-          ? resolveMobilizationAmount(
+            ).added
+          : scopeMobilizationAddedRaw;
+        const sunScopeMobAddedRaw = processedQuote.hasSun
+          ? resolveMobilizationBreakdown(
               processedQuote.sunFinalValue,
               processedQuote.scopeMobFactors,
               processedQuote.mobSource,
-            )
-          : scopeMobilizationRaw;
+            ).added
+          : scopeMobilizationAddedRaw;
 
         const scopeTermsToRender = letterShowAllTerms
           ? [
@@ -6751,10 +6914,10 @@ export default function EstimateSheet({
                 ? processedQuote.sunFinalValue
                 : processedQuote.finalValue;
             const baseMob = showScopesSat
-              ? satScopeMobRaw
+              ? satScopeMobAddedRaw
               : showScopesSun
-                ? sunScopeMobRaw
-                : scopeMobilizationRaw;
+                ? sunScopeMobAddedRaw
+                : scopeMobilizationAddedRaw;
             const o1Raw =
               Math.ceil(baseVal * paymentTermFactors.net30) + baseMob;
             const o2Raw =
@@ -6774,7 +6937,7 @@ export default function EstimateSheet({
               if (showScopesMF) {
                 const val =
                   Math.ceil(processedQuote.finalValue * term.factor) +
-                  scopeMobilizationRaw;
+                  scopeMobilizationAddedRaw;
                 lines.push(
                   `<li>Work performed Monday - Friday: <b class="scope-price" data-base="${val}" data-kind="${term.key}">${formatCurrency(val)}</b></li>`,
                 );
@@ -6782,7 +6945,7 @@ export default function EstimateSheet({
               if (showScopesSat) {
                 const val =
                   Math.ceil(processedQuote.satFinalValue * term.factor) +
-                  satScopeMobRaw;
+                  satScopeMobAddedRaw;
                 lines.push(
                   `<li>Work performed on Saturday: <b>${formatCurrency(val)}</b></li>`,
                 );
@@ -6790,7 +6953,7 @@ export default function EstimateSheet({
               if (showScopesSun) {
                 const val =
                   Math.ceil(processedQuote.sunFinalValue * term.factor) +
-                  sunScopeMobRaw;
+                  sunScopeMobAddedRaw;
                 lines.push(
                   `<li>Work performed on Sunday / Holiday: <b>${formatCurrency(val)}</b></li>`,
                 );
@@ -6798,7 +6961,7 @@ export default function EstimateSheet({
               if (lines.length === 0) {
                 const val =
                   Math.ceil(processedQuote.finalValue * term.factor) +
-                  scopeMobilizationRaw;
+                  scopeMobilizationAddedRaw;
                 lines.push(
                   `<li>Total: <b class="scope-price" data-base="${val}" data-kind="${term.key}">${formatCurrency(val)}</b></li>`,
                 );
@@ -6993,10 +7156,10 @@ export default function EstimateSheet({
                   ? combinedSunFinalValue
                   : combinedFinalValue;
               const baseMob = grandShowSat
-                ? combinedSatMobRaw
+                ? combinedSatMobAddedRaw
                 : grandShowSun
-                  ? combinedSunMobRaw
-                  : combinedMobilizationRaw;
+                  ? combinedSunMobAddedRaw
+                  : combinedMobilizationAddedRaw;
               const o1Raw =
                 Math.ceil(baseVal * paymentTermFactors.net30) + baseMob;
               const o2Raw =
@@ -7030,7 +7193,7 @@ export default function EstimateSheet({
                 if (grandShowMF) {
                   const val =
                     Math.ceil(combinedFinalValue * term.factor) +
-                    combinedMobilizationRaw;
+                    combinedMobilizationAddedRaw;
                   lines.push(
                     '<li>Work performed Monday - Friday: <b class="grand-price" data-kind="' +
                       term.key +
@@ -7044,7 +7207,7 @@ export default function EstimateSheet({
                 if (grandShowSat) {
                   const val =
                     Math.ceil(combinedSatFinalValue * term.factor) +
-                    combinedSatMobRaw;
+                    combinedSatMobAddedRaw;
                   lines.push(
                     "<li>Work performed on Saturday: <b>" +
                       formatCurrency(val) +
@@ -7054,7 +7217,7 @@ export default function EstimateSheet({
                 if (grandShowSun) {
                   const val =
                     Math.ceil(combinedSunFinalValue * term.factor) +
-                    combinedSunMobRaw;
+                    combinedSunMobAddedRaw;
                   lines.push(
                     "<li>Work performed on Sunday / Holiday: <b>" +
                       formatCurrency(val) +
@@ -7064,7 +7227,7 @@ export default function EstimateSheet({
                 if (lines.length === 0) {
                   const val =
                     Math.ceil(combinedFinalValue * term.factor) +
-                    combinedMobilizationRaw;
+                    combinedMobilizationAddedRaw;
                   lines.push(
                     '<li>Total: <b class="grand-price" data-kind="' +
                       term.key +
@@ -7631,12 +7794,24 @@ export default function EstimateSheet({
     return mobilizationFactors.base;
   }
 
-  /** Mobilization dollars for this estimate, honoring a split's fixed amount. */
-  function getMobilizationAmount(finalValue: number) {
-    return resolveMobilizationAmount(finalValue, mobilizationFactors, {
+  function getMobilizationBreakdown(finalValue: number) {
+    return resolveMobilizationBreakdown(finalValue, mobilizationFactors, {
       mobilizationOverride,
       mobilizationValue,
+      mobilizationAddedValue,
+      mobilizationMode,
+      mobilizationGroups,
     });
+  }
+
+  /** Total mobilization for this estimate (what the proposal quotes), honoring a split's fixed amount. */
+  function getMobilizationAmount(finalValue: number) {
+    return getMobilizationBreakdown(finalValue).total;
+  }
+
+  /** The part of mobilization added on top of the price; baked-in groups are left out. */
+  function getMobilizationAdded(finalValue: number) {
+    return getMobilizationBreakdown(finalValue).added;
   }
 
   // When mobilization or payment-term factors change, update the letter/proposal HTML so the
@@ -7663,24 +7838,32 @@ export default function EstimateSheet({
     const mobilizationRawFromLetter = mobMatch
       ? parseFloat(mobMatch[1].replace(/,/g, ""))
       : 0;
+    // The letter quotes total mobilization, but only the "added" part is in
+    // the option prices; back that part out using this estimate's split.
+    const liveFinal = getFinalValue();
+    const liveMobTotal = getMobilizationAmount(liveFinal);
+    const addedShare =
+      liveMobTotal > 0 ? getMobilizationAdded(liveFinal) / liveMobTotal : 1;
+    const mobilizationAddedFromLetter = mobilizationRawFromLetter * addedShare;
     const isInclusiveFormat =
-      Number.isFinite(mobilizationRawFromLetter) &&
-      mobilizationRawFromLetter > 0 &&
-      option1Raw > mobilizationRawFromLetter;
+      Number.isFinite(mobilizationAddedFromLetter) &&
+      mobilizationAddedFromLetter > 0 &&
+      option1Raw > mobilizationAddedFromLetter;
     const finalValue = isInclusiveFormat
-      ? (option1Raw - mobilizationRawFromLetter) / paymentTermFactors.net30
+      ? (option1Raw - mobilizationAddedFromLetter) / paymentTermFactors.net30
       : option1Raw / paymentTermFactors.net30;
     if (!Number.isFinite(finalValue) || finalValue <= 0) return;
     const newMobilizationRaw = getMobilizationAmount(finalValue);
+    const newMobilizationAddedRaw = getMobilizationAdded(finalValue);
     const newMobilization = formatCurrency(newMobilizationRaw);
     const newOption1 = formatCurrency(
-      Math.ceil(finalValue * paymentTermFactors.net30) + newMobilizationRaw,
+      Math.ceil(finalValue * paymentTermFactors.net30) + newMobilizationAddedRaw,
     );
     const newOption2 = formatCurrency(
-      Math.ceil(finalValue * paymentTermFactors.net60) + newMobilizationRaw,
+      Math.ceil(finalValue * paymentTermFactors.net60) + newMobilizationAddedRaw,
     );
     const newOption3 = formatCurrency(
-      Math.ceil(finalValue * paymentTermFactors.net90) + newMobilizationRaw,
+      Math.ceil(finalValue * paymentTermFactors.net90) + newMobilizationAddedRaw,
     );
     const updated = html
       .replace(
@@ -10483,7 +10666,7 @@ export default function EstimateSheet({
                     {(() => {
                       const summaryNavItems: SectionNavItem<typeof activeSummarySection>[] = [
                         { key: "hoursLabor", label: "Hours & Labor", badge: `${formatNumber(data.hoursSummary.totalHours)} hrs` },
-                        { key: "terms", label: "Payment + mob", badge: formatCurrency(Math.ceil(getFinalValue() * paymentTermFactors.net30) + getMobilizationAmount(getFinalValue())) },
+                        { key: "terms", label: "Payment + mob", badge: formatCurrency(Math.ceil(getFinalValue() * paymentTermFactors.net30) + getMobilizationAdded(getFinalValue())) },
                         { key: "financial", label: "Financial", badge: formatCurrency(getFinalValue()) },
                       ];
                       return (
@@ -13288,7 +13471,7 @@ export default function EstimateSheet({
                                       getFinalValue() *
                                         paymentTermFactors.net30,
                                     ) +
-                                      getMobilizationAmount(getFinalValue()),
+                                      getMobilizationAdded(getFinalValue()),
                                   )}
                                 </td>
                               </tr>
@@ -13351,7 +13534,7 @@ export default function EstimateSheet({
                                       getFinalValue() *
                                         paymentTermFactors.net60,
                                     ) +
-                                      getMobilizationAmount(getFinalValue()),
+                                      getMobilizationAdded(getFinalValue()),
                                   )}
                                 </td>
                               </tr>
@@ -13414,7 +13597,7 @@ export default function EstimateSheet({
                                       getFinalValue() *
                                         paymentTermFactors.net90,
                                     ) +
-                                      getMobilizationAmount(getFinalValue()),
+                                      getMobilizationAdded(getFinalValue()),
                                   )}
                                 </td>
                               </tr>
@@ -13693,6 +13876,178 @@ export default function EstimateSheet({
                               </tr>
                             </tbody>
                           </table>
+
+                          {/* Mobilization groups: the tiered amount above is the
+                              main group; extra groups are a flat % of FINAL.
+                              "Baked in" raises mobilization without raising the price. */}
+                          <div
+                            style={{
+                              marginTop: "12px",
+                              fontSize: "13px",
+                              color: "var(--text-color)",
+                            }}
+                          >
+                            {mobilizationOverride && (
+                              <div
+                                style={{
+                                  marginBottom: "8px",
+                                  color: "var(--muted, #737373)",
+                                }}
+                              >
+                                Mobilization is fixed at{" "}
+                                {formatCurrency(
+                                  getMobilizationAmount(getFinalValue()),
+                                )}{" "}
+                                by a split, so the settings below don't apply.
+                              </div>
+                            )}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                flexWrap: "wrap",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              <strong>Tiered mobilization (above):</strong>
+                              <select
+                                value={mobilizationMode}
+                                onChange={(e) => {
+                                  setMobilizationMode(
+                                    e.target.value === "baked"
+                                      ? "baked"
+                                      : "added",
+                                  );
+                                  setIsDirty(true);
+                                }}
+                                disabled={isViewMode}
+                                className="form-input rounded-none"
+                                style={{ width: "auto" }}
+                              >
+                                <option value="added">Added to price</option>
+                                <option value="baked">Baked into price</option>
+                              </select>
+                            </div>
+                            {mobilizationGroups.map((group, gi) => (
+                              <div
+                                key={group.id}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                  flexWrap: "wrap",
+                                  marginBottom: "6px",
+                                }}
+                              >
+                                <span>Group {gi + 2}:</span>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  step="0.1"
+                                  value={group.percent || ""}
+                                  placeholder="0"
+                                  onChange={(e) => {
+                                    const pct = parseFloat(e.target.value);
+                                    setMobilizationGroups((prev) =>
+                                      prev.map((g) =>
+                                        g.id === group.id
+                                          ? {
+                                              ...g,
+                                              percent:
+                                                Number.isFinite(pct) && pct > 0
+                                                  ? pct
+                                                  : 0,
+                                            }
+                                          : g,
+                                      ),
+                                    );
+                                    setIsDirty(true);
+                                  }}
+                                  readOnly={isViewMode}
+                                  className="form-input rounded-none"
+                                  style={{ width: "80px", textAlign: "right" }}
+                                />
+                                <span>% of FINAL</span>
+                                <select
+                                  value={group.mode}
+                                  onChange={(e) => {
+                                    const mode: MobilizationMode =
+                                      e.target.value === "baked"
+                                        ? "baked"
+                                        : "added";
+                                    setMobilizationGroups((prev) =>
+                                      prev.map((g) =>
+                                        g.id === group.id ? { ...g, mode } : g,
+                                      ),
+                                    );
+                                    setIsDirty(true);
+                                  }}
+                                  disabled={isViewMode}
+                                  className="form-input rounded-none"
+                                  style={{ width: "auto" }}
+                                >
+                                  <option value="added">Added to price</option>
+                                  <option value="baked">Baked into price</option>
+                                </select>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {formatCurrency(
+                                    Math.ceil(
+                                      (getFinalValue() * group.percent) / 100,
+                                    ),
+                                  )}
+                                </span>
+                                {!isViewMode && (
+                                  <button
+                                    type="button"
+                                    title="Remove group"
+                                    onClick={() => {
+                                      setMobilizationGroups((prev) =>
+                                        prev.filter((g) => g.id !== group.id),
+                                      );
+                                      setIsDirty(true);
+                                    }}
+                                    className="px-2 py-1 text-xs text-white bg-red-600 hover:bg-red-700 rounded-none"
+                                  >
+                                    ×
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                            {!isViewMode && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMobilizationGroups((prev) => [
+                                    ...prev,
+                                    {
+                                      id: `mob-${Date.now()}`,
+                                      percent: 0,
+                                      mode: "baked",
+                                    },
+                                  ]);
+                                  setIsDirty(true);
+                                }}
+                                className="px-3 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                              >
+                                + Add mobilization group
+                              </button>
+                            )}
+                            <div style={{ marginTop: "8px" }}>
+                              Total mobilization:{" "}
+                              <strong>
+                                {formatCurrency(
+                                  getMobilizationAmount(getFinalValue()),
+                                )}
+                              </strong>
+                              {" · "}Added to price:{" "}
+                              <strong>
+                                {formatCurrency(
+                                  getMobilizationAdded(getFinalValue()),
+                                )}
+                              </strong>
+                            </div>
+                          </div>
                         </div>
                           </div>
                         )}
@@ -14032,7 +14387,7 @@ export default function EstimateSheet({
                                           getFinalValue() *
                                             paymentTermFactors.net30,
                                         ) +
-                                          getMobilizationAmount(getFinalValue()),
+                                          getMobilizationAdded(getFinalValue()),
                                       )}
                                     </td>
                                     {showSaturdayHours && (
@@ -14048,7 +14403,7 @@ export default function EstimateSheet({
                                             getSaturdayFinalValue() *
                                               paymentTermFactors.net30,
                                           ) +
-                                            getMobilizationAmount(getSaturdayFinalValue()),
+                                            getMobilizationAdded(getSaturdayFinalValue()),
                                         )}
                                       </td>
                                     )}
@@ -14065,7 +14420,7 @@ export default function EstimateSheet({
                                             getSundayFinalValue() *
                                               paymentTermFactors.net30,
                                           ) +
-                                            getMobilizationAmount(getSundayFinalValue()),
+                                            getMobilizationAdded(getSundayFinalValue()),
                                         )}
                                       </td>
                                     )}
@@ -14092,7 +14447,7 @@ export default function EstimateSheet({
                                           getFinalValue() *
                                             paymentTermFactors.net60,
                                         ) +
-                                          getMobilizationAmount(getFinalValue()),
+                                          getMobilizationAdded(getFinalValue()),
                                       )}
                                     </td>
                                     {showSaturdayHours && (
@@ -14108,7 +14463,7 @@ export default function EstimateSheet({
                                             getSaturdayFinalValue() *
                                               paymentTermFactors.net60,
                                           ) +
-                                            getMobilizationAmount(getSaturdayFinalValue()),
+                                            getMobilizationAdded(getSaturdayFinalValue()),
                                         )}
                                       </td>
                                     )}
@@ -14125,7 +14480,7 @@ export default function EstimateSheet({
                                             getSundayFinalValue() *
                                               paymentTermFactors.net60,
                                           ) +
-                                            getMobilizationAmount(getSundayFinalValue()),
+                                            getMobilizationAdded(getSundayFinalValue()),
                                         )}
                                       </td>
                                     )}
@@ -14152,7 +14507,7 @@ export default function EstimateSheet({
                                           getFinalValue() *
                                             paymentTermFactors.net90,
                                         ) +
-                                          getMobilizationAmount(getFinalValue()),
+                                          getMobilizationAdded(getFinalValue()),
                                       )}
                                     </td>
                                     {showSaturdayHours && (
@@ -14168,7 +14523,7 @@ export default function EstimateSheet({
                                             getSaturdayFinalValue() *
                                               paymentTermFactors.net90,
                                           ) +
-                                            getMobilizationAmount(getSaturdayFinalValue()),
+                                            getMobilizationAdded(getSaturdayFinalValue()),
                                         )}
                                       </td>
                                     )}
@@ -14185,7 +14540,7 @@ export default function EstimateSheet({
                                             getSundayFinalValue() *
                                               paymentTermFactors.net90,
                                           ) +
-                                            getMobilizationAmount(getSundayFinalValue()),
+                                            getMobilizationAdded(getSundayFinalValue()),
                                         )}
                                       </td>
                                     )}

@@ -29,6 +29,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
 import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
+import { openPendingReportTab } from "./common/openReportTab";
 import {
   reportSaveFailed,
   reportSaveSucceeded,
@@ -172,6 +173,60 @@ interface FormData {
   };
   comments: string;
 }
+
+/** The report's saved columns, shared by the Save path and "copy to new report". */
+function buildReportRow(
+  formData: FormData,
+  maskCustomerName: (v: string) => string,
+  maskCustomerAddress: (v: string) => string,
+) {
+  return {
+    report_info: {
+      customer: maskCustomerName(formData.customerName),
+      address: maskCustomerAddress(formData.customerLocation),
+      userName: formData.userName,
+      date: formData.date,
+      identifier: formData.identifier,
+      technicians: formData.technicians,
+      substation: formData.substation,
+      eqptLocation: formData.eqptLocation,
+      temperature: formData.temperature,
+      manufacturer: formData.nameplate.manufacturer,
+      catalogNumber: formData.nameplate.catalogNumber,
+      serialNumber: formData.nameplate.serialNumber,
+      series: formData.nameplate.series,
+      type: formData.nameplate.type,
+      ratedVoltage: formData.nameplate.ratedVoltage,
+      systemVoltage: formData.nameplate.systemVoltage,
+      ratedCurrent: formData.nameplate.ratedCurrent,
+      aicRating: formData.nameplate.aicRating,
+      phaseConfiguration: formData.nameplate.phaseConfiguration,
+      testEquipment: formData.testEquipment,
+      status: formData.status,
+    },
+    visual_mechanical: { items: formData.visualInspectionItems },
+    insulation_resistance: {
+      tests: formData.insulationMeasured,
+      correctedTests: formData.tempCorrected,
+      unit: formData.insulationUnit,
+      units: formData.insulationUnit,
+      testVoltage: formData.insulationTestVoltage,
+      criteriaValue: formData.criteriaValue,
+      criteriaUnits: formData.criteriaUnits,
+    },
+    contact_resistance: {
+      tests: formData.contactResistance,
+      unit: formData.contactUnit,
+      evaluation: formData.contactEvaluation,
+      dielectricTests: formData.dielectricWithstand,
+      dielectricUnit: formData.dielectricUnit,
+      dielectricTestVoltage: formData.dielectricTestVoltage,
+      dielectricDuration: formData.dielectricTestDuration,
+    },
+    comments: formData.comments,
+  };
+}
+
 
 // Simple TCF table (matches other reports) keyed by rounded °C
 const TCF_TABLE: { [k: string]: number } = {
@@ -1052,49 +1107,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
           id: reportId,
           job_id: jobId,
           user_id: user.id,
-          report_info: {
-            customer: maskCustomerName(formData.customerName),
-            address: maskCustomerAddress(formData.customerLocation),
-            userName: formData.userName,
-            date: formData.date,
-            identifier: formData.identifier,
-            technicians: formData.technicians,
-            substation: formData.substation,
-            eqptLocation: formData.eqptLocation,
-            temperature: formData.temperature,
-            manufacturer: formData.nameplate.manufacturer,
-            catalogNumber: formData.nameplate.catalogNumber,
-            serialNumber: formData.nameplate.serialNumber,
-            series: formData.nameplate.series,
-            type: formData.nameplate.type,
-            ratedVoltage: formData.nameplate.ratedVoltage,
-            systemVoltage: formData.nameplate.systemVoltage,
-            ratedCurrent: formData.nameplate.ratedCurrent,
-            aicRating: formData.nameplate.aicRating,
-            phaseConfiguration: formData.nameplate.phaseConfiguration,
-            testEquipment: formData.testEquipment,
-            status: formData.status,
-          },
-          visual_mechanical: { items: formData.visualInspectionItems },
-          insulation_resistance: {
-            tests: formData.insulationMeasured,
-            correctedTests: formData.tempCorrected,
-            unit: formData.insulationUnit,
-            units: formData.insulationUnit,
-            testVoltage: formData.insulationTestVoltage,
-            criteriaValue: formData.criteriaValue,
-            criteriaUnits: formData.criteriaUnits,
-          },
-          contact_resistance: {
-            tests: formData.contactResistance,
-            unit: formData.contactUnit,
-            evaluation: formData.contactEvaluation,
-            dielectricTests: formData.dielectricWithstand,
-            dielectricUnit: formData.dielectricUnit,
-            dielectricTestVoltage: formData.dielectricTestVoltage,
-            dielectricDuration: formData.dielectricTestDuration,
-          },
-          comments: formData.comments,
+          ...buildReportRow(formData, maskCustomerName, maskCustomerAddress),
         },
         { onConflict: "id" },
       );
@@ -1133,6 +1146,128 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
 
     return reportId;
   }, [jobId, user?.id, maskCustomerName, maskCustomerAddress, reportSlug]);
+
+  // Save this report, then open a new one carrying everything except the
+  // V&M results and the test readings. Sections keep their count and titles.
+  const copyNameplateDataToNewReport = React.useCallback(async () => {
+    if (!jobId || !user?.id) {
+      alert("Unable to create new report. Missing job or user information.");
+      return;
+    }
+
+    // Claim the tab the copy will open in while the click is still fresh; the
+    // saves below take long enough that a later window.open reads as a popup.
+    const copyTab = openPendingReportTab();
+
+    try {
+      setIsSaving(true);
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = null;
+      }
+
+      const savedCurrentReportId = await persistReport();
+      if (!savedCurrentReportId) {
+        throw new Error("Failed to save current report.");
+      }
+
+      const formData = formDataRef.current;
+      const clearInsulation = (row: InsulationRow): InsulationRow => ({
+        busSection: row.busSection,
+        ag: "",
+        bg: "",
+        cg: "",
+        ab: "",
+        bc: "",
+        ca: "",
+        an: "",
+        bn: "",
+        cn: "",
+      });
+
+      // Identifier and serial number belong to the old gear, so they clear.
+      const newFormData: FormData = {
+        ...formData,
+        date: new Date().toISOString().split("T")[0],
+        identifier: "",
+        status: "PASS",
+        nameplate: { ...formData.nameplate, serialNumber: "" },
+        visualInspectionItems: formData.visualInspectionItems.map((item) => ({
+          id: item.id,
+          description: item.description,
+          result: "Select One",
+        })),
+        insulationMeasured: formData.insulationMeasured.map(clearInsulation),
+        tempCorrected: formData.tempCorrected.map(clearInsulation),
+        contactResistance: formData.contactResistance.map((row) => ({
+          busSection: row.busSection,
+          aPhase: "",
+          bPhase: "",
+          cPhase: "",
+          neutral: "",
+          ground: "",
+        })),
+        contactEvaluation: formData.contactResistance.map((_, i) => ({
+          deviation: "N/A",
+          criteria: formData.contactEvaluation[i]?.criteria || "<50%",
+          result: "N/A" as const,
+        })),
+        contactNeutral: { ...formData.contactNeutral, result: "N/A" },
+        contactGround: { ...formData.contactGround, result: "N/A" },
+        dielectricWithstand: formData.dielectricWithstand.map((row) => ({
+          busSection: row.busSection,
+          ag: "",
+          bg: "",
+          cg: "",
+          result: "",
+        })),
+        comments: "",
+      };
+
+      const copyReportId = newReportId();
+      const { error: newReportError } = await supabase
+        .schema("neta_ops")
+        .from("switchgear_switchboard_ats25_reports")
+        .upsert(
+          {
+            id: copyReportId,
+            job_id: jobId,
+            user_id: user.id,
+            ...buildReportRow(newFormData, maskCustomerName, maskCustomerAddress),
+          },
+          { onConflict: "id" },
+        );
+      if (newReportError) throw newReportError;
+
+      await ensureReportAssetLink(
+        jobId,
+        {
+          name: getAssetName(reportSlug, newFormData.eqptLocation || ""),
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${copyReportId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+
+      // This tab stays on the finished report so it can serve as the template.
+      copyTab.go(`/jobs/${jobId}/${reportSlug}/${copyReportId}`);
+    } catch (error: any) {
+      copyTab.cancel();
+      console.error("Error creating new switchgear report:", error);
+      alert(
+        `Failed to create new report: ${error?.message || "Unknown error"}`,
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }, [
+    jobId,
+    maskCustomerAddress,
+    maskCustomerName,
+    persistReport,
+    reportSlug,
+    user?.id,
+  ]);
 
   const autoSave = React.useCallback(async () => {
     if (!jobId || !user?.id) return;
@@ -1349,9 +1484,22 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
           {/* Nameplate */}
           <div className="mb-6">
             <div className="w-full h-1 bg-brand mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
-              Nameplate Data
-            </h2>
+            <div className="flex items-center justify-between gap-3 mb-4 border-b dark:border-neutral-700 pb-2 print:border-black">
+              <h2 className="text-xl font-semibold text-neutral-900 dark:text-white print:text-black print:font-bold">
+                Nameplate Data
+              </h2>
+              {!isPrintMode && isEditing && (
+                <button
+                  type="button"
+                  onClick={copyNameplateDataToNewReport}
+                  disabled={isSaving}
+                  title="Opens in a new tab"
+                  className="print:hidden shrink-0 px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-none hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  Copy nameplate to new report
+                </button>
+              )}
+            </div>
             <ReportNameplateFields
               profile={assetProfile}
               values={formData}
@@ -1462,18 +1610,18 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
             </div>
             <div className="overflow-x-auto">
               {/* Measured table */}
-              <table className="w-full min-w-[1000px] divide-y divide-neutral-200 dark:divide-neutral-700 table-fixed">
+              <table className="w-full min-w-[1100px] divide-y divide-neutral-200 dark:divide-neutral-700 table-fixed">
                 <colgroup>
-                  <col style={{ width: "17%" }} />
-                  <col style={{ width: "8.5%" }} />
-                  <col style={{ width: "8.5%" }} />
-                  <col style={{ width: "8.5%" }} />
-                  <col style={{ width: "8.5%" }} />
-                  <col style={{ width: "8.5%" }} />
+                  <col style={{ width: "23%" }} />
+                  <col style={{ width: "8%" }} />
+                  <col style={{ width: "8%" }} />
+                  <col style={{ width: "8%" }} />
+                  <col style={{ width: "8%" }} />
+                  <col style={{ width: "8%" }} />
                   <col style={{ width: "8%" }} />
                   <col style={{ width: "9%" }} />
                   <col style={{ width: "9.5%" }} />
-                  <col style={{ width: "14%" }} />
+                  <col style={{ width: "10.5%" }} />
                 </colgroup>
                 <thead>
                   <tr>
@@ -1528,7 +1676,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                               }));
                             }}
                             readOnly={!isEditing}
-                            className={`block flex-1 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block flex-1 min-w-0 rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white text-sm ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           />
                           {isEditing &&
                             formData.contactResistance.length > 1 && (
@@ -1536,7 +1684,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                                 <button
                                   onClick={() => moveContactResistanceRow(i, -1)}
                                   disabled={i === 0}
-                                  className="px-2 py-1 text-xs text-neutral-700 dark:text-neutral-200 bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 rounded-none disabled:opacity-40 disabled:cursor-not-allowed"
+                                  className="shrink-0 px-2 py-1 text-xs text-neutral-700 dark:text-neutral-200 bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 rounded-none disabled:opacity-40 disabled:cursor-not-allowed"
                                   type="button"
                                   title="Move row up"
                                 >
@@ -1547,7 +1695,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                                   disabled={
                                     i === formData.contactResistance.length - 1
                                   }
-                                  className="px-2 py-1 text-xs text-neutral-700 dark:text-neutral-200 bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 rounded-none disabled:opacity-40 disabled:cursor-not-allowed"
+                                  className="shrink-0 px-2 py-1 text-xs text-neutral-700 dark:text-neutral-200 bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 rounded-none disabled:opacity-40 disabled:cursor-not-allowed"
                                   type="button"
                                   title="Move row down"
                                 >
@@ -1559,7 +1707,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                             formData.contactResistance.length > 1 && (
                               <button
                                 onClick={() => removeContactResistanceRow(i)}
-                                className="px-2 py-1 text-xs text-white bg-red-600 hover:bg-red-700 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                className="shrink-0 px-2 py-1 text-xs text-white bg-red-600 hover:bg-red-700 rounded-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                 type="button"
                                 title="Remove row"
                               >

@@ -300,7 +300,7 @@ export default function SavedReportsPage() {
             <span className="h-2 w-2 rounded-none bg-brand" />
             {hypeLine}
           </p>
-          <h2 className="font-bitcount mt-3 text-4xl sm:text-7xl">
+          <h2 className="font-bitcount mt-3 text-4xl sm:text-6xl">
             {greeting()}.
           </h2>
 

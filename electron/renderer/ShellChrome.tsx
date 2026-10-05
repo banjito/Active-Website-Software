@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { useTheme } from "@/components/theme/theme-provider";
 import logoUrl from "./assets/ampOSOFFLINE.svg";
 
 /**
@@ -42,30 +41,6 @@ export const ICONS = {
   export: "M12 15V3m0 0 4 4m-4-4-4 4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2",
 };
 
-function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const isDark =
-    theme === "dark" ||
-    (theme === "system" &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches);
-  return (
-    <button
-      aria-label="Toggle theme"
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="flex h-9 w-9 items-center justify-center rounded-none border border-neutral-300 text-neutral-600 transition hover:border-brand hover:text-brand dark:border-neutral-700 dark:text-neutral-300"
-    >
-      {isDark ? (
-        <Icon
-          className="h-5 w-5"
-          d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
-        />
-      ) : (
-        <Icon className="h-5 w-5" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-      )}
-    </button>
-  );
-}
-
 /** Sticky top bar: logo (or a back link), a subtitle line, and right-side actions. */
 export function TopBar({
   back,
@@ -104,7 +79,6 @@ export function TopBar({
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {actions}
-            <ThemeToggle />
           </div>
         </div>
         {children}

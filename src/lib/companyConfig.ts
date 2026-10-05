@@ -93,9 +93,14 @@ export const companyConfig = {
    *  logo and the wordmark text together. Dark, so it is inverted in dark mode. */
   docsLogoPath: str(env.VITE_COMPANY_DOCS_LOGO, "/ampOS_docs.svg"),
 
-  /** Base URL for offline-app installer downloads (GitHub Releases). */
+  /**
+   * Base URL for offline-app installer downloads (GitHub Releases). "latest"
+   * always serves the newest release, so publishing one updates the portal's
+   * download buttons with no deploy. Asset names must stay
+   * ampOS-Offline-Windows-x64-Setup.exe / ampOS-Offline-macOS-AppleSilicon.zip.
+   */
   offlineReleaseBase:
-    str(env.VITE_COMPANY_OFFLINE_RELEASE_BASE, "https://github.com/banjito/Active-Website-Software/releases/download/offline-v1.0.0"),
+    str(env.VITE_COMPANY_OFFLINE_RELEASE_BASE, "https://github.com/banjito/Active-Website-Software/releases/latest/download"),
 
   /**
    * The HR handbook content is AMP-specific legal text. Buyer instances

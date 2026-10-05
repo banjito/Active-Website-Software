@@ -83,4 +83,7 @@ gh release create offline-vX.Y.Z --repo banjito/Active-Website-Software \
   "release/ampOS Offline_X.Y.Z_x64.exe#ampOS Offline - Windows (x64) Installer" \
   "release/ampOS Offline-X.Y.Z-arm64-mac.zip#ampOS Offline - macOS (Apple Silicon)"
 ```
-Then update the two `href`s in `src/app/portal/page.tsx` to the new tag.
+Upload the two files under exactly these names: `ampOS-Offline-Windows-x64-Setup.exe`
+and `ampOS-Offline-macOS-AppleSilicon.zip`. The portal buttons use
+`companyConfig.offlineReleaseBase`, which points at GitHub's `releases/latest/download`,
+so a new release updates the buttons with no code change or deploy.

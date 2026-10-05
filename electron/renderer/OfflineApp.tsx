@@ -23,7 +23,9 @@ import ReportHost from "./ReportHost";
 export default function OfflineApp() {
   return (
     <AuthProvider>
-      <ThemeProvider defaultTheme="system" storageKey="amp-offline-theme">
+      {/* Light only: the offline app has no dark mode. A new storage key so a
+          "dark" choice saved by the old theme toggle is ignored. */}
+      <ThemeProvider defaultTheme="light" storageKey="amp-offline-theme-light">
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <DemoModeProvider>
             <Toaster position="top-right" />

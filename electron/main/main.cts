@@ -65,7 +65,7 @@ function createWindow(): void {
     height: 960,
     minWidth: 1024,
     minHeight: 700,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: "#f5f5f5", // neutral-100, the app's (light-only) page color
     show: false,
     title: "ampOS Offline",
     webPreferences: {

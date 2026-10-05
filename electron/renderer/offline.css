@@ -26,13 +26,6 @@
 ::-webkit-scrollbar-corner {
   background: #f5f5f5; /* neutral-100 */
 }
-/* `.dark::` covers the page's own scrollbar (it belongs to <html>, which has the class). */
-.dark::-webkit-scrollbar-track,
-.dark::-webkit-scrollbar-corner,
-.dark ::-webkit-scrollbar-track,
-.dark ::-webkit-scrollbar-corner {
-  background: #0a0a0a; /* neutral-950 */
-}
 ::-webkit-scrollbar-thumb {
   background: var(--brand);
   border-radius: 0;

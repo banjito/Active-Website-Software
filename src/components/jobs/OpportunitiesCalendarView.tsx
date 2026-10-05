@@ -124,29 +124,47 @@ export function OpportunitiesCalendarView() {
         return;
       }
 
+      // Query in batches: one `.in()` with every opportunity id makes the
+      // request URL too long once there are a few hundred opportunities, the
+      // request fails, and every event falls back to "not started" gray.
       const ids = opps.map((o) => o.id);
-      const { data: estData, error: estErr } = await supabase
-        .schema("business")
-        .from("estimates")
-        .select("id, opportunity_id, status, created_at")
-        .in("opportunity_id", ids)
-        // Secondary sort by id so the "most recent" estimate is chosen
-        // deterministically when two estimates share the same created_at
-        // (e.g. from the duplicate-opportunity flow). Must match the ordering
-        // in OpportunityList and OpportunityDetail so all three views agree.
-        .order("created_at", { ascending: false })
-        .order("id", { ascending: false });
+      const BATCH_SIZE = 100;
+      const batches: string[][] = [];
+      for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+        batches.push(ids.slice(i, i + BATCH_SIZE));
+      }
+      const results = await Promise.all(
+        batches.map((batch) =>
+          supabase
+            .schema("business")
+            .from("estimates")
+            .select("id, opportunity_id, status, created_at")
+            .in("opportunity_id", batch)
+            // Secondary sort by id so the "most recent" estimate is chosen
+            // deterministically when two estimates share the same created_at
+            // (e.g. from the duplicate-opportunity flow). Must match the ordering
+            // in OpportunityList and OpportunityDetail so all three views agree.
+            .order("created_at", { ascending: false })
+            .order("id", { ascending: false }),
+        ),
+      );
 
+      // Each opportunity's estimates all land in the same batch, so the
+      // first row seen per opportunity is still its most recent estimate.
       const statusByOpp: Record<string, string> = {};
-      if (!estErr && estData && estData.length > 0) {
-        (estData as { opportunity_id: string; status: string }[]).forEach(
+      results.forEach(({ data: estData, error: estErr }) => {
+        if (estErr) {
+          console.error("Error loading estimate statuses for calendar:", estErr);
+          return;
+        }
+        ((estData || []) as { opportunity_id: string; status: string }[]).forEach(
           (row) => {
             if (row.opportunity_id && statusByOpp[row.opportunity_id] == null) {
               statusByOpp[row.opportunity_id] = row.status || "";
             }
           },
         );
-      }
+      });
 
       const withStatus = opps.map((o) => ({
         ...o,

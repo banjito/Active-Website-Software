@@ -2051,6 +2051,8 @@ export default function JobDetail() {
   const [editPdfReportName, setEditPdfReportName] = useState("");
   const [editPdfReportType, setEditPdfReportType] = useState("");
   const [editPdfReportSubstation, setEditPdfReportSubstation] = useState("");
+  const [editPdfReportFile, setEditPdfReportFile] = useState<File | null>(null);
+  const [isSavingEditedPdfReport, setIsSavingEditedPdfReport] = useState(false);
   // Basic manual tracker state
   type TrackingItem = {
     id: string;
@@ -4963,6 +4965,70 @@ export default function JobDetail() {
     }
   };
 
+  // Stores an uploaded report file and returns its public URL. Shared by
+  // the first upload and by "replace file" in the edit dialog.
+  const uploadJobPdfReportFile = async (file: File): Promise<string> => {
+    // 1. Upload PDF file to Storage (use job-documents bucket, same as other job files)
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+    const filePath = `job-pdf-reports/${id}/${fileName}`;
+
+    // Try job-documents bucket first (standard for job-related files)
+    let bucket = "job-documents";
+    let uploadSuccess = false;
+
+    const { error: err1, data: uploadData1 } = await supabase.storage
+      .from(bucket)
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (!err1) {
+      uploadSuccess = true;
+    } else {
+      console.warn(
+        "job-documents bucket failed, trying documents bucket:",
+        err1,
+      );
+      // If job-documents fails, try documents bucket as fallback
+      bucket = "documents";
+      const { error: err2, data: uploadData2 } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (err2) {
+        console.error(
+          "Both buckets failed. job-documents error:",
+          err1,
+          "documents error:",
+          err2,
+        );
+        // Provide a more helpful error message
+        const errorMessage =
+          err2.message || err2.toString() || "Unknown storage error";
+        throw new Error(
+          `Failed to upload PDF: ${errorMessage}. Please check that storage buckets 'job-documents' or 'documents' exist and are accessible.`,
+        );
+      }
+      uploadSuccess = true;
+    }
+
+    if (!uploadSuccess) {
+      throw new Error("Upload failed but no error was returned");
+    }
+
+    // 2. Get public URL for the file
+    const { data: publicUrlData } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(filePath);
+
+    return publicUrlData.publicUrl;
+  };
+
   // Handle PDF report upload
   const handlePdfReportUpload = async () => {
     if (!id) {
@@ -4987,69 +5053,9 @@ export default function JobDetail() {
     setPdfUploadProgress(0);
 
     try {
-      // 1. Upload PDF file to Storage (use job-documents bucket, same as other job files)
-      const fileExt = pdfReportFile.name.split(".").pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      const filePath = `job-pdf-reports/${id}/${fileName}`;
-
       setPdfUploadProgress(10);
-
-      // Try job-documents bucket first (standard for job-related files)
-      let bucket = "job-documents";
-      let uploadSuccess = false;
-
-      const { error: err1, data: uploadData1 } = await supabase.storage
-        .from(bucket)
-        .upload(filePath, pdfReportFile, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-
-      if (!err1) {
-        uploadSuccess = true;
-      } else {
-        console.warn(
-          "job-documents bucket failed, trying documents bucket:",
-          err1,
-        );
-        // If job-documents fails, try documents bucket as fallback
-        bucket = "documents";
-        const { error: err2, data: uploadData2 } = await supabase.storage
-          .from(bucket)
-          .upload(filePath, pdfReportFile, {
-            cacheControl: "3600",
-            upsert: false,
-          });
-
-        if (err2) {
-          console.error(
-            "Both buckets failed. job-documents error:",
-            err1,
-            "documents error:",
-            err2,
-          );
-          // Provide a more helpful error message
-          const errorMessage =
-            err2.message || err2.toString() || "Unknown storage error";
-          throw new Error(
-            `Failed to upload PDF: ${errorMessage}. Please check that storage buckets 'job-documents' or 'documents' exist and are accessible.`,
-          );
-        }
-        uploadSuccess = true;
-      }
-
-      if (!uploadSuccess) {
-        throw new Error("Upload failed but no error was returned");
-      }
-
+      const publicUrl = await uploadJobPdfReportFile(pdfReportFile);
       setPdfUploadProgress(70);
-
-      // 2. Get public URL for the file
-      const { data: publicUrlData } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(filePath);
-
-      const publicUrl = publicUrlData.publicUrl;
       const now = new Date().toISOString();
 
       // 3. Create asset record in database with status 'ready_for_review' so it appears in Reports tab
@@ -5141,6 +5147,7 @@ export default function JobDetail() {
       setEditPdfReportName(parts.identifier);
       // Get substation from asset if available, or from assetSubstations state
       setEditPdfReportSubstation(assetSubstations[asset.id] || "");
+      setEditPdfReportFile(null);
       setShowEditPdfReportDialog(true);
     }
   };
@@ -5149,13 +5156,21 @@ export default function JobDetail() {
   const handleSaveEditedPdfReport = async () => {
     if (!editingPdfReport) return;
 
+    setIsSavingEditedPdfReport(true);
     try {
+      // A replacement file is stored as a new object; the record then points
+      // at it. The old file stays in storage untouched.
+      const newFileUrl = editPdfReportFile
+        ? await uploadJobPdfReportFile(editPdfReportFile)
+        : null;
+
       const { error } = await supabase
         .schema("neta_ops")
         .from("assets")
         .update({
           name: joinUploadedReportName(editPdfReportType, editPdfReportName),
           substation: editPdfReportSubstation.trim() || null,
+          ...(newFileUrl ? { file_url: newFileUrl } : {}),
           updated_at: new Date().toISOString(),
         })
         .eq("id", editingPdfReport.id);
@@ -5171,8 +5186,11 @@ export default function JobDetail() {
       // Refresh assets
       fetchJobAssets();
 
+      if (newFileUrl) fetchAssets();
+
       setShowEditPdfReportDialog(false);
       setEditingPdfReport(null);
+      setEditPdfReportFile(null);
       toast({
         title: "Success",
         description: "PDF report updated successfully",
@@ -5185,6 +5203,8 @@ export default function JobDetail() {
         description: `Failed to update PDF report: ${error instanceof Error ? error.message : "Unknown error"}`,
         variant: "destructive",
       });
+    } finally {
+      setIsSavingEditedPdfReport(false);
     }
   };
 
@@ -13708,7 +13728,7 @@ export default function JobDetail() {
           <DialogHeader>
             <DialogTitle>Edit PDF Report</DialogTitle>
             <DialogDescription>
-              Update the report type, name and substation.
+              Update the report type, name, substation or file.
             </DialogDescription>
           </DialogHeader>
 
@@ -13757,6 +13777,26 @@ export default function JobDetail() {
                 placeholder="e.g., Main Substation"
               />
             </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="edit-pdf-report-file"
+                className="text-sm font-medium"
+              >
+                Replace File
+              </label>
+              <Input
+                id="edit-pdf-report-file"
+                type="file"
+                accept="application/pdf,.pdf"
+                onChange={(e) => setEditPdfReportFile(e.target.files?.[0] || null)}
+              />
+              <p className="text-xs text-neutral-500">
+                {editPdfReportFile
+                  ? `${editPdfReportFile.name} (${Math.round(editPdfReportFile.size / 1024)} KB) will replace the current PDF.`
+                  : "Leave empty to keep the current PDF."}
+              </p>
+            </div>
           </div>
 
           <DialogFooter>
@@ -13768,16 +13808,18 @@ export default function JobDetail() {
                 setEditPdfReportName("");
                 setEditPdfReportType("");
                 setEditPdfReportSubstation("");
+                setEditPdfReportFile(null);
               }}
+              disabled={isSavingEditedPdfReport}
             >
               Cancel
             </Button>
             <Button
               type="submit"
               onClick={handleSaveEditedPdfReport}
-              disabled={!editPdfReportName.trim()}
+              disabled={!editPdfReportName.trim() || isSavingEditedPdfReport}
             >
-              Save Changes
+              {isSavingEditedPdfReport ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>

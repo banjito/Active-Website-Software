@@ -313,6 +313,31 @@ export const supabase = {
 
 // ---- error-classifier helpers (offline-appropriate reimplementations of the
 // originals in src/lib/supabase.ts, which other modules import) ----
+
+// Session-persistence helpers AuthContext imports. The offline user is always
+// signed in: its "persisted session" always exists and no error ever counts
+// as a reason to sign it out.
+export const AUTH_STORAGE_KEY = "supabase.auth.token";
+export interface PersistedSession {
+  access_token?: string;
+  refresh_token?: string;
+  expires_at?: number;
+  user?: any;
+}
+export function isOffline(): boolean {
+  return typeof navigator !== "undefined" && navigator.onLine === false;
+}
+export function isRetryableAuthError(error: unknown): boolean {
+  return !!error;
+}
+export function isUnrecoverableAuthError(_error: unknown): boolean {
+  return false;
+}
+export function readPersistedSession(): PersistedSession {
+  return OFFLINE_SESSION;
+}
+export function clearPersistedAuth(): void {}
+
 export function isCookieAuthError(_error: unknown): boolean {
   return false;
 }

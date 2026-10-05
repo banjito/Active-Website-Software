@@ -9,6 +9,7 @@ import {
   PermissionResource,
   PermissionAction,
   updateRole,
+  resetRoleToDefault,
   RolePermissions,
 } from "@/lib/roles";
 import Card, {
@@ -33,6 +34,7 @@ import {
   Copy,
   Save,
   AlertCircle,
+  RotateCcw,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Alert, AlertDescription, AlertTitle } from "../ui/Alert";
@@ -44,6 +46,8 @@ export default function RoleManagement() {
   const [roles, setRoles] = useState<Role[]>(getAllRoles());
   const [systemRoles, setSystemRoles] = useState<Role[]>(getSystemRoles());
   const [customRoles, setCustomRoles] = useState<Role[]>([]);
+  // Roles that have a saved config in the database (system roles here are edited)
+  const [savedRoleNames, setSavedRoleNames] = useState<Set<string>>(new Set());
 
   // State for role editing
   const [isEditing, setIsEditing] = useState(false);
@@ -117,6 +121,19 @@ export default function RoleManagement() {
     setRoles(allRoles);
     setSystemRoles(systemRolesList);
     setCustomRoles(customRolesList);
+    loadSavedRoleNames();
+  };
+
+  const loadSavedRoleNames = async () => {
+    const { data, error: dbError } = await supabase
+      .schema("common")
+      .from("custom_roles")
+      .select("name");
+    if (dbError) {
+      console.error("Failed to load saved roles:", dbError);
+      return;
+    }
+    setSavedRoleNames(new Set((data || []).map((r: any) => r.name)));
   };
 
   // Load a role for editing
@@ -188,22 +205,25 @@ export default function RoleManagement() {
         canManageContent,
         canViewAllData,
         permissions,
-        parentRole: parentRole || undefined,
+        // null (not undefined) so clearing a system role's parent survives the
+        // JSON round trip and overrides the built-in parent on reload
+        parentRole: (parentRole || null) as any,
       };
 
-      // Update local role data
-      updateRole(roleName, roleConfig);
-
-      // Save to database
+      // Save to database first so a failed save doesn't look like it worked
       setLoading(true);
-      const { error: dbError } = await supabase.rpc("admin_update_role", {
-        role_name: roleName,
-        role_config: roleConfig,
-      });
+      const { error: dbError } = await supabase
+        .schema("common")
+        .rpc("admin_update_role", {
+          role_name: roleName,
+          role_config: roleConfig,
+        });
 
       if (dbError) {
         throw new Error(`Failed to save role: ${dbError.message}`);
       }
+
+      updateRole(roleName, roleConfig);
 
       // Refresh role list
       loadRoles();
@@ -239,23 +259,53 @@ export default function RoleManagement() {
       setLoading(true);
 
       // Remove from database
-      const { error: dbError } = await supabase.rpc("admin_delete_role", {
-        role_name: role,
-      });
+      const { error: dbError } = await supabase
+        .schema("common")
+        .rpc("admin_delete_role", { role_name: role });
 
       if (dbError) {
         throw new Error(`Failed to delete role: ${dbError.message}`);
       }
 
-      // Update local state
-      // In a real app, this would be more complex to update the ROLES object
-      // But for now, we'll just reload the roles
+      delete (ROLES as any)[role];
       loadRoles();
 
       setSuccess(`Role "${role}" deleted successfully`);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
       setError(`Error deleting role: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Drop a system role's saved edits and go back to the built-in config
+  const resetRole = async (role: Role) => {
+    if (
+      !confirm(
+        `Reset "${role}" to its default portals and permissions? Your edits to this role will be lost.`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { error: dbError } = await supabase
+        .schema("common")
+        .rpc("admin_delete_role", { role_name: role });
+
+      if (dbError) {
+        throw new Error(`Failed to reset role: ${dbError.message}`);
+      }
+
+      resetRoleToDefault(role);
+      loadRoles();
+
+      setSuccess(`Role "${role}" reset to defaults`);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      setError(`Error resetting role: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -327,8 +377,8 @@ export default function RoleManagement() {
         <CardHeader className="bg-neutral-50 dark:bg-dark-150 pb-2">
           <CardTitle className="text-lg">System Roles</CardTitle>
           <CardDescription>
-            Built-in roles with predefined permissions. These roles cannot be
-            deleted, but can be cloned.
+            Built-in roles. You can edit their portals and permissions, or
+            reset them to defaults. They cannot be renamed or deleted.
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-4">
@@ -369,18 +419,46 @@ export default function RoleManagement() {
           <div className="flex items-center">
             <Shield className="h-5 w-5 mr-2 text-purple-500" />
             <CardTitle className="text-base">{role}</CardTitle>
+            {isSystem && savedRoleNames.has(role) && (
+              <span className="ml-2 px-2 py-0.5 bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-100 text-xs rounded-none">
+                Modified
+              </span>
+            )}
           </div>
           <div className="flex gap-1">
             {isSystem ? (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-8 w-8 p-0"
-                onClick={() => cloneRole(role)}
-                title="Clone role"
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
+              <>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                  onClick={() => loadRole(role)}
+                  title="Edit role"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                  onClick={() => cloneRole(role)}
+                  title="Clone role"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+                {savedRoleNames.has(role) && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 p-0"
+                    onClick={() => resetRole(role)}
+                    disabled={loading}
+                    title="Reset to defaults"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                  </Button>
+                )}
+              </>
             ) : (
               <>
                 <Button

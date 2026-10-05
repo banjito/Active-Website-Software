@@ -447,10 +447,25 @@ $$;
 
 CREATE FUNCTION common.admin_delete_role(role_name text) RETURNS boolean
     LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO 'common', 'neta_ops', 'business'
+    SET search_path TO 'common', 'public'
     AS $$
+DECLARE
+  caller_email TEXT;
+  caller_role TEXT;
 BEGIN
+  SELECT u.email, u.raw_user_meta_data->>'role'
+  INTO caller_email, caller_role
+  FROM auth.users u
+  WHERE u.id = auth.uid();
+
+  IF COALESCE(caller_role, '') NOT IN ('Admin', 'Super Admin')
+     AND NOT common.is_superuser_email(caller_email)
+  THEN
+    RAISE EXCEPTION 'Access denied – Admin role required';
+  END IF;
+
   DELETE FROM common.custom_roles WHERE name = role_name;
+
   RETURN TRUE;
 END;
 $$;
@@ -645,25 +660,30 @@ $$;
 
 CREATE FUNCTION common.admin_update_role(role_name text, role_config jsonb) RETURNS boolean
     LANGUAGE plpgsql SECURITY DEFINER
-    SET search_path TO 'common', 'neta_ops', 'business'
+    SET search_path TO 'common', 'public'
     AS $$
 DECLARE
-  v_prev_config JSONB;
-  v_user_id UUID;
+  caller_email TEXT;
+  caller_role TEXT;
 BEGIN
-  SELECT auth.uid() INTO v_user_id;
-  
-  SELECT config INTO v_prev_config
-  FROM common.custom_roles
-  WHERE name = role_name;
-  
+  SELECT u.email, u.raw_user_meta_data->>'role'
+  INTO caller_email, caller_role
+  FROM auth.users u
+  WHERE u.id = auth.uid();
+
+  IF COALESCE(caller_role, '') NOT IN ('Admin', 'Super Admin')
+     AND NOT common.is_superuser_email(caller_email)
+  THEN
+    RAISE EXCEPTION 'Access denied – Admin role required';
+  END IF;
+
   INSERT INTO common.custom_roles (name, config, created_by)
-  VALUES (role_name, role_config, v_user_id)
-  ON CONFLICT (name) 
-  DO UPDATE SET 
-    config = role_config,
+  VALUES (role_name, role_config, auth.uid())
+  ON CONFLICT (name)
+  DO UPDATE SET
+    config = EXCLUDED.config,
     updated_at = NOW();
-  
+
   RETURN TRUE;
 END;
 $$;
@@ -29554,7 +29574,7 @@ CREATE POLICY "Allow all authenticated users to access contacts" ON common.conta
 -- Name: custom_roles Allow all authenticated users to access custom_roles; Type: POLICY; Schema: common; Owner: -
 --
 
-CREATE POLICY "Allow all authenticated users to access custom_roles" ON common.custom_roles TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Signed-in users can read roles" ON common.custom_roles FOR SELECT TO authenticated USING (true);
 
 
 --
@@ -30002,7 +30022,7 @@ CREATE POLICY "Only admins can manage permissions" ON common.user_permissions US
 -- Name: custom_roles Only admins can manage roles; Type: POLICY; Schema: common; Owner: -
 --
 
-CREATE POLICY "Only admins can manage roles" ON common.custom_roles USING (((auth.jwt() ->> 'role'::text) = 'Admin'::text)) WITH CHECK (((auth.jwt() ->> 'role'::text) = 'Admin'::text));
+-- Writes go through common.admin_update_role / admin_delete_role (Admin only).
 
 
 --
@@ -34424,7 +34444,7 @@ GRANT ALL ON FUNCTION common.admin_delete_role(role_name text) TO authenticated;
 -- Name: TABLE custom_roles; Type: ACL; Schema: common; Owner: -
 --
 
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE common.custom_roles TO authenticated;
+GRANT SELECT,REFERENCES,TRIGGER ON TABLE common.custom_roles TO authenticated;
 
 
 --

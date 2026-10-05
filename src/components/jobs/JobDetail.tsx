@@ -86,6 +86,11 @@ import type {
 } from "@/lib/types/substationFolders";
 import type { ChangeOrderSummary } from "../../services/changeOrderService";
 import { reportImportService } from "../../services/reportImport";
+import {
+  importOfflineBundle,
+  isOfflineBundle,
+  summarizeOfflineImport,
+} from "../../services/reportImport/offlineBundle";
 import { ShortcutService } from "../../services/ShortcutService";
 import Card, {
   CardContent,
@@ -4877,6 +4882,19 @@ export default function JobDetail() {
               title: "Error",
               description: "Job ID or user ID is missing",
               variant: "destructive",
+            });
+            return;
+          }
+
+          // Export file from the ampOS Offline desktop app: one file, many reports.
+          if (isOfflineBundle(reportData)) {
+            const results = await importOfflineBundle(reportData, id, user.id);
+            fetchJobAssets();
+            const failed = results.some((r) => r.outcome === "failed");
+            toast({
+              title: failed ? "Some reports did not import" : "Offline reports imported",
+              description: summarizeOfflineImport(results),
+              variant: failed ? "destructive" : "success",
             });
             return;
           }

@@ -371,6 +371,7 @@ export default function AmpuPage() {
     courseCertifiedAt: {},
   });
   const [newUnitOpen, setNewUnitOpen] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [progressLoaded, setProgressLoaded] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   /* Set false when the progress table is missing: keeps a playing video from
@@ -657,6 +658,7 @@ export default function AmpuPage() {
                   progress={progress}
                   canManage={canManage && source === "database"}
                   onWithdraw={withdrawCourse}
+                  onEdit={setEditingCourse}
                 />
               }
             />
@@ -690,6 +692,24 @@ export default function AmpuPage() {
           }
         />
       )}
+      {canManage && editingCourse && (
+        <NewUnitDialog
+          key={editingCourse.id}
+          isOpen
+          course={editingCourse}
+          onClose={() => setEditingCourse(null)}
+          existingCodes={courses
+            .filter((c) => c.id !== editingCourse.id)
+            .map((c) => c.code)}
+          onPublished={(saved) =>
+            setCourses((prev) =>
+              prev
+                .map((c) => (c.id === saved.id ? saved : c))
+                .sort((a, b) => a.code.localeCompare(b.code)),
+            )
+          }
+        />
+      )}
     </div>
   );
 }
@@ -708,11 +728,13 @@ function CourseRoute({
   progress,
   canManage,
   onWithdraw,
+  onEdit,
 }: {
   courses: Course[];
   progress: ProgressState;
   canManage: boolean;
   onWithdraw: (course: Course) => Promise<void>;
+  onEdit: (course: Course) => void;
 }) {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
@@ -726,6 +748,7 @@ function CourseRoute({
       progress={progress}
       canManage={canManage}
       onWithdraw={onWithdraw}
+      onEdit={onEdit}
       onBack={() => navigate(CATALOG_PATH)}
       onOpenLesson={(lessonId) => navigate(lessonPath(course.id, lessonId))}
     />
@@ -1113,6 +1136,7 @@ function CourseDetail({
   progress,
   canManage,
   onWithdraw,
+  onEdit,
   onBack,
   onOpenLesson,
 }: {
@@ -1120,6 +1144,7 @@ function CourseDetail({
   progress: ProgressState;
   canManage: boolean;
   onWithdraw: (course: Course) => Promise<void>;
+  onEdit: (course: Course) => void;
   onBack: () => void;
   onOpenLesson: (lessonId: string) => void;
 }) {
@@ -1159,15 +1184,20 @@ function CourseDetail({
           ← Course catalog
         </Button>
         {canManage && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={withdraw}
-            isLoading={withdrawing}
-            className="text-red-600 hover:text-red-700"
-          >
-            Withdraw unit
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" onClick={() => onEdit(course)}>
+              Edit unit
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={withdraw}
+              isLoading={withdrawing}
+              className="text-red-600 hover:text-red-700"
+            >
+              Withdraw unit
+            </Button>
+          </div>
         )}
       </div>
       {withdrawError && (

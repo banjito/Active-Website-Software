@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import OfflineApp from "./OfflineApp";
 import "@/index.css";
+import "./offline.css";
 
 /**
  * On first save, reports put the new report id in the address bar with

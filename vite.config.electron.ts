@@ -1,4 +1,5 @@
 import { defineConfig, mergeConfig, type Plugin } from "vite";
+import fs from "fs";
 import path from "path";
 import baseConfigFactory from "./vite.config";
 
@@ -18,6 +19,29 @@ function offlineSupabasePlugin(): Plugin {
   return {
     name: "offline-supabase-adapter",
     enforce: "pre",
+    // When src/lib/supabase.ts gains an export the adapter lacks, any module
+    // importing it fails at load and the offline app shows a blank window.
+    // Fail the build/dev server here instead, naming what to add.
+    buildStart() {
+      const exportsOf = (file: string) =>
+        new Set(
+          Array.from(
+            fs
+              .readFileSync(file, "utf8")
+              .matchAll(/^export (?:async )?(?:function|const|let|class) (\w+)/gm),
+            (m) => m[1],
+          ),
+        );
+      const offline = exportsOf(OFFLINE_ADAPTER);
+      const missing = [...exportsOf(REAL_SUPABASE)].filter((n) => !offline.has(n));
+      if (missing.length) {
+        this.error(
+          `electron/renderer/offlineSupabaseAdapter.ts is missing exports that ` +
+            `src/lib/supabase.ts now has: ${missing.join(", ")}. Add offline ` +
+            `versions there, or the offline app loads as a blank window.`,
+        );
+      }
+    },
     async resolveId(source, importer, options) {
       if (!importer || importer === OFFLINE_ADAPTER) return null;
       // Cheap pre-filter; the resolved-path equality below is the real gate.

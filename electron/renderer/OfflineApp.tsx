@@ -5,15 +5,14 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { AuthProvider } from "@/lib/AuthContext";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { DemoModeProvider } from "@/lib/DemoModeContext";
-import JobListPage from "./JobListPage";
-import JobPage from "./JobPage";
+import SavedReportsPage from "./SavedReportsPage";
 import ReportListPage from "./ReportListPage";
 import ReportHost from "./ReportHost";
 
 /**
- * Standalone offline reporting app. Deliberately NOT the full ampOS shell:
- * a job list, a page per job (its saved reports), a report-type picker, and a
- * page per report. Uses HashRouter so deep links work
+ * Standalone offline reporting app. Deliberately NOT the full ampOS shell and
+ * has no jobs: the saved-reports list, a report-type picker, and a page per
+ * report. Uses HashRouter so deep links work
  * under the file:// protocol in a packaged build. The report components run
  * unchanged: data I/O goes through the offline Supabase adapter (aliased in
  * vite.config.electron.ts), and AuthProvider resolves to a local user offline.
@@ -30,15 +29,14 @@ export default function OfflineApp() {
             <Toaster position="top-right" />
             <HashRouter>
               <Routes>
-                <Route path="/" element={<JobListPage />} />
-                {/* Reports' own Back/Cancel buttons go to /jobs/<id>. */}
-                <Route path="/jobs/:id" element={<JobPage />} />
-                <Route path="/jobs/:id/new" element={<ReportListPage />} />
+                <Route path="/" element={<SavedReportsPage />} />
+                <Route path="/new" element={<ReportListPage />} />
                 <Route
                   path="/jobs/:id/:slug/:reportId?"
                   element={<ReportHost />}
                 />
-                {/* Any other online-only link a report follows: back home, not a blank screen. */}
+                {/* Reports' own Back/Cancel go to /jobs/<id>, and other links
+                    point at online-only pages: send them home, not to a blank screen. */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </HashRouter>

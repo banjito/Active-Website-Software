@@ -35,6 +35,8 @@ export interface CatalogResult {
 }
 
 export interface NewLessonInput {
+  /** Existing lesson id when editing; keeps learner progress attached. */
+  id?: string;
   title: string;
   type?: 'VIDEO' | 'QUIZ' | 'DOCUMENT';
   durationSeconds?: number;
@@ -268,6 +270,87 @@ export async function createCourse(input: NewCourseInput): Promise<Course> {
     estimatedDurationMinutes: coursePayload.estimated_duration_minutes,
     isRequired: coursePayload.is_required,
     sequentialUnlock: coursePayload.sequential_unlock,
+    lessons: lessons.map((l) =>
+      toLesson({ ...l, quiz: l.quiz as Quiz | null } as LessonRow),
+    ),
+  };
+}
+
+/**
+ * Rewrites a published unit: catalog fields plus its full, ordered lesson list.
+ *
+ * Lessons that keep their id are updated in place so learner progress stays
+ * attached. Lessons missing from `input.lessons` are deleted, which cascades
+ * to their progress rows.
+ */
+export async function updateCourse(
+  courseId: string,
+  input: NewCourseInput,
+): Promise<Course> {
+  const coursePatch = {
+    course_code: input.code.trim(),
+    title: input.title.trim(),
+    description: input.description.trim(),
+    department: input.department,
+    thumbnail: input.thumbnail || '📘',
+    instructor: input.instructor?.trim() || null,
+    estimated_duration_minutes:
+      input.estimatedDurationMinutes ?? derivedMinutes(input.lessons),
+    is_required: input.isRequired,
+    sequential_unlock: input.sequentialUnlock,
+  };
+
+  const { error: courseError } = await withWriteRetry(
+    () => supabase.schema(SCHEMA).from(COURSES).update(coursePatch).eq('id', courseId),
+    { label: 'ampu updateCourse' },
+  );
+  if (courseError) throw new Error(describeSupabaseError(courseError));
+
+  const lessons = input.lessons.map((lesson, index) => ({
+    id: lesson.id ?? crypto.randomUUID(),
+    course_id: courseId,
+    title: lesson.title.trim(),
+    lesson_type: lesson.type ?? 'VIDEO',
+    duration_seconds: lesson.durationSeconds ?? null,
+    video_url: lesson.videoUrl ?? null,
+    youtube_id: lesson.youtubeId ?? null,
+    document_url: lesson.documentUrl ?? null,
+    document_name: lesson.documentName ?? null,
+    quiz: lesson.quiz ?? null,
+    sort_order: index,
+  }));
+
+  if (lessons.length > 0) {
+    const { error: lessonError } = await withWriteRetry(
+      () => supabase.schema(SCHEMA).from(LESSONS).upsert(lessons),
+      { label: 'ampu updateCourse lessons' },
+    );
+    if (lessonError) throw new Error(describeSupabaseError(lessonError));
+  }
+
+  // Drop lessons the registrar removed. Runs after the upsert so a failed
+  // save never leaves the unit with fewer lessons than it started with.
+  const keptIds = `(${lessons.map((l) => l.id).join(',')})`;
+  const { error: removeError } = await withWriteRetry(
+    () => {
+      const query = supabase.schema(SCHEMA).from(LESSONS).delete().eq('course_id', courseId);
+      return lessons.length > 0 ? query.not('id', 'in', keptIds) : query;
+    },
+    { label: 'ampu updateCourse remove lessons' },
+  );
+  if (removeError) throw new Error(describeSupabaseError(removeError));
+
+  return {
+    id: courseId,
+    code: coursePatch.course_code,
+    title: coursePatch.title,
+    description: coursePatch.description,
+    department: input.department,
+    thumbnail: coursePatch.thumbnail,
+    instructor: coursePatch.instructor ?? undefined,
+    estimatedDurationMinutes: coursePatch.estimated_duration_minutes,
+    isRequired: coursePatch.is_required,
+    sequentialUnlock: coursePatch.sequential_unlock,
     lessons: lessons.map((l) =>
       toLesson({ ...l, quiz: l.quiz as Quiz | null } as LessonRow),
     ),

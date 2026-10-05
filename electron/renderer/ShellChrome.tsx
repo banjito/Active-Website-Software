@@ -4,8 +4,7 @@ import { useTheme } from "@/components/theme/theme-provider";
 import logoUrl from "./assets/ampOSOFFLINE.svg";
 
 /**
- * Shared chrome for the offline shell screens (job list, job page, report
- * picker). Plain <div>s throughout: a browser extension some techs run hides
+ * Shared chrome for the offline shell screens (saved reports, report picker). Plain <div>s throughout: a browser extension some techs run hides
  * <header>/<nav> elements.
  */
 
@@ -16,7 +15,7 @@ export const primaryButtonClass =
   "flex items-center gap-1.5 rounded-none bg-brand px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-50";
 
 export const secondaryButtonClass =
-  "flex items-center gap-1.5 rounded-none border border-neutral-300 px-3.5 py-2 text-sm font-medium text-neutral-700 transition hover:border-brand hover:text-brand dark:border-neutral-700 dark:text-neutral-200";
+  "flex items-center gap-1.5 rounded-none border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 transition hover:border-brand hover:text-brand dark:border-neutral-700 dark:text-neutral-200";
 
 export function Icon({ d, className = "h-4 w-4" }: { d: string; className?: string }) {
   return (
@@ -39,9 +38,8 @@ export const ICONS = {
   chevron: "m9 6 6 6-6 6",
   plus: "M12 5v14M5 12h14",
   search: "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zm9 2-3-3",
-  edit: "M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4",
-  download:
-    "M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2",
+  check: "m5 12 5 5L20 7",
+  export: "M12 15V3m0 0 4 4m-4-4-4 4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2",
 };
 
 function ThemeToggle() {
@@ -154,6 +152,17 @@ export function SectionHeading({ title, count }: { title: string; count?: number
       )}
     </div>
   );
+}
+
+/** Report display name without its NETA section number ("7.1.2 ", "3-"). */
+export function cleanReportName(name: string): string {
+  return name.replace(/^[0-9.\-\s]+/, "").trim() || name;
+}
+
+/** A short initialism for a report, shown in its accent tile. */
+export function initials(name: string): string {
+  const words = cleanReportName(name).split(/\s+/).filter(Boolean);
+  return (words[0]?.[0] ?? "R").toUpperCase() + (words[1]?.[0] ?? "").toUpperCase();
 }
 
 export function formatDate(iso?: string | null): string {

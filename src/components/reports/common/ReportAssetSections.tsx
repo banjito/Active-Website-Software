@@ -1,4 +1,5 @@
 import React from "react";
+import { isOfflineApp } from "@/lib/offlineApp";
 import {
   getPath,
   type ReportAssetProfile,
@@ -56,11 +57,19 @@ interface FieldState {
   value: unknown;
 }
 
+/**
+ * Locked because they come from the job. The offline app has no jobs, so the
+ * tech types them there; once imported, the online job's values take over.
+ */
+const OFFLINE_TYPED_JOB_FIELDS = new Set(["customer", "customerName", "jobNumber"]);
+
 function fieldState(props: SectionFieldsProps, field: ReportField): FieldState {
   const perVisit = props.mode === "asset" && field.scope === "job";
+  const locked =
+    !!field.locked && !(isOfflineApp() && OFFLINE_TYPED_JOB_FIELDS.has(field.path));
   return {
     perVisit,
-    readOnly: perVisit || !!field.locked || !props.isEditing,
+    readOnly: perVisit || locked || !props.isEditing,
     value: perVisit
       ? ""
       : (props.displayValues?.[field.path] ?? getPath(props.values, field.path) ?? ""),

@@ -22,6 +22,8 @@ A role is a bundle of permissions. Getting roles right is the highest-leverage a
 
 Custom roles can be created on top of these.
 
+Admins can also edit a built-in role's portals and permissions. Edited roles show a **Modified** tag. **Reset to defaults** (the circular arrow) undoes the edits. Built-in roles cannot be renamed or deleted.
+
 ## How a permission is built
 
 Every permission is a **resource** plus an **action**.

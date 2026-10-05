@@ -290,6 +290,16 @@ export const ROLES: Record<Role, RolePermissions> = {
 // Super Admin has same access as Admin (including HR portal)
 (ROLES as any)['Super Admin'] = ROLES['Admin'] ? { ...ROLES['Admin'] } : undefined;
 
+// Built-in role configs as shipped, before any database overrides are applied.
+// Used to reset an edited system role back to its defaults.
+const DEFAULT_ROLES: Record<string, RolePermissions> = JSON.parse(JSON.stringify(ROLES));
+
+// Restore a system role to its built-in config (local cache only).
+export const resetRoleToDefault = (roleName: Role): void => {
+  const defaults = DEFAULT_ROLES[roleName];
+  if (defaults) ROLES[roleName] = JSON.parse(JSON.stringify(defaults));
+};
+
 // Helper function to check if a user has access to a specific portal
 export const hasPortalAccess = (userRole: Role, portal: Portal): boolean => {
   // HR portal is accessible to all authenticated users — HrLayout enforces
@@ -667,7 +677,8 @@ export const hasResourceOwnership = async (
 export const updateRole = (
   roleName: Role,
   roleConfig: Partial<RolePermissions>,
-  userId?: string
+  userId?: string,
+  skipAudit = false
 ): void => {
   // Track previous configuration for audit logging
   const previousConfig = ROLES[roleName] ? { ...ROLES[roleName] } : null;
@@ -695,6 +706,9 @@ export const updateRole = (
     };
   }
   
+  // Loading saved roles at startup is not a change; don't log it.
+  if (skipAudit) return;
+
   // Log the role change to the audit system (dynamic import for ESM / avoid circular deps)
   import('@/services/auditService')
     .then(({ logRoleChange }) => {

@@ -258,7 +258,7 @@ export async function initializeRoles(): Promise<void> {
     
     // Update local role cache with custom roles from the database
     customRoles.forEach(role => {
-      updateLocalRole(role.name, role.config);
+      updateLocalRole(role.name, role.config, undefined, true);
     });
     
     console.log(`Initialized ${customRoles.length} custom roles`);

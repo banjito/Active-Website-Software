@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.initStore = initStore;
 exports.runQuery = runQuery;
 exports.seedRows = seedRows;
+exports.rowsForReports = rowsForReports;
 /**
  * Offline SQLite store for ampOS Offline (main process).
  *
@@ -377,5 +378,46 @@ function seedRows(schema, table, rows) {
         }
     });
     tx(rows);
+}
+/** Tables that are app plumbing, not report data, so never part of an export. */
+const NON_REPORT_TABLES = new Set([
+    "neta_ops.assets",
+    "neta_ops.job_assets",
+    "neta_ops.jobs",
+    "common.customers",
+]);
+/**
+ * Every stored row that belongs to the given reports: each report's own row
+ * (`id` = report id) plus any child rows (`report_id` = report id), from any
+ * table. Report ids are UUIDs, so they never collide across tables. Keyed by
+ * report id; a report with no saved data is simply absent.
+ */
+function rowsForReports(reportIds) {
+    const byReport = new Map();
+    if (!reportIds.length)
+        return byReport;
+    const wanted = new Set(reportIds);
+    const tables = db
+        .prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE '%.%'`)
+        .all()
+        .map((t) => t.name)
+        .filter((name) => !NON_REPORT_TABLES.has(name));
+    const marks = reportIds.map(() => "?").join(",");
+    for (const name of tables) {
+        const dot = name.indexOf(".");
+        const schema = name.slice(0, dot);
+        const table = name.slice(dot + 1);
+        const raws = db
+            .prepare(`SELECT "_raw" FROM "${name}" WHERE "id" IN (${marks}) OR "report_id" IN (${marks})`)
+            .all(...reportIds, ...reportIds);
+        for (const { _raw } of raws) {
+            const row = materialize({ _raw });
+            const owner = wanted.has(String(row.id)) ? String(row.id) : String(row.report_id);
+            if (!byReport.has(owner))
+                byReport.set(owner, []);
+            byReport.get(owner).push({ schema, table, row });
+        }
+    }
+    return byReport;
 }
 //# sourceMappingURL=store.cjs.map

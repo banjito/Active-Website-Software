@@ -1,0 +1,42 @@
+/*
+ * Offline-app-only styles. Fonts are bundled (not loaded from Google Fonts)
+ * because the app must work with no internet.
+ */
+
+/* Bitcount Grid Single, latin subset, variable weight 100-900. SIL OFL 1.1, see
+   assets/fonts/OFL-bitcount-grid-single.txt. */
+@font-face {
+  font-family: "Bitcount Grid Single";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./assets/fonts/bitcount-grid-single-latin.woff2") format("woff2");
+}
+
+.font-bitcount {
+  font-family: "Bitcount Grid Single", ui-monospace, monospace;
+}
+
+/* Square, brand-colored scrollbars everywhere in the offline app (Chromium). */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: #f5f5f5; /* neutral-100 */
+}
+/* `.dark::` covers the page's own scrollbar (it belongs to <html>, which has the class). */
+.dark::-webkit-scrollbar-track,
+.dark::-webkit-scrollbar-corner,
+.dark ::-webkit-scrollbar-track,
+.dark ::-webkit-scrollbar-corner {
+  background: #0a0a0a; /* neutral-950 */
+}
+::-webkit-scrollbar-thumb {
+  background: var(--brand);
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--brand-dark-rgb));
+}

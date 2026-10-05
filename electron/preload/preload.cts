@@ -23,6 +23,11 @@ const api = {
   db: {
     query: (intent: unknown) => ipcRenderer.invoke("db:query", intent),
   },
+  // Export saved reports as one .amp-report file for the main app's importer.
+  reports: {
+    export: (assetIds: string[]) =>
+      ipcRenderer.invoke("reports:export", { assetIds }),
+  },
   // Offline PDF export of the current report (Phase 4).
   pdf: {
     export: (opts?: {

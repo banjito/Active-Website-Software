@@ -20,8 +20,14 @@ import {
   shell,
 } from "electron";
 import * as fs from "fs";
+import * as os from "os";
 import * as path from "path";
-import { initStore, runQuery, type QueryIntent } from "../db/store.cjs";
+import {
+  initStore,
+  rowsForReports,
+  runQuery,
+  type QueryIntent,
+} from "../db/store.cjs";
 
 // Vite dev server URL (see `npm run electron:dev`). When unset we load the
 // packaged renderer from disk.
@@ -121,7 +127,12 @@ app.whenReady().then(() => {
 
   // Open the offline SQLite store under the OS app-data dir and expose the
   // query executor to the renderer's offline Supabase adapter over IPC.
-  initStore(path.join(app.getPath("userData"), "ampreports.sqlite"));
+  // The workflow test writes reports, so it gets a throwaway database instead
+  // of the real one in userData.
+  const dbPath = process.env.ELECTRON_WORKFLOW_TEST
+    ? path.join(app.getPath("temp"), `ampreports-workflow-test-${Date.now()}.sqlite`)
+    : path.join(app.getPath("userData"), "ampreports.sqlite");
+  initStore(dbPath);
   ipcMain.handle("db:query", (_evt, intent: QueryIntent) => runQuery(intent));
 
   // PDF export over IPC (renderer can trigger export of its own report).
@@ -134,11 +145,25 @@ app.whenReady().then(() => {
     },
   );
 
+  // Export saved reports as one .amp-report file for the main app's importer.
+  ipcMain.handle("reports:export", (evt, opts: { assetIds: string[] }) => {
+    const win = BrowserWindow.fromWebContents(evt.sender);
+    if (!win) return { ok: false, error: "no window" };
+    return exportReportsBundle(win, opts?.assetIds ?? []);
+  });
+
   buildMenu();
 
   // Headless data-layer test: round-trip the executor, then exit. No window.
   if (process.env.ELECTRON_DB_TEST) {
     runDbSelfTest();
+    return;
+  }
+
+  // Headless export test: bundle EVERY saved report into the given file
+  // without marking anything exported, check the file, then exit.
+  if (process.env.ELECTRON_EXPORT_TEST) {
+    void runExportSelfTest(process.env.ELECTRON_EXPORT_TEST);
     return;
   }
 
@@ -155,6 +180,16 @@ app.whenReady().then(() => {
 
   // Headless all-reports sweep: open every registered report and confirm it
   // mounts without a render crash (see runAllReportsTest).
+  // Headless end-to-end test of what a tech actually does: start a report,
+  // type, autosave, find it on the home screen, reopen it, export the PDF and
+  // the .amp-report file (see runWorkflowTest).
+  if (process.env.ELECTRON_WORKFLOW_TEST) {
+    const win = BrowserWindow.getAllWindows()[0];
+    win.webContents.once("did-finish-load", () => {
+      void runWorkflowTest(win, dbPath);
+    });
+  }
+
   if (process.env.ELECTRON_ALL_REPORTS_TEST) {
     const win = BrowserWindow.getAllWindows()[0];
     win.webContents.once("did-finish-load", () => {
@@ -166,8 +201,15 @@ app.whenReady().then(() => {
   if (process.env.ELECTRON_PDF_TEST) {
     const win = BrowserWindow.getAllWindows()[0];
     win.webContents.once("did-finish-load", async () => {
-      const out = path.join(app.getPath("temp"), "ampreports-pdf-test.pdf");
-      const res = await exportReportPdf(win, { toPath: out });
+      // ELECTRON_PDF_TEST_HASH exports a specific report, e.g.
+      // "#/jobs/offline/<slug>/<id>"; ELECTRON_PDF_TEST_OUT sets the file.
+      const out =
+        process.env.ELECTRON_PDF_TEST_OUT ||
+        path.join(app.getPath("temp"), "ampreports-pdf-test.pdf");
+      const res = await exportReportPdf(win, {
+        toPath: out,
+        hash: process.env.ELECTRON_PDF_TEST_HASH,
+      });
       const bytes =
         res.ok && fs.existsSync(out) ? fs.readFileSync(out) : Buffer.alloc(0);
       const isPdf =
@@ -201,8 +243,11 @@ async function exportReportPdf(
     toPath?: string;
     search?: string;
     hash?: string;
+    /** Test hook: JS evaluated in the export page just before printing. */
+    probe?: string;
   } = {},
-): Promise<{ ok: boolean; path?: string; error?: string }> {
+): Promise<{ ok: boolean; path?: string; error?: string; probe?: unknown }> {
+  let probeResult: unknown;
   try {
     let target = opts.toPath;
     if (!target) {
@@ -239,30 +284,180 @@ async function exportReportPdf(
       currentUrl.hash = `${hashPath}?${exportSearch}`;
       await exportWindow.loadURL(currentUrl.toString());
 
+      // The page "loads" long before the report does: it still has to fetch
+      // its saved data and lay itself out. Printing right away caught reports
+      // half-drawn. Wait for the report container, then for the page to stop
+      // changing for a moment (capped), then for fonts.
       await exportWindow.webContents.executeJavaScript(`
         new Promise((resolve) => {
           document.documentElement.style.background = '#ffffff';
           document.body.style.background = '#ffffff';
-          requestAnimationFrame(() => requestAnimationFrame(resolve));
-        });
+          const started = Date.now();
+          const settle = () => {
+            let quiet;
+            const done = () => { observer.disconnect(); resolve(); };
+            const observer = new MutationObserver(() => {
+              clearTimeout(quiet);
+              quiet = setTimeout(done, 800);
+            });
+            observer.observe(document.body, {
+              subtree: true, childList: true, attributes: true, characterData: true,
+            });
+            quiet = setTimeout(done, 800);
+            setTimeout(done, 10000);
+          };
+          const waitForReport = () => {
+            if (document.getElementById('report-container')) settle();
+            else if (Date.now() - started > 15000) resolve();
+            else setTimeout(waitForReport, 100);
+          };
+          waitForReport();
+        }).then(() => document.fonts.ready).then(() => true);
       `);
+
+      if (opts.probe) {
+        probeResult = await exportWindow.webContents.executeJavaScript(opts.probe);
+      }
 
       const data = await exportWindow.webContents.printToPDF({
         printBackground: true,
         pageSize: "Letter",
         landscape: !!opts.landscape,
-        margins: { marginType: "default" },
+        // Reports set their own page (ReportWrapper's @page: Letter, 0.25in
+        // sides/top, 0.35in bottom), the same one the main app prints with.
+        // Electron ignores it unless told to, and its 1cm default margins
+        // narrowed every page and squeezed wide tables.
+        preferCSSPageSize: true,
+        margins: { top: 0.25, bottom: 0.35, left: 0.25, right: 0.25 },
       });
       fs.writeFileSync(target, data);
     } finally {
       exportWindow.destroy();
     }
-    return { ok: true, path: target };
+    return { ok: true, path: target, probe: probeResult };
   } catch (err) {
     return {
       ok: false,
       error: err instanceof Error ? err.message : String(err),
     };
+  }
+}
+
+/** Must match OFFLINE_BUNDLE_FORMAT in src/services/reportImport/offlineBundle.ts. */
+const BUNDLE_FORMAT = "amp-report-bundle";
+const BUNDLE_VERSION = 1;
+
+/**
+ * Writes the chosen saved reports to one .amp-report file. Each report carries
+ * its own stored rows exactly as the report components saved them (they are
+ * the same rows the main app saves), plus its name/status. The main app's job
+ * page imports the file and re-files the rows under that job. The shape is a
+ * batch of row changes on purpose, so a future live sync can reuse it.
+ */
+async function exportReportsBundle(
+  win: BrowserWindow | null,
+  assetIds: string[],
+  opts: { toPath?: string; markExported?: boolean } = {},
+): Promise<{
+  ok: boolean;
+  path?: string;
+  count?: number;
+  skipped?: string[];
+  error?: string;
+}> {
+  try {
+    const found = runQuery({
+      op: "select",
+      schema: "neta_ops",
+      table: "assets",
+      columns: "*",
+      filters: [{ col: "id", op: "in", val: assetIds }],
+    });
+    if (found.error) throw new Error(found.error.message);
+    const assets = (found.data ?? []) as Record<string, any>[];
+
+    const picked = assets.flatMap((asset) => {
+      const m = /^report:\/jobs\/[^/]+\/([^/]+)\/([^/?#]+)/.exec(String(asset.file_url ?? ""));
+      return m ? [{ asset, slug: m[1], reportId: m[2] }] : [];
+    });
+    const rows = rowsForReports(picked.map((p) => p.reportId));
+
+    const skipped: string[] = [];
+    const exportedAssetIds: string[] = [];
+    const reports = picked.flatMap(({ asset, slug, reportId }) => {
+      const own = rows.get(reportId) ?? [];
+      if (!own.some((r) => r.row.id === reportId)) {
+        // Opened but never saved: there is no report data to send.
+        skipped.push(String(asset.name ?? reportId));
+        return [];
+      }
+      exportedAssetIds.push(String(asset.id));
+      return [
+        {
+          reportId,
+          slug,
+          asset: {
+            name: asset.name ?? null,
+            status: asset.status ?? null,
+            template_type: asset.template_type ?? null,
+            created_at: asset.created_at ?? null,
+            updated_at: asset.updated_at ?? null,
+          },
+          // The report's own row first, then any child rows.
+          rows: [...own].sort(
+            (a, b) => Number(b.row.id === reportId) - Number(a.row.id === reportId),
+          ),
+        },
+      ];
+    });
+    if (!reports.length) {
+      return { ok: false, error: "None of the selected reports have saved data yet.", skipped };
+    }
+
+    let target = opts.toPath;
+    if (!target) {
+      const date = new Date().toISOString().slice(0, 10);
+      const base =
+        reports.length === 1
+          ? String(reports[0].asset.name || reports[0].slug)
+          : `ampOS Offline - ${reports.length} reports - ${date}`;
+      const dialogOpts = {
+        title: "Export reports",
+        defaultPath: `${base.replace(/[\\/:*?"<>|]+/g, "-")}.amp-report`,
+        filters: [{ name: "ampOS report file", extensions: ["amp-report"] }],
+      };
+      const res = win
+        ? await dialog.showSaveDialog(win, dialogOpts)
+        : await dialog.showSaveDialog(dialogOpts);
+      if (res.canceled || !res.filePath) return { ok: false, error: "canceled" };
+      target = res.filePath;
+    }
+
+    const bundle = {
+      format: BUNDLE_FORMAT,
+      version: BUNDLE_VERSION,
+      exportedAt: new Date().toISOString(),
+      source: {
+        app: "ampOS Offline",
+        appVersion: app.getVersion(),
+        computer: os.hostname(),
+      },
+      reports,
+    };
+    fs.writeFileSync(target, JSON.stringify(bundle, null, 2));
+
+    if (opts.markExported !== false) {
+      runQuery({
+        op: "update",
+        schema: "neta_ops",
+        table: "assets",
+        filters: [{ col: "id", op: "in", val: exportedAssetIds }],
+        payload: { exported_at: bundle.exportedAt },
+      });
+    }
+    return { ok: true, path: target, count: reports.length, skipped };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -323,10 +518,7 @@ async function runShellSelfTest(win: BrowserWindow): Promise<void> {
   );
   assert(title === "ampOS Offline", "list page heading renders");
 
-  // The report-type picker lives under a job; "offline" is the catch-all job.
-  await win.webContents.executeJavaScript(
-    `location.hash = '#/jobs/offline/new'`,
-  );
+  await win.webContents.executeJavaScript(`location.hash = '#/new'`);
   const count = (await waitForDom(
     win,
     `document.querySelectorAll('main button').length > 30 && document.querySelectorAll('main button').length`,
@@ -427,6 +619,174 @@ async function runAllReportsTest(win: BrowserWindow): Promise<void> {
   if (failures.length) console.log(`FAIL: crashed reports -> ${failures.join(", ")}`);
   if (!ok) process.exitCode = 1;
   console.log("[all-reports-test] complete");
+  app.quit();
+}
+
+/**
+ * Walks the real field workflow on a throwaway database, typing with real
+ * input events: new LV Breaker ATS 25 report, type Customer / Job # /
+ * Comments, autosave, home list, reopen, PDF (checking the page the PDF is
+ * printed from shows the data) and the .amp-report export.
+ * Run with ELECTRON_WORKFLOW_TEST=1, plus ELECTRON_RENDERER_URL for the dev
+ * server, or against a fresh electron:build:renderer output.
+ */
+async function runWorkflowTest(win: BrowserWindow, dbPath: string): Promise<void> {
+  const assert = (cond: unknown, msg: string) => {
+    console.log(`${cond ? "PASS" : "FAIL"}: ${msg}`);
+    if (!cond) process.exitCode = 1;
+    return !!cond;
+  };
+  const finish = () => {
+    console.log(`[workflow-test] database: ${dbPath}`);
+    console.log("[workflow-test] complete");
+    app.quit();
+  };
+  const js = (code: string) => win.webContents.executeJavaScript(code);
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  const SLUG = "lv-molded-case-circuit-breaker-ats25";
+  const CUSTOMER = `Workflow Test Co ${Date.now() % 100000}`;
+  const JOB_NUMBER = "WF-1234";
+  const COMMENT = "Typed by the workflow self-test.";
+  const COMMENTS_BOX = `document.querySelector('textarea[placeholder^="Enter any comments"]')`;
+  const byLabel = (label: string) =>
+    `[...document.querySelectorAll('label')].find((l) => l.textContent.trim().replace(/:$/, '') === ${JSON.stringify(label)})?.parentElement?.querySelector('input')`;
+
+  // Focus the field, then type with real input events, the way a person would.
+  const typeInto = async (target: string, text: string) => {
+    const editable = await js(
+      `(()=>{const el=${target}; if(!el||el.readOnly||el.disabled) return false; el.scrollIntoView({block:'center'}); el.focus(); return true;})()`,
+    );
+    if (!editable) return false;
+    await win.webContents.insertText(text);
+    return js(`(${target})?.value === ${JSON.stringify(text)}`);
+  };
+
+  // 1. Fresh database: empty home screen.
+  assert(
+    // textContent, not innerText: the list may be folded shut (hidden) if the
+    // tech collapsed it last time.
+    await waitForDom(
+      win,
+      `document.getElementById('saved-reports-panel')?.textContent.includes('Nothing saved yet')`,
+    ),
+    "home shows an empty saved-reports list",
+  );
+
+  // 2. New report.
+  await js(`location.hash = '#/jobs/offline/${SLUG}'`);
+  if (!assert(await waitForDom(win, `!!${COMMENTS_BOX}`, 30000), "new LV Breaker ATS 25 report opens ready to edit")) {
+    return finish();
+  }
+
+  // 3. Type.
+  assert(await typeInto(byLabel("Customer"), CUSTOMER), "Customer is typeable offline");
+  assert(await typeInto(byLabel("Job #"), JOB_NUMBER), "Job # is typeable offline");
+  assert(await typeInto(COMMENTS_BOX, COMMENT), "Comments is typeable");
+
+  // 4. Autosave puts the new report's id in the address.
+  const hash = (await waitForDom(
+    win,
+    `/^#\\/jobs\\/offline\\/${SLUG}\\/[0-9a-f-]{36}/.test(location.hash) && location.hash`,
+    20000,
+  )) as string | null;
+  if (!assert(hash, "autosave saved the report and put its id in the address")) return finish();
+  const reportId = hash!.split("?")[0].split("/")[4];
+  await sleep(3500); // let the debounced follow-up save catch everything typed
+
+  // 5. It is really in the database.
+  const saved = runQuery({
+    op: "select",
+    schema: "neta_ops",
+    table: "lv_molded_case_circuit_breaker_ats25",
+    columns: "*",
+    filters: [{ col: "id", op: "eq", val: reportId }],
+    modifier: "maybeSingle",
+  }).data as any;
+  assert(saved?.report_data?.customer === CUSTOMER, "Customer saved to the database");
+  assert(saved?.report_data?.jobNumber === JOB_NUMBER, "Job # saved to the database");
+  assert(saved?.report_data?.comments === COMMENT, "Comments saved to the database");
+
+  // 6. Home lists it.
+  await js(`location.hash = '#/'`);
+  assert(
+    await waitForDom(win, `document.querySelectorAll('#saved-reports-panel li').length === 1`),
+    "home lists the saved report",
+  );
+
+  // 7. Reopen: values come back from the database.
+  await js(`location.hash = '#/jobs/offline/${SLUG}/${reportId}'`);
+  assert(
+    await waitForDom(win, `(${byLabel("Customer")})?.value === ${JSON.stringify(CUSTOMER)}`, 30000),
+    "reopened report shows the saved Customer",
+  );
+
+  // 8. PDF, checking the page it is printed from actually shows the data.
+  const pdfPath = path.join(app.getPath("temp"), "ampreports-workflow-test.pdf");
+  const pdf = await exportReportPdf(win, {
+    toPath: pdfPath,
+    hash: `#/jobs/offline/${SLUG}/${reportId}`,
+    probe: `[...document.querySelectorAll('input, textarea')].some((el) => el.value === ${JSON.stringify(CUSTOMER)}) || document.body.innerText.includes(${JSON.stringify(CUSTOMER)})`,
+  });
+  const bytes = pdf.ok && fs.existsSync(pdfPath) ? fs.readFileSync(pdfPath) : Buffer.alloc(0);
+  assert(bytes.subarray(0, 5).toString() === "%PDF-", `PDF exported (${pdfPath})`);
+  assert(pdf.probe === true, "the page the PDF was printed from shows the saved data");
+
+  // 9. .amp-report export.
+  const fileUrl = `report:/jobs/offline/${SLUG}/${reportId}`;
+  const assetOf = () =>
+    runQuery({
+      op: "select",
+      schema: "neta_ops",
+      table: "assets",
+      columns: "*",
+      filters: [{ col: "file_url", op: "eq", val: fileUrl }],
+      modifier: "maybeSingle",
+    }).data as any;
+  const asset = assetOf();
+  if (!assert(asset?.id, "report is linked (has its asset row)")) return finish();
+  const bundlePath = path.join(app.getPath("temp"), "ampreports-workflow-test.amp-report");
+  const exported = await exportReportsBundle(null, [asset.id], { toPath: bundlePath });
+  assert(exported.ok && exported.count === 1, `.amp-report written (${bundlePath})`);
+  if (exported.ok) {
+    const bundle = JSON.parse(fs.readFileSync(bundlePath, "utf8"));
+    assert(
+      bundle.reports?.[0]?.rows?.[0]?.row?.report_data?.customer === CUSTOMER,
+      "export file carries the saved data",
+    );
+    assert(assetOf()?.exported_at, "report is marked exported");
+  }
+
+  finish();
+}
+
+/** Bundles every saved report to `outPath` and checks the file's shape. */
+async function runExportSelfTest(outPath: string): Promise<void> {
+  const assert = (cond: boolean, msg: string) => {
+    console.log(`${cond ? "PASS" : "FAIL"}: ${msg}`);
+    if (!cond) process.exitCode = 1;
+  };
+  const all = runQuery({
+    op: "select",
+    schema: "neta_ops",
+    table: "assets",
+    columns: "id",
+    filters: [],
+  });
+  const ids = ((all.data ?? []) as { id: string }[]).map((a) => a.id);
+  const res = await exportReportsBundle(null, ids, { toPath: outPath, markExported: false });
+  assert(res.ok, `export wrote a file (${res.error ?? res.path})`);
+  if (res.ok) {
+    const bundle = JSON.parse(fs.readFileSync(outPath, "utf8"));
+    assert(bundle.format === BUNDLE_FORMAT, "file has the bundle format marker");
+    assert(bundle.reports.length === res.count, `${res.count} reports in file`);
+    assert(
+      bundle.reports.every((r: any) => r.rows[0]?.row?.id === r.reportId),
+      "every report's own row comes first",
+    );
+    if (res.skipped?.length) console.log(`INFO: skipped (no saved data) -> ${res.skipped.join(", ")}`);
+  }
+  console.log("[export-test] complete");
   app.quit();
 }
 

@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { OFFLINE_JOB_ID } from "./offlineReports";
 import { REPORTS, type ReportEntry } from "./reportRegistry";
-import { Icon, ICONS, SearchBox, SectionHeading, TopBar } from "./ShellChrome";
+import { Icon, ICONS, initials, SearchBox, SectionHeading, TopBar } from "./ShellChrome";
 
 /** Bucket a report by its display name into a coarse category. */
-function categoryOf(name: string): string {
+export function categoryOf(name: string): string {
   if (/\bMTS\b/.test(name)) return "Maintenance Testing";
   if (/\bATS\b/.test(name)) return "Acceptance Testing";
   return "Other Reports";
@@ -25,21 +26,13 @@ const CATEGORY_ORDER = [
  *  existing saved report still opens by slug, but they are not offered as a
  *  starting point for new work. `switchgear-report` is the 2021 ATS sheet,
  *  replaced by `switchgear-switchboard-assemblies-ats25`. */
-const RETIRED_SLUGS = new Set(["switchgear-report"]);
+export const RETIRED_SLUGS = new Set(["switchgear-report"]);
 
 /** The report types a tech can actually start from. */
-const AVAILABLE = REPORTS.filter((r) => !RETIRED_SLUGS.has(r.slug));
+export const AVAILABLE = REPORTS.filter((r) => !RETIRED_SLUGS.has(r.slug));
 
-/** A short initialism for a report, shown in the card's accent tile. */
-function initials(name: string): string {
-  const cleaned = name.replace(/^[0-9.\-\s]+/, "").trim();
-  const words = cleaned.split(/\s+/).filter(Boolean);
-  return (words[0]?.[0] ?? "R").toUpperCase() + (words[1]?.[0] ?? "").toUpperCase();
-}
-
-/** Picks a report type to start under the job in the URL (/jobs/:id/new). */
+/** Picks a report type to start a new report (/new). */
 export default function ReportListPage() {
-  const { id: jobId = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [activeCat, setActiveCat] = useState<string | null>(null);
@@ -68,7 +61,7 @@ export default function ReportListPage() {
   return (
     <div className="min-h-screen bg-neutral-100 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <TopBar
-        back={{ label: "Back to job", to: `/jobs/${jobId}` }}
+        back={{ label: "All reports", to: "/" }}
         subtitle={`New report · ${AVAILABLE.length} report types`}
       >
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -102,7 +95,7 @@ export default function ReportListPage() {
               {items.map((r) => (
                 <li key={r.slug}>
                   <button
-                    onClick={() => navigate(`/jobs/${jobId}/${r.slug}`)}
+                    onClick={() => navigate(`/jobs/${OFFLINE_JOB_ID}/${r.slug}`)}
                     className="group flex w-full items-center gap-3 rounded-none border border-neutral-200 bg-white p-3 text-left transition hover:border-brand dark:border-neutral-800 dark:bg-neutral-900"
                   >
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-none bg-brand/10 text-xs font-bold text-brand transition-colors group-hover:bg-brand group-hover:text-white dark:bg-neutral-800">

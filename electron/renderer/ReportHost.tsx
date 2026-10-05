@@ -61,7 +61,7 @@ const electronAPI = (
  * .reportId exactly as it does in the main app — so it runs unchanged.
  */
 export default function ReportHost() {
-  const { id: jobId, slug } = useParams<{ id: string; slug: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const entry = REPORTS.find((r) => r.slug === slug);
@@ -77,10 +77,10 @@ export default function ReportHost() {
     return (
       <div className="p-8 text-neutral-700 dark:text-neutral-200">
         <button
-          onClick={() => navigate(`/jobs/${jobId}`)}
+          onClick={() => navigate("/")}
           className="mb-4 text-sm text-brand hover:underline"
         >
-          Back to job
+          All reports
         </button>
         <p>Unknown report: {slug}</p>
       </div>
@@ -110,7 +110,7 @@ export default function ReportHost() {
       {!isPdfExport && (
         <div className="electron-report-toolbar print:hidden sticky top-0 z-50 flex items-center justify-between gap-3 border-b border-neutral-200 bg-white/90 px-4 py-2.5 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/90">
           <button
-            onClick={() => navigate(`/jobs/${jobId}`)}
+            onClick={() => navigate("/")}
             className="flex items-center gap-1.5 rounded-none px-2.5 py-1.5 text-sm font-medium text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white"
           >
             <svg
@@ -126,7 +126,7 @@ export default function ReportHost() {
                 strokeLinejoin="round"
               />
             </svg>
-            Back to job
+            All reports
           </button>
           <span className="hidden flex-1 truncate text-center text-sm font-medium text-neutral-500 dark:text-neutral-400 sm:block">
             {entry.name}

@@ -16,9 +16,15 @@ import {
   DEPARTMENT_PREFIX,
   type Course,
   type Department,
+  type Lesson,
+  type Quiz,
 } from "./types";
 import { toVideoSource } from "./videoSource";
-import { createCourse, type NewLessonInput } from "@/lib/services/ampuService";
+import {
+  createCourse,
+  updateCourse,
+  type NewLessonInput,
+} from "@/lib/services/ampuService";
 
 const DEPARTMENTS: Department[] = ["NFPA_70E", "NFPA_70B", "ONBOARDING", "OTHER"];
 
@@ -34,7 +40,11 @@ type LessonKind = "VIDEO" | "DOCUMENT";
 
 interface LessonDraft {
   key: string;
-  kind: LessonKind;
+  /** Saved lesson id when editing, so learner progress stays attached. */
+  id?: string;
+  /** QUIZ rows can't be authored here; they ride along untouched. */
+  kind: LessonKind | "QUIZ";
+  quiz?: Quiz;
   title: string;
   source: string; // YouTube link/id or a direct media URL
   minutes: string;
@@ -54,6 +64,23 @@ const emptyLesson = (): LessonDraft => ({
   docName: "",
   uploading: false,
   uploadError: null,
+});
+
+/** Turns a saved lesson back into an editable row. */
+const draftFromLesson = (lesson: Lesson): LessonDraft => ({
+  ...emptyLesson(),
+  id: lesson.id,
+  kind: lesson.type,
+  quiz: lesson.quiz,
+  title: lesson.title,
+  source: lesson.youtubeId
+    ? `https://www.youtube.com/watch?v=${lesson.youtubeId}`
+    : lesson.videoUrl ?? "",
+  minutes: lesson.durationSeconds
+    ? String(+(lesson.durationSeconds / 60).toFixed(2))
+    : "",
+  docUrl: lesson.documentUrl ?? "",
+  docName: lesson.documentName ?? "",
 });
 
 const fieldClass =
@@ -86,21 +113,34 @@ export default function NewUnitDialog({
   onClose,
   onPublished,
   existingCodes,
+  course,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onPublished: (course: Course) => void;
   existingCodes: string[];
+  /** When set, the form edits this unit instead of publishing a new one.
+      Mount with key={course.id}: fields are read from it once. */
+  course?: Course;
 }) {
-  const [code, setCode] = useState("");
-  const [title, setTitle] = useState("");
-  const [department, setDepartment] = useState<Department>("OTHER");
-  const [description, setDescription] = useState("");
-  const [thumbnail, setThumbnail] = useState("📘");
-  const [instructor, setInstructor] = useState("");
-  const [isRequired, setIsRequired] = useState(false);
-  const [sequentialUnlock, setSequentialUnlock] = useState(false);
-  const [lessons, setLessons] = useState<LessonDraft[]>([emptyLesson()]);
+  const isEdit = !!course;
+  const [code, setCode] = useState(course?.code ?? "");
+  const [title, setTitle] = useState(course?.title ?? "");
+  const [department, setDepartment] = useState<Department>(
+    course?.department ?? "OTHER",
+  );
+  const [description, setDescription] = useState(course?.description ?? "");
+  const [thumbnail, setThumbnail] = useState(course?.thumbnail ?? "📘");
+  const [instructor, setInstructor] = useState(course?.instructor ?? "");
+  const [isRequired, setIsRequired] = useState(course?.isRequired ?? false);
+  const [sequentialUnlock, setSequentialUnlock] = useState(
+    course?.sequentialUnlock ?? false,
+  );
+  const [lessons, setLessons] = useState<LessonDraft[]>(() =>
+    course && course.lessons.length > 0
+      ? course.lessons.map(draftFromLesson)
+      : [emptyLesson()],
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -175,6 +215,10 @@ export default function NewUnitDialog({
     for (const [i, draft] of lessons.entries()) {
       const hasAnything =
         draft.title.trim() || draft.source.trim() || draft.docUrl;
+      if (draft.kind === "QUIZ") {
+        out.push({ id: draft.id, title: draft.title, type: "QUIZ", quiz: draft.quiz });
+        continue;
+      }
       if (!hasAnything) continue; // an untouched row is just left blank
       if (!draft.title.trim()) return `Lesson ${i + 1} needs a title.`;
 
@@ -182,6 +226,8 @@ export default function NewUnitDialog({
         if (draft.uploading) return `Lesson ${i + 1} is still uploading.`;
         if (!draft.docUrl) return `Lesson ${i + 1} needs a PDF or Word file.`;
         out.push({
+          id: draft.id,
+          quiz: draft.quiz,
           title: draft.title,
           type: "DOCUMENT",
           documentUrl: draft.docUrl,
@@ -196,6 +242,8 @@ export default function NewUnitDialog({
       }
       const minutes = draft.minutes.trim() ? Number(draft.minutes) : NaN;
       out.push({
+        id: draft.id,
+        quiz: draft.quiz,
         title: draft.title,
         type: "VIDEO",
         durationSeconds:
@@ -226,9 +274,21 @@ export default function NewUnitDialog({
       return;
     }
 
+    if (course) {
+      const keptIds = new Set(built.map((l) => l.id).filter(Boolean));
+      const dropped = course.lessons.filter((l) => !keptIds.has(l.id)).length;
+      if (
+        dropped > 0 &&
+        !window.confirm(
+          `${dropped} lesson${dropped === 1 ? "" : "s"} will be removed, along with everyone's progress on ${dropped === 1 ? "it" : "them"}. Save anyway?`,
+        )
+      )
+        return;
+    }
+
     setSaving(true);
     try {
-      const course = await createCourse({
+      const input = {
         code: finalCode,
         title,
         description,
@@ -238,12 +298,21 @@ export default function NewUnitDialog({
         isRequired,
         sequentialUnlock,
         lessons: built,
-      });
-      onPublished(course);
-      reset();
+      };
+      const saved = course
+        ? await updateCourse(course.id, input)
+        : await createCourse(input);
+      onPublished(saved);
+      if (!course) reset();
       onClose();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not publish the unit.");
+      setError(
+        e instanceof Error
+          ? e.message
+          : isEdit
+            ? "Could not save the unit."
+            : "Could not publish the unit.",
+      );
     } finally {
       setSaving(false);
     }
@@ -253,14 +322,18 @@ export default function NewUnitDialog({
     <Modal
       isOpen={isOpen}
       onClose={saving ? () => {} : onClose}
-      title="Office of the Registrar — New Unit"
+      title={
+        isEdit
+          ? "Office of the Registrar: Edit Unit"
+          : "Office of the Registrar — New Unit"
+      }
       size="xl"
     >
       <div className="max-h-[70vh] space-y-6 overflow-y-auto px-1">
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
-          Publishing adds the unit to the course catalog for every employee.
-          Attach video lectures and PDF/Word documents now; the exam can be
-          added later.
+          {isEdit
+            ? "Changes show up for every employee as soon as you save. Removing a lesson also clears everyone's progress on it."
+            : "Publishing adds the unit to the course catalog for every employee. Attach video lectures and PDF/Word documents now; the exam can be added later."}
         </p>
 
         {/* --- Catalog entry ------------------------------------------- */}
@@ -375,9 +448,15 @@ export default function NewUnitDialog({
             >
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
-                  {lesson.kind === "DOCUMENT" ? "Reading" : "Lecture"} {i + 1}
+                  {lesson.kind === "QUIZ"
+                    ? "Exam"
+                    : lesson.kind === "DOCUMENT"
+                      ? "Reading"
+                      : "Lecture"}{" "}
+                  {i + 1}
                 </span>
                 <div className="flex items-center gap-3">
+                  {lesson.kind !== "QUIZ" && (
                   <div className="flex border border-neutral-300 dark:border-neutral-700">
                     {(["VIDEO", "DOCUMENT"] as LessonKind[]).map((k) => (
                       <button
@@ -395,6 +474,7 @@ export default function NewUnitDialog({
                       </button>
                     ))}
                   </div>
+                  )}
                   {lessons.length > 1 && (
                     <button
                       type="button"
@@ -411,7 +491,15 @@ export default function NewUnitDialog({
                 </div>
               </div>
 
-              {lesson.kind === "DOCUMENT" ? (
+              {lesson.kind === "QUIZ" ? (
+                <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                  {lesson.title}
+                  <span className="mt-1 block text-xs text-neutral-400">
+                    Exam questions can't be edited here. It stays as-is unless
+                    you remove it.
+                  </span>
+                </p>
+              ) : lesson.kind === "DOCUMENT" ? (
                 <>
                   <Field label="Reading title">
                     <input
@@ -533,7 +621,7 @@ export default function NewUnitDialog({
           Cancel
         </Button>
         <Button onClick={publish} isLoading={saving}>
-          Publish unit
+          {isEdit ? "Save changes" : "Publish unit"}
         </Button>
       </div>
     </Modal>

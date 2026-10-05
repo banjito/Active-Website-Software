@@ -37,6 +37,30 @@ function offlineSupabasePlugin(): Plugin {
 }
 
 /**
+ * Reports load the company logo from a Vercel blob URL, which is a broken image
+ * with no internet. Point every copy of that URL at the bundled file in
+ * electron/renderer/public instead. A relative path works in all three places
+ * the URL appears (JSX src, JS strings, HTML inside template strings) and
+ * resolves next to index.html in both dev and the packaged app.
+ */
+const REMOTE_REPORT_LOGO =
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png";
+
+function offlineLogoPlugin(): Plugin {
+  return {
+    name: "offline-report-logo",
+    enforce: "pre",
+    transform(code) {
+      if (!code.includes(REMOTE_REPORT_LOGO)) return null;
+      return {
+        code: code.split(REMOTE_REPORT_LOGO).join("./amp-logo.png"),
+        map: null,
+      };
+    },
+  };
+}
+
+/**
  * Renderer build for the Electron offline-reports app.
  *
  * Extends the existing web Vite config so the SAME React app and report
@@ -78,7 +102,7 @@ export default defineConfig((env) => {
     // Dedicated port so the offline app never collides with the main ampOS dev
     // server (which holds 5175). You can run both at once.
     server: { port: 5180, strictPort: true },
-    plugins: [offlineSupabasePlugin()],
+    plugins: [offlineSupabasePlugin(), offlineLogoPlugin()],
     build: {
       outDir: path.resolve(__dirname, "electron/renderer-dist"),
       emptyOutDir: true,

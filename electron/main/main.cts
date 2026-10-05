@@ -323,11 +323,15 @@ async function runShellSelfTest(win: BrowserWindow): Promise<void> {
   );
   assert(title === "ampOS Offline", "list page heading renders");
 
+  // The report-type picker lives under a job; "offline" is the catch-all job.
+  await win.webContents.executeJavaScript(
+    `location.hash = '#/jobs/offline/new'`,
+  );
   const count = (await waitForDom(
     win,
-    `document.querySelectorAll('main button').length`,
+    `document.querySelectorAll('main button').length > 30 && document.querySelectorAll('main button').length`,
   )) as number;
-  assert(count > 30, `report list shows many reports (${count})`);
+  assert(count > 30, `report picker shows many reports (${count})`);
 
   // 2. Navigate into a report and confirm it mounts without an error overlay.
   await win.webContents.executeJavaScript(
@@ -335,7 +339,7 @@ async function runShellSelfTest(win: BrowserWindow): Promise<void> {
   );
   const opened = await waitForDom(
     win,
-    `!!document.querySelector('button') && document.body.innerText.includes('All reports')`,
+    `!!document.querySelector('.electron-report-toolbar')`,
   );
   assert(!!opened, "report page mounts (toolbar present)");
   const crashed = (await win.webContents.executeJavaScript(
@@ -383,7 +387,7 @@ async function runAllReportsTest(win: BrowserWindow): Promise<void> {
     // effects/data fetches a beat to run so a late throw still trips the boundary.
     await waitForDom(
       win,
-      `document.body.innerText.includes('All reports') || !!document.querySelector('[data-report-error]')`,
+      `!!document.querySelector('.electron-report-toolbar') || !!document.querySelector('[data-report-error]')`,
     );
     await new Promise((r) => setTimeout(r, 200));
     const crashed = (await win.webContents.executeJavaScript(

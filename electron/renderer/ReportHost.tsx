@@ -1,5 +1,6 @@
 import { Component, useMemo, type ReactNode } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "react-hot-toast";
 import { REPORTS } from "./reportRegistry";
 
 /**
@@ -60,7 +61,7 @@ const electronAPI = (
  * .reportId exactly as it does in the main app — so it runs unchanged.
  */
 export default function ReportHost() {
-  const { slug } = useParams<{ slug: string }>();
+  const { id: jobId, slug } = useParams<{ id: string; slug: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const entry = REPORTS.find((r) => r.slug === slug);
@@ -76,10 +77,10 @@ export default function ReportHost() {
     return (
       <div className="p-8 text-neutral-700 dark:text-neutral-200">
         <button
-          onClick={() => navigate("/")}
-          className="mb-4 text-sm text-blue-600 hover:underline"
+          onClick={() => navigate(`/jobs/${jobId}`)}
+          className="mb-4 text-sm text-brand hover:underline"
         >
-          ← All reports
+          Back to job
         </button>
         <p>Unknown report: {slug}</p>
       </div>
@@ -88,14 +89,29 @@ export default function ReportHost() {
 
   const ReportComponent = entry.component;
 
+  // Reports put their id in the address on first save (see main.tsx). With no
+  // id, the export window would open a brand-new blank report, not this one.
+  const exportPdf = () => {
+    const savedReportId = window.location.hash.split("?")[0].split("/")[4];
+    if (!savedReportId) {
+      toast.error("Save this report first, then export the PDF.");
+      return;
+    }
+    void electronAPI?.pdf.export({
+      defaultName: entry.slug,
+      search: exportSearch,
+      hash: window.location.hash,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-900">
       {/* Sticky toolbar — hidden when printing/exporting so it never lands in the PDF. */}
       {!isPdfExport && (
         <div className="electron-report-toolbar print:hidden sticky top-0 z-50 flex items-center justify-between gap-3 border-b border-neutral-200 bg-white/90 px-4 py-2.5 backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/90">
           <button
-            onClick={() => navigate("/")}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white"
+            onClick={() => navigate(`/jobs/${jobId}`)}
+            className="flex items-center gap-1.5 rounded-none px-2.5 py-1.5 text-sm font-medium text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white"
           >
             <svg
               viewBox="0 0 24 24"
@@ -110,20 +126,14 @@ export default function ReportHost() {
                 strokeLinejoin="round"
               />
             </svg>
-            All reports
+            Back to job
           </button>
           <span className="hidden flex-1 truncate text-center text-sm font-medium text-neutral-500 dark:text-neutral-400 sm:block">
             {entry.name}
           </span>
           <button
-            onClick={() =>
-              electronAPI?.pdf.export({
-                defaultName: entry.slug,
-                search: exportSearch,
-                hash: window.location.hash,
-              })
-            }
-            className="flex items-center gap-1.5 rounded-lg bg-amp-orange-600 px-3.5 py-1.5 text-sm font-semibold text-white shadow-sm shadow-amp-orange-700/30 transition hover:bg-amp-orange-700"
+            onClick={exportPdf}
+            className="flex items-center gap-1.5 rounded-none bg-brand px-3.5 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
           >
             <svg
               viewBox="0 0 24 24"

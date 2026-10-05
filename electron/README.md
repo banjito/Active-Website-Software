@@ -1,11 +1,15 @@
 # ampOS Offline (Electron)
 
-A standalone, fully-offline desktop app for filling out NETA reports. It is
-**only** the reports: a searchable report list + one page per report + PDF
-export. No login, no cloud sync, no other ampOS features. All ~48 report
-components from `src/components/reports/` run unchanged against a local SQLite
-store (via an offline Supabase adapter), and export to PDF with Electron's
-`printToPDF`.
+A standalone, fully-offline desktop app for filling out NETA reports: local
+jobs (Job #, customer, site), each job's saved reports, a report-type picker,
+one page per report, and PDF export. No login, no cloud sync, no other ampOS
+features. All ~60 report components from `src/components/reports/` run
+unchanged against a local SQLite store (via an offline Supabase adapter), and
+export to PDF with Electron's `printToPDF`. Local jobs live in the same
+`neta_ops.jobs` / `common.customers` tables the reports already read, so report
+headers fill in exactly as they do online.
+
+Roadmap and known gaps: `documentation/OFFLINE_APP_PLAN.md`.
 
 ## Develop
 

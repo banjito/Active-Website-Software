@@ -1310,6 +1310,60 @@ export function ReportApprovalWorkflow({
     }
   };
 
+  // Uploaded PDFs have nothing to edit, so they can be approved straight from
+  // the list row as well as from the View popup.
+  const handleApprovePdfReport = async (
+    report: TechnicalReport,
+    comments: string | null,
+  ): Promise<boolean> => {
+    if (!user) return false;
+    const now = new Date().toISOString();
+
+    const { error } = await supabase
+      .schema("neta_ops")
+      .from("assets")
+      .update({
+        status: "approved",
+        reviewed_by: user.id,
+        approved_by: user.id,
+        reviewed_at: now,
+        approved_at: now,
+        review_comments: comments,
+      })
+      .eq("id", report.id);
+
+    if (error) {
+      console.error("Error approving PDF report:", error);
+      toast({
+        title: "Error",
+        description: `Failed to approve report: ${error.message || "Unknown error"}`,
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    window.dispatchEvent(
+      new CustomEvent("assetStatusChanged", {
+        detail: { assetIds: [report.id], newStatus: "approved" },
+      }),
+    );
+    toast({
+      title: "Success",
+      description: "Report approved successfully",
+      variant: "success",
+    });
+    fetchReports();
+    fetchMetrics();
+    if (onUpdate) {
+      try {
+        onUpdate();
+      } catch {
+        /* noop */
+      }
+    }
+    return true;
+  };
+
   const handleViewReport = async (report: TechnicalReport) => {
     console.log("[ViewDialog] handleViewReport called for:", report.id);
 
@@ -1493,52 +1547,13 @@ export function ReportApprovalWorkflow({
 
         if (approveBtn) {
           approveBtn.onclick = async () => {
-            if (!user) return;
-            const now = new Date().toISOString();
-
-            const updateData: any = {
-              status: "approved",
-              reviewed_by: user.id,
-              approved_by: user.id,
-              reviewed_at: now,
-              approved_at: now,
-              review_comments: commentsInput?.value || null,
-            };
-
-            const { error } = await supabase
-              .schema("neta_ops")
-              .from("assets")
-              .update(updateData)
-              .eq("id", report.id);
-
-            if (error) {
-              toast({
-                title: "Error",
-                description: `Failed to approve report: ${error.message || "Unknown error"}`,
-                variant: "destructive",
-              });
-            } else {
-              window.dispatchEvent(
-                new CustomEvent("assetStatusChanged", {
-                  detail: { assetIds: [report.id], newStatus: "approved" },
-                }),
-              );
-              toast({
-                title: "Success",
-                description: "Report approved successfully",
-                variant: "success",
-              });
+            const ok = await handleApprovePdfReport(
+              report,
+              commentsInput?.value || null,
+            );
+            if (ok) {
               const modal = document.getElementById("report-view-modal");
               if (modal) modal.remove();
-              fetchReports();
-              fetchMetrics();
-              if (onUpdate) {
-                try {
-                  onUpdate();
-                } catch {
-                  /* noop */
-                }
-              }
             }
           };
         }
@@ -2636,6 +2651,19 @@ export function ReportApprovalWorkflow({
                           {isApprovedTab ? "Print" : "Download"}
                         </Button>
                       )}
+                      {isPdfReport(report) &&
+                        report.status === "submitted" &&
+                        userPermissions.canApprove && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleApprovePdfReport(report, null)}
+                            className="border-none text-green-600 hover:text-green-700"
+                            leftIcon={<CheckCircle className="h-4 w-4" />}
+                          >
+                            Approve
+                          </Button>
+                        )}
                       {showStatusButton && (
                         <Button
                           variant="outline"

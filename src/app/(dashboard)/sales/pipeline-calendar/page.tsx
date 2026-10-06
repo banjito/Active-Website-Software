@@ -356,6 +356,9 @@ function mapOpportunityToPipelineJob(
     endDate,
     status: getStatusFromOpportunity(opportunity),
     isAwarded: isAwardedOpportunity(opportunity),
+    jobNumber: linkedJob?.job_number
+      ? String(linkedJob.job_number)
+      : undefined,
   };
 }
 
@@ -428,7 +431,7 @@ export default function PipelineCalendarPage() {
           const { data: jobData, error: jobError } = await supabase
             .schema("neta_ops")
             .from("jobs")
-            .select("opportunity_id, start_date, due_date, budget")
+            .select("opportunity_id, job_number, start_date, due_date, budget")
             .in("opportunity_id", opportunityIds)
             .is("deleted_at", null);
 
@@ -1065,6 +1068,7 @@ export default function PipelineCalendarPage() {
                       </button>
                     </th>
                   ))}
+                  <th className="px-3 py-3 font-semibold">Job #</th>
                   <th className="px-3 py-3 font-semibold">Data center</th>
                   <th className="px-3 py-3 font-semibold">Location</th>
                   <th className="px-3 py-3 font-semibold">Status</th>
@@ -1138,6 +1142,9 @@ export default function PipelineCalendarPage() {
                         />
                         {job.region}
                       </span>
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-3">
+                      {job.jobNumber || "-"}
                     </td>
                     <td className="px-3 py-3">{job.dataCenterId || "-"}</td>
                     <td className="px-3 py-3">{job.location}</td>

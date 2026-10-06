@@ -12,4 +12,5 @@ export interface PipelineJob {
   endDate?: string;
   status: PipelineStatus;
   isAwarded?: boolean;
+  jobNumber?: string;
 }

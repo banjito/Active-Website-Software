@@ -322,20 +322,28 @@ function isAwardedOpportunity(opportunity: any): boolean {
 function mapOpportunityToPipelineJob(
   opportunity: any,
   customerMap: Record<string, any>,
+  linkedJob?: any,
 ): PipelineJob {
   const customer = opportunity?.customer_id
     ? customerMap[opportunity.customer_id]
     : null;
   const customerName =
     customer?.company_name || customer?.name || "Unknown Customer";
-  const amountDollars = Number(opportunity?.quoted_amount || 0);
+  const amountDollars = Number(
+    linkedJob?.budget || opportunity?.quoted_amount || 0,
+  );
+  // Once a job exists, its dates are the real schedule
   const startDate =
+    linkedJob?.start_date?.slice(0, 10) ||
     opportunity?.estimated_start_date ||
     opportunity?.proposal_due_date ||
     opportunity?.opportunity_created_date ||
     opportunity?.created_at?.slice(0, 10) ||
     toDateInputValue(new Date());
-  const endDate = opportunity?.estimated_end_date || undefined;
+  const endDate =
+    linkedJob?.due_date?.slice(0, 10) ||
+    opportunity?.estimated_end_date ||
+    undefined;
 
   return {
     id: String(opportunity.id),
@@ -411,9 +419,33 @@ export default function PipelineCalendarPage() {
           });
         }
 
+        const opportunityIds = (opportunityData || []).map(
+          (opportunity: any) => opportunity.id,
+        );
+        const jobMap: Record<string, any> = {};
+
+        if (opportunityIds.length > 0) {
+          const { data: jobData, error: jobError } = await supabase
+            .schema("neta_ops")
+            .from("jobs")
+            .select("opportunity_id, start_date, due_date, budget")
+            .in("opportunity_id", opportunityIds)
+            .is("deleted_at", null);
+
+          if (jobError) throw jobError;
+
+          (jobData || []).forEach((job: any) => {
+            jobMap[job.opportunity_id] = job;
+          });
+        }
+
         const nextJobs = (opportunityData || [])
           .map((opportunity: any) =>
-            mapOpportunityToPipelineJob(opportunity, customerMap),
+            mapOpportunityToPipelineJob(
+              opportunity,
+              customerMap,
+              jobMap[opportunity.id],
+            ),
           )
           .sort(
             (jobA, jobB) =>

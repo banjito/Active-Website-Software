@@ -27,6 +27,12 @@ export const COMPANY_FULL_NAME = env(
   "AMP Quality Energy Services"
 );
 
+/** Estimating mailbox: Reply-To on customer RFQ acknowledgment emails. */
+export const COMPANY_ESTIMATING_EMAIL = env(
+  "COMPANY_ESTIMATING_EMAIL",
+  "estimating@ampqes.com"
+);
+
 /** Admin who receives report-flag / issue-resolved notifications. */
 export const COMPANY_ADMIN_EMAIL = env(
   "COMPANY_ADMIN_EMAIL",

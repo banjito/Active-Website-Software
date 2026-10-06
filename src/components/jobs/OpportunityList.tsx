@@ -28,6 +28,7 @@ import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
 import { useUserPreferences } from "../../hooks/useUserPreferences";
 import { withPgTimeoutRetry } from "../../lib/retryPgTimeout";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { sendRfqEmail } from "@/lib/rfqAcknowledgment";
 import { isSuperUser } from "../../lib/roles";
 import { useDivisions } from "@/hooks/useDivisions";
 import { jobDivisionOptions } from "@/services/divisionsService";
@@ -43,6 +44,7 @@ interface Contact {
   first_name: string;
   last_name: string;
   customer_id?: string;
+  email?: string | null;
 }
 
 interface FormData {
@@ -457,6 +459,8 @@ export default function OpportunityList() {
     address: "",
   });
   const [showNewContact, setShowNewContact] = useState(false);
+  // Email the contact an RFQ acknowledgment when the opportunity is created.
+  const [sendRfqAck, setSendRfqAck] = useState(true);
   const [creatingContact, setCreatingContact] = useState(false);
   const [newContact, setNewContact] = useState<{
     first_name: string;
@@ -1951,7 +1955,7 @@ export default function OpportunityList() {
       const { data, error } = await supabase
         .schema("common")
         .from("contacts")
-        .select("id, first_name, last_name, customer_id")
+        .select("id, first_name, last_name, customer_id, email")
         .eq("customer_id", customerId)
         .order("first_name");
 
@@ -1983,6 +1987,10 @@ export default function OpportunityList() {
       return updated;
     });
   }
+
+  const selectedContactEmail =
+    contacts.find((c) => c.id === formData.contact_id)?.email?.trim() || "";
+  const willSendRfqAck = sendRfqAck && !!selectedContactEmail;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -2209,9 +2217,24 @@ export default function OpportunityList() {
       }
 
       console.log("Created opportunity:", data);
-      alert("Opportunity created successfully!");
+
+      // The opportunity is saved either way; a failed email must not undo it.
+      let createdMessage = "Opportunity created successfully!";
+      if (willSendRfqAck) {
+        try {
+          const result = await sendRfqEmail(data.id, "acknowledge");
+          if (result.emailSent) {
+            createdMessage = `Opportunity created. RFQ acknowledgment emailed to ${result.sentTo}.`;
+          }
+        } catch (ackError: any) {
+          console.error("RFQ acknowledgment failed:", ackError);
+          createdMessage = `Opportunity created, but the RFQ acknowledgment email failed: ${ackError?.message || "Unknown error"}. You can send it from the opportunity page.`;
+        }
+      }
+      alert(createdMessage);
       setIsOpen(false);
       setFormData(initialFormData);
+      setSendRfqAck(true);
       fetchOpportunities();
     } catch (error: any) {
       console.error("Error creating opportunity:", {
@@ -2675,6 +2698,7 @@ export default function OpportunityList() {
                       setIsCreateMenuOpen(false);
                       setIsOpen(true);
                       setFormData(initialFormData);
+                      setSendRfqAck(true);
                     }}
                     className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100 transition-colors"
                   >
@@ -3853,8 +3877,35 @@ export default function OpportunityList() {
                   name="proposal_due_date"
                   value={formData.proposal_due_date}
                   onChange={handleChange}
+                  required={willSendRfqAck}
                   className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
+                {willSendRfqAck && (
+                  <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                    Customer will see this date.
+                  </p>
+                )}
+                <div className="mt-3">
+                  {selectedContactEmail ? (
+                    <label className="flex items-start gap-2 text-sm text-neutral-700 dark:text-white">
+                      <input
+                        type="checkbox"
+                        checked={sendRfqAck}
+                        onChange={(e) => setSendRfqAck(e.target.checked)}
+                        className="mt-0.5 rounded-none accent-brand"
+                      />
+                      <span>
+                        Email RFQ acknowledgment to {selectedContactEmail}
+                      </span>
+                    </label>
+                  ) : (
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                      {formData.contact_id
+                        ? "This contact has no email, so no RFQ acknowledgment will be sent."
+                        : "Pick a contact with an email to send the customer an RFQ acknowledgment."}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

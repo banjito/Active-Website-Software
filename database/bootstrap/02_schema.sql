@@ -6422,6 +6422,9 @@ CREATE TABLE business.opportunities (
     in_pipeline_projection boolean DEFAULT false NOT NULL,
     estimated_end_date date,
     exclude_from_quoted_total boolean DEFAULT false NOT NULL,
+    rfq_ack_sent_at timestamp with time zone,
+    rfq_ack_sent_to text,
+    rfq_ack_promised_date date,
     CONSTRAINT opportunities_estimated_dates_order_check CHECK (((estimated_start_date IS NULL) OR (estimated_end_date IS NULL) OR (estimated_end_date >= estimated_start_date))),
     CONSTRAINT opportunities_opportunity_type_check CHECK ((opportunity_type = ANY (ARRAY['large_acceptance'::text, 'small_acceptance'::text, 'maintenance'::text, 'other'::text, 'time_materials'::text, 'engineering'::text]))),
     CONSTRAINT opportunities_status_check CHECK ((status = ANY (ARRAY['awareness'::text, 'interest'::text, 'quote'::text, 'decision'::text, 'decision - forecasted win'::text, 'decision - forecast lose'::text, 'awarded'::text, 'lost'::text, 'no quote'::text])))

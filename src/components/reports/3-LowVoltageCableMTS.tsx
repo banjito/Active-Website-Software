@@ -1093,7 +1093,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
         table.electrical-tests-table td > select {
           position: absolute !important;
           top: 50.5% !important;
-          left: -10px !important; /* match MTS left bias exactly */
+          left: 0 !important;
           right: 0 !important;
           transform: translateY(-50%) !important;
           width: auto !important;
@@ -1957,8 +1957,7 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
   return (
     <div
       id="report-container"
-      className="w-full overflow-visible"
-      style={{ minHeight: "calc(100vh + 300px)", paddingBottom: "200px" }}
+      className="w-full overflow-visible min-h-[calc(100vh+300px)] pb-[200px] print:min-h-0 print:pb-0"
     >
       <SaveStatusBanner />
       {/* Print Header - Only visible when printing */}

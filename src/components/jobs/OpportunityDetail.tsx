@@ -64,6 +64,7 @@ import CopyEstimateToOpportunityModal, {
 } from "../estimates/CopyEstimateToOpportunityModal";
 import { toast } from "../ui/toast";
 import { getDivisions, useDivisions } from "@/hooks/useDivisions";
+import { sendRfqEmail } from "@/lib/rfqAcknowledgment";
 import { jobDivisionOptions } from "@/services/divisionsService";
 
 interface Customer {
@@ -91,6 +92,9 @@ interface OpportunityWithCustomer extends Opportunity {
   proposal_due_date?: string | null;
   estimated_end_date?: string | null;
   quoted_amount?: number | null;
+  rfq_ack_sent_at?: string | null;
+  rfq_ack_sent_to?: string | null;
+  rfq_ack_promised_date?: string | null;
 }
 
 interface AdjacentOpportunityIds {
@@ -767,6 +771,7 @@ export default function OpportunityDetail() {
     documents_stage: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sendingRfqAck, setSendingRfqAck] = useState(false);
   const [showJobDialog, setShowJobDialog] = useState(false);
   const [selectedLetterId, setSelectedLetterId] = useState<string>("");
   const [lettersForSelect, setLettersForSelect] = useState<
@@ -2194,6 +2199,46 @@ export default function OpportunityDetail() {
     }
   }
 
+  async function handleSendRfqAck() {
+    if (!opportunity) return;
+    const resend = !!opportunity.rfq_ack_sent_at;
+    if (
+      resend &&
+      !window.confirm("Send the RFQ acknowledgment to the customer again?")
+    ) {
+      return;
+    }
+    setSendingRfqAck(true);
+    try {
+      const result = await sendRfqEmail(opportunity.id, "acknowledge", {
+        resend,
+      });
+      if (result.emailSent) {
+        toast({
+          title: "RFQ acknowledgment sent",
+          description: `Emailed to ${result.sentTo}.`,
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: "Not sent",
+          description: "An acknowledgment was already sent for this opportunity.",
+          variant: "info",
+        });
+      }
+      await fetchOpportunity();
+    } catch (err: any) {
+      console.error("RFQ acknowledgment failed:", err);
+      toast({
+        title: "RFQ acknowledgment failed",
+        description: err?.message || "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingRfqAck(false);
+    }
+  }
+
   async function handleEditSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!opportunity) return;
@@ -2435,6 +2480,33 @@ export default function OpportunityDetail() {
       }
 
       setIsEditing(false);
+
+      // The customer was promised a proposal date; if it moved, tell them.
+      // The server re-checks against the date they were last told.
+      if (
+        opportunity.rfq_ack_sent_at &&
+        editFormData.proposal_due_date &&
+        editFormData.proposal_due_date !==
+          opportunity.rfq_ack_promised_date?.substring(0, 10)
+      ) {
+        try {
+          const result = await sendRfqEmail(opportunity.id, "date_change");
+          if (result.emailSent) {
+            toast({
+              title: "Customer emailed the new proposal date",
+              description: `Sent to ${result.sentTo}.`,
+              variant: "success",
+            });
+          }
+        } catch (dateEmailError: any) {
+          console.error("Proposal date change email failed:", dateEmailError);
+          toast({
+            title: "Saved, but the customer was not emailed the new date",
+            description: dateEmailError?.message || "Unknown error",
+            variant: "destructive",
+          });
+        }
+      }
 
       // Force refresh the opportunity data from database
       await fetchOpportunity();
@@ -4400,6 +4472,14 @@ export default function OpportunityDetail() {
                       onChange={handleInputChange}
                       className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                     />
+                    {opportunity.rfq_ack_sent_at &&
+                      opportunity.rfq_ack_promised_date && (
+                        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                          Customer was told{" "}
+                          {formatDateSafe(opportunity.rfq_ack_promised_date)}.
+                          Changing this emails them the new date.
+                        </p>
+                      )}
                   </div>
                 </div>
 
@@ -5502,6 +5582,36 @@ export default function OpportunityDetail() {
                         </p>
                       </div>
                     )}
+                    <div className="mb-4">
+                      <p className="text-sm text-neutral-500 dark:text-dark-400">
+                        RFQ Acknowledgment
+                      </p>
+                      <p className="text-neutral-900 dark:text-dark-900">
+                        {opportunity.rfq_ack_sent_at
+                          ? `Sent ${formatDateSafe(opportunity.rfq_ack_sent_at)} to ${opportunity.rfq_ack_sent_to || "customer"}`
+                          : "Not sent"}
+                      </p>
+                      {opportunity.rfq_ack_sent_at &&
+                        opportunity.rfq_ack_promised_date && (
+                          <p className="text-sm text-neutral-500 dark:text-dark-400">
+                            Customer told to expect the proposal by{" "}
+                            {formatDateSafe(opportunity.rfq_ack_promised_date)}
+                          </p>
+                        )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={handleSendRfqAck}
+                        disabled={sendingRfqAck}
+                      >
+                        {sendingRfqAck
+                          ? "Sending..."
+                          : opportunity.rfq_ack_sent_at
+                            ? "Resend"
+                            : "Send acknowledgment"}
+                      </Button>
+                    </div>
                     {opportunity.awarded_date && (
                       <div className="mb-4">
                         <p className="text-sm text-neutral-500 dark:text-dark-400">

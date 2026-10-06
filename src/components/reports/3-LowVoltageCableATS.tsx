@@ -1110,8 +1110,7 @@ const ThreeLowVoltageCableATSForm: React.FC = () => {
 
   return (
     <div
-      className="w-full overflow-visible"
-      style={{ minHeight: "calc(100vh + 300px)", paddingBottom: "200px" }}
+      className="w-full overflow-visible min-h-[calc(100vh+300px)] pb-[200px] print:min-h-0 print:pb-0"
     >
       <SaveStatusBanner />
       {/* Print Header - Only visible when printing */}

@@ -650,6 +650,12 @@ const LowVoltageCableMTS23Report: React.FC = () => {
       ${SCREEN_TABLE_STYLES}
 
       @media print {
+        /* A scrolling flex wrapper cannot reliably split the report across pages. */
+        .low-voltage-cable-ats-report #report-container {
+          display: block !important;
+          overflow: visible !important;
+        }
+
         /* Hide navigation bar and scrollbar */
         nav, header, .navigation, [class*="nav"], [class*="header"] {
           display: none !important;
@@ -1174,7 +1180,7 @@ const LowVoltageCableMTS23Report: React.FC = () => {
         table.electrical-tests-table td > select {
           position: absolute !important;
           top: 50.5% !important;
-          left: -10px !important; /* match MTS left bias exactly */
+          left: 0 !important;
           right: 0 !important;
           transform: translateY(-50%) !important;
           width: auto !important;
@@ -2702,8 +2708,7 @@ const LowVoltageCableMTS23Report: React.FC = () => {
 
   return (
     <div
-      className="low-voltage-cable-ats-report w-full overflow-visible"
-      style={{ minHeight: "calc(100vh + 300px)", paddingBottom: "200px" }}
+      className="low-voltage-cable-ats-report w-full overflow-visible min-h-[calc(100vh+300px)] pb-[200px] print:min-h-0 print:pb-0"
     >
       <ReportWrapper isPrintMode={isPrintMode} disablePreview>
         {/* Print Header - Only visible when printing */}

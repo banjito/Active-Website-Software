@@ -21,8 +21,12 @@ A handful of emails go out on their own. They exist to stop work sitting quietly
 | Email | Fires when | Goes to |
 |---|---|---|
 | **Ready-to-Bill Notification** | A job's status changes to `Ready to bill` | Accounting |
+| **RFQ Acknowledgment** | A new opportunity is created with the acknowledgment box ticked | The opportunity's customer contact |
+| **Updated Proposal Date** | The Proposal Due Date changes after an acknowledgment went out | The same customer contact |
 
-This one is immediate. The moment someone flips a job to ready to bill, accounting knows.
+These are immediate. The moment someone flips a job to ready to bill, accounting knows.
+
+The two customer emails are the only ones that leave the company. The acknowledgment thanks the customer for the RFQ and says "You can expect a proposal by" the opportunity's Proposal Due Date, so that date is a promise. Replies go to the estimating inbox. If the date later moves, the customer is told the new one automatically. Re-saving without changing the date sends nothing. The opportunity page shows when the acknowledgment went out and has a button to send or resend it.
 
 ## Why the timing is what it is
 

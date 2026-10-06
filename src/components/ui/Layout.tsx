@@ -968,7 +968,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   ) : null;
 
   const mainContent = (
-    <main className="flex-1 min-w-0 p-3 sm:p-4 lg:p-6 overflow-x-auto overflow-y-auto">
+    <main className="flex-1 min-w-0 p-3 sm:p-4 lg:p-6 overflow-x-auto overflow-y-auto print:overflow-visible">
       {isReportLocked && (
         <div
           className="report-locked-banner print:hidden mb-4 px-4 py-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-none flex items-center gap-3"

@@ -1,5 +1,5 @@
 # electron-builder config for ampOS Offline.
-# Phase 0 baseline; signing/notarization/auto-update feeds are wired in Phase 6.
+# Phase 0 baseline; auto-update feeds are wired in Phase 6.
 appId: com.ampreports.offlinereports
 productName: ampOS Offline
 copyright: Copyright © Amp Reports
@@ -50,6 +50,11 @@ mac:
     - target: zip
       arch: [arm64, x64]
   hardenedRuntime: true
+  # Developer ID = Apple's cert for apps shipped outside the App Store (GitHub
+  # Releases). Pinned so a build without it fails loudly instead of shipping an
+  # unsigned app that macOS reports as "damaged". Notarization runs when
+  # APPLE_KEYCHAIN_PROFILE is set (see `xcrun notarytool store-credentials`).
+  identity: "AMP LLC (DJQD5689XT)"
 
 nsis:
   oneClick: false

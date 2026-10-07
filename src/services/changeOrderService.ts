@@ -14,8 +14,11 @@ export interface ChangeOrder {
   schedule_impact_days: number | null;
   status: ChangeOrderStatus;
   requested_by: string | null;
+  requested_date: string | null;
   approved_by: string | null;
   approved_at: string | null;
+  approved_date: string | null;
+  approved_by_name: string | null;
   file_url: string | null;
   file_path: string | null;
   file_type: string | null;
@@ -33,6 +36,7 @@ export interface ChangeOrderInput {
   schedule_impact_days?: number | null;
   status?: ChangeOrderStatus;
   requested_by?: string | null;
+  requested_date?: string | null;
   file_url?: string | null;
   file_path?: string | null;
   file_type?: string | null;
@@ -92,6 +96,7 @@ export async function createChangeOrder(
         schedule_impact_days: input.schedule_impact_days ?? null,
         status: input.status ?? 'draft',
         requested_by: input.requested_by ?? null,
+        requested_date: input.requested_date ?? null,
         file_url: input.file_url ?? null,
         file_path: input.file_path ?? null,
         file_type: input.file_type ?? null,
@@ -112,6 +117,8 @@ export async function updateChangeOrder(
     status?: ChangeOrderStatus;
     approved_by?: string | null;
     approved_at?: string | null;
+    approved_date?: string | null;
+    approved_by_name?: string | null;
     qbo_estimate_id?: string | null;
     qbo_synced_at?: string | null;
   }
@@ -134,12 +141,14 @@ export async function deleteChangeOrder(id: string): Promise<void> {
 export async function approveChangeOrder(
   co: ChangeOrder,
   approverId: string,
-  qbo?: { projectId?: string | null; jobNumber?: string | null }
+  qbo?: { projectId?: string | null; jobNumber?: string | null },
+  details?: { approved_date?: string | null; approved_by_name?: string | null }
 ): Promise<{ changeOrder: ChangeOrder; qboError: string | null }> {
   let updated = await updateChangeOrder(co.id, {
     status: 'approved',
     approved_by: approverId,
     approved_at: new Date().toISOString(),
+    ...(details ?? {}),
   });
 
   if (!qbo?.projectId || updated.qbo_estimate_id) {

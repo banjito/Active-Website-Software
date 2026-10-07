@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { usePersistentState } from "@/hooks/usePersistentState";
 import { createPortal } from "react-dom";
 import {
   CalendarRange,
@@ -365,13 +366,29 @@ function mapOpportunityToPipelineJob(
 
 export default function PipelineCalendarPage() {
   const [jobs, setJobs] = useState<PipelineJob[]>([]);
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const [rangeMode, setRangeMode] = useState<RangeMode>("quarter");
-  const [anchorDate, setAnchorDate] = useState<Date>(() => new Date());
-  const [regionFilter, setRegionFilter] =
-    useState<Record<PipelineRegion, boolean>>(defaultRegionFilter);
-  const [statusFilter, setStatusFilter] =
-    useState<Record<PipelineStatus, boolean>>(defaultStatusFilter);
+  const [viewMode, setViewMode] = usePersistentState<ViewMode>(
+    "pipelineProjection:viewMode",
+    "list",
+  );
+  const [rangeMode, setRangeMode] = usePersistentState<RangeMode>(
+    "pipelineProjection:rangeMode",
+    "quarter",
+  );
+  // Stored as a date string because a Date doesn't survive JSON.
+  const [anchorDateValue, setAnchorDateValue] = usePersistentState<string>(
+    "pipelineProjection:anchorDate",
+    toDateInputValue(new Date()),
+  );
+  const anchorDate = useMemo(
+    () => parseDate(anchorDateValue),
+    [anchorDateValue],
+  );
+  const [regionFilter, setRegionFilter] = usePersistentState<
+    Record<PipelineRegion, boolean>
+  >("pipelineProjection:regionFilter", defaultRegionFilter);
+  const [statusFilter, setStatusFilter] = usePersistentState<
+    Record<PipelineStatus, boolean>
+  >("pipelineProjection:statusFilter", defaultStatusFilter);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [popoverPosition, setPopoverPosition] =
     useState<PopoverPosition | null>(null);
@@ -380,8 +397,14 @@ export default function PipelineCalendarPage() {
   >(new Set());
   const [storageError, setStorageError] = useState("");
   const [isLoadingProjection, setIsLoadingProjection] = useState(true);
-  const [sortKey, setSortKey] = useState<SortKey>("startDate");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [sortKey, setSortKey] = usePersistentState<SortKey>(
+    "pipelineProjection:sortKey",
+    "startDate",
+  );
+  const [sortDirection, setSortDirection] = usePersistentState<SortDirection>(
+    "pipelineProjection:sortDirection",
+    "asc",
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -577,14 +600,16 @@ export default function PipelineCalendarPage() {
   );
 
   const moveRange = (direction: -1 | 1) => {
-    setAnchorDate((currentDate) =>
-      addMonths(
-        currentDate,
-        rangeMode === "month"
-          ? direction
-          : rangeMode === "quarter"
-            ? direction * 3
-            : direction * 12,
+    setAnchorDateValue((currentValue) =>
+      toDateInputValue(
+        addMonths(
+          parseDate(currentValue),
+          rangeMode === "month"
+            ? direction
+            : rangeMode === "quarter"
+              ? direction * 3
+              : direction * 12,
+        ),
       ),
     );
   };

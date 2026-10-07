@@ -3316,6 +3316,7 @@ export default function JobDetail() {
       tabParam &&
       [
         "overview",
+        "change-orders",
         "assets",
         "deliverables",
         "notes",
@@ -10185,6 +10186,18 @@ export default function JobDetail() {
                     Overview
                   </button>
                   <button
+                    onClick={() => handleTabChange("change-orders")}
+                    className={`py-4 px-6 text-sm font-medium ${
+                      activeTab === "change-orders"
+                        ? "border-b-2 border-brand text-brand"
+                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
+                    }`}
+                  >
+                    Change Orders
+                    {changeOrderSummary.pendingCount > 0 &&
+                      ` (${changeOrderSummary.pendingCount})`}
+                  </button>
+                  <button
                     onClick={() => handleTabChange("deliverables")}
                     className={`py-4 px-6 text-sm font-medium ${
                       activeTab === "deliverables"
@@ -11251,16 +11264,6 @@ export default function JobDetail() {
                       </CardContent>
                     </Card>
 
-                    {/* Change Orders Section */}
-                    {id && (
-                      <ChangeOrdersSection
-                        jobId={id}
-                        jobNumber={job?.job_number}
-                        quickbooksProjectId={job?.quickbooks_project_id}
-                        onSummaryChange={setChangeOrderSummary}
-                      />
-                    )}
-
                     {/* One-Line Drawings Section */}
                     <Card>
                       <CardHeader>
@@ -11450,6 +11453,20 @@ export default function JobDetail() {
                         )}
                       </CardContent>
                     </Card>
+                  </div>
+                )}
+
+                {/* Stays mounted on every tab: its totals feed Total Contract Value and the tab count */}
+                {id && (
+                  <div
+                    className={activeTab === "change-orders" ? "" : "hidden"}
+                  >
+                    <ChangeOrdersSection
+                      jobId={id}
+                      jobNumber={job?.job_number}
+                      quickbooksProjectId={job?.quickbooks_project_id}
+                      onSummaryChange={setChangeOrderSummary}
+                    />
                   </div>
                 )}
 

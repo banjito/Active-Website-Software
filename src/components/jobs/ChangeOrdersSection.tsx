@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import {
   Check,
   Download,
@@ -25,6 +25,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/Dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/Table";
 import { toast } from "@/components/ui/toast";
 import {
   approveChangeOrder,
@@ -61,12 +70,20 @@ const money = (n: number) =>
     maximumFractionDigits: 2,
   })}`;
 
+// Date-only columns are parsed as local dates so they don't shift a day by timezone
+const today = () => format(new Date(), "yyyy-MM-dd");
+const fmtDate = (d?: string | null) =>
+  d ? format(parseISO(d), "MMM d, yyyy") : "-";
+
 interface FormState {
   title: string;
   description: string;
   amount: string;
   scheduleImpactDays: string;
   requestedBy: string;
+  requestedDate: string;
+  approvedDate: string;
+  approvedByName: string;
 }
 
 const EMPTY_FORM: FormState = {
@@ -75,6 +92,9 @@ const EMPTY_FORM: FormState = {
   amount: "",
   scheduleImpactDays: "",
   requestedBy: "",
+  requestedDate: "",
+  approvedDate: "",
+  approvedByName: "",
 };
 
 export default function ChangeOrdersSection({
@@ -91,6 +111,13 @@ export default function ChangeOrdersSection({
   const [file, setFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [approving, setApproving] = useState<ChangeOrder | null>(null);
+  const [approveForm, setApproveForm] = useState({
+    approvedDate: "",
+    approvedByName: "",
+  });
+  // Approved COs are already in contract totals and QuickBooks; only tracking fields stay editable
+  const locked = editing?.status === "approved";
 
   const applyList = useCallback(
     (cos: ChangeOrder[]) => {
@@ -116,7 +143,7 @@ export default function ChangeOrdersSection({
 
   const openAdd = () => {
     setEditing(null);
-    setForm(EMPTY_FORM);
+    setForm({ ...EMPTY_FORM, requestedDate: today() });
     setFile(null);
     setShowForm(true);
   };
@@ -130,9 +157,17 @@ export default function ChangeOrdersSection({
       scheduleImpactDays:
         co.schedule_impact_days != null ? String(co.schedule_impact_days) : "",
       requestedBy: co.requested_by ?? "",
+      requestedDate: co.requested_date ?? "",
+      approvedDate: co.approved_date ?? "",
+      approvedByName: co.approved_by_name ?? "",
     });
     setFile(null);
     setShowForm(true);
+  };
+
+  const openApprove = (co: ChangeOrder) => {
+    setApproveForm({ approvedDate: today(), approvedByName: "" });
+    setApproving(co);
   };
 
   const uploadFile = async (): Promise<{
@@ -178,15 +213,25 @@ export default function ChangeOrdersSection({
     setSaving(true);
     try {
       const fileFields = await uploadFile();
+      const tracking = {
+        requested_by: form.requestedBy.trim() || null,
+        requested_date: form.requestedDate || null,
+        ...(fileFields ?? {}),
+      };
       const input = {
+        ...tracking,
         title: form.title.trim(),
         description: form.description.trim() || null,
         amount,
         schedule_impact_days: scheduleDays,
-        requested_by: form.requestedBy.trim() || null,
-        ...(fileFields ?? {}),
       };
-      if (editing) {
+      if (editing && locked) {
+        await updateChangeOrder(editing.id, {
+          ...tracking,
+          approved_date: form.approvedDate || null,
+          approved_by_name: form.approvedByName.trim() || null,
+        });
+      } else if (editing) {
         await updateChangeOrder(editing.id, input);
       } else {
         await createChangeOrder(jobId, user.id, input);
@@ -227,14 +272,21 @@ export default function ChangeOrdersSection({
     }
   };
 
-  const handleApprove = async (co: ChangeOrder) => {
-    if (!user?.id) return;
+  const handleApprove = async () => {
+    const co = approving;
+    if (!user?.id || !co) return;
+    setApproving(null);
     setBusyId(co.id);
     try {
-      const { qboError } = await approveChangeOrder(co, user.id, {
-        projectId: quickbooksProjectId,
-        jobNumber,
-      });
+      const { qboError } = await approveChangeOrder(
+        co,
+        user.id,
+        { projectId: quickbooksProjectId, jobNumber },
+        {
+          approved_date: approveForm.approvedDate || null,
+          approved_by_name: approveForm.approvedByName.trim() || null,
+        },
+      );
       await reload();
       if (qboError) {
         toast({
@@ -324,26 +376,9 @@ export default function ChangeOrdersSection({
             <FilePlus2 className="h-5 w-5 text-brand" />
             <span>Change Orders</span>
           </CardTitle>
-          <div className="flex items-center gap-4 flex-wrap">
-            <span className="text-sm text-neutral-600 dark:text-neutral-400">
-              Approved:{" "}
-              <span
-                className={`font-semibold ${summary.approvedTotal < 0 ? "text-red-600 dark:text-red-400" : summary.approvedTotal > 0 ? "text-green-600 dark:text-green-400" : "text-neutral-900 dark:text-white"}`}
-              >
-                {money(summary.approvedTotal)}
-              </span>
-            </span>
-            <span className="text-sm text-neutral-600 dark:text-neutral-400">
-              Pending:{" "}
-              <span className="font-semibold text-yellow-600 dark:text-yellow-400">
-                {money(summary.pendingTotal)}
-              </span>
-              {summary.pendingCount > 0 && ` (${summary.pendingCount})`}
-            </span>
-            <Button onClick={openAdd} leftIcon={<Plus className="h-4 w-4" />}>
-              Add Change Order
-            </Button>
-          </div>
+          <Button onClick={openAdd} leftIcon={<Plus className="h-4 w-4" />}>
+            Add Change Order
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -356,160 +391,212 @@ export default function ChangeOrdersSection({
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {changeOrders.map((co) => {
-              const busy = busyId === co.id;
-              const amount = Number(co.amount) || 0;
-              return (
-                <div
-                  key={co.id}
-                  className="border border-neutral-200 dark:border-neutral-700 rounded-none p-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <span className="font-mono text-sm font-semibold text-brand whitespace-nowrap">
-                          CO #{co.co_number}
-                        </span>
-                        <div>
-                          <h4 className="font-medium text-neutral-900 dark:text-white">
-                            {co.title}
-                          </h4>
-                          <div className="flex items-center space-x-4 text-sm text-neutral-500 dark:text-white flex-wrap gap-y-1">
-                            <Badge className={STATUS_BADGE[co.status]}>
-                              {co.status}
-                            </Badge>
-                            <span
-                              className={
-                                amount < 0
-                                  ? "text-red-600 dark:text-red-400"
-                                  : ""
-                              }
-                            >
-                              {amount < 0 ? "" : "+"}
-                              {money(amount)}
-                            </span>
-                            {co.schedule_impact_days != null &&
-                              co.schedule_impact_days !== 0 && (
-                                <span>
-                                  {co.schedule_impact_days > 0 ? "+" : ""}
-                                  {co.schedule_impact_days} days
-                                </span>
-                              )}
-                            {co.requested_by && (
-                              <span>Requested by {co.requested_by}</span>
-                            )}
-                            <span>
-                              {format(new Date(co.created_at), "MMM d, yyyy")}
-                            </span>
-                            {co.qbo_estimate_id && (
-                              <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
-                                QB Estimate
-                              </Badge>
-                            )}
-                          </div>
-                          {co.description && (
-                            <p className="text-sm text-neutral-600 dark:text-white mt-1">
-                              {co.description}
-                            </p>
-                          )}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>CO #</TableHead>
+                <TableHead>Requested</TableHead>
+                <TableHead>Scope</TableHead>
+                <TableHead className="text-right">Price</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Approved</TableHead>
+                <TableHead>Approved By</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {changeOrders.map((co) => {
+                const busy = busyId === co.id;
+                const amount = Number(co.amount) || 0;
+                return (
+                  <TableRow key={co.id}>
+                    <TableCell className="font-mono font-semibold text-brand whitespace-nowrap">
+                      CO #{co.co_number}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <div>{fmtDate(co.requested_date)}</div>
+                      {co.requested_by && (
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                          by {co.requested_by}
                         </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="min-w-[16rem]">
+                      <div className="font-medium text-neutral-900 dark:text-white">
+                        {co.title}
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-2 flex-wrap justify-end">
-                      {co.file_url && (
-                        <>
+                      {co.description && (
+                        <p className="text-sm text-neutral-600 dark:text-neutral-300 whitespace-pre-wrap">
+                          {co.description}
+                        </p>
+                      )}
+                      {co.schedule_impact_days != null &&
+                        co.schedule_impact_days !== 0 && (
+                          <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                            Schedule: {co.schedule_impact_days > 0 ? "+" : ""}
+                            {co.schedule_impact_days} days
+                          </div>
+                        )}
+                    </TableCell>
+                    <TableCell
+                      className={`text-right whitespace-nowrap font-medium ${amount < 0 ? "text-red-600 dark:text-red-400" : ""}`}
+                    >
+                      {amount < 0 ? "" : "+"}
+                      {money(amount)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col items-start gap-1">
+                        <Badge className={STATUS_BADGE[co.status]}>
+                          {co.status}
+                        </Badge>
+                        {co.qbo_estimate_id && (
+                          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                            QB Estimate
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {fmtDate(co.approved_date)}
+                    </TableCell>
+                    <TableCell>{co.approved_by_name || "-"}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-2 flex-wrap">
+                        {co.file_url && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              title="View attachment"
+                              aria-label="View attachment"
+                              onClick={() => window.open(co.file_url!, "_blank")}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              title="Download attachment"
+                              aria-label="Download attachment"
+                              onClick={() => {
+                                const link = document.createElement("a");
+                                link.href = co.file_url!;
+                                link.download = co.title;
+                                link.click();
+                              }}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                        {co.status === "draft" && (
                           <Button
                             variant="outline"
-                            size="sm"
-                            onClick={() => window.open(co.file_url!, "_blank")}
-                            leftIcon={<Eye className="h-4 w-4" />}
-                          >
-                            View
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const link = document.createElement("a");
-                              link.href = co.file_url!;
-                              link.download = co.title;
-                              link.click();
-                            }}
-                            leftIcon={<Download className="h-4 w-4" />}
-                          >
-                            Download
-                          </Button>
-                        </>
-                      )}
-                      {co.status === "draft" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={busy}
-                          onClick={() => setStatus(co, "submitted")}
-                        >
-                          Submit
-                        </Button>
-                      )}
-                      {(co.status === "draft" || co.status === "submitted") && (
-                        <>
-                          <Button
                             size="sm"
                             disabled={busy}
-                            onClick={() => handleApprove(co)}
-                            leftIcon={<Check className="h-4 w-4" />}
+                            onClick={() => setStatus(co, "submitted")}
                           >
-                            Approve
+                            Submit
                           </Button>
+                        )}
+                        {(co.status === "draft" ||
+                          co.status === "submitted") && (
+                          <>
+                            <Button
+                              size="sm"
+                              disabled={busy}
+                              onClick={() => openApprove(co)}
+                              leftIcon={<Check className="h-4 w-4" />}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={busy}
+                              onClick={() => setStatus(co, "rejected")}
+                              leftIcon={<X className="h-4 w-4" />}
+                            >
+                              Reject
+                            </Button>
+                          </>
+                        )}
+                        {co.status !== "rejected" && (
                           <Button
                             variant="outline"
                             size="sm"
-                            disabled={busy}
-                            onClick={() => setStatus(co, "rejected")}
-                            leftIcon={<X className="h-4 w-4" />}
-                          >
-                            Reject
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
+                            title="Edit"
+                            aria-label="Edit"
                             disabled={busy}
                             onClick={() => openEdit(co)}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
-                        </>
-                      )}
-                      {co.status === "approved" &&
-                        quickbooksProjectId &&
-                        !co.qbo_estimate_id && (
+                        )}
+                        {co.status === "approved" &&
+                          quickbooksProjectId &&
+                          !co.qbo_estimate_id && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={busy}
+                              onClick={() => handlePushToQBO(co)}
+                              leftIcon={<RefreshCw className="h-4 w-4" />}
+                            >
+                              Push to QB
+                            </Button>
+                          )}
+                        {co.status !== "approved" && (
                           <Button
                             variant="outline"
                             size="sm"
+                            title="Delete"
+                            aria-label="Delete"
                             disabled={busy}
-                            onClick={() => handlePushToQBO(co)}
-                            leftIcon={<RefreshCw className="h-4 w-4" />}
+                            onClick={() => handleDelete(co)}
                           >
-                            Push to QB
+                            <Trash2 className="h-4 w-4 text-red-600" />
                           </Button>
                         )}
-                      {co.status !== "approved" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={busy}
-                          onClick={() => handleDelete(co)}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-600" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={3} className="text-right">
+                  Approved total ({summary.approvedCount})
+                </TableCell>
+                <TableCell
+                  className={`text-right whitespace-nowrap ${summary.approvedTotal < 0 ? "text-red-600 dark:text-red-400" : summary.approvedTotal > 0 ? "text-green-600 dark:text-green-400" : ""}`}
+                >
+                  {money(summary.approvedTotal)}
+                </TableCell>
+                <TableCell
+                  colSpan={4}
+                  className="text-xs font-normal text-neutral-500 dark:text-neutral-400"
+                >
+                  Included in total contract value
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell colSpan={3} className="text-right">
+                  Pending total ({summary.pendingCount})
+                </TableCell>
+                <TableCell className="text-right whitespace-nowrap text-yellow-600 dark:text-yellow-400">
+                  {money(summary.pendingTotal)}
+                </TableCell>
+                <TableCell
+                  colSpan={4}
+                  className="text-xs font-normal text-neutral-500 dark:text-neutral-400"
+                >
+                  Not in contract value until approved
+                </TableCell>
+              </TableRow>
+            </TableFooter>
+          </Table>
         )}
       </CardContent>
 
@@ -523,6 +610,12 @@ export default function ChangeOrdersSection({
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {locked && (
+              <p className="text-sm text-neutral-600 dark:text-neutral-300">
+                This change order is approved. Title, amount, and scope are
+                locked.
+              </p>
+            )}
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="co-title">
                 Title
@@ -534,9 +627,10 @@ export default function ChangeOrdersSection({
                   setForm((prev) => ({ ...prev, title: e.target.value }))
                 }
                 placeholder="e.g. Added transformer testing at Bldg 2"
+                disabled={locked}
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium" htmlFor="co-amount">
                   Amount ($)
@@ -550,6 +644,7 @@ export default function ChangeOrdersSection({
                     setForm((prev) => ({ ...prev, amount: e.target.value }))
                   }
                   placeholder="Negative = deductive"
+                  disabled={locked}
                 />
               </div>
               <div className="space-y-2">
@@ -568,6 +663,7 @@ export default function ChangeOrdersSection({
                     }))
                   }
                   placeholder="Optional"
+                  disabled={locked}
                 />
               </div>
               <div className="space-y-2">
@@ -583,14 +679,76 @@ export default function ChangeOrdersSection({
                   placeholder="Customer / GC contact"
                 />
               </div>
+              <div className="space-y-2">
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="co-requested-date"
+                >
+                  Date Requested
+                </label>
+                <Input
+                  id="co-requested-date"
+                  type="date"
+                  value={form.requestedDate}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      requestedDate: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+              {locked && (
+                <>
+                  <div className="space-y-2">
+                    <label
+                      className="text-sm font-medium"
+                      htmlFor="co-approved-by"
+                    >
+                      Approved By
+                    </label>
+                    <Input
+                      id="co-approved-by"
+                      value={form.approvedByName}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          approvedByName: e.target.value,
+                        }))
+                      }
+                      placeholder="Customer / GC contact"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label
+                      className="text-sm font-medium"
+                      htmlFor="co-approved-date"
+                    >
+                      Date Approved
+                    </label>
+                    <Input
+                      id="co-approved-date"
+                      type="date"
+                      value={form.approvedDate}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          approvedDate: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                </>
+              )}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="co-description">
-                Description (optional)
+                Scope / Description (optional)
               </label>
               <Textarea
                 id="co-description"
-                rows={2}
+                rows={3}
+                disabled={locked}
                 value={form.description}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, description: e.target.value }))
@@ -623,6 +781,64 @@ export default function ChangeOrdersSection({
             </Button>
             <Button onClick={handleSave} disabled={saving}>
               {saving ? "Saving..." : editing ? "Save Changes" : "Add Change Order"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!approving}
+        onOpenChange={(open) => {
+          if (!open) setApproving(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md w-full">
+          <DialogHeader>
+            <DialogTitle>Approve CO #{approving?.co_number}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="co-approve-by">
+                Approved By
+              </label>
+              <Input
+                id="co-approve-by"
+                value={approveForm.approvedByName}
+                onChange={(e) =>
+                  setApproveForm((prev) => ({
+                    ...prev,
+                    approvedByName: e.target.value,
+                  }))
+                }
+                placeholder="Customer / GC contact"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="co-approve-date">
+                Date Approved
+              </label>
+              <Input
+                id="co-approve-date"
+                type="date"
+                value={approveForm.approvedDate}
+                onChange={(e) =>
+                  setApproveForm((prev) => ({
+                    ...prev,
+                    approvedDate: e.target.value,
+                  }))
+                }
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setApproving(null)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleApprove}
+              leftIcon={<Check className="h-4 w-4" />}
+            >
+              Approve
             </Button>
           </DialogFooter>
         </DialogContent>

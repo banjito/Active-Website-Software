@@ -332,17 +332,18 @@ function mapOpportunityToPipelineJob(
   const amountDollars = Number(
     linkedJob?.budget || opportunity?.quoted_amount || 0,
   );
-  // Once a job exists, its dates are the real schedule
+  // The opportunity's own Start/End Date wins. A job's start_date defaults to
+  // the day the job was created, so it only fills in when the opp has none.
   const startDate =
+    opportunity?.estimated_start_date?.slice(0, 10) ||
     linkedJob?.start_date?.slice(0, 10) ||
-    opportunity?.estimated_start_date ||
     opportunity?.proposal_due_date ||
     opportunity?.opportunity_created_date ||
     opportunity?.created_at?.slice(0, 10) ||
     toDateInputValue(new Date());
   const endDate =
+    opportunity?.estimated_end_date?.slice(0, 10) ||
     linkedJob?.due_date?.slice(0, 10) ||
-    opportunity?.estimated_end_date ||
     undefined;
 
   return {

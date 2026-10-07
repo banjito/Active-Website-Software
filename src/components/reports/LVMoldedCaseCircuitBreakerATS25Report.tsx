@@ -2539,6 +2539,136 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           display: none !important;
         }
       `}</style>
+      {/*
+        Print fixes for this report only.
+
+        Other reports inject unscoped print CSS into <head> at startup
+        (.text-xs { font-size: 7px }, input { text-align: left }, ...), and it
+        lands on this report too: tiny table labels, left-jammed values. These
+        rules carry the #report-container id so they outrank those sheets.
+
+        The shared print CSS also forces every table to 100% width, which
+        wrapped the Current Sensing results table underneath the settings
+        table, leaving its rows unlabeled. Print them side by side with equal
+        row heights so each result lines up with its function.
+      */}
+      <style data-report-print>{`
+        @media print {
+          #report-container .lv-mccb-ats25 table input,
+          #report-container .lv-mccb-ats25 table select {
+            font-size: 9px !important;
+            text-align: center !important;
+            text-align-last: center !important;
+          }
+          #report-container .lv-mccb-ats25 .overflow-x-auto table th,
+          #report-container .lv-mccb-ats25 .overflow-x-auto table td,
+          #report-container .lv-mccb-ats25 .overflow-x-auto table th *,
+          #report-container .lv-mccb-ats25 .overflow-x-auto table td * {
+            font-size: 9px !important;
+          }
+
+          #report-container .lv-mccb-ats25 .ats25-cs-tables {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            align-items: flex-end !important;
+            gap: 8px !important;
+            width: 100% !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          #report-container .lv-mccb-ats25 .ats25-cs-tables > div {
+            min-width: 0 !important;
+            width: auto !important;
+          }
+          #report-container .lv-mccb-ats25 .ats25-cs-tables > div:first-child {
+            flex: 56 1 0 !important;
+          }
+          #report-container .lv-mccb-ats25 .ats25-cs-tables > div:last-child {
+            flex: 44 1 0 !important;
+          }
+          #report-container .lv-mccb-ats25 .ats25-cs-tables thead th {
+            padding: 1px 2px !important;
+            line-height: 1.2 !important;
+            vertical-align: middle !important;
+          }
+          /* Settings table has a two-row header, results table has one. */
+          #report-container .lv-mccb-ats25 .ats25-cs-tables thead tr {
+            height: 15px !important;
+          }
+          #report-container .lv-mccb-ats25 .ats25-cs-tables thead tr:only-child {
+            height: 30px !important;
+          }
+          /* Pin column widths: leaked rules widen the first column and crush
+             Min/Max. The two-row header is the Primary Injection layout; its
+             last cell spans Min + Max. */
+          #report-container .lv-mccb-ats25 .ats25-cs-tables > div:first-child thead tr:not(:only-child):first-child th:nth-child(1),
+          #report-container .lv-mccb-ats25 .ats25-cs-tables > div:first-child thead tr:not(:only-child):first-child th:nth-child(2) {
+            width: 13% !important;
+          }
+          #report-container .lv-mccb-ats25 .ats25-cs-tables > div:first-child thead tr:not(:only-child):first-child th:nth-child(3) {
+            width: 21% !important;
+          }
+          #report-container .lv-mccb-ats25 .ats25-cs-tables > div:first-child thead tr:not(:only-child):first-child th:nth-child(4) {
+            width: 15% !important;
+          }
+          #report-container .lv-mccb-ats25 .ats25-cs-tables > div:first-child thead tr:not(:only-child):first-child th:nth-child(5) {
+            width: 38% !important;
+          }
+          #report-container .lv-mccb-ats25 .ats25-cs-tables > div:last-child thead th {
+            width: 27% !important;
+          }
+          #report-container .lv-mccb-ats25 .ats25-cs-tables > div:last-child thead th:last-child {
+            width: 19% !important;
+          }
+          /* Min | Max tolerance pair shares its cell instead of overflowing. */
+          #report-container .lv-mccb-ats25 .ats25-cs-tables tbody td .flex {
+            width: 100% !important;
+          }
+          #report-container .lv-mccb-ats25 .ats25-cs-tables tbody td .flex > input {
+            flex: 1 1 0 !important;
+            width: auto !important;
+            min-width: 0 !important;
+          }
+          /* Other reports leak "td span { display: inline-block; margin... }"
+             and td:after rules, which push read-only values left of center. */
+          #report-container .lv-mccb-ats25 .ats25-cs-tables tbody td::before,
+          #report-container .lv-mccb-ats25 .ats25-cs-tables tbody td::after {
+            content: none !important;
+            display: none !important;
+          }
+          #report-container .lv-mccb-ats25 .ats25-cs-tables tbody td > span {
+            display: block !important;
+            width: 100% !important;
+          }
+          #report-container .lv-mccb-ats25 .ats25-cs-tables tbody td > span,
+          #report-container .lv-mccb-ats25 .ats25-cs-tables tbody td .flex > span:last-child {
+            min-width: 0 !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            text-indent: 0 !important;
+            text-align: center !important;
+            position: static !important;
+            float: none !important;
+          }
+          #report-container .lv-mccb-ats25 .ats25-cs-tables tbody td {
+            height: 20px !important;
+            padding: 0 2px !important;
+            line-height: 20px !important;
+            vertical-align: middle !important;
+          }
+          #report-container .lv-mccb-ats25 .ats25-cs-tables tbody td * {
+            height: 20px !important;
+            min-height: 0 !important;
+            line-height: 20px !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+          }
+        }
+      `}</style>
       {/* Print Header - Only visible when printing */}
       <div
         className="print:flex hidden items-center justify-between pb-4 mb-6 relative"
@@ -2616,7 +2746,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
         </div>
       </div>
 
-      <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white">
+      <div className="p-6 max-w-7xl mx-auto space-y-6 dark:text-white lv-mccb-ats25">
         {error && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-none p-4 text-red-700 dark:text-red-300 mb-4">
             {error}
@@ -5188,7 +5318,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
               </div>
 
               {/* Current Sensing Tests Tables - Side by Side - align at bottom so GFPU / A. row lines up */}
-              <div className="flex flex-wrap gap-4 items-end">
+              <div className="flex flex-wrap gap-4 items-end ats25-cs-tables">
                 {/* Left Table: Settings */}
                 <div className="overflow-x-auto">
                   <table className="border-collapse border border-neutral-300 dark:border-neutral-600 text-xs align-top">

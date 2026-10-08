@@ -59,6 +59,7 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { supabase } from "@/lib/supabase";
+import { createBatchedRowLookup } from "@/lib/batchedRowLookup";
 import { canApproveReports, canExportReports } from "@/lib/roles";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import {
@@ -957,6 +958,9 @@ export function ReportApprovalWorkflow({
           };
 
           const subMap: Record<string, string> = {};
+          // Rows are fetched a hundred at a time. One request per report timed out on
+          // the biggest jobs, and a report with no answer was filed under 'Other'.
+          const reportRows = createBatchedRowLookup();
           await Promise.all(
             merged.map(async (r) => {
               // Get file_url from linked asset (more reliable than technical_reports.report_data.file_url)
@@ -996,12 +1000,9 @@ export function ReportApprovalWorkflow({
               ];
               let data: any = null;
               for (const t of tablesToTry) {
-                const { data: d } = await supabase
-                  .schema("neta_ops")
-                  .from(t)
-                  .select("*")
-                  .eq("id", repId)
-                  .maybeSingle();
+                // A lookup that could not be completed is skipped here and counted by
+                // reportRows, so the substations already on screen are kept below.
+                const d = await reportRows.load(t, repId).catch(() => null);
                 if (d) {
                   data = d;
                   break;
@@ -1036,7 +1037,7 @@ export function ReportApprovalWorkflow({
               }
             }),
           );
-          if (isLoadMore) {
+          if (isLoadMore || reportRows.failedCount() > 0) {
             setReportSubstations((prev) => ({ ...prev, ...subMap }));
           } else {
             setReportSubstations(subMap);

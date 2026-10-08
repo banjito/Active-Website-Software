@@ -74,6 +74,7 @@ import {
   updateAssetReportStatus,
 } from "@/lib/services/assetReportStatus";
 import { describeSupabaseError, withWriteRetry } from "@/lib/supabaseRetry";
+import { createBatchedRowLookup } from "@/lib/batchedRowLookup";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { format } from "date-fns";
 import { Button } from "../ui/Button";
@@ -6040,6 +6041,11 @@ export default function JobDetail() {
         ],
       };
 
+      // Every report's row is asked for below, but they are fetched a hundred at a time.
+      // One request per report meant 2,000 at once on the biggest jobs; the ones that
+      // timed out left their reports under 'Other' with a stale name.
+      const reportRows = createBatchedRowLookup();
+
       const tasks = jobAssets.map(async (asset) => {
         try {
           if (!asset.file_url) return;
@@ -6051,12 +6057,11 @@ export default function JobDetail() {
             // ['jobs', jobId, 'custom-form', templateId, instanceId]
             const instanceId = (parts[4] || "").split("?")[0];
             if (!instanceId) return;
-            const { data: inst } = await supabase
-              .schema("neta_ops")
-              .from("custom_form_instances")
-              .select("data")
-              .eq("id", instanceId)
-              .maybeSingle();
+            const inst = await reportRows.load(
+              "custom_form_instances",
+              instanceId,
+              "id, data",
+            );
             const instData =
               typeof (inst as any)?.data === "string"
                 ? JSON.parse((inst as any).data)
@@ -6133,12 +6138,7 @@ export default function JobDetail() {
           ];
           let data: any = null;
           for (const t of tablesToTry) {
-            const { data: d } = await supabase
-              .schema("neta_ops")
-              .from(t)
-              .select("*")
-              .eq("id", reportIdFromUrl)
-              .maybeSingle();
+            const d = await reportRows.load(t, reportIdFromUrl);
             if (d) {
               data = d;
               break;
@@ -6283,6 +6283,17 @@ export default function JobDetail() {
       }
       if (Object.keys(serialUpdates).length > 0) {
         setAssetSerialNumbers((prev) => ({ ...prev, ...serialUpdates }));
+      }
+      // A lookup that never got an answer leaves its report with no substation here.
+      // Remembering that would keep it under 'Other' on every later visit, so only a
+      // complete pass is cached; a partial one is simply run again next time.
+      if (reportRows.failedCount() > 0) {
+        console.warn(
+          `Job reports: ${reportRows.failedCount()} report lookup(s) failed; not caching this pass.`,
+        );
+        // Keep the evaluations already on screen for the reports that were not reached.
+        setAssetEvaluations((prev) => ({ ...prev, ...evaluationUpdates }));
+        return;
       }
       setAssetEvaluations(evaluationUpdates);
       patchJobAssetsCache(jobAssetsCacheKey, {

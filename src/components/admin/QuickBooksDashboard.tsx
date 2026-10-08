@@ -94,6 +94,7 @@ import {
   getQuickBooksTimeOffBalances,
   getQuickBooksEmployeeCompensation,
 } from "@/services/quickbooksService";
+import QuickBooksTimeEntryTest from "./QuickBooksTimeEntryTest";
 
 export const QuickBooksDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);

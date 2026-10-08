@@ -468,6 +468,32 @@ export async function getQuickBooksEmployees(): Promise<any[]> {
 }
 
 /**
+ * Create a time entry (TimeActivity) in QuickBooks
+ */
+export async function createQuickBooksTimeActivity(timeActivityData: any): Promise<any> {
+  return quickBooksApiCall('/v3/company/{realmId}/timeactivity', 'POST', timeActivityData);
+}
+
+/**
+ * Get a single time entry (TimeActivity) by ID
+ */
+export async function getQuickBooksTimeActivity(timeActivityId: string): Promise<any> {
+  const response = await quickBooksApiCall(`/v3/company/{realmId}/timeactivity/${timeActivityId}`);
+  return response?.TimeActivity || null;
+}
+
+/**
+ * Delete a time entry (TimeActivity) from QuickBooks.
+ * QuickBooks only accepts the delete with the entry's current SyncToken.
+ */
+export async function deleteQuickBooksTimeActivity(timeActivityId: string, syncToken: string): Promise<any> {
+  return quickBooksApiCall('/v3/company/{realmId}/timeactivity?operation=delete', 'POST', {
+    Id: timeActivityId,
+    SyncToken: syncToken,
+  });
+}
+
+/**
  * Get time activities (time tracking entries) from QuickBooks
  * @param startDate - Start date in YYYY-MM-DD format
  * @param endDate - End date in YYYY-MM-DD format

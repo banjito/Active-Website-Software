@@ -699,6 +699,8 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
   const saveAgainRef = React.useRef(false);
   /** The asset row + job link have been confirmed for this report. */
   const assetLinkedRef = React.useRef(false);
+  /** The name the asset row was last written under, so a later rename reaches it. */
+  const linkedAssetNameRef = React.useRef<string | null>(null);
   /** An existing report failed to load; the form on screen is not its data. */
   const loadFailedRef = React.useRef(false);
   /**
@@ -1412,11 +1414,14 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
       );
     if (error) throw error;
 
-    if (!assetLinkedRef.current) {
+    // The first auto-save usually lands before the breaker identifier is typed, so the
+    // asset row has to be written again whenever the name it would carry has changed.
+    const assetName = getAssetName(reportSlug, currentFormData.breakerIdentifier);
+    if (!assetLinkedRef.current || linkedAssetNameRef.current !== assetName) {
       const reportAssetId = await ensureReportAssetLink(
         jobId,
         {
-          name: getAssetName(reportSlug, currentFormData.breakerIdentifier),
+          name: assetName,
           file_url: `report:/jobs/${jobId}/${reportSlug}/${reportId}`,
           template_type: "ATS",
           status: "in_progress",
@@ -1427,6 +1432,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
         await setReportAssetEquipmentLink(reportAssetId, equipmentAssetIdRef.current);
       }
       assetLinkedRef.current = true;
+      linkedAssetNameRef.current = assetName;
     }
 
     if (isNewReport) {
@@ -1479,6 +1485,16 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
         .eq("id", originalId);
       if (restoreError) throw restoreError;
 
+      // Those same saves carried the new name onto this report's asset row too.
+      await ensureReportAssetLink(
+        jobId,
+        {
+          name: getAssetName(reportSlug, previous.breakerIdentifier),
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${originalId}`,
+        },
+        user?.id,
+      );
+
       // Hand the form a new row. persistReport mints the id, links the asset
       // and rewrites the URL, so the crew carries straight on typing.
       reportIdRef.current = undefined;
@@ -1491,7 +1507,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
         throw new Error("Could not create the new report.");
       }
     },
-    [jobId, persistReport],
+    [jobId, persistReport, user?.id, reportSlug],
   );
 
   const renameGuard = useIdentifierRenameGuard({

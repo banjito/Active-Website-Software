@@ -824,6 +824,8 @@ const OilInspectionReport: React.FC = () => {
   );
   /** The asset row + job link have been confirmed for this report. */
   const assetLinkedRef = React.useRef(false);
+  /** The name the asset row was last written under, so a later rename reaches it. */
+  const linkedAssetNameRef = React.useRef<string | null>(null);
   /** An existing report failed to load; the form on screen is not its data. */
   const loadFailedRef = React.useRef(false);
 
@@ -1677,21 +1679,24 @@ const OilInspectionReport: React.FC = () => {
       if (error) throw error;
     }
 
-    if (!assetLinkedRef.current) {
-      const { formData } = saveStateRef.current;
+    // The first auto-save usually lands before the identifier is typed, so the asset
+    // row has to be written again whenever the name it would carry has changed.
+    const assetName = getAssetName(
+      reportSlug,
+      saveStateRef.current.formData.identifier || saveStateRef.current.formData.eqptLocation || "",
+    );
+    if (!assetLinkedRef.current || linkedAssetNameRef.current !== assetName) {
       await ensureReportAssetLink(
         jobId,
         {
-          name: getAssetName(
-            reportSlug,
-            formData.identifier || formData.eqptLocation || "",
-          ),
+          name: assetName,
           file_url: `report:/jobs/${jobId}/${reportSlug}/${reportId}`,
           user_id: user.id,
         },
         user.id,
       );
       assetLinkedRef.current = true;
+      linkedAssetNameRef.current = assetName;
     }
 
     if (iCreatedTheRow) {

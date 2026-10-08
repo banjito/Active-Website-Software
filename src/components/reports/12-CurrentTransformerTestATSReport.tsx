@@ -381,6 +381,8 @@ const CurrentTransformerTestATSReport: React.FC = () => {
   const saveAgainRef = React.useRef(false);
   /** The asset row + job link have been confirmed for this report. */
   const assetLinkedRef = React.useRef(false);
+  /** The name the asset row was last written under, so a later rename reaches it. */
+  const linkedAssetNameRef = React.useRef<string | null>(null);
   /** An existing report failed to load; the form on screen is not its data. */
   const loadFailedRef = React.useRef(false);
   const [searchParams] = useSearchParams();
@@ -1279,17 +1281,19 @@ const CurrentTransformerTestATSReport: React.FC = () => {
       .upsert({ id: reportId, ...buildReportPayload() }, { onConflict: "id" });
     if (error) throw error;
 
-    if (!assetLinkedRef.current) {
-      const formData = formDataRef.current;
+    // The first auto-save usually lands before the identifier is typed, so the asset
+    // row has to be written again whenever the name it would carry has changed.
+    const assetName = getAssetName(
+      reportSlug,
+      formDataRef.current.identifier ||
+        formDataRef.current.eqptLocation ||
+        "",
+    );
+    if (!assetLinkedRef.current || linkedAssetNameRef.current !== assetName) {
       await ensureReportAssetLink(
         jobId,
         {
-          name: getAssetName(
-            reportSlug,
-            formData.identifier ||
-              formData.eqptLocation ||
-              "",
-          ),
+          name: assetName,
           file_url: `report:/jobs/${jobId}/${reportSlug}/${reportId}`,
           user_id: user.id,
           template_type: "ATS",
@@ -1297,6 +1301,7 @@ const CurrentTransformerTestATSReport: React.FC = () => {
         user.id,
       );
       assetLinkedRef.current = true;
+      linkedAssetNameRef.current = assetName;
     }
 
     if (isNewReport) {

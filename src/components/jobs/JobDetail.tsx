@@ -23,10 +23,8 @@ import {
   FileText,
   Package,
   Trash2,
-  ClipboardCheck,
   MessageCircleWarning,
   Calendar,
-  DollarSign,
   Building,
   User,
   Phone,
@@ -4604,6 +4602,100 @@ export default function JobDetail() {
   const handleTabChange = (tabValue: string) => {
     setActiveTab(tabValue);
   };
+
+  // Job page navigation: sections on the top row, the active section's tabs on a second row.
+  // Keys are the existing activeTab values ("assets" is the Reports list, "reports" is Report Approvals).
+  type JobTab = {
+    key: string;
+    label: string;
+    hidden?: boolean;
+    disabled?: boolean;
+    alert?: boolean;
+  };
+  const allJobTabSections: {
+    id: string;
+    label: string;
+    count?: number;
+    tabs: JobTab[];
+  }[] = [
+    {
+      id: "overview",
+      label: "Overview",
+      tabs: [{ key: "overview", label: "Overview" }],
+    },
+    {
+      id: "reports",
+      label: "Reports",
+      count:
+        !jobAssetsLoading && totalAssetCount > 0 ? totalAssetCount : undefined,
+      tabs: [
+        { key: "assets", label: "Reports" },
+        {
+          key: "reports",
+          label: "Approvals",
+          disabled: !isAdmin,
+          alert: openReportFlagCount > 0,
+        },
+        { key: "report-audit", label: "Audit" },
+      ],
+    },
+    {
+      id: "assets",
+      label: "Assets",
+      tabs: [{ key: "equipment-assets", label: "Assets" }],
+    },
+    {
+      id: "tracking",
+      label: "Tracking",
+      tabs: [
+        { key: "project-tracker", label: "Project Tracker" },
+        { key: "tracking", label: "Tracking" },
+        { key: "deliverables", label: "Deliverables" },
+      ],
+    },
+    {
+      id: "field",
+      label: "Field",
+      tabs: [
+        { key: "notes", label: "Job Notes" },
+        { key: "pictures", label: "Pictures" },
+        { key: "after-action", label: "After-Action Reports" },
+      ],
+    },
+    {
+      id: "financials",
+      label: "Financials",
+      tabs: [
+        {
+          key: "change-orders",
+          label:
+            changeOrderSummary.pendingCount > 0
+              ? `Change Orders (${changeOrderSummary.pendingCount})`
+              : "Change Orders",
+        },
+        { key: "tm-expenses", label: "T&M Expenses", hidden: !isTMJob },
+        { key: "profitability", label: "Profitability", hidden: !isAdmin },
+      ],
+    },
+  ];
+  const jobTabSections = allJobTabSections.map((section) => ({
+    ...section,
+    tabs: section.tabs.filter((tab) => !tab.hidden),
+  }));
+  const activeTabSection =
+    jobTabSections.find((section) =>
+      section.tabs.some((tab) => tab.key === activeTab),
+    ) ?? jobTabSections[0];
+  const reportFlagBadge = openReportFlagCount > 0 && (
+    <span
+      className="inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-none bg-red-600 px-1.5 text-[11px] font-bold leading-none text-white shadow-sm"
+      title={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
+      aria-label={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
+    >
+      <MessageCircleWarning className="h-3 w-3" />
+      {openReportFlagCount}
+    </span>
+  );
 
   const handleEditSubmit = async () => {
     if (!editFormData || !id) return;
@@ -10057,15 +10149,34 @@ export default function JobDetail() {
           <div>
             <div className="px-6 py-4">
               <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white">
-                    {mergedTitles && mergedTitles.length > 0
-                      ? mergedTitles.map((t) => maskJobTitle(t)).join(", ")
-                      : maskJobTitle(job.title)}
-                  </h1>
-                  <p className="mt-1 text-sm text-neutral-600 dark:text-white">
-                    Job #{job.job_number || "Pending"}
-                  </p>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white">
+                      {mergedTitles && mergedTitles.length > 0
+                        ? mergedTitles.map((t) => maskJobTitle(t)).join(", ")
+                        : maskJobTitle(job.title)}
+                    </h1>
+                    {job.status && (
+                      <span className="rounded-none border border-neutral-300 bg-neutral-100 px-2 py-1 text-xs font-bold uppercase tracking-wide text-neutral-700 dark:border-neutral-600 dark:bg-dark-200 dark:text-neutral-200">
+                        {job.status.replace(/_/g, " ")}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-x-5 gap-y-1 text-sm text-neutral-600 dark:text-neutral-300">
+                    <span>Job #{job.job_number || "Pending"}</span>
+                    {(job.customers?.company_name || job.customers?.name) && (
+                      <span>
+                        {maskCustomerName(
+                          job.customers?.company_name || job.customers?.name,
+                        )}
+                      </span>
+                    )}
+                    {job.due_date && (
+                      <span>
+                        Due {format(new Date(job.due_date), "MMM d, yyyy")}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 {/* Additional job header details would go here */}
               </div>
@@ -10110,173 +10221,62 @@ export default function JobDetail() {
             </div>
 
             <div className="border-t border-neutral-200 dark:border-neutral-700">
-              <div className="px-6">
-                <div className="flex border-b border-neutral-200 dark:border-neutral-700">
-                  <button
-                    onClick={() => handleTabChange("assets")}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === "assets"
-                        ? "border-b-2 border-brand text-brand"
-                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
-                    }`}
-                  >
-                    Reports
-                  </button>
-                  <button
-                    onClick={() => handleTabChange("equipment-assets")}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === "equipment-assets"
-                        ? "border-b-2 border-brand text-brand"
-                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
-                    }`}
-                  >
-                    Assets
-                  </button>
-                  <button
-                    onClick={() => handleTabChange("project-tracker")}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === "project-tracker"
-                        ? "border-b-2 border-brand text-brand"
-                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
-                    }`}
-                  >
-                    Project Tracker
-                  </button>
-                  <button
-                    onClick={() => handleTabChange("reports")}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === "reports"
-                        ? "border-b-2 border-brand text-brand"
-                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
-                    } ${!isAdmin ? "opacity-50 cursor-not-allowed" : ""}`}
-                    disabled={!isAdmin}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <ClipboardCheck className="h-5 w-5 min-w-[20px] flex-shrink-0" />
-                      Report Approvals
-                      {openReportFlagCount > 0 && (
-                        <span
-                          className="inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-none bg-red-600 px-1.5 text-[11px] font-bold leading-none text-white shadow-sm"
-                          title={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
-                          aria-label={`${openReportFlagCount} open customer flag${openReportFlagCount === 1 ? "" : "s"} needing attention`}
-                        >
-                          <MessageCircleWarning className="h-3 w-3" />
-                          {openReportFlagCount}
+              {/* Sections: six at most, and they wrap instead of running off a narrow window */}
+              <div className="flex flex-wrap border-b border-neutral-200 px-2 dark:border-neutral-700">
+                {jobTabSections.map((section) => {
+                  const on = section.id === activeTabSection.id;
+                  return (
+                    <button
+                      key={section.id}
+                      type="button"
+                      onClick={() =>
+                        handleTabChange(
+                          (
+                            section.tabs.find((tab) => !tab.disabled) ??
+                            section.tabs[0]
+                          ).key,
+                        )
+                      }
+                      className={`-mb-px inline-flex h-12 items-center gap-2 border-b-[3px] px-4 text-[15px] ${
+                        on
+                          ? "border-brand font-bold text-neutral-900 dark:text-white"
+                          : "border-transparent font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
+                      }`}
+                    >
+                      {section.label}
+                      {section.count != null && (
+                        <span className="rounded-none border border-neutral-300 bg-neutral-100 px-1.5 py-0.5 text-xs font-bold text-neutral-700 dark:border-neutral-600 dark:bg-dark-200 dark:text-neutral-200">
+                          {section.count}
                         </span>
                       )}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => handleTabChange("report-audit")}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === "report-audit"
-                        ? "border-b-2 border-brand text-brand"
-                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
-                    }`}
-                  >
-                    Report Audit
-                  </button>
-                  <button
-                    onClick={() => handleTabChange("tracking")}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === "tracking"
-                        ? "border-b-2 border-brand text-brand"
-                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
-                    }`}
-                  >
-                    Tracking
-                  </button>
-                  <button
-                    onClick={() => handleTabChange("overview")}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === "overview"
-                        ? "border-b-2 border-brand text-brand"
-                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
-                    }`}
-                  >
-                    Overview
-                  </button>
-                  <button
-                    onClick={() => handleTabChange("change-orders")}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === "change-orders"
-                        ? "border-b-2 border-brand text-brand"
-                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
-                    }`}
-                  >
-                    Change Orders
-                    {changeOrderSummary.pendingCount > 0 &&
-                      ` (${changeOrderSummary.pendingCount})`}
-                  </button>
-                  <button
-                    onClick={() => handleTabChange("deliverables")}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === "deliverables"
-                        ? "border-b-2 border-brand text-brand"
-                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
-                    }`}
-                  >
-                    Deliverables
-                  </button>
-                  <button
-                    onClick={() => handleTabChange("notes")}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === "notes"
-                        ? "border-b-2 border-brand text-brand"
-                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
-                    }`}
-                  >
-                    Job Notes
-                  </button>
-                  <button
-                    onClick={() => handleTabChange("pictures")}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === "pictures"
-                        ? "border-b-2 border-brand text-brand"
-                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
-                    }`}
-                  >
-                    Pictures
-                  </button>
-                  <button
-                    onClick={() => handleTabChange("after-action")}
-                    className={`py-4 px-6 text-sm font-medium ${
-                      activeTab === "after-action"
-                        ? "border-b-2 border-brand text-brand"
-                        : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
-                    }`}
-                  >
-                    After-Action Reports
-                  </button>
-                  {isTMJob && (
-                    <button
-                      onClick={() => handleTabChange("tm-expenses")}
-                      className={`py-4 px-6 text-sm font-medium ${
-                        activeTab === "tm-expenses"
-                          ? "border-b-2 border-brand text-brand"
-                          : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
-                      }`}
-                    >
-                      T&amp;M Expenses
+                      {!on && section.tabs.some((tab) => tab.alert) && reportFlagBadge}
                     </button>
-                  )}
-                  {isAdmin && (
-                    <button
-                      onClick={() => handleTabChange("profitability")}
-                      className={`py-4 px-6 text-sm font-medium ${
-                        activeTab === "profitability"
-                          ? "border-b-2 border-brand text-brand"
-                          : "text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-neutral-300"
-                      }`}
-                    >
-                      <span className="inline-flex items-center gap-1.5">
-                        <DollarSign className="h-5 w-5 min-w-[20px] flex-shrink-0" />
-                        Profitability
-                      </span>
-                    </button>
-                  )}
-                </div>
+                  );
+                })}
               </div>
+              {activeTabSection.tabs.length > 1 && (
+                <div className="flex flex-wrap gap-1 border-b border-neutral-200 bg-neutral-50 px-5 py-1.5 dark:border-neutral-700 dark:bg-dark-200">
+                  {activeTabSection.tabs.map((tab) => {
+                    const on = tab.key === activeTab;
+                    return (
+                      <button
+                        key={tab.key}
+                        type="button"
+                        onClick={() => handleTabChange(tab.key)}
+                        disabled={tab.disabled}
+                        className={`inline-flex h-11 items-center gap-2 rounded-none border px-3.5 text-sm ${
+                          on
+                            ? "border-neutral-400 bg-white font-bold text-neutral-900 dark:border-neutral-500 dark:bg-dark-150 dark:text-white"
+                            : "border-transparent font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
+                        } ${tab.disabled ? "cursor-not-allowed opacity-50" : ""}`}
+                      >
+                        {tab.label}
+                        {tab.alert && reportFlagBadge}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
               <div className="p-6">
                 {activeTab === "overview" && (
@@ -11485,11 +11485,11 @@ export default function JobDetail() {
                   <div className="space-y-6">
                     {/* Linked assets section */}
                     <CardHeader>
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <CardTitle>Reports</CardTitle>
                         </div>
-                        <div className="flex w-2/3 items-center justify-end gap-1">
+                        <div className="flex min-w-0 flex-1 basis-96 items-center justify-end gap-1">
                           {/* Hidden until this instance has run the folders migration. */}
                           {substationFolders.available && (
                             <div className="shrink-0 order-last">
@@ -11943,136 +11943,100 @@ export default function JobDetail() {
 
                       {/* Status filter tabs */}
                       <div className="pt-4">
-                        <div className="inline-flex space-x-1 bg-neutral-100 dark:bg-dark-150 p-1 rounded-none">
+                        {/* Wraps on narrow windows; empty statuses are dimmed so the active ones stand out */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          {(
+                            [
+                              { key: "all", label: "All", count: totalAssetCount },
+                              {
+                                key: "not started",
+                                label: "Not Started",
+                                count: jobAssets.filter(
+                                  (asset) => asset.status === "not started",
+                                ).length,
+                              },
+                              {
+                                key: "in_progress",
+                                label: "In Progress",
+                                count: jobAssets.filter(
+                                  (asset) =>
+                                    !asset.status ||
+                                    asset.status === "in_progress",
+                                ).length,
+                              },
+                              {
+                                key: "ready_for_review",
+                                label: "Ready for Review",
+                                count: jobAssets.filter(
+                                  (asset) => asset.status === "ready_for_review",
+                                ).length,
+                              },
+                              {
+                                key: "approved",
+                                label: "Approved",
+                                count: jobAssets.filter(
+                                  (asset) =>
+                                    asset.status === "approved" &&
+                                    !isInternalFormAsset(asset),
+                                ).length,
+                              },
+                              {
+                                key: "approved_internal_forms",
+                                label: "Approved Internal Forms",
+                                count: jobAssets.filter(
+                                  (asset) =>
+                                    asset.status === "approved" &&
+                                    isInternalFormAsset(asset),
+                                ).length,
+                              },
+                              {
+                                key: "sent",
+                                label: "Sent",
+                                count: jobAssets.filter(
+                                  (asset) => asset.status === "sent",
+                                ).length,
+                              },
+                              {
+                                key: "issue",
+                                label: "Issues",
+                                count: jobAssets.filter(
+                                  (asset) => asset.status === "issue",
+                                ).length,
+                              },
+                            ] as const
+                          ).map((f) => {
+                            const on = assetStatusFilter === f.key;
+                            const empty = !jobAssetsLoading && f.count === 0;
+                            return (
+                              <button
+                                key={f.key}
+                                type="button"
+                                onClick={() => setAssetStatusFilter(f.key)}
+                                className={`inline-flex h-11 items-center gap-2 rounded-none border px-3.5 text-sm transition-colors ${
+                                  on
+                                    ? "border-neutral-900 bg-neutral-900 font-bold text-white dark:border-white dark:bg-white dark:text-neutral-900"
+                                    : empty
+                                      ? "border-neutral-200 bg-white text-neutral-500 hover:text-neutral-900 dark:border-neutral-700 dark:bg-dark-150 dark:text-neutral-400 dark:hover:text-white"
+                                      : "border-neutral-400 bg-white font-medium text-neutral-900 hover:bg-neutral-50 dark:border-neutral-500 dark:bg-dark-150 dark:text-white dark:hover:bg-dark-200"
+                                }`}
+                              >
+                                <span>{f.label}</span>
+                                <span className={on || empty ? "" : "font-bold"}>
+                                  {jobAssetsLoading ? "…" : f.count}
+                                </span>
+                              </button>
+                            );
+                          })}
                           <button
-                            onClick={() => setAssetStatusFilter("all")}
-                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
-                              assetStatusFilter === "all"
-                                ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
-                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
-                            }`}
-                          >
-                            All {assetTabCount(totalAssetCount)}
-                          </button>
-                          <button
-                            onClick={() => setAssetStatusFilter("not started")}
-                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
-                              assetStatusFilter === "not started"
-                                ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
-                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
-                            }`}
-                          >
-                            Not Started{" "}
-                            {assetTabCount(
-                              jobAssets.filter(
-                                (asset) => asset.status === "not started",
-                              ).length,
-                            )}
-                          </button>
-                          <button
-                            onClick={() => setAssetStatusFilter("in_progress")}
-                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
-                              assetStatusFilter === "in_progress"
-                                ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
-                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
-                            }`}
-                          >
-                            In Progress{" "}
-                            {assetTabCount(
-                              jobAssets.filter(
-                                (asset) =>
-                                  !asset.status ||
-                                  asset.status === "in_progress",
-                              ).length,
-                            )}
-                          </button>
-                          <button
-                            onClick={() =>
-                              setAssetStatusFilter("ready_for_review")
-                            }
-                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
-                              assetStatusFilter === "ready_for_review"
-                                ? "bg-blue-600 text-white shadow-sm"
-                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
-                            }`}
-                          >
-                            Ready for Review{" "}
-                            {assetTabCount(
-                              jobAssets.filter(
-                                (asset) => asset.status === "ready_for_review",
-                              ).length,
-                            )}
-                          </button>
-                          <button
-                            onClick={() => setAssetStatusFilter("approved")}
-                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
-                              assetStatusFilter === "approved"
-                                ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
-                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
-                            }`}
-                          >
-                            Approved{" "}
-                            {assetTabCount(
-                              jobAssets.filter(
-                                (asset) =>
-                                  asset.status === "approved" &&
-                                  !isInternalFormAsset(asset),
-                              ).length,
-                            )}
-                          </button>
-                          <button
-                            onClick={() =>
-                              setAssetStatusFilter("approved_internal_forms")
-                            }
-                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
-                              assetStatusFilter === "approved_internal_forms"
-                                ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
-                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
-                            }`}
-                          >
-                            Approved Internal Forms{" "}
-                            {assetTabCount(
-                              jobAssets.filter(
-                                (asset) =>
-                                  asset.status === "approved" &&
-                                  isInternalFormAsset(asset),
-                              ).length,
-                            )}
-                          </button>
-                          <button
-                            onClick={() => setAssetStatusFilter("sent")}
-                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
-                              assetStatusFilter === "sent"
-                                ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
-                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
-                            }`}
-                          >
-                            Sent{" "}
-                            {assetTabCount(
-                              jobAssets.filter((asset) => asset.status === "sent").length,
-                            )}
-                          </button>
-                          <button
-                            onClick={() => setAssetStatusFilter("issue")}
-                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
-                              assetStatusFilter === "issue"
-                                ? "bg-white dark:bg-dark-150 text-neutral-900 dark:text-white shadow-sm"
-                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
-                            }`}
-                          >
-                            Issues{" "}
-                            {assetTabCount(
-                              jobAssets.filter((asset) => asset.status === "issue").length,
-                            )}
-                          </button>
-                          <button
+                            type="button"
                             onClick={() => setAssetStatusFilter("archived")}
-                            className={`px-3 py-2 text-sm font-medium rounded-none transition-colors ${
+                            className={`ml-auto inline-flex h-11 items-center gap-2 rounded-none px-3.5 text-sm font-medium underline transition-colors ${
                               assetStatusFilter === "archived"
-                                ? "bg-neutral-500 text-white shadow-sm"
-                                : "text-neutral-600 dark:text-white hover:text-neutral-900 dark:hover:text-white"
+                                ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+                                : "text-neutral-700 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
                             }`}
                           >
+                            <Archive className="h-4 w-4" />
                             Archived{" "}
                             {assetTabCount(
                               jobAssets.filter((asset) => asset.status === "archived")

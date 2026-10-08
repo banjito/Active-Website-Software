@@ -109,6 +109,7 @@ import AmplifyReportPage from "./pages/AmplifyReportView";
 import OilReportView from "./pages/OilReportView";
 import EstimatingPresetsPage from "./pages/EstimatingPresetsPage";
 import { HrDashboard } from "./pages/HrDashboard";
+import Timesheets from "./pages/hr/Timesheets";
 import { JobRequisitions } from "./pages/hr/recruiting/JobRequisitions";
 import { RequisitionApprovals } from "./pages/hr/recruiting/RequisitionApprovals";
 import { CareerPage } from "./pages/hr/recruiting/CareerPage";
@@ -1679,7 +1680,7 @@ function App() {
                     element={
                       <RequireAuth>
                         <HrLayout>
-                          <HrDashboard />
+                          <Timesheets />
                         </HrLayout>
                       </RequireAuth>
                     }

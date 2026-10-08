@@ -2325,6 +2325,9 @@ export const QuickBooksDashboard: React.FC = () => {
         </Card>
       )}
 
+      {/* Temporary: TimeStAMP build step 0 (does payroll pick up outside time entries) */}
+      <QuickBooksTimeEntryTest />
+
       {/* Invoice Status Cards - Not Paid, Paid, Deposited */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">

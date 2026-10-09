@@ -2602,6 +2602,13 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           #report-container .lv-mccb-ats25 .ats25-cs-tables > div:last-child {
             flex: 44 1 0 !important;
           }
+          /* Fixed layout: columns take the pinned widths below and the table
+             can never grow past its slot. Auto layout let cell contents set
+             the width, and that differs by OS font (Windows overlapped). */
+          #report-container .lv-mccb-ats25 .ats25-cs-tables table {
+            table-layout: fixed !important;
+            width: 100% !important;
+          }
           #report-container .lv-mccb-ats25 .ats25-cs-tables thead th {
             padding: 1px 2px !important;
             line-height: 1.2 !important;
@@ -2640,9 +2647,11 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           #report-container .lv-mccb-ats25 .ats25-cs-tables tbody td .flex {
             width: 100% !important;
           }
+          /* width 0, not auto: an auto-width input is 20 characters wide in
+             the OS font, which blew the % Tolerance column out on Windows. */
           #report-container .lv-mccb-ats25 .ats25-cs-tables tbody td .flex > input {
             flex: 1 1 0 !important;
-            width: auto !important;
+            width: 0 !important;
             min-width: 0 !important;
           }
           /* Other reports leak "td span { display: inline-block; margin... }"

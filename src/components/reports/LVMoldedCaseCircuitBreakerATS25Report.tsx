@@ -2643,16 +2643,22 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
           #report-container .lv-mccb-ats25 .ats25-cs-tables > div:last-child thead th:last-child {
             width: 19% !important;
           }
-          /* Min | Max tolerance pair shares its cell instead of overflowing. */
           #report-container .lv-mccb-ats25 .ats25-cs-tables tbody td .flex {
             width: 100% !important;
           }
-          /* width 0, not auto: an auto-width input is 20 characters wide in
-             the OS font, which blew the % Tolerance column out on Windows. */
-          #report-container .lv-mccb-ats25 .ats25-cs-tables tbody td .flex > input {
-            flex: 1 1 0 !important;
-            width: 0 !important;
+          /* Other reports leak "input { min-width: 60px }". In a narrower
+             cell the box sticks out the right side, so its centered value
+             lands off-center. Keep every box exactly as wide as its cell. */
+          #report-container .lv-mccb-ats25 .ats25-cs-tables tbody td > input {
+            width: 100% !important;
             min-width: 0 !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            text-indent: 0 !important;
           }
           /* Other reports leak "td span { display: inline-block; margin... }"
              and td:after rules, which push read-only values left of center. */
@@ -5386,6 +5392,7 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                             <th
                               className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-xs font-medium text-neutral-900 dark:text-white w-20"
                               rowSpan={2}
+                              colSpan={2}
                             >
                               %<br />
                               Tolerance
@@ -5682,17 +5689,12 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                   />
                                 )}
                               </td>
-                              <td
-                                className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center ${rowBgClass}`}
-                              >
-                                {isRowDisabled ? (
-                                  <span
-                                    className={`${spanClass} text-neutral-400`}
+                              {/* Pick-up rows: min and max % each get their own cell. Other rows span both. */}
+                              {!isRowDisabled && test.function.includes("PU") ? (
+                                <>
+                                  <td
+                                    className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center ${rowBgClass}`}
                                   >
-                                    -
-                                  </span>
-                                ) : test.function.includes("PU") ? (
-                                  <div className="flex items-center justify-center h-6">
                                     <input
                                       type="text"
                                       value={test.multiplierMin}
@@ -5703,11 +5705,12 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                         )
                                       }
                                       readOnly={!isEditing}
-                                      className={`w-8 h-6 p-0 border-0 text-center text-xs font-normal dark:bg-dark-150 dark:text-white ${cellBgClass}`}
+                                      className={`w-full h-6 p-0 border-0 text-center text-xs font-normal dark:bg-dark-150 dark:text-white ${cellBgClass}`}
                                     />
-                                    <span className="text-xs font-normal text-neutral-500 mx-0.5">
-                                      |
-                                    </span>
+                                  </td>
+                                  <td
+                                    className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center ${rowBgClass}`}
+                                  >
                                     <input
                                       type="text"
                                       value={test.multiplierMax}
@@ -5718,24 +5721,37 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
                                         )
                                       }
                                       readOnly={!isEditing}
-                                      className={`w-8 h-6 p-0 border-0 text-center text-xs font-normal dark:bg-dark-150 dark:text-white ${cellBgClass}`}
+                                      className={`w-full h-6 p-0 border-0 text-center text-xs font-normal dark:bg-dark-150 dark:text-white ${cellBgClass}`}
                                     />
-                                  </div>
-                                ) : (
-                                  <input
-                                    type="text"
-                                    value={test.multiplierMin}
-                                    onChange={(e) =>
-                                      handleChange(
-                                        `currentSensing.tests.${originalIndex}.multiplierMin`,
-                                        e.target.value,
-                                      )
-                                    }
-                                    readOnly={!isEditing}
-                                    className={inputClass}
-                                  />
-                                )}
-                              </td>
+                                  </td>
+                                </>
+                              ) : (
+                                <td
+                                  colSpan={2}
+                                  className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center ${rowBgClass}`}
+                                >
+                                  {isRowDisabled ? (
+                                    <span
+                                      className={`${spanClass} text-neutral-400`}
+                                    >
+                                      -
+                                    </span>
+                                  ) : (
+                                    <input
+                                      type="text"
+                                      value={test.multiplierMin}
+                                      onChange={(e) =>
+                                        handleChange(
+                                          `currentSensing.tests.${originalIndex}.multiplierMin`,
+                                          e.target.value,
+                                        )
+                                      }
+                                      readOnly={!isEditing}
+                                      className={inputClass}
+                                    />
+                                  )}
+                                </td>
+                              )}
                               <td
                                 className={`border border-neutral-300 dark:border-neutral-600 px-1 py-1 text-center ${rowBgClass} ${!isRowDisabled ? "bg-neutral-100 dark:bg-neutral-700" : ""}`}
                               >

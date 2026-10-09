@@ -148,6 +148,7 @@ import { JobNotifications } from "./JobNotifications";
 import { AssetCommentsDialog } from "@/components/ui/AssetCommentsDialog";
 import { SubmittalTracker } from "./SubmittalTracker";
 import JobNotes from "./JobNotes";
+import JobDelays from "./JobDelays";
 import TMExpenses from "./TMExpenses";
 import JobPictures from "./JobPictures";
 import JobProfitabilityDashboard from "./JobProfitabilityDashboard";
@@ -3321,6 +3322,7 @@ export default function JobDetail() {
         "notes",
         "sla",
         "tracking",
+        "delays",
         "reports",
         "report-audit",
         "after-action",
@@ -4650,6 +4652,7 @@ export default function JobDetail() {
       tabs: [
         { key: "project-tracker", label: "Project Tracker" },
         { key: "tracking", label: "Tracking" },
+        { key: "delays", label: "Delays" },
         { key: "deliverables", label: "Deliverables" },
       ],
     },
@@ -13348,6 +13351,12 @@ export default function JobDetail() {
                         }
                       }}
                     />
+                  </div>
+                )}
+
+                {activeTab === "delays" && job && (
+                  <div className="p-4">
+                    <JobDelays jobId={job.id} isAdmin={isAdmin} />
                   </div>
                 )}
 

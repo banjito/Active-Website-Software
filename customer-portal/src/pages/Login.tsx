@@ -37,11 +37,32 @@ export function Login() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
-      <div className="absolute right-4 top-4">
+      {/* Background video - plain background shows if it can't play */}
+      <video
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20"
+        src="/ampos-access.webm"
+        autoPlay
+        loop
+        muted
+        playsInline
+        aria-hidden="true"
+      />
+      {/* Dot grid over the video - follows the theme's text color */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(hsl(var(--foreground) / 0.2) 1px, transparent 1px)",
+          backgroundSize: "16px 16px",
+        }}
+        aria-hidden="true"
+      />
+
+      <div className="absolute right-4 top-4 z-10">
         <ThemeToggle />
       </div>
 
-      <div className="w-full max-w-sm animate-scale-in">
+      <div className="relative z-10 w-full max-w-sm animate-scale-in">
         <div className="mb-6 text-center">
           <img
             src="/ampOSACCESS-logo.svg"

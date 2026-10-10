@@ -39,7 +39,7 @@ export function Login() {
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
       {/* Background video - plain background shows if it can't play */}
       <video
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[80%] w-[80%] -translate-x-1/2 -translate-y-1/2 object-contain opacity-20"
         src="/ampos-access.webm"
         autoPlay
         loop

@@ -1,0 +1,11 @@
+# The web version of TimeStAMP (time.ampos.io). In Netlify, set this site's
+# base directory to "timestamp-app" so it reads this file, not the ampOS one.
+[build]
+  command = "npx expo export -p web"
+  publish = "dist"
+
+# One page serves every route, so a refresh on /week still loads the app
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Easing, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Animated, Easing, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { router, Slot, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -32,6 +32,9 @@ export default function RootLayout() {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
   const [menu, setMenu] = useState(false);
+  // A roomy browser window gets the website layout. Phones and slim windows keep the app layout.
+  const { width } = useWindowDimensions();
+  const wide = Platform.OS === 'web' && width >= 820;
 
   useEffect(() => {
     supabase.auth
@@ -54,9 +57,9 @@ export default function RootLayout() {
   }, [onWeek, slide]);
 
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider style={s.page}>
       <StatusBar style="auto" />
-      <SafeAreaView style={s.screen}>
+      <SafeAreaView style={[s.screen, Platform.OS === 'web' && !wide && s.narrow]}>
         {!ready ? (
           <View style={s.center}>
             <ActivityIndicator color={c.brand} />
@@ -67,19 +70,42 @@ export default function RootLayout() {
           <>
             {Platform.OS !== 'web' ? <AlarmTap /> : null}
 
-            <View style={s.top}>
-              <Logo height={20} />
-              <Pressable
-                style={s.avatar}
-                onPress={() => {
-                  smooth();
-                  setMenu(!menu);
-                }}
-              >
-                <Text style={s.avatarText}>{initialsOf(session)}</Text>
-              </Pressable>
-            </View>
-            {menu ? (
+            {wide ? (
+              // Website bar: logo, the two pages, and who is signed in
+              <View style={s.bar}>
+                <View style={s.barIn}>
+                  <Logo height={22} />
+                  <View style={s.links}>
+                    <Pressable style={[s.link, !onWeek && s.linkOn]} onPress={() => router.replace('/')}>
+                      <Text style={[s.linkText, !onWeek && s.linkTextOn]}>Clock</Text>
+                    </Pressable>
+                    <Pressable style={[s.link, onWeek && s.linkOn]} onPress={() => router.replace('/week')}>
+                      <Text style={[s.linkText, onWeek && s.linkTextOn]}>My week</Text>
+                    </Pressable>
+                  </View>
+                  <Text style={s.who} numberOfLines={1}>
+                    {session.user.email}
+                  </Text>
+                  <Pressable onPress={() => supabase.auth.signOut()}>
+                    <Text style={s.signOut}>Sign out</Text>
+                  </Pressable>
+                </View>
+              </View>
+            ) : (
+              <View style={s.top}>
+                <Logo height={20} />
+                <Pressable
+                  style={s.avatar}
+                  onPress={() => {
+                    smooth();
+                    setMenu(!menu);
+                  }}
+                >
+                  <Text style={s.avatarText}>{initialsOf(session)}</Text>
+                </Pressable>
+              </View>
+            )}
+            {menu && !wide ? (
               <View style={s.menu}>
                 <Text style={s.menuText} numberOfLines={1}>
                   {session.user.email}
@@ -95,7 +121,7 @@ export default function RootLayout() {
               </View>
             ) : null}
 
-            <View style={s.body}>
+            <View style={[s.body, wide && s.bodyWide]}>
               {/* Dots behind the clock, graph lines behind My week, fading from one to the other */}
               <Animated.View
                 style={[StyleSheet.absoluteFill, { opacity: slide.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) }]}
@@ -106,10 +132,13 @@ export default function RootLayout() {
               <Animated.View style={[StyleSheet.absoluteFill, { opacity: slide }]} pointerEvents="none">
                 <DotGrid kind="grid" />
               </Animated.View>
-              <Slot />
+              {/* On the website the page sits in a framed panel on top of the backdrop */}
+              <View style={wide ? s.panel : s.fill}>
+                <Slot />
+              </View>
             </View>
 
-            <View style={s.tabs} onLayout={(e) => setTabsWidth(e.nativeEvent.layout.width)}>
+            <View style={[s.tabs, wide && s.hidden]} onLayout={(e) => setTabsWidth(e.nativeEvent.layout.width)}>
               {/* One orange line that slides to the tab you're on */}
               <Animated.View
                 style={[
@@ -143,7 +172,41 @@ export default function RootLayout() {
 
 const make = (c: Colors) =>
   StyleSheet.create({
+    page: { flex: 1, backgroundColor: c.bg },
     screen: { flex: 1, backgroundColor: c.bg },
+    // A slim browser window keeps the app phone-width and in the middle
+    narrow: { width: '100%', maxWidth: 480, alignSelf: 'center' },
+    fill: { flex: 1 },
+    hidden: { display: 'none' },
+    bar: { backgroundColor: c.surface, borderBottomWidth: 1, borderBottomColor: c.line },
+    barIn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 28,
+      width: '100%',
+      maxWidth: 1120,
+      alignSelf: 'center',
+      height: 60,
+      paddingHorizontal: 24,
+    },
+    links: { flex: 1, flexDirection: 'row', alignSelf: 'stretch', gap: 4 },
+    link: { justifyContent: 'center', paddingHorizontal: 14, borderBottomWidth: 2, borderBottomColor: 'transparent' },
+    linkOn: { borderBottomColor: c.brand },
+    linkText: { fontSize: 15, fontWeight: '600', color: c.muted },
+    linkTextOn: { color: c.ink },
+    who: { color: c.muted, fontSize: 13 },
+    bodyWide: { backgroundColor: c.bg, paddingHorizontal: 24, paddingVertical: 32 },
+    panel: {
+      flex: 1,
+      width: '100%',
+      maxWidth: 720,
+      maxHeight: 780,
+      alignSelf: 'center',
+      padding: 10,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.line,
+    },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     top: {
       flexDirection: 'row',

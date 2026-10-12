@@ -36,6 +36,7 @@ export default function SignIn() {
   return (
     <View style={s.screen}>
       <DotGrid />
+      <View style={s.form}>
       <View style={s.logo}>
         <StackedLogo width={230} />
       </View>
@@ -61,6 +62,7 @@ export default function SignIn() {
       />
       {error ? <Text style={s.error}>{error}</Text> : null}
       <PrimaryButton label="Sign in" onPress={signIn} busy={busy} />
+      </View>
     </View>
   );
 }
@@ -68,6 +70,8 @@ export default function SignIn() {
 const make = (c: Colors) =>
   StyleSheet.create({
     screen: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: c.bg },
+    // Stops the boxes stretching across a wide browser window
+    form: { width: '100%', maxWidth: 400, alignSelf: 'center' },
     logo: { alignItems: 'center' },
     hint: { color: c.muted, textAlign: 'center', marginTop: 20, marginBottom: 24, fontSize: 14 },
     input: {

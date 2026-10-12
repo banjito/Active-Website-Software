@@ -1390,7 +1390,7 @@ export default function PortalLanding() {
                 <img
                   src="/ampOS_docs.svg"
                   alt="ampOS Docs"
-                  className="h-5 w-auto transition-[filter] dark:invert group-hover:invert dark:group-hover:invert-0 translate-y-1"
+                  className="h-5 w-auto aspect-[16234/2378] shrink-0 transition-[filter] dark:invert group-hover:invert dark:group-hover:invert-0 translate-y-1"
                 />
               </Link>
               <div className="relative">

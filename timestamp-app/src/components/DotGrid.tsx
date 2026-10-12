@@ -13,7 +13,7 @@ const FADE_FROM = 'rgb(213,114,33)';
 const FADE_TO = 'rgb(225,172,98)';
 
 // Fainter on the website, where the dots fill a big open page instead of hiding behind the screen
-const DOTS_OPACITY = Platform.OS === 'web' ? 0.3 : 0.55;
+const DOTS_OPACITY = Platform.OS === 'web' ? 0.3 : 0.45;
 
 // The lines are drawn one by one at exact sizes, so a square is the same size on every phone
 function GridLines() {

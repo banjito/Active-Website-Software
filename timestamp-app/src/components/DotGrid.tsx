@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Mask, Path, Pattern, Rect, Stop } from 'react-native-svg';
 
 // Faint backdrop behind a screen, in the logo's orange-to-amber fade (the "AMP" letters).
@@ -11,6 +11,9 @@ const GRID_CELL = 16;
 // Same two colors as the gradient in the logo file
 const FADE_FROM = 'rgb(213,114,33)';
 const FADE_TO = 'rgb(225,172,98)';
+
+// Fainter on the website, where the dots fill a big open page instead of hiding behind the screen
+const DOTS_OPACITY = Platform.OS === 'web' ? 0.3 : 0.55;
 
 // The lines are drawn one by one at exact sizes, so a square is the same size on every phone
 function GridLines() {
@@ -52,7 +55,7 @@ function Dots() {
           <Rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-dots)" />
         </Mask>
       </Defs>
-      <Rect x="0" y="0" width="100%" height="100%" fill="url(#amp-dots)" mask="url(#mask-dots)" opacity={0.55} />
+      <Rect x="0" y="0" width="100%" height="100%" fill="url(#amp-dots)" mask="url(#mask-dots)" opacity={DOTS_OPACITY} />
     </Svg>
   );
 }

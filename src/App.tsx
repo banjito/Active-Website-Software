@@ -175,6 +175,10 @@ const DocsLayout = lazy(() =>
 const DocsHome = lazy(() => loadDocs().then((m) => ({ default: m.DocsHome })));
 const DocsPage = lazy(() => loadDocs().then((m) => ({ default: m.DocsPage })));
 
+// PM dashboard: standalone for now, not linked from any menu.
+const PMDashboard = lazy(() => import("./app/pm-dashboard/PMDashboard"));
+const PMJobDetail = lazy(() => import("./app/pm-dashboard/PMJobDetail"));
+
 // MUI X Date Pickers setup
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -1881,6 +1885,44 @@ function App() {
                   {/* === Meetings — external redirect until internal page is ready === */}
                   <Route path="/meetings" element={<RunwayRedirect />} />
                   <Route path="/meetings/*" element={<RunwayRedirect />} />
+
+                  {/* === PM Dashboard (standalone, no menu link yet) === */}
+                  <Route
+                    path="/pm-dashboard"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <Suspense
+                            fallback={
+                              <div className="flex min-h-[300px] items-center justify-center">
+                                <LoadingSpinner size="md" />
+                              </div>
+                            }
+                          >
+                            <PMDashboard />
+                          </Suspense>
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/pm-dashboard/:jobId"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <Suspense
+                            fallback={
+                              <div className="flex min-h-[300px] items-center justify-center">
+                                <LoadingSpinner size="md" />
+                              </div>
+                            }
+                          >
+                            <PMJobDetail />
+                          </Suspense>
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
 
                   {/* === Division-Specific Dashboard Routes === */}
                   {/* These specific routes should come before the generic /:division/dashboard route */}

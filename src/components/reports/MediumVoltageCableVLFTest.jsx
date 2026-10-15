@@ -49,6 +49,10 @@ import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
+import { ensureReportAssetLink } from "./linkReportAsset";
+import { newReportId } from "./common/reportIdentity";
+import { openPendingReportTab } from "./common/openReportTab";
+import { buildMvCableNameplateCopy } from "./common/mvCableNameplateCopy";
 
 // Types
 const TestStatus = {
@@ -381,6 +385,272 @@ const TanDeltaChart = ({ values, chartData, systemVoltageL2G }) => {
   );
 };
 
+// A blank report. Also the base of "Copy nameplate data", which lays only
+// the cable's nameplate and test set-up back on top of it.
+const createInitialFormData = () => ({
+  reportInfo: {
+    title: "",
+    date: "",
+    location: "",
+    technicians: [],
+    reportNumber: "",
+    customerName: "",
+    customerContactName: "",
+    customerContactEmail: "",
+    customerContactPhone: "",
+  },
+  status: TestStatus.PASS,
+  customerName: "",
+  siteAddress: "",
+  contactPerson: "",
+  contactPhone: "",
+  contactEmail: "",
+  jobNumber: "",
+  identifier: "",
+  testedBy: "",
+  testDate: "",
+  location: "", // Initialize substation field
+  equipmentLocation: "", // Initialize equipment location field
+  cableType: "",
+  operatingVoltage: "",
+  cableLength: "",
+
+  // Cable information
+  cableInfo: {
+    description: "",
+    size: "",
+    length: "",
+    voltageRating: "",
+    insulation: "",
+    yearInstalled: "",
+    testedFrom: "", // Changed from testedFrom
+    testedTo: "", // Changed from testedTo
+    from: "", // Separate from field
+    to: "", // Separate to field
+    manufacturer: "",
+    insulationThickness: "",
+    conductorMaterial: "",
+  },
+
+  // Termination data
+  terminationData: {
+    terminationData: "",
+    ratedVoltage: "",
+    terminationData2: "",
+    ratedVoltage2: "",
+    from: "",
+    to: "",
+  },
+
+  // Visual and Mechanical Inspection
+  visualInspection: {
+    inspectCablesAndConnectors: InspectionResult.SELECT, // 7.3.3.A.1
+    inspectTerminationsAndSplices: InspectionResult.SELECT, // 7.3.3.A.2
+    useOhmmeter: InspectionResult.SELECT, // 7.3.3.A.3.1
+    inspectShieldGrounding: InspectionResult.SELECT, // 7.3.3.A.4
+    verifyBendRadius: InspectionResult.SELECT, // 7.3.3.A.5
+    inspectCurrentTransformers: InspectionResult.SELECT, // 7.3.3.A.7
+  },
+
+  // Electrical Tests - Shield Continuity
+  shieldContinuity: {
+    phaseA: "",
+    phaseB: "",
+    phaseC: "",
+    unit: "Ω", // Default unit
+  },
+
+  // Electrical Tests - Insulation Resistance
+  insulationTest: {
+    testVoltage: "1000",
+    unit: "GΩ", // Default unit
+    preTest: {
+      ag: "",
+      bg: "",
+      cg: "",
+    },
+    postTest: {
+      ag: "",
+      bg: "",
+      cg: "",
+    },
+    preTestCorrected: {
+      ag: "",
+      bg: "",
+      cg: "",
+    },
+    postTestCorrected: {
+      ag: "",
+      bg: "",
+      cg: "",
+    },
+  },
+
+  // Test Equipment
+  equipment: {
+    ohmmeter: "",
+    ohmSerialNumber: "",
+    ohmAmpId: "", // Add ohmmeter AMP ID
+    megohmmeter: "",
+    megohmSerialNumber: "",
+    megohmAmpId: "", // Add megohmmeter AMP ID
+    vlfHipot: "",
+    vlfSerialNumber: "",
+    vlfAmpId: "", // Rename general ampId to specific vlfAmpId
+    vlfTestSet: "", // Add this field to maintain compatibility with existing code
+  },
+
+  // Temperature correction data
+  temperature: {
+    fahrenheit: 68,
+    celsius: 20,
+    humidity: 0,
+    tcf: 1.0,
+  },
+
+  // Comments
+  comments: "",
+
+  // For backward compatibility
+  testEquipment: {
+    vlf: "",
+    vlfCalibrationDate: "",
+    insulationTester: "",
+    insulationTesterCalibrationDate: "",
+  },
+  vlfTests: [],
+  insulationResistanceTests: [],
+  voltageBreakdownChart: null,
+  voltageBreakdownPreview: "",
+  testConditions: {
+    weatherConditions: "",
+    temperature: "",
+    humidity: "",
+    cableCondition: "",
+  },
+  conclusion: "",
+  recommendations: "",
+  testEngineer: "",
+  clientRepresentative: "",
+  reportDate: "",
+  equipmentType: "",
+  equipmentInfo: {
+    type: "",
+    manufacturer: "",
+    model: "",
+    serialNumber: "",
+    ratingKV: "",
+    ratingKVA: "",
+    installationDate: "",
+    lastMaintenanceDate: "",
+  },
+  testData: {
+    testVoltage: "",
+    testDuration: "",
+    frequency: "",
+    leakageCurrentPhaseA: "",
+    leakageCurrentPhaseB: "",
+    leakageCurrentPhaseC: "",
+  },
+  testResults: {
+    summary: "",
+    phaseAStatus: "",
+    phaseBStatus: "",
+    phaseCStatus: "",
+    overallResult: "",
+    recommendedActions: "",
+  },
+  notes: "",
+  signatures: {
+    technicianSignature: "",
+    customerSignature: "",
+  },
+
+  // Electrical Tests Withstand Test
+  withstandTest: {
+    readings: [
+      {
+        timeMinutes: "10",
+        kVAC: "13",
+        phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+        phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+        phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+      },
+      {
+        timeMinutes: "20",
+        kVAC: "13",
+        phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+        phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+        phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+      },
+      {
+        timeMinutes: "30",
+        kVAC: "13",
+        phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+        phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+        phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+      },
+      {
+        timeMinutes: "40",
+        kVAC: "13",
+        phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+        phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+        phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+      },
+      {
+        timeMinutes: "50",
+        kVAC: "13",
+        phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+        phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+        phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+      },
+      {
+        timeMinutes: "60",
+        kVAC: "13",
+        phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+        phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+        phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
+      },
+    ],
+  },
+
+  // Add Tan Delta test initial data
+  tanDeltaTest: {
+    systemVoltageL2G: "14.4",
+    testVoltage: "",
+    frequency: "0.1",
+    values: [
+      {
+        voltageStep: "0.5 Uo",
+        kV: "7.200",
+        phaseA: { td: "", stdDev: "10" },
+        phaseB: { td: "", stdDev: "5" },
+        phaseC: { td: "", stdDev: "5" },
+      },
+      {
+        voltageStep: "1.0 Uo",
+        kV: "14.400",
+        phaseA: { td: "", stdDev: "10" },
+        phaseB: { td: "", stdDev: "5" },
+        phaseC: { td: "", stdDev: "5" },
+      },
+      {
+        voltageStep: "1.5 Uo",
+        kV: "21.600",
+        phaseA: { td: "", stdDev: "10" },
+        phaseB: { td: "", stdDev: "5" },
+        phaseC: { td: "", stdDev: "5" },
+      },
+    ],
+    points: [
+      { kV: 0.5, phaseA: 1.1, phaseB: 1.2, phaseC: 1.3 },
+      { kV: 1.0, phaseA: 1.3, phaseB: 1.4, phaseC: 1.5 },
+      { kV: 1.5, phaseA: 1.5, phaseB: 1.6, phaseC: 1.7 },
+    ],
+    editingTanDeltaData: false,
+  },
+});
+
 const MediumVoltageCableVLFTest = () => {
   const params = useParams();
   const navigate = useNavigate();
@@ -467,269 +737,7 @@ const MediumVoltageCableVLFTest = () => {
   console.log("- isEditMode:", isEditMode);
 
   // Initialize form data
-  const [formData, setFormData] = useState({
-    reportInfo: {
-      title: "",
-      date: "",
-      location: "",
-      technicians: [],
-      reportNumber: "",
-      customerName: "",
-      customerContactName: "",
-      customerContactEmail: "",
-      customerContactPhone: "",
-    },
-    status: TestStatus.PASS,
-    customerName: "",
-    siteAddress: "",
-    contactPerson: "",
-    contactPhone: "",
-    contactEmail: "",
-    jobNumber: "",
-    identifier: "",
-    testedBy: "",
-    testDate: "",
-    location: "", // Initialize substation field
-    equipmentLocation: "", // Initialize equipment location field
-    cableType: "",
-    operatingVoltage: "",
-    cableLength: "",
-
-    // Cable information
-    cableInfo: {
-      description: "",
-      size: "",
-      length: "",
-      voltageRating: "",
-      insulation: "",
-      yearInstalled: "",
-      testedFrom: "", // Changed from testedFrom
-      testedTo: "", // Changed from testedTo
-      from: "", // Separate from field
-      to: "", // Separate to field
-      manufacturer: "",
-      insulationThickness: "",
-      conductorMaterial: "",
-    },
-
-    // Termination data
-    terminationData: {
-      terminationData: "",
-      ratedVoltage: "",
-      terminationData2: "",
-      ratedVoltage2: "",
-      from: "",
-      to: "",
-    },
-
-    // Visual and Mechanical Inspection
-    visualInspection: {
-      inspectCablesAndConnectors: InspectionResult.SELECT, // 7.3.3.A.1
-      inspectTerminationsAndSplices: InspectionResult.SELECT, // 7.3.3.A.2
-      useOhmmeter: InspectionResult.SELECT, // 7.3.3.A.3.1
-      inspectShieldGrounding: InspectionResult.SELECT, // 7.3.3.A.4
-      verifyBendRadius: InspectionResult.SELECT, // 7.3.3.A.5
-      inspectCurrentTransformers: InspectionResult.SELECT, // 7.3.3.A.7
-    },
-
-    // Electrical Tests - Shield Continuity
-    shieldContinuity: {
-      phaseA: "",
-      phaseB: "",
-      phaseC: "",
-      unit: "Ω", // Default unit
-    },
-
-    // Electrical Tests - Insulation Resistance
-    insulationTest: {
-      testVoltage: "1000",
-      unit: "GΩ", // Default unit
-      preTest: {
-        ag: "",
-        bg: "",
-        cg: "",
-      },
-      postTest: {
-        ag: "",
-        bg: "",
-        cg: "",
-      },
-      preTestCorrected: {
-        ag: "",
-        bg: "",
-        cg: "",
-      },
-      postTestCorrected: {
-        ag: "",
-        bg: "",
-        cg: "",
-      },
-    },
-
-    // Test Equipment
-    equipment: {
-      ohmmeter: "",
-      ohmSerialNumber: "",
-      ohmAmpId: "", // Add ohmmeter AMP ID
-      megohmmeter: "",
-      megohmSerialNumber: "",
-      megohmAmpId: "", // Add megohmmeter AMP ID
-      vlfHipot: "",
-      vlfSerialNumber: "",
-      vlfAmpId: "", // Rename general ampId to specific vlfAmpId
-      vlfTestSet: "", // Add this field to maintain compatibility with existing code
-    },
-
-    // Temperature correction data
-    temperature: {
-      fahrenheit: 68,
-      celsius: 20,
-      humidity: 0,
-      tcf: 1.0,
-    },
-
-    // Comments
-    comments: "",
-
-    // For backward compatibility
-    testEquipment: {
-      vlf: "",
-      vlfCalibrationDate: "",
-      insulationTester: "",
-      insulationTesterCalibrationDate: "",
-    },
-    vlfTests: [],
-    insulationResistanceTests: [],
-    voltageBreakdownChart: null,
-    voltageBreakdownPreview: "",
-    testConditions: {
-      weatherConditions: "",
-      temperature: "",
-      humidity: "",
-      cableCondition: "",
-    },
-    conclusion: "",
-    recommendations: "",
-    testEngineer: "",
-    clientRepresentative: "",
-    reportDate: "",
-    equipmentType: "",
-    equipmentInfo: {
-      type: "",
-      manufacturer: "",
-      model: "",
-      serialNumber: "",
-      ratingKV: "",
-      ratingKVA: "",
-      installationDate: "",
-      lastMaintenanceDate: "",
-    },
-    testData: {
-      testVoltage: "",
-      testDuration: "",
-      frequency: "",
-      leakageCurrentPhaseA: "",
-      leakageCurrentPhaseB: "",
-      leakageCurrentPhaseC: "",
-    },
-    testResults: {
-      summary: "",
-      phaseAStatus: "",
-      phaseBStatus: "",
-      phaseCStatus: "",
-      overallResult: "",
-      recommendedActions: "",
-    },
-    notes: "",
-    signatures: {
-      technicianSignature: "",
-      customerSignature: "",
-    },
-
-    // Electrical Tests Withstand Test
-    withstandTest: {
-      readings: [
-        {
-          timeMinutes: "10",
-          kVAC: "13",
-          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-        },
-        {
-          timeMinutes: "20",
-          kVAC: "13",
-          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-        },
-        {
-          timeMinutes: "30",
-          kVAC: "13",
-          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-        },
-        {
-          timeMinutes: "40",
-          kVAC: "13",
-          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-        },
-        {
-          timeMinutes: "50",
-          kVAC: "13",
-          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-        },
-        {
-          timeMinutes: "60",
-          kVAC: "13",
-          phaseA: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-          phaseB: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-          phaseC: { mA: "", nF: "", currentUnit: "mA", capacitanceUnit: "nF" },
-        },
-      ],
-    },
-
-    // Add Tan Delta test initial data
-    tanDeltaTest: {
-      systemVoltageL2G: "14.4",
-      testVoltage: "",
-      frequency: "0.1",
-      values: [
-        {
-          voltageStep: "0.5 Uo",
-          kV: "7.200",
-          phaseA: { td: "", stdDev: "10" },
-          phaseB: { td: "", stdDev: "5" },
-          phaseC: { td: "", stdDev: "5" },
-        },
-        {
-          voltageStep: "1.0 Uo",
-          kV: "14.400",
-          phaseA: { td: "", stdDev: "10" },
-          phaseB: { td: "", stdDev: "5" },
-          phaseC: { td: "", stdDev: "5" },
-        },
-        {
-          voltageStep: "1.5 Uo",
-          kV: "21.600",
-          phaseA: { td: "", stdDev: "10" },
-          phaseB: { td: "", stdDev: "5" },
-          phaseC: { td: "", stdDev: "5" },
-        },
-      ],
-      points: [
-        { kV: 0.5, phaseA: 1.1, phaseB: 1.2, phaseC: 1.3 },
-        { kV: 1.0, phaseA: 1.3, phaseB: 1.4, phaseC: 1.5 },
-        { kV: 1.5, phaseA: 1.5, phaseB: 1.6, phaseC: 1.7 },
-      ],
-      editingTanDeltaData: false,
-    },
-  });
+  const [formData, setFormData] = useState(createInitialFormData);
 
   // Check for returnToAssets query parameter
   const returnToAssets =
@@ -1516,6 +1524,110 @@ const MediumVoltageCableVLFTest = () => {
     await handleSave();
     if (reportId) {
       setIsEditMode(false);
+    }
+  };
+
+  // Save this report, then start a new one for the next cable run with only
+  // the nameplate and test set-up copied. It opens in its own tab so this one
+  // can stay on screen as the template.
+  const copyNameplateDataToNewReport = async () => {
+    const effectiveJobId = jobId || formData.jobNumber;
+    if (!effectiveJobId || !user?.id) {
+      toast.error("Unable to create new report. Missing job or user information.");
+      return;
+    }
+
+    // Claim the tab the copy will open in while the click is still fresh; the
+    // saves below take long enough that a later window.open reads as a popup.
+    const copyTab = openPendingReportTab();
+
+    try {
+      setIsSaving(true);
+
+      // Finish the report on screen first.
+      if (reportId) {
+        const { error } = await supabase
+          .schema("neta_ops")
+          .from("medium_voltage_cable_vlf_test")
+          .update({ data: formData, updated_at: new Date().toISOString() })
+          .eq("id", reportId);
+        if (error) throw error;
+      } else {
+        const templateId = newReportId();
+        const { error } = await supabase
+          .schema("neta_ops")
+          .from("medium_voltage_cable_vlf_test")
+          .upsert(
+            {
+              id: templateId,
+              job_id: effectiveJobId,
+              user_id: user.id,
+              data: formData,
+              created_at: new Date().toISOString(),
+            },
+            { onConflict: "id" },
+          );
+        if (error) throw error;
+        await ensureReportAssetLink(
+          effectiveJobId,
+          {
+            name: getAssetName(
+              reportSlug,
+              formData.identifier || formData.location || "",
+            ),
+            file_url: `report:/jobs/${effectiveJobId}/${reportSlug}/${templateId}`,
+            user_id: user.id,
+          },
+          user.id,
+        );
+        setReportId(templateId);
+        window.history.replaceState(
+          {},
+          "",
+          `/jobs/${effectiveJobId}/${reportSlug}/${templateId}`,
+        );
+      }
+
+      const newFormData = buildMvCableNameplateCopy(
+        formData,
+        createInitialFormData(),
+      );
+
+      const copyReportId = newReportId();
+      const { error } = await supabase
+        .schema("neta_ops")
+        .from("medium_voltage_cable_vlf_test")
+        .upsert(
+          {
+            id: copyReportId,
+            job_id: effectiveJobId,
+            user_id: user.id,
+            data: newFormData,
+            created_at: new Date().toISOString(),
+          },
+          { onConflict: "id" },
+        );
+      if (error) throw error;
+
+      await ensureReportAssetLink(
+        effectiveJobId,
+        {
+          name: getAssetName(reportSlug, newFormData.location || ""),
+          file_url: `report:/jobs/${effectiveJobId}/${reportSlug}/${copyReportId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+
+      copyTab.go(`/jobs/${effectiveJobId}/${reportSlug}/${copyReportId}`);
+    } catch (error) {
+      copyTab.cancel();
+      console.error("Error creating new MV cable report:", error);
+      toast.error(
+        `Failed to create new report: ${(error && error.message) || "Unknown error"}`,
+      );
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -5085,6 +5197,18 @@ const MediumVoltageCableVLFTest = () => {
           </section>
         </div>
       </div>
+      {/* Copy Nameplate Data Button */}
+      {!isPrintMode && isEditMode && (
+        <div className="mb-4 print:hidden flex justify-center">
+          <button
+            onClick={copyNameplateDataToNewReport}
+            disabled={isSaving}
+            className="px-6 py-3 text-base font-medium text-white bg-green-600 rounded-none hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            Copy Nameplate data to new report (opens in a new tab)
+          </button>
+        </div>
+      )}
     </ReportWrapper>
   );
 };

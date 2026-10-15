@@ -19,6 +19,8 @@
       }
     },
     "android": {
+      "package": "com.ampreports.timestamp",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#d57221",
         "foregroundImage": "./assets/android-icon-foreground.png",

@@ -3800,17 +3800,27 @@ const MediumVoltageVLFReport: React.FC = () => {
                 <label className="block text-sm font-medium text-neutral-700 dark:text-white">
                   Ohmmeter
                 </label>
-                <input
-                  type="text"
+                <EquipmentAutocomplete
                   value={formData.equipment?.ohmmeter || ""}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     handleChange("equipment", {
                       ...formData.equipment,
-                      ohmmeter: e.target.value,
+                      ohmmeter: value,
+                    })
+                  }
+                  onSelect={(equipment) =>
+                    handleChange("equipment", {
+                      ...formData.equipment,
+                      ohmmeter: equipment.equipment_name,
+                      ohmSerialNumber: equipment.serial_number || "",
+                      ohmmeterAmpId: equipment.amp_id || "",
+                      ohmmeterCalDate: formatLocalDateShort(
+                        equipment.calibration_date,
+                      ),
                     })
                   }
                   readOnly={!isEditMode}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditMode ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm"
                 />
               </div>
               <div>

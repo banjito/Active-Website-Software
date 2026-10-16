@@ -511,12 +511,30 @@ const EDIT_STEPS = 6;
 /** The section as it stands, in the terms the tools use to build one. */
 export function describeSection(section: SectionConfig): string {
   const lines = [`Title: ${section.title}`];
+  // ", shown when Trip Type is LI / LS" for a row or column that follows a dropdown.
+  const shownWhen = (visibleWhen?: Record<string, string | string[]>) => {
+    const parts = Object.entries(visibleWhen ?? {}).map(([settingId, values]) => {
+      const label = section.settingFields?.find((setting) => setting.id === settingId)?.label ?? settingId;
+      return `${label} is ${[values].flat().join(" / ")}`;
+    });
+    return parts.length ? `, shown when ${parts.join(" and ")}` : "";
+  };
+  for (const setting of section.settingFields ?? []) {
+    lines.push(
+      `Dropdown "${setting.label}": ${setting.options.map((option) => option.label).join(" / ")}${setting.defaultValue ? `, starting on ${setting.defaultValue}` : ""}`,
+    );
+  }
+  if (section.conditionalRows?.length) {
+    lines.push(`Rows (the first column holds their names):`);
+    for (const row of section.conditionalRows) lines.push(`  "${row.label}"${shownWhen(row.visibleWhen)}`);
+  }
   if (section.columns?.length) {
-    lines.push(`A table of ${section.rows ?? 0} rows and ${section.columns.length} columns:`);
+    const rows = section.conditionalRows?.length ?? section.rows ?? 0;
+    lines.push(`A table of ${rows} rows and ${section.columns.length} columns:`);
     section.columns.forEach((column, index) => {
       const choices = column.field.options?.map((option) => option.label).join(" / ");
       lines.push(
-        `  ${index + 1}. "${column.label}" (${column.field.type}${choices ? `: ${choices}` : ""})`,
+        `  ${index + 1}. "${column.label}" (${column.field.type}${choices ? `: ${choices}` : ""}${shownWhen(column.visibleWhen)})`,
       );
     });
     const header = section.v2?.header ?? [];
@@ -542,6 +560,11 @@ invent nothing. Never write a formula or a value.
 
 Cells are not involved here. Where a tool asks for a cell or a range, use the
 first data row you are given, or A1 upwards, and nothing will be read from it.
+
+When rows or columns should appear only for some choices of a dropdown, use
+add_conditional_table, and list for each row and column exactly the choices
+the person gives. A section that already has a dropdown stays conditional
+unless they ask otherwise.
 
 Make one call, then stop. Do not call finish.`;
 

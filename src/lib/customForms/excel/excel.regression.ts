@@ -1234,6 +1234,53 @@ await (async () => {
     turn("add_table", { title: "x", rows: 2, columns: [{ label: "A", cell: "A1" }, { label: "B", cell: "Q9" }] }),
   );
   check("a refused call does not produce a half-built section", () => assert.equal(refused, null));
+
+  // Device Settings by Trip Type: rows and a column that follow a dropdown.
+  const tripTable = {
+    title: "Device Settings",
+    dropdown: { label: "Trip Type", options: ["LI", "LSIG", "TMD"], default: "LSIG" },
+    row_heading: "Function",
+    columns: [
+      { label: "Setting" },
+      { label: "Delay" },
+      { label: "I²t", type: "select", options: ["On", "Off"], show_for: ["LSIG", "TMD"] },
+    ],
+    rows: [
+      { label: "Long Time", show_for: ["LI", "LSIG"] },
+      { label: "Thermal", show_for: ["TMD"] },
+      { label: "Notes", show_for: ["LI", "LSIG", "TMD"] },
+    ],
+  };
+  const conditional = await regenerateSection(existing, "rows follow Trip Type", async () =>
+    turn("add_conditional_table", tripTable),
+  );
+  check("regenerate can build a table whose rows and columns follow a dropdown", () => {
+    assert.ok(conditional);
+    const [section] = conditional!;
+    assert.equal(section.componentType, ComponentType.CONDITIONAL_TABLE);
+    assert.equal(section.id, "sec-settings");
+    assert.equal(section.referenceCode, "DS");
+    const setting = section.settingFields![0];
+    assert.equal(setting.label, "Trip Type");
+    assert.equal(setting.defaultValue, "LSIG");
+    assert.deepEqual(section.columns!.map((column) => column.label), ["Function", "Setting", "Delay", "I²t"]);
+    assert.deepEqual(section.columns![3].visibleWhen, { [setting.id]: ["LSIG", "TMD"] });
+    assert.equal(section.columns![1].visibleWhen, undefined, "a column with no choices is always shown");
+    assert.deepEqual(section.conditionalRows!.map((row) => row.label), ["Long Time", "Thermal", "Notes"]);
+    assert.deepEqual(section.conditionalRows![1].visibleWhen, { [setting.id]: ["TMD"] });
+    assert.equal(section.conditionalRows![2].visibleWhen, undefined, "every choice listed means always");
+  });
+  check("a conditional table is described with what each row follows", () => {
+    const text = describeSection(conditional![0]);
+    assert.match(text, /Dropdown "Trip Type": LI \/ LSIG \/ TMD, starting on LSIG/);
+    assert.match(text, /"Long Time", shown when Trip Type is LI \/ LSIG/);
+    assert.match(text, /"I²t" \(select: On \/ Off, shown when Trip Type is LSIG \/ TMD\)/);
+  });
+
+  const unknownChoice = await regenerateSection(existing, "rows follow Trip Type", async () =>
+    turn("add_conditional_table", { ...tripTable, rows: [{ label: "Long Time", show_for: ["LSI"] }] }),
+  );
+  check("a row shown for a choice the dropdown lacks is refused", () => assert.equal(unknownChoice, null));
 })();
 
 console.log(

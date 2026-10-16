@@ -275,6 +275,8 @@ Generate the CustomFormTemplate JSON now.`;
 /** The only tools this function will pass on. The app owns what they do. */
 const BUILD_TOOL_NAMES = [
   "add_section", "add_table", "add_header_row", "set_column_text", "add_note", "finish",
+  // Offered only by the section editor's regenerate.
+  "add_conditional_table",
 ];
 const STEP_LIMITS = { messages: 600, contentChars: 200_000, totalChars: 600_000, tools: 12 };
 

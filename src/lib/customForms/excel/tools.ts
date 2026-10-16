@@ -274,6 +274,71 @@ export const BUILD_TOOLS = [
   },
 ] as const;
 
+/**
+ * A table whose rows and columns follow a dropdown, like Device Settings by
+ * Trip Type. Only the section editor offers it: a workbook has no dropdown
+ * that hides rows, so a file import never needs it.
+ */
+export const CONDITIONAL_TABLE_TOOL = {
+  name: "add_conditional_table",
+  description:
+    "Add a table whose rows and columns change with a dropdown above it, e.g. a Trip Type that decides which functions are listed. Use it whenever rows or columns appear only for some choices. The first column holds the row names and is added for you: do not list it in columns.",
+  parameters: {
+    type: "object",
+    required: ["title", "dropdown", "columns", "rows"],
+    properties: {
+      title: { type: "string" },
+      dropdown: {
+        type: "object",
+        required: ["label", "options"],
+        properties: {
+          label: { type: "string", description: "e.g. Trip Type." },
+          options: { type: "array", items: { type: "string" } },
+          default: { type: "string", description: "The choice it starts on. Optional; otherwise the first." },
+        },
+      },
+      row_heading: { type: "string", description: "Heading over the row names, e.g. Function." },
+      columns: {
+        type: "array",
+        description: "The columns after the row names.",
+        items: {
+          type: "object",
+          required: ["label"],
+          properties: {
+            label: { type: "string" },
+            type: { type: "string", description: "text, number, date, select, radio, textarea or checkbox." },
+            options: { type: "array", items: { type: "string" }, description: "Choices for select." },
+            width: { type: "string" },
+            show_for: {
+              type: "array",
+              items: { type: "string" },
+              description: "Dropdown choices that show this column. Leave out to always show it.",
+            },
+          },
+        },
+      },
+      rows: {
+        type: "array",
+        items: {
+          type: "object",
+          required: ["label"],
+          properties: {
+            label: { type: "string" },
+            show_for: {
+              type: "array",
+              items: { type: "string" },
+              description: "Dropdown choices that show this row. Leave out to always show it.",
+            },
+          },
+        },
+      },
+    },
+  },
+} as const;
+
+/** What the section editor's regenerate offers the model. */
+export const EDIT_TOOLS = [...BUILD_TOOLS, CONDITIONAL_TABLE_TOOL] as const;
+
 function nextId(state: BuildState, prefix: string): string {
   state.counter += 1;
   return `${prefix}${state.counter}`;
@@ -373,6 +438,86 @@ function addTable(state: BuildState, args: Record<string, unknown>, sheet: strin
     allowRemoveRows: false,
   });
   state.sources.push({ sectionId: id, kind: "columns", sheet, anchors, rows });
+  return id;
+}
+
+/**
+ * Which dropdown choices show a row or column. Undefined means always: left
+ * out, empty, or every choice listed.
+ */
+function showFor(value: unknown, choices: string[], what: string): string[] | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (!Array.isArray(value)) fail(`"show_for" for ${what} must be a list of dropdown choices.`);
+  const picked = [...new Set(value.map((entry) => String(entry ?? "")))];
+  const unknown = picked.filter((entry) => !choices.includes(entry));
+  if (unknown.length) {
+    fail(`${what} is shown for ${unknown.map((entry) => `"${entry}"`).join(", ")}, which the dropdown does not offer. Its choices are: ${choices.join(", ")}.`);
+  }
+  return picked.length === 0 || picked.length === choices.length ? undefined : picked;
+}
+
+function addConditionalTable(state: BuildState, args: Record<string, unknown>): string {
+  const title = str(args, "title");
+  const dropdown = record(args.dropdown, "dropdown");
+  const dropdownLabel = str(dropdown, "label");
+  const choices = options(dropdown.options, dropdownLabel);
+  if (!choices?.length) fail(`The dropdown "${dropdownLabel}" needs its choices.`);
+  const values = choices.map((choice) => choice.value);
+  const start = str(dropdown, "default", BUILD_LIMITS.labelLength, false);
+  if (start && !values.includes(start)) {
+    fail(`"${start}" is not one of the dropdown's choices, so it cannot start there. Its choices are: ${values.join(", ")}.`);
+  }
+  const columnEntries = array(args, "columns", BUILD_LIMITS.columns - 1);
+  const rowEntries = array(args, "rows", BUILD_LIMITS.rows);
+  const id = nextId(state, "s");
+  const settingId = nextId(state, "set");
+  const follows = (picked: string[] | undefined) =>
+    picked ? { visibleWhen: { [settingId]: picked } } : {};
+
+  const rowHeading = str(args, "row_heading", BUILD_LIMITS.labelLength, false);
+  const nameColumn: ColumnConfig = {
+    id: nextId(state, "c"),
+    label: rowHeading,
+    field: { id: nextId(state, "f"), label: rowHeading, type: FieldType.TEXT },
+  };
+  const columns: ColumnConfig[] = columnEntries.map((raw, index) => {
+    const entry = record(raw, "column");
+    const label = str(entry, "label", BUILD_LIMITS.labelLength, false);
+    const name = `Column "${label || index + 2}"`;
+    const columnChoices = options(entry.options, label || `column ${index + 2}`);
+    return {
+      id: nextId(state, "c"),
+      label,
+      ...(entry.width ? { width: str(entry, "width", 20) } : {}),
+      field: {
+        id: nextId(state, "f"),
+        label,
+        type: fieldType(entry.type, name),
+        ...(columnChoices ? { options: columnChoices } : {}),
+      },
+      ...follows(showFor(entry.show_for, values, name)),
+    };
+  });
+  const conditionalRows = rowEntries.map((raw) => {
+    const entry = record(raw, "row");
+    const label = str(entry, "label");
+    return { id: nextId(state, "r"), label, ...follows(showFor(entry.show_for, values, `Row "${label}"`)) };
+  });
+
+  state.sections.push({
+    id,
+    componentType: ComponentType.CONDITIONAL_TABLE,
+    title,
+    order: state.sections.length,
+    showInPrint: true,
+    settingFields: [
+      { id: settingId, label: dropdownLabel, options: choices, ...(start ? { defaultValue: start } : {}) },
+    ],
+    conditionalRows,
+    columns: [nameColumn, ...columns],
+    allowAddRows: false,
+    allowRemoveRows: false,
+  });
   return id;
 }
 
@@ -486,6 +631,16 @@ export function applyToolCall(state: BuildState, call: ToolCall, sheet: string):
           ok: true,
           summary: `${section.title}, ${section.columns!.length} columns by ${section.rows} rows`,
           message: `Added table "${section.title}" as ${id}: ${section.columns!.length} columns, ${section.rows} rows.`,
+        };
+      }
+      case "add_conditional_table": {
+        const id = addConditionalTable(state, args);
+        const section = state.sections[state.sections.length - 1];
+        const dropdown = section.settingFields![0].label;
+        return {
+          ok: true,
+          summary: `${section.title}, ${section.conditionalRows!.length} rows that follow ${dropdown}`,
+          message: `Added table "${section.title}" as ${id}: ${section.columns!.length} columns and ${section.conditionalRows!.length} rows, shown by "${dropdown}".`,
         };
       }
       case "add_header_row": {

@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { COMPONENT_LIBRARY } from "@/lib/customForms/componentLibrary";
 import type { SectionConfig } from "@/lib/types/customForms";
 import { buildExcelDraft } from "@/lib/customForms/excel/import";
-import { BUILD_TOOLS } from "@/lib/customForms/excel/tools";
+import { BUILD_TOOLS, EDIT_TOOLS } from "@/lib/customForms/excel/tools";
 import {
   draftFromBuild,
   rebuildSection,
@@ -91,7 +91,9 @@ export async function importExcelTemplate(
  * and the person can watch and stop the run. The edge function is a bounded
  * pass-through that adds the API key.
  */
-const stepCall: ModelCall = async (messages, signal) => {
+const stepCallWith = (
+  tools: readonly { name: string }[],
+): ModelCall => async (messages, signal) => {
   const { data, error } = await supabase.functions.invoke("generate-form-template", {
     body: {
       sourceType: "excel-step",
@@ -109,13 +111,29 @@ const stepCall: ModelCall = async (messages, signal) => {
             }
           : {}),
       })),
-      tools: BUILD_TOOLS.map((tool) => ({ type: "function", function: tool })),
+      tools: tools.map((tool) => ({ type: "function", function: tool })),
     },
     ...(signal ? { signal } : {}),
   });
   if (error) throw new Error(await functionErrorMessage(error));
   if (data?.error) throw new Error(data.error);
   return { text: String(data?.text ?? ""), toolCalls: Array.isArray(data?.toolCalls) ? data.toolCalls : [] };
+};
+
+const stepCall = stepCallWith(BUILD_TOOLS);
+
+/**
+ * The section editor's call, which also offers conditional tables. A server
+ * function deployed before that tool existed refuses the whole step, so fall
+ * back to the file-import tools rather than fail every regenerate.
+ */
+const editCall: ModelCall = async (messages, signal) => {
+  try {
+    return await stepCallWith(EDIT_TOOLS)(messages, signal);
+  } catch (error) {
+    if (!/Unknown build tool/i.test(String((error as Error)?.message ?? error))) throw error;
+    return stepCall(messages, signal);
+  }
 };
 
 export interface FileImportOptions {
@@ -171,5 +189,5 @@ export async function regenerateSectionWithPrompt(
   instruction: string,
   options: { call?: ModelCall; signal?: AbortSignal } = {},
 ): Promise<SectionConfig[] | null> {
-  return regenerateSection(section, instruction, options.call ?? stepCall, { signal: options.signal });
+  return regenerateSection(section, instruction, options.call ?? editCall, { signal: options.signal });
 }

@@ -59,15 +59,16 @@ export async function syncAlarms(day: MyDay): Promise<void> {
     if (error) throw error;
     if (!me?.clocks_in) return;
 
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status !== 'granted') return;
-
+    // Android 13+ only shows the permission prompt once a channel exists.
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync(CHANNEL, {
         name: 'Clock reminders',
         importance: Notifications.AndroidImportance.MAX,
       });
     }
+
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== 'granted') return;
 
     const now = Date.now();
     const ring = async (identifier: string, at: Date, title: string) => {

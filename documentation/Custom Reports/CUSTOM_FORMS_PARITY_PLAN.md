@@ -15,7 +15,7 @@
 |---|---|---|
 | 0 — Protect data and define the contract | **Done**, pending smoke test | Migration written and applied. Version store, pinning, revisions, `LIMITED SERVICE`, compiler and fixtures all landed. |
 | 1 — Build one shared runtime | **Done** | Four renderers collapsed into one. Render harness now proves the modes agree. |
-| 2 — Complete document and table schema | **Mostly done** | Schema, runtime, validation and the table grid editor landed. Layout containers and bindings still have no authoring UI. |
+| 2 — Complete document and table schema | **Mostly done** | Schema, runtime, validation, the table grid editor and layout authoring landed. Bindings still have no authoring UI. |
 | 3 — Typed expression and rule engine | **In progress: core library** | Safe parser, typed evaluation, stable-reference upgrade helper, dependency checks and regression tests landed. Not activated in the report runtime or publication path. |
 | 4 — Repeaters, comparisons, charts, signatures | Not started | Signature capture is stubbed; the schema slot exists. |
 | 5 — Operational workflow | **Started** | Workflow itself not begun (`workflow_status` exists, nothing reads it). Excel import built alongside it: workbook to reviewable draft, with deterministic formula translation checked against the workbook's saved results. |
@@ -28,18 +28,28 @@ you click cells in it to merge and split; the section carries a `v2` overlay
 beside its V1 shape, so conversion is per-section and reversible. Formulas are
 written with a searchable reference picker instead of remembered syntax.
 
-**Still not authorable:** layout containers (side-by-side, grid, callout,
-keep-together, page break) and declarative bindings. Both are supported by the
-schema and the renderer; neither has UI. They need a block-tree editor rather
-than a section-level one.
+**Layouts can now be authored (16 October 2026).** Tick sections on the canvas
+and arrange them side by side, in a grid, a boxed strip, a callout, or kept on
+one page; add page breaks with the scissors control. Stored as
+`structure.layout` beside the flat section list (`src/lib/customForms/layoutGroups.ts`),
+the same overlay idea as a table's `v2`: sections keep their ids and order, so
+no reader or saved value moves, and deleting the key flattens the form. One
+level only: a group holds sections, not other groups. Publication keeps the
+layout (`normalizeStructure`). Members never get narrower than their content
+needs (`sectionMinWidthRem`), so a row that cannot fit wraps rather than
+overlapping, and the builder warns when a group will not fit on paper. 28
+regression checks cover it, 5 of them rendered.
+
+**Still not authorable:** declarative bindings. The schema and renderer support
+them; there is no UI.
 
 **One real report has been rebuilt end to end.** 3-Low Voltage Cable MTS
 reproduces against the hard-coded original on 30 checked properties, and the
 exercise found and closed a genuine schema gap (records that span more than one
 row). See the conversion pilot note under Phase 2.
 
-The next step is either a second report, to see whether the first was
-representative, or the block-tree editor for layout containers.
+The next step is a second report, to see whether the first was
+representative, now that layouts can be built.
 
 ### Verification available today
 

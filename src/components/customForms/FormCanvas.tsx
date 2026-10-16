@@ -2,7 +2,8 @@
  * Form Canvas
  *
  * The builder's editing shell: drag-and-drop ordering, per-section actions,
- * and per-cell formula editing. The section bodies themselves come from the
+ * per-cell formula editing, and layout (tick sections, then arrange them side
+ * by side, in a grid or in a box). The section bodies themselves come from the
  * shared runtime, so the canvas cannot drift from what the filler renders.
  */
 
@@ -22,9 +23,48 @@ import {
   Sparkles,
   EyeOff,
   FileCode2,
+  Columns2,
+  LayoutGrid,
+  RectangleHorizontal,
+  MessageSquareText,
+  Rows2,
+  Scissors,
+  Ungroup,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
+  LogOut,
+  X,
+  Check,
+  type LucideIcon,
 } from "lucide-react";
 
-import { SectionConfig } from "@/lib/types/customForms";
+import type {
+  CustomFormStructure,
+  LayoutGroupConfig,
+  LayoutGroupKind,
+  SectionConfig,
+} from "@/lib/types/customForms";
+import {
+  LAYOUT_KIND_LABELS,
+  MAX_GRID_COLUMNS,
+  fitsOnPaper,
+  gridTemplate,
+  groupSections,
+  memberMinWidth,
+  sectionMinWidthRem,
+  sideBySideFlex,
+  layoutUnits,
+  moveWithinGroup,
+  pageBreakIds,
+  removeFromGroup,
+  togglePageBreakBefore,
+  ungroup,
+  updateGroup,
+  widthPresets,
+  type LayoutUnit,
+} from "@/lib/customForms/layoutGroups";
 import { getComponentDefinition } from "@/lib/customForms/componentLibrary";
 import { getSectionReferenceCode } from "@/lib/customForms/formCellResolution";
 import {
@@ -38,6 +78,8 @@ import {
   type SectionChrome,
   type SectionRowInfo,
 } from "@/lib/customForms/runtime";
+import { sectionFromV1 } from "@/lib/customForms/v2/fromV1";
+import { confirmDialog } from "@/components/ui/confirmDialog";
 import { SectionBody } from "./runtime/SectionBody";
 import { FormulaInput } from "./FormulaInput";
 import { createPlaceholderControlRenderer } from "./runtime/PlaceholderControl";
@@ -197,7 +239,7 @@ const SectionPreview: React.FC<SectionPreviewProps> = ({
             </span>
           )}
           <div
-            className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5"
+            className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5 break-all"
             title={`${section.title || "Section"}, column ${cNum} (same row). Or ${rowRefs} for specific rows.`}
           >
             {`{${code}.C${cNum}}`}
@@ -216,7 +258,7 @@ const SectionPreview: React.FC<SectionPreviewProps> = ({
           <span className="text-blue-500 ml-1 text-[10px]">(Auto)</span>
         )}
         <div
-          className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5"
+          className="font-mono text-[10px] text-amber-600 dark:text-amber-400 mt-0.5 break-all"
           title={`${section.title || "Section"} » ${field.label || field.id}`}
         >
           {`{${code}.${field.id}}`}
@@ -369,6 +411,14 @@ interface SortableSectionProps {
     formula: string,
   ) => void;
   onRequestEditFormulas?: (sectionId: string) => void;
+  /** Ticked for arranging. Absent hides the tick box. */
+  arrangeSelected?: boolean;
+  onToggleArrange?: () => void;
+  /** Sections inside a group move with the group, not on their own. */
+  dragDisabled?: boolean;
+  /** Absent hides the page break control (sections inside a group). */
+  pageBreakBefore?: boolean;
+  onTogglePageBreak?: () => void;
 }
 
 const SortableSection: React.FC<SortableSectionProps> = ({
@@ -382,6 +432,11 @@ const SortableSection: React.FC<SortableSectionProps> = ({
   isFormulaEditing = false,
   onCellFormulaChange,
   onRequestEditFormulas,
+  arrangeSelected = false,
+  onToggleArrange,
+  dragDisabled = false,
+  pageBreakBefore = false,
+  onTogglePageBreak,
 }) => {
   const [prompting, setPrompting] = React.useState(false);
   const [instruction, setInstruction] = React.useState("");
@@ -410,7 +465,12 @@ const SortableSection: React.FC<SortableSectionProps> = ({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: section.id });
+  } = useSortable({
+    id: section.id,
+    // Both halves: a bare `true` only stops dragging, and a section inside a
+    // group that still accepts drops lets a new section land between members.
+    disabled: { draggable: dragDisabled, droppable: dragDisabled },
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -424,11 +484,12 @@ const SortableSection: React.FC<SortableSectionProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-white dark:bg-dark-150 border-2 rounded-none transition-all ${
+      data-layout-unit={section.id}
+      className={`bg-white dark:bg-dark-150 border-2 rounded-none transition-all min-w-0 ${
         isSelected
           ? "border-brand shadow-lg"
           : "border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600"
-      }`}
+      } ${arrangeSelected ? "outline outline-2 outline-dashed outline-offset-2 outline-brand" : ""}`}
     >
       <div
         className={`flex items-center gap-2 md:gap-3 px-2 md:px-4 py-2 md:py-3 border-b ${
@@ -437,17 +498,35 @@ const SortableSection: React.FC<SortableSectionProps> = ({
             : "border-neutral-200 dark:border-neutral-700"
         }`}
       >
-        <button
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hidden md:block"
-        >
-          <GripVertical className="w-4 h-4 md:w-5 md:h-5" />
-        </button>
+        {onToggleArrange && (
+          <span className="relative inline-flex h-4 w-4 shrink-0">
+            <input
+              type="checkbox"
+              checked={arrangeSelected}
+              onChange={onToggleArrange}
+              title="Tick to arrange with other sections"
+              aria-label={`Select ${section.title || "section"} to arrange`}
+              className="peer h-4 w-4 cursor-pointer appearance-none rounded-none border-2 border-neutral-400 dark:border-neutral-500 bg-white dark:bg-dark-100 checked:border-brand checked:bg-brand dark:checked:border-brand dark:checked:bg-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
+            />
+            <Check
+              strokeWidth={3}
+              className="pointer-events-none absolute inset-0 m-auto hidden h-3 w-3 text-white peer-checked:block"
+            />
+          </span>
+        )}
+        {!dragDisabled && (
+          <button
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hidden md:block"
+          >
+            <GripVertical className="w-4 h-4 md:w-5 md:h-5" />
+          </button>
+        )}
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="text-xs md:text-sm font-semibold text-neutral-900 dark:text-white truncate">
+            <h3 className="text-xs md:text-sm font-semibold text-neutral-900 dark:text-white min-w-0 [overflow-wrap:anywhere]">
               {section.title}
             </h3>
             {isFormulaEditing && (
@@ -484,6 +563,20 @@ const SortableSection: React.FC<SortableSectionProps> = ({
               title="Rebuild this section from a description"
             >
               <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            </button>
+          )}
+          {onTogglePageBreak && (
+            <button
+              onClick={onTogglePageBreak}
+              className={`hidden md:block p-1.5 md:p-2 rounded-none hover:bg-neutral-100 dark:hover:bg-dark-100 ${
+                pageBreakBefore
+                  ? "text-brand"
+                  : "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+              }`}
+              title={pageBreakBefore ? "Remove the page break above" : "Start a new printed page here"}
+              aria-pressed={pageBreakBefore}
+            >
+              <Scissors className="w-3.5 h-3.5 md:w-4 md:h-4" />
             </button>
           )}
           <button
@@ -565,8 +658,261 @@ const SortableSection: React.FC<SortableSectionProps> = ({
   );
 };
 
+// ---------------------------------------------------------------------------
+// Layout: groups, the arrange bar, page break markers
+// ---------------------------------------------------------------------------
+
+const KIND_ICONS: Record<LayoutGroupKind, LucideIcon> = {
+  "side-by-side": Columns2,
+  grid: LayoutGrid,
+  strip: RectangleHorizontal,
+  callout: MessageSquareText,
+  "keep-together": Rows2,
+};
+
+const KIND_HINTS: Record<LayoutGroupKind, string> = {
+  "side-by-side": "Next to each other in one row",
+  grid: "In rows of a set number of columns",
+  strip: "Inside one bordered box",
+  callout: "Inside a highlighted note box",
+  "keep-together": "Never split across two printed pages",
+};
+
+const ARRANGE_KINDS: LayoutGroupKind[] = [
+  "side-by-side",
+  "grid",
+  "strip",
+  "callout",
+  "keep-together",
+];
+
+/** Side by side and grid need at least two sections to mean anything. */
+const minimumFor = (kind: LayoutGroupKind) =>
+  kind === "side-by-side" || kind === "grid" ? 2 : 1;
+
+const smallSelect =
+  "h-7 px-1.5 text-xs border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand";
+
+const PageBreakMarker: React.FC<{ onRemove: () => void }> = ({ onRemove }) => (
+  <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+    <div className="flex-1 border-t-2 border-dashed border-neutral-300 dark:border-neutral-600" />
+    <Scissors className="w-3 h-3" />
+    New printed page
+    <button
+      type="button"
+      onClick={onRemove}
+      className="p-0.5 rounded-none text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
+      title="Remove page break"
+      aria-label="Remove page break"
+    >
+      <X className="w-3 h-3" />
+    </button>
+    <div className="flex-1 border-t-2 border-dashed border-neutral-300 dark:border-neutral-600" />
+  </div>
+);
+
+interface CanvasGroupProps {
+  unit: Extract<LayoutUnit, { type: "group" }>;
+  pageBreakBefore: boolean;
+  onUpdate: (patch: Partial<Omit<LayoutGroupConfig, "id" | "sectionIds">>) => void;
+  onUngroup: () => void;
+  /** Absent for the first block, which already starts a page. */
+  onTogglePageBreak?: () => void;
+  renderMember: (section: SectionConfig, index: number, count: number) => React.ReactNode;
+}
+
+/** A group on the canvas: a dashed box with its settings, dragged as one. */
+const CanvasGroup: React.FC<CanvasGroupProps> = ({
+  unit,
+  pageBreakBefore,
+  onUpdate,
+  onUngroup,
+  onTogglePageBreak,
+  renderMember,
+}) => {
+  const { group, sections } = unit;
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: group.id });
+  const Icon = KIND_ICONS[group.kind];
+  // The canvas card carries editing chrome (reference codes, buttons), so it
+  // needs more room than the printed section before it can share a row.
+  const printMins = sections.map((section) => sectionMinWidthRem(sectionFromV1(section)));
+  const canvasMins = printMins.map((rem) => Math.max(20, rem * 1.3 + 2));
+  const weighted = group.widths?.length === sections.length;
+  const fits = fitsOnPaper(group.kind, printMins, group.columns);
+  // A group that will not fit on paper is drawn stacked, the way it prints,
+  // so the builder never shows columns next to a note saying there are none.
+  const across = fits && (group.kind === "side-by-side" || group.kind === "strip");
+  const presets = widthPresets(sections.length);
+  const presetIndex = Math.max(
+    0,
+    presets.findIndex(
+      (preset) => JSON.stringify(preset.widths) === JSON.stringify(group.widths),
+    ),
+  );
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+      }}
+      data-layout-unit={group.id}
+      className="border-2 border-dashed border-brand/60 bg-brand/5 dark:bg-brand/10 rounded-none"
+    >
+      <div className="flex flex-wrap items-center gap-2 px-2 md:px-3 py-2 border-b border-dashed border-brand/40">
+        <button
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hidden md:block"
+          title="Drag to move the whole group"
+        >
+          <GripVertical className="w-4 h-4 md:w-5 md:h-5" />
+        </button>
+        <Icon className="w-4 h-4 text-brand shrink-0" />
+        <select
+          value={group.kind}
+          onChange={(event) => onUpdate({ kind: event.target.value as LayoutGroupKind })}
+          className={smallSelect}
+          aria-label="Arrangement"
+          title={KIND_HINTS[group.kind]}
+        >
+          {ARRANGE_KINDS.map((kind) => (
+            <option key={kind} value={kind}>
+              {LAYOUT_KIND_LABELS[kind]}
+            </option>
+          ))}
+        </select>
+
+        {group.kind === "side-by-side" && sections.length > 1 && (
+          <select
+            value={presetIndex}
+            onChange={(event) => onUpdate({ widths: presets[Number(event.target.value)].widths })}
+            className={smallSelect}
+            aria-label="Widths"
+          >
+            {presets.map((preset, index) => (
+              <option key={preset.label} value={index}>
+                {preset.label}
+              </option>
+            ))}
+          </select>
+        )}
+
+        {group.kind === "grid" && (
+          <select
+            value={group.columns ?? 2}
+            onChange={(event) => onUpdate({ columns: Number(event.target.value) })}
+            className={smallSelect}
+            aria-label="Columns"
+          >
+            {Array.from({ length: MAX_GRID_COLUMNS - 1 }, (_, i) => i + 2).map((n) => (
+              <option key={n} value={n}>
+                {n} columns
+              </option>
+            ))}
+          </select>
+        )}
+
+        {group.kind === "callout" && (
+          <select
+            value={group.tone ?? "info"}
+            onChange={(event) =>
+              onUpdate({ tone: event.target.value as LayoutGroupConfig["tone"] })
+            }
+            className={smallSelect}
+            aria-label="Callout style"
+          >
+            <option value="info">Note (blue)</option>
+            <option value="warning">Warning (amber)</option>
+            <option value="criteria">Criteria (orange)</option>
+          </select>
+        )}
+
+        <input
+          value={group.title ?? ""}
+          onChange={(event) => onUpdate({ title: event.target.value })}
+          placeholder="Heading (optional)"
+          className={`${smallSelect} flex-1 min-w-[8rem]`}
+          aria-label="Group heading"
+        />
+
+        <div className="flex items-center gap-0.5 ml-auto">
+          {onTogglePageBreak && (
+            <button
+              type="button"
+              onClick={onTogglePageBreak}
+              className={`p-1.5 rounded-none hover:bg-white/70 dark:hover:bg-dark-100 ${
+                pageBreakBefore ? "text-brand" : "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+              }`}
+              title={pageBreakBefore ? "Remove the page break above" : "Start a new printed page here"}
+              aria-pressed={pageBreakBefore}
+            >
+              <Scissors className="w-4 h-4" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onUngroup}
+            className="flex items-center gap-1 px-2 py-1 text-xs rounded-none text-neutral-600 dark:text-neutral-300 hover:bg-white/70 dark:hover:bg-dark-100"
+            title="Put these sections back one under another"
+          >
+            <Ungroup className="w-3.5 h-3.5" />
+            Ungroup
+          </button>
+        </div>
+      </div>
+
+      {!fits && (
+        <p className="px-2 md:px-3 py-1.5 text-[11px] text-amber-800 dark:text-amber-200 bg-amber-50 dark:bg-amber-900/20 border-b border-dashed border-brand/40">
+          {group.kind === "grid"
+            ? `Too wide for ${group.columns ?? 2} columns on a printed page. They will print in fewer columns.`
+            : "Too wide to fit side by side on a printed page. These sections will print one under another."}
+        </p>
+      )}
+
+      <div className="p-2 md:p-3">
+        {group.kind === "grid" && fits ? (
+          <div
+            className="grid gap-3 items-start"
+            style={{ gridTemplateColumns: gridTemplate(group.columns, Math.max(...canvasMins)) }}
+          >
+            {sections.map((section, index) => renderMember(section, index, sections.length))}
+          </div>
+        ) : across ? (
+          <div className="flex flex-wrap items-start gap-3">
+            {sections.map((section, index) => (
+              <div
+                key={section.id}
+                style={{
+                  flex: sideBySideFlex(
+                    group.kind === "side-by-side" && weighted ? group.widths![index] : 1,
+                  ),
+                  minWidth: memberMinWidth(canvasMins[index]),
+                }}
+              >
+                {renderMember(section, index, sections.length)}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {sections.map((section, index) => renderMember(section, index, sections.length))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 interface FormCanvasProps {
   sections: SectionConfig[];
+  /** The whole structure, for layout. */
+  structure: CustomFormStructure;
+  /** Apply a layout edit. Takes an updater so edits never act on stale state. */
+  onStructureChange: (update: (structure: CustomFormStructure) => CustomFormStructure) => void;
   selectedSectionId: string | null;
   onSectionSelect: (sectionId: string) => void;
   onSectionDelete: (sectionId: string) => void;
@@ -585,6 +931,8 @@ interface FormCanvasProps {
 
 export const FormCanvas: React.FC<FormCanvasProps> = ({
   sections,
+  structure,
+  onStructureChange,
   selectedSectionId,
   onSectionSelect,
   onSectionDelete,
@@ -596,41 +944,208 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
 }) => {
   const { setNodeRef } = useDroppable({ id: "form-canvas" });
   const ordered = [...sections].sort((a, b) => a.order - b.order);
+  const units = React.useMemo(
+    () => layoutUnits({ ...structure, sections }),
+    [structure, sections],
+  );
+  const breaks = React.useMemo(
+    () => pageBreakIds({ ...structure, sections }),
+    [structure, sections],
+  );
+
+  const [arrangeIds, setArrangeIds] = React.useState<string[]>([]);
+  const liveIds = new Set(ordered.map((s) => s.id));
+  const picked = arrangeIds.filter((id) => liveIds.has(id));
+  const toggleArrange = (id: string) =>
+    setArrangeIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+
+  const arrange = (kind: LayoutGroupKind) => {
+    onStructureChange((current) => groupSections(current, picked, kind).structure);
+    setArrangeIds([]);
+  };
+
+  const renderSection = (
+    section: SectionConfig,
+    options: { inGroup: boolean },
+  ) => (
+    <SortableSection
+      key={section.id}
+      section={section}
+      allSections={ordered}
+      isSelected={section.id === selectedSectionId}
+      onSelect={() => onSectionSelect(section.id)}
+      onDelete={async () => {
+        if (
+          await confirmDialog({
+            title: `Delete "${section.title || "this section"}"?`,
+            description: "It is removed from this template. Saved forms keep their own copy.",
+            confirmLabel: "Delete",
+            destructive: true,
+          })
+        ) {
+          onSectionDelete(section.id);
+        }
+      }}
+      onDuplicate={() => onSectionDuplicate(section.id)}
+      onRegenerate={
+        onSectionRegenerate
+          ? (instruction) => onSectionRegenerate(section.id, instruction)
+          : undefined
+      }
+      isFormulaEditing={section.id === formulaEditingSectionId}
+      onCellFormulaChange={onCellFormulaChange}
+      onRequestEditFormulas={onRequestEditFormulas}
+      arrangeSelected={picked.includes(section.id)}
+      onToggleArrange={ordered.length > 1 ? () => toggleArrange(section.id) : undefined}
+      dragDisabled={options.inGroup}
+      pageBreakBefore={breaks.has(section.id)}
+      onTogglePageBreak={
+        options.inGroup || section.id === units[0]?.id
+          ? undefined
+          : () => onStructureChange((current) => togglePageBreakBefore(current, section.id))
+      }
+    />
+  );
+
+  const renderMember = (
+    group: LayoutGroupConfig,
+    section: SectionConfig,
+    index: number,
+    count: number,
+  ) => {
+    const across = group.kind === "side-by-side" || group.kind === "grid";
+    const Earlier = across ? ChevronLeft : ChevronUp;
+    const Later = across ? ChevronRight : ChevronDown;
+    const move = (delta: -1 | 1) =>
+      onStructureChange((current) => moveWithinGroup(current, section.id, delta));
+    const controlClass =
+      "p-1 rounded-none text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-white/70 dark:hover:bg-dark-100 disabled:opacity-30 disabled:hover:bg-transparent";
+    return (
+      <div key={section.id} className="min-w-0">
+        <div className="flex items-center justify-end gap-0.5 mb-1">
+          {count > 1 && (
+            <>
+              <button
+                type="button"
+                className={controlClass}
+                disabled={index === 0}
+                onClick={() => move(-1)}
+                title={across ? "Move left" : "Move up"}
+                aria-label={across ? "Move left" : "Move up"}
+              >
+                <Earlier className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                className={controlClass}
+                disabled={index === count - 1}
+                onClick={() => move(1)}
+                title={across ? "Move right" : "Move down"}
+                aria-label={across ? "Move right" : "Move down"}
+              >
+                <Later className="w-3.5 h-3.5" />
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            className={`${controlClass} flex items-center gap-1 text-[11px]`}
+            onClick={() => onStructureChange((current) => removeFromGroup(current, section.id))}
+            title="Take this section out of the group"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Take out
+          </button>
+        </div>
+        {renderSection(section, { inGroup: true })}
+      </div>
+    );
+  };
 
   return (
-    <div ref={setNodeRef} className="w-full mx-auto">
+    <div ref={setNodeRef} className={`w-full mx-auto ${picked.length > 0 ? "pb-44 md:pb-24" : ""}`}>
+      {ordered.length > 1 && (
+        <p className="mb-3 text-xs text-neutral-500 dark:text-neutral-400">
+          Tick two or more sections to put them side by side, in a grid, or in a box.
+        </p>
+      )}
+
       <SortableContext
-        items={ordered.map((s) => s.id)}
+        items={units.map((unit) => unit.id)}
         strategy={verticalListSortingStrategy}
       >
         <div className="space-y-3 md:space-y-4">
-          {ordered.map((section) => (
-            <SortableSection
-              key={section.id}
-              section={section}
-              allSections={ordered}
-              isSelected={section.id === selectedSectionId}
-              onSelect={() => onSectionSelect(section.id)}
-              onDelete={() => {
-                if (
-                  confirm(`Are you sure you want to delete "${section.title}"?`)
-                ) {
-                  onSectionDelete(section.id);
-                }
-              }}
-              onDuplicate={() => onSectionDuplicate(section.id)}
-              onRegenerate={
-                onSectionRegenerate
-                  ? (instruction) => onSectionRegenerate(section.id, instruction)
-                  : undefined
-              }
-              isFormulaEditing={section.id === formulaEditingSectionId}
-              onCellFormulaChange={onCellFormulaChange}
-              onRequestEditFormulas={onRequestEditFormulas}
-            />
+          {units.map((unit) => (
+            <React.Fragment key={unit.id}>
+              {breaks.has(unit.id) && (
+                <PageBreakMarker
+                  onRemove={() =>
+                    onStructureChange((current) => togglePageBreakBefore(current, unit.id))
+                  }
+                />
+              )}
+              {unit.type === "section" ? (
+                renderSection(unit.section, { inGroup: false })
+              ) : (
+                <CanvasGroup
+                  unit={unit}
+                  pageBreakBefore={breaks.has(unit.id)}
+                  onUpdate={(patch) =>
+                    onStructureChange((current) => updateGroup(current, unit.id, patch))
+                  }
+                  onUngroup={() =>
+                    onStructureChange((current) => ungroup(current, unit.id))
+                  }
+                  onTogglePageBreak={
+                    unit.id === units[0]?.id
+                      ? undefined
+                      : () =>
+                          onStructureChange((current) => togglePageBreakBefore(current, unit.id))
+                  }
+                  renderMember={(section, index, count) =>
+                    renderMember(unit.group, section, index, count)
+                  }
+                />
+              )}
+            </React.Fragment>
           ))}
         </div>
       </SortableContext>
+
+      {picked.length > 0 && (
+        // Floats at the bottom of the window, so ticking a box never shifts the
+        // sections under the pointer, and it is on screen however the page is
+        // scrolled. The canvas gets bottom padding so it never hides the last section.
+        <div className="fixed bottom-20 md:bottom-4 left-1/2 -translate-x-1/2 z-40 w-max max-w-[calc(100vw-2rem)] flex flex-wrap items-center gap-1.5 border-2 border-brand bg-white dark:bg-dark-150 px-3 py-2 rounded-none shadow-lg">
+          <span className="text-xs font-semibold text-neutral-900 dark:text-white mr-1">
+            {picked.length} selected. Arrange as:
+          </span>
+          {ARRANGE_KINDS.map((kind) => {
+            const Icon = KIND_ICONS[kind];
+            const tooFew = picked.length < minimumFor(kind);
+            return (
+              <button
+                key={kind}
+                type="button"
+                onClick={() => arrange(kind)}
+                disabled={tooFew}
+                title={tooFew ? "Tick at least two sections" : KIND_HINTS[kind]}
+                className="flex items-center gap-1 px-2 py-1 text-xs rounded-none border border-neutral-300 dark:border-neutral-600 text-neutral-800 dark:text-neutral-100 hover:border-brand hover:text-brand disabled:opacity-40 disabled:hover:border-neutral-300 disabled:hover:text-neutral-800 dark:disabled:hover:text-neutral-100"
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {LAYOUT_KIND_LABELS[kind]}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => setArrangeIds([])}
+            className="ml-auto px-2 py-1 text-xs rounded-none text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white"
+          >
+            Clear
+          </button>
+        </div>
+      )}
     </div>
   );
 };

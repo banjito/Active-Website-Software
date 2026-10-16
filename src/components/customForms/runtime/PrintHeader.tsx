@@ -79,8 +79,10 @@ export const CustomFormPrintHeader: React.FC<{
   const settings = template.structure.settings;
   if (!isEnabled(settings?.includePrintHeader)) return null;
 
+  // No rule of its own: the first section's accent rule sits right below it,
+  // and the two together printed as a heavy double line.
   return (
-    <div className="print:flex hidden items-center justify-between border-b-2 border-neutral-800 pb-4 mb-6">
+    <div className="print:flex hidden items-center justify-between pb-2 mb-2">
       <div
         style={{ width: "120px", display: "flex", justifyContent: "flex-start" }}
       >

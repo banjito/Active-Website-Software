@@ -390,7 +390,7 @@ const TableRenderer: React.FC<TableProps> = ({
                     key={cell.id}
                     colSpan={colSpan > 1 ? colSpan : undefined}
                     rowSpan={rowSpan > 1 ? rowSpan : undefined}
-                    className={`border ${BORDER} bg-neutral-50 dark:bg-dark-200 align-top ${density.th} ${ALIGN_CLASS[cell.align ?? "left"]}`}
+                    className={`border ${BORDER} bg-neutral-50 dark:bg-dark-200 align-top [overflow-wrap:anywhere] ${density.th} ${ALIGN_CLASS[cell.align ?? "left"]}`}
                     style={
                       colSpan === 1 && visibleColumns[columnIndex]?.width
                         ? { width: visibleColumns[columnIndex].width }
@@ -793,7 +793,9 @@ const FieldLabel: React.FC<{
   density: Density;
   required: boolean;
 }> = ({ v1Section, field, chrome, density, required }) => (
-  <div className={density.label}>
+  // A word longer than its column ("Technicians") wraps instead of running
+  // into the next column's label.
+  <div className={`${density.label} [overflow-wrap:anywhere]`}>
     {field.label}
     {field.unit && (
       <span className="text-neutral-400 ml-1 normal-case">({field.unit})</span>

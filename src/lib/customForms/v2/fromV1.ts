@@ -26,6 +26,7 @@ import {
   resolveRowCount,
   contactResistanceRowLabels,
 } from "../runtime/layout";
+import { layoutUnits, pageBreakIds } from "../layoutGroups";
 import type {
   BlockV2,
   BodyRowV2,
@@ -408,14 +409,35 @@ export function sectionFromV1(section: SectionConfig): SectionBlockV2 {
 }
 
 /**
- * A whole V1 structure as a V2 document. Sections become a flat list of blocks
- * because V1 had no nesting; layout containers only appear in templates
- * authored as V2.
+ * A whole V1 structure as a V2 document. Sections become blocks in order;
+ * `structure.layout` wraps runs of them in layout containers and adds page
+ * breaks. Without it the document is one flat column, as V1 always was.
  */
 export function documentFromV1(structure: CustomFormStructure): DocumentV2 {
-  const blocks: BlockV2[] = [...structure.sections]
-    .sort((a, b) => a.order - b.order)
-    .map(sectionFromV1);
+  const breaks = pageBreakIds(structure);
+  const blocks: BlockV2[] = [];
+  for (const unit of layoutUnits(structure)) {
+    if (breaks.has(unit.id)) {
+      blocks.push({ id: `${unit.id}-page-break`, type: "page-break" });
+    }
+    if (unit.type === "section") {
+      blocks.push(sectionFromV1(unit.section));
+      continue;
+    }
+    const { group } = unit;
+    blocks.push({
+      id: group.id,
+      type: "layout",
+      kind: group.kind,
+      ...(group.kind === "grid" ? { columns: group.columns ?? 2 } : {}),
+      ...(group.kind === "side-by-side" && group.widths
+        ? { widths: group.widths.map((w) => `minmax(0, ${w}fr)`) }
+        : {}),
+      ...(group.kind === "callout" ? { tone: group.tone ?? "info" } : {}),
+      ...(group.title ? { title: group.title } : {}),
+      children: unit.sections.map(sectionFromV1),
+    });
+  }
 
   return {
     schemaVersion: 2,

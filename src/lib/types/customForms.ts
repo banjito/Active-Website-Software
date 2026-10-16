@@ -323,9 +323,49 @@ export interface InterpolationCurveDefinition {
   outOfRange?: 'clamp' | 'null';
 }
 
+// ============================================================================
+// Layout groups: sections arranged side by side, in a grid, boxed, or kept together
+// ============================================================================
+
+export type LayoutGroupKind =
+  | 'side-by-side'
+  | 'grid'
+  | 'strip'
+  | 'callout'
+  | 'keep-together';
+
+/**
+ * Sections arranged together. A group is always a run of consecutive
+ * sections: it renders where its first member sits, members in section order.
+ */
+export interface LayoutGroupConfig {
+  id: string;
+  kind: LayoutGroupKind;
+  sectionIds: string[];
+  /** For `grid`: how many columns. */
+  columns?: number;
+  /** For `side-by-side`: a relative width per member, e.g. [2, 1]. */
+  widths?: number[];
+  /** For `callout`. */
+  tone?: 'info' | 'warning' | 'criteria';
+  title?: string;
+}
+
+export interface CustomFormLayout {
+  groups?: LayoutGroupConfig[];
+  /** Section or group ids that start a new printed page. */
+  pageBreaksBefore?: string[];
+}
+
 export interface CustomFormStructure {
   sections: SectionConfig[];
   settings: CustomFormSettings;
+  /**
+   * Layout laid over the flat section list, the way `v2` is laid over a table.
+   * Sections keep their ids and order, so no reader and no saved value moves,
+   * and deleting this key flattens the form back to one column.
+   */
+  layout?: CustomFormLayout;
   /** Absent means legacy evaluation. This payload is frozen and checksummed with the version. */
   expressions?: {
     engineVersion: 'typed-1';

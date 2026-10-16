@@ -24,6 +24,7 @@ import { classifySection } from "./runtime/sectionKind";
 import { resolveRowCount } from "./runtime/layout";
 import { getSectionReferenceCode } from "./formCellResolution";
 import { documentFromV1 } from "./v2/fromV1";
+import { normalizeLayout } from "./layoutGroups";
 import { validateDocumentV2 } from "./v2/validate";
 import { compileFormExpressions } from "@/lib/customForms/expressions/form-program";
 
@@ -513,8 +514,10 @@ function dedupeIssues(issues: TemplateIssue[]): TemplateIssue[] {
 export function normalizeStructure(
   structure: CustomFormStructure,
 ): CustomFormStructure {
+  const layout = normalizeLayout(structure);
   return {
     ...(structure.expressions !== undefined ? { expressions: structuredClone(structure.expressions) } : {}),
+    ...(layout ? { layout: structuredClone(layout) } : {}),
     settings: {
       includePassFail: structure.settings?.includePassFail !== false,
       includeJobInfo: structure.settings?.includeJobInfo !== false,

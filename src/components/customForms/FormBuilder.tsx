@@ -31,13 +31,14 @@ import {
   DragOverlay,
   DragStartEvent,
   closestCenter,
+  pointerWithin,
+  type CollisionDetection,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
@@ -63,6 +64,18 @@ import Card, { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 import { ComponentLibrarySidebar } from "./ComponentLibrarySidebar";
 import { FormCanvas } from "./FormCanvas";
+import { confirmDialog } from "@/components/ui/confirmDialog";
+import {
+  getSectionReferenceCode,
+  withFreeReferenceCode,
+} from "@/lib/customForms/formCellResolution";
+import {
+  insertIndexForDrop,
+  moveUnit,
+  placeAfterSection,
+  replaceSectionInLayout,
+  tidyLayout,
+} from "@/lib/customForms/layoutGroups";
 import { SectionEditor } from "./SectionEditor";
 
 import {
@@ -87,6 +100,40 @@ import { SavedComponentsDialog } from "./SavedComponentsDialog";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useReportCssIsolation } from "./runtime/useReportCssIsolation";
 import { regenerateSectionWithPrompt } from "@/lib/customForms/excel/generate";
+
+
+/**
+ * What a drag is over: whatever is under the pointer, preferring a section or
+ * group to the canvas around them. Plain closest-centre often picked the big
+ * canvas, whose middle is nearer than a section's, and dropped at the end.
+ * Keyboard drags have no pointer and fall back to closest-centre.
+ */
+const builderCollisions: CollisionDetection = (args) => {
+  const under = pointerWithin(args);
+  const specific = under.filter((collision) => collision.id !== "form-canvas");
+  if (specific.length > 0) return specific;
+  if (under.length > 0) return under;
+  return closestCenter(args);
+};
+
+/**
+ * Where the pointer was when a drag ended, or null for a keyboard drag.
+ * `tracked` is the last position the window saw. dnd-kit's own delta also
+ * counts scrolling in whichever box the drag is over, which pushed drops on
+ * the top half of the first section to after it.
+ */
+function pointerY(event: DragEndEvent, tracked: number | null): number | null {
+  const start = event.activatorEvent as (MouseEvent & TouchEvent) | null;
+  const y = start?.touches?.[0]?.clientY ?? start?.clientY;
+  if (typeof y !== "number") return null;
+  return tracked ?? y + event.delta.y;
+}
+
+/** The on-screen box of whatever the drag ended over, measured now. */
+function overNode(event: DragEndEvent): HTMLElement | null {
+  const hit = event.collisions?.find((collision) => collision.id === event.over?.id);
+  return (hit?.data?.droppableContainer?.node?.current as HTMLElement | null) ?? null;
+}
 
 export const FormBuilder: React.FC = () => {
   useReportCssIsolation();
@@ -173,7 +220,44 @@ export const FormBuilder: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true); // open by default so component library is visible when editing
+
+  // Below 1400px the library, the section editor and the canvas do not all
+  // fit; together they left the canvas a sliver. One side panel at a time
+  // there: the editor hides the library while it is open, and bringing the
+  // library back closes the editor. Checked live, so resizing the window
+  // with both open cannot get round it.
+  const [narrowScreen, setNarrowScreen] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < 1400,
+  );
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 1399px)");
+    const update = () => setNarrowScreen(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  const libraryShown = showSidebar && !(narrowScreen && selectedSectionId !== null);
+  const showLibrary = () => {
+    if (narrowScreen && selectedSectionId !== null) {
+      setSelectedSectionId(null);
+      setFormulaEditingSectionId(null);
+    }
+    setShowSidebar(true);
+  };
   const [activeId, setActiveId] = useState<string | null>(null);
+  // The pointer's last on-screen height, read when a drag ends.
+  const lastPointerY = useRef<number | null>(null);
+  useEffect(() => {
+    const track = (event: PointerEvent) => {
+      lastPointerY.current = event.clientY;
+    };
+    window.addEventListener("pointerdown", track, { capture: true, passive: true });
+    window.addEventListener("pointermove", track, { capture: true, passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", track, true);
+      window.removeEventListener("pointermove", track, true);
+    };
+  }, []);
   const [actionTooltip, setActionTooltip] = useState<{
     text: string;
     x: number;
@@ -335,7 +419,21 @@ export const FormBuilder: React.FC = () => {
   };
 
   /** Saves the draft. Resolves to the template id, or null if it did not save. */
-  const handleSaveTemplate = async (
+  /** The save in progress, so Preview can wait for it instead of being ignored. */
+  const saveInFlight = useRef<Promise<string | null> | null>(null);
+
+  const handleSaveTemplate = (
+    options: { quiet?: boolean } = {},
+  ): Promise<string | null> => {
+    const pending = saveTemplateNow(options);
+    saveInFlight.current = pending;
+    void pending.finally(() => {
+      if (saveInFlight.current === pending) saveInFlight.current = null;
+    });
+    return pending;
+  };
+
+  const saveTemplateNow = async (
     options: { quiet?: boolean } = {},
   ): Promise<string | null> => {
     if (!user?.id) {
@@ -436,7 +534,18 @@ export const FormBuilder: React.FC = () => {
    */
   const handleOpenPreview = async () => {
     let id = template.id ?? null;
-    if (!id || isDirty) {
+    let dirty = isDirty;
+    // Clicked while a save is still running: wait for it, and use the id it
+    // returns. The button used to be disabled during a save, so a click right
+    // after Save did nothing and needed repeating.
+    const pending = saveInFlight.current;
+    if (pending) {
+      const savedId = await pending;
+      if (!savedId) return; // save already explained why
+      id = savedId;
+      dirty = false;
+    }
+    if (!id || dirty) {
       id = await handleSaveTemplate({ quiet: true });
       if (!id) return; // save already explained why
     }
@@ -529,14 +638,27 @@ export const FormBuilder: React.FC = () => {
     }
 
     // If dropping a component from the library — insert at drop position
+    // Dropped on the lower half of a section: it goes after it, not before.
+    // Judged by the pointer, not the dragged card, whose middle can sit well
+    // below the pointer depending on where it was picked up.
+    // Both measured now, so scrolling during the drag cannot skew them.
+    const dropY = pointerY(event, lastPointerY.current);
+    const node = overNode(event);
+    const overRect = node?.getBoundingClientRect() ?? over.rect;
+    const dropAfter =
+      dropY !== null && dropY > overRect.top + overRect.height / 2;
+    // Dropped on the empty canvas above the first section, such as the hint
+    // line: that means the top of the form, not the end.
+    const firstUnit =
+      over.id === "form-canvas" ? node?.querySelector("[data-layout-unit]") : null;
+    const dropIndex =
+      firstUnit && dropY !== null && dropY < firstUnit.getBoundingClientRect().top
+        ? 0
+        : insertIndexForDrop(template.structure, String(over.id), dropAfter);
+
     if (active.data.current?.type === "library-component") {
       const componentType = active.id as ComponentType;
-      const dropIndex = template.structure.sections.findIndex(
-        (s) => s.id === over.id,
-      );
-      const insertAtIndex =
-        dropIndex >= 0 ? dropIndex : template.structure.sections.length;
-      addSection(componentType, insertAtIndex);
+      addSection(componentType, dropIndex);
     }
     // If dropping a saved component (custom table etc.) — add section from saved config
     else if (active.data.current?.type === "saved-component") {
@@ -545,44 +667,16 @@ export const FormBuilder: React.FC = () => {
         name: string;
         savedComponentId: string;
       };
-      const dropIndex = template.structure.sections.findIndex(
-        (s) => s.id === over.id,
-      );
-      const insertAtIndex =
-        dropIndex >= 0 ? dropIndex : template.structure.sections.length;
-      addSectionFromSaved(sectionConfig, insertAtIndex, savedComponentId);
+      addSectionFromSaved(sectionConfig, dropIndex, savedComponentId);
       toast.success(`Added ${name}`);
     }
-    // If reordering existing sections
+    // If reordering: a section or a whole group takes the target's place
     else if (active.id !== over.id) {
-      const oldIndex = template.structure.sections.findIndex(
-        (s) => s.id === active.id,
-      );
-      const newIndex = template.structure.sections.findIndex(
-        (s) => s.id === over.id,
-      );
-
-      if (oldIndex !== -1 && newIndex !== -1) {
-        const newSections = arrayMove(
-          template.structure.sections,
-          oldIndex,
-          newIndex,
-        );
-        // Update order property
-        const updatedSections = newSections.map((section, index) => ({
-          ...section,
-          order: index,
-        }));
-
-        setTemplate((prev) => ({
-          ...prev,
-          structure: {
-            ...prev.structure,
-            sections: updatedSections,
-          },
-        }));
-        setIsDirty(true);
-      }
+      setTemplate((prev) => ({
+        ...prev,
+        structure: moveUnit(prev.structure, String(active.id), String(over.id)),
+      }));
+      setIsDirty(true);
     }
 
     setActiveId(null);
@@ -607,8 +701,8 @@ export const FormBuilder: React.FC = () => {
     } as SectionConfig;
 
     setTemplate((prev) => {
-      const sections = [...prev.structure.sections];
-      sections.splice(index, 0, newSection);
+      const sections = [...prev.structure.sections].sort((a, b) => a.order - b.order);
+      sections.splice(index, 0, withFreeReferenceCode(newSection, sections));
       const withOrder = sections.map((s, i) => ({ ...s, order: i }));
       return {
         ...prev,
@@ -640,8 +734,8 @@ export const FormBuilder: React.FC = () => {
     } as SectionConfig;
 
     setTemplate((prev) => {
-      const sections = [...prev.structure.sections];
-      sections.splice(index, 0, newSection);
+      const sections = [...prev.structure.sections].sort((a, b) => a.order - b.order);
+      sections.splice(index, 0, withFreeReferenceCode(newSection, sections));
       const withOrder = sections.map((s, i) => ({ ...s, order: i }));
       return {
         ...prev,
@@ -847,12 +941,12 @@ export const FormBuilder: React.FC = () => {
   const deleteSection = (sectionId: string) => {
     setTemplate((prev) => ({
       ...prev,
-      structure: {
+      structure: tidyLayout({
         ...prev.structure,
         sections: prev.structure.sections
           .filter((section) => section.id !== sectionId)
           .map((section, index) => ({ ...section, order: index })),
-      },
+      }),
     }));
 
     if (selectedSectionId === sectionId) {
@@ -908,12 +1002,16 @@ export const FormBuilder: React.FC = () => {
 
     setTemplate((prev) => ({
       ...prev,
-      structure: {
-        ...prev.structure,
-        sections: prev.structure.sections
-          .flatMap((entry) => (entry.id === sectionId ? rebuilt : [entry]))
-          .map((entry, order) => ({ ...entry, order })),
-      },
+      structure: replaceSectionInLayout(
+        {
+          ...prev.structure,
+          sections: prev.structure.sections
+            .flatMap((entry) => (entry.id === sectionId ? rebuilt : [entry]))
+            .map((entry, order) => ({ ...entry, order })),
+        },
+        sectionId,
+        rebuilt.map((entry) => entry.id),
+      ),
     }));
     setIsDirty(true);
     toast.success(`Rebuilt "${section.title}". Check it before saving.`);
@@ -929,15 +1027,19 @@ export const FormBuilder: React.FC = () => {
       ...sectionToDuplicate,
       id: `section-${Date.now()}`,
       title: `${sectionToDuplicate.title} (Copy)`,
+      // The copy's code comes from the original's (COM gives COM2), not from
+      // the "(Copy)" title, which made codes like "C(".
+      referenceCode: getSectionReferenceCode(sectionToDuplicate),
       order: template.structure.sections.length,
     };
 
     setTemplate((prev) => ({
       ...prev,
-      structure: {
-        ...prev.structure,
-        sections: [...prev.structure.sections, newSection],
-      },
+      structure: placeAfterSection(
+        prev.structure,
+        sectionId,
+        withFreeReferenceCode(newSection, prev.structure.sections),
+      ),
     }));
     setIsDirty(true);
     toast.success("Section duplicated");
@@ -990,12 +1092,16 @@ export const FormBuilder: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
+            onClick={async () => {
               if (
                 isDirty &&
-                !confirm(
-                  "You have unsaved changes. Are you sure you want to leave?",
-                )
+                !(await confirmDialog({
+                  title: "Leave without saving?",
+                  description: "Your unsaved changes to this template will be lost.",
+                  confirmLabel: "Leave",
+                  cancelLabel: "Stay",
+                  destructive: true,
+                }))
               ) {
                 return;
               }
@@ -1007,7 +1113,7 @@ export const FormBuilder: React.FC = () => {
             <span className="hidden md:inline">Back</span>
           </Button>
 
-          <div className="grid flex-1 min-w-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,320px)] lg:self-center">
+          <div className="grid flex-1 min-w-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_clamp(160px,30%,320px)] lg:self-center">
             <div className="min-w-0 flex flex-col gap-1">
               <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                 Form title
@@ -1150,7 +1256,6 @@ export const FormBuilder: React.FC = () => {
             >
               <Button
                 onClick={handleOpenPreview}
-                disabled={isSaving}
                 variant="outline"
                 className="!h-10 !w-10 !rounded-none !p-0 flex items-center justify-center border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-white bg-transparent hover:bg-transparent hover:border-purple-600 hover:text-purple-600 dark:hover:border-purple-400 dark:hover:text-purple-400 focus:outline-none focus:border-purple-600 focus:text-purple-600 focus:ring-2 focus:ring-purple-600/30 shadow-none shrink-0 [&>span:first-child]:mr-0"
                 size="sm"
@@ -1279,12 +1384,12 @@ export const FormBuilder: React.FC = () => {
       <div className="flex-1 flex overflow-hidden">
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCenter}
+          collisionDetection={builderCollisions}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
           {/* Left Sidebar - Component Library (Toggleable) */}
-          {showSidebar ? (
+          {libraryShown ? (
             <ComponentLibrarySidebar
               savedComponents={savedComponents}
               onViewSavedComponent={(saved) => setViewingSavedComponent(saved)}
@@ -1295,7 +1400,7 @@ export const FormBuilder: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowSidebar(true)}
+                onClick={showLibrary}
                 title="Show component library"
                 aria-label="Show component library"
                 className="h-9 w-9 rounded-none p-0 [&>span:first-child]:mr-0 border-none"
@@ -1304,10 +1409,18 @@ export const FormBuilder: React.FC = () => {
             </div>
           )}
 
-          {/* Center - Form Canvas */}
-          <div className="flex-1 overflow-auto p-4 md:p-6">
+          {/* Center - Form Canvas. Its minimum width makes a wide section
+              editor give way instead of squeezing the canvas to a sliver.
+              Capped at half the row so canvas and editor minimums together
+              never push the editor's close button off the edge. */}
+          <div className="flex-1 overflow-auto p-4 md:p-6 lg:min-w-[min(26rem,50%)]">
             <FormCanvas
               sections={template.structure.sections}
+              structure={template.structure}
+              onStructureChange={(update) => {
+                setTemplate((prev) => ({ ...prev, structure: update(prev.structure) }));
+                setIsDirty(true);
+              }}
               selectedSectionId={selectedSectionId}
               onSectionSelect={setSelectedSectionId}
               onSectionDelete={deleteSection}
@@ -1335,7 +1448,7 @@ export const FormBuilder: React.FC = () => {
                     Start Building Your Form
                   </h3>
                   <Button
-                    onClick={() => setShowSidebar(true)}
+                    onClick={showLibrary}
                     className="bg-brand hover:bg-brand-dark border-none"
                     leftIcon={<PanelLeftOpen className="w-4 h-4" />}
                   >
@@ -1481,7 +1594,7 @@ export const FormBuilder: React.FC = () => {
             />
           )}
 
-          <DragOverlay>
+          <DragOverlay dropAnimation={null}>
             {activeId ? (
               <div className="bg-white dark:bg-dark-150 p-4 rounded-none shadow-lg border-2 border-brand">
                 Dragging...

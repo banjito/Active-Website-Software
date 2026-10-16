@@ -52,9 +52,29 @@ import {
 } from "../src/lib/customForms/instanceState";
 import {
   compileTemplate,
+  normalizeStructure,
   validateInstanceStructure,
   validateTemplateDraft,
 } from "../src/lib/customForms/compile";
+import {
+  freeReferenceCode,
+  getSectionReferenceCode,
+} from "../src/lib/customForms/formCellResolution";
+import {
+  fitsOnPaper,
+  groupSections,
+  insertIndexForDrop,
+  sectionMinWidthRem,
+  layoutUnits,
+  moveUnit,
+  moveWithinGroup,
+  placeAfterSection,
+  removeFromGroup,
+  tidyLayout,
+  togglePageBreakBefore,
+  ungroup,
+  updateGroup,
+} from "../src/lib/customForms/layoutGroups";
 import { canonicalJson } from "../src/lib/customForms/checksum";
 import { CUSTOM_FORM_RESULTS } from "../src/lib/types/customForms";
 import { fitColumnWidths, rowStateKey } from "../src/lib/customForms/runtime/layout";
@@ -1977,6 +1997,230 @@ section("Column width fitting");
   const px = fitColumnWidths(["480px", "50%"]);
   check("pixel widths become proportions", Math.abs(parseFloat(px[0]!) - parseFloat(px[1]!)) < 0.01, px.join());
   check("auto counts as unset", fitColumnWidths(["auto", "50%"])[0] !== undefined);
+}
+
+section("Layout groups: side by side, grid, page breaks");
+{
+  const base = VALID_FIXTURES[0].structure;
+  const [a, b, c] = [...base.sections].sort((x, y) => x.order - y.order);
+  const d = { ...c, id: "layout-extra", title: "Extra", referenceCode: "EXTRA", order: 3 };
+  const four: CustomFormStructure = { ...base, sections: [a, b, c, d] };
+  const ids = (st: CustomFormStructure) =>
+    [...st.sections].sort((x, y) => x.order - y.order).map((x) => x.id).join(",");
+  const blockShape = (st: CustomFormStructure) =>
+    documentFromV1(st).blocks.map((blk) =>
+      blk.type === "layout"
+        ? `${blk.kind}[${blk.children.map((ch) => ch.id).join("+")}]`
+        : blk.type === "page-break" ? "BREAK" : blk.id,
+    ).join(",");
+
+  const pair = groupSections(four, [b.id, c.id], "side-by-side");
+  check(
+    "grouping two adjacent sections wraps them in one side-by-side block",
+    blockShape(pair.structure) === `${a.id},side-by-side[${b.id}+${c.id}],${d.id}`,
+    blockShape(pair.structure),
+  );
+  check("grouping keeps every section and id", ids(pair.structure) === ids(four));
+
+  const apart = groupSections(four, [a.id, d.id], "grid");
+  check(
+    "grouping sections that are apart gathers them where the first one sits",
+    ids(apart.structure) === `${a.id},${d.id},${b.id},${c.id}` &&
+      blockShape(apart.structure).startsWith(`grid[${a.id}+${d.id}]`),
+    `${ids(apart.structure)} / ${blockShape(apart.structure)}`,
+  );
+  check(
+    "a new grid gets a column count",
+    apart.structure.layout?.groups?.[0]?.columns === 2,
+  );
+
+  check(
+    "ungrouping removes the layout key entirely",
+    ungroup(pair.structure, pair.groupId!).layout === undefined &&
+      blockShape(ungroup(pair.structure, pair.groupId!)) === `${a.id},${b.id},${c.id},${d.id}`,
+  );
+
+  const takenOut = removeFromGroup(
+    groupSections(four, [a.id, b.id, c.id], "side-by-side").structure,
+    a.id,
+  );
+  check(
+    "taking a section out lands it just after the group",
+    ids(takenOut) === `${b.id},${c.id},${a.id},${d.id}` &&
+      blockShape(takenOut) === `side-by-side[${b.id}+${c.id}],${a.id},${d.id}`,
+    `${ids(takenOut)} / ${blockShape(takenOut)}`,
+  );
+
+  const lone = removeFromGroup(groupSections(four, [b.id], "callout").structure, b.id);
+  check(
+    "taking out a group's only section leaves it where the box was",
+    ids(lone) === `${a.id},${b.id},${c.id},${d.id}`,
+    ids(lone),
+  );
+
+  const moved = moveUnit(pair.structure, pair.groupId!, a.id);
+  check(
+    "dragging a group moves all its sections together",
+    ids(moved) === `${b.id},${c.id},${a.id},${d.id}`,
+    ids(moved),
+  );
+  const swapped = moveWithinGroup(pair.structure, c.id, -1);
+  check(
+    "moving left inside a group swaps the pair and nothing else",
+    ids(swapped) === `${a.id},${c.id},${b.id},${d.id}` &&
+      blockShape(swapped) === `${a.id},side-by-side[${c.id}+${b.id}],${d.id}`,
+  );
+
+  const wide = updateGroup(pair.structure, pair.groupId!, { widths: [2, 1] });
+  const wideBlock = documentFromV1(wide).blocks[1];
+  check(
+    "side-by-side widths become one CSS column per child",
+    wideBlock.type === "layout" &&
+      JSON.stringify(wideBlock.widths) === JSON.stringify(["minmax(0, 2fr)", "minmax(0, 1fr)"]),
+  );
+  check(
+    "equal widths are not stored",
+    updateGroup(pair.structure, pair.groupId!, { widths: [1, 1] }).layout?.groups?.[0]?.widths === undefined,
+  );
+
+  const broken = togglePageBreakBefore(pair.structure, pair.groupId!);
+  check(
+    "a page break before a group comes before the whole group",
+    blockShape(broken) === `${a.id},BREAK,side-by-side[${b.id}+${c.id}],${d.id}`,
+    blockShape(broken),
+  );
+  check(
+    "the first block cannot take a page break",
+    togglePageBreakBefore(four, a.id).layout === undefined,
+  );
+  const brokenThenGrouped = groupSections(togglePageBreakBefore(four, b.id), [b.id, c.id], "strip");
+  check(
+    "grouping a section that starts a page moves the break to the group",
+    blockShape(brokenThenGrouped.structure) === `${a.id},BREAK,strip[${b.id}+${c.id}],${d.id}`,
+    blockShape(brokenThenGrouped.structure),
+  );
+
+  const deletedOne = tidyLayout({
+    ...pair.structure,
+    sections: pair.structure.sections.filter((x) => x.id !== c.id),
+  });
+  check(
+    "deleting a member keeps the group with the rest",
+    JSON.stringify(deletedOne.layout?.groups?.[0]?.sectionIds) === JSON.stringify([b.id]),
+  );
+  const deletedAll = tidyLayout({
+    ...pair.structure,
+    sections: pair.structure.sections.filter((x) => x.id !== c.id && x.id !== b.id),
+  });
+  check("deleting every member removes the group", deletedAll.layout === undefined);
+
+  check(
+    "a library drop on a group inserts before the whole group",
+    insertIndexForDrop(pair.structure, pair.groupId!) === 1,
+  );
+  check(
+    "a drop on the lower half of a group lands after the whole group",
+    insertIndexForDrop(pair.structure, pair.groupId!, true) === 3,
+  );
+  check(
+    "a drop on the lower half of a section lands after it",
+    insertIndexForDrop(four, b.id, true) === 2 && insertIndexForDrop(four, b.id) === 1,
+  );
+  check(
+    "a drop aimed at a section inside a group lands outside the whole group",
+    insertIndexForDrop(pair.structure, c.id) === 1 &&
+      insertIndexForDrop(pair.structure, c.id, true) === 3,
+  );
+  check(
+    "dragging onto a section inside a group moves past the whole group",
+    ids(moveUnit(pair.structure, a.id, c.id)) === `${b.id},${c.id},${a.id},${d.id}`,
+  );
+  const copy = { ...c, id: "copy", title: `${c.title} (Copy)`, referenceCode: getSectionReferenceCode(c) };
+  const placed = placeAfterSection(pair.structure, b.id, copy);
+  check(
+    "a copy of a grouped section lands next to it and joins the group",
+    ids(placed) === `${a.id},${b.id},copy,${c.id},${d.id}` &&
+      blockShape(placed) === `${a.id},side-by-side[${b.id}+copy+${c.id}],${d.id}`,
+    `${ids(placed)} / ${blockShape(placed)}`,
+  );
+  check(
+    "a copy of an ungrouped section lands right after it",
+    ids(placeAfterSection(four, a.id, copy)) === `${a.id},copy,${b.id},${c.id},${d.id}`,
+  );
+  check(
+    "a copy takes the original's code plus a number, never one built from '(Copy)'",
+    freeReferenceCode(copy, [a, b, c]) === `${getSectionReferenceCode(c)}2`,
+    String(freeReferenceCode(copy, [a, b, c])),
+  );
+  const shuffled: CustomFormStructure = {
+    ...pair.structure,
+    sections: [...pair.structure.sections].reverse(),
+  };
+  check(
+    "a layout edit never reorders a form whose stored list is out of order",
+    ids(updateGroup(shuffled, pair.groupId!, { title: "x" })) === ids(pair.structure) &&
+      ids(togglePageBreakBefore(shuffled, d.id)) === ids(pair.structure),
+  );
+  check(
+    "a second Comments section gets its own formula code",
+    freeReferenceCode(c, [a, b, c]) === `${getSectionReferenceCode(c)}2` &&
+      freeReferenceCode(c, [a, b]) === undefined &&
+      freeReferenceCode(c, [a, b, c, { ...c, id: "x", referenceCode: `${getSectionReferenceCode(c)}2` }]) ===
+        `${getSectionReferenceCode(c)}3`,
+  );
+
+  const stray: CustomFormStructure = {
+    ...four,
+    layout: { groups: [{ id: "g", kind: "side-by-side", sectionIds: [a.id, b.id, d.id] }] },
+  };
+  check(
+    "a group that is not one run keeps its longest run",
+    JSON.stringify(layoutUnits(stray).map((u) => u.id)) === JSON.stringify(["g", c.id, d.id]),
+    JSON.stringify(layoutUnits(stray).map((u) => u.id)),
+  );
+
+  check(
+    "a grouped document validates with no layout errors",
+    validateDocumentV2(documentFromV1(togglePageBreakBefore(apart.structure, b.id)))
+      .filter((issue) => issue.severity === "error").length === 0,
+  );
+
+  const titled = updateGroup(pair.structure, pair.groupId!, { title: "Test Results" });
+  const regrouped = groupSections(titled, [b.id, c.id], "grid");
+  check(
+    "regrouping a whole group keeps its heading, id and page break",
+    regrouped.groupId === pair.groupId &&
+      regrouped.structure.layout?.groups?.[0]?.title === "Test Results" &&
+      regrouped.structure.layout?.groups?.[0]?.kind === "grid",
+  );
+
+  const minOf = (st: CustomFormStructure, id: string) => {
+    const block = documentFromV1(st).blocks.find((blk) => blk.id === id);
+    return block && block.type === "section" ? sectionMinWidthRem(block) : -1;
+  };
+  const jobInfo = four.sections.find((x) => x.componentType === "job-info")!;
+  check(
+    "a five-column Job Details needs 40rem before it can share a row",
+    minOf(four, jobInfo.id) === 40,
+  );
+  check(
+    "Job Details beside Comments is flagged as too wide for paper",
+    !fitsOnPaper("side-by-side", [40, 14]) && fitsOnPaper("side-by-side", [16, 16]),
+  );
+  check(
+    "a grid that cannot fit its columns on paper is flagged",
+    !fitsOnPaper("grid", [16, 16, 16], 3) && fitsOnPaper("grid", [14, 14, 14], 3),
+  );
+
+  const threeGrouped = groupSections(base, [b.id, c.id], "side-by-side").structure;
+  const compiled = compileTemplate({ name: "layout", structure: threeGrouped });
+  check(
+    "publishing keeps the layout",
+    compiled.ok &&
+      JSON.stringify(compiled.structure?.layout) === JSON.stringify(threeGrouped.layout) &&
+      JSON.stringify(normalizeStructure(base).layout) === undefined,
+    compiled.report.errors.map((e) => `${e.code}: ${e.message}`).join("; "),
+  );
 }
 
 // Phase 6 conversion pilots. Each asserts internally and throws on the first

@@ -20,6 +20,7 @@
  */
 
 import React from "react";
+import { confirmDialog } from "@/components/ui/confirmDialog";
 import {
   Plus,
   Trash2,
@@ -418,14 +419,17 @@ export const TableGridEditor: React.FC<TableGridEditorProps> = ({
             <button
               type="button"
               disabled={columns.length <= 1}
-              onClick={() => {
+              onClick={async () => {
                 const column = columns.find(
                   (entry) => entry.id === selectedHeaderCell.columnId,
                 );
                 if (
-                  !confirm(
-                    `Delete the "${column?.label || selectedHeaderCell.columnId}" column? Any values, formulas and merges that used it go too.`,
-                  )
+                  !(await confirmDialog({
+                    title: `Delete the "${column?.label || selectedHeaderCell.columnId}" column?`,
+                    description: "Any values, formulas and merges that used it go too.",
+                    confirmLabel: "Delete column",
+                    destructive: true,
+                  }))
                 ) {
                   return;
                 }
@@ -542,14 +546,17 @@ export const TableGridEditor: React.FC<TableGridEditorProps> = ({
             <button
               type="button"
               disabled={columns.length <= 1}
-              onClick={() => {
+              onClick={async () => {
                 const column = columns.find(
                   (entry) => entry.id === selectedBodyCell.columnId,
                 );
                 if (
-                  !confirm(
-                    `Delete the "${column?.label || selectedBodyCell.columnId}" column? Any values, formulas and merges that used it go too.`,
-                  )
+                  !(await confirmDialog({
+                    title: `Delete the "${column?.label || selectedBodyCell.columnId}" column?`,
+                    description: "Any values, formulas and merges that used it go too.",
+                    confirmLabel: "Delete column",
+                    destructive: true,
+                  }))
                 ) {
                   return;
                 }
@@ -709,11 +716,15 @@ export const TableGridEditor: React.FC<TableGridEditorProps> = ({
       <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700">
         <button
           type="button"
-          onClick={() => {
+          onClick={async () => {
             if (
-              confirm(
-                "Discard this table's grid layout and go back to the simple one-header-row table? Merged cells, extra row types and footers will be lost.",
-              )
+              await confirmDialog({
+                title: "Go back to the simple table?",
+                description:
+                  "This discards the grid layout. Merged cells, extra row types and footers will be lost.",
+                confirmLabel: "Discard grid",
+                destructive: true,
+              })
             ) {
               setSelected(null);
               onUpdate({ v2: undefined });

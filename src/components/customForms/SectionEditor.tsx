@@ -438,7 +438,10 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
 
   return (
     <div
-      className="relative bg-white dark:bg-dark-150 border-l dark:border-neutral-700 flex flex-col overflow-hidden shrink-0"
+      // Shrinks (down to 280px) before the canvas does, so a panel widened on
+      // a big screen cannot squeeze the canvas on a smaller one. With the
+      // canvas's own minimum this still fits a 1024px window.
+      className="relative bg-white dark:bg-dark-150 border-l dark:border-neutral-700 flex flex-col overflow-hidden min-w-[280px]"
       style={{ width }}
     >
       {/* Drag the left edge to widen. The grid editor is often wider than the
@@ -462,7 +465,8 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
       />
       {/* Header */}
       <div className="p-4 border-b dark:border-neutral-700 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
+        {/* Wraps on a narrow panel so the close button is never pushed off. */}
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-white shrink-0">
             Edit Section
           </h2>

@@ -31,6 +31,32 @@ export function getSectionReferenceCode(section: SectionConfig): string {
 }
 
 /**
+ * A reference code for `section` that none of `others` already answers to, or
+ * `undefined` when its own code is free. Two sections sharing a code block
+ * publication, and adding a second Comments section always did exactly that.
+ */
+export function freeReferenceCode(
+  section: SectionConfig,
+  others: SectionConfig[],
+): string | undefined {
+  const taken = new Set(others.map(getSectionReferenceCode));
+  const code = getSectionReferenceCode(section);
+  if (!taken.has(code)) return undefined;
+  for (let n = 2; ; n += 1) {
+    if (!taken.has(`${code}${n}`)) return `${code}${n}`;
+  }
+}
+
+/** `section`, given a free reference code if its own is already taken. */
+export function withFreeReferenceCode(
+  section: SectionConfig,
+  others: SectionConfig[],
+): SectionConfig {
+  const code = freeReferenceCode(section, others);
+  return code ? { ...section, referenceCode: code } : section;
+}
+
+/**
  * Human-readable description for a reference path, e.g.:
  * "IR.C1.R2" → "Insulation resistance, column 1, row 2"
  * "IR.C1" → "Insulation resistance, column 1 (same row)"

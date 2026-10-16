@@ -65,6 +65,24 @@ Click a component on the canvas to edit it. Depending on the type, you can:
 Mark a field required only if the form is genuinely wrong without it. A form with thirty required fields is a form technicians will fight, and the one field that actually mattered gets lost among the twenty-nine that did not.
 :::
 
+### Arrange sections on the page
+
+Sections stack one under another by default. To arrange them:
+
+1. Tick the box at the left of each section's title bar.
+2. In the bar that appears at the bottom of the window, pick an arrangement:
+   - **Side by side**: next to each other in one row. Choose equal widths, or make one wider.
+   - **Grid**: rows of 2, 3 or 4 columns.
+   - **Boxed strip**: inside one bordered box.
+   - **Callout**: inside a highlighted note box (note, warning or criteria).
+   - **Keep on one page**: never split across two printed pages.
+
+The group shows as a dashed box. Drag it by its handle to move the whole group. Use the arrows above a section to reorder it inside the group, **Take out** to remove it, or **Ungroup** to undo the whole thing. Nothing you have typed into a form is lost when you change its layout.
+
+To start a new printed page at a section or group, click the scissors icon in its title bar. A "New printed page" line marks the spot.
+
+Sections only sit side by side when each one has room for its content. When there is not enough room, they wrap one under another instead of squeezing, so a five-column Job Details never ends up with its headings printed on top of each other. On a phone most groups stack. If a group is too wide to fit side by side on a printed page, the group shows an amber warning in the builder.
+
 ## Step 6: Preview
 
 Click **Preview**. You get the form exactly as a technician will see it.

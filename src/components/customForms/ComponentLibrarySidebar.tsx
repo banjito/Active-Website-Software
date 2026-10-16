@@ -35,6 +35,7 @@ import { Button } from "@/components/ui/Button";
 import {
   COMPONENT_LIBRARY,
   getAllCategories,
+  getComponentDefinition,
 } from "@/lib/customForms/componentLibrary";
 import type { SavedComponent } from "@/lib/customForms/savedComponents";
 import { ComponentDefinition } from "@/lib/types/customForms";
@@ -198,6 +199,23 @@ export const ComponentLibrarySidebar: React.FC<{
     return matchesSearch && matchesCategory;
   });
 
+  // Saved components follow the same search and category as the library:
+  // by their own name and description, and by the kind of component they are.
+  const filteredSaved = savedComponents.filter((saved) => {
+    const query = searchQuery.trim().toLowerCase();
+    const definition = saved.section_config
+      ? getComponentDefinition(saved.section_config.componentType)
+      : undefined;
+    const matchesSearch =
+      query === "" ||
+      [saved.name, saved.description ?? "", definition?.name ?? ""].some((text) =>
+        text.toLowerCase().includes(query),
+      );
+    const matchesCategory =
+      selectedCategory === null || definition?.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
   // Group components by category for display
   const groupedComponents = filteredComponents.reduce(
     (acc, component) => {
@@ -273,13 +291,13 @@ export const ComponentLibrarySidebar: React.FC<{
 
       {/* Component List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {savedComponents.length > 0 && (
+        {filteredSaved.length > 0 && (
           <div>
             <h3 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3">
               Saved components
             </h3>
             <div className="space-y-2">
-              {savedComponents.map((saved) => (
+              {filteredSaved.map((saved) => (
                 <DraggableSavedComponent
                   key={saved.id}
                   saved={saved}
@@ -290,7 +308,7 @@ export const ComponentLibrarySidebar: React.FC<{
           </div>
         )}
         {Object.entries(groupedComponents).length === 0 &&
-        savedComponents.length === 0 ? (
+        filteredSaved.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-neutral-500 dark:text-neutral-400 text-sm">
               No components found

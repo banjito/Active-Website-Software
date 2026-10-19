@@ -352,10 +352,50 @@ const calculateTempCorrectedReading = (
   reading: string,
   tcf: number,
 ): string => {
-  if (!reading || reading.trim() === "" || isNaN(parseFloat(reading))) {
-    return "";
+  // Keep a leading > or < (e.g. ">22" = over the meter's range).
+  const match = String(reading ?? "")
+    .trim()
+    .match(/^([<>]=?)?\s*(-?\d*\.?\d+)/);
+  if (!match) return "";
+  return `${match[1] ?? ""}${(parseFloat(match[2]) * tcf).toFixed(2)}`;
+};
+
+const resolveTCF = (temperature?: { celsius?: number; tcf?: number }) =>
+  Number(temperature?.tcf) || getTCF(Number(temperature?.celsius ?? 20));
+
+// Saved/imported units can be spelled "MOhm", "mΩ", or use the look-alike
+// Ohm sign (U+2126), which leaves the dropdown blank. Map those to an option.
+const normalizeIRUnits = (units?: string): string => {
+  const s = String(units ?? "")
+    .trim()
+    .replace(/Ω/g, "Ω")
+    .replace(/\s*ohms?$/i, "Ω");
+  if (!s) return "MΩ";
+  return (
+    insulationResistanceUnitsOptions.find(
+      (o) => o.toLowerCase() === s.toLowerCase(),
+    ) ?? s
+  );
+};
+
+// Corrected values are always rebuilt from reading x current TCF, so rows
+// loaded from saved/imported reports and later temperature changes stay right.
+const withCorrectedIR = <T extends Record<string, any>>(ir: T, tcf: number): T => {
+  const out: any = {};
+  for (const [key, row] of Object.entries(ir || {})) {
+    const next: any = { ...(row as any) };
+    next.units = normalizeIRUnits(next.units);
+    for (const pole of ["p1", "p2", "p3", "neutral"]) {
+      if (next[pole + "Reading"] !== undefined) {
+        next[pole + "Corrected"] = calculateTempCorrectedReading(
+          next[pole + "Reading"],
+          tcf,
+        );
+      }
+    }
+    out[key] = next;
   }
-  return (parseFloat(reading) * tcf).toFixed(2);
+  return out;
 };
 
 const AutomaticTransferSwitchATSReport: React.FC = () => {
@@ -731,7 +771,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
 
       // Calculate corrected values when readings change
       if (field.includes("Reading")) {
-        const tcf = prev.temperature.tcf;
+        const tcf = resolveTCF(prev.temperature);
         const correctedField = field.replace("Reading", "Corrected");
         (newIR[stateKey] as any)[correctedField] =
           calculateTempCorrectedReading(value, tcf);
@@ -795,7 +835,14 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
       );
     }
 
-    const formData = formDataRef.current;
+    const rawFormData = formDataRef.current;
+    const formData = {
+      ...rawFormData,
+      insulationResistance: withCorrectedIR(
+        rawFormData.insulationResistance,
+        resolveTCF(rawFormData.temperature),
+      ),
+    };
     const basePayload = {
       job_id: jobId,
       user_id: user.id,
@@ -1366,6 +1413,13 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
     title: string,
     hasNeutral: boolean = false,
   ) => {
+    const tcf = resolveTCF(formData.temperature);
+    const units = normalizeIRUnits(
+      formData.insulationResistance[stateKey]?.units,
+    );
+    const unitOptions = insulationResistanceUnitsOptions.includes(units)
+      ? insulationResistanceUnitsOptions
+      : [...insulationResistanceUnitsOptions, units];
     const rowData =
       formData.insulationResistance[stateKey] ||
       ({ ...initialInsulationRow } as any);
@@ -1394,7 +1448,10 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
             <td className="px-3 py-4">
               <input
                 type="text"
-                value={rowData[pole + "Corrected"] || ""}
+                value={calculateTempCorrectedReading(
+                  rowData[pole + "Reading"],
+                  tcf,
+                )}
                 readOnly
                 className="form-input w-full text-center bg-neutral-100 dark:bg-dark-150"
               />
@@ -1421,7 +1478,10 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
             <td className="px-3 py-4">
               <input
                 type="text"
-                value={rowData.neutralCorrected || ""}
+                value={calculateTempCorrectedReading(
+                  rowData.neutralReading,
+                  tcf,
+                )}
                 readOnly
                 className="form-input w-full text-center bg-neutral-100 dark:bg-dark-150"
               />
@@ -1435,7 +1495,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
         )}
         <td className="px-6 py-4">
           <select
-            value={rowData.units || "MΩ"}
+            value={units}
             onChange={(e) =>
               handleInsulationResistanceChange(
                 stateKey,
@@ -1446,7 +1506,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
             disabled={!isEditing}
             className={`form-select w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
           >
-            {insulationResistanceUnitsOptions.map((u) => (
+            {unitOptions.map((u) => (
               <option key={u} value={u}>
                 {u}
               </option>

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { BRAND_COLOR, COMPANY_FULL_NAME, COMPANY_HR_EMAIL, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
 import { buildFromHeader, getEmailApiKey, sendEmail } from '../_shared/email.ts'
+import { getTestRecipient } from '../_shared/testSend.ts'
 
 console.log("new-applicant-notification: function loaded")
 
@@ -27,7 +28,10 @@ serve(async (req) => {
     const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     if (!url || !key) throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
 
-    const { candidateId } = await req.json().catch(() => ({}))
+    const { candidateId, testTo: requestedTestTo } = await req.json().catch(() => ({}))
+    // Test sends: `testTo` sends to that address only, for any candidate, skipping the
+    // freshness check. Without the service role key it throws and nothing is sent.
+    const testTo = await getTestRecipient(req, requestedTestTo)
     if (!candidateId) {
       return new Response(JSON.stringify({ error: 'candidateId required' }), { headers, status: 400 })
     }
@@ -44,7 +48,7 @@ serve(async (req) => {
     }
 
     const isFresh = Date.now() - new Date(candidate.created_at).getTime() < FRESH_WINDOW_MS
-    if (candidate.source !== 'Career Page' || !isFresh) {
+    if (!testTo && (candidate.source !== 'Career Page' || !isFresh)) {
       return new Response(JSON.stringify({ emailSent: false, message: 'not a new career page application' }), { headers })
     }
 
@@ -114,15 +118,15 @@ serve(async (req) => {
     console.log("Sending new applicant notification to:", COMPANY_HR_EMAIL)
     const sendRes = await sendEmail({
       from: buildFromHeader(DEFAULT_FROM_EMAIL),
-      to: COMPANY_HR_EMAIL,
-      subject: `New applicant: ${name} for ${position}`,
+      to: testTo || COMPANY_HR_EMAIL,
+      subject: `${testTo ? '[TEST] ' : ''}New applicant: ${name} for ${position}`,
       html: htmlBody,
       text: textBody
     })
     console.log("Resend response:", sendRes.status, sendRes.body)
 
     return new Response(
-      JSON.stringify({ emailSent: sendRes.ok, sentTo: COMPANY_HR_EMAIL, providerStatus: sendRes.status, providerBody: sendRes.ok ? undefined : sendRes.body }),
+      JSON.stringify({ emailSent: sendRes.ok, sentTo: testTo || COMPANY_HR_EMAIL, providerStatus: sendRes.status, providerBody: sendRes.ok ? undefined : sendRes.body }),
       { headers, status: sendRes.ok ? 200 : 502 }
     )
   } catch (e) {

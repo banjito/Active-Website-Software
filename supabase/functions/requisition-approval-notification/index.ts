@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { BRAND_COLOR, COMPANY_FULL_NAME, COMPANY_HR_EMAIL, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
 import { buildFromHeader, getEmailApiKey, sendEmail } from '../_shared/email.ts'
+import { getTestRecipient } from '../_shared/testSend.ts'
 
 console.log("requisition-approval-notification: function loaded")
 
@@ -28,6 +29,10 @@ serve(async (req) => {
     if (!url || !key) throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
 
     const body = await req.json().catch(() => ({}))
+
+    // Test sends: `testTo` sends this one email to that address only. Without the
+    // service role key it throws, so a refused test never reaches real recipients.
+    const testTo = await getTestRecipient(req, body.testTo)
     console.log("Request body:", JSON.stringify(body))
 
     const { requisitionId, approverUserId, stepNumber, totalSteps, action, reason, actorUserId } = body
@@ -234,16 +239,16 @@ serve(async (req) => {
     console.log("Sending approval notification to:", primary, copy ? `(cc ${copy})` : '')
     const sendRes = await sendEmail({
       from: fromHeader,
-      to: primary,
-      cc: copy,
-      subject: emailSubject,
+      to: testTo || primary,
+      cc: testTo ? '' : copy,
+      subject: testTo ? `[TEST] ${emailSubject}` : emailSubject,
       html: htmlBody,
       text: textBody
     })
     console.log("Resend response:", sendRes.status, sendRes.body)
 
     return new Response(
-      JSON.stringify({ emailSent: sendRes.ok, sentTo: primary, cc: copy || undefined, providerStatus: sendRes.status, providerBody: sendRes.ok ? undefined : sendRes.body }),
+      JSON.stringify({ emailSent: sendRes.ok, sentTo: testTo || primary, cc: (!testTo && copy) || undefined, providerStatus: sendRes.status, providerBody: sendRes.ok ? undefined : sendRes.body }),
       { headers, status: sendRes.ok ? 200 : 502 }
     )
   } catch (e) {

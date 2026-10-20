@@ -6,6 +6,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { BRAND_COLOR, COMPANY_FULL_NAME, COMPANY_PO_REPORT_EMAILS, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
 import { buildFromHeader, getEmailApiKey, sendEmail } from '../_shared/email.ts'
+import { getTestRecipient } from '../_shared/testSend.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,9 +29,10 @@ interface POData {
 async function sendToRecipients(
   subject: string,
   html: string,
-  text: string
+  text: string,
+  testTo?: string
 ): Promise<{ emailSent: boolean; message: string }> {
-  const recipientEmails = COMPANY_PO_REPORT_EMAILS
+  const recipientEmails = testTo ? [testTo] : COMPANY_PO_REPORT_EMAILS
   if (recipientEmails.length === 0) {
     console.log('PO_REPORT_EMAILS is empty; skipping email')
     return { emailSent: false, message: 'No recipients configured for the PO report' }
@@ -46,7 +48,7 @@ async function sendToRecipients(
   const sendRes = await sendEmail({
     from: buildFromHeader(DEFAULT_FROM_EMAIL),
     to: recipientEmails,
-    subject,
+    subject: testTo ? `[TEST] ${subject}` : subject,
     html,
     text
   })
@@ -72,6 +74,12 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     if (!supabaseServiceKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set')
 
+    // Test sends: `testTo` sends to that address only, and `testDays` looks back further
+    // than one week. Without the service role key it throws and nothing is sent.
+    const body = await req.json().catch(() => ({}))
+    const testTo = await getTestRecipient(req, body.testTo)
+    const lookbackDays = testTo && Number(body.testDays) > 0 ? Number(body.testDays) : 7
+
     console.log('Initializing Supabase client...')
     
     // @ts-ignore deno: remote module types resolved at runtime
@@ -88,7 +96,7 @@ serve(async (req) => {
     // Calculate date range (last 7 days)
     const endDate = new Date()
     const startDate = new Date()
-    startDate.setDate(startDate.getDate() - 7)
+    startDate.setDate(startDate.getDate() - lookbackDays)
 
     console.log(`Fetching POs from ${startDate.toISOString()} to ${endDate.toISOString()}`)
 
@@ -135,7 +143,8 @@ serve(async (req) => {
       const delivery = await sendToRecipients(
         `Weekly PO Report - No POs Submitted (${weekRange})`,
         emptyHtml,
-        emptyText
+        emptyText,
+        testTo
       )
 
       return new Response(
@@ -284,7 +293,7 @@ This is an automated weekly report from ${COMPANY_FULL_NAME}
 Generated on ${new Date().toLocaleString()}
     `
 
-    const delivery = await sendToRecipients(emailSubject, emailHtml, emailText)
+    const delivery = await sendToRecipients(emailSubject, emailHtml, emailText, testTo)
 
     return new Response(
       JSON.stringify({

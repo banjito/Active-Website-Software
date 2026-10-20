@@ -7,6 +7,7 @@ import {
 } from "../../../services/hr/jobRequisitionsService";
 import {
   candidatesService,
+  notifyNewApplicant,
   CreateCandidateInput,
 } from "../../../services/hr/candidatesService";
 import { eeoComplianceService } from "../../../services/hr/eeoComplianceService";
@@ -353,6 +354,7 @@ export const PublicCareerPage: React.FC = () => {
 
       setUploadProgress(90);
       const createdCandidate = await candidatesService.create(candidateData);
+      notifyNewApplicant(createdCandidate.id);
 
       // Save answers to the posting's custom questions. Non-blocking: the
       // application is already recorded, and losing an answer must not tell the

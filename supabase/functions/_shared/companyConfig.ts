@@ -61,7 +61,16 @@ export const COMPANY_HR_EMAIL = env(
  */
 export const COMPANY_SUPPRESSED_EMAILS = env(
   "COMPANY_SUPPRESSED_EMAILS",
-  "john.chambers@ampqes.com"
+  "jack.lyons@ampqes.com"
+)
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
+/** The only people who get the weekly PO report. Comma-separated. */
+export const COMPANY_PO_REPORT_EMAILS = env(
+  "PO_REPORT_EMAILS",
+  "jack.lyons@ampqes.com,anthony.masters@ampqes.com,mike.bland@ampqes.com,greg.pellerito@ampqes.com"
 )
   .split(",")
   .map((e) => e.trim().toLowerCase())
@@ -70,7 +79,7 @@ export const COMPANY_SUPPRESSED_EMAILS = env(
 /** Emails allowed to use the admin password-reset function. */
 export const COMPANY_SUPERUSER_EMAILS = env(
   "COMPANY_SUPERUSER_EMAILS",
-  "john.chambers@ampqes.com,jack.lyons@ampqes.com"
+  "jack.lyons@ampqes.com"
 )
   .split(",")
   .map((e) => e.trim().toLowerCase())

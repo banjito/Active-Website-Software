@@ -1,6 +1,37 @@
 import { supabase } from '@/lib/supabase';
 import { eeoComplianceService } from './eeoComplianceService';
 
+/**
+ * Emails HR about a new career page application.
+ *
+ * Fire-and-forget: a mail failure must never tell the applicant their
+ * application failed. Failures are logged with the reason.
+ */
+export function notifyNewApplicant(candidateId: string) {
+  try {
+    const fnUrl = (import.meta as any).env?.VITE_SUPABASE_URL;
+    const anonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
+    if (!fnUrl || !anonKey) {
+      console.warn('[applicant-notify] skipped: Supabase URL or anon key missing');
+      return;
+    }
+    fetch(`${fnUrl.replace(/\/rest\/v1.*$/, '')}/functions/v1/new-applicant-notification`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${anonKey}` },
+      body: JSON.stringify({ candidateId }),
+    })
+      .then(async (res) => {
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok || payload?.emailSent === false) {
+          console.warn('[applicant-notify] email not sent:', payload?.message || payload?.error || payload?.providerBody || res.status);
+        }
+      })
+      .catch((err) => console.warn('[applicant-notify] request failed:', err?.message || err));
+  } catch (err) {
+    console.warn('[applicant-notify] threw:', err);
+  }
+}
+
 export interface Candidate {
   id: string;
   first_name: string;

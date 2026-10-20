@@ -4,8 +4,7 @@
 
 // @ts-ignore deno: remote module types resolved at runtime
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { getDigestRecipientEmails } from '../_shared/digestRecipients.ts'
-import { BRAND_COLOR, COMPANY_FULL_NAME, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
+import { BRAND_COLOR, COMPANY_FULL_NAME, COMPANY_PO_REPORT_EMAILS, DEFAULT_FROM_EMAIL } from '../_shared/companyConfig.ts'
 import { buildFromHeader, getEmailApiKey, sendEmail } from '../_shared/email.ts'
 
 const corsHeaders = {
@@ -22,6 +21,43 @@ interface POData {
   job_number?: string;
   job_title?: string;
   customer_name?: string;
+}
+
+// Sends to the fixed PO report list (PO_REPORT_EMAILS), not the weekly digest
+// subscribers. Shared by the normal report and the empty-week note.
+async function sendToRecipients(
+  subject: string,
+  html: string,
+  text: string
+): Promise<{ emailSent: boolean; message: string }> {
+  const recipientEmails = COMPANY_PO_REPORT_EMAILS
+  if (recipientEmails.length === 0) {
+    console.log('PO_REPORT_EMAILS is empty; skipping email')
+    return { emailSent: false, message: 'No recipients configured for the PO report' }
+  }
+
+  if (!getEmailApiKey()) {
+    console.log('RESEND_API_KEY not configured, skipping email send')
+    return { emailSent: false, message: 'Email not sent: RESEND_API_KEY not configured' }
+  }
+
+  console.log('Sending email to:', recipientEmails.join(', '))
+
+  const sendRes = await sendEmail({
+    from: buildFromHeader(DEFAULT_FROM_EMAIL),
+    to: recipientEmails,
+    subject,
+    html,
+    text
+  })
+
+  if (!sendRes.ok) {
+    console.error('Resend error:', sendRes.body)
+    throw new Error(`Resend API failed: ${sendRes.status} - ${sendRes.body}`)
+  }
+
+  console.log('Weekly PO report sent successfully')
+  return { emailSent: true, message: 'Weekly PO report sent successfully' }
 }
 
 serve(async (req) => {
@@ -72,12 +108,42 @@ serve(async (req) => {
     }
 
     if (!posData || posData.length === 0) {
+      // Still email on a quiet week, so silence never looks like a broken report.
+      const weekRange = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
+      const emptyMessage = "No PO's submitted into ampOS this week."
+      const emptyHtml = `
+      <!DOCTYPE html>
+      <html>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+          <div style="background: ${BRAND_COLOR}; color: white; padding: 30px;">
+            <h1 style="margin: 0;">📋 Weekly Purchase Order Report</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Week of ${weekRange}</p>
+          </div>
+          <div style="background: white; padding: 30px; border: 1px solid #ddd; border-top: none;">
+            <p style="font-size: 18px; margin: 0;">${emptyMessage}</p>
+          </div>
+          <div style="text-align: center; color: #777; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+            <p>This is an automated weekly report from ${COMPANY_FULL_NAME}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+      const emptyText = `Weekly Purchase Order Report\nWeek of ${weekRange}\n\n${emptyMessage}\n\nThis is an automated weekly report from ${COMPANY_FULL_NAME}`
+
+      const delivery = await sendToRecipients(
+        `Weekly PO Report - No POs Submitted (${weekRange})`,
+        emptyHtml,
+        emptyText
+      )
+
       return new Response(
         JSON.stringify({
           success: true,
-          message: 'No POs entered in the past week',
+          message: `No POs entered in the past week. ${delivery.message}`,
           poCount: 0,
-          emailSent: false
+          emailSent: delivery.emailSent
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
@@ -218,61 +284,15 @@ This is an automated weekly report from ${COMPANY_FULL_NAME}
 Generated on ${new Date().toLocaleString()}
     `
 
-    const recipientEmails = await getDigestRecipientEmails(supabase, 'weeklyReports')
-    if (recipientEmails.length === 0) {
-      console.log('No subscribers for weekly reports digest; skipping email')
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'No digest subscribers configured for weekly reports',
-          poCount: enrichedPOs.length,
-          emailSent: false
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-      )
-    }
-
-    // Send via Resend
-    if (!getEmailApiKey()) {
-      console.log('RESEND_API_KEY not configured, skipping email send')
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'Email not sent: RESEND_API_KEY not configured',
-          poCount: enrichedPOs.length,
-          emailSent: false
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-      )
-    }
-
-    console.log('Sending email to:', recipientEmails.join(', '))
-    
-    const fromEmail = DEFAULT_FROM_EMAIL
-    const fromHeader = buildFromHeader(fromEmail)
-
-    const sendRes = await sendEmail({
-      from: fromHeader,
-      to: recipientEmails,
-      subject: emailSubject,
-      html: emailHtml,
-      text: emailText
-    })
-
-    if (!sendRes.ok) {
-      console.error('Resend error:', sendRes.body)
-      throw new Error(`Resend API failed: ${sendRes.status} - ${sendRes.body}`)
-    }
-
-    console.log('Weekly PO report sent successfully')
+    const delivery = await sendToRecipients(emailSubject, emailHtml, emailText)
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Weekly PO report sent successfully',
+        message: delivery.message,
         poCount: enrichedPOs.length,
         totalValue: totalValue,
-        emailSent: true
+        emailSent: delivery.emailSent
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )

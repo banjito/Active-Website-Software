@@ -4,6 +4,7 @@ import { Switch } from "../../components/ui/Switch";
 import Card from "../../components/ui/Card";
 import { CardContent, CardHeader, CardTitle } from "../../components/ui/Card";
 import { Badge } from "../../components/ui";
+import HomeSearch from "@/components/search/HomeSearch";
 import {
   ChevronRight,
   Building,
@@ -1330,6 +1331,13 @@ export default function PortalLanding() {
           </div>
         </div>
       )}
+
+      {/* Search across ampOS. Outside the Hero so hiding the welcome section keeps it. */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <div className="mx-auto max-w-3xl">
+          <HomeSearch />
+        </div>
+      </div>
 
       {/* Hero Section */}
       <section

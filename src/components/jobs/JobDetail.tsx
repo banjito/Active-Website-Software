@@ -65,6 +65,12 @@ import { useAuth } from "../../lib/AuthContext";
 import { isSuperUser, canReviewReports } from "../../lib/roles";
 import { useDemoMode } from "../../lib/DemoModeContext";
 import { useJobDetails } from "../../lib/hooks";
+import { usePreference } from "@/hooks/useUserPreferences";
+import {
+  JOB_DEFAULT_TAB_FALLBACK,
+  JOB_DEFAULT_TAB_PREF,
+  resolveJobDefaultTab,
+} from "@/lib/jobDefaultTab";
 import { formatStatusLabel } from "@/utils/formatters";
 import {
   AssetReportStatus,
@@ -2033,7 +2039,27 @@ export default function JobDetail() {
   const [editFormData, setEditFormData] = useState<Job | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tempDueDate, setTempDueDate] = useState<string>("");
-  const [activeTab, setActiveTab] = useState("assets");
+  // The user's chosen landing tab (Settings menu). A ?tab= link overrides it.
+  const [savedDefaultTab, , defaultTabLoading] = usePreference<string | null>(
+    JOB_DEFAULT_TAB_PREF,
+    null,
+  );
+  const [activeTab, setActiveTab] = useState(() =>
+    resolveJobDefaultTab(savedDefaultTab, isAdmin),
+  );
+  // Preferences may still be loading on first render; apply once they arrive,
+  // unless the user already picked a tab.
+  const defaultTabAppliedRef = useRef(!defaultTabLoading);
+  useEffect(() => {
+    if (defaultTabAppliedRef.current || defaultTabLoading) return;
+    defaultTabAppliedRef.current = true;
+    if (new URLSearchParams(location.search).get("tab")) return;
+    setActiveTab((current) =>
+      current === JOB_DEFAULT_TAB_FALLBACK
+        ? resolveJobDefaultTab(savedDefaultTab, isAdmin)
+        : current,
+    );
+  }, [defaultTabLoading, savedDefaultTab, isAdmin, location.search]);
   const [currentTab, setCurrentTab] = useState("details");
   const [selectedAssetType, setSelectedAssetType] =
     useState<string>("document");

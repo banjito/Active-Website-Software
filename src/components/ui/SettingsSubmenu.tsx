@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { User as UserIcon, FileText, Edit3 } from "lucide-react";
 import { EditProfilePopup } from "../profile/EditProfilePopup";
 import { EmailDigestPreferences } from "../settings/EmailDigestPreferences";
+import { JobDefaultTabPreference } from "../settings/JobDefaultTabPreference";
+import { isSuperUser } from "@/lib/roles";
 
 export interface SettingsSubmenuUser {
   id?: string;
@@ -79,6 +81,15 @@ export const SettingsSubmenu: React.FC<SettingsSubmenuProps> = ({
             About
           </button>
         </div>
+
+        {currentUser?.id && (
+          <JobDefaultTabPreference
+            isAdmin={
+              (currentUser.user_metadata?.role ?? currentUser.role) ===
+                "Admin" || isSuperUser(currentUser.email)
+            }
+          />
+        )}
 
         {currentUser?.id && (
           <EmailDigestPreferences

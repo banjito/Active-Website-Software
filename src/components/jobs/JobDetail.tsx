@@ -4653,11 +4653,6 @@ export default function JobDetail() {
       tabs: [{ key: "overview", label: "Overview" }],
     },
     {
-      id: "notes",
-      label: "Notes",
-      tabs: [{ key: "notes", label: "Notes" }],
-    },
-    {
       id: "reports",
       label: "Reports",
       count:
@@ -4710,6 +4705,11 @@ export default function JobDetail() {
         { key: "tm-expenses", label: "T&M Expenses", hidden: !isTMJob },
         { key: "profitability", label: "Profitability", hidden: !isAdmin },
       ],
+    },
+    {
+      id: "notes",
+      label: "Notes",
+      tabs: [{ key: "notes", label: "Notes" }],
     },
   ];
   const jobTabSections = allJobTabSections.map((section) => ({

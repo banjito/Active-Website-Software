@@ -11,7 +11,6 @@ export const JOB_DEFAULT_TAB_OPTIONS: {
   adminOnly?: boolean;
 }[] = [
   { key: "overview", label: "Overview" },
-  { key: "notes", label: "Notes" },
   { key: "assets", label: "Reports" },
   { key: "reports", label: "Report Approvals", adminOnly: true },
   { key: "equipment-assets", label: "Assets" },
@@ -23,6 +22,7 @@ export const JOB_DEFAULT_TAB_OPTIONS: {
   { key: "after-action", label: "After-Action Reports" },
   { key: "change-orders", label: "Change Orders" },
   { key: "profitability", label: "Profitability", adminOnly: true },
+  { key: "notes", label: "Notes" },
 ];
 
 /** The saved tab if this user may see it, otherwise the Reports list. */

@@ -11,6 +11,7 @@ export const JOB_DEFAULT_TAB_OPTIONS: {
   adminOnly?: boolean;
 }[] = [
   { key: "overview", label: "Overview" },
+  { key: "notes", label: "Job Notes" },
   { key: "assets", label: "Reports" },
   { key: "reports", label: "Report Approvals", adminOnly: true },
   { key: "equipment-assets", label: "Assets" },
@@ -18,7 +19,6 @@ export const JOB_DEFAULT_TAB_OPTIONS: {
   { key: "tracking", label: "Tracking" },
   { key: "delays", label: "Delays" },
   { key: "deliverables", label: "Deliverables" },
-  { key: "notes", label: "Job Notes" },
   { key: "pictures", label: "Pictures" },
   { key: "after-action", label: "After-Action Reports" },
   { key: "change-orders", label: "Change Orders" },

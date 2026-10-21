@@ -2757,6 +2757,9 @@ export default function JobDetail() {
   const [showMiscViewer, setShowMiscViewer] = useState(false);
   const [selectedMiscDocument, setSelectedMiscDocument] =
     useState<MiscellaneousDocument | null>(null);
+  // Set when the upload dialog is reused to rename an existing document
+  const [editingMiscDocument, setEditingMiscDocument] =
+    useState<MiscellaneousDocument | null>(null);
   const [contractForm, setContractForm] = useState({
     name: "",
     type: "main" as Contract["type"],
@@ -4652,6 +4655,11 @@ export default function JobDetail() {
       tabs: [{ key: "overview", label: "Overview" }],
     },
     {
+      id: "notes",
+      label: "Job Notes",
+      tabs: [{ key: "notes", label: "Job Notes" }],
+    },
+    {
       id: "reports",
       label: "Reports",
       count:
@@ -4686,7 +4694,6 @@ export default function JobDetail() {
       id: "field",
       label: "Field",
       tabs: [
-        { key: "notes", label: "Job Notes" },
         { key: "pictures", label: "Pictures" },
         { key: "after-action", label: "After-Action Reports" },
       ],
@@ -6768,6 +6775,67 @@ export default function JobDetail() {
   const handleMiscView = (document: MiscellaneousDocument) => {
     setSelectedMiscDocument(document);
     setShowMiscViewer(true);
+  };
+
+  const handleMiscEdit = (document: MiscellaneousDocument) => {
+    setEditingMiscDocument(document);
+    setMiscForm({
+      name: document.name,
+      description: document.description || "",
+    });
+    setShowMiscUpload(true);
+  };
+
+  const handleMiscDialogChange = (open: boolean) => {
+    setShowMiscUpload(open);
+    // Clear the edit prefill so the next upload starts blank
+    if (!open && editingMiscDocument) {
+      setEditingMiscDocument(null);
+      setMiscForm({ name: "", description: "" });
+    }
+  };
+
+  const handleMiscSaveEdit = async () => {
+    if (!editingMiscDocument) return;
+
+    setIsMiscUploading(true);
+    try {
+      // Fixed values on one id, so safe to retry
+      const { error, status } = await withWriteRetry(
+        () =>
+          supabase
+            .schema("neta_ops")
+            .from("miscellaneous_documents")
+            .update({
+              name: miscForm.name.trim(),
+              description: miscForm.description.trim() || null,
+            })
+            .eq("id", editingMiscDocument.id),
+        { label: "miscellaneous_documents.name/description" },
+      );
+
+      if (error) {
+        throw new Error(describeSupabaseError(error, status));
+      }
+
+      handleMiscDialogChange(false);
+      await fetchMiscellaneousDocuments();
+
+      toast({
+        title: "Success",
+        description: "Document updated successfully!",
+        variant: "success",
+      });
+    } catch (error: any) {
+      console.error("Error updating document:", error);
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to update document.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsMiscUploading(false);
+    }
   };
 
   const handleMiscDelete = async (documentId: string) => {
@@ -11478,6 +11546,15 @@ export default function JobDetail() {
                                     <Button
                                       variant="outline"
                                       size="sm"
+                                      onClick={() => handleMiscEdit(document)}
+                                      title="Edit name and description"
+                                      aria-label="Edit document"
+                                    >
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
                                       onClick={() =>
                                         handleMiscDelete(document.id)
                                       }
@@ -14496,12 +14573,18 @@ export default function JobDetail() {
       </Dialog>
 
       {/* Miscellaneous Document Upload Dialog */}
-      <Dialog open={showMiscUpload} onOpenChange={setShowMiscUpload}>
+      <Dialog open={showMiscUpload} onOpenChange={handleMiscDialogChange}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Upload Miscellaneous Document</DialogTitle>
+            <DialogTitle>
+              {editingMiscDocument
+                ? "Edit Miscellaneous Document"
+                : "Upload Miscellaneous Document"}
+            </DialogTitle>
             <DialogDescription>
-              Upload a miscellaneous document for this job.
+              {editingMiscDocument
+                ? "Change the name or description of this document."
+                : "Upload a miscellaneous document for this job."}
             </DialogDescription>
           </DialogHeader>
 
@@ -14539,38 +14622,51 @@ export default function JobDetail() {
               />
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="misc-file" className="text-sm font-medium">
-                Document File
-              </label>
-              <Input
-                id="misc-file"
-                type="file"
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
-                onChange={(e) => setMiscFile(e.target.files?.[0] || null)}
-              />
-              {miscFile && (
-                <p className="text-xs text-neutral-500">
-                  {miscFile.name} ({Math.round(miscFile.size / 1024)} KB)
-                </p>
-              )}
-            </div>
+            {!editingMiscDocument && (
+              <div className="space-y-2">
+                <label htmlFor="misc-file" className="text-sm font-medium">
+                  Document File
+                </label>
+                <Input
+                  id="misc-file"
+                  type="file"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
+                  onChange={(e) => setMiscFile(e.target.files?.[0] || null)}
+                />
+                {miscFile && (
+                  <p className="text-xs text-neutral-500">
+                    {miscFile.name} ({Math.round(miscFile.size / 1024)} KB)
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setShowMiscUpload(false)}
+              onClick={() => handleMiscDialogChange(false)}
               disabled={isMiscUploading}
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleMiscUpload}
-              disabled={isMiscUploading || !miscFile || !miscForm.name.trim()}
-            >
-              {isMiscUploading ? "Uploading..." : "Upload Document"}
-            </Button>
+            {editingMiscDocument ? (
+              <Button
+                onClick={handleMiscSaveEdit}
+                disabled={isMiscUploading || !miscForm.name.trim()}
+              >
+                {isMiscUploading ? "Saving..." : "Save Changes"}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleMiscUpload}
+                disabled={
+                  isMiscUploading || !miscFile || !miscForm.name.trim()
+                }
+              >
+                {isMiscUploading ? "Uploading..." : "Upload Document"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

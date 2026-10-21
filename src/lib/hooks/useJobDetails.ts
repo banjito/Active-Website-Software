@@ -27,6 +27,7 @@ export interface JobDetails {
   /** Facility owner / end user shown in the "User" field on this job's reports. */
   end_user?: string | null;
   fireteam_lead?: string | null;
+  project_manager_id?: string | null;
   progress_billing_status?: string | null;
   estimated_man_hours?: number | null;
   quickbooks_project_id?: string | null;
@@ -111,6 +112,7 @@ export function useJobDetails(jobId: string | undefined) {
             end_user,
             tracking_plan,
             fireteam_lead,
+            project_manager_id,
             estimated_man_hours,
             quickbooks_project_id,
             quickbooks_project_name,
@@ -352,6 +354,7 @@ export function useJobDetails(jobId: string | undefined) {
           site_address: (jobData as any).site_address || null,
           end_user: (jobData as any).end_user ?? null,
           fireteam_lead: (jobData as any).fireteam_lead || null,
+          project_manager_id: (jobData as any).project_manager_id || null,
           progress_billing_status:
             (jobData as any).progress_billing_status || null,
           estimated_man_hours: (jobData as any).estimated_man_hours ?? null,

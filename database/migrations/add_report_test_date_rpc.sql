@@ -182,7 +182,7 @@ BEGIN
       WHERE a.id = ANY($1)
         AND lower(a.file_url) ~ '/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
     ),
-    resolved_report AS (
+    resolved_report AS MATERIALIZED (
       %s
     )
     SELECT DISTINCT ON (ar.asset_id) ar.asset_id, rd.test_date

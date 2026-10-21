@@ -39,6 +39,9 @@ Editor) and run, in this order:
 4. `03_storage.sql` — storage buckets + file-access policies
 5. `04_cron.sql` — scheduled jobs (hourly chat cleanup, 6 PM daily review
    email) + live-update subscriptions for report status badges
+6. `05_default_data.sql` — starting rows (default project checklist steps).
+   `02_schema.sql` copies table structure only, so any default rows a
+   migration seeds must be copied into this file by hand
 
 ## After running
 

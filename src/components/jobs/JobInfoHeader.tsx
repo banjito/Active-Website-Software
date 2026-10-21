@@ -12,11 +12,13 @@ import {
 import Card, { CardHeader, CardTitle } from "@/components/ui/Card";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { formatDivisionDisplay } from "@/lib/utils/divisionDisplay";
+import ProjectManagerPicker from "./ProjectManagerPicker";
 
 interface JobInfoHeaderJob {
   status: string;
   priority: string;
   fireteam_lead?: string | null;
+  project_manager_id?: string | null;
   job_number: string | null;
   description: string;
   start_date: string | null;
@@ -61,6 +63,8 @@ interface JobInfoHeaderProps {
   onFireteamLeadClick: () => void;
   /** The open user-search popover; rendered under the Lead dropdown. */
   fireteamLeadPicker?: React.ReactNode;
+  /** Saves the job's PM. Null clears it. */
+  onProjectManagerChange: (id: string | null, name: string | null) => void | Promise<void>;
   /** Saves the new status. Resolves true on success so the editor can close. */
   onSaveProgressBillingStatus: (status: string | null) => Promise<boolean>;
 }
@@ -198,6 +202,7 @@ export default function JobInfoHeader({
   onPriorityChange,
   onFireteamLeadClick,
   fireteamLeadPicker,
+  onProjectManagerChange,
   onSaveProgressBillingStatus,
 }: JobInfoHeaderProps) {
   const navigate = useNavigate();
@@ -325,6 +330,13 @@ export default function JobInfoHeader({
               </button>
               {fireteamLeadPicker}
             </div>
+            <ProjectManagerPicker
+              value={job.project_manager_id}
+              division={job.division}
+              onChange={onProjectManagerChange}
+              chipClassName={chipClass}
+              labelClassName={chipLabelClass}
+            />
           </div>
         </div>
       </CardHeader>

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AlertTriangle, ArrowLeft, Copy, Pencil, Plus, Save, Trash2 } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
 import { useDemoMode } from '@/lib/DemoModeContext';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
@@ -31,6 +32,7 @@ import {
   monthLabel,
   monthRange,
   pct,
+  shiftMonth,
   sovHours,
   sovTotal,
   totalHours,
@@ -75,12 +77,44 @@ const parseNumber = (value: string): number => {
   return Number.isFinite(n) && n >= 0 ? n : 0;
 };
 
+// How many month columns the SOV table shows, ending at the picked month.
+// Saved per person in this browser.
+const MONTH_COUNT_OPTIONS = [1, 3, 6, 12];
+const DEFAULT_MONTH_COUNT = 3;
+const monthCountKey = (userId: string) => `pm-dashboard:sov-month-count:${userId}`;
+
+function readMonthCount(userId: string | undefined): number {
+  if (!userId) return DEFAULT_MONTH_COUNT;
+  try {
+    const saved = Number(localStorage.getItem(monthCountKey(userId)));
+    return MONTH_COUNT_OPTIONS.includes(saved) ? saved : DEFAULT_MONTH_COUNT;
+  } catch {
+    return DEFAULT_MONTH_COUNT;
+  }
+}
+
 export default function PMJobDetail() {
   const { jobId } = useParams<{ jobId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const access = usePmAccess();
   const { maskJobTitle, maskCustomerName } = useDemoMode();
+  const { user } = useAuth();
+  const [monthCount, setMonthCount] = useState(() => readMonthCount(user?.id));
+
+  useEffect(() => {
+    setMonthCount(readMonthCount(user?.id));
+  }, [user?.id]);
+
+  const changeMonthCount = (n: number) => {
+    setMonthCount(n);
+    if (!user?.id) return;
+    try {
+      localStorage.setItem(monthCountKey(user.id), String(n));
+    } catch {
+      // Private window or blocked storage: the choice just won't stick
+    }
+  };
 
   const thisMonth = monthKey(new Date());
   const month = searchParams.get('month') ?? thisMonth;
@@ -178,16 +212,12 @@ export default function PMJobDetail() {
     return counts;
   }, [reports]);
 
-  // One column per month from the first activity through the latest.
-  const months = useMemo(() => {
-    const active = [
-      ...reports.map((r) => monthKey(r.sent_at)),
-      ...Object.keys(hoursByMonth),
-      month,
-      thisMonth,
-    ].sort();
-    return monthRange(active[0], active[active.length - 1]);
-  }, [reports, hoursByMonth, month, thisMonth]);
+  // A fixed number of month columns, ending at the picked month, so moving
+  // back in time doesn't keep adding columns.
+  const months = useMemo(
+    () => monthRange(shiftMonth(month, -(monthCount - 1)), month),
+    [month, monthCount],
+  );
 
   const markChanged = (next: SovLine[]) => {
     setLines(next);
@@ -459,6 +489,18 @@ export default function PMJobDetail() {
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Schedule of values</h2>
           <div className="flex flex-wrap items-center gap-2">
             {dirty && <span className="text-xs text-amber-700 dark:text-amber-300">Unsaved changes</span>}
+            <select
+              aria-label="Months to show"
+              value={monthCount}
+              onChange={(e) => changeMonthCount(Number(e.target.value))}
+              className="rounded-none border border-neutral-300 bg-white px-2 py-1.5 text-sm text-neutral-900 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+            >
+              {MONTH_COUNT_OPTIONS.map((n) => (
+                <option key={n} value={n}>
+                  {n === 1 ? 'Show 1 month' : `Show ${n} months`}
+                </option>
+              ))}
+            </select>
             {estimates.length > 0 && (
               <Button
                 variant="outline"

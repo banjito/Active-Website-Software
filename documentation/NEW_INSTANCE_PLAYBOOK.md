@@ -40,8 +40,11 @@ Rough time budget: ~1 day the first time, half a day once practiced.
 Follow `database/bootstrap/README.md` exactly:
 
 1. Regenerate the schema snapshot if it's older than the last schema change.
+   Then check `database/migrations/` for any new migration that inserts
+   default rows, and copy that insert into `05_default_data.sql` (the
+   snapshot copies table structure only, not rows).
 2. Find-replace the AMP emails/domain per the README table.
-3. Run `00` → `04` in the new project's SQL editor.
+3. Run `00` → `05` in the new project's SQL editor.
 4. Create their first admin user (SQL in the README).
 
 (The SVG-upload fix and the `app_settings` table are already baked into the

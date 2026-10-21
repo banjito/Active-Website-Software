@@ -27,6 +27,7 @@ import {
   unmatchedCount,
 } from '@/utils/pmDashboardCalculations';
 import { fmtHours, fmtMoney, MiniBar, MonthPicker, Notice, StatTile, usePmAccess } from './shared';
+import ChecklistBoard from './ChecklistBoard';
 
 // QuickBooks is asked about a few jobs at a time so a long list does not stall.
 const BILLED_WORKERS = 3;
@@ -49,6 +50,7 @@ export default function PMDashboard() {
     (options.some((o) => o.id === userDivision) ? userDivision : options[0]?.id) ??
     '';
   const month = searchParams.get('month') ?? monthKey(new Date());
+  const view = searchParams.get('view') === 'checklist' ? 'checklist' : 'jobs';
 
   const setParam = (key: string, value: string) =>
     setSearchParams(
@@ -180,11 +182,33 @@ export default function PMDashboard() {
               </option>
             ))}
           </select>
-          <MonthPicker month={month} onChange={(m) => setParam('month', m)} />
+          {view === 'jobs' && <MonthPicker month={month} onChange={(m) => setParam('month', m)} />}
         </div>
       </div>
 
-      {setupMissing && (
+      <div className="flex border-b border-neutral-200 dark:border-neutral-700">
+        {(
+          [
+            ['jobs', 'Jobs'],
+            ['checklist', 'Checklist'],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setParam('view', key)}
+            className={`-mb-px border-b-2 px-4 py-2 text-sm ${
+              view === key
+                ? 'border-brand font-medium text-neutral-900 dark:text-neutral-100'
+                : 'border-transparent text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {view === 'jobs' && setupMissing && (
         <Notice>
           Database setup has not been run. Hours and saved SOV edits stay empty until
           database/migrations/pm_dashboard.sql is run.
@@ -202,6 +226,8 @@ export default function PMDashboard() {
         <div className="flex min-h-[300px] items-center justify-center">
           <LoadingSpinner size="md" />
         </div>
+      ) : view === 'checklist' ? (
+        <ChecklistBoard jobs={jobs} />
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

@@ -181,8 +181,9 @@ let queuedReviewJobsRefresh: Promise<JobWithReportsReadyForReview[]> | null = nu
  * Jobs with reports waiting to be reviewed, shared across every caller.
  *
  * Resolving the queue is expensive: neta_ops.get_asset_test_dates probes every
- * report table in the schema for each of the ~200 assets sitting in review and
- * takes several seconds. Four different consumers ask for it (the header count,
+ * report table in the schema (~0.25s per 200 assets since
+ * fix_asset_test_dates_timeout.sql; it was 6-10s before). Four different
+ * consumers ask for it (the header count,
  * both review shortcut panels, the notification summary) and all of them ask
  * again on every `assetStatusChanged` event, so a single status change used to
  * kick off several ten-second query bursts at once. That starved the API of

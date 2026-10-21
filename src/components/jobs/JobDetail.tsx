@@ -155,6 +155,7 @@ import { AssetCommentsDialog } from "@/components/ui/AssetCommentsDialog";
 import { SubmittalTracker } from "./SubmittalTracker";
 import JobNotes from "./JobNotes";
 import JobDelays from "./JobDelays";
+import JobChecklist from "./JobChecklist";
 import TMExpenses from "./TMExpenses";
 import JobPictures from "./JobPictures";
 import JobProfitabilityDashboard from "./JobProfitabilityDashboard";
@@ -280,6 +281,7 @@ interface Job {
    */
   end_user?: string | null;
   fireteam_lead?: string | null;
+  project_manager_id?: string | null;
   submittal_job_type?: "standard" | "data_center" | null;
   submittal_window_hours?: number | null;
   progress_billing_status?: string | null;
@@ -3350,6 +3352,7 @@ export default function JobDetail() {
         "sla",
         "tracking",
         "delays",
+        "checklist",
         "reports",
         "report-audit",
         "after-action",
@@ -3438,6 +3441,7 @@ export default function JobDetail() {
           site_address: jobDetails.site_address || null,
           end_user: jobDetails.end_user ?? null,
           fireteam_lead: jobDetails.fireteam_lead || null,
+          project_manager_id: jobDetails.project_manager_id || null,
           progress_billing_status:
             (jobDetails as any).progress_billing_status || null,
           estimated_man_hours: (jobDetails as any).estimated_man_hours ?? null,
@@ -4681,6 +4685,7 @@ export default function JobDetail() {
         { key: "tracking", label: "Tracking" },
         { key: "delays", label: "Delays" },
         { key: "deliverables", label: "Deliverables" },
+        { key: "checklist", label: "Checklist" },
       ],
     },
     {
@@ -8453,6 +8458,49 @@ export default function JobDetail() {
     }
   };
 
+  const handleProjectManagerChange = async (
+    pmId: string | null,
+    pmName: string | null,
+  ) => {
+    if (!id || !user?.id) return;
+
+    try {
+      const { error } = await supabase
+        .schema("neta_ops")
+        .from("jobs")
+        .update({
+          project_manager_id: pmId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setJob((prev) =>
+        prev ? { ...prev, project_manager_id: pmId } : prev,
+      );
+
+      if (refreshJobDetails) {
+        refreshJobDetails();
+      }
+
+      toast({
+        title: "Project Manager updated",
+        description: pmName
+          ? `${pmName} assigned as project manager`
+          : "Project manager cleared",
+        variant: "success",
+      });
+    } catch (e) {
+      console.error("Failed to update project manager:", e);
+      toast({
+        title: "Update failed",
+        description: "Could not update project manager.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleFireteamLeadSelect = async (selectedUser: any) => {
     if (!id || !user?.id) return;
 
@@ -10597,6 +10645,7 @@ export default function JobDetail() {
                       onFireteamLeadClick={() =>
                         setIsFireteamLeadSelectorOpen(!isFireteamLeadSelectorOpen)
                       }
+                      onProjectManagerChange={handleProjectManagerChange}
                       fireteamLeadPicker={
                         isFireteamLeadSelectorOpen && (
                           <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-lg z-50">
@@ -13022,6 +13071,10 @@ export default function JobDetail() {
                   <div className="p-4">
                     <JobDelays jobId={job.id} isAdmin={isAdmin} />
                   </div>
+                )}
+
+                {activeTab === "checklist" && job && (
+                  <JobChecklist jobId={job.id} />
                 )}
 
                 {activeTab === "deliverables" && job && (

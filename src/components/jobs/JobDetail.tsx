@@ -158,7 +158,7 @@ import JobDelays from "./JobDelays";
 import TMExpenses from "./TMExpenses";
 import JobPictures from "./JobPictures";
 import JobProfitabilityDashboard from "./JobProfitabilityDashboard";
-import { formatDivisionDisplay } from "../../lib/utils/divisionDisplay";
+import JobInfoHeader from "@/components/jobs/JobInfoHeader";
 import {
   compareAlphanumericLabels,
   compareLinkedAssetFolderLabels,
@@ -2029,8 +2029,6 @@ export default function JobDetail() {
   const [isStatusEditing, setIsStatusEditing] = useState(false);
   const [isPriorityEditing, setIsPriorityEditing] = useState(false);
   const [isDueDateEditing, setIsDueDateEditing] = useState(false);
-  const [isProgressBillingStatusEditing, setIsProgressBillingStatusEditing] =
-    useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [isFireteamLeadSelectorOpen, setIsFireteamLeadSelectorOpen] =
@@ -4656,8 +4654,8 @@ export default function JobDetail() {
     },
     {
       id: "notes",
-      label: "Job Notes",
-      tabs: [{ key: "notes", label: "Job Notes" }],
+      label: "Notes",
+      tabs: [{ key: "notes", label: "Notes" }],
     },
     {
       id: "reports",
@@ -8416,6 +8414,45 @@ export default function JobDetail() {
   };
 
   // Handle fireteam lead selection
+  const handleQuickPrioritySave = async (newPriority: string) => {
+    if (!id) return;
+    try {
+      const { data: updatedRow, error } = await supabase
+        .schema("neta_ops")
+        .from("jobs")
+        .update({ priority: newPriority, updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .select("id, priority")
+        .single();
+
+      if (error) throw error;
+      if (!updatedRow) {
+        throw new Error(
+          "Update not permitted by current permissions (RLS) or job not found.",
+        );
+      }
+
+      setJob((prev) =>
+        prev ? { ...prev, priority: updatedRow.priority } : prev,
+      );
+      if (refreshJobDetails) {
+        refreshJobDetails();
+      }
+      toast({
+        title: "Priority updated",
+        description: `Job priority set to ${formatStatusLabel(newPriority)}`,
+        variant: "success",
+      });
+    } catch (error: any) {
+      console.error("Failed to update priority:", error);
+      toast({
+        title: "Update failed",
+        description: `Could not update priority: ${error?.message || "Unknown error"}`,
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleFireteamLeadSelect = async (selectedUser: any) => {
     if (!id || !user?.id) return;
 
@@ -10547,638 +10584,162 @@ export default function JobDetail() {
                       </Card>
                     )}
 
-                    {/* Project Status Summary */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-medium text-neutral-600 dark:text-white">
-                            Project Status
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center space-x-2">
-                              <div
-                                className={`h-3 w-3 rounded-none ${
-                                  job.status === "completed"
-                                    ? "bg-green-500"
-                                    : job.status === "in_progress"
-                                      ? "bg-blue-500"
-                                      : job.status === "pending"
-                                        ? "bg-yellow-500"
-                                        : job.status === "ready_to_bill"
-                                          ? "bg-purple-500"
-                                          : job.status === "progress_billing"
-                                            ? "bg-orange-500"
-                                            : job.status === "billed"
-                                              ? "bg-indigo-500"
-                                              : "bg-neutral-500"
-                                }`}
-                              />
-                              <span className="text-lg font-semibold capitalize text-neutral-900 dark:text-white">
-                                {job.status.replace("_", " ")}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {!isStatusEditing ? (
-                                <button
-                                  className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
-                                  onClick={() => setIsStatusEditing(true)}
-                                >
-                                  Change
-                                </button>
-                              ) : (
-                                <div className="flex items-center gap-2">
-                                  <select
-                                    defaultValue={job.status}
-                                    onChange={(e) =>
-                                      setJob((prev) =>
-                                        prev
-                                          ? {
-                                              ...prev,
-                                              status: e.target.value as any,
-                                            }
-                                          : prev,
-                                      )
-                                    }
-                                    className="mt-0 block w-full p-2 bg-neutral-100 dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-900 dark:text-white"
-                                  >
-                                    <option value="pending">Pending</option>
-                                    <option value="in_progress">
-                                      In Progress
-                                    </option>
-                                    <option value="completed">Completed</option>
-                                    <option value="ready_to_bill">
-                                      Ready to Bill
-                                    </option>
-                                    <option value="progress_billing">
-                                      Progress Billing
-                                    </option>
-                                    <option value="billed">Billed</option>
-                                  </select>
-                                  <button
-                                    className="px-3 py-1 text-sm text-white bg-brand rounded-none hover:bg-brand-dark"
-                                    onClick={() =>
-                                      handleQuickStatusSave(
-                                        (job.status as any) || "pending",
-                                      )
-                                    }
-                                  >
-                                    Save
-                                  </button>
-                                  <button
-                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
-                                    onClick={() => setIsStatusEditing(false)}
-                                  >
-                                    Cancel
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-medium text-neutral-600 dark:text-white">
-                            Priority
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex items-center space-x-2">
-                            {job.priority === "high" ? (
-                              <AlertTriangle className="h-4 w-4 text-red-500" />
-                            ) : job.priority === "medium" ? (
-                              <Clock className="h-4 w-4 text-yellow-500" />
-                            ) : (
-                              <CheckCircle className="h-4 w-4 text-green-500" />
-                            )}
-                            <span className="text-lg font-semibold text-neutral-900 dark:text-white">
-                              {formatStatusLabel(job.priority)}
-                            </span>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-sm font-medium text-neutral-600 dark:text-white">
-                            Fireteam Lead
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center space-x-2">
-                              <User className="h-4 w-4 text-brand" />
-                              <span className="text-lg font-semibold text-neutral-900 dark:text-white">
-                                {job.fireteam_lead || "Not assigned"}
-                              </span>
-                            </div>
-                            <div className="relative fireteam-lead-selector">
-                              <button
-                                className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
-                                onClick={() =>
-                                  setIsFireteamLeadSelectorOpen(
-                                    !isFireteamLeadSelectorOpen,
-                                  )
+                    {/* Job & customer facts, laid out like the report Job Information table */}
+                    <JobInfoHeader
+                      job={job}
+                      opportunity={opportunity}
+                      contacts={contacts}
+                      customerPath={getCustomerPath(job.customers.id)}
+                      onStatusChange={(status) =>
+                        handleQuickStatusSave(status as any)
+                      }
+                      onPriorityChange={handleQuickPrioritySave}
+                      onFireteamLeadClick={() =>
+                        setIsFireteamLeadSelectorOpen(!isFireteamLeadSelectorOpen)
+                      }
+                      fireteamLeadPicker={
+                        isFireteamLeadSelectorOpen && (
+                          <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-lg z-50">
+                            <div className="p-3">
+                              <input
+                                type="text"
+                                placeholder="Search users..."
+                                value={userSearchQuery}
+                                onChange={(e) =>
+                                  setUserSearchQuery(e.target.value)
                                 }
-                              >
-                                {job.fireteam_lead ? "Change" : "Assign"}
-                              </button>
-
-                              {/* User Selection Dropdown */}
-                              {isFireteamLeadSelectorOpen && (
-                                <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-lg z-50">
-                                  <div className="p-3">
-                                    <input
-                                      type="text"
-                                      placeholder="Search users..."
-                                      value={userSearchQuery}
-                                      onChange={(e) =>
-                                        setUserSearchQuery(e.target.value)
-                                      }
-                                      className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
-                                    />
-                                  </div>
-                                  <div className="max-h-60 overflow-y-auto">
-                                    {users
-                                      .filter((u) => {
-                                        // Hide deactivated users from the picker
-                                        // (their name still resolves elsewhere).
-                                        if (u.is_active === false) return false;
-                                        const searchLower =
-                                          userSearchQuery.toLowerCase();
-                                        const email =
-                                          u.email?.toLowerCase() || "";
-                                        if (!employeeEmailRegex.test(email))
-                                          return false;
-                                        const name =
-                                          displayUserName(u).toLowerCase();
-                                        return (
-                                          email.includes(searchLower) ||
-                                          name.includes(searchLower)
-                                        );
-                                      })
-                                      .map((u) => (
-                                        <div
-                                          key={u.id}
-                                          className="px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-100 border-b border-neutral-100 dark:border-neutral-700 last:border-b-0"
-                                          onClick={() =>
-                                            handleFireteamLeadSelect(u)
-                                          }
-                                        >
-                                          <div className="flex flex-col">
-                                            <span className="font-medium text-neutral-900 dark:text-white">
-                                              {displayUserName(u)}
-                                            </span>
-                                            <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                                              {u.email}
-                                            </span>
-                                            {u.user_metadata?.role && (
-                                              <span className="text-xs text-neutral-600 dark:text-neutral-300">
-                                                Role: {u.user_metadata.role}
-                                              </span>
-                                            )}
-                                          </div>
-                                        </div>
-                                      ))}
-                                    {users.filter((u) => {
-                                      if (u.is_active === false) return false;
-                                      const searchLower =
-                                        userSearchQuery.toLowerCase();
-                                      const email =
-                                        u.email?.toLowerCase() || "";
-                                      if (!employeeEmailRegex.test(email))
-                                        return false;
-                                      const name =
-                                        displayUserName(u).toLowerCase();
-                                      return (
-                                        email.includes(searchLower) ||
-                                        name.includes(searchLower)
-                                      );
-                                    }).length === 0 && (
-                                      <div className="px-3 py-4 text-center text-neutral-500 dark:text-neutral-400">
-                                        No users found
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="p-2 border-t border-neutral-200 dark:border-neutral-700">
-                                    <button
-                                      className="w-full px-3 py-1 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200"
-                                      onClick={() => {
-                                        setIsFireteamLeadSelectorOpen(false);
-                                        setUserSearchQuery("");
-                                      }}
-                                    >
-                                      Cancel
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
+                                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
+                              />
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    {/* Job Details & Customer Information */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Job Information */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center space-x-2">
-                            <Building className="h-5 w-5 text-brand" />
-                            <span>Job Information</span>
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div>
-                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                              Job Number
-                            </label>
-                            <p className="text-neutral-900 dark:text-white font-mono">
-                              {job.job_number || "Pending"}
-                            </p>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                              Title
-                            </label>
-                            <p className="text-neutral-900 dark:text-white">
-                              {maskJobTitle(job.title)}
-                            </p>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                              Job Site Address
-                            </label>
-                            <div className="flex items-start space-x-2">
-                              <MapPin className="h-4 w-4 text-neutral-500 mt-0.5" />
-                              <p className="text-neutral-900 dark:text-white text-sm">
-                                {maskCustomerAddress(job.site_address) ||
-                                  "Not set"}
-                              </p>
-                            </div>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                              User
-                            </label>
-                            <p className="text-neutral-900 dark:text-white text-sm">
-                              {job.end_user ? maskCustomerName(job.end_user) : "Not set"}
-                            </p>
-                          </div>
-                          {job.description && !isDemoMode && (
-                            <div>
-                              <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                                Description
-                              </label>
-                              <p className="text-neutral-900 dark:text-white text-sm">
-                                {job.description}
-                              </p>
-                            </div>
-                          )}
-                          {opportunity && (
-                            <div>
-                              <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                                Opportunity
-                              </label>
-                              <div className="flex items-center gap-2">
-                                <a
-                                  href={`/opportunities/${opportunity.id}`}
-                                  className="text-brand hover:underline"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    navigate(
-                                      `/sales-dashboard/opportunities/${opportunity.id}`,
-                                    );
-                                  }}
-                                >
-                                  {opportunity.quote_number ||
-                                    `Opportunity #${opportunity.id}`}
-                                </a>
-                                {opportunity.opportunity_type ===
-                                  "time_materials" && (
-                                  <span className="px-2 py-1 rounded-none bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 font-semibold text-xs">
-                                    T&M
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                          <div>
-                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                              Estimated Man Hours
-                            </label>
-                            <p className="text-neutral-900 dark:text-white">
-                              {(() => {
-                                const fromJob =
-                                  job.estimated_man_hours != null
-                                    ? Number(job.estimated_man_hours)
-                                    : null;
-                                const fromOpp =
-                                  opportunity?.total_man_hours != null
-                                    ? typeof opportunity.total_man_hours ===
-                                      "number"
-                                      ? opportunity.total_man_hours
-                                      : Number(opportunity.total_man_hours)
-                                    : null;
-                                const val = fromJob ?? fromOpp;
-                                return val != null && !Number.isNaN(val)
-                                  ? `${val} hours`
-                                  : "Not set";
-                              })()}
-                            </p>
-                          </div>
-                          {job.notes &&
-                            /T&M|time.*material/i.test(job.notes) &&
-                            !opportunity && (
-                              <div>
-                                <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                                  Source
-                                </label>
-                                <span className="px-2 py-1 rounded-none bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400 font-semibold text-xs">
-                                  T&M
-                                </span>
-                              </div>
-                            )}
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                                Start Date
-                              </label>
-                              <div className="flex items-center space-x-2">
-                                <Calendar className="h-4 w-4 text-neutral-500" />
-                                <p className="text-neutral-900 dark:text-white text-sm">
-                                  {job.start_date
-                                    ? format(
-                                        new Date(job.start_date),
-                                        "MMM d, yyyy",
-                                      )
-                                    : "Not set"}
-                                </p>
-                              </div>
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                                Due Date
-                              </label>
-                              <div className="flex items-center space-x-2">
-                                <Calendar className="h-4 w-4 text-neutral-500" />
-                                <p className="text-neutral-900 dark:text-white text-sm">
-                                  {job.due_date
-                                    ? format(
-                                        new Date(job.due_date),
-                                        "MMM d, yyyy",
-                                      )
-                                    : "Not set"}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                          {job.division && (
-                            <div>
-                              <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                                Division
-                              </label>
-                              <p className="text-neutral-900 dark:text-white">
-                                {formatDivisionDisplay(job.division)}
-                              </p>
-                            </div>
-                          )}
-                          <div>
-                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                              Fireteam Lead
-                            </label>
-                            <div className="flex items-center space-x-2">
-                              <User className="h-4 w-4 text-neutral-500" />
-                              <p className="text-neutral-900 dark:text-white text-sm">
-                                {job.fireteam_lead || "Not assigned"}
-                              </p>
-                            </div>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                              Progress Billing Status
-                            </label>
-                            <div className="flex items-center justify-between gap-2 mt-1">
-                              {!isProgressBillingStatusEditing ? (
-                                <>
-                                  <p className="text-neutral-900 dark:text-white text-sm capitalize">
-                                    {job.progress_billing_status
-                                      ? job.progress_billing_status.replace(
-                                          "_",
-                                          " ",
-                                        )
-                                      : "Not set"}
-                                  </p>
-                                  <button
-                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
+                            <div className="max-h-60 overflow-y-auto">
+                              {users
+                                .filter((u) => {
+                                  // Hide deactivated users from the picker
+                                  // (their name still resolves elsewhere).
+                                  if (u.is_active === false) return false;
+                                  const searchLower =
+                                    userSearchQuery.toLowerCase();
+                                  const email =
+                                    u.email?.toLowerCase() || "";
+                                  if (!employeeEmailRegex.test(email))
+                                    return false;
+                                  const name =
+                                    displayUserName(u).toLowerCase();
+                                  return (
+                                    email.includes(searchLower) ||
+                                    name.includes(searchLower)
+                                  );
+                                })
+                                .map((u) => (
+                                  <div
+                                    key={u.id}
+                                    className="px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-100 border-b border-neutral-100 dark:border-neutral-700 last:border-b-0"
                                     onClick={() =>
-                                      setIsProgressBillingStatusEditing(true)
+                                      handleFireteamLeadSelect(u)
                                     }
                                   >
-                                    {job.progress_billing_status
-                                      ? "Change"
-                                      : "Set"}
-                                  </button>
-                                </>
-                              ) : (
-                                <div className="flex items-center gap-2 w-full">
-                                  <select
-                                    defaultValue={
-                                      job.progress_billing_status || ""
-                                    }
-                                    onChange={(e) =>
-                                      setJob((prev) =>
-                                        prev
-                                          ? {
-                                              ...prev,
-                                              progress_billing_status:
-                                                e.target.value || null,
-                                            }
-                                          : prev,
-                                      )
-                                    }
-                                    className="flex-1 p-2 bg-neutral-100 dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-900 dark:text-white text-sm"
-                                  >
-                                    <option value="">Not set</option>
-                                    <option value="not_started">
-                                      Not Started
-                                    </option>
-                                    <option value="in_progress">
-                                      In Progress
-                                    </option>
-                                    <option value="completed">Completed</option>
-                                    <option value="on_hold">On Hold</option>
-                                    <option value="cancelled">Cancelled</option>
-                                  </select>
-                                  <button
-                                    className="px-3 py-1 text-sm text-white bg-brand rounded-none hover:bg-brand-dark"
-                                    onClick={async () => {
-                                      if (!id || !job) return;
-                                      try {
-                                        const newStatus =
-                                          job.progress_billing_status || null;
-                                        const {
-                                          data: updatedRow,
-                                          error: updateError,
-                                        } = await supabase
-                                          .schema("neta_ops")
-                                          .from("jobs")
-                                          .update({
-                                            progress_billing_status: newStatus,
-                                            updated_at:
-                                              new Date().toISOString(),
-                                          })
-                                          .eq("id", id)
-                                          .select()
-                                          .single();
-
-                                        if (updateError) throw updateError;
-                                        if (!updatedRow) {
-                                          throw new Error(
-                                            "Update not permitted by current permissions (RLS) or job not found.",
-                                          );
-                                        }
-
-                                        setJob((prev) =>
-                                          prev
-                                            ? {
-                                                ...prev,
-                                                progress_billing_status:
-                                                  newStatus,
-                                              }
-                                            : prev,
-                                        );
-                                        if (refreshJobDetails) {
-                                          refreshJobDetails();
-                                        }
-                                        setIsProgressBillingStatusEditing(
-                                          false,
-                                        );
-                                        toast({
-                                          title:
-                                            "Progress billing status updated",
-                                          description: newStatus
-                                            ? `Status set to ${newStatus.replace("_", " ")}`
-                                            : "Status cleared",
-                                          variant: "success",
-                                        });
-                                      } catch (error: any) {
-                                        const errorMessage =
-                                          error?.message || "Unknown error";
-                                        console.error(
-                                          "Failed to update progress billing status:",
-                                          error,
-                                        );
-                                        toast({
-                                          title: "Update failed",
-                                          description: `Could not update progress billing status: ${errorMessage}`,
-                                          variant: "destructive",
-                                        });
-                                      }
-                                    }}
-                                  >
-                                    Save
-                                  </button>
-                                  <button
-                                    className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
-                                    onClick={() => {
-                                      setIsProgressBillingStatusEditing(false);
-                                      // Reset to original value
-                                      setJob((prev) =>
-                                        prev
-                                          ? {
-                                              ...prev,
-                                              progress_billing_status:
-                                                (jobDetails as any)
-                                                  ?.progress_billing_status ||
-                                                null,
-                                            }
-                                          : prev,
-                                      );
-                                    }}
-                                  >
-                                    Cancel
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* Customer Information */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center space-x-2">
-                            <User className="h-5 w-5 text-brand" />
-                            <span>Customer Information</span>
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div>
-                            <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                              Company
-                            </label>
-                            <Link
-                              to={getCustomerPath(job.customers.id)}
-                              className="text-neutral-900 dark:text-white font-semibold hover:text-brand hover:underline"
-                            >
-                              {maskCustomerName(
-                                job.customers.company_name ||
-                                  job.customers.name,
-                              )}
-                            </Link>
-                          </div>
-                          {job.customers.address && (
-                            <div>
-                              <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                                Customer Address
-                              </label>
-                              <div className="flex items-start space-x-2">
-                                <MapPin className="h-4 w-4 text-neutral-500 mt-0.5" />
-                                <p className="text-neutral-900 dark:text-white text-sm">
-                                  {maskCustomerAddress(job.customers.address)}
-                                </p>
-                              </div>
-                            </div>
-                          )}
-                          {contacts.length > 0 && (
-                            <div>
-                              <label className="text-sm font-medium text-neutral-600 dark:text-white">
-                                Primary Contact
-                              </label>
-                              {contacts
-                                .filter((c) => c.is_primary)
-                                .map((contact) => (
-                                  <div key={contact.id} className="space-y-2">
-                                    <p className="text-neutral-900 dark:text-white font-medium">
-                                      {contact.first_name} {contact.last_name}
-                                    </p>
-                                    <div className="space-y-1">
-                                      <div className="flex items-center space-x-2">
-                                        <Mail className="h-4 w-4 text-neutral-500" />
-                                        <p className="text-neutral-900 dark:text-white text-sm">
-                                          {contact.email}
-                                        </p>
-                                      </div>
-                                      <div className="flex items-center space-x-2">
-                                        <Phone className="h-4 w-4 text-neutral-500" />
-                                        <p className="text-neutral-900 dark:text-white text-sm">
-                                          {contact.phone}
-                                        </p>
-                                      </div>
+                                    <div className="flex flex-col">
+                                      <span className="font-medium text-neutral-900 dark:text-white">
+                                        {displayUserName(u)}
+                                      </span>
+                                      <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                                        {u.email}
+                                      </span>
+                                      {u.user_metadata?.role && (
+                                        <span className="text-xs text-neutral-600 dark:text-neutral-300">
+                                          Role: {u.user_metadata.role}
+                                        </span>
+                                      )}
                                     </div>
                                   </div>
                                 ))}
+                              {users.filter((u) => {
+                                if (u.is_active === false) return false;
+                                const searchLower =
+                                  userSearchQuery.toLowerCase();
+                                const email =
+                                  u.email?.toLowerCase() || "";
+                                if (!employeeEmailRegex.test(email))
+                                  return false;
+                                const name =
+                                  displayUserName(u).toLowerCase();
+                                return (
+                                  email.includes(searchLower) ||
+                                  name.includes(searchLower)
+                                );
+                              }).length === 0 && (
+                                <div className="px-3 py-4 text-center text-neutral-500 dark:text-neutral-400">
+                                  No users found
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </div>
+                            <div className="p-2 border-t border-neutral-200 dark:border-neutral-700">
+                              <button
+                                className="w-full px-3 py-1 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200"
+                                onClick={() => {
+                                  setIsFireteamLeadSelectorOpen(false);
+                                  setUserSearchQuery("");
+                                }}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      }
+                      onSaveProgressBillingStatus={async (newStatus) => {
+                        if (!id || !job) return false;
+                        try {
+                          const { data: updatedRow, error: updateError } =
+                            await supabase
+                              .schema("neta_ops")
+                              .from("jobs")
+                              .update({
+                                progress_billing_status: newStatus,
+                                updated_at: new Date().toISOString(),
+                              })
+                              .eq("id", id)
+                              .select()
+                              .single();
+
+                          if (updateError) throw updateError;
+                          if (!updatedRow) {
+                            throw new Error(
+                              "Update not permitted by current permissions (RLS) or job not found.",
+                            );
+                          }
+
+                          setJob((prev) =>
+                            prev
+                              ? { ...prev, progress_billing_status: newStatus }
+                              : prev,
+                          );
+                          if (refreshJobDetails) {
+                            refreshJobDetails();
+                          }
+                          toast({
+                            title: "Progress billing status updated",
+                            description: newStatus
+                              ? `Status set to ${newStatus.replace("_", " ")}`
+                              : "Status cleared",
+                            variant: "success",
+                          });
+                          return true;
+                        } catch (error: any) {
+                          const errorMessage = error?.message || "Unknown error";
+                          console.error(
+                            "Failed to update progress billing status:",
+                            error,
+                          );
+                          toast({
+                            title: "Update failed",
+                            description: `Could not update progress billing status: ${errorMessage}`,
+                            variant: "destructive",
+                          });
+                          return false;
+                        }
+                      }}
+                    />
 
                     {/* Contracts Section */}
                     <Card>

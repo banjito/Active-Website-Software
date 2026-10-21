@@ -720,3 +720,69 @@
         visibility: hidden !important;
     }
 }
+
+/* Job page "Job Information" block (components/jobs/JobInfoHeader.tsx).
+   Columns follow the block's own width, not the window, so an open sidebar or
+   split screen still triggers the drop. 10 cells always render, so 5, 2 and 1
+   columns always fill evenly. Cells never get narrower than ~170px.
+   Keep "header"/"nav" out of these class names: a declutter extension hides them. */
+.job-info-block {
+  container-type: inline-size;
+}
+/* Each cell draws its own right and bottom border. The -1px margins push the
+   outermost ones outside .job-info-block, which clips them (overflow hidden). */
+.job-info-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-right: -1px;
+}
+.job-info-foot {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 2fr);
+  margin: 0 -1px -1px 0;
+}
+/* Progress Billing editor gets the full row while open. */
+.job-info-foot--editing {
+  grid-template-columns: minmax(0, 1fr);
+}
+.job-info-cell {
+  min-width: 0;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.job-info-cell .job-info-label {
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@container (max-width: 859px) {
+  .job-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container (max-width: 699px) {
+  .job-info-foot {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* Phone: one column, label left and value right, like a list. */
+@container (max-width: 379px) {
+  .job-info-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .job-info-cell {
+    display: grid;
+    grid-template-columns: 7.5em minmax(0, 1fr);
+    gap: 0.625rem;
+    align-items: baseline;
+    text-align: left;
+  }
+  .job-info-cell .job-info-label {
+    margin-bottom: 0;
+    white-space: normal;
+  }
+  .job-info-cell .job-info-inline {
+    justify-content: flex-start;
+  }
+}

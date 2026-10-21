@@ -11,7 +11,7 @@ export const JOB_DEFAULT_TAB_OPTIONS: {
   adminOnly?: boolean;
 }[] = [
   { key: "overview", label: "Overview" },
-  { key: "notes", label: "Job Notes" },
+  { key: "notes", label: "Notes" },
   { key: "assets", label: "Reports" },
   { key: "reports", label: "Report Approvals", adminOnly: true },
   { key: "equipment-assets", label: "Assets" },

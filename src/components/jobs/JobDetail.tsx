@@ -156,6 +156,7 @@ import { SubmittalTracker } from "./SubmittalTracker";
 import JobNotes from "./JobNotes";
 import JobDelays from "./JobDelays";
 import JobChecklist from "./JobChecklist";
+import { JobRfis } from "./OpportunityRfis";
 import TMExpenses from "./TMExpenses";
 import JobPictures from "./JobPictures";
 import JobProfitabilityDashboard from "./JobProfitabilityDashboard";
@@ -11180,6 +11181,9 @@ export default function JobDetail() {
                         )}
                       </CardContent>
                     </Card>
+
+                    {/* RFIs answered during estimating; hidden when the job has none */}
+                    {job && <JobRfis jobId={job.id} />}
                   </div>
                 )}
 

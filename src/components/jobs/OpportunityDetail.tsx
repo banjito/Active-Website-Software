@@ -58,6 +58,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
 import { PDFEditor } from "../pdf/PDFEditor";
 import OpportunityNotes from "./OpportunityNotes";
+import OpportunityRfis from "./OpportunityRfis";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import CopyEstimateToOpportunityModal, {
   type CopyTargetOpportunity,
@@ -6000,6 +6001,19 @@ export default function OpportunityDetail() {
                   )}
                 </div>
               </div>
+
+              {/* RFIs: estimating questions for the customer, sent and returned as Excel */}
+              {id && opportunity && (
+                <div className="mt-8">
+                  <OpportunityRfis
+                    opportunityId={id}
+                    title={opportunity.title}
+                    customerName={opportunity.customers?.company_name || opportunity.customers?.name}
+                    quoteNumber={opportunity.quote_number}
+                    proposalDueDate={opportunity.proposal_due_date}
+                  />
+                </div>
+              )}
 
               {/* Opportunity notes (chat-style): who left the note and when */}
               {id && (

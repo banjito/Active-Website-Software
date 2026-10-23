@@ -36,6 +36,15 @@ serve(async (req) => {
       typeof body?.resolutionComment === "string"
         ? body.resolutionComment.trim()
         : "";
+    // Only accept images from our own public storage so the email can't embed arbitrary URLs
+    const storagePrefix = `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/`;
+    const resolutionImageUrls: string[] = Array.isArray(
+      body?.resolutionImageUrls,
+    )
+      ? body.resolutionImageUrls.filter(
+          (u: unknown) => typeof u === "string" && u.startsWith(storagePrefix),
+        )
+      : [];
     if (!issueId)
       return new Response(JSON.stringify({ error: "issueId required" }), {
         headers,
@@ -198,10 +207,19 @@ serve(async (req) => {
       const resolutionCommentRow = safeResolutionComment
         ? `<tr><td style="padding:12px;border-bottom:1px solid #eee;font-weight:bold;background:#f8f9fa">Resolution note</td><td style="padding:12px;border-bottom:1px solid #eee">${safeResolutionComment}</td></tr>`
         : "";
+      const resolutionImagesRow = resolutionImageUrls.length
+        ? `<tr><td style="padding:12px;border-bottom:1px solid #eee;font-weight:bold;background:#f8f9fa">Screenshots</td><td style="padding:12px;border-bottom:1px solid #eee">${resolutionImageUrls
+            .map((u) => u.replace(/"/g, "%22"))
+            .map(
+              (u) =>
+                `<a href="${u}"><img src="${u}" alt="Screenshot" style="display:block;max-width:100%;margin:0 0 8px;border:1px solid #eee"></a>`,
+            )
+            .join("")}</td></tr>`
+        : "";
       emailSubject = `${label} resolved: ${issue.title}`;
       heading = `${label} Resolved`;
       bodyText = `The following ${issue.type === "feature_request" ? "feature request" : "issue"} has been marked as resolved.`;
-      detailRows = `<tr><td style="padding:12px;border-bottom:1px solid #eee;font-weight:bold;background:#f8f9fa">Title</td><td style="padding:12px;border-bottom:1px solid #eee">${safeTitle}</td></tr>${resolutionCommentRow}<tr><td style="padding:12px;font-weight:bold;background:#f8f9fa">Resolved</td><td style="padding:12px">${resolvedAt}</td></tr>`;
+      detailRows = `<tr><td style="padding:12px;border-bottom:1px solid #eee;font-weight:bold;background:#f8f9fa">Title</td><td style="padding:12px;border-bottom:1px solid #eee">${safeTitle}</td></tr>${resolutionCommentRow}${resolutionImagesRow}<tr><td style="padding:12px;font-weight:bold;background:#f8f9fa">Resolved</td><td style="padding:12px">${resolvedAt}</td></tr>`;
     }
 
     const htmlBody = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto"><div style="background:${BRAND_COLOR};color:#fff;padding:20px;text-align:center"><h1 style="margin:0;font-size:24px">${heading}</h1></div><div style="padding:20px;background:#f9f9f9"><p>${bodyText}</p><table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,.1)">${detailRows}</table>${link ? `<div style="margin-top:20px;text-align:center"><a href="${link}" style="background:${BRAND_COLOR};color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;font-weight:bold">View Features &amp; Fixes</a></div>` : ""}</div><div style="padding:20px;text-align:center;color:#666;font-size:14px;border-top:1px solid #eee"><p style="margin:0">Automated notification from ${COMPANY_FULL_NAME}</p></div></div>`;
@@ -209,7 +227,11 @@ serve(async (req) => {
       action === "resolved" && resolutionComment
         ? `\n\nResolution note:\n${resolutionComment}`
         : "";
-    const textBodyStr = `${heading}\n\n${bodyText}\n\nTitle: ${issue.title}${textResolutionComment}${link ? "\nView: " + link : ""}\n\nAutomated notification from ${COMPANY_FULL_NAME}`;
+    const textResolutionImages =
+      action === "resolved" && resolutionImageUrls.length
+        ? `\n\nScreenshots:\n${resolutionImageUrls.join("\n")}`
+        : "";
+    const textBodyStr = `${heading}\n\n${bodyText}\n\nTitle: ${issue.title}${textResolutionComment}${textResolutionImages}${link ? "\nView: " + link : ""}\n\nAutomated notification from ${COMPANY_FULL_NAME}`;
 
     // 5. Send email to each recipient
     const sentTo: string[] = [];

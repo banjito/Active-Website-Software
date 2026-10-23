@@ -49,6 +49,7 @@ import { ensureReportAssetLink } from "./linkReportAsset";
 import { newReportId } from "./common/reportIdentity";
 import { openPendingReportTab } from "./common/openReportTab";
 import { buildMvCableNameplateCopy } from "./common/mvCableNameplateCopy";
+import { buildVlfTanDeltaCopy } from "./common/vlfTanDeltaCopy";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
@@ -1603,6 +1604,73 @@ const MediumVoltageVLFReport: React.FC = () => {
     }
   };
 
+  // Finish the report on screen first, the way Save does, before a copy is
+  // made from it.
+  const saveReportBeforeCopy = async (
+    effectiveJobId: string,
+    userId: string,
+  ) => {
+    if (reportId) {
+      const { data: updated, error } = await supabase
+        .schema("neta_ops")
+        .from("medium_voltage_vlf_mts_reports")
+        .update({ data: toRowData(formData) })
+        .eq("id", reportId)
+        .select("id");
+      if (error) throw error;
+      // An older report still living in the legacy table: move it over.
+      if (!updated?.length) {
+        const { error: upsertError } = await supabase
+          .schema("neta_ops")
+          .from("medium_voltage_vlf_mts_reports")
+          .upsert(
+            {
+              id: reportId,
+              job_id: effectiveJobId,
+              user_id: userId,
+              data: toRowData(formData),
+            },
+            { onConflict: "id" },
+          );
+        if (upsertError) throw upsertError;
+      }
+    } else {
+      const templateId = newReportId();
+      const { error } = await supabase
+        .schema("neta_ops")
+        .from("medium_voltage_vlf_mts_reports")
+        .upsert(
+          {
+            id: templateId,
+            job_id: effectiveJobId,
+            user_id: userId,
+            data: toRowData(formData),
+          },
+          { onConflict: "id" },
+        );
+      if (error) throw error;
+      await ensureReportAssetLink(
+        effectiveJobId,
+        {
+          name: getAssetName(
+            reportSlug,
+            formData.identifier || formData.equipmentLocation || "",
+          ),
+          file_url: `report:/jobs/${effectiveJobId}/${reportSlug}/${templateId}`,
+          user_id: userId,
+          equipment_asset_id: equipmentAssetId,
+        },
+        userId,
+      );
+      setReportId(templateId);
+      window.history.replaceState(
+        {},
+        "",
+        `/jobs/${effectiveJobId}/${reportSlug}/${templateId}`,
+      );
+    }
+  };
+
   // Save this report, then start a new one for the next cable run with only
   // the nameplate and test set-up copied. It opens in its own tab so this one
   // can stay on screen as the template.
@@ -1620,67 +1688,7 @@ const MediumVoltageVLFReport: React.FC = () => {
 
     try {
       setIsSaving(true);
-
-      // Finish the report on screen first, the way Save does.
-      if (reportId) {
-        const { data: updated, error } = await supabase
-          .schema("neta_ops")
-          .from("medium_voltage_vlf_mts_reports")
-          .update({ data: toRowData(formData) })
-          .eq("id", reportId)
-          .select("id");
-        if (error) throw error;
-        // An older report still living in the legacy table: move it over.
-        if (!updated?.length) {
-          const { error: upsertError } = await supabase
-            .schema("neta_ops")
-            .from("medium_voltage_vlf_mts_reports")
-            .upsert(
-              {
-                id: reportId,
-                job_id: effectiveJobId,
-                user_id: user.id,
-                data: toRowData(formData),
-              },
-              { onConflict: "id" },
-            );
-          if (upsertError) throw upsertError;
-        }
-      } else {
-        const templateId = newReportId();
-        const { error } = await supabase
-          .schema("neta_ops")
-          .from("medium_voltage_vlf_mts_reports")
-          .upsert(
-            {
-              id: templateId,
-              job_id: effectiveJobId,
-              user_id: user.id,
-              data: toRowData(formData),
-            },
-            { onConflict: "id" },
-          );
-        if (error) throw error;
-        await ensureReportAssetLink(
-          effectiveJobId,
-          {
-            name: getAssetName(
-              reportSlug,
-              formData.identifier || formData.equipmentLocation || "",
-            ),
-            file_url: `report:/jobs/${effectiveJobId}/${reportSlug}/${templateId}`,
-            user_id: user.id,
-            equipment_asset_id: equipmentAssetId,
-          },
-          user.id,
-        );
-        setReportId(templateId);
-        window.history.replaceState(
-          {},
-          "",
-          `/jobs/${effectiveJobId}/${reportSlug}/${templateId}`,
-        );
-      }
+      await saveReportBeforeCopy(effectiveJobId, user.id);
 
       const newFormData = buildMvCableNameplateCopy(
         formData,
@@ -1718,6 +1726,70 @@ const MediumVoltageVLFReport: React.FC = () => {
       console.error("Error creating new MV cable report:", error);
       toast.error(
         `Failed to create new report: ${error?.message || "Unknown error"}`,
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // "Save as" a VLF + Tan Delta report for this same cable, with every
+  // reading carried over, so tan delta run later only needs its own numbers.
+  // This withstand report is left as it is.
+  const saveAsTanDeltaReport = async () => {
+    const effectiveJobId =
+      jobId || location.pathname.split("/jobs/")[1]?.split("/")[0];
+    if (!effectiveJobId || !user?.id) {
+      toast.error(
+        "Unable to create Tan Delta report. Missing job or user information.",
+      );
+      return;
+    }
+
+    const copyTab = openPendingReportTab();
+
+    try {
+      setIsSaving(true);
+      if (isEditMode) await saveReportBeforeCopy(effectiveJobId, user.id);
+
+      const tanDeltaSlug = "medium-voltage-cable-vlf-test";
+      const copyReportId = newReportId();
+      const { error } = await supabase
+        .schema("neta_ops")
+        .from("medium_voltage_cable_vlf_test")
+        .upsert(
+          {
+            id: copyReportId,
+            job_id: effectiveJobId,
+            user_id: user.id,
+            data: {
+              ...buildVlfTanDeltaCopy(formData),
+              customerName: maskCustomerName(formData.customerName),
+            },
+          },
+          { onConflict: "id" },
+        );
+      if (error) throw error;
+
+      await ensureReportAssetLink(
+        effectiveJobId,
+        {
+          name: getAssetName(
+            tanDeltaSlug,
+            formData.identifier || formData.equipmentLocation || "",
+          ),
+          file_url: `report:/jobs/${effectiveJobId}/${tanDeltaSlug}/${copyReportId}`,
+          user_id: user.id,
+          equipment_asset_id: equipmentAssetId,
+        },
+        user.id,
+      );
+
+      copyTab.go(`/jobs/${effectiveJobId}/${tanDeltaSlug}/${copyReportId}`);
+    } catch (error: any) {
+      copyTab.cancel();
+      console.error("Error creating Tan Delta report:", error);
+      toast.error(
+        `Failed to create Tan Delta report: ${error?.message || "Unknown error"}`,
       );
     } finally {
       setIsSaving(false);
@@ -4199,6 +4271,19 @@ const MediumVoltageVLFReport: React.FC = () => {
             className="px-6 py-3 text-base font-medium text-white bg-green-600 rounded-none hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             Copy Nameplate data to new report (opens in a new tab)
+          </button>
+        </div>
+      )}
+      {/* Save as Tan Delta Button: also shown outside edit mode, since it is
+          mostly used on a finished withstand report. */}
+      {!isPrintMode && (isEditMode || reportId) && (
+        <div className="mb-4 print:hidden flex justify-center">
+          <button
+            onClick={saveAsTanDeltaReport}
+            disabled={isSaving}
+            className="px-6 py-3 text-base font-medium text-white bg-brand rounded-none hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            Save as Tan Delta report (opens in a new tab)
           </button>
         </div>
       )}

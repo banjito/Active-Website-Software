@@ -217,6 +217,9 @@ const FeaturesFixesPage: React.FC = () => {
   const [showIpDropdown, setShowIpDropdown] = useState(false);
   const [resolveIssue, setResolveIssue] = useState<Issue | null>(null);
   const [resolveComment, setResolveComment] = useState("");
+  const [resolveImages, setResolveImages] = useState<
+    { file: File; preview: string }[]
+  >([]);
   const [isResolving, setIsResolving] = useState(false);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
@@ -601,8 +604,49 @@ const FeaturesFixesPage: React.FC = () => {
     }
   };
 
-  const handleMarkResolved = async (issue: Issue, comment = "") => {
+  // Uploads resolution screenshots as issue attachments; returns their public URLs for the email.
+  const uploadResolutionImages = async (issueId: string, images: File[]) => {
+    const urls: string[] = [];
+    for (const file of images) {
+      const fileExt =
+        file.name.split(".").pop() || file.type.split("/")[1] || "png";
+      const fileName = `resolution_${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`;
+      const storagePath = `issues/${issueId}/${fileName}`;
+
+      const { error: upErr } = await supabase.storage
+        .from("documents")
+        .upload(storagePath, file, { upsert: false });
+      if (upErr) throw upErr;
+
+      const { data: pub } = supabase.storage
+        .from("documents")
+        .getPublicUrl(storagePath);
+
+      const { error: attachErr } = await supabase
+        .schema("common")
+        .from("issue_attachments")
+        .insert({
+          issue_id: issueId,
+          file_path: storagePath,
+          file_url: pub.publicUrl,
+        });
+      if (attachErr) throw attachErr;
+      urls.push(pub.publicUrl);
+    }
+    return urls;
+  };
+
+  const handleMarkResolved = async (
+    issue: Issue,
+    comment = "",
+    images: File[] = [],
+  ) => {
     try {
+      // Upload first so a failed upload leaves the issue unresolved and retryable
+      const resolutionImageUrls = await uploadResolutionImages(
+        issue.id,
+        images,
+      );
       await updateIssue(issue.id, {
         status: "resolved",
         resolved_at: new Date().toISOString(),
@@ -651,6 +695,9 @@ const FeaturesFixesPage: React.FC = () => {
             body: JSON.stringify({
               issueId: issue.id,
               resolutionComment: resolutionComment || undefined,
+              resolutionImageUrls: resolutionImageUrls.length
+                ? resolutionImageUrls
+                : undefined,
             }),
           },
         ).catch(() => {});
@@ -662,25 +709,53 @@ const FeaturesFixesPage: React.FC = () => {
     }
   };
 
+  const clearResolveImages = () =>
+    setResolveImages((prev) => {
+      prev.forEach((img) => URL.revokeObjectURL(img.preview));
+      return [];
+    });
+
+  const handleResolvePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pasted = Array.from(e.clipboardData.files).filter((f) =>
+      f.type.startsWith("image/"),
+    );
+    if (pasted.length === 0) return;
+    setResolveImages((prev) => [
+      ...prev,
+      ...pasted.map((file) => ({ file, preview: URL.createObjectURL(file) })),
+    ]);
+  };
+
+  const removeResolveImage = (index: number) =>
+    setResolveImages((prev) => {
+      URL.revokeObjectURL(prev[index].preview);
+      return prev.filter((_, i) => i !== index);
+    });
+
   const openResolveModal = (issue: Issue) => {
     setResolveIssue(issue);
     setResolveComment("");
+    clearResolveImages();
   };
 
   const closeResolveModal = () => {
     if (isResolving) return;
     setResolveIssue(null);
     setResolveComment("");
+    clearResolveImages();
   };
 
   const handleConfirmResolve = async () => {
     if (!resolveIssue) return;
     setIsResolving(true);
     try {
-      await handleMarkResolved(resolveIssue, resolveComment);
+      const images = resolveImages.map((img) => img.file);
+      await handleMarkResolved(resolveIssue, resolveComment, images);
       setResolveIssue(null);
       setResolveComment("");
+      clearResolveImages();
       closeModal();
+      if (images.length > 0) loadData(false);
     } finally {
       setIsResolving(false);
     }
@@ -1067,6 +1142,7 @@ const FeaturesFixesPage: React.FC = () => {
     setIsEditMode(false);
     setResolveIssue(null);
     setResolveComment("");
+    clearResolveImages();
   };
 
   const handleStartEdit = () => {
@@ -2434,10 +2510,40 @@ const FeaturesFixesPage: React.FC = () => {
                     onChange={(e) => setResolveComment(e.target.value)}
                     rows={5}
                     className="form-textarea w-full text-neutral-900 dark:text-white bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded px-3 py-2"
+                    onPaste={handleResolvePaste}
                     placeholder="Optional note for the reporter..."
                     disabled={isResolving}
                     autoFocus
                   />
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                    Paste screenshots here (Ctrl/Cmd+V). They go in the email
+                    and the issue's attachments.
+                  </p>
+                  {resolveImages.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2 mt-3">
+                      {resolveImages.map((img, index) => (
+                        <div
+                          key={img.preview}
+                          className="relative border border-neutral-200 dark:border-neutral-700 rounded-none bg-neutral-50 dark:bg-dark-100"
+                        >
+                          <img
+                            src={img.preview}
+                            alt="Pasted screenshot"
+                            className="w-full h-24 object-contain"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeResolveImage(index)}
+                            disabled={isResolving}
+                            className="absolute top-0 right-0 w-6 h-6 flex items-center justify-center bg-black/60 text-white text-sm leading-none rounded-none hover:bg-black/80"
+                            aria-label="Remove image"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="px-5 py-4 bg-neutral-50 dark:bg-dark-100 border-t border-neutral-200 dark:border-neutral-700 flex justify-end gap-2">
                   <button

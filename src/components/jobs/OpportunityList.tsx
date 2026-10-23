@@ -338,6 +338,7 @@ export default function OpportunityList() {
   const { maskCustomerName } = useDemoMode();
   const navigate = useNavigate();
   const hasAttemptedRecovery = useRef(false); // Prevent infinite retry loops
+  const fetchRequestIdRef = useRef(0); // Only the newest fetch may update the list
 
   // Load filter settings from Supabase user preferences
   const {
@@ -1217,6 +1218,10 @@ export default function OpportunityList() {
 
   async function fetchOpportunities() {
     console.log("[OpportunityList] fetchOpportunities START");
+    // Several effects can start a fetch while another is still running. A slow
+    // unfiltered fetch must not land on top of newer search results.
+    const requestId = ++fetchRequestIdRef.current;
+    const isStale = () => requestId !== fetchRequestIdRef.current;
     setLoadError(null); // Clear any previous error
     if (debouncedSearch) {
       setSearchLoading(true);
@@ -1379,6 +1384,8 @@ export default function OpportunityList() {
       }
 
       const opportunityError = null;
+
+      if (isStale()) return;
 
       if (!opportunityData) {
         console.log(
@@ -1651,6 +1658,8 @@ export default function OpportunityList() {
         finalList = sortOpportunities(opportunitiesWithCustomers);
       }
 
+      if (isStale()) return;
+
       console.log("[OpportunityList] Setting opportunities:", {
         count: finalList?.length || 0,
       });
@@ -1666,6 +1675,7 @@ export default function OpportunityList() {
       // Reset recovery flag on successful fetch
       hasAttemptedRecovery.current = false;
     } catch (error: any) {
+      if (isStale()) return; // A newer fetch owns the list and its errors
       console.error("Error in fetchOpportunities function:", error);
 
       // If this looks like an auth error and we haven't tried recovery yet, attempt soft refresh
@@ -1714,12 +1724,15 @@ export default function OpportunityList() {
         );
       }
     } finally {
-      // Always clear loading state - BOTH states to handle all scenarios
-      console.log(
-        "[OpportunityList] fetchOpportunities FINALLY - clearing loading state",
-      );
-      setLoading(false);
-      setSearchLoading(false);
+      // Clear loading state - BOTH states to handle all scenarios. A stale
+      // fetch leaves it alone so the newer one's spinner stays up.
+      if (!isStale()) {
+        console.log(
+          "[OpportunityList] fetchOpportunities FINALLY - clearing loading state",
+        );
+        setLoading(false);
+        setSearchLoading(false);
+      }
     }
   }
 

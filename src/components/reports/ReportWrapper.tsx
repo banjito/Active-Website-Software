@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import { ReportPhotosPrintSection } from "./common/ReportPhotos";
 import { SaveStatusBanner } from "./common/SaveStatusBanner";
+import { ColumnFillSelection } from "./common/ColumnFillSelection";
 import { enablePrintMediaEmulation } from "./common/printMediaEmulation";
 import {
   JOB_INFO_EDITABLE_ATTR,
@@ -2240,6 +2241,8 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
       {/* Warns the technician when auto-save stops reaching the server, which
           used to happen silently and cost completed reports. */}
       <SaveStatusBanner />
+      {/* Shift+click a column of table cells, type once to fill them all. */}
+      <ColumnFillSelection />
       {children}
       {/* Attached photos print after the report body, below the Comments
           section (the last printed section in the standard layout). */}

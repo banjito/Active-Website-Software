@@ -786,3 +786,14 @@
     justify-content: flex-start;
   }
 }
+
+/* Shift+click column fill (reports/common/ColumnFillSelection.tsx). */
+[data-column-fill-selected] {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+@media print {
+  [data-column-fill-selected] {
+    outline: none !important;
+  }
+}

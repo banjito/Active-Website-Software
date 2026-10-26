@@ -36,6 +36,16 @@ The measurement grids. This is where the keyboard matters. See [Keyboard shortcu
 
 Enter values in the units the column header asks for. Most insulation resistance columns want megohms or gigohms and the form tells you which.
 
+### Fill a whole column at once
+
+When many rows share a value (catalog number, rated voltage, amps):
+
+1. Click the first cell in the column.
+2. Hold **Shift** and click the last cell. Every cell in between is outlined.
+3. Type the value once. All outlined cells fill.
+
+Press **Esc** or click anywhere else to stop. Works on text boxes and dropdowns in any report table. Needs a keyboard, so not on a tablet.
+
 Read [Test values and pass/fail](/docs/reports/test-values) for how limits and corrections work.
 
 ## 5. Test equipment used

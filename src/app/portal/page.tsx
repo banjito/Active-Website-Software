@@ -69,6 +69,13 @@ import { useSiteLogos } from "@/services/siteThemeService";
 import { useDivisions } from "@/hooks/useDivisions";
 import { fieldTechCities } from "@/services/divisionsService";
 import Constellation from "@/components/engineering/Constellation";
+import TrendLine from "@/components/sales/TrendLine";
+import RosterWave from "@/components/hr/RosterWave";
+import ThreePhaseWave from "@/components/portal/ThreePhaseWave";
+import WireGlobe from "@/components/portal/WireGlobe";
+import ScuteShimmer from "@/components/portal/ScuteShimmer";
+import OfficeWindows from "@/components/portal/OfficeWindows";
+import SwitchgearWireframe from "@/components/portal/SwitchgearWireframe";
 
 /**
  * CSS-mask style for painting an SVG in the current text color.
@@ -2186,9 +2193,13 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card portal-field-tech border border-neutral-200 dark:border-dark-300 overflow-hidden h-full cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="group relative portal-click-card portal-field-tech border border-neutral-200 dark:border-dark-300 overflow-hidden h-full cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
-              <div className="flex flex-col sm:flex-row sm:items-stretch">
+              <ThreePhaseWave
+                whileParentHovered
+                className="opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus:opacity-100"
+              />
+              <div className="relative flex flex-col sm:flex-row sm:items-stretch">
                 {/* Identity — clicking the card opens the aggregated Field Tech portal */}
                 <div className="flex flex-col justify-between p-6 sm:w-1/2">
                   <div className="flex items-center gap-3">
@@ -2235,9 +2246,13 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="group relative overflow-hidden h-full portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
-              <CardHeader className="flex flex-row items-start justify-between p-6">
+              <WireGlobe
+                whileParentHovered
+                className="opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus:opacity-100"
+              />
+              <CardHeader className="relative flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
                     className="portal-icon-bg p-2.5 rounded-none"
@@ -2268,9 +2283,13 @@ export default function PortalLanding() {
               tabIndex={0}
               role="button"
               data-portal-title="Armadillo Division"
-              className="portal-click-card portal-armadillo border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="group relative overflow-hidden portal-click-card portal-armadillo border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
-              <CardHeader className="flex flex-row items-start justify-between p-6">
+              <ScuteShimmer
+                whileParentHovered
+                className="opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus:opacity-100"
+              />
+              <CardHeader className="relative flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div className="portal-icon-bg p-2.5 rounded-none text-[#181818] dark:text-white">
                     <div
@@ -2308,9 +2327,13 @@ export default function PortalLanding() {
               tabIndex={0}
               role="button"
               data-portal-title="Scavenger Portal"
-              className="portal-click-card portal-scavenger border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="group relative overflow-hidden portal-click-card portal-scavenger border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
-              <CardHeader className="flex flex-row items-start justify-between p-6">
+              <SwitchgearWireframe
+                whileParentHovered
+                className="opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus:opacity-100"
+              />
+              <CardHeader className="relative flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div className="portal-icon-bg p-2.5 rounded-none text-[#993809] dark:text-white">
                     <div
@@ -2348,9 +2371,13 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="group relative overflow-hidden portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
-              <CardHeader className="flex flex-row items-start justify-between p-6">
+              <OfficeWindows
+                whileParentHovered
+                className="opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus:opacity-100"
+              />
+              <CardHeader className="relative flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
                     className="portal-icon-bg p-2.5 rounded-none"
@@ -2381,9 +2408,13 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="group relative overflow-hidden portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
-              <CardHeader className="flex flex-row items-start justify-between p-6">
+              <TrendLine
+                whileParentHovered
+                className="opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus:opacity-100"
+              />
+              <CardHeader className="relative flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
                     className="portal-icon-bg p-2.5 rounded-none"
@@ -2446,9 +2477,13 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="group relative overflow-hidden portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
-              <CardHeader className="flex flex-row items-start justify-between p-6">
+              <RosterWave
+                whileParentHovered
+                className="opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus:opacity-100"
+              />
+              <CardHeader className="relative flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
                     className="portal-icon-bg p-2.5 rounded-none"

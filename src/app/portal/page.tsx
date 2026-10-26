@@ -76,6 +76,7 @@ import WireGlobe from "@/components/portal/WireGlobe";
 import ScuteShimmer from "@/components/portal/ScuteShimmer";
 import OfficeWindows from "@/components/portal/OfficeWindows";
 import SwitchgearWireframe from "@/components/portal/SwitchgearWireframe";
+import GlyphGlitch from "@/components/portal/GlyphGlitch";
 
 /**
  * CSS-mask style for painting an SVG in the current text color.
@@ -2545,9 +2546,13 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card portal-features-fixes border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#6D2C32] focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="group relative overflow-hidden portal-click-card portal-features-fixes border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-[#6D2C32] focus:ring-offset-2 dark:focus:ring-offset-black"
             >
-              <CardHeader className="flex flex-row items-start justify-between p-6">
+              <GlyphGlitch
+                whileParentHovered
+                className="opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus:opacity-100"
+              />
+              <CardHeader className="relative flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div
                     className="portal-icon-bg p-2.5 rounded-none"

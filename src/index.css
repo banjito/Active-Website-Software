@@ -226,6 +226,15 @@
         background-color: #155e75;
     }
 
+    /* Engineering portal: C&E Design navy */
+    .portal-click-card.portal-engineering {
+        --portal-card-color: #1b0f56;
+    }
+
+    .portal-click-card.portal-engineering:hover {
+        background-color: #1b0f56;
+    }
+
     .portal-click-card:has(.text-pink-500):hover {
         background-color: #831843;
     }

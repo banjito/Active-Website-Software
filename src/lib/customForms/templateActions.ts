@@ -1,6 +1,6 @@
 /**
- * Template list actions shared by the Custom Form Templates page and the
- * Engineering portal's Report builder tab, so both write the same rows.
+ * Template list actions for the Custom Form Templates page. The Engineering
+ * portal's LaTeX report builder is separate and never uses these.
  */
 
 import { supabase } from "@/lib/supabase";

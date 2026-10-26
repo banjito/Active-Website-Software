@@ -68,6 +68,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useSiteLogos } from "@/services/siteThemeService";
 import { useDivisions } from "@/hooks/useDivisions";
 import { fieldTechCities } from "@/services/divisionsService";
+import Constellation from "@/components/engineering/Constellation";
 
 /**
  * CSS-mask style for painting an SVG in the current text color.
@@ -2412,18 +2413,18 @@ export default function PortalLanding() {
             <Card
               tabIndex={0}
               role="button"
-              className="portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
+              className="group relative overflow-hidden portal-click-card portal-engineering border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
-              <CardHeader className="flex flex-row items-start justify-between p-6">
+              <Constellation
+                whileParentHovered
+                density={0.0002}
+                className="opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus:opacity-100"
+              />
+              <CardHeader className="relative flex flex-row items-start justify-between p-6">
                 <div className="flex items-center gap-3">
-                  <div
-                    className="portal-icon-bg p-2.5 rounded-none"
-                    style={{ color: "#155e75" }}
-                  >
-                    <Omega
-                      className="h-5 w-5 text-cyan-500 dark:text-white"
-                      style={{ color: "#155e75" }}
-                    />
+                  {/* C&E Design navy, lightened in dark mode like the C&E `brand` token. */}
+                  <div className="portal-icon-bg p-2.5 rounded-none text-[#1b0f56] dark:text-[#a9a0ea]">
+                    <Omega className="h-5 w-5" />
                   </div>
                   <div>
                     <CardTitle className="text-2xl font-medium text-neutral-900 dark:text-white">

@@ -39,13 +39,13 @@ export const CustomFormPreview: React.FC = () => {
   const location = useLocation();
   // Opened from the builder's Preview button: Back returns to that editor
   // rather than dropping you on the template list.
-  const navState = location.state as { from?: string; returnTo?: string } | null;
-  const cameFromBuilder = navState?.from === "builder";
+  const cameFromBuilder =
+    (location.state as { from?: string } | null)?.from === "builder";
   const goBack = () =>
     navigate(
       cameFromBuilder && templateId
         ? `/custom-forms/builder/${templateId}`
-        : navState?.returnTo ?? "/custom-forms/templates",
+        : "/custom-forms/templates",
     );
 
   const [template, setTemplate] = useState<CustomFormTemplate | null>(null);

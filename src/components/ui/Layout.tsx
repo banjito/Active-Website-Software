@@ -927,24 +927,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </Link>
           </>
         )}
-        {/* Custom Report Builder - Engineering portal only */}
-        {division === "engineering" && (
-          <Link
-            to="/engineering/report-builder"
-            onClick={() => setIsMobileSidebarOpen(false)}
-          >
-            <Button
-              variant="ghost"
-              className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
-                location.pathname.startsWith("/custom-forms")
-                  ? "bg-black/5 dark:bg-dark-50"
-                  : ""
-              }`}
-            >
-              Custom Report Builder
-            </Button>
-          </Link>
-        )}
       </>
     );
   };

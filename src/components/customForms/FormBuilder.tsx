@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { supabase } from "@/lib/supabase";
 import {
@@ -139,10 +139,6 @@ export const FormBuilder: React.FC = () => {
   useReportCssIsolation();
   const { templateId } = useParams<{ templateId?: string }>();
   const navigate = useNavigate();
-  // Set by the Engineering portal's Report builder tab so Back returns there.
-  const returnTo =
-    (useLocation().state as { returnTo?: string } | null)?.returnTo ??
-    "/custom-forms/templates";
   const { user } = useAuth();
   const isAdmin =
     (user?.user_metadata?.role as string) === "Admin" ||
@@ -1109,7 +1105,7 @@ export const FormBuilder: React.FC = () => {
               ) {
                 return;
               }
-              navigate(returnTo);
+              navigate("/custom-forms/templates");
             }}
             className="!h-10 shrink-0 [&>span:first-child]:mr-0 md:[&>span:first-child]:mr-2"
             leftIcon={<ArrowLeft className="w-4 h-4" />}

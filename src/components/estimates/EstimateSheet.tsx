@@ -10463,6 +10463,35 @@ export default function EstimateSheet({
                                 </span>
                               </div>
                             </div>
+
+                            {/* A line-item move freezes travel dollars on the estimate. Pricing
+                                uses that frozen amount, not the trip math above, so say so. */}
+                            {travelNonLaborOverride && (
+                              <div className="mt-2 flex flex-wrap items-center justify-between gap-3 rounded-none border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
+                                <div>
+                                  Price uses a fixed travel amount of{" "}
+                                  <span className="font-semibold">
+                                    {fmtMoney(toNum(travelNonLaborValue))}
+                                  </span>{" "}
+                                  (set when line items were moved), not the{" "}
+                                  {fmtMoney(tt.nonLaborCost)} calculated above.
+                                  Trip edits won't change the price until you
+                                  switch back.
+                                </div>
+                                {!isViewMode && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setTravelNonLaborOverride(false);
+                                      setTravelNonLaborValue(0);
+                                    }}
+                                  >
+                                    Use calculated
+                                  </Button>
+                                )}
+                              </div>
+                            )}
                           </div>
                         );
                       })()}

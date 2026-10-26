@@ -37,9 +37,15 @@ import {
   generateTemplateFromReport,
   type ReportOption,
 } from "@/lib/customForms/generateTemplateFromReport";
-import { publishTemplateVersion } from "@/lib/customForms/versioning";
+import {
+  fetchActiveTemplates,
+  duplicateTemplate,
+  deactivateTemplate,
+  unpublishTemplate,
+  publishTemplate,
+  saveImportedDraft,
+} from "@/lib/customForms/templateActions";
 import { hasRegisteredConversion } from "@/lib/customForms/conversions";
-import { reviewAsDescription } from "@/lib/customForms/excel/import";
 import type { ExcelImportDraft } from "@/lib/customForms/excel/types";
 import GenerateFromFileDialog from "@/components/customForms/GenerateFromFileDialog";
 
@@ -121,38 +127,13 @@ export const CustomFormTemplates: React.FC = () => {
   };
 
   /** Save a built draft and return its id, so the dialog can open it. */
-  const saveImportedDraft = async (draft: ExcelImportDraft): Promise<string> => {
-    const { data, error } = await supabase
-      .schema("neta_ops")
-      .from("custom_form_templates")
-      .insert({
-        name: draft.template.name || "Imported form",
-        description: reviewAsDescription(draft.review),
-        neta_section: null,
-        created_by: user?.id,
-        structure: draft.template.structure,
-        is_active: true,
-        is_published: false,
-      })
-      .select()
-      .single();
-    if (error) throw error;
-    return data.id as string;
-  };
+  const handleSaveImportedDraft = (draft: ExcelImportDraft): Promise<string> =>
+    saveImportedDraft(draft, user?.id);
 
   const loadTemplates = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .schema("neta_ops")
-        .from("custom_form_templates")
-        .select("*")
-        .eq("is_active", true)
-        .order("updated_at", { ascending: false });
-
-      if (error) throw error;
-
-      setTemplates(data || []);
+      setTemplates(await fetchActiveTemplates());
     } catch (error) {
       console.error("Error loading templates:", error);
       toast.error("Failed to load templates");
@@ -170,14 +151,7 @@ export const CustomFormTemplates: React.FC = () => {
     }
 
     try {
-      const { error } = await supabase
-        .schema("neta_ops")
-        .from("custom_form_templates")
-        .update({ is_active: false })
-        .eq("id", templateId);
-
-      if (error) throw error;
-
+      await deactivateTemplate(templateId);
       toast.success("Template deleted successfully");
       loadTemplates();
     } catch (error) {
@@ -188,32 +162,7 @@ export const CustomFormTemplates: React.FC = () => {
 
   const handleDuplicateTemplate = async (templateId: string) => {
     try {
-      // Load the template to duplicate
-      const { data: originalTemplate, error: loadError } = await supabase
-        .schema("neta_ops")
-        .from("custom_form_templates")
-        .select("*")
-        .eq("id", templateId)
-        .single();
-
-      if (loadError) throw loadError;
-
-      // Create a copy (always starts as unpublished draft)
-      const { error: insertError } = await supabase
-        .schema("neta_ops")
-        .from("custom_form_templates")
-        .insert({
-          name: `${originalTemplate.name} (Copy)`,
-          description: originalTemplate.description,
-          neta_section: originalTemplate.neta_section,
-          created_by: user?.id,
-          structure: originalTemplate.structure,
-          is_active: true,
-          is_published: false,
-        });
-
-      if (insertError) throw insertError;
-
+      await duplicateTemplate(templateId, user?.id);
       toast.success("Template duplicated successfully");
       loadTemplates();
     } catch (error) {
@@ -233,12 +182,7 @@ export const CustomFormTemplates: React.FC = () => {
   ) => {
     if (currentlyPublished) {
       try {
-        const { error } = await supabase
-          .schema("neta_ops")
-          .from("custom_form_templates")
-          .update({ is_published: false })
-          .eq("id", templateId);
-        if (error) throw error;
+        await unpublishTemplate(templateId);
         toast.success("Template unpublished");
         loadTemplates();
       } catch (error) {
@@ -250,43 +194,13 @@ export const CustomFormTemplates: React.FC = () => {
 
     setPublishingId(templateId);
     try {
-      const { data, error } = await supabase
-        .schema("neta_ops")
-        .from("custom_form_templates")
-        .select("*")
-        .eq("id", templateId)
-        .single();
-      if (error || !data) throw error ?? new Error("Template not found");
-
-      const result = await publishTemplateVersion(
-        {
-          id: data.id,
-          name: data.name,
-          description: data.description ?? undefined,
-          netaSection: data.neta_section ?? undefined,
-          structure: data.structure,
-        },
-        { userId: user?.id },
-      );
-
-      if (!result.ok) {
-        const firstError = result.report.errors[0];
-        toast.error(
-          result.error ??
-            (firstError
-              ? `Cannot publish: ${firstError.message}`
-              : "Cannot publish: the template did not compile."),
-        );
-        return;
-      }
-
-      toast.success(
-        `Published version ${result.version!.version}. It will now appear in jobs.`,
-      );
+      toast.success(await publishTemplate(templateId, user?.id));
       loadTemplates();
     } catch (error) {
       console.error("Error publishing template:", error);
-      toast.error("Failed to update publish status");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update publish status",
+      );
     } finally {
       setPublishingId(null);
     }
@@ -526,7 +440,7 @@ export const CustomFormTemplates: React.FC = () => {
       {showExcelModal && (
         <GenerateFromFileDialog
           onClose={() => setShowExcelModal(false)}
-          onSave={saveImportedDraft}
+          onSave={handleSaveImportedDraft}
           onOpenTemplate={(id) => {
             setShowExcelModal(false);
             toast.success("Draft created. Check the review notes before publishing.", { duration: 6000 });

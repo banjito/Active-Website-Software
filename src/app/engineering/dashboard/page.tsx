@@ -1,298 +1,133 @@
 import React, { useLayoutEffect, useEffect } from "react";
-import {
-  FileText,
-  PencilRuler,
-  Book,
-  FileSymlink,
-  ChevronRight,
-  Users,
-  Building,
-  Briefcase,
-  FileCode,
-  Workflow,
-  Gauge,
-} from "lucide-react";
-import { Link } from "react-router-dom";
-import { Card, Button } from "@/components/ui";
-import { useAuth } from "@/lib/AuthContext";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Briefcase, LayoutTemplate, Plus } from "lucide-react";
 import { useDivision } from "@/App";
+import { companyConfig } from "@/lib/companyConfig";
+import { ce } from "@/components/engineering/engineeringTheme";
+import EngineeringJobsTab from "@/components/engineering/EngineeringJobsTab";
+import EngineeringReportBuilderTab, {
+  ENGINEERING_BUILDER_PATH,
+  RETURN_TO_ENGINEERING,
+} from "@/components/engineering/EngineeringReportBuilderTab";
 
+const JOBS_PATH = "/engineering/jobs";
+
+/** The 40px blueprint grid over midnight that deepens into navy. */
+const BLUEPRINT_STYLE: React.CSSProperties = {
+  backgroundColor: "#0c0a34",
+  backgroundImage:
+    "linear-gradient(#14114e 1px, transparent 1px), linear-gradient(90deg, #14114e 1px, transparent 1px), linear-gradient(180deg, #0c0a34 0%, #0c0a34 50%, #1b0f56 100%)",
+  backgroundSize: "40px 40px, 40px 40px, 100% 100%",
+};
+
+// A still frame of the C&E constellation: points joined to near neighbors.
+const STARS: [number, number, number, number][] = [
+  [60, 40, 2, 0.4], [140, 90, 2, 0.7], [210, 30, 1.5, 0.5], [260, 120, 2.5, 0.8],
+  [330, 70, 2, 0.6], [390, 150, 2, 0.7], [450, 50, 2.5, 0.8], [500, 110, 2, 0.55],
+  [560, 30, 1.5, 0.45], [600, 160, 2, 0.6], [180, 180, 1.5, 0.4], [300, 200, 2, 0.5],
+  [420, 190, 1.5, 0.6], [540, 200, 2, 0.5], [80, 140, 1.5, 0.35],
+];
+const LINKS: [number, number][] = [
+  [0, 1], [1, 2], [1, 3], [2, 4], [3, 4], [4, 6], [4, 5], [5, 7], [6, 7], [6, 8],
+  [7, 9], [8, 7], [3, 10], [10, 14], [14, 1], [3, 11], [5, 12], [12, 13], [13, 9], [11, 12],
+];
+
+function Constellation() {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 640 240"
+      preserveAspectRatio="xMaxYMid slice"
+      className="pointer-events-none absolute right-0 top-0 hidden h-full w-[640px] md:block"
+    >
+      <g stroke="#ffffff" strokeOpacity={0.18} strokeWidth={1}>
+        {LINKS.map(([a, b]) => (
+          <line key={`${a}-${b}`} x1={STARS[a][0]} y1={STARS[a][1]} x2={STARS[b][0]} y2={STARS[b][1]} />
+        ))}
+      </g>
+      <g fill="#ffffff">
+        {STARS.map(([x, y, r, o]) => (
+          <circle key={`${x}-${y}`} cx={x} cy={y} r={r} fillOpacity={o} />
+        ))}
+      </g>
+    </svg>
+  );
+}
+
+const TABS = [
+  { path: JOBS_PATH, label: "Jobs", icon: Briefcase },
+  { path: ENGINEERING_BUILDER_PATH, label: "Report builder", icon: LayoutTemplate },
+];
+
+/**
+ * Engineering portal: two tabs, Jobs and Report builder. /engineering,
+ * /engineering/dashboard and /engineering/jobs all open the Jobs tab.
+ */
 export default function EngineeringDashboard() {
-  const { user } = useAuth();
   const { setDivision } = useDivision();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const onBuilder = pathname.startsWith(ENGINEERING_BUILDER_PATH);
 
-  // Scroll to top when the component mounts
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Set division context to engineering when this component mounts
   useEffect(() => {
     setDivision("engineering");
   }, [setDivision]);
 
   return (
-    <div className="space-y-6">
-      {/* Quick Actions Section */}
-      <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer">
-          <Link to="/engineering/designs" className="block p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="p-2 bg-blue-50 rounded-none mr-3">
-                  <PencilRuler className="h-5 w-5 text-blue-500" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-neutral-900 dark:text-white">
-                    Design Approval
-                  </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                    Review and approve engineering designs
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-neutral-400" />
+    // Negative margins undo the layout's padding so the title band runs edge to edge.
+    <div className={`-m-3 min-h-full sm:-m-4 lg:-m-6 ${ce.page}`}>
+      <div className="relative overflow-hidden print:hidden" style={BLUEPRINT_STYLE}>
+        <Constellation />
+        <div className="relative mx-auto flex max-w-[1360px] flex-col gap-7 px-4 pt-10 sm:px-8">
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div className="flex flex-col gap-2.5">
+              <div className={`${ce.eyebrow} text-[#f8894f]`}>{companyConfig.engineeringName}</div>
+              <h1 className="m-0 text-[30px] font-bold leading-9 text-white sm:text-[40px] sm:leading-[46px]">
+                Engineering
+              </h1>
+              <div aria-hidden className={`h-[3px] w-14 ${ce.spark}`} />
             </div>
-          </Link>
-        </Card>
-
-        <Card className="hover:shadow-md hover:border-green-200 transition-all cursor-pointer">
-          <Link to="/engineering/documentation" className="block p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="p-2 bg-green-50 rounded-none mr-3">
-                  <Book className="h-5 w-5 text-green-500" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-neutral-900 dark:text-white">
-                    Technical Documentation
-                  </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                    Access engineering documents and manuals
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-neutral-400" />
-            </div>
-          </Link>
-        </Card>
-
-        <Card className="hover:shadow-md hover:border-orange-200 transition-all cursor-pointer">
-          <Link to="/engineering/standards" className="block p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="p-2 bg-orange-50 rounded-none mr-3">
-                  <FileCode className="h-5 w-5 text-orange-500" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-neutral-900 dark:text-white">
-                    Standards & Compliance
-                  </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                    Access engineering standards and updates
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-neutral-400" />
-            </div>
-          </Link>
-        </Card>
-
-        <Card className="hover:shadow-md hover:border-purple-200 transition-all cursor-pointer">
-          <Link to="/engineering/drawings" className="block p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="p-2 bg-purple-50 rounded-none mr-3">
-                  <FileSymlink className="h-5 w-5 text-purple-500" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-neutral-900 dark:text-white">
-                    Drawing Repository
-                  </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                    Access technical drawings and blueprints
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-neutral-400" />
-            </div>
-          </Link>
-        </Card>
-
-        <Card className="hover:shadow-md hover:border-blue-200 transition-all cursor-pointer">
-          <Link to="/engineering/customers" className="block p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="p-2 bg-blue-50 rounded-none mr-3">
-                  <Building className="h-5 w-5 text-blue-500" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-neutral-900 dark:text-white">
-                    Customers
-                  </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                    Manage engineering customers
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-neutral-400" />
-            </div>
-          </Link>
-        </Card>
-
-        <Card className="hover:shadow-md hover:border-green-200 transition-all cursor-pointer">
-          <Link to="/engineering/jobs" className="block p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="p-2 bg-green-50 rounded-none mr-3">
-                  <Briefcase className="h-5 w-5 text-green-500" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-neutral-900 dark:text-white">
-                    Jobs & Projects
-                  </h3>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                    Manage engineering projects
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-neutral-400" />
-            </div>
-          </Link>
-        </Card>
-      </div>
-
-      {/* Engineering Metrics Section */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Engineering Metrics</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <div className="flex items-center justify-between p-6">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-white/70">
-                  Design Reviews
-                </p>
-                <p className="text-2xl font-bold text-neutral-900 dark:text-white">
-                  24
-                </p>
-                <p className="text-xs text-neutral-500 dark:text-white">
-                  8 pending approval
-                </p>
-              </div>
-              <div className="rounded-none bg-black/5 p-2">
-                <PencilRuler className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <div className="flex items-center justify-between p-6">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-white/70">
-                  Active Projects
-                </p>
-                <p className="text-2xl font-bold text-neutral-900 dark:text-white">
-                  12
-                </p>
-                <p className="text-xs text-neutral-500 dark:text-white">
-                  3 in critical phase
-                </p>
-              </div>
-              <div className="rounded-none bg-black/5 p-2">
-                <Workflow className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <div className="flex items-center justify-between p-6">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-white/70">
-                  Standard Updates
-                </p>
-                <p className="text-2xl font-bold text-neutral-900 dark:text-white">
-                  7
-                </p>
-                <p className="text-xs text-neutral-500 dark:text-white">
-                  2 require action
-                </p>
-              </div>
-              <div className="rounded-none bg-black/5 p-2">
-                <FileCode className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <div className="flex items-center justify-between p-6">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-white/70">
-                  Compliance
-                </p>
-                <p className="text-2xl font-bold text-neutral-900 dark:text-white">
-                  98%
-                </p>
-                <p className="text-xs text-neutral-500 dark:text-white">
-                  Above target (95%)
-                </p>
-              </div>
-              <div className="rounded-none bg-black/5 p-2">
-                <Gauge className="h-4 w-4 text-black dark:text-[#8D5F3D]" />
-              </div>
-            </div>
-          </Card>
+            {onBuilder && (
+              <button
+                type="button"
+                onClick={() => navigate("/custom-forms/builder", RETURN_TO_ENGINEERING)}
+                className="inline-flex h-11 items-center gap-2 rounded-none bg-white px-5 text-sm font-semibold text-[#1b0f56] hover:bg-[#f4f3f8] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-[#0c0a34]"
+              >
+                <Plus className="h-[18px] w-[18px]" aria-hidden />
+                New template
+              </button>
+            )}
+          </div>
+          <div role="tablist" aria-label="Engineering sections" className="flex gap-0.5">
+            {TABS.map(({ path, label, icon: Icon }) => {
+              const active = path === ENGINEERING_BUILDER_PATH ? onBuilder : !onBuilder;
+              return (
+                <Link
+                  key={path}
+                  to={path}
+                  role="tab"
+                  aria-selected={active}
+                  className={`flex items-center gap-2.5 px-5 py-3.5 text-sm font-semibold no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand ${
+                    active
+                      ? `${ce.surface} ${ce.ink} shadow-[inset_0_2px_0_rgb(var(--brand-rgb))]`
+                      : "text-[#c4c8d2] hover:bg-white/[0.06] hover:text-white"
+                  }`}
+                >
+                  <Icon className="h-[18px] w-[18px]" aria-hidden />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Recent Activity Section */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-        <Card>
-          <div className="p-6">
-            <ul className="space-y-4">
-              <li className="flex items-start">
-                <div className="p-1.5 rounded-none bg-blue-50 text-blue-500 mr-3 mt-0.5">
-                  <PencilRuler className="h-3.5 w-3.5" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">
-                    Main Line Power Distribution Design approved
-                  </p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    Yesterday at 2:34 PM
-                  </p>
-                </div>
-              </li>
-              <li className="flex items-start">
-                <div className="p-1.5 rounded-none bg-green-50 text-green-500 mr-3 mt-0.5">
-                  <Book className="h-3.5 w-3.5" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">
-                    Technical Documentation updated for Transformer
-                    Specifications
-                  </p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    2 days ago
-                  </p>
-                </div>
-              </li>
-              <li className="flex items-start">
-                <div className="p-1.5 rounded-none bg-orange-50 text-orange-500 mr-3 mt-0.5">
-                  <FileCode className="h-3.5 w-3.5" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">
-                    IEEE 1547 Standard update notification
-                  </p>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    Last week
-                  </p>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </Card>
+      <div className="mx-auto max-w-[1360px] px-4 pb-28 pt-8 sm:px-8">
+        {onBuilder ? <EngineeringReportBuilderTab /> : <EngineeringJobsTab />}
       </div>
     </div>
   );

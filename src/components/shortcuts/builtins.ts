@@ -78,13 +78,8 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
     key: "engineering",
     label: "Engineering",
     options: [
-      { label: "Dashboard", path: "/engineering/dashboard" },
       { label: "Jobs", path: "/engineering/jobs" },
-      { label: "Designs", path: "/engineering/designs" },
-      { label: "Documentation", path: "/engineering/documentation" },
-      { label: "Standards", path: "/engineering/standards" },
-      { label: "Drawings", path: "/engineering/drawings" },
-      { label: "Custom Report Builder", path: "/custom-forms/templates" },
+      { label: "Report Builder", path: "/engineering/report-builder" },
     ],
   },
   {

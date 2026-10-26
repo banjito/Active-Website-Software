@@ -592,6 +592,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     location.pathname === "/meetings" ||
     location.pathname.startsWith("/meetings/");
   const useHeaderBarLayout = !isMeetingsPage;
+  // The Engineering portal navigates with its own tabs, so no sidebar there.
+  const isEngineeringPortal = /^\/engineering(\/|$)/.test(location.pathname);
 
   // If embedded mode, render children without any chrome
   if (isEmbedded) {
@@ -896,7 +898,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Custom Report Builder - Engineering portal only */}
         {division === "engineering" && (
           <Link
-            to="/custom-forms/templates"
+            to="/engineering/report-builder"
             onClick={() => setIsMobileSidebarOpen(false)}
           >
             <Button
@@ -923,7 +925,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     );
   }
 
-  const sidebar = !isMeetingsPage ? (
+  const sidebar = !isMeetingsPage && !isEngineeringPortal ? (
     <div
       ref={sidebarRef}
       className={`
@@ -1188,6 +1190,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="flex min-h-0 flex-1 min-w-0">
           {sidebar}
           <div className="flex flex-col flex-1 min-w-0">
+            {(!isEngineeringPortal || isReportPage) && (
             <div
               className={`flex items-center gap-2 px-3 py-2 border-b border-neutral-200 dark:border-dark-200 print:hidden ${
                 isReportPage ? "" : "lg:hidden"
@@ -1230,6 +1233,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   to an asset. */}
               {isReportPage && !isPrintExport && <ReportStatusButton />}
             </div>
+            )}
             {mainContent}
           </div>
         </div>

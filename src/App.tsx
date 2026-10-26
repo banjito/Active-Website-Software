@@ -993,7 +993,28 @@ function App() {
                       </RequireAuth>
                     }
                   />
-                  {/* Engineering jobs use the generic /:division/jobs route below */}
+                  {/* The Jobs and Report builder tabs. Static paths outrank
+                      /:division/jobs; job detail still uses /:division/jobs/:id. */}
+                  <Route
+                    path="/engineering/jobs"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <EngineeringDashboard />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/engineering/report-builder"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <EngineeringDashboard />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
                   <Route
                     path="/engineering/designs"
                     element={

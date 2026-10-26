@@ -32,6 +32,8 @@ const list = (value: unknown, fallback: string[]): string[] =>
 export const companyConfig = {
   /** Short product/company display name (page titles, UI). */
   name: str(env.VITE_COMPANY_NAME, "AMP"),
+  /** Name shown above the Engineering portal's title. */
+  engineeringName: str(env.VITE_ENGINEERING_NAME, "C&E Design"),
   /** Full company name used on documents (proposals, POs, reports). */
   fullName: str(env.VITE_COMPANY_FULL_NAME, "AMP Quality Energy Services"),
   /** Legal entity name used in contract/terms language. */

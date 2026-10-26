@@ -165,7 +165,7 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
       { label: "PTO/Leave Tracking", path: "/hr/time-attendance/pto-leave" },
       { label: "Review Cycles", path: "/hr/performance/review-cycles" },
       {
-        label: "Document Acknowledgment",
+        label: "Policies",
         path: "/hr/compliance/document-acknowledgment",
       },
       {

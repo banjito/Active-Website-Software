@@ -840,7 +840,8 @@ export default function EstimateSheet({
   const [manualPriceValue, setManualPriceValue] = useState<number>(0);
 
   // Explicit mobilization amount. Set when a pricing group is split, so the
-  // pieces still sum to the mobilization the original scope quoted.
+  // pieces still sum to the mobilization the original scope quoted. Editing any
+  // mobilization setting clears it, so a split never locks those settings.
   const [mobilizationOverride, setMobilizationOverride] =
     useState<boolean>(false);
   const [mobilizationValue, setMobilizationValue] = useState<number>(0);
@@ -13516,6 +13517,7 @@ export default function EstimateSheet({
                                         ...prev,
                                         base: value,
                                       }));
+                                      setMobilizationOverride(false);
                                       setIsDirty(true);
                                     }}
                                     readOnly={isViewMode}
@@ -13567,6 +13569,7 @@ export default function EstimateSheet({
                                         ...prev,
                                         over100k: value,
                                       }));
+                                      setMobilizationOverride(false);
                                       setIsDirty(true);
                                     }}
                                     readOnly={isViewMode}
@@ -13622,6 +13625,7 @@ export default function EstimateSheet({
                                         ...prev,
                                         over500k: value,
                                       }));
+                                      setMobilizationOverride(false);
                                       setIsDirty(true);
                                     }}
                                     readOnly={isViewMode}
@@ -13679,6 +13683,7 @@ export default function EstimateSheet({
                                         ...prev,
                                         over1m: value,
                                       }));
+                                      setMobilizationOverride(false);
                                       setIsDirty(true);
                                     }}
                                     readOnly={isViewMode}
@@ -13720,20 +13725,6 @@ export default function EstimateSheet({
                               color: "var(--text-color)",
                             }}
                           >
-                            {mobilizationOverride && (
-                              <div
-                                style={{
-                                  marginBottom: "8px",
-                                  color: "var(--muted, #737373)",
-                                }}
-                              >
-                                Mobilization is fixed at{" "}
-                                {formatCurrency(
-                                  getMobilizationAmount(getFinalValue()),
-                                )}{" "}
-                                by a split, so the settings below don't apply.
-                              </div>
-                            )}
                             <div
                               style={{
                                 display: "flex",
@@ -13752,6 +13743,7 @@ export default function EstimateSheet({
                                       ? "baked"
                                       : "added",
                                   );
+                                  setMobilizationOverride(false);
                                   setIsDirty(true);
                                 }}
                                 disabled={isViewMode}
@@ -13795,6 +13787,7 @@ export default function EstimateSheet({
                                           : g,
                                       ),
                                     );
+                                    setMobilizationOverride(false);
                                     setIsDirty(true);
                                   }}
                                   readOnly={isViewMode}
@@ -13814,6 +13807,7 @@ export default function EstimateSheet({
                                         g.id === group.id ? { ...g, mode } : g,
                                       ),
                                     );
+                                    setMobilizationOverride(false);
                                     setIsDirty(true);
                                   }}
                                   disabled={isViewMode}
@@ -13838,6 +13832,7 @@ export default function EstimateSheet({
                                       setMobilizationGroups((prev) =>
                                         prev.filter((g) => g.id !== group.id),
                                       );
+                                      setMobilizationOverride(false);
                                       setIsDirty(true);
                                     }}
                                     className="px-2 py-1 text-xs text-white bg-red-600 hover:bg-red-700 rounded-none"
@@ -13859,6 +13854,7 @@ export default function EstimateSheet({
                                       mode: "baked",
                                     },
                                   ]);
+                                  setMobilizationOverride(false);
                                   setIsDirty(true);
                                 }}
                                 className="px-3 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-100 dark:hover:bg-neutral-700"

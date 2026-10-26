@@ -85,9 +85,13 @@ export default function EngineeringDashboard() {
         <div className="relative mx-auto flex max-w-[1360px] flex-col gap-7 px-4 pt-10 sm:px-8">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div className="flex flex-col gap-2.5">
-              <div className={`${ce.eyebrow} text-[#f8894f]`}>{companyConfig.engineeringName}</div>
-              <h1 className="m-0 text-[30px] font-bold leading-9 text-white sm:text-[40px] sm:leading-[46px]">
-                Engineering
+              <h1 className="m-0 leading-none">
+                <img
+                  src={companyConfig.engineeringLogoPath}
+                  alt={companyConfig.engineeringName}
+                  className="h-14 w-auto sm:h-20"
+                />
+                <span className="sr-only"> Engineering</span>
               </h1>
               <div aria-hidden className={`h-[3px] w-14 ${ce.spark}`} />
             </div>

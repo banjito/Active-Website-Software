@@ -1400,7 +1400,7 @@ export function Announcements() {
                         }`}
                       >
                         <FileText className="h-3.5 w-3.5 inline mr-1.5 align-middle" />
-                        Document Acknowledgment
+                        Policies
                       </button>
                       <button
                         type="button"
@@ -1426,8 +1426,8 @@ export function Announcements() {
                       <>
                         {availableDocs.length === 0 ? (
                           <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                            No document acknowledgments available. Create one in
-                            Compliance &rarr; Document Acknowledgment first.
+                            No policies available. Create one in
+                            Compliance &rarr; Policies first.
                           </p>
                         ) : (
                           <div className="space-y-1 max-h-40 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-none p-2">

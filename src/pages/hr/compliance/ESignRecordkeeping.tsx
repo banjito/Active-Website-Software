@@ -499,7 +499,7 @@ export const ESignRecordkeeping: React.FC = () => {
           ) : filteredRows.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
               No e-sign records found. Records appear when forms are signed via
-              Onboarding E-Sign Forms, Document Acknowledgment, or Offers.
+              Onboarding E-Sign Forms, Policies, or Offers.
             </div>
           ) : (
             <div className="overflow-x-auto border rounded-none">

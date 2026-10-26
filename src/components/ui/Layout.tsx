@@ -24,6 +24,7 @@ import {
   Droplet,
   FileSpreadsheet,
   Plus,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "./Button";
 import { AssignDivisionLeadPopover } from "./AssignDivisionLeadPopover";
@@ -204,11 +205,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Track whether the "Mark Ready to Review" button should be hidden
   // (hidden when status is ready_for_review, approved, or sent)
   const [hideReadyToReview, setHideReadyToReview] = useState(false);
+  // Reviewer's note when a report is sent back as an Issue, so the tech can
+  // read it while fixing the report (it was only visible on the job page).
+  const [reviewIssue, setReviewIssue] = useState<{
+    comments: string;
+    reviewer: string | null;
+    reviewedAt: string | null;
+  } | null>(null);
 
   useEffect(() => {
     let isCancelled = false;
     setIsReportLocked(false); // Reset on route change
     setHideReadyToReview(false);
+    setReviewIssue(null);
 
     const checkLock = async () => {
       if (!isReportPage) return;
@@ -232,18 +241,20 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         const { data: asset } = await supabase
           .schema("neta_ops")
           .from("assets")
-          .select("id, status")
+          .select("id, status, review_comments, reviewed_by, reviewed_at")
           .eq("file_url", fileUrl)
           .maybeSingle();
 
-        let assetStatus: string | null = (asset as any)?.status || null;
+        let match: any = asset || null;
 
         // If exact match didn't find it, try broader suffix match on the last segment (reportId)
-        if (!assetStatus) {
+        if (!match?.status) {
           const { data: assetsBySuffix } = await supabase
             .schema("neta_ops")
             .from("assets")
-            .select("id, status, file_url")
+            .select(
+              "id, status, file_url, review_comments, reviewed_by, reviewed_at",
+            )
             .ilike("file_url", `%/${lastSegment}`);
           if (Array.isArray(assetsBySuffix) && assetsBySuffix.length > 0) {
             const candidate =
@@ -254,17 +265,38 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 (a.file_url || "").startsWith("report:/jobs/"),
               ) ||
               assetsBySuffix[0];
-            assetStatus = (candidate as any)?.status || null;
+            match = candidate;
           }
         }
 
+        const s = String(match?.status || "").toLowerCase();
         if (!isCancelled) {
-          const s = String(assetStatus || "").toLowerCase();
           if (s === "approved" || s === "sent") {
             setIsReportLocked(true);
             setHideReadyToReview(true);
           } else if (s === "ready_for_review") {
             setHideReadyToReview(true);
+          }
+        }
+
+        const comments = String(match?.review_comments || "").trim();
+        if ((s === "issue" || s === "rejected") && comments) {
+          let reviewer: string | null = null;
+          if (match.reviewed_by) {
+            const { data: profile } = await supabase
+              .schema("common")
+              .from("profiles")
+              .select("full_name, email")
+              .eq("id", match.reviewed_by)
+              .maybeSingle();
+            reviewer = profile?.full_name || profile?.email || null;
+          }
+          if (!isCancelled) {
+            setReviewIssue({
+              comments,
+              reviewer,
+              reviewedAt: match.reviewed_at || null,
+            });
           }
         }
       } catch {
@@ -971,6 +1003,30 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const mainContent = (
     <main className="flex-1 min-w-0 p-3 sm:p-4 lg:p-6 overflow-x-auto overflow-y-auto print:overflow-visible">
+      {reviewIssue && (
+        <div className="print:hidden mb-4 px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-none flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 mt-0.5 text-red-600 dark:text-red-400 flex-shrink-0" />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-red-800 dark:text-red-200">
+              Reviewer flagged an issue
+            </p>
+            <p className="text-sm text-red-700 dark:text-red-300 whitespace-pre-wrap break-words">
+              {reviewIssue.comments}
+            </p>
+            {(reviewIssue.reviewer || reviewIssue.reviewedAt) && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                {[
+                  reviewIssue.reviewer,
+                  reviewIssue.reviewedAt &&
+                    new Date(reviewIssue.reviewedAt).toLocaleDateString(),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
       {isReportLocked && (
         <div
           className="report-locked-banner print:hidden mb-4 px-4 py-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-none flex items-center gap-3"

@@ -586,7 +586,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
       items: [
         {
           path: "/hr/compliance/document-acknowledgment",
-          label: "Document Acknowledgment",
+          label: "Policies",
           icon: <FileCheck className="mr-2 h-3.5 w-3.5" />,
         },
         {
@@ -680,15 +680,12 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
         ]
       : [
           { path: "/hr/handbook", label: "Employee Handbook" },
+          { path: "/hr/compliance/document-acknowledgment", label: "Policies" },
           { path: "/hr/employee-files", label: "Employee Files" },
           { path: "/hr/retirement-calculator", label: "401(k) Calculator" },
           { path: "/hr/onboarding/your-onboarding", label: "Your Onboarding" },
           { path: "/hr/data/employee-profiles", label: "Employee Profiles" },
           { path: "/hr/data/org-chart", label: "Org Chart" },
-          {
-            path: "/hr/compliance/document-acknowledgment",
-            label: "Document Acknowledgment",
-          },
           { path: "/hr/self-service/manager-portal", label: "Manager Portal" },
         ];
   const searchableNavItems = [
@@ -881,7 +878,15 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                     icon={<BookOpen className="h-3.5 w-3.5" />}
                     label="Employee Handbook"
                     active={pathMatches(location.pathname, "/hr/handbook")}
-                    emphasis
+                  />
+                  <NavLinkRow
+                    to="/hr/compliance/document-acknowledgment"
+                    icon={<FileCheck className="h-3.5 w-3.5" />}
+                    label="Policies"
+                    active={pathMatches(
+                      location.pathname,
+                      "/hr/compliance/document-acknowledgment",
+                    )}
                   />
                   {isHrFullAccess && (
                     <NavLinkRow
@@ -983,15 +988,6 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                         active={pathMatches(
                           location.pathname,
                           "/hr/data/org-chart",
-                        )}
-                      />
-                      <NavLinkRow
-                        to="/hr/compliance/document-acknowledgment"
-                        icon={<Shield className="h-3.5 w-3.5" />}
-                        label="Document Acknowledgment"
-                        active={pathMatches(
-                          location.pathname,
-                          "/hr/compliance/document-acknowledgment",
                         )}
                       />
                     </div>

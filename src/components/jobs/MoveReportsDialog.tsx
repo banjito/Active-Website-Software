@@ -8,6 +8,10 @@ import {
   type MoveTargetJob,
 } from "@/services/reportMoveService";
 
+// Reports go over in small batches so the bar shows real progress and no single call
+// runs long enough to hit the database's statement timeout. Each batch is all-or-nothing.
+const MOVE_BATCH_SIZE = 5;
+
 /**
  * Moves the selected reports to another job.
  *
@@ -47,6 +51,19 @@ const MoveReportsDialog: React.FC<MoveReportsDialogProps> = ({
   /** Whether the current press began on the backdrop rather than the panel. */
   const pressedBackdrop = useRef(false);
   const jobFieldRef = useRef<HTMLDivElement>(null);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  // Survive a failed batch: ids already sent are skipped on retry, and what did move is
+  // still reported to the page when the dialog closes.
+  const processedIds = useRef<Set<string>>(new Set());
+  const movedSoFar = useRef<MovedReport[]>([]);
+  const movedTo = useRef<MoveTargetJob | null>(null);
+
+  const close = useCallback(() => {
+    if (movedSoFar.current.length > 0 && movedTo.current) {
+      onMoved(movedSoFar.current, movedTo.current);
+    }
+    onClose();
+  }, [onMoved, onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -55,6 +72,10 @@ const MoveReportsDialog: React.FC<MoveReportsDialogProps> = ({
     setReason("");
     setError(null);
     setShowResults(false);
+    setProgress(null);
+    processedIds.current = new Set();
+    movedSoFar.current = [];
+    movedTo.current = null;
   }, [open]);
 
   // The suggestion list floats over the form, so a click anywhere else dismisses it.
@@ -73,7 +94,7 @@ const MoveReportsDialog: React.FC<MoveReportsDialogProps> = ({
     if (!open) return;
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !busy) onClose();
+      if (e.key === "Escape" && !busy) close();
     };
     document.addEventListener("keydown", onKeyDown);
 
@@ -84,7 +105,7 @@ const MoveReportsDialog: React.FC<MoveReportsDialogProps> = ({
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
     };
-  }, [open, busy, onClose]);
+  }, [open, busy, close]);
 
   useEffect(() => {
     if (!open) return;
@@ -111,23 +132,38 @@ const MoveReportsDialog: React.FC<MoveReportsDialogProps> = ({
 
   const submit = useCallback(async () => {
     if (!job || reports.length === 0) return;
+    const remaining = reports.filter((r) => !processedIds.current.has(r.id));
+    const total = reports.length;
     setBusy(true);
     setError(null);
+    setProgress({ done: total - remaining.length, total });
     try {
-      const moved = await moveReportsToJob({
-        assetIds: reports.map((r) => r.id),
-        sourceJobId,
-        targetJobId: job.id,
-        reason,
-      });
-      onMoved(moved, job);
-      onClose();
+      for (let i = 0; i < remaining.length; i += MOVE_BATCH_SIZE) {
+        const batch = remaining.slice(i, i + MOVE_BATCH_SIZE);
+        const moved = await moveReportsToJob({
+          assetIds: batch.map((r) => r.id),
+          sourceJobId,
+          targetJobId: job.id,
+          reason,
+        });
+        batch.forEach((r) => processedIds.current.add(r.id));
+        movedSoFar.current = [...movedSoFar.current, ...moved];
+        movedTo.current = job;
+        setProgress({ done: processedIds.current.size, total });
+      }
+      close();
     } catch (err) {
-      setError(String((err as Error)?.message || err));
+      const message = String((err as Error)?.message || err);
+      const done = processedIds.current.size;
+      setError(
+        done > 0
+          ? `Moved ${done} of ${total}. The rest are still on this job (${message}). Click Move to try the rest again.`
+          : message,
+      );
     } finally {
       setBusy(false);
     }
-  }, [job, reports, sourceJobId, reason, onMoved, onClose]);
+  }, [job, reports, sourceJobId, reason, close]);
 
   if (!open) return null;
 
@@ -149,7 +185,7 @@ const MoveReportsDialog: React.FC<MoveReportsDialogProps> = ({
         pressedBackdrop.current = e.target === e.currentTarget;
       }}
       onClick={(e) => {
-        if (e.target === e.currentTarget && pressedBackdrop.current && !busy) onClose();
+        if (e.target === e.currentTarget && pressedBackdrop.current && !busy) close();
         pressedBackdrop.current = false;
       }}
     >
@@ -285,12 +321,29 @@ const MoveReportsDialog: React.FC<MoveReportsDialogProps> = ({
               {error}
             </div>
           )}
+
+          {busy && progress && (
+            <div>
+              <div className="mb-1 flex justify-between text-xs text-neutral-500 dark:text-neutral-400">
+                <span>Moving reports…</span>
+                <span>
+                  {progress.done} of {progress.total}
+                </span>
+              </div>
+              <div className="h-2 w-full rounded-none bg-neutral-200 dark:bg-neutral-700">
+                <div
+                  className="h-2 rounded-none bg-brand transition-all duration-300"
+                  style={{ width: `${(progress.done / progress.total) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-6 flex justify-end gap-2">
           <button
             type="button"
-            onClick={onClose}
+            onClick={close}
             disabled={busy}
             className="rounded-none border border-neutral-200 bg-white px-3.5 py-2 text-sm font-medium text-neutral-700 hover:border-neutral-300 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
           >
@@ -302,7 +355,9 @@ const MoveReportsDialog: React.FC<MoveReportsDialogProps> = ({
             disabled={busy || !job || count === 0}
             className="rounded-none bg-brand px-3.5 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-50"
           >
-            {busy ? "Moving…" : `Move ${count} ${plural}`}
+            {busy
+              ? `Moving ${progress?.done ?? 0} of ${count}…`
+              : `Move ${count} ${plural}`}
           </button>
         </div>
       </div>

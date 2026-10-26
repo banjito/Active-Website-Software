@@ -2490,6 +2490,10 @@ export default function JobDetail() {
   const [reportAuditUsers, setReportAuditUsers] = useState<
     Record<string, string>
   >({});
+  const [auditSearch, setAuditSearch] = useState("");
+  const [auditStatusFilter, setAuditStatusFilter] = useState("all");
+  const [auditTypeFilter, setAuditTypeFilter] = useState("all");
+  const [auditLocationFilter, setAuditLocationFilter] = useState("all");
 
   useEffect(() => {
     let cancelled = false;
@@ -4118,6 +4122,72 @@ export default function JobDetail() {
           ? status.charAt(0).toUpperCase() + status.slice(1)
           : "Not Started";
     }
+  };
+
+  const auditFilterOptions = useMemo(() => {
+    const unique = (values: string[]) =>
+      Array.from(new Set(values.filter(Boolean))).sort((a, b) =>
+        a.localeCompare(b, undefined, { sensitivity: "base" }),
+      );
+    return {
+      statuses: unique(reportAuditRows.map((r) => r.status)),
+      types: unique(reportAuditRows.map((r) => r.reportType)),
+      locations: unique(reportAuditRows.map((r) => r.substation)),
+    };
+  }, [reportAuditRows]);
+
+  const filteredReportAuditRows = useMemo(() => {
+    const searchLower = auditSearch.trim().toLowerCase();
+    return reportAuditRows.filter((row) => {
+      if (auditStatusFilter !== "all" && row.status !== auditStatusFilter)
+        return false;
+      if (auditTypeFilter !== "all" && row.reportType !== auditTypeFilter)
+        return false;
+      if (
+        auditLocationFilter !== "all" &&
+        row.substation !== auditLocationFilter
+      )
+        return false;
+      if (!searchLower) return true;
+      // Search names, people, and the nameplate serials of the equipment tested
+      const haystack = [
+        row.reportType,
+        row.assetIdentifier,
+        row.substation,
+        row.asset.name,
+        getAuditStatusLabel(row.status),
+        getAuditUserName(row.submittedBy),
+        getAuditUserName(row.approvedBy),
+        getAuditUserName(row.sentBy),
+        ...(assetSerialNumbers[row.asset.id] || []),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(searchLower);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    reportAuditRows,
+    auditSearch,
+    auditStatusFilter,
+    auditTypeFilter,
+    auditLocationFilter,
+    assetSerialNumbers,
+    users,
+    reportAuditUsers,
+  ]);
+
+  const hasAuditFilters =
+    auditSearch.trim() !== "" ||
+    auditStatusFilter !== "all" ||
+    auditTypeFilter !== "all" ||
+    auditLocationFilter !== "all";
+
+  const clearAuditFilters = () => {
+    setAuditSearch("");
+    setAuditStatusFilter("all");
+    setAuditTypeFilter("all");
+    setAuditLocationFilter("all");
   };
 
   async function fetchAdjacentJobIds(currentJobId: string) {
@@ -12955,15 +13025,95 @@ export default function JobDetail() {
                       <CardTitle>Report Audit</CardTitle>
                     </CardHeader>
                     <CardContent>
+                      {reportAuditRows.length > 0 && (
+                        <div className="mb-4 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <input
+                              type="text"
+                              aria-label="Search reports"
+                              placeholder="Search..."
+                              value={auditSearch}
+                              onChange={(e) => setAuditSearch(e.target.value)}
+                              className="w-full sm:w-80 px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand focus:outline-none dark:bg-dark-150 dark:text-white text-sm"
+                            />
+                            <select
+                              aria-label="Filter by status"
+                              value={auditStatusFilter}
+                              onChange={(e) =>
+                                setAuditStatusFilter(e.target.value)
+                              }
+                              className="px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm"
+                            >
+                              <option value="all">All statuses</option>
+                              {auditFilterOptions.statuses.map((s) => (
+                                <option key={s} value={s}>
+                                  {getAuditStatusLabel(s)}
+                                </option>
+                              ))}
+                            </select>
+                            <select
+                              aria-label="Filter by report type"
+                              value={auditTypeFilter}
+                              onChange={(e) =>
+                                setAuditTypeFilter(e.target.value)
+                              }
+                              className="px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm max-w-xs"
+                            >
+                              <option value="all">All report types</option>
+                              {auditFilterOptions.types.map((t) => (
+                                <option key={t} value={t}>
+                                  {t}
+                                </option>
+                              ))}
+                            </select>
+                            {auditFilterOptions.locations.length > 0 && (
+                              <select
+                                aria-label="Filter by location"
+                                value={auditLocationFilter}
+                                onChange={(e) =>
+                                  setAuditLocationFilter(e.target.value)
+                                }
+                                className="px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm max-w-xs"
+                              >
+                                <option value="all">All locations</option>
+                                {auditFilterOptions.locations.map((l) => (
+                                  <option key={l} value={l}>
+                                    {l}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                            {hasAuditFilters && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                leftIcon={<X className="h-4 w-4" />}
+                                onClick={clearAuditFilters}
+                              >
+                                Clear
+                              </Button>
+                            )}
+                          </div>
+                          <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                            Showing {filteredReportAuditRows.length} of{" "}
+                            {reportAuditRows.length} reports
+                          </div>
+                        </div>
+                      )}
                       {reportAuditRows.length === 0 ? (
                         <div className="text-center py-6 text-neutral-500 dark:text-white">
                           <p>No reports found for this project.</p>
+                        </div>
+                      ) : filteredReportAuditRows.length === 0 ? (
+                        <div className="text-center py-6 text-neutral-500 dark:text-white">
+                          <p>No reports match these filters.</p>
                         </div>
                       ) : (
                         <div className="overflow-x-auto">
                           <Table>
                             <TableHeader>
                               <TableRow>
+                                <TableHead className="w-12">Open</TableHead>
                                 <TableHead>Report Type</TableHead>
                                 <TableHead>Asset Identifier</TableHead>
                                 <TableHead>Status</TableHead>
@@ -12974,8 +13124,31 @@ export default function JobDetail() {
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {reportAuditRows.map((row) => (
+                              {filteredReportAuditRows.map((row) => (
                                 <TableRow key={row.asset.id}>
+                                  <TableCell>
+                                    {row.asset.file_url.startsWith(
+                                      "report:",
+                                    ) ? (
+                                      <Link
+                                        to={getReportEditPath(row.asset)}
+                                        className="inline-flex text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                        aria-label="Open report"
+                                      >
+                                        <SquareArrowOutUpRight className="h-5 w-5" />
+                                      </Link>
+                                    ) : (
+                                      <a
+                                        href={row.asset.file_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                        aria-label="Open report"
+                                      >
+                                        <SquareArrowOutUpRight className="h-5 w-5" />
+                                      </a>
+                                    )}
+                                  </TableCell>
                                   <TableCell className="min-w-[220px]">
                                     <div>
                                       {row.reportType || "Untitled Report"}

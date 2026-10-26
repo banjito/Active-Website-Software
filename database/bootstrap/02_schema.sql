@@ -4847,12 +4847,22 @@ begin
   begin v_report_type := (to_jsonb(NEW)->>'report_type'); exception when others then v_report_type := null; end;
   begin v_title := (to_jsonb(NEW)->>'title'); exception when others then v_title := null; end;
 
-  -- Determine next version number for this source row within this table
-  select coalesce(max(version), 0) + 1 into v_next_version
-  from neta_ops.backup_reports br
-  where br.source_schema = tg_table_schema
-    and br.source_table = tg_table_name
-    and (v_source_id is not distinct from br.source_id);
+  -- Determine next version number for this source row within this table.
+  -- Plain "=" (not IS NOT DISTINCT FROM) so idx_backup_reports_lookup is used;
+  -- see database/migrations/fix_backup_snapshot_version_lookup.sql.
+  if v_source_id is null then
+    select coalesce(max(version), 0) + 1 into v_next_version
+    from neta_ops.backup_reports br
+    where br.source_schema = tg_table_schema
+      and br.source_table = tg_table_name
+      and br.source_id is null;
+  else
+    select coalesce(max(version), 0) + 1 into v_next_version
+    from neta_ops.backup_reports br
+    where br.source_schema = tg_table_schema
+      and br.source_table = tg_table_name
+      and br.source_id = v_source_id;
+  end if;
 
   insert into neta_ops.backup_reports(
     source_schema, source_table, source_id, row_pk, action, job_id, report_type, title, data, version, edited_by

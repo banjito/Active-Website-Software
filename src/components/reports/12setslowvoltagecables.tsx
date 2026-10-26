@@ -161,76 +161,80 @@ const CONFIGURATION_OPTIONS = ["Select One", "3 wire", "4 wire"];
 // pixels and scrolls sideways when the window is narrow. The percentage widths
 // in the colgroup are what print needs, and squeeze the fields far too small to
 // read while filling them out. Print styles are unaffected by this block.
+// The review window preview is also a screen, but it renders the print
+// styles (html gets .print-emulated or .force-print), so these must stay off
+// there or the table spills past the page. :where() adds no specificity.
+const LIVE_EDIT = ":where(html:not(.print-emulated):not(.force-print))";
 const SCREEN_TABLE_STYLES = `
       @media screen {
-        .low-voltage-cable-ats-report .electrical-tests-table {
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table {
           min-width: 1320px;
         }
 
-        .low-voltage-cable-ats-report .electrical-tests-table th,
-        .low-voltage-cable-ats-report .electrical-tests-table td,
-        .low-voltage-cable-ats-report .electrical-tests-table input,
-        .low-voltage-cable-ats-report .electrical-tests-table select,
-        .low-voltage-cable-ats-report .electrical-tests-table textarea,
-        .low-voltage-cable-ats-report .electrical-tests-table .text-xs {
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table th,
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table td,
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table input,
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table select,
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table textarea,
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table .text-xs {
           font-size: 13px !important;
           line-height: 1.3 !important;
         }
 
         /* Fields keep their own padding only; the cell gives up its padding so
            the value has the full column width to sit in. */
-        .low-voltage-cable-ats-report .electrical-tests-table td {
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table td {
           padding: 2px !important;
         }
 
-        .low-voltage-cable-ats-report .electrical-tests-table input,
-        .low-voltage-cable-ats-report .electrical-tests-table select,
-        .low-voltage-cable-ats-report .electrical-tests-table textarea {
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table input,
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table select,
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table textarea {
           padding: 4px 2px !important;
           min-height: 32px !important;
         }
 
-        .low-voltage-cable-ats-report .electrical-tests-table textarea {
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table textarea {
           min-height: 46px !important;
         }
 
         /* Keep the From value clear of the remove-row button */
-        .low-voltage-cable-ats-report .electrical-tests-table tbody tr td:first-child textarea {
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table tbody tr td:first-child textarea {
           padding-left: 20px !important;
         }
 
         /* Highlight the field being typed into */
-        .low-voltage-cable-ats-report .electrical-tests-table input:focus,
-        .low-voltage-cable-ats-report .electrical-tests-table select:focus,
-        .low-voltage-cable-ats-report .electrical-tests-table textarea:focus {
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table input:focus,
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table select:focus,
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table textarea:focus {
           outline: 2px solid var(--brand) !important;
           outline-offset: -2px !important;
         }
 
         /* From / To */
-        .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(1),
-        .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(2) {
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(1),
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(2) {
           width: 118px !important;
         }
         /* Size / Config (each rendered as a colspan=2 cell) */
-        .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(3),
-        .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(4) {
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(3),
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(4) {
           width: 48px !important;
         }
         /* RDG / 20°C label */
-        .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(5) {
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(5) {
           width: 46px !important;
         }
         /* Ten insulation resistance readings */
-        .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(n+6):nth-child(-n+15) {
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(n+6):nth-child(-n+15) {
           width: 74px !important;
         }
         /* Cont. */
-        .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(16) {
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(16) {
           width: 80px !important;
         }
         /* Results */
-        .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(17) {
+        ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table colgroup col:nth-child(17) {
           width: 120px !important;
         }
       }

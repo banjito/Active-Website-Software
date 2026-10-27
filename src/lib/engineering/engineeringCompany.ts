@@ -2,13 +2,13 @@ import { supabase } from "@/lib/supabase";
 
 // Engineering-division jobs belong to AMP or to the engineering company (C&E
 // Design): neta_ops.jobs.engineering_company, see
-// database/migrations/add_job_engineering_company.sql. C&E jobs open on the
-// engineering portal's job page instead of the normal one.
+// database/migrations/add_job_engineering_company.sql. Both kinds open on the
+// engineering portal's job page.
 
 /** Postgres "column does not exist": the instance has not run the migration. */
 export const UNDEFINED_COLUMN = "42703";
 
-/** Where every engineering job opens; the route picks the C&E or AMP page. */
+/** Where every engineering job opens (AMP or C&E). */
 export const engineeringJobPath = (id: string) => `/engineering/jobs/${id}`;
 
 /**

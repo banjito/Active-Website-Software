@@ -1,11 +1,23 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, Download, FileText, Loader2, RotateCcw, Upload, X } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Download,
+  FileText,
+  Loader2,
+  RotateCcw,
+  Save,
+  Upload,
+  X,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import {
-  POWER_SYSTEM_STUDY,
   templateFields,
   templatePdfSlots,
+  type ReportTemplate,
 } from "@/lib/engineering/typst/templates";
+import { isMissingTable, jobFieldValues, STORAGE_NOT_SET_UP } from "@/lib/engineering/reportStore";
+import { measurePdfMargins } from "@/lib/engineering/typst/pdfMargins";
 import {
   compileTypstPdf,
   setTypstFile,
@@ -14,42 +26,13 @@ import {
 import { ce } from "../engineeringTheme";
 import PdfPreview, { type PreviewClick } from "./PdfPreview";
 
-const template = POWER_SYSTEM_STUDY;
-const DRAFT_KEY = `ampos.engineeringReport.${template.id}`;
 const FIRST_FILES = ["/main.typ", "/project.typ", "/style.typ"];
 // Typst wants Helvetica first and falls back to Arimo; that's expected here.
 const IGNORED_WARNING = /unknown font family/i;
 
-interface Draft {
-  /** Only the files that differ from the template. */
-  sources?: Record<string, string>;
-  values?: Record<string, string>;
-}
-
-// Edits are kept in this browser until reports are saved to jobs.
-const readDraft = (): Draft => {
-  try {
-    return JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}");
-  } catch {
-    return {};
-  }
-};
-
-const writeDraft = (draft: Draft) => {
-  try {
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-  } catch {
-    // Private window or storage full: edits just aren't kept.
-  }
-};
-
-const today = () =>
-  new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-
-/** "616 Church St NE, Decatur, AL 35601" -> "Decatur, AL". */
-const cityState = (address?: string | null) => {
-  const m = address?.trim().match(/(?:^|,)\s*([^,]+?)\s*,\s*([A-Z]{2})(?:\s+\d{5}(?:-\d{4})?)?$/);
-  return m ? `${m[1]}, ${m[2]}` : "";
+const sameRecord = (a: Record<string, string>, b: Record<string, string>) => {
+  const keys = Object.keys(a);
+  return keys.length === Object.keys(b).length && keys.every((k) => a[k] === b[k]);
 };
 
 /** "range" is "line:col-line:col" counted from 0. */
@@ -128,22 +111,77 @@ interface JobOption {
   fields: Record<string, string>;
 }
 
+export interface Saved {
+  name: string;
+  sources: Record<string, string>;
+  values: Record<string, string>;
+}
+
+interface ReportEditorProps {
+  /** Small label above the name: "Template" or "Report". */
+  kind: string;
+  name: string;
+  /** Show the name as a text box so it can be renamed. */
+  nameEditable?: boolean;
+  /** The bundled template that supplies pictures and field labels. */
+  base: ReportTemplate;
+  /** The files and field values as last saved. */
+  sources: Record<string, string>;
+  values?: Record<string, string>;
+  /** Offer "Fill fields from a job", to preview a template with real data. */
+  jobPicker?: boolean;
+  /** Field values are part of what's saved (reports), not just a preview (templates). */
+  saveValues?: boolean;
+  /** Save button: stores the current state; resolve false if nothing was saved. */
+  onSave?: (saved: Saved) => Promise<void | false>;
+  saveLabel?: string;
+  /** Save even with no changes (e.g. "Save as new template" on a built-in one). */
+  saveWhenClean?: boolean;
+  onBack?: () => void;
+  backLabel?: string;
+  /** More header buttons, e.g. Delete. */
+  actions?: React.ReactNode;
+}
+
 interface UploadedPdf {
   name: string;
   pages: number;
+  /** Blank border, "left,right,top,bottom" (see measurePdfMargins). */
+  margins: string;
 }
 
 /**
  * Typst report editor: template files on the left, the file being edited in
  * the middle, the built PDF on the right. Job fields and SKM PDFs feed the
- * template; the PDF rebuilds a moment after each change.
+ * template; the PDF rebuilds a moment after each change. Remount it (key) to
+ * open something else.
  */
-export default function ReportEditor() {
-  const [sources, setSources] = useState<Record<string, string>>(() => ({
-    ...template.sources,
-    ...readDraft().sources,
+export default function ReportEditor({
+  kind,
+  name: initialName,
+  nameEditable = false,
+  base,
+  sources: initialSources,
+  values: initialValues = {},
+  jobPicker = false,
+  saveValues = true,
+  onSave,
+  saveLabel = "Save",
+  saveWhenClean = false,
+  onBack,
+  backLabel = "Back",
+  actions,
+}: ReportEditorProps) {
+  const [saved, setSaved] = useState<Saved>(() => ({
+    name: initialName,
+    sources: initialSources,
+    values: initialValues,
   }));
-  const [values, setValues] = useState<Record<string, string>>(() => readDraft().values ?? {});
+  const [name, setName] = useState(initialName);
+  const [sources, setSources] = useState<Record<string, string>>(() => ({ ...initialSources }));
+  const [values, setValues] = useState<Record<string, string>>(() => ({ ...initialValues }));
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [activePath, setActivePath] = useState("/main.typ");
   const [cursorLine, setCursorLine] = useState(1);
   const [uploads, setUploads] = useState<Record<string, UploadedPdf>>({});
@@ -157,6 +195,11 @@ export default function ReportEditor() {
   const [buildSeconds, setBuildSeconds] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const editorRef = useRef<HTMLTextAreaElement>(null);
+
+  const dirty =
+    name.trim() !== saved.name ||
+    !sameRecord(sources, saved.sources) ||
+    (saveValues && !sameRecord(values, saved.values));
 
   const fields = useMemo(() => templateFields(sources["/project.typ"] ?? ""), [sources]);
   const pdfSlots = useMemo(() => templatePdfSlots(sources), [sources]);
@@ -174,7 +217,10 @@ export default function ReportEditor() {
   // A field left untouched uses the template's sample; "" prints blank.
   const inputs = useMemo(() => {
     const next: Record<string, string> = { ...values };
-    for (const [path, upload] of Object.entries(uploads)) next[`pages:${path}`] = String(upload.pages);
+    for (const [path, upload] of Object.entries(uploads)) {
+      next[`pages:${path}`] = String(upload.pages);
+      next[`margins:${path}`] = upload.margins;
+    }
     return next;
   }, [values, uploads]);
 
@@ -188,7 +234,7 @@ export default function ReportEditor() {
     let cancelled = false;
     (async () => {
       await Promise.all(
-        Object.entries(template.assets).map(async ([path, url]) => {
+        Object.entries(base.assets).map(async ([path, url]) => {
           const res = await fetch(url);
           if (!res.ok) throw new Error(`Couldn't load ${fileLabel(path)}`);
           await setTypstFile(path, new Uint8Array(await res.arrayBuffer()));
@@ -206,6 +252,7 @@ export default function ReportEditor() {
 
   // Engineering jobs for "Fill fields from a job".
   useEffect(() => {
+    if (!jobPicker) return;
     (async () => {
       const { data, error } = await supabase
         .schema("neta_ops")
@@ -232,28 +279,22 @@ export default function ReportEditor() {
         rows.map((j: any) => ({
           id: j.id,
           label: [j.job_number, j.title].filter(Boolean).join(" · ") || "Untitled job",
-          fields: {
-            projectnumber: j.job_number || "",
-            sitename: j.location || j.title || "",
-            sitelocation: cityState(j.site_address),
-            preparedfor: customerName.get(j.customer_id) || "",
-            mydate: today(),
-          },
+          fields: jobFieldValues({ ...j, customerName: customerName.get(j.customer_id) }),
         })),
       );
     })().catch((error) => console.warn("Error loading engineering jobs:", error));
-  }, []);
+  }, [jobPicker]);
 
-  // Keep edits in this browser (only files that differ from the template).
+  // Warn before closing the tab with unsaved changes.
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const changed = Object.fromEntries(
-        Object.entries(sources).filter(([path, text]) => template.sources[path] !== text),
-      );
-      writeDraft({ sources: changed, values });
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [sources, values]);
+    if (!dirty || !onSave) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty, onSave]);
 
   // Build a moment after the last change. If a build is already running,
   // run once more when it finishes so the preview always catches up.
@@ -313,8 +354,13 @@ export default function ReportEditor() {
       const { PDFDocument } = await import("pdf-lib");
       const doc = await PDFDocument.load(bytes, { ignoreEncryption: true, updateMetadata: false });
       const pages = doc.getPageCount();
+      // A PDF pdf.js can't draw still goes in, just without trimming.
+      const margins = await measurePdfMargins(bytes).catch((error) => {
+        console.warn("Couldn't measure PDF margins:", error);
+        return "0,0,0,0";
+      });
       await setTypstFile(path, bytes);
-      setUploads((prev) => ({ ...prev, [path]: { name: file.name, pages } }));
+      setUploads((prev) => ({ ...prev, [path]: { name: file.name, pages, margins } }));
     } catch (error) {
       console.error("PDF upload failed:", error);
       setUploadError(`${file.name} couldn't be read as a PDF.`);
@@ -330,9 +376,33 @@ export default function ReportEditor() {
     await setTypstFile(path, null).catch((error) => console.warn("Error removing PDF:", error));
   };
 
-  const resetFiles = () => {
-    if (!window.confirm("Put every file back to the original template? Your edits will be lost.")) return;
-    setSources({ ...template.sources });
+  const discardChanges = () => {
+    if (!window.confirm("Throw away your changes since the last save?")) return;
+    setName(saved.name);
+    setSources({ ...saved.sources });
+    setValues({ ...saved.values });
+  };
+
+  const save = async () => {
+    if (!onSave) return;
+    const next = { name: name.trim() || saved.name, sources, values };
+    setSaving(true);
+    setSaveError(null);
+    try {
+      if ((await onSave(next)) === false) return;
+      setName(next.name);
+      setSaved(next);
+    } catch (error) {
+      console.error("Error saving:", error);
+      setSaveError(isMissingTable(error) ? STORAGE_NOT_SET_UP : "Couldn't save. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const back = () => {
+    if (dirty && onSave && !window.confirm("Leave without saving? Your changes will be lost.")) return;
+    onBack?.();
   };
 
   const fieldValue = (key: string) =>
@@ -405,7 +475,9 @@ export default function ReportEditor() {
   };
 
   let status: React.ReactNode;
-  if (notice) {
+  if (saveError) {
+    status = <span className="text-red-700 dark:text-red-300">{saveError}</span>;
+  } else if (notice) {
     status = <span className={ce.accentInk}>{notice}</span>;
   } else if (engineError) {
     status = <span className="text-red-700 dark:text-red-300">PDF engine problem: {engineError}</span>;
@@ -439,9 +511,27 @@ export default function ReportEditor() {
   return (
     <div className={`flex flex-col border ${ce.border} ${ce.surface}`}>
       <div className={`flex flex-wrap items-center gap-3 border-b px-4 py-3 ${ce.border}`}>
-        <div className="mr-auto min-w-0">
-          <div className={`${ce.eyebrow} ${ce.muted}`}>Template</div>
-          <div className="truncate text-base font-bold">{template.name}</div>
+        {onBack && (
+          <button type="button" onClick={back} className={`${ce.ghostButton} h-10 px-3`}>
+            <ArrowLeft className="h-4 w-4" aria-hidden />
+            {backLabel}
+          </button>
+        )}
+        <div className="mr-auto min-w-0 flex-1">
+          <div className={`${ce.eyebrow} ${ce.muted}`}>
+            {kind}
+            {dirty && onSave && <span className={`ml-2 normal-case tracking-normal ${ce.accentInk}`}>unsaved changes</span>}
+          </div>
+          {nameEditable ? (
+            <input
+              aria-label={`${kind} name`}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={`${ce.field} mt-1 h-9 w-full max-w-[420px] px-2 text-base font-bold`}
+            />
+          ) : (
+            <div className="truncate text-base font-bold">{name}</div>
+          )}
         </div>
         {jobs.length > 0 && (
           <select
@@ -458,19 +548,37 @@ export default function ReportEditor() {
             ))}
           </select>
         )}
-        <button type="button" onClick={resetFiles} className={`${ce.ghostButton} h-10 px-4`}>
-          <RotateCcw className="h-4 w-4" aria-hidden />
-          Reset files
-        </button>
+        {actions}
+        {dirty && (
+          <button type="button" onClick={discardChanges} className={`${ce.ghostButton} h-10 px-4`}>
+            <RotateCcw className="h-4 w-4" aria-hidden />
+            Discard changes
+          </button>
+        )}
         <button
           type="button"
           onClick={downloadPdf}
           disabled={!pdf || errors.length > 0}
-          className={`${ce.primaryButton} h-10 px-4`}
+          className={`${ce.ghostButton} h-10 px-4`}
         >
           <Download className="h-4 w-4" aria-hidden />
           Download PDF
         </button>
+        {onSave && (
+          <button
+            type="button"
+            onClick={save}
+            disabled={saving || (!dirty && !saveWhenClean)}
+            className={`${ce.primaryButton} h-10 px-4`}
+          >
+            {saving ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            ) : (
+              <Save className="h-4 w-4" aria-hidden />
+            )}
+            {saveLabel}
+          </button>
+        )}
       </div>
 
       <div className="grid lg:h-[calc(100vh-9rem)] lg:min-h-[640px] lg:grid-cols-[264px_minmax(0,1fr)_minmax(0,1.1fr)]">
@@ -490,7 +598,7 @@ export default function ReportEditor() {
               >
                 <FileText className="h-4 w-4 shrink-0" aria-hidden />
                 <span className="truncate">{fileLabel(path)}</span>
-                {template.sources[path] !== sources[path] && (
+                {saved.sources[path] !== sources[path] && (
                   <span className={`ml-auto text-xs ${path === activePath ? "" : ce.accentInk}`}>edited</span>
                 )}
               </button>
@@ -512,7 +620,7 @@ export default function ReportEditor() {
           <div className="mb-6 flex flex-col gap-3">
             {fields.map(({ key, sample }) => (
               <label key={key} className="flex flex-col gap-1 text-xs font-semibold">
-                <span className={ce.muted}>{template.fieldLabels[key] ?? key}</span>
+                <span className={ce.muted}>{base.fieldLabels[key] ?? key}</span>
                 <input
                   value={values[key] ?? ""}
                   placeholder={values[key] === "" ? "Blank in the report" : sample}

@@ -103,8 +103,8 @@
   background: place(left + top, rect(width: 0.8cm, height: 100%, fill: myorange)),
   {
     set align(center)
-    set text(weight: "bold")
-    set par(spacing: 0.4em)
+    set text(weight: "bold", hyphenate: false)
+    set par(spacing: 0.4em, justify: false)
     image("/Pictures/Cover Header.png", width: 100%)
     text(fs.small, preparedbyaddress)
     body
@@ -136,8 +136,8 @@
 // Title page in front of each SKM section.
 #let title-page(heading, logo-width) = page(header: none, footer: none, {
   set align(center)
-  set text(weight: "bold")
-  set par(spacing: 0.4em)
+  set text(weight: "bold", hyphenate: false)
+  set par(spacing: 0.4em, justify: false)
   v(1cm)
   text(fs.large)[Report \##projectnumber]
   v(0.25cm)
@@ -156,9 +156,10 @@
 // header, numbered from 2 ("Page x"). `heading` is the title-page text when
 // it differs from the header. Landscape sections print on ledger paper
 // (17 x 11 in). `bare` drops the header and footer and fills the page (arc
-// flash labels).
+// flash labels); bare landscape pages stay letter, the labels' sticker size.
 #let section(title, body, heading: none, landscape: false, logo-width: 25%, bare: false) = {
-  set page(width: 17in, height: 11in, margin: (top: 1.6cm, bottom: 2.8cm, x: 2cm)) if landscape
+  set page(width: 17in, height: 11in, margin: (top: 1.6cm, bottom: 2.8cm, x: 2cm)) if landscape and not bare
+  set page(flipped: true) if landscape and bare
   set page(
     header: page-header(title),
     footer: page-footer(context [Page #counter(page).display()]),
@@ -169,25 +170,28 @@
   body
 }
 
-// One PDF page, as big as the page allows. `trim` cuts the PDF's own blank
-// margins off (a fraction of its width and height from each side), so the
-// table inside fills more of the page.
+// One PDF page, as big as the page allows. `trim` is the PDF's own blank
+// border (left, right, top, bottom as fractions of its page); it is cut off so
+// the table inside fills more of the page.
 #let pdf-page(file, p, trim) = layout(area => {
+  let (l, r, t, b) = trim
   let natural = measure(image(file, page: p))
-  let w = natural.width * (1 - 2 * trim.x)
-  let h = natural.height * (1 - 2 * trim.y)
+  let w = natural.width * (1 - l - r)
+  let h = natural.height * (1 - t - b)
   let scale = calc.min(area.width / w, area.height / h) * 0.999
   align(center + horizon, box(width: w * scale, height: h * scale, clip: true, place(
     top + left,
-    dx: -natural.width * trim.x * scale,
-    dy: -natural.height * trim.y * scale,
+    dx: -natural.width * l * scale,
+    dy: -natural.height * t * scale,
     // Both sides set, or Typst shrinks the image to fit the box.
     image(file, page: p, width: natural.width * scale, height: natural.height * scale),
   )))
 })
 
-// An SKM section: a title page, then every page of the PDF.
-#let attachment(title, file, trim: (x: 0, y: 0), ..options) = section(title, ..options, {
+// An SKM section: a title page, then every page of the PDF, trimmed of its
+// blank border (bare pages are left whole).
+#let attachment(title, file, ..options) = section(title, ..options, {
+  let trim = if options.named().at("bare", default: false) { (0, 0, 0, 0) } else { pdf-margins(file) }
   for p in range(1, pdf-page-count(file) + 1) {
     pagebreak(weak: true)
     pdf-page(file, p, trim)

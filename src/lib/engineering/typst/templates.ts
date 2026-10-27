@@ -60,3 +60,43 @@ export const templatePdfSlots = (sources: Record<string, string>) =>
       path: m[2],
     })),
   );
+
+/** Templates bundled with ampOS. Saved templates start from one of these. */
+export const BUILT_IN_TEMPLATES: ReportTemplate[] = [POWER_SYSTEM_STUDY];
+
+/** The bundled template that supplies a saved template's pictures and field labels. */
+export const baseTemplateFor = (id: string | null | undefined) =>
+  BUILT_IN_TEMPLATES.find((t) => t.id === id) ?? POWER_SYSTEM_STUDY;
+
+/** Starting files for a "Blank" new template: a title block and a few job fields. */
+export const BLANK_SOURCES: Record<string, string> = {
+  "/main.typ": `#import "project.typ": *
+
+#set page(paper: "us-letter", margin: 1in)
+#set text(font: ("Helvetica", "Arimo"), size: 11pt)
+
+#align(center)[
+  #text(20pt, weight: "bold")[#reporttypetitle]
+  #v(6pt)
+  #sitename · Project #projectnumber
+  #v(2pt)
+  Prepared for #preparedfor · #mydate
+]
+
+= Introduction
+
+Write the report here.
+`,
+  "/project.typ": `// PROJECT DEFINITIONS
+// ampOS fills these in from the job when it builds the PDF. The values after
+// each name are only used when this template is compiled by hand.
+
+#let field(key, fallback) = sys.inputs.at(key, default: fallback)
+
+#let reporttypetitle = field("reporttypetitle", "Report title")
+#let projectnumber = field("projectnumber", "00000")
+#let mydate = field("mydate", "January 1, 2026")
+#let sitename = field("sitename", "Site name")
+#let preparedfor = field("preparedfor", "Customer")
+`,
+};

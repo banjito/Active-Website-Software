@@ -26,3 +26,9 @@
 // commented-out \includepdf lines in the LaTeX version.
 // By hand: typst compile main.typ --input "pages:/PDF/TCCs.pdf=5"
 #let pdf-page-count(path) = int(sys.inputs.at("pages:" + path, default: "0"))
+
+// The blank border around an SKM PDF's pages: left, right, top and bottom, as
+// fractions of the page. ampOS measures it when the PDF is uploaded, and the
+// report trims it off so the tables fill the page.
+// By hand: --input "margins:/PDF/TCCs.pdf=0.02,0.02,0.03,0.03"
+#let pdf-margins(path) = sys.inputs.at("margins:" + path, default: "0,0,0,0").split(",").map(float)

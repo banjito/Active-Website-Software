@@ -1,7 +1,7 @@
 -- Which company runs an engineering job: AMP or the engineering company (C&E Design).
 --
--- Why: engineering-division jobs can belong to AMP or to C&E. A C&E job opens on the
--- engineering portal's job page (no NETA reports); an AMP one keeps the normal job page.
+-- Why: engineering-division jobs can belong to AMP or to C&E. Both open on the engineering
+-- portal's job page; the engineering home page switches between AMP and C&E jobs.
 -- Every job starts as AMP; anyone who can edit the job can flip it.
 --
 --   neta_ops.jobs.engineering_company            true = C&E job

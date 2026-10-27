@@ -105,6 +105,6 @@ The following items are needed in order to fully implement the #sitename arc fla
 - Per NFPA-70E, it is recommended the short circuit, protective device coordination, and arc flash hazard analysis be updated every time a significant modification is made to the electrical system and reviewed periodically, not to exceed 5 years, to account for any system changes that may impact the design of the facilities protective systems.
 
 #section("Arc Flash PPE Table", landscape: true, logo-width: 35%, ppe-table())
-#attachment("Arc Flash Results Table", "/PDF/Arc Flash Results Table.pdf", landscape: true, trim: (x: 0.035, y: 0.045))
+#attachment("Arc Flash Results Table", "/PDF/Arc Flash Results Table.pdf", landscape: true)
 #attachment("Arc Flash Oneline(s)", "/PDF/Arc Flash Oneline.pdf", landscape: true)
 #attachment("Arc Flash Labels", "/PDF/Arc Flash Labels.pdf", landscape: true, bare: true)

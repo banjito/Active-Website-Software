@@ -789,8 +789,8 @@ export default function JobDetail() {
     refreshJobDetails,
   } = useJobDetails(id);
 
-  // C&E jobs open on the engineering portal's job page instead. null = the
-  // column doesn't exist yet (migration not run), so the switch stays hidden.
+  // For the Company switch in the edit form. null = the column doesn't exist
+  // yet (migration not run), so the switch stays hidden.
   const [ceJob, setCeJob] = useState<boolean | null>(null);
   useEffect(() => {
     if (!id) return;
@@ -803,9 +803,6 @@ export default function JobDetail() {
       cancelled = true;
     };
   }, [id]);
-  useEffect(() => {
-    if (ceJob && id) navigate(engineeringJobPath(id), { replace: true });
-  }, [ceJob, id]);
 
   // See jobAssetsCache: this job's reports, if they are already loaded from an earlier
   // visit in this session.
@@ -823,6 +820,12 @@ export default function JobDetail() {
     isSuperUser(user?.email);
 
   const [job, setJob] = useState<Job | null>(null);
+  // Engineering jobs (AMP or C&E) open on the engineering portal's job page.
+  useEffect(() => {
+    if (job?.division === "engineering" && id) {
+      navigate(engineeringJobPath(id), { replace: true });
+    }
+  }, [job?.division, id]);
   const [adjacentJobIds, setAdjacentJobIds] = useState<AdjacentJobIds>({
     previous: null,
     next: null,
@@ -4890,7 +4893,6 @@ export default function JobDetail() {
 
       // Update the local job state with the new data
       setJob((prev) => (prev ? { ...prev, ...editFormData } : null));
-      // Turning C&E on moves to the engineering job page (effect above).
       if (ceJob !== null) setCeJob(nextCeJob);
 
       // New reports opened after this read the job's User from a cache.

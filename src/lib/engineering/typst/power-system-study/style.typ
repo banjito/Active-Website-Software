@@ -152,12 +152,13 @@
   image("/Pictures/AMP-Logo.png", width: logo-width)
 })
 
-// An SKM section: a title page, then every page of the PDF under its own
+// A section after a study's text: a title page, then the body under its own
 // header, numbered from 2 ("Page x"). `heading` is the title-page text when
-// it differs from the header. `bare` drops the header and footer and fills
-// the page (arc flash labels).
-#let attachment(title, file, heading: none, landscape: false, logo-width: 25%, bare: false) = {
-  set page(flipped: true, margin: (top: 1.6cm, bottom: 2.8cm, x: 2cm)) if landscape
+// it differs from the header. Landscape sections print on ledger paper
+// (17 x 11 in). `bare` drops the header and footer and fills the page (arc
+// flash labels).
+#let section(title, body, heading: none, landscape: false, logo-width: 25%, bare: false) = {
+  set page(width: 17in, height: 11in, margin: (top: 1.6cm, bottom: 2.8cm, x: 2cm)) if landscape
   set page(
     header: page-header(title),
     footer: page-footer(context [Page #counter(page).display()]),
@@ -165,8 +166,89 @@
   set page(header: none, footer: none, margin: 0pt) if bare
   title-page(if heading == none { title } else { heading }, logo-width)
   if not bare { counter(page).update(2) }
+  body
+}
+
+// One PDF page, as big as the page allows. `trim` cuts the PDF's own blank
+// margins off (a fraction of its width and height from each side), so the
+// table inside fills more of the page.
+#let pdf-page(file, p, trim) = layout(area => {
+  let natural = measure(image(file, page: p))
+  let w = natural.width * (1 - 2 * trim.x)
+  let h = natural.height * (1 - 2 * trim.y)
+  let scale = calc.min(area.width / w, area.height / h) * 0.999
+  align(center + horizon, box(width: w * scale, height: h * scale, clip: true, place(
+    top + left,
+    dx: -natural.width * trim.x * scale,
+    dy: -natural.height * trim.y * scale,
+    // Both sides set, or Typst shrinks the image to fit the box.
+    image(file, page: p, width: natural.width * scale, height: natural.height * scale),
+  )))
+})
+
+// An SKM section: a title page, then every page of the PDF.
+#let attachment(title, file, trim: (x: 0, y: 0), ..options) = section(title, ..options, {
   for p in range(1, pdf-page-count(file) + 1) {
     pagebreak(weak: true)
-    align(center + horizon, image(file, page: p, width: 100%, height: 100%, fit: "contain"))
+    pdf-page(file, p, trim)
   }
+})
+
+// SKM's Arc Flash PPE Table (NFPA 70E 130.5(G)). It is the same on every job,
+// so it is typed in here instead of uploaded. The picture columns (paths to
+// SKM's own bitmaps) and the empty PPE Others 5 column are left out.
+#let ppe-table() = {
+  set text(size: 11pt)
+  set par(justify: false)
+  set table(inset: 6pt)
+  let danger = rgb(255, 235, 235)
+  let level-fill = (x, y) => if y == 4 { danger }
+  let swatch(c) = table.cell(fill: c)[]
+  let orange = rgb(255, 165, 0)
+  let dnwol = [DO NOT WORK ON LIVE!]
+  let arc-clothing = [Arc-rated shirt & pants or arc-rated coverall or arc-rated arc flash suit]
+  let arc-others = [Arc-rated shirt (long-sleeve) plus Arc-rated pants (long) or Arc-rated coverall, or arc rated arc flash suit. Arc rated outerwear (eg. jacket, parka, rainwear, hard hat liner, high visibility apparel) as needed.]
+  let tools = [> 50V voltage rated tools + Class 0 (minimum) gloves]
+  let hard-hat = [Hardhat + Arc-rated hard hat liner + Safety Glasses or Goggles + Ear Canal Inserts]
+  let shoes = [Leather shoes (flash) as needed. Dielectric shoes or insulating mat (step and touch potential).]
+  table(
+    columns: (auto, 1fr, 1fr, 1fr, 1fr, 0.8fr, 2.2fr, 1.2fr, 1.3fr, 1fr, 0.9fr, 0.9fr),
+    fill: level-fill,
+    table.header(
+      [], [Incident Energy From (cal/cm²)], [Incident Energy To (cal/cm²)],
+      [IE Low Marginal (cal/cm²)], [IE High Marginal (cal/cm²)], [PPE Level \#],
+      [PPE Level], [Clothing Layers], [Required Minimum Arc Rating of PPE (cal/cm²)], [Notes],
+      [Level Background Color], [Level Foreground Color],
+    ),
+    [1], [0.0], [1.2], [0.000], [1.190], [0], [No Arc-rated PPE Required], [N/A], [N/A], [H.3],
+    swatch(orange), swatch(black),
+    [2], [1.2], [12.0], [1.210], [11.800], [3], arc-clothing, [2 or 3], [12], [130.5(G)],
+    swatch(orange), swatch(black),
+    [3], [12.0], [100.0], [12.200], [99.000], [4], arc-clothing, [3 or more], [100], [130.5(G)],
+    swatch(orange), swatch(black),
+    [4], [100.0], [9999.0], [1000.000], [9998.000], [Dangerous!], dnwol, dnwol, [N/A], dnwol,
+    swatch(red), swatch(white),
+  )
+  v(1fr)
+  table(
+    columns: (auto, 0.9fr, 1.6fr, 1.3fr, 1fr, 1.4fr, 2fr, 1.2fr, 1.4fr),
+    fill: level-fill,
+    table.header(
+      [], [Warning Label Text], [Head & Eye & Hearing Protection], [Hand & Arm Protection],
+      [Foot Protection], [PPE Others 1], [PPE Others 2], [PPE Others 3], [PPE Others 4],
+    ),
+    [1], [WARNING], [Safety Glasses or Goggles], [Rubber insulating gloves w/ leather protectors], [N/A],
+    [Safety glasses, Class G or E hard hat as needed.], [N/A], tools,
+    [Dielectric shoes or insulating mat (step and touch potential).],
+    [2], [WARNING], hard-hat,
+    [Heavy-duty leather gloves, arc-rated gloves, or rubber insulating gloves w/ leather protectors],
+    [Leather footwear],
+    [Safety glasses, hard hat with arc-rated hood or balaclava, and arc-rated face shield. Hearing protection.],
+    arc-others, [#tools and leather protectors (flash).], shoes,
+    [3], [WARNING], hard-hat, [Arc-rated gloves or rubber insulating gloves w/ leather protectors],
+    [Leather footwear], [Safety glasses, hard hat with arc-rated hood. Hearing protection.],
+    arc-others, [#tools and leather protectors (flash).], shoes,
+    [4], [DANGER], dnwol, dnwol, dnwol, dnwol, dnwol, dnwol, dnwol,
+  )
+  v(1fr)
 }

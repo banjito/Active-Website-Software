@@ -49,7 +49,7 @@ export default defineConfig(({ mode }) => {
   },
   resolve: {
     alias: [
-      { find: "@", replacement: path.resolve(__dirname, "./src") },
+      { find: "@", replacement: path.resolve(import.meta.dirname, "./src") },
       // Anchored so it matches ONLY the bare specifier. A plain string alias
       // matches by prefix, which rewrote subpath imports like
       // "pdfjs-dist/legacy/build/pdf.worker.min.mjs" into a bogus
@@ -57,7 +57,7 @@ export default defineConfig(({ mode }) => {
       // Bare imports still get the legacy build; subpaths resolve in-package.
       {
         find: /^pdfjs-dist$/,
-        replacement: path.resolve(__dirname, "./node_modules/pdfjs-dist/legacy/build/pdf.mjs")
+        replacement: path.resolve(import.meta.dirname, "./node_modules/pdfjs-dist/legacy/build/pdf.mjs")
       }
     ]
   },

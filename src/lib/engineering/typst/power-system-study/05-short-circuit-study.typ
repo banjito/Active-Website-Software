@@ -43,6 +43,6 @@ With the available short circuit fault current, each protective device can be as
   "/PDF/Utility Information.pdf",
   heading: [Information Provided by \ #utilityprovider],
 )
-#attachment("SKM Generated 3-Phase Short Circuit Report", "/PDF/Short Circuit SKM Report.pdf", landscape: true)
-#attachment("SKM Generated Equipment Evaluation Report", "/PDF/Equipment Evaluation Report.pdf", landscape: true)
+#attachment("SKM Generated 3-Phase Short Circuit Report", "/PDF/Short Circuit SKM Report.pdf", landscape: true, trim: (x: 0.08, y: 0.11))
+#attachment("SKM Generated Equipment Evaluation Report", "/PDF/Equipment Evaluation Report.pdf", landscape: true, trim: (x: 0.035, y: 0.045))
 #attachment("Short Circuit Oneline(s)", "/PDF/Short Circuit Oneline.pdf", landscape: true)

@@ -238,7 +238,7 @@ export default function NewUnitDialog({
 
       const source = toVideoSource(draft.source);
       if (!source) {
-        return `Lesson ${i + 1} needs a YouTube link or a direct video URL.`;
+        return `Lesson ${i + 1} needs a YouTube link, a Google Drive link, or a direct video URL.`;
       }
       const minutes = draft.minutes.trim() ? Number(draft.minutes) : NaN;
       out.push({
@@ -567,7 +567,7 @@ export default function NewUnitDialog({
                   </div>
                   <Field
                     label="Video"
-                    hint="A YouTube link or id, or a direct .mp4 URL."
+                    hint="A YouTube link or id, a Google Drive link (shared with anyone who has the link, or your company), or a direct .mp4 URL. Drive videos can't track watch time, so learners mark them watched themselves."
                   >
                     <input
                       value={lesson.source}

@@ -1,6 +1,7 @@
 /**
  * Normalizes whatever an admin pastes into the New Unit form into the two
- * fields the player understands: a YouTube id, or a direct file URL.
+ * fields the player understands: a YouTube id, or a URL (a direct file, or a
+ * Google Drive preview link).
  */
 
 export interface VideoSource {
@@ -43,9 +44,40 @@ export function parseYouTubeId(input: string): string | null {
   return null;
 }
 
+const DRIVE_ID = /^[A-Za-z0-9_-]{10,}$/;
+
 /**
- * A YouTube link becomes a tracked embed; anything else is treated as a direct
- * media URL. Returns null when the input is neither.
+ * Pulls the file id out of a Google Drive share link (/file/d/<id>/view,
+ * /open?id=<id>, /uc?id=<id>). Returns null for anything that isn't Drive.
+ */
+export function parseDriveId(input: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(input.trim());
+  } catch {
+    return null;
+  }
+  const host = url.hostname.replace(/^www\./, "");
+  if (host !== "drive.google.com" && host !== "docs.google.com") return null;
+
+  const segments = url.pathname.split("/").filter(Boolean);
+  const d = segments.indexOf("d");
+  if (segments[d - 1] === "file" && DRIVE_ID.test(segments[d + 1] ?? "")) {
+    return segments[d + 1];
+  }
+  const id = url.searchParams.get("id");
+  return id && DRIVE_ID.test(id) ? id : null;
+}
+
+/** Google's embeddable player for a Drive file. */
+export function drivePreviewUrl(id: string): string {
+  return `https://drive.google.com/file/d/${id}/preview`;
+}
+
+/**
+ * A YouTube link becomes a tracked embed, a Google Drive link becomes Drive's
+ * preview player (stored as videoUrl), and anything else is treated as a
+ * direct media URL. Returns null when the input is none of those.
  */
 export function toVideoSource(input: string): VideoSource | null {
   const trimmed = input.trim();
@@ -53,6 +85,9 @@ export function toVideoSource(input: string): VideoSource | null {
 
   const youtubeId = parseYouTubeId(trimmed);
   if (youtubeId) return { youtubeId };
+
+  const driveId = parseDriveId(trimmed);
+  if (driveId) return { videoUrl: drivePreviewUrl(driveId) };
 
   try {
     const url = new URL(trimmed);

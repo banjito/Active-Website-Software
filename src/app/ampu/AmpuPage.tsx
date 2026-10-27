@@ -58,7 +58,7 @@ import {
 } from "@/lib/services/ampuService";
 import NewUnitDialog from "./NewUnitDialog";
 import { SEED_CATALOG } from "./seedCatalog";
-import { formatRuntime } from "./videoSource";
+import { drivePreviewUrl, formatRuntime, parseDriveId } from "./videoSource";
 import {
   DEPARTMENT_LABEL,
   DEPARTMENT_SHORT,
@@ -1733,7 +1733,13 @@ function VideoLesson({
   );
   const seeded = useRef(false);
 
-  const thresholdHit = watchPct >= VIDEO_COMPLETE_THRESHOLD * 100 || completed;
+  /* Drive's player is a plain iframe with no playback events, so watch time
+     can't be measured. Those lectures are on the honor system, like a reading. */
+  const driveId =
+    !lesson.youtubeId && lesson.videoUrl ? parseDriveId(lesson.videoUrl) : null;
+
+  const thresholdHit =
+    driveId !== null || watchPct >= VIDEO_COMPLETE_THRESHOLD * 100 || completed;
 
   // Shared progress handler for both the HTML5 player and the YouTube player.
   const handleProgress = (seconds: number, duration: number) => {
@@ -1759,6 +1765,14 @@ function VideoLesson({
               startAt={startAt}
               onProgress={handleProgress}
             />
+          ) : driveId ? (
+            <iframe
+              title={lesson.title}
+              src={drivePreviewUrl(driveId)}
+              allow="autoplay; fullscreen"
+              allowFullScreen
+              className="aspect-video w-full border-0"
+            />
           ) : (
             <video
               ref={ref}
@@ -1780,20 +1794,33 @@ function VideoLesson({
           )}
         </div>
 
-        <div className="mt-4">
-          <div className="mb-1 flex items-center justify-between text-xs text-neutral-500">
-            <span>Attendance</span>
-            <span>{Math.round(watchPct)}%</span>
+        {!driveId && (
+          <div className="mt-4">
+            <div className="mb-1 flex items-center justify-between text-xs text-neutral-500">
+              <span>Attendance</span>
+              <span>{Math.round(watchPct)}%</span>
+            </div>
+            <ProgressBar percent={watchPct} />
           </div>
-          <ProgressBar percent={watchPct} />
-        </div>
+        )}
 
         <div className="mt-4 flex items-center justify-between">
-          <p className="text-xs text-neutral-500">
-            {thresholdHit
-              ? "✅ Attendance requirement met"
-              : `Watch ${Math.round(VIDEO_COMPLETE_THRESHOLD * 100)}% to complete this lecture`}
-          </p>
+          {driveId ? (
+            <a
+              href={`https://drive.google.com/file/d/${driveId}/view`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-medium text-brand hover:underline"
+            >
+              Video not loading? Open it in Google Drive ↗
+            </a>
+          ) : (
+            <p className="text-xs text-neutral-500">
+              {thresholdHit
+                ? "✅ Attendance requirement met"
+                : `Watch ${Math.round(VIDEO_COMPLETE_THRESHOLD * 100)}% to complete this lecture`}
+            </p>
+          )}
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -1805,7 +1832,11 @@ function VideoLesson({
                   : "Available once you've watched enough"
               }
             >
-              {completed ? "Completed ✓" : "I've finished this"}
+              {completed
+                ? "Completed ✓"
+                : driveId
+                  ? "I've watched this"
+                  : "I've finished this"}
             </Button>
             <Button onClick={onNext} disabled={!thresholdHit && !completed}>
               Next →

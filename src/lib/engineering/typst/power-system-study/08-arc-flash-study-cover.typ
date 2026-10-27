@@ -1,4 +1,4 @@
-// Placeholder cover until the LaTeX file is converted.
+// Arc Flash Study cover.
 #import "style.typ": *
 
-#section-cover("Arc Flash Study")
+#study-cover("Arc Flash Study")

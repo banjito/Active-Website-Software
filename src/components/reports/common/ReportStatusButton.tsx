@@ -92,6 +92,11 @@ const ACTIONS: Record<AssetReportStatus, StatusAction[]> = {
     },
   ],
   issue: [
+    {
+      target: "ready_for_review",
+      label: "Resubmit for Review",
+      hint: "Sends the fixed report back to the approvals queue",
+    },
     { target: "in_progress", label: "Mark In Progress" },
     { target: "archived", label: "Archive", confirm: "Archive this report?" },
   ],

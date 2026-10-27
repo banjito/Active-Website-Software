@@ -13576,7 +13576,8 @@ CREATE TABLE neta_ops.miscellaneous_documents (
     file_type text,
     file_size integer,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    updated_at timestamp with time zone DEFAULT now(),
+    category text DEFAULT 'misc'::text NOT NULL
 );
 
 

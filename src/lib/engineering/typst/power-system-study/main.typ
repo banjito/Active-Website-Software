@@ -1,5 +1,5 @@
-// Power system study report: the Typst version of the LaTeX master.
-// Job details live in project.typ; page styles live in style.typ.
+// Arc Flash Hazard Analysis report: the Typst version of "00 main.tex".
+// Job details live in project.typ; the look lives in style.typ.
 //
 // Compile by hand:  typst compile main.typ
 // Try other values: typst compile main.typ --input sitename="Plant 2"
@@ -9,7 +9,7 @@
 #include "01-report-cover.typ"
 
 #include "02-executive-summary-cover.typ"
-#study("Executive Summary")[#include "03-executive-summary.typ"]
+#study("Executive Summary", numbered: false)[#include "03-executive-summary.typ"]
 
 #include "04-short-circuit-study-cover.typ"
 #study("Short Circuit Study")[#include "05-short-circuit-study.typ"]

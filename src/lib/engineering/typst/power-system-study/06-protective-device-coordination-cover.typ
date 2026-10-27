@@ -1,4 +1,4 @@
-// Placeholder cover until the LaTeX file is converted.
+// Protective Device Coordination Study cover.
 #import "style.typ": *
 
-#section-cover("Protective Device Coordination")
+#study-cover("Protective Device Coordination Study")

@@ -13,3 +13,16 @@
 #let preparedby = field("preparedby", "AMP Quality Energy Services")
 #let preparedbyaddress = field("preparedbyaddress", "P.O. Box 1725, Decatur, AL 35602")
 #let utilityprovider = field("utilityprovider", "Decatur Utilities")
+
+// Arc flash findings: buses in each PPE category. Shared by the Executive
+// Summary and the Arc Flash Study, so the two tables can't disagree.
+#let busescat0 = field("busescat0", "9")
+#let busescat3 = field("busescat3", "5")
+#let busescat4 = field("busescat4", "5")
+#let busesdanger = field("busesdanger", "0")
+
+// How many pages an SKM PDF has. ampOS sets this when the PDF is uploaded.
+// A PDF with no count is left out and only its title page prints, like the
+// commented-out \includepdf lines in the LaTeX version.
+// By hand: typst compile main.typ --input "pages:/PDF/TCCs.pdf=5"
+#let pdf-page-count(path) = int(sys.inputs.at("pages:" + path, default: "0"))

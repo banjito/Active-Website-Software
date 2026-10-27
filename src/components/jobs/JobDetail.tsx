@@ -33,8 +33,6 @@ import {
   Clock,
   AlertTriangle,
   CheckCircle,
-  Image,
-  Maximize2,
   Minimize2,
   Save,
   Edit3,
@@ -537,9 +535,25 @@ interface MiscellaneousDocument {
   file_path: string;
   file_type?: string;
   file_size?: number;
+  // Tag from JOB_DOCUMENT_CATEGORIES; null on rows uploaded before tagging
+  category?: string | null;
   created_at: string;
   updated_at: string;
 }
+
+// Tags for the single Documents card on the job overview. Stored as plain
+// text, so adding one here needs no database change.
+const JOB_DOCUMENT_CATEGORIES = [
+  { value: "drawing", label: "Drawing" },
+  { value: "spec", label: "Spec" },
+  { value: "contract", label: "Contract" },
+  { value: "agreement", label: "Agreement" },
+  { value: "invoice", label: "Invoice" },
+  { value: "misc", label: "Miscellaneous" },
+];
+
+const jobDocumentCategoryLabel = (value: string) =>
+  JOB_DOCUMENT_CATEGORIES.find((c) => c.value === value)?.label ?? value;
 
 const reportRoutes = {
   "Panelboard Report": "panelboard-report",
@@ -2753,11 +2767,7 @@ export default function JobDetail() {
   const [selectedContract, setSelectedContract] = useState<Contract | null>(
     null,
   );
-  const [showDrawingUpload, setShowDrawingUpload] = useState(false);
-  const [showDrawingViewer, setShowDrawingViewer] = useState(false);
-  const [selectedDrawing, setSelectedDrawing] = useState<OneLineDrawing | null>(
-    null,
-  );
+  const [documentCategoryFilter, setDocumentCategoryFilter] = useState("all");
   const [showMiscUpload, setShowMiscUpload] = useState(false);
   const [showMiscViewer, setShowMiscViewer] = useState(false);
   const [selectedMiscDocument, setSelectedMiscDocument] =
@@ -2774,19 +2784,14 @@ export default function JobDetail() {
     start_date: "",
     end_date: "",
   });
-  const [drawingForm, setDrawingForm] = useState({
-    name: "",
-    description: "",
-  });
   const [miscForm, setMiscForm] = useState({
     name: "",
     description: "",
+    category: "misc",
   });
   const [contractFile, setContractFile] = useState<File | null>(null);
-  const [drawingFile, setDrawingFile] = useState<File | null>(null);
   const [miscFile, setMiscFile] = useState<File | null>(null);
   const [isContractUploading, setIsContractUploading] = useState(false);
-  const [isDrawingUploading, setIsDrawingUploading] = useState(false);
   const [isMiscUploading, setIsMiscUploading] = useState(false);
 
   // Retired report templates: kept in defaultAssets so existing reports still
@@ -6660,79 +6665,6 @@ export default function JobDetail() {
     }
   };
 
-  const handleDrawingUpload = async () => {
-    if (!drawingFile || !user?.id || !id) return;
-
-    setIsDrawingUploading(true);
-    try {
-      // Upload file to Supabase Storage
-      const fileExt = drawingFile.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `${id}/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("one-line-drawings")
-        .upload(filePath, drawingFile);
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("one-line-drawings").getPublicUrl(filePath);
-
-      // Save drawing record
-      const drawingData = {
-        job_id: id,
-        user_id: user.id,
-        name: drawingForm.name || drawingFile.name,
-        description: drawingForm.description || null,
-        file_url: publicUrl,
-        file_path: filePath,
-        file_type: drawingFile.type,
-        file_size: drawingFile.size,
-        version: "1.0",
-        is_current: true,
-      };
-
-      const { error: insertError } = await supabase
-        .schema("neta_ops")
-        .from("one_line_drawings")
-        .insert(drawingData);
-
-      if (insertError) throw insertError;
-
-      // Reset form and refresh drawings
-      setDrawingForm({
-        name: "",
-        description: "",
-      });
-      setDrawingFile(null);
-      setShowDrawingUpload(false);
-      await fetchOneLineDrawings();
-
-      toast({
-        title: "Success",
-        description: "Drawing uploaded successfully!",
-        variant: "success",
-      });
-    } catch (error) {
-      console.error("Error uploading drawing:", error);
-      toast({
-        title: "Error",
-        description: "Failed to upload drawing",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDrawingUploading(false);
-    }
-  };
-
-  const handleDrawingView = (drawing: OneLineDrawing) => {
-    setSelectedDrawing(drawing);
-    setShowDrawingViewer(true);
-  };
-
   // Miscellaneous Documents Functions
   const fetchMiscellaneousDocuments = async () => {
     if (!id) return;
@@ -6797,6 +6729,7 @@ export default function JobDetail() {
         file_path: filePath,
         file_type: miscFile.type,
         file_size: miscFile.size,
+        category: miscForm.category,
       };
 
       const { error: insertError } = await supabase
@@ -6821,6 +6754,7 @@ export default function JobDetail() {
       setMiscForm({
         name: "",
         description: "",
+        category: "misc",
       });
       setMiscFile(null);
       setShowMiscUpload(false);
@@ -6856,16 +6790,47 @@ export default function JobDetail() {
     setMiscForm({
       name: document.name,
       description: document.description || "",
+      category: document.category || "misc",
     });
     setShowMiscUpload(true);
   };
+
+  // New uploads open tagged with whatever filter is showing
+  const openDocumentUpload = () => {
+    setMiscForm({
+      name: "",
+      description: "",
+      category:
+        documentCategoryFilter === "all" ? "misc" : documentCategoryFilter,
+    });
+    setShowMiscUpload(true);
+  };
+
+  // Overview Documents card: tagged uploads plus older one-line drawings,
+  // which live in their own table and always show as "Drawing"
+  const jobDocuments = [
+    ...miscellaneousDocuments.map((doc) => ({
+      doc,
+      category: doc.category || "misc",
+      isLegacyDrawing: false,
+    })),
+    ...oneLineDrawings.map((doc) => ({
+      doc: doc as MiscellaneousDocument,
+      category: "drawing",
+      isLegacyDrawing: true,
+    })),
+  ].sort((a, b) => b.doc.created_at.localeCompare(a.doc.created_at));
+  const visibleJobDocuments =
+    documentCategoryFilter === "all"
+      ? jobDocuments
+      : jobDocuments.filter((d) => d.category === documentCategoryFilter);
 
   const handleMiscDialogChange = (open: boolean) => {
     setShowMiscUpload(open);
     // Clear the edit prefill so the next upload starts blank
     if (!open && editingMiscDocument) {
       setEditingMiscDocument(null);
-      setMiscForm({ name: "", description: "" });
+      setMiscForm({ name: "", description: "", category: "misc" });
     }
   };
 
@@ -6883,9 +6848,10 @@ export default function JobDetail() {
             .update({
               name: miscForm.name.trim(),
               description: miscForm.description.trim() || null,
+              category: miscForm.category,
             })
             .eq("id", editingMiscDocument.id),
-        { label: "miscellaneous_documents.name/description" },
+        { label: "miscellaneous_documents.name/description/category" },
       );
 
       if (error) {
@@ -10867,7 +10833,7 @@ export default function JobDetail() {
                         <div className="flex items-center justify-between">
                           <CardTitle className="flex items-center space-x-2">
                             <FileText className="h-5 w-5 text-brand" />
-                            <span>Contracts / Agreements / Invoices / etc</span>
+                            <span>Contract Value & Billing</span>
                           </CardTitle>
                           <div className="flex items-center gap-4 flex-wrap">
                             <span className="text-sm text-neutral-600 dark:text-neutral-400">
@@ -11053,164 +11019,119 @@ export default function JobDetail() {
                       </CardContent>
                     </Card>
 
-                    {/* One-Line Drawings Section */}
+                    {/* Documents: one tagged list instead of a card per type */}
                     <Card>
                       <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="flex items-center space-x-2">
-                            <Image className="h-5 w-5 text-brand" />
-                            <span>One-Line Drawings</span>
-                          </CardTitle>
-                          <Button
-                            onClick={() => setShowDrawingUpload(true)}
-                            leftIcon={<Upload className="h-4 w-4" />}
-                          >
-                            Upload Drawing
-                          </Button>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        {oneLineDrawings.length === 0 ? (
-                          <div className="text-center py-8 text-neutral-500 dark:text-white">
-                            <Image className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p>No drawings uploaded yet</p>
-                            <p className="text-sm">
-                              Upload your first one-line drawing to get started
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {oneLineDrawings.map((drawing) => (
-                              <div
-                                key={drawing.id}
-                                className="border border-neutral-200 dark:border-neutral-700 rounded-none p-4 hover:shadow-md transition-shadow"
-                              >
-                                <div className="aspect-video bg-neutral-100 dark:bg-dark-150 rounded-none mb-3 flex items-center justify-center">
-                                  <Image className="h-8 w-8 text-neutral-400" />
-                                </div>
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <h4 className="font-medium text-neutral-900 dark:text-white text-sm truncate">
-                                      {drawing.name}
-                                    </h4>
-                                    <Badge
-                                      className={
-                                        drawing.is_current
-                                          ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
-                                          : "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-100"
-                                      }
-                                    >
-                                      {drawing.is_current
-                                        ? "Current"
-                                        : "Previous"}
-                                    </Badge>
-                                  </div>
-                                  <div className="text-xs text-neutral-500 dark:text-white">
-                                    <p>Version {drawing.version}</p>
-                                    <p>
-                                      {format(
-                                        new Date(drawing.created_at),
-                                        "MMM d, yyyy",
-                                      )}
-                                    </p>
-                                  </div>
-                                  <div className="flex items-center space-x-2">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handleDrawingView(drawing)}
-                                      className="flex-1"
-                                      leftIcon={<Maximize2 className="h-3 w-3" />}
-                                    >
-                                      View
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        window.open(drawing.file_url, "_blank")
-                                      }
-                                    >
-                                      <Edit3 className="h-3 w-3" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    {/* Miscellaneous Documents Section */}
-                    <Card>
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
                           <CardTitle className="flex items-center space-x-2">
                             <FileText className="h-5 w-5 text-brand" />
-                            <span>Miscellaneous</span>
+                            <span>Documents</span>
                           </CardTitle>
                           <Button
-                            onClick={() => setShowMiscUpload(true)}
+                            onClick={openDocumentUpload}
                             leftIcon={<Upload className="h-4 w-4" />}
                           >
                             Upload Document
                           </Button>
                         </div>
+                        {jobDocuments.length > 0 && (
+                          <div className="flex flex-wrap gap-2 pt-3">
+                            {[
+                              { value: "all", label: "All" },
+                              ...JOB_DOCUMENT_CATEGORIES,
+                            ]
+                              // Only tags in use, plus whichever is selected
+                              .filter(
+                                (c) =>
+                                  c.value === "all" ||
+                                  c.value === documentCategoryFilter ||
+                                  jobDocuments.some(
+                                    (d) => d.category === c.value,
+                                  ),
+                              )
+                              .map((c) => {
+                                const count =
+                                  c.value === "all"
+                                    ? jobDocuments.length
+                                    : jobDocuments.filter(
+                                        (d) => d.category === c.value,
+                                      ).length;
+                                const active =
+                                  documentCategoryFilter === c.value;
+                                return (
+                                  <button
+                                    key={c.value}
+                                    type="button"
+                                    onClick={() =>
+                                      setDocumentCategoryFilter(c.value)
+                                    }
+                                    className={`px-2.5 py-1 text-xs font-medium border rounded-none transition-colors ${
+                                      active
+                                        ? "bg-brand border-brand text-white"
+                                        : "border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                                    }`}
+                                  >
+                                    {c.label} ({count})
+                                  </button>
+                                );
+                              })}
+                          </div>
+                        )}
                       </CardHeader>
                       <CardContent>
-                        {miscellaneousDocuments.length === 0 ? (
-                          <div className="text-center py-8 text-neutral-500 dark:text-white">
-                            <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p>No documents uploaded yet</p>
-                            <p className="text-sm">
-                              Upload your first document to get started
-                            </p>
+                        {visibleJobDocuments.length === 0 ? (
+                          <div className="text-center py-6 text-neutral-500 dark:text-white">
+                            <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">No documents uploaded yet</p>
                           </div>
                         ) : (
-                          <div className="space-y-4">
-                            {miscellaneousDocuments.map((document) => (
-                              <div
-                                key={document.id}
-                                className="border border-neutral-200 dark:border-neutral-700 rounded-none p-4"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex-1">
-                                    <div className="flex items-center space-x-3">
-                                      <FileText className="h-5 w-5 text-brand" />
-                                      <div>
-                                        <h4 className="font-medium text-neutral-900 dark:text-white">
-                                          {document.name}
-                                        </h4>
-                                        <div className="flex items-center space-x-4 text-sm text-neutral-500 dark:text-white">
-                                          <span>
-                                            {format(
-                                              new Date(document.created_at),
-                                              "MMM d, yyyy",
-                                            )}
-                                          </span>
-                                          {document.file_size && (
-                                            <span>
-                                              {Math.round(
-                                                document.file_size / 1024,
-                                              )}{" "}
-                                              KB
-                                            </span>
+                          <div className="border border-neutral-200 dark:border-neutral-700 divide-y divide-neutral-200 dark:divide-neutral-700">
+                            {visibleJobDocuments.map(
+                              ({ doc, category, isLegacyDrawing }) => (
+                                <div
+                                  key={`${isLegacyDrawing ? "drawing" : "doc"}-${doc.id}`}
+                                  className="flex items-center justify-between gap-3 px-3 py-2"
+                                >
+                                  <div className="flex items-center gap-3 min-w-0">
+                                    <FileText className="h-4 w-4 text-brand shrink-0" />
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-medium text-sm text-neutral-900 dark:text-white break-all">
+                                          {doc.name}
+                                        </span>
+                                        <Badge className="bg-neutral-100 text-neutral-700 dark:bg-dark-150 dark:text-neutral-200">
+                                          {jobDocumentCategoryLabel(category)}
+                                        </Badge>
+                                      </div>
+                                      <div className="flex items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400 min-w-0">
+                                        <span className="shrink-0">
+                                          {format(
+                                            new Date(doc.created_at),
+                                            "MMM d, yyyy",
                                           )}
-                                        </div>
-                                        {document.description && (
-                                          <p className="text-sm text-neutral-600 dark:text-white mt-1">
-                                            {document.description}
-                                          </p>
+                                        </span>
+                                        {!!doc.file_size && (
+                                          <span className="shrink-0">
+                                            {Math.round(doc.file_size / 1024)}{" "}
+                                            KB
+                                          </span>
+                                        )}
+                                        {doc.description && (
+                                          <span
+                                            className="truncate"
+                                            title={doc.description}
+                                          >
+                                            {doc.description}
+                                          </span>
                                         )}
                                       </div>
                                     </div>
                                   </div>
-                                  <div className="flex items-center space-x-2">
+                                  <div className="flex items-center gap-1 shrink-0">
                                     <Button
                                       variant="outline"
                                       size="sm"
-                                      onClick={() => handleMiscView(document)}
+                                      onClick={() => handleMiscView(doc)}
                                       leftIcon={<Eye className="h-4 w-4" />}
                                     >
                                       View
@@ -11219,34 +11140,43 @@ export default function JobDetail() {
                                       variant="outline"
                                       size="sm"
                                       onClick={() =>
-                                        window.open(document.file_url, "_blank")
+                                        window.open(doc.file_url, "_blank")
                                       }
+                                      title="Download"
+                                      aria-label="Download document"
                                     >
                                       <Download className="h-4 w-4" />
                                     </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handleMiscEdit(document)}
-                                      title="Edit name and description"
-                                      aria-label="Edit document"
-                                    >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleMiscDelete(document.id)
-                                      }
-                                      className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                    {/* Older drawings sit in their own table, so they stay view-only like before */}
+                                    {!isLegacyDrawing && (
+                                      <>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => handleMiscEdit(doc)}
+                                          title="Edit name, tag and description"
+                                          aria-label="Edit document"
+                                        >
+                                          <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() =>
+                                            handleMiscDelete(doc.id)
+                                          }
+                                          title="Delete"
+                                          aria-label="Delete document"
+                                          className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </>
+                                    )}
                                   </div>
                                 </div>
-                              </div>
-                            ))}
+                              ),
+                            )}
                           </div>
                         )}
                       </CardContent>
@@ -14205,177 +14135,19 @@ export default function JobDetail() {
         </DialogContent>
       </Dialog>
 
-      {/* Drawing Upload Dialog */}
-      <Dialog open={showDrawingUpload} onOpenChange={setShowDrawingUpload}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Upload One-Line Drawing</DialogTitle>
-            <DialogDescription>
-              Upload a one-line electrical drawing for this job.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <label htmlFor="drawing-name" className="text-sm font-medium">
-                Drawing Name
-              </label>
-              <Input
-                id="drawing-name"
-                value={drawingForm.name}
-                onChange={(e) =>
-                  setDrawingForm((prev) => ({ ...prev, name: e.target.value }))
-                }
-                placeholder="Main Electrical One-Line"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label
-                htmlFor="drawing-description"
-                className="text-sm font-medium"
-              >
-                Description
-              </label>
-              <textarea
-                id="drawing-description"
-                value={drawingForm.description}
-                onChange={(e) =>
-                  setDrawingForm((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
-                }
-                placeholder="Brief description of the drawing..."
-                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none"
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="drawing-file" className="text-sm font-medium">
-                Drawing File
-              </label>
-              <Input
-                id="drawing-file"
-                type="file"
-                accept=".pdf,.dwg,.png,.jpg,.jpeg,.svg"
-                onChange={(e) => setDrawingFile(e.target.files?.[0] || null)}
-              />
-              {drawingFile && (
-                <p className="text-xs text-neutral-500">
-                  {drawingFile.name} ({Math.round(drawingFile.size / 1024)} KB)
-                </p>
-              )}
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowDrawingUpload(false)}
-              disabled={isDrawingUploading}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleDrawingUpload}
-              disabled={
-                isDrawingUploading || !drawingFile || !drawingForm.name.trim()
-              }
-            >
-              {isDrawingUploading ? "Uploading..." : "Upload Drawing"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Drawing Viewer Dialog */}
-      <Dialog open={showDrawingViewer} onOpenChange={setShowDrawingViewer}>
-        <DialogContent className="sm:max-w-[90vw] sm:h-[90vh] max-w-none w-full flex flex-col">
-          <DialogHeader className="flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <div>
-                <DialogTitle>{selectedDrawing?.name}</DialogTitle>
-                <DialogDescription>
-                  Version {selectedDrawing?.version} •{" "}
-                  {selectedDrawing?.is_current ? "Current" : "Previous"}
-                </DialogDescription>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    selectedDrawing &&
-                    window.open(selectedDrawing.file_url, "_blank")
-                  }
-                  leftIcon={<Edit3 className="h-4 w-4" />}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (selectedDrawing) {
-                      const link = document.createElement("a");
-                      link.href = selectedDrawing.file_url;
-                      link.download = selectedDrawing.name;
-                      link.click();
-                    }
-                  }}
-                  leftIcon={<Download className="h-4 w-4" />}
-                >
-                  Download
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowDrawingViewer(false)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </DialogHeader>
-
-          <div className="flex-1 min-h-0 overflow-hidden">
-            {selectedDrawing && (
-              <div className="w-full h-full bg-neutral-100 dark:bg-dark-150 rounded-none">
-                {selectedDrawing.file_url.toLowerCase().endsWith(".pdf") ? (
-                  <iframe
-                    src={selectedDrawing.file_url}
-                    className="w-full h-full rounded-none border-0"
-                    title={selectedDrawing.name}
-                    style={{ minHeight: "100%" }}
-                  />
-                ) : (
-                  <img
-                    src={selectedDrawing.file_url}
-                    alt={selectedDrawing.name}
-                    className="w-full h-full object-contain"
-                  />
-                )}
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
       {/* Miscellaneous Document Upload Dialog */}
       <Dialog open={showMiscUpload} onOpenChange={handleMiscDialogChange}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>
               {editingMiscDocument
-                ? "Edit Miscellaneous Document"
-                : "Upload Miscellaneous Document"}
+                ? "Edit Document"
+                : "Upload Document"}
             </DialogTitle>
             <DialogDescription>
               {editingMiscDocument
-                ? "Change the name or description of this document."
-                : "Upload a miscellaneous document for this job."}
+                ? "Change the name, tag or description of this document."
+                : "Upload a document for this job and tag it."}
             </DialogDescription>
           </DialogHeader>
 
@@ -14392,6 +14164,29 @@ export default function JobDetail() {
                 }
                 placeholder="Document Name"
               />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="misc-category" className="text-sm font-medium">
+                Tag
+              </label>
+              <select
+                id="misc-category"
+                value={miscForm.category}
+                onChange={(e) =>
+                  setMiscForm((prev) => ({
+                    ...prev,
+                    category: e.target.value,
+                  }))
+                }
+                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
+              >
+                {JOB_DOCUMENT_CATEGORIES.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">
@@ -14421,7 +14216,7 @@ export default function JobDetail() {
                 <Input
                   id="misc-file"
                   type="file"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg,.dwg,.svg"
                   onChange={(e) => setMiscFile(e.target.files?.[0] || null)}
                 />
                 {miscFile && (
@@ -14514,7 +14309,7 @@ export default function JobDetail() {
                   />
                 ) : selectedMiscDocument.file_url
                     .toLowerCase()
-                    .match(/\.(jpg|jpeg|png|gif)$/i) ? (
+                    .match(/\.(jpg|jpeg|png|gif|svg)$/i) ? (
                   <img
                     src={selectedMiscDocument.file_url}
                     alt={selectedMiscDocument.name}

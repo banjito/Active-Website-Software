@@ -1,4 +1,4 @@
-// Placeholder cover until the LaTeX file is converted.
+// Executive Summary cover.
 #import "style.typ": *
 
-#section-cover("Executive Summary")
+#study-cover("Executive Summary")

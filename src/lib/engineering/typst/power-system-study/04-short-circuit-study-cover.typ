@@ -1,4 +1,4 @@
-// Placeholder cover until the LaTeX file is converted.
+// Short Circuit Study cover.
 #import "style.typ": *
 
-#section-cover("Short Circuit Study")
+#study-cover("Short Circuit Study")

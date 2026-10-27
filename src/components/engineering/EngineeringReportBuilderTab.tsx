@@ -1,26 +1,26 @@
-import React from "react";
-import { FileCode } from "lucide-react";
-import { ce } from "./engineeringTheme";
+import React, { Suspense, lazy } from "react";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 export const ENGINEERING_BUILDER_PATH = "/engineering/report-builder";
 
+// Loaded on demand: the editor pulls in the Typst PDF engine and pdf.js.
+const ReportEditor = lazy(() => import("./report-builder/ReportEditor"));
+
 /**
  * Engineering's report builder: Typst templates, filled from each job and
- * compiled to PDF in the browser. Kept fully
- * separate from the custom form builder (/custom-forms); neither shows the
- * other's templates. Not built yet.
+ * compiled to PDF in the browser. Kept fully separate from the custom form
+ * builder (/custom-forms); neither shows the other's templates.
  */
 export default function EngineeringReportBuilderTab() {
   return (
-    <div
-      className={`flex flex-col items-center gap-3 border border-dashed px-6 py-16 text-center ${ce.borderStrong}`}
+    <Suspense
+      fallback={
+        <div className="flex justify-center py-16">
+          <LoadingSpinner />
+        </div>
+      }
     >
-      <FileCode className={`h-8 w-8 ${ce.muted}`} aria-hidden />
-      <h2 className="m-0 text-xl font-bold">Report builder</h2>
-      <p className={`m-0 max-w-md text-sm leading-[22px] ${ce.muted}`}>
-        Report templates filled in from each job and turned into PDFs right here.
-        Coming soon.
-      </p>
-    </div>
+      <ReportEditor />
+    </Suspense>
   );
 }

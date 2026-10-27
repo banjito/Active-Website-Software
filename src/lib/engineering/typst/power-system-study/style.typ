@@ -12,7 +12,7 @@
 #let report(body) = {
   set document(title: reporttypetitle)
   set page(paper: "us-letter", margin: (top: 2cm, bottom: 2.8cm, x: 1.5cm))
-  set text(font: ("Helvetica", "Arial"), size: 12pt)
+  set text(font: ("Helvetica", "Arial", "Arimo"), size: 12pt)
   set par(justify: true, spacing: 1.1em)
   set list(indent: 1em)
   set enum(indent: 1em)

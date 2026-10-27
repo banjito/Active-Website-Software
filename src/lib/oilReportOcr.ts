@@ -10,6 +10,8 @@
  * bundle stay out of the main chunk.
  */
 
+import { loadPdfJs } from "@/lib/loadPdfJs";
+
 /** Scale to render at. 2.0 ≈ 144 DPI, enough for the dense 6pt table text. */
 const RENDER_SCALE = 2.0;
 
@@ -221,21 +223,4 @@ async function renderPage(
   page.cleanup();
 
   return canvas;
-}
-
-/** Load pdf.js with a worker whose version matches the bundled library. */
-async function loadPdfJs() {
-  const pdfjsLib = await import("pdfjs-dist");
-  if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-    // Resolved through Vite so it always tracks the installed version, rather
-    // than the stale copy in public/pdfjs (a version skew here throws
-    // "API version does not match Worker version"). Bare "pdfjs-dist" is
-    // aliased to the legacy build, so the legacy worker is the matching one;
-    // that alias is anchored in vite.config.ts to keep this subpath intact.
-    const workerUrl = (
-      await import("pdfjs-dist/legacy/build/pdf.worker.min.mjs?url")
-    ).default;
-    pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
-  }
-  return pdfjsLib;
 }

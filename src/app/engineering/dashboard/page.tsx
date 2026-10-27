@@ -85,7 +85,12 @@ export default function EngineeringDashboard() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1360px] px-4 pb-28 pt-8 sm:px-8">
+      {/* The report builder is an editor, so it gets the full window width. */}
+      <div
+        className={
+          onBuilder ? "px-3 pb-6 pt-4 sm:px-4" : "mx-auto max-w-[1360px] px-4 pb-28 pt-8 sm:px-8"
+        }
+      >
         {onBuilder ? <EngineeringReportBuilderTab /> : <EngineeringJobsTab />}
       </div>
     </div>

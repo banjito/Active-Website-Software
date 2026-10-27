@@ -40,7 +40,12 @@ export default defineConfig(({ mode }) => {
       : {}),
   },
   optimizeDeps: {
-    exclude: ['lucide-react'],
+    // typst.ts loads its wasm compiler itself; pre-bundling breaks that.
+    exclude: ['lucide-react', '@myriaddreamin/typst.ts', '@myriaddreamin/typst-ts-web-compiler'],
+  },
+  // The report builder's Typst worker loads code on demand, which needs ES workers.
+  worker: {
+    format: 'es' as const,
   },
   resolve: {
     alias: [

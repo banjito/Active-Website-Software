@@ -75,6 +75,7 @@ import {
   notifyAssetStatusChanged,
   updateAssetReportStatus,
 } from "@/lib/services/assetReportStatus";
+import { ensureFixNote } from "@/components/reports/common/fixNoteDialog";
 import { describeSupabaseError, withWriteRetry } from "@/lib/supabaseRetry";
 import { createBatchedRowLookup } from "@/lib/batchedRowLookup";
 import { usePersistentState } from "@/hooks/usePersistentState";
@@ -176,6 +177,10 @@ import {
   fieldTechDivisionIds,
   jobDivisionOptions,
 } from "@/services/divisionsService";
+import {
+  engineeringJobPath,
+  fetchEngineeringCompany,
+} from "@/lib/engineering/engineeringCompany";
 import {
   SubstationFolderBoard,
   SubstationDragHandle,
@@ -281,6 +286,8 @@ interface Job {
   end_user?: string | null;
   fireteam_lead?: string | null;
   project_manager_id?: string | null;
+  /** Engineering jobs only: true = C&E job (see engineeringCompany.ts). */
+  engineering_company?: boolean | null;
   submittal_job_type?: "standard" | "data_center" | null;
   submittal_window_hours?: number | null;
   progress_billing_status?: string | null;
@@ -781,6 +788,24 @@ export default function JobDetail() {
     error: jobDetailsError,
     refreshJobDetails,
   } = useJobDetails(id);
+
+  // C&E jobs open on the engineering portal's job page instead. null = the
+  // column doesn't exist yet (migration not run), so the switch stays hidden.
+  const [ceJob, setCeJob] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    setCeJob(null);
+    fetchEngineeringCompany(id)
+      .then((value) => !cancelled && setCeJob(value))
+      .catch((err) => console.warn("Error checking job company:", err));
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+  useEffect(() => {
+    if (ceJob && id) navigate(engineeringJobPath(id), { replace: true });
+  }, [ceJob, id]);
 
   // See jobAssetsCache: this job's reports, if they are already loaded from an earlier
   // visit in this session.
@@ -4844,6 +4869,11 @@ export default function JobDetail() {
       ) {
         updatePayload.job_number = editFormData.job_number.trim();
       }
+      // Only engineering jobs can be C&E; skipped until the column exists.
+      const nextCeJob =
+        editFormData.division === "engineering" &&
+        !!(editFormData.engineering_company ?? ceJob);
+      if (ceJob !== null) updatePayload.engineering_company = nextCeJob;
 
       const { data: updatedJob, error: updateError } = await supabase
         .schema("neta_ops")
@@ -4860,6 +4890,8 @@ export default function JobDetail() {
 
       // Update the local job state with the new data
       setJob((prev) => (prev ? { ...prev, ...editFormData } : null));
+      // Turning C&E on moves to the engineering job page (effect above).
+      if (ceJob !== null) setCeJob(nextCeJob);
 
       // New reports opened after this read the job's User from a cache.
       clearJobEndUserCache(id);
@@ -5751,15 +5783,21 @@ export default function JobDetail() {
       }
       const currentStatus = asset?.status;
 
-      // If moving TO "ready_for_review" from Approved or Issue, confirm with the user
-      if (
-        newStatus === "ready_for_review" &&
-        (currentStatus === "approved" || currentStatus === "issue")
-      ) {
+      // If moving TO "ready_for_review" from Approved, confirm with the user
+      if (newStatus === "ready_for_review" && currentStatus === "approved") {
         const confirmed = confirm(
           'This will resubmit the report for approval. Are you sure you want to change the status to "Ready for Review"?',
         );
         if (!confirmed) return;
+      }
+
+      // Coming back from Issue: ask what was fixed (the note dialog doubles as
+      // the "are you sure") so the next reviewer can check it.
+      if (
+        newStatus === "ready_for_review" &&
+        !(await ensureFixNote(assetId, currentStatus))
+      ) {
+        return;
       }
 
       // If moving FROM "ready_for_review" back to "in_progress", the report drops
@@ -9929,6 +9967,42 @@ export default function JobDetail() {
                           )}
                       </select>
                     </div>
+                    {editFormData?.division === "engineering" &&
+                      ceJob !== null && (
+                        <div>
+                          <label
+                            htmlFor="engineering_company"
+                            className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
+                          >
+                            Company
+                          </label>
+                          <select
+                            id="engineering_company"
+                            value={
+                              (editFormData.engineering_company ?? ceJob)
+                                ? "ce"
+                                : "amp"
+                            }
+                            onChange={(e) =>
+                              setEditFormData((prev) =>
+                                prev
+                                  ? {
+                                      ...prev,
+                                      engineering_company:
+                                        e.target.value === "ce",
+                                    }
+                                  : null,
+                              )
+                            }
+                            className="w-full px-3 py-2 rounded-none border border-neutral-300 dark:border-neutral-600 shadow-sm focus:border-brand focus:ring-1 focus:ring-brand dark:bg-dark-150 dark:text-white text-sm"
+                          >
+                            <option value="amp">{companyConfig.name}</option>
+                            <option value="ce">
+                              {companyConfig.engineeringName}
+                            </option>
+                          </select>
+                        </div>
+                      )}
                     <div>
                       <label
                         htmlFor="fireteam_lead"

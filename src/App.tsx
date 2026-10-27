@@ -94,6 +94,7 @@ import GoalManagementPage from "./app/(dashboard)/sales/goals/management/page";
 import PipelineCalendarPage from "./app/(dashboard)/sales/pipeline-calendar/page";
 import EngineeringPage from "./app/engineering/page";
 import EngineeringDashboard from "./app/engineering/dashboard/page";
+import EngineeringJobRoute from "./app/engineering/jobs/[id]/page";
 import { EncryptionSettings } from "./components/admin/EncryptionSettings";
 import FeaturesFixesPage from "./app/features-fixes/page";
 import FormBuilder from "./components/customForms/FormBuilder";
@@ -994,13 +995,24 @@ function App() {
                     }
                   />
                   {/* The Jobs and Report builder tabs. Static paths outrank
-                      /:division/jobs; job detail still uses /:division/jobs/:id. */}
+                      /:division/jobs and /:division/jobs/:id. */}
                   <Route
                     path="/engineering/jobs"
                     element={
                       <RequireAuth>
                         <Layout>
                           <EngineeringDashboard />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  {/* C&E jobs get the engineering job page, AMP ones JobDetail. */}
+                  <Route
+                    path="/engineering/jobs/:id"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <EngineeringJobRoute />
                         </Layout>
                       </RequireAuth>
                     }

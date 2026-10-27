@@ -1,3 +1,5 @@
+import type React from "react";
+
 /**
  * C&E Design palette for the Engineering portal (navy and midnight, square
  * corners). Full class strings so Tailwind keeps them; the orange accent
@@ -34,3 +36,11 @@ export const chipClass = (on: boolean) =>
       ? "border-[#1b0f56] bg-[#1b0f56] text-white dark:border-[#f4f5f8] dark:bg-[#f4f5f8] dark:text-[#0c0a34]"
       : "border-[#8f8aae] bg-transparent text-[#4d4870] hover:bg-[#f4f3f8] hover:text-[#1b0f56] dark:border-[#5e58a0] dark:text-[#c4c8d2] dark:hover:bg-[#151244] dark:hover:text-[#f4f5f8]"
   }`;
+
+/** The 40px blueprint grid over midnight that deepens into navy (title bands). */
+export const blueprintStyle: React.CSSProperties = {
+  backgroundColor: "#0c0a34",
+  backgroundImage:
+    "linear-gradient(#14114e 1px, transparent 1px), linear-gradient(90deg, #14114e 1px, transparent 1px), linear-gradient(180deg, #0c0a34 0%, #0c0a34 50%, #1b0f56 100%)",
+  backgroundSize: "40px 40px, 40px 40px, 100% 100%",
+};

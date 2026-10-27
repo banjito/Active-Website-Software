@@ -1,11 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronRight, Search } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { companyConfig } from "@/lib/companyConfig";
+import { engineeringJobPath, UNDEFINED_COLUMN } from "@/lib/engineering/engineeringCompany";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ce, chipClass } from "./engineeringTheme";
 
+/** ?company=ce shows C&E jobs; anything else shows AMP's. */
+export const COMPANY_PARAM = "company";
+
 interface EngineeringJob {
+  /** true = C&E job, false = AMP. */
+  engineering_company: boolean;
   id: string;
   job_number: string | null;
   title: string | null;
@@ -23,7 +30,7 @@ type StatusGroup = "open" | "hold" | "done" | "cancelled";
 type Filter = "all" | Exclude<StatusGroup, "cancelled">;
 
 /** Label, step on the 4-step bar (0 = off the track) and filter group. */
-const STATUS: Record<string, { label: string; step: number; group: StatusGroup }> = {
+export const STATUS: Record<string, { label: string; step: number; group: StatusGroup }> = {
   pending: { label: "Pending", step: 1, group: "open" },
   in_progress: { label: "In progress", step: 2, group: "open" },
   completed: { label: "Completed", step: 3, group: "done" },
@@ -33,9 +40,9 @@ const STATUS: Record<string, { label: string; step: number; group: StatusGroup }
   on_hold: { label: "On hold", step: 0, group: "hold" },
   cancelled: { label: "Cancelled", step: 0, group: "cancelled" },
 };
-const STEPS = 4;
+export const STEPS = 4;
 
-const statusOf = (s: string | null) => STATUS[s ?? "pending"] ?? STATUS.pending;
+export const statusOf = (s: string | null) => STATUS[s ?? "pending"] ?? STATUS.pending;
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: "all", label: "All" },
@@ -55,7 +62,7 @@ function daysUntil(date: string): number {
   return Math.round((new Date(y, m - 1, d).getTime() - today.getTime()) / 86400000);
 }
 
-function formatDue(date: string): string {
+export function formatDue(date: string): string {
   const [y, m, d] = date.split("-").map(Number);
   const due = new Date(y, m - 1, d);
   return due.toLocaleDateString("en-US", {
@@ -82,7 +89,9 @@ const initials = (name: string) =>
 
 export default function EngineeringJobsTab() {
   const navigate = useNavigate();
-  const [jobs, setJobs] = useState<EngineeringJob[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const showCe = searchParams.get(COMPANY_PARAM) === "ce";
+  const [allJobs, setAllJobs] = useState<EngineeringJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
@@ -93,15 +102,21 @@ export default function EngineeringJobsTab() {
     setLoading(true);
     setLoadError(null);
     try {
-      const { data, error } = await supabase
-        .schema("neta_ops")
-        .from("jobs")
-        .select(
-          "id, job_number, title, status, due_date, location, site_address, customer_id, project_manager_id",
-        )
-        .eq("division", "engineering")
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false });
+      const query = (cols: string) =>
+        supabase
+          .schema("neta_ops")
+          .from("jobs")
+          .select(cols)
+          .eq("division", "engineering")
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false });
+      const columns =
+        "id, job_number, title, status, due_date, location, site_address, customer_id, project_manager_id";
+      let { data, error }: { data: any[] | null; error: any } = await query(
+        `${columns}, engineering_company`,
+      );
+      // Before the migration runs every job is AMP.
+      if (error?.code === UNDEFINED_COLUMN) ({ data, error } = await query(columns));
       if (error) throw error;
       const rows = data || [];
 
@@ -134,9 +149,10 @@ export default function EngineeringJobsTab() {
         (pmsRes.data || []).map((p: any) => [p.id, (p.full_name || "").trim() || p.email]),
       );
 
-      setJobs(
+      setAllJobs(
         rows.map((j) => ({
           ...j,
+          engineering_company: !!j.engineering_company,
           customerName: (j.customer_id && customerName.get(j.customer_id)) || "",
           pmName: (j.project_manager_id && pmName.get(j.project_manager_id)) || null,
         })),
@@ -152,6 +168,25 @@ export default function EngineeringJobsTab() {
   useEffect(() => {
     loadJobs();
   }, []);
+
+  const jobs = useMemo(
+    () => allJobs.filter((j) => j.engineering_company === showCe),
+    [allJobs, showCe],
+  );
+  const ceCount = useMemo(() => allJobs.filter((j) => j.engineering_company).length, [allJobs]);
+
+  const companies = [
+    { ce: false, label: `${companyConfig.name} jobs`, count: allJobs.length - ceCount },
+    { ce: true, label: `${companyConfig.engineeringName} jobs`, count: ceCount },
+  ];
+
+  const pickCompany = (ce: boolean) => {
+    const next = new URLSearchParams(searchParams);
+    if (ce) next.set(COMPANY_PARAM, "ce");
+    else next.delete(COMPANY_PARAM);
+    setSearchParams(next, { replace: true });
+    setPmFilter("");
+  };
 
   const stats = useMemo(() => {
     const open = jobs.filter((j) => statusOf(j.status).group === "open");
@@ -202,7 +237,7 @@ export default function EngineeringJobsTab() {
     });
   }, [jobs, filter, search, pmFilter]);
 
-  const openJob = (id: string) => navigate(`/engineering/jobs/${id}`);
+  const openJob = (id: string) => navigate(engineeringJobPath(id));
 
   if (loading) {
     return (
@@ -243,6 +278,21 @@ export default function EngineeringJobsTab() {
 
   return (
     <div className="flex flex-col gap-6">
+      <div role="group" aria-label="Company" className="flex flex-wrap">
+        {companies.map((c, i) => (
+          <button
+            key={c.label}
+            type="button"
+            aria-pressed={showCe === c.ce}
+            onClick={() => pickCompany(c.ce)}
+            className={`${chipClass(showCe === c.ce)} ${i > 0 ? "-ml-px" : ""}`}
+          >
+            {c.label}
+            <span className="font-mono text-xs font-medium">{c.count}</span>
+          </button>
+        ))}
+      </div>
+
       <div
         className={`grid grid-cols-2 md:grid-cols-4 border ${ce.border} ${ce.surface} ${ce.shadow}`}
       >
@@ -400,7 +450,9 @@ export default function EngineeringJobsTab() {
 
           {visible.length === 0 && (
             <div className={`px-4 py-12 text-center text-sm ${ce.muted}`}>
-              {jobs.length === 0 ? "No engineering jobs yet." : "No jobs match this filter."}
+              {jobs.length === 0
+                ? `No ${showCe ? companyConfig.engineeringName : companyConfig.name} engineering jobs yet.`
+                : "No jobs match this filter."}
             </div>
           )}
         </div>

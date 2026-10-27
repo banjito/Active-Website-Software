@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Briefcase, FileCode } from "lucide-react";
 import { useDivision } from "@/App";
 import { companyConfig } from "@/lib/companyConfig";
-import { ce } from "@/components/engineering/engineeringTheme";
+import { blueprintStyle, ce } from "@/components/engineering/engineeringTheme";
 import Constellation from "@/components/engineering/Constellation";
 import EngineeringJobsTab from "@/components/engineering/EngineeringJobsTab";
 import EngineeringReportBuilderTab, {
@@ -11,14 +11,6 @@ import EngineeringReportBuilderTab, {
 } from "@/components/engineering/EngineeringReportBuilderTab";
 
 const JOBS_PATH = "/engineering/jobs";
-
-/** The 40px blueprint grid over midnight that deepens into navy. */
-const BLUEPRINT_STYLE: React.CSSProperties = {
-  backgroundColor: "#0c0a34",
-  backgroundImage:
-    "linear-gradient(#14114e 1px, transparent 1px), linear-gradient(90deg, #14114e 1px, transparent 1px), linear-gradient(180deg, #0c0a34 0%, #0c0a34 50%, #1b0f56 100%)",
-  backgroundSize: "40px 40px, 40px 40px, 100% 100%",
-};
 
 const TABS = [
   { path: JOBS_PATH, label: "Jobs", icon: Briefcase },
@@ -45,7 +37,7 @@ export default function EngineeringDashboard() {
   return (
     // Negative margins undo the layout's padding so the title band runs edge to edge.
     <div className={`-m-3 min-h-full sm:-m-4 lg:-m-6 ${ce.page}`}>
-      <div className="relative overflow-hidden print:hidden" style={BLUEPRINT_STYLE}>
+      <div className="relative overflow-hidden print:hidden" style={blueprintStyle}>
         <Constellation />
         <div className="relative mx-auto flex max-w-[1360px] flex-col gap-7 px-4 pt-10 sm:px-8">
           <div className="flex flex-wrap items-end justify-between gap-6">

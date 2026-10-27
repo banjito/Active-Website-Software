@@ -68,6 +68,11 @@ import {
 } from "@/lib/reportEvaluations";
 import { EvaluationResultBadge } from "./EvaluationResultBadge";
 import { splitAssetName } from "./reportMappings";
+import {
+  fetchReportActivity,
+  issueRounds,
+  issueRoundsHtml,
+} from "@/services/reportActivityService";
 
 // A report's title is the stored asset name, "<report type> - <asset identifier>".
 // The list shows the identifier as the headline and the report type underneath,
@@ -1413,6 +1418,17 @@ export function ReportApprovalWorkflow({
       ? `${report.title} - #${jobNumber}`
       : report.title;
 
+    // Earlier send-backs to Issue and the tech's fix notes, so the reviewer can
+    // check the old comments were dealt with. Best effort.
+    let reviewHistoryHtml = "";
+    try {
+      reviewHistoryHtml = issueRoundsHtml(
+        issueRounds(await fetchReportActivity(report.id)),
+      );
+    } catch (e) {
+      console.warn("[ViewDialog] Review history unavailable:", e);
+    }
+
     // Create modal completely outside of React
     // This survives component unmounts
     let modalContainer = document.getElementById("report-view-modal-root");
@@ -1461,6 +1477,7 @@ export function ReportApprovalWorkflow({
                     ${PRINTER_ICON_SVG}
                   </button>
                 </div>
+                ${reviewHistoryHtml}
                 ${
                   canReview
                     ? `
@@ -1785,6 +1802,7 @@ export function ReportApprovalWorkflow({
                     : ""
                 }
               </div>
+              ${reviewHistoryHtml}
               ${
                 canReview
                   ? `

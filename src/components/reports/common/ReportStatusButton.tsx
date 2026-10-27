@@ -2,9 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "@/components/ui/toast";
 import { useAuth } from "@/lib/AuthContext";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, History } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { deriveReportPathParts } from "./ReportPhotos";
+import { ensureFixNote } from "./fixNoteDialog";
+import { ReportHistoryDialog } from "./ReportHistoryDialog";
 import {
   AssetReportStatus,
   notifyAssetStatusChanged,
@@ -135,9 +137,12 @@ export const ReportStatusButton: React.FC = () => {
     file_url: string;
     template_type?: string | null;
     approved_at?: string | null;
+    created_at?: string | null;
+    user_id?: string | null;
     status: AssetReportStatus;
   } | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [saving, setSaving] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -147,7 +152,8 @@ export const ReportStatusButton: React.FC = () => {
       setAsset(null);
       return false;
     }
-    const columns = "id, name, file_url, template_type, approved_at, status";
+    const columns =
+      "id, name, file_url, template_type, approved_at, status, created_at, user_id";
     const apply = (row: any) => {
       setAsset({
         ...row,
@@ -243,6 +249,13 @@ export const ReportStatusButton: React.FC = () => {
     if (!jobId) return;
     if (action.confirm && !confirm(action.confirm)) return;
     setIsOpen(false);
+    // Coming back from Issue: ask what was fixed so the reviewer can check it.
+    if (
+      action.target === "ready_for_review" &&
+      !(await ensureFixNote(asset.id, status))
+    ) {
+      return;
+    }
     setSaving(true);
     try {
       const result = await updateAssetReportStatus({
@@ -338,7 +351,30 @@ export const ReportStatusButton: React.FC = () => {
               </button>
             ))
           )}
+          <div className="my-1 border-t border-neutral-200 dark:border-neutral-700" />
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setIsOpen(false);
+              setShowHistory(true);
+            }}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-neutral-900 hover:bg-neutral-100 dark:text-white dark:hover:bg-neutral-700"
+          >
+            <History className="h-4 w-4" aria-hidden="true" />
+            View history
+          </button>
         </div>
+      )}
+
+      {showHistory && (
+        <ReportHistoryDialog
+          assetId={asset.id}
+          reportName={asset.name}
+          createdAt={asset.created_at}
+          createdBy={asset.user_id}
+          onClose={() => setShowHistory(false)}
+        />
       )}
     </div>
   );

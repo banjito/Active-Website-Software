@@ -51,6 +51,7 @@ import { useMobileDetection } from "../../hooks/useMobileDetection";
 import { HeaderBar } from "./HeaderBar";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ReportStatusButton } from "@/components/reports/common/ReportStatusButton";
+import { ensureFixNote } from "@/components/reports/common/fixNoteDialog";
 import {
   JOB_INFO_EDITABLE_CSS,
   collectJobInfoFields,
@@ -212,12 +213,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     reviewer: string | null;
     reviewedAt: string | null;
   } | null>(null);
+  // The open report's asset, so its own "Mark Ready to Review" button can ask
+  // for a fix note when the report is coming back from Issue.
+  const [fixNoteTarget, setFixNoteTarget] = useState<{
+    id: string;
+    status: string;
+  } | null>(null);
 
   useEffect(() => {
     let isCancelled = false;
     setIsReportLocked(false); // Reset on route change
     setHideReadyToReview(false);
     setReviewIssue(null);
+    setFixNoteTarget(null);
 
     const checkLock = async () => {
       if (!isReportPage) return;
@@ -270,6 +278,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         }
 
         const s = String(match?.status || "").toLowerCase();
+        if (!isCancelled && match?.id) {
+          setFixNoteTarget({ id: match.id, status: s });
+        }
         if (!isCancelled) {
           if (s === "approved" || s === "sent") {
             setIsReportLocked(true);
@@ -486,6 +497,57 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       if (observer) observer.disconnect();
     };
   }, [hideReadyToReview]);
+
+  // Keep the fix-note check in step when the status changes from the toolbar.
+  useEffect(() => {
+    const onChanged = (e: Event) => {
+      const { assetId, newStatus } = (e as CustomEvent).detail || {};
+      if (!assetId || !newStatus) return;
+      setFixNoteTarget((prev) =>
+        prev && prev.id === assetId ? { ...prev, status: newStatus } : prev,
+      );
+    };
+    window.addEventListener("assetStatusChanged", onChanged);
+    return () => window.removeEventListener("assetStatusChanged", onChanged);
+  }, []);
+
+  // Each report has its own "Mark Ready to Review" button with its own save
+  // code, so catch the click before the report sees it: if the report is coming
+  // back from Issue, ask what was fixed first, then let the click through.
+  useEffect(() => {
+    const target = fixNoteTarget;
+    if (
+      !target ||
+      !["issue", "in_progress", "not started"].includes(target.status)
+    ) {
+      return;
+    }
+    let letThrough = false;
+    const onClickCapture = async (e: MouseEvent) => {
+      if (letThrough) return;
+      const btn = (e.target as HTMLElement | null)?.closest("button");
+      if (!btn || !document.querySelector("main")?.contains(btn)) return;
+      const text = (btn.textContent || "").trim().toLowerCase();
+      if (
+        text !== "mark ready to review" &&
+        text !== "mark as ready to review" &&
+        text !== "submit for review"
+      ) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      if (!(await ensureFixNote(target.id, target.status))) return;
+      letThrough = true;
+      try {
+        btn.click();
+      } finally {
+        letThrough = false;
+      }
+    };
+    document.addEventListener("click", onClickCapture, true);
+    return () => document.removeEventListener("click", onClickCapture, true);
+  }, [fixNoteTarget]);
 
   // Inject CSS-level lock styles for approved/sent reports
   useEffect(() => {

@@ -69,7 +69,7 @@ import { useSiteLogos } from "@/services/siteThemeService";
 import { useDivisions } from "@/hooks/useDivisions";
 import { fieldTechCities } from "@/services/divisionsService";
 import Constellation from "@/components/engineering/Constellation";
-import TrendLine from "@/components/sales/TrendLine";
+import RevenueOdometer from "@/components/sales/RevenueOdometer";
 import RosterWave from "@/components/hr/RosterWave";
 import ThreePhaseWave from "@/components/portal/ThreePhaseWave";
 import WireGlobe from "@/components/portal/WireGlobe";
@@ -2411,7 +2411,7 @@ export default function PortalLanding() {
               role="button"
               className="group relative overflow-hidden portal-click-card border border-neutral-200 dark:border-dark-300 cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black"
             >
-              <TrendLine
+              <RevenueOdometer
                 whileParentHovered
                 className="opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus:opacity-100"
               />

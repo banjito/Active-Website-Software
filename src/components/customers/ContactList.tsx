@@ -7,6 +7,17 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Pagination } from "../ui/Pagination";
 import { DIVISION_OPTIONS } from "../../services/customerService";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { SortHeader } from "@/components/ui/SortHeader";
+
+type ContactSortField = "name" | "position" | "email" | "phone" | "is_primary";
+
+const CONTACT_SORT_FIELDS: ContactSortField[] = [
+  "name",
+  "position",
+  "email",
+  "phone",
+  "is_primary",
+];
 
 interface Contact {
   id: string;
@@ -130,6 +141,14 @@ export default function ContactList() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(
     initialSettings.sortOrder,
   );
+  const [sortField, setSortField] = useState<ContactSortField>(() => {
+    try {
+      const saved = localStorage.getItem("contactListSortField");
+      if (CONTACT_SORT_FIELDS.includes(saved as ContactSortField))
+        return saved as ContactSortField;
+    } catch {}
+    return "name";
+  });
   const [startsWithFilter, setStartsWithFilter] = useState<string>("");
   const [activeDivisionTabs, setActiveDivisionTabs] = useState<string[]>(
     getInitialDivisionTabs,
@@ -158,9 +177,16 @@ export default function ContactList() {
     page,
     debouncedSearch,
     sortOrder,
+    sortField,
     startsWithFilter,
     activeDivisionTabs,
   ]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("contactListSortField", sortField);
+    } catch {}
+  }, [sortField]);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -367,7 +393,12 @@ export default function ContactList() {
           ? "asc"
           : currentSortOrder;
 
-      if (effectiveSortOrder) {
+      if (currentSortOrder && sortField !== "name") {
+        query = query.order(sortField, {
+          ascending: currentSortOrder === "asc",
+          nullsFirst: false,
+        });
+      } else if (effectiveSortOrder) {
         query = query
           .order("last_name", { ascending: effectiveSortOrder === "asc" })
           .order("first_name", { ascending: effectiveSortOrder === "asc" });
@@ -620,7 +651,23 @@ export default function ContactList() {
     navigate(targetPath);
   };
 
+  function handleHeaderSort(
+    field: ContactSortField,
+    direction: "asc" | "desc",
+  ) {
+    setSortField(field);
+    setSortOrder(direction);
+    setPage(1);
+  }
+
   function toggleSortOrder() {
+    // This button is the name A-Z/Z-A toggle; other fields use the sort bar.
+    if (sortField !== "name") {
+      setSortField("name");
+      setSortOrder("asc");
+      setPage(1);
+      return;
+    }
     setSortOrder((prev) => {
       if (prev === null) return "asc";
       if (prev === "asc") return "desc";
@@ -803,31 +850,62 @@ export default function ContactList() {
                   scope="col"
                   className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-neutral-900 dark:text-white sm:pl-6"
                 >
-                  Name
+                  <SortHeader
+                    label="Name"
+                    field="name"
+                    sortField={sortField}
+                    sortDirection={sortOrder}
+                    onSort={handleHeaderSort}
+                  />
                 </th>
                 <th
                   scope="col"
                   className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white"
                 >
-                  Position
+                  <SortHeader
+                    label="Position"
+                    field="position"
+                    sortField={sortField}
+                    sortDirection={sortOrder}
+                    onSort={handleHeaderSort}
+                  />
                 </th>
                 <th
                   scope="col"
                   className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white"
                 >
-                  Email
+                  <SortHeader
+                    label="Email"
+                    field="email"
+                    sortField={sortField}
+                    sortDirection={sortOrder}
+                    onSort={handleHeaderSort}
+                  />
                 </th>
                 <th
                   scope="col"
                   className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white"
                 >
-                  Phone
+                  <SortHeader
+                    label="Phone"
+                    field="phone"
+                    sortField={sortField}
+                    sortDirection={sortOrder}
+                    onSort={handleHeaderSort}
+                  />
                 </th>
                 <th
                   scope="col"
                   className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-white"
                 >
-                  Primary
+                  <SortHeader
+                    label="Primary"
+                    field="is_primary"
+                    sortField={sortField}
+                    sortDirection={sortOrder}
+                    onSort={handleHeaderSort}
+                    defaultDirection="desc"
+                  />
                 </th>
                 <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
                   <span className="sr-only">Actions</span>

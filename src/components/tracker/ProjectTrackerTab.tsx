@@ -892,6 +892,7 @@ export function ProjectTrackerTab({ jobId, onOpenReport }: ProjectTrackerTabProp
         </div>
       )}
 
+
       <div className="rounded-none border overflow-x-auto">
         <Table>
           <TableHeader>

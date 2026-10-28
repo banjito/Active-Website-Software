@@ -54,7 +54,12 @@ type MeasurementValue = number | "";
 interface Measurement {
   value: number | null;
   isEmpty: boolean;
+  // Exactly what the tech typed, e.g. ">2200" when the meter maxed out
+  raw?: string;
 }
+
+const isGreaterThan = (measurement: Measurement): boolean =>
+  /^\s*>/.test(measurement.raw ?? "");
 
 interface MeasurementSet {
   "P1-P2": Measurement;
@@ -85,8 +90,16 @@ const createMeasurement = (value: string | number | null): Measurement => {
   if (value === "" || value === null) {
     return { value: null, isEmpty: true };
   }
-  const numValue = typeof value === "string" ? parseFloat(value) : value;
-  return { value: numValue, isEmpty: false };
+  if (typeof value === "number") {
+    return { value, isEmpty: false };
+  }
+  // Keep the typed text and pull the number out of it (">2200" -> 2200)
+  const numValue = parseFloat(value.replace(/[^0-9eE+\-.]/g, ""));
+  return {
+    value: Number.isNaN(numValue) ? null : numValue,
+    isEmpty: false,
+    raw: value,
+  };
 };
 
 const applyTemperatureCorrection = (
@@ -100,6 +113,9 @@ const applyTemperatureCorrection = (
   return {
     value: correctedValue,
     isEmpty: false,
+    ...(isGreaterThan(measurement) && {
+      raw: ">" + correctedValue.toFixed(2),
+    }),
   };
 };
 
@@ -628,6 +644,7 @@ const getMeasurementValue = (measurement: Measurement): string => {
 const getMeasurementDisplayValue = (
   measurement: Measurement | undefined | null,
 ): string => {
+  if (typeof measurement?.raw === "string") return measurement.raw;
   if (
     !measurement ||
     measurement.isEmpty ||
@@ -643,7 +660,10 @@ const getTemperatureCorrectedValue = (
   tcf: number,
 ): string => {
   if (measurement.isEmpty || measurement.value === null) return "";
-  return (measurement.value * tcf).toFixed(2);
+  return (
+    (isGreaterThan(measurement) ? ">" : "") +
+    (measurement.value * tcf).toFixed(2)
+  );
 };
 
 export default function LowVoltageSwitchReport() {
@@ -2154,7 +2174,7 @@ export default function LowVoltageSwitchReport() {
                   <tr>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
-                        type="number"
+                        type="text"
                         value={getMeasurementDisplayValue(
                           formData.insulationResistance.poleToPole["P1-P2"],
                         )}
@@ -2170,7 +2190,7 @@ export default function LowVoltageSwitchReport() {
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
-                        type="number"
+                        type="text"
                         value={getMeasurementDisplayValue(
                           formData.insulationResistance.poleToPole["P2-P3"],
                         )}
@@ -2186,7 +2206,7 @@ export default function LowVoltageSwitchReport() {
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
-                        type="number"
+                        type="text"
                         value={getMeasurementDisplayValue(
                           formData.insulationResistance.poleToPole["P3-P1"],
                         )}
@@ -2202,7 +2222,7 @@ export default function LowVoltageSwitchReport() {
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
-                        type="number"
+                        type="text"
                         value={getMeasurementDisplayValue(
                           formData.insulationResistance.poleToFrame["P1"],
                         )}
@@ -2218,7 +2238,7 @@ export default function LowVoltageSwitchReport() {
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
-                        type="number"
+                        type="text"
                         value={getMeasurementDisplayValue(
                           formData.insulationResistance.poleToFrame["P2"],
                         )}
@@ -2234,7 +2254,7 @@ export default function LowVoltageSwitchReport() {
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
-                        type="number"
+                        type="text"
                         value={getMeasurementDisplayValue(
                           formData.insulationResistance.poleToFrame["P3"],
                         )}
@@ -2250,7 +2270,7 @@ export default function LowVoltageSwitchReport() {
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
-                        type="number"
+                        type="text"
                         value={getMeasurementDisplayValue(
                           formData.insulationResistance.lineToLoad["P1"],
                         )}
@@ -2266,7 +2286,7 @@ export default function LowVoltageSwitchReport() {
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
-                        type="number"
+                        type="text"
                         value={getMeasurementDisplayValue(
                           formData.insulationResistance.lineToLoad["P2"],
                         )}
@@ -2282,7 +2302,7 @@ export default function LowVoltageSwitchReport() {
                     </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
-                        type="number"
+                        type="text"
                         value={getMeasurementDisplayValue(
                           formData.insulationResistance.lineToLoad["P3"],
                         )}
@@ -2476,141 +2496,19 @@ export default function LowVoltageSwitchReport() {
               <table className="min-w-full border-collapse border border-neutral-200 dark:border-neutral-700">
                 <thead>
                   <tr>
-                    <th
-                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center"
-                      colSpan={3}
-                    >
-                      Pole-to-Pole
-                    </th>
-                    <th
-                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center"
-                      colSpan={3}
-                    >
-                      Pole-to-Frame
-                    </th>
-                    <th
-                      className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center"
-                      colSpan={3}
-                    >
-                      Line-to-Load
-                    </th>
-                  </tr>
-                  <tr>
-                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
-                      P1-P2
-                    </th>
-                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
-                      P2-P3
-                    </th>
-                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
-                      P3-P1
-                    </th>
-                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center">
                       P1
                     </th>
-                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center">
                       P2
                     </th>
-                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
-                      P3
-                    </th>
-                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
-                      P1
-                    </th>
-                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
-                      P2
-                    </th>
-                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal">
+                    <th className="border border-neutral-200 dark:border-neutral-700 p-1 bg-neutral-50 dark:bg-dark-150 font-normal text-center">
                       P3
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
-                      <input
-                        type="number"
-                        value={formData.contactResistance.poleToPole["P1-P2"]}
-                        onChange={(e) =>
-                          handleChange("contactResistance.poleToPole", {
-                            ...formData.contactResistance.poleToPole,
-                            "P1-P2": Number(e.target.value),
-                          })
-                        }
-                        readOnly={!isEditing}
-                        className="form-input w-full"
-                      />
-                    </td>
-                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
-                      <input
-                        type="number"
-                        value={formData.contactResistance.poleToPole["P2-P3"]}
-                        onChange={(e) =>
-                          handleChange("contactResistance.poleToPole", {
-                            ...formData.contactResistance.poleToPole,
-                            "P2-P3": Number(e.target.value),
-                          })
-                        }
-                        readOnly={!isEditing}
-                        className="form-input w-full"
-                      />
-                    </td>
-                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
-                      <input
-                        type="number"
-                        value={formData.contactResistance.poleToPole["P3-P1"]}
-                        onChange={(e) =>
-                          handleChange("contactResistance.poleToPole", {
-                            ...formData.contactResistance.poleToPole,
-                            "P3-P1": Number(e.target.value),
-                          })
-                        }
-                        readOnly={!isEditing}
-                        className="form-input w-full"
-                      />
-                    </td>
-                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
-                      <input
-                        type="number"
-                        value={formData.contactResistance.poleToFrame["P1"]}
-                        onChange={(e) =>
-                          handleChange("contactResistance.poleToFrame", {
-                            ...formData.contactResistance.poleToFrame,
-                            P1: Number(e.target.value),
-                          })
-                        }
-                        readOnly={!isEditing}
-                        className="form-input w-full"
-                      />
-                    </td>
-                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
-                      <input
-                        type="number"
-                        value={formData.contactResistance.poleToFrame["P2"]}
-                        onChange={(e) =>
-                          handleChange("contactResistance.poleToFrame", {
-                            ...formData.contactResistance.poleToFrame,
-                            P2: Number(e.target.value),
-                          })
-                        }
-                        readOnly={!isEditing}
-                        className="form-input w-full"
-                      />
-                    </td>
-                    <td className="border border-neutral-200 dark:border-neutral-700 p-1">
-                      <input
-                        type="number"
-                        value={formData.contactResistance.poleToFrame["P3"]}
-                        onChange={(e) =>
-                          handleChange("contactResistance.poleToFrame", {
-                            ...formData.contactResistance.poleToFrame,
-                            P3: Number(e.target.value),
-                          })
-                        }
-                        readOnly={!isEditing}
-                        className="form-input w-full"
-                      />
-                    </td>
                     <td className="border border-neutral-200 dark:border-neutral-700 p-1">
                       <input
                         type="number"

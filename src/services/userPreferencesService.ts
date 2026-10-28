@@ -28,7 +28,7 @@ import { supabase } from '../lib/supabase';
 export interface UserPreferences {
   filters?: {
     opportunityList?: {
-      sortField?: 'quote_number' | 'opportunity_created_date' | 'proposal_due_date';
+      sortField?: string;
       sortDirection?: 'asc' | 'desc';
       searchTerm?: string;
       divisionFilter?: string | string[];

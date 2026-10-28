@@ -26,6 +26,8 @@ import { JobNotifications } from "./JobNotifications";
 import { Database } from "@/types/supabase"; // Assuming this is the correct path to your generated types
 import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { SortHeader, compareSortValues } from "@/components/ui/SortHeader";
+import { TableTopScrollbar } from "@/components/ui/TableTopScrollbar";
 import { withPgTimeoutRetry } from "../../lib/retryPgTimeout";
 import { isSuperUser } from "../../lib/roles";
 import { formatStatusLabel } from "@/utils/formatters";
@@ -123,17 +125,38 @@ type JobSortField =
   | "priority"
   | "job_number"
   | "title"
-  | "created_at";
+  | "created_at"
+  | "customer"
+  | "remaining"
+  | "division"
+  | "source";
 type SortDirection = "asc" | "desc";
 
-const SORT_FIELD_OPTIONS: Array<{ value: JobSortField; label: string }> = [
+const SORT_FIELD_OPTIONS: Array<{
+  value: JobSortField;
+  label: string;
+  defaultDirection?: SortDirection;
+}> = [
   { value: "status", label: "Status" },
-  { value: "budget", label: "Quoted Amount" },
-  { value: "priority", label: "Priority" },
-  { value: "job_number", label: "Job Number" },
+  { value: "budget", label: "Quoted Amount", defaultDirection: "desc" },
+  { value: "priority", label: "Priority", defaultDirection: "desc" },
+  { value: "job_number", label: "Job Number", defaultDirection: "desc" },
   { value: "title", label: "Title" },
-  { value: "created_at", label: "Date Created" },
+  { value: "created_at", label: "Date Created", defaultDirection: "desc" },
+  { value: "customer", label: "Customer" },
+  { value: "remaining", label: "Remaining Balance", defaultDirection: "desc" },
+  { value: "division", label: "Division" },
+  { value: "source", label: "Source" },
 ];
+
+function getJobSource(job: Job): string {
+  if (
+    job.opportunity?.opportunity_type === "time_materials" ||
+    (job.notes && /T&M|time.*material/i.test(job.notes))
+  )
+    return "T&M";
+  return job.opportunity_id ? "From Opportunity" : "Direct Entry";
+}
 
 // Date filter: "created" is the job's own created date; "submitted"/"approved"
 // match jobs whose reports were submitted/approved in the range.
@@ -219,6 +242,7 @@ export default function JobList() {
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const sortMenuRef = useRef<HTMLDivElement>(null);
+  const jobsTableScrollRef = useRef<HTMLDivElement>(null);
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const filterMenuRef = useRef<HTMLDivElement>(null);
 
@@ -493,6 +517,11 @@ export default function JobList() {
     setDateFilterEnd("");
   }
 
+  function handleHeaderSort(field: JobSortField, direction: SortDirection) {
+    setSortField(field);
+    setSortDirection(direction);
+  }
+
   function sortJobsForDisplay(list: Job[]) {
     const priorityRank: Record<string, number> = {
       low: 1,
@@ -504,6 +533,22 @@ export default function JobList() {
     return [...list].sort((a, b) => {
       if (sortField === "budget") {
         return ((a.budget ?? 0) - (b.budget ?? 0)) * direction;
+      }
+
+      if (sortField === "remaining") {
+        return ((a.contractValue ?? 0) - (b.contractValue ?? 0)) * direction;
+      }
+
+      if (sortField === "customer") {
+        return compareSortValues(
+          a.customers?.company_name || a.customers?.name,
+          b.customers?.company_name || b.customers?.name,
+          sortDirection,
+        );
+      }
+
+      if (sortField === "source") {
+        return compareSortValues(getJobSource(a), getJobSource(b), sortDirection);
       }
 
       if (sortField === "priority") {
@@ -2034,63 +2079,126 @@ export default function JobList() {
       </div>
 
       <div className="mt-8">
-        <div className="-mx-4 overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-none">
+        <div className="-mx-4 shadow ring-1 ring-black ring-opacity-5 sm:-mx-6 md:mx-0 md:rounded-none">
+          <TableTopScrollbar
+            scrollRef={jobsTableScrollRef}
+            watch={filteredJobs.length}
+          />
+          <div ref={jobsTableScrollRef} className="overflow-x-auto">
           <table className="min-w-[1180px] divide-y divide-neutral-300">
             <thead className="bg-neutral-50 dark:bg-dark-150">
               <tr>
                 <th
                   scope="col"
-                  className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-neutral-900 dark:text-neutral-200 sm:pl-6"
+                  className="w-28 whitespace-nowrap py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-neutral-900 dark:text-neutral-200 sm:pl-6"
                 >
-                  Job #
+                  <SortHeader
+                    label="Job #"
+                    field="job_number"
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onSort={handleHeaderSort}
+                    defaultDirection="desc"
+                  />
+                </th>
+                <th
+                  scope="col"
+                  className="w-64 px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-neutral-200"
+                >
+                  <SortHeader
+                    label="Title"
+                    field="title"
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onSort={handleHeaderSort}
+                  />
                 </th>
                 <th
                   scope="col"
                   className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-neutral-200"
                 >
-                  Title
+                  <SortHeader
+                    label="Customer"
+                    field="customer"
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onSort={handleHeaderSort}
+                  />
                 </th>
                 <th
                   scope="col"
                   className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-neutral-200"
                 >
-                  Customer
+                  <SortHeader
+                    label="Status"
+                    field="status"
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onSort={handleHeaderSort}
+                  />
                 </th>
                 <th
                   scope="col"
                   className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-neutral-200"
                 >
-                  Status
+                  <SortHeader
+                    label="Remaining Balance"
+                    field="remaining"
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onSort={handleHeaderSort}
+                    defaultDirection="desc"
+                  />
                 </th>
                 <th
                   scope="col"
                   className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-neutral-200"
                 >
-                  Remaining Balance
+                  <SortHeader
+                    label="Quoted Amount"
+                    field="budget"
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onSort={handleHeaderSort}
+                    defaultDirection="desc"
+                  />
                 </th>
                 <th
                   scope="col"
                   className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-neutral-200"
                 >
-                  Quoted Amount
+                  <SortHeader
+                    label="Division"
+                    field="division"
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onSort={handleHeaderSort}
+                  />
                 </th>
                 <th
                   scope="col"
                   className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-neutral-200"
                 >
-                  Division
+                  <SortHeader
+                    label="Priority"
+                    field="priority"
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onSort={handleHeaderSort}
+                    defaultDirection="desc"
+                  />
                 </th>
                 <th
                   scope="col"
                   className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-neutral-200"
                 >
-                  Priority
-                </th>
-                <th
-                  scope="col"
-                  className="px-3 py-3.5 text-left text-sm font-semibold text-neutral-900 dark:text-neutral-200"
-                >
-                  Source
+                  <SortHeader
+                    label="Source"
+                    field="source"
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onSort={handleHeaderSort}
+                  />
                 </th>
               </tr>
             </thead>
@@ -2111,7 +2219,7 @@ export default function JobList() {
                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-neutral-900 dark:text-neutral-200 sm:pl-6">
                       {job.job_number || "Pending"}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-neutral-600 dark:text-white">
+                    <td className="min-w-[12rem] px-3 py-4 text-sm text-neutral-600 dark:text-white">
                       {maskJobTitle(job.title)}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-neutral-600 dark:text-white">
@@ -2185,6 +2293,7 @@ export default function JobList() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 

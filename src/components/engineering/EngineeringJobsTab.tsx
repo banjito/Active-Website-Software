@@ -44,6 +44,10 @@ export const STEPS = 4;
 
 export const statusOf = (s: string | null) => STATUS[s ?? "pending"] ?? STATUS.pending;
 
+/** Filled steps are orange, and turn green once every step is done (billed). */
+export const stepFill = (st: { step: number }) =>
+  st.step === STEPS ? "bg-green-600 dark:bg-green-500" : "bg-brand";
+
 const FILTERS: { id: Filter; label: string }[] = [
   { id: "all", label: "All" },
   { id: "open", label: "Open" },
@@ -414,7 +418,7 @@ export default function EngineeringJobsTab() {
                     {Array.from({ length: STEPS }, (_, i) => (
                       <span
                         key={i}
-                        className={`h-1.5 w-[26px] ${i < st.step ? "bg-brand" : ce.segmentOff}`}
+                        className={`h-1.5 w-[26px] ${i < st.step ? stepFill(st) : ce.segmentOff}`}
                       />
                     ))}
                     <span className={`ml-1.5 font-mono text-xs ${ce.muted}`}>

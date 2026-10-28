@@ -15,7 +15,7 @@ import JobPictures from "@/components/jobs/JobPictures";
 import Constellation from "./Constellation";
 import EngineeringJobReports from "./EngineeringJobReports";
 import { blueprintStyle, ce } from "./engineeringTheme";
-import { COMPANY_PARAM, formatDue, STATUS, statusOf, STEPS } from "./EngineeringJobsTab";
+import { COMPANY_PARAM, formatDue, STATUS, statusOf, stepFill, STEPS } from "./EngineeringJobsTab";
 
 type Tab = "overview" | "reports" | "notes" | "pictures";
 
@@ -435,7 +435,7 @@ function Overview({
               <dd className="m-0 flex flex-col gap-1.5">
                 <div className="flex items-center gap-[3px]" aria-hidden>
                   {Array.from({ length: STEPS }, (_, i) => (
-                    <span key={i} className={`h-1.5 w-[26px] ${i < st.step ? "bg-brand" : ce.segmentOff}`} />
+                    <span key={i} className={`h-1.5 w-[26px] ${i < st.step ? stepFill(st) : ce.segmentOff}`} />
                   ))}
                 </div>
                 <span className="text-sm">{st.label}</span>

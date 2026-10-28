@@ -19,6 +19,7 @@ import {
 import IssueNotes from "@/components/feedback/IssueNotes";
 import { HeaderBar } from "@/components/ui/HeaderBar";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { SortHeader, compareSortValues } from "@/components/ui/SortHeader";
 import { Badge } from "@/components/ui/Badge";
 
 type Issue = {
@@ -75,7 +76,7 @@ type UserProfile = {
 
 type StatusFilter = "all" | "open" | "resolved";
 type TypeFilter = "all" | "issue" | "feature_request";
-type SortBy = "date" | "priority";
+type SortBy = "date" | "priority" | "status" | "type" | "title";
 
 const TYPE_FILTER_OPTIONS = [
   { value: "all", label: "All Types" },
@@ -90,8 +91,11 @@ const STATUS_FILTER_OPTIONS = [
 ] as const;
 
 const SORT_BY_OPTIONS = [
-  { value: "date", label: "Date Added" },
-  { value: "priority", label: "Priority" },
+  { value: "date", label: "Date Added", defaultDirection: "desc" },
+  { value: "priority", label: "Priority", defaultDirection: "desc" },
+  { value: "status", label: "Status", defaultDirection: "asc" },
+  { value: "type", label: "Type", defaultDirection: "asc" },
+  { value: "title", label: "Title", defaultDirection: "asc" },
 ] as const;
 
 const STATUS_BADGE: Record<
@@ -194,6 +198,11 @@ const FeaturesFixesPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("open");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [sortBy, setSortBy] = useState<SortBy>("priority");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const handleHeaderSort = (field: SortBy, direction: "asc" | "desc") => {
+    setSortBy(field);
+    setSortDirection(direction);
+  };
   const [search, setSearch] = useState("");
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -415,7 +424,10 @@ const FeaturesFixesPage: React.FC = () => {
       );
     }
 
-    // Sort the list
+    // Sort the list. Ties always fall back to newest first.
+    const dir = sortDirection === "asc" ? 1 : -1;
+    const newestFirst = (a: Issue, b: Issue) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     if (sortBy === "priority") {
       const priorityOrder: Record<Issue["priority"], number> = {
         urgent: 4,
@@ -423,32 +435,28 @@ const FeaturesFixesPage: React.FC = () => {
         normal: 2,
         low: 1,
       };
-      list = [...list].sort((a, b) => {
-        const priorityDiff =
-          priorityOrder[b.priority] - priorityOrder[a.priority];
-        // If priorities are equal, sort by date (newest first)
-        if (priorityDiff === 0) {
-          return (
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-          );
-        }
-        return priorityDiff;
-      });
-    } else {
-      // Default: sort by date (newest first) - this matches the database query order
       list = [...list].sort(
         (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          (priorityOrder[a.priority] - priorityOrder[b.priority]) * dir ||
+          newestFirst(a, b),
+      );
+    } else if (sortBy === "date") {
+      list = [...list].sort((a, b) => -newestFirst(a, b) * dir);
+    } else {
+      list = [...list].sort(
+        (a, b) =>
+          compareSortValues(a[sortBy], b[sortBy], sortDirection) ||
+          newestFirst(a, b),
       );
     }
 
     return list;
-  }, [issues, statusFilter, typeFilter, search, sortBy]);
+  }, [issues, statusFilter, typeFilter, search, sortBy, sortDirection]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter, typeFilter, search, sortBy]);
+  }, [statusFilter, typeFilter, search, sortBy, sortDirection]);
 
   useEffect(() => {
     if (!isSortMenuOpen) return;
@@ -1542,7 +1550,13 @@ const FeaturesFixesPage: React.FC = () => {
                       {renderSingleChoiceOptions(
                         SORT_BY_OPTIONS,
                         sortBy,
-                        setSortBy,
+                        (next) => {
+                          setSortBy(next);
+                          setSortDirection(
+                            SORT_BY_OPTIONS.find((o) => o.value === next)
+                              ?.defaultDirection || "desc",
+                          );
+                        },
                       )}
                     </div>
                   </div>
@@ -1575,19 +1589,51 @@ const FeaturesFixesPage: React.FC = () => {
                   <thead>
                     <tr className="border-b border-neutral-200 dark:border-neutral-700">
                       <th className="text-left py-3 px-4 text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                        Type
+                        <SortHeader
+                          label="Type"
+                          field="type"
+                          sortField={sortBy}
+                          sortDirection={sortDirection}
+                          onSort={handleHeaderSort}
+                        />
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                        Title
+                        <SortHeader
+                          label="Title"
+                          field="title"
+                          sortField={sortBy}
+                          sortDirection={sortDirection}
+                          onSort={handleHeaderSort}
+                        />
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                        Status
+                        <SortHeader
+                          label="Status"
+                          field="status"
+                          sortField={sortBy}
+                          sortDirection={sortDirection}
+                          onSort={handleHeaderSort}
+                        />
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-neutral-500 dark:text-neutral-400 min-w-[7.5rem]">
-                        Priority
+                        <SortHeader
+                          label="Priority"
+                          field="priority"
+                          sortField={sortBy}
+                          sortDirection={sortDirection}
+                          onSort={handleHeaderSort}
+                          defaultDirection="desc"
+                        />
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                        Date Added
+                        <SortHeader
+                          label="Date Added"
+                          field="date"
+                          sortField={sortBy}
+                          sortDirection={sortDirection}
+                          onSort={handleHeaderSort}
+                          defaultDirection="desc"
+                        />
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-neutral-500 dark:text-neutral-400">
                         Reporter

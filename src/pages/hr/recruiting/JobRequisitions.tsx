@@ -1009,6 +1009,7 @@ export const JobRequisitions: React.FC = () => {
         </CardContent>
       </Card>
 
+
       {/* Requisitions List/Grid */}
       {loading ? (
         <Card>

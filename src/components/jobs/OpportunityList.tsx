@@ -28,6 +28,7 @@ import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
 import { useUserPreferences } from "../../hooks/useUserPreferences";
 import { withPgTimeoutRetry } from "../../lib/retryPgTimeout";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { SortHeader, compareSortValues } from "@/components/ui/SortHeader";
 import { sendRfqEmail } from "@/lib/rfqAcknowledgment";
 import { isSuperUser } from "../../lib/roles";
 import { useDivisions } from "@/hooks/useDivisions";
@@ -297,7 +298,14 @@ const SORT_FIELD_OPTIONS = [
   { value: "quote_number", label: "Quote #" },
   { value: "opportunity_created_date", label: "Opportunity Created Date" },
   { value: "proposal_due_date", label: "Proposal Due Date" },
+  { value: "title", label: "Opportunity" },
+  { value: "status", label: "Status" },
+  { value: "amp_division", label: "Division" },
+  { value: "opportunity_type", label: "Type" },
+  { value: "probability", label: "Probability" },
 ] as const;
+
+type OpportunitySortField = (typeof SORT_FIELD_OPTIONS)[number]["value"];
 
 const SORT_DIRECTION_OPTIONS = [
   { value: "asc", label: "Ascending" },
@@ -399,10 +407,16 @@ export default function OpportunityList() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
-  const [sortField, setSortField] = useState<
-    "quote_number" | "opportunity_created_date" | "proposal_due_date"
-  >("quote_number");
+  const [sortField, setSortField] =
+    useState<OpportunitySortField>("quote_number");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const handleHeaderSort = (
+    field: OpportunitySortField,
+    direction: "asc" | "desc",
+  ) => {
+    setSortField(field);
+    setSortDirection(direction);
+  };
   const [divisionFilters, setDivisionFilters] = useState<string[]>([]);
   const [opportunityTypeFilters, setOpportunityTypeFilters] = useState<
     string[]
@@ -1070,8 +1084,12 @@ export default function OpportunityList() {
     // If we have saved filter preferences, apply them
     let hasStateUpdates = false;
     if (savedFilters) {
-      if (savedFilters.sortField && savedFilters.sortField !== sortField) {
-        setSortField(savedFilters.sortField);
+      if (
+        savedFilters.sortField &&
+        savedFilters.sortField !== sortField &&
+        SORT_FIELD_OPTIONS.some((o) => o.value === savedFilters.sortField)
+      ) {
+        setSortField(savedFilters.sortField as OpportunitySortField);
         hasStateUpdates = true;
       }
       if (
@@ -1246,20 +1264,11 @@ export default function OpportunityList() {
         const like = `%${debouncedSearch}%`;
 
         // Build the order clause based on sort settings
-        let orderColumn = "created_at";
+        // Every sort field is also the column name. Blanks always go last,
+        // except quote_number which is never blank.
+        const orderColumn: string = sortField || "created_at";
         const ascending = sortDirection === "asc";
-        let nullsLast = false; // Flag to indicate if we need NULLS LAST handling
-
-        if (sortField === "quote_number") {
-          // For numeric quote numbers, cast to integer for proper sorting
-          orderColumn = "quote_number";
-        } else if (sortField === "proposal_due_date") {
-          orderColumn = "proposal_due_date";
-          nullsLast = true; // Always show null dates at the end
-        } else if (sortField === "opportunity_created_date") {
-          orderColumn = "opportunity_created_date";
-          nullsLast = true; // Always show null dates at the end
-        }
+        const nullsLast = sortField !== "quote_number";
 
         // Query 1: match opportunity fields on server for performance
         let q1 = supabase
@@ -1335,20 +1344,11 @@ export default function OpportunityList() {
         opportunityData = Array.from(map.values());
       } else {
         // Build the order clause based on sort settings
-        let orderColumn = "created_at";
+        // Every sort field is also the column name. Blanks always go last,
+        // except quote_number which is never blank.
+        const orderColumn: string = sortField || "created_at";
         const ascending = sortDirection === "asc";
-        let nullsLast = false; // Flag to indicate if we need NULLS LAST handling
-
-        if (sortField === "quote_number") {
-          // For numeric quote numbers, cast to integer for proper sorting
-          orderColumn = "quote_number";
-        } else if (sortField === "proposal_due_date") {
-          orderColumn = "proposal_due_date";
-          nullsLast = true; // Always show null dates at the end
-        } else if (sortField === "opportunity_created_date") {
-          orderColumn = "opportunity_created_date";
-          nullsLast = true; // Always show null dates at the end
-        }
+        const nullsLast = sortField !== "quote_number";
 
         let query = supabase
           .schema("business")
@@ -1604,6 +1604,15 @@ export default function OpportunityList() {
             const aNum = Number.isNaN(an) ? Number.MAX_SAFE_INTEGER : an;
             const bNum = Number.isNaN(bn) ? Number.MAX_SAFE_INTEGER : bn;
             return (aNum - bNum) * dir;
+          } else if (
+            sortField !== "proposal_due_date" &&
+            sortField !== "opportunity_created_date"
+          ) {
+            return compareSortValues(
+              a[sortField],
+              b[sortField],
+              sortDirection,
+            );
           } else if (sortField === "proposal_due_date") {
             // Handle null dates: always push to end regardless of sort direction
             const hasA = !!a.proposal_due_date;
@@ -2916,19 +2925,40 @@ export default function OpportunityList() {
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-dark-400 uppercase tracking-wider"
                   >
-                    Quote
+                    <SortHeader
+                      label="Quote"
+                      field="quote_number"
+                      sortField={sortField}
+                      sortDirection={sortDirection}
+                      onSort={handleHeaderSort}
+                      defaultDirection="desc"
+                    />
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-dark-400 uppercase tracking-wider"
                   >
-                    Due
+                    <SortHeader
+                      label="Due"
+                      field="proposal_due_date"
+                      sortField={sortField}
+                      sortDirection={sortDirection}
+                      onSort={handleHeaderSort}
+                      defaultDirection="desc"
+                    />
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-dark-400 uppercase tracking-wider"
                   >
-                    Created
+                    <SortHeader
+                      label="Created"
+                      field="opportunity_created_date"
+                      sortField={sortField}
+                      sortDirection={sortDirection}
+                      onSort={handleHeaderSort}
+                      defaultDirection="desc"
+                    />
                   </th>
                   <th
                     scope="col"
@@ -2940,13 +2970,25 @@ export default function OpportunityList() {
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-dark-400 uppercase tracking-wider"
                   >
-                    Opportunity
+                    <SortHeader
+                      label="Opportunity"
+                      field="title"
+                      sortField={sortField}
+                      sortDirection={sortDirection}
+                      onSort={handleHeaderSort}
+                    />
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-dark-400 uppercase tracking-wider"
                   >
-                    Status
+                    <SortHeader
+                      label="Status"
+                      field="status"
+                      sortField={sortField}
+                      sortDirection={sortDirection}
+                      onSort={handleHeaderSort}
+                    />
                   </th>
                   <th
                     scope="col"
@@ -2964,13 +3006,25 @@ export default function OpportunityList() {
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-dark-400 uppercase tracking-wider"
                   >
-                    Division
+                    <SortHeader
+                      label="Division"
+                      field="amp_division"
+                      sortField={sortField}
+                      sortDirection={sortDirection}
+                      onSort={handleHeaderSort}
+                    />
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-dark-400 uppercase tracking-wider"
                   >
-                    Type
+                    <SortHeader
+                      label="Type"
+                      field="opportunity_type"
+                      sortField={sortField}
+                      sortDirection={sortDirection}
+                      onSort={handleHeaderSort}
+                    />
                   </th>
                   <th
                     scope="col"
@@ -2982,7 +3036,14 @@ export default function OpportunityList() {
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-dark-400 uppercase tracking-wider"
                   >
-                    Probability
+                    <SortHeader
+                      label="Probability"
+                      field="probability"
+                      sortField={sortField}
+                      sortDirection={sortDirection}
+                      onSort={handleHeaderSort}
+                      defaultDirection="desc"
+                    />
                   </th>
                   <th scope="col" className="relative px-6 py-3">
                     <span className="sr-only">Actions</span>

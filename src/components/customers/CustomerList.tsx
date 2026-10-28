@@ -29,6 +29,18 @@ import {
 } from "../../services/customerService";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
+type CustomerSortField = "company_name" | "status" | "created_at";
+
+const CUSTOMER_SORT_OPTIONS: Array<{
+  value: CustomerSortField;
+  label: string;
+  defaultDirection?: "asc" | "desc";
+}> = [
+  { value: "company_name", label: "Company Name" },
+  { value: "status", label: "Status" },
+  { value: "created_at", label: "Date Created", defaultDirection: "desc" },
+];
+
 interface ContactInfo {
   id: string;
   first_name: string;
@@ -62,6 +74,7 @@ function getInitialFilterSettings() {
     const savedSearch = localStorage.getItem("customerListSearch");
     const savedFilters = localStorage.getItem("customerListFilters");
     const savedSortOrder = localStorage.getItem("customerListSortOrder");
+    const savedSortField = localStorage.getItem("customerListSortField");
     const savedDivisionTabs = localStorage.getItem("customerListDivisionTabs");
 
     return {
@@ -69,6 +82,9 @@ function getInitialFilterSettings() {
       searchTerm: savedSearch || "",
       activeFilters: savedFilters ? JSON.parse(savedFilters) : {},
       sortOrder: (savedSortOrder as "asc" | "desc" | null) || null,
+      sortField: CUSTOMER_SORT_OPTIONS.some((o) => o.value === savedSortField)
+        ? (savedSortField as CustomerSortField)
+        : ("company_name" as CustomerSortField),
       activeDivisionTabs: savedDivisionTabs
         ? JSON.parse(savedDivisionTabs)
         : ([] as string[]),
@@ -83,6 +99,7 @@ function getInitialFilterSettings() {
       searchTerm: "",
       activeFilters: {},
       sortOrder: null as "asc" | "desc" | null,
+      sortField: "company_name" as CustomerSortField,
       activeDivisionTabs: [] as string[],
     };
   }
@@ -136,6 +153,9 @@ export default function CustomerList() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(
     initialSettings.sortOrder,
   );
+  const [sortField, setSortField] = useState<CustomerSortField>(
+    initialSettings.sortField,
+  );
   const [startsWithFilter, setStartsWithFilter] = useState<string>("");
   const [activeDivisionTabs, setActiveDivisionTabs] = useState<string[]>(
     getInitialDivisionTabs,
@@ -170,6 +190,7 @@ export default function CustomerList() {
     page,
     debouncedSearch,
     sortOrder,
+    sortField,
     startsWithFilter,
     activeDivisionTabs,
   ]);
@@ -207,6 +228,10 @@ export default function CustomerList() {
       localStorage.removeItem("customerListSortOrder");
     }
   }, [sortOrder]);
+
+  useEffect(() => {
+    localStorage.setItem("customerListSortField", sortField);
+  }, [sortField]);
 
   // Save division tabs to localStorage whenever they change
   useEffect(() => {
@@ -333,7 +358,11 @@ export default function CustomerList() {
           page,
           pageSize,
           search: debouncedSearch,
-          sortBy: effectiveSortOrder || sortOrder ? "company_name" : undefined,
+          sortBy: sortOrder
+            ? sortField
+            : effectiveSortOrder
+              ? "company_name"
+              : undefined,
           sortOrder: effectiveSortOrder || sortOrder || undefined,
         });
         customersData = result.data;
@@ -345,7 +374,7 @@ export default function CustomerList() {
           page,
           pageSize,
           search: debouncedSearch,
-          sortBy: sortOrder ? "company_name" : undefined,
+          sortBy: sortOrder ? sortField : undefined,
           sortOrder: sortOrder || undefined,
         });
         customersData = result.data;
@@ -694,9 +723,16 @@ export default function CustomerList() {
                   <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                     Sort by
                   </div>
-                  <div className="rounded-none bg-orange-50 px-2.5 py-1.5 text-sm text-brand dark:bg-orange-900/20">
-                    Company Name
-                  </div>
+                  {renderSingleChoiceOptions(
+                    CUSTOMER_SORT_OPTIONS,
+                    sortOrder ? sortField : null,
+                    (next) => {
+                      if (!next) return;
+                      setSortField(next);
+                      if (!sortOrder) setSortOrder("asc");
+                      setPage(1);
+                    },
+                  )}
                 </div>
                 <div className="mt-2">
                   <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">

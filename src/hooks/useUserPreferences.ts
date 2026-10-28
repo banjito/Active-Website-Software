@@ -309,7 +309,7 @@ export function useOpportunityFilters() {
     searchTerm: ''
   };
 
-  const setSortField = useCallback(async (field: 'quote_number' | 'opportunity_created_date' | 'proposal_due_date') => {
+  const setSortField = useCallback(async (field: string) => {
     return updatePreference('filters.opportunityList.sortField', field);
   }, [updatePreference]);
 

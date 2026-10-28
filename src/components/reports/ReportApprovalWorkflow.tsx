@@ -73,6 +73,7 @@ import {
   issueRounds,
   issueRoundsHtml,
 } from "@/services/reportActivityService";
+import { fetchReportCode } from "@/services/reportNumberService";
 
 // A report's title is the stored asset name, "<report type> - <asset identifier>".
 // The list shows the identifier as the headline and the report type underneath,
@@ -1414,9 +1415,14 @@ export function ReportApprovalWorkflow({
     } catch {
       /* job number is best-effort */
     }
-    const displayTitle = jobNumber
-      ? `${report.title} - #${jobNumber}`
-      : report.title;
+    // Report number within the job ("26015-203") when it has one; it already
+    // starts with the job number.
+    const reportCode = await fetchReportCode(report.id);
+    const displayTitle = reportCode
+      ? `${report.title} - #${reportCode}`
+      : jobNumber
+        ? `${report.title} - #${jobNumber}`
+        : report.title;
 
     // Earlier send-backs to Issue and the tech's fix notes, so the reviewer can
     // check the old comments were dealt with. Best effort.

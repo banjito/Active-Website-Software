@@ -7,6 +7,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { deriveReportPathParts } from "./ReportPhotos";
 import { ensureFixNote } from "./fixNoteDialog";
 import { ReportHistoryDialog } from "./ReportHistoryDialog";
+import { fetchReportCode } from "@/services/reportNumberService";
 import {
   AssetReportStatus,
   notifyAssetStatusChanged,
@@ -143,6 +144,8 @@ export const ReportStatusButton: React.FC = () => {
   } | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  // Report number within the job, e.g. "26103-203"
+  const [reportCode, setReportCode] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -212,6 +215,27 @@ export const ReportStatusButton: React.FC = () => {
       timers.forEach((t) => window.clearTimeout(t));
     };
   }, [loadAsset]);
+
+  // The number is assigned when the report is linked to its job, a moment
+  // after a new report's asset appears, so look once more if it's missing.
+  const assetId = asset?.id;
+  useEffect(() => {
+    setReportCode(null);
+    if (!assetId) return;
+    let cancelled = false;
+    let timer: number | undefined;
+    const load = async (retry: boolean) => {
+      const code = await fetchReportCode(assetId);
+      if (cancelled) return;
+      if (code) setReportCode(code);
+      else if (retry) timer = window.setTimeout(() => load(false), 4000);
+    };
+    load(true);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [assetId]);
 
   // Keep in step when the status changes elsewhere (approvals, the job page).
   useEffect(() => {
@@ -297,6 +321,15 @@ export const ReportStatusButton: React.FC = () => {
   };
 
   return (
+    <div className="flex items-center gap-1">
+      {reportCode && (
+        <span
+          className="hidden sm:inline px-1 font-mono text-xs text-neutral-500 dark:text-neutral-400"
+          title="Report number (job number - report number on this job)"
+        >
+          #{reportCode}
+        </span>
+      )}
     <div className="relative" ref={containerRef}>
       <button
         type="button"
@@ -370,12 +403,13 @@ export const ReportStatusButton: React.FC = () => {
       {showHistory && (
         <ReportHistoryDialog
           assetId={asset.id}
-          reportName={asset.name}
+          reportName={reportCode ? `${asset.name} · #${reportCode}` : asset.name}
           createdAt={asset.created_at}
           createdBy={asset.user_id}
           onClose={() => setShowHistory(false)}
         />
       )}
+    </div>
     </div>
   );
 };

@@ -49,10 +49,10 @@ export const stepFill = (st: { step: number }) =>
   st.step === STEPS ? "bg-green-600 dark:bg-green-500" : "bg-brand";
 
 const FILTERS: { id: Filter; label: string }[] = [
-  { id: "all", label: "All" },
   { id: "open", label: "Open" },
   { id: "hold", label: "On hold" },
   { id: "done", label: "Done" },
+  { id: "all", label: "All" },
 ];
 
 const COLUMNS =
@@ -98,7 +98,7 @@ export default function EngineeringJobsTab() {
   const [allJobs, setAllJobs] = useState<EngineeringJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<Filter>("open");
   const [search, setSearch] = useState("");
   const [pmFilter, setPmFilter] = useState("");
 

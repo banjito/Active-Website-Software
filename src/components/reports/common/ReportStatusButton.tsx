@@ -2,12 +2,17 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "@/components/ui/toast";
 import { useAuth } from "@/lib/AuthContext";
-import { ChevronDown, History } from "lucide-react";
+import { ChevronDown, ClipboardList, History } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { deriveReportPathParts } from "./ReportPhotos";
 import { ensureFixNote } from "./fixNoteDialog";
 import { ReportHistoryDialog } from "./ReportHistoryDialog";
 import { fetchReportCode } from "@/services/reportNumberService";
+import { ActionItemsDialog } from "./ActionItemsDialog";
+import {
+  ACTION_ITEMS_CHANGED_EVENT,
+  fetchOpenActionItemCounts,
+} from "@/services/reportActionItemService";
 import {
   AssetReportStatus,
   notifyAssetStatusChanged,
@@ -146,6 +151,9 @@ export const ReportStatusButton: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false);
   // Report number within the job, e.g. "26103-203"
   const [reportCode, setReportCode] = useState<string | null>(null);
+  const [openActionItems, setOpenActionItems] = useState(0);
+  // null = closed; "" = open on the list; an id = open on that item
+  const [actionItemsView, setActionItemsView] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -236,6 +244,32 @@ export const ReportStatusButton: React.FC = () => {
       window.clearTimeout(timer);
     };
   }, [assetId]);
+
+  // Open action item count for the toolbar badge.
+  useEffect(() => {
+    if (!assetId) return;
+    let cancelled = false;
+    const load = async () => {
+      const counts = await fetchOpenActionItemCounts([assetId]);
+      if (!cancelled) setOpenActionItems(counts[assetId] || 0);
+    };
+    load();
+    const onChanged = (e: Event) => {
+      if ((e as CustomEvent).detail?.assetId === assetId) load();
+    };
+    window.addEventListener(ACTION_ITEMS_CHANGED_EVENT, onChanged);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(ACTION_ITEMS_CHANGED_EVENT, onChanged);
+    };
+  }, [assetId]);
+
+  // The notification bell links here with ?actionItem=<id> to open that item.
+  useEffect(() => {
+    if (!assetId || !reportCode) return;
+    const itemId = new URLSearchParams(window.location.search).get("actionItem");
+    if (itemId) setActionItemsView(itemId);
+  }, [assetId, reportCode]);
 
   // Keep in step when the status changes elsewhere (approvals, the job page).
   useEffect(() => {
@@ -330,6 +364,22 @@ export const ReportStatusButton: React.FC = () => {
           #{reportCode}
         </span>
       )}
+      {reportCode && (
+        <button
+          type="button"
+          onClick={() => setActionItemsView("")}
+          title="Action items: things to do or tell the customer"
+          className="inline-flex items-center gap-1.5 rounded-none px-2 lg:px-3 py-1.5 text-xs lg:text-sm font-medium text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-dark-100"
+        >
+          <ClipboardList className="h-3 w-3 lg:h-4 lg:w-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Action items</span>
+          {openActionItems > 0 && (
+            <span className="min-w-[18px] rounded-none bg-brand px-1 text-[11px] font-bold leading-[18px] text-white text-center">
+              {openActionItems}
+            </span>
+          )}
+        </button>
+      )}
     <div className="relative" ref={containerRef}>
       <button
         type="button"
@@ -407,6 +457,18 @@ export const ReportStatusButton: React.FC = () => {
           createdAt={asset.created_at}
           createdBy={asset.user_id}
           onClose={() => setShowHistory(false)}
+        />
+      )}
+
+      {actionItemsView !== null && (
+        <ActionItemsDialog
+          assetId={asset.id}
+          jobId={jobId}
+          reportCode={reportCode}
+          reportName={asset.name}
+          userId={user?.id || ""}
+          initialItemId={actionItemsView || null}
+          onClose={() => setActionItemsView(null)}
         />
       )}
     </div>

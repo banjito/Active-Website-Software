@@ -76,6 +76,11 @@ import {
   updateAssetReportStatus,
 } from "@/lib/services/assetReportStatus";
 import { ensureFixNote } from "@/components/reports/common/fixNoteDialog";
+import {
+  ACTION_ITEMS_CHANGED_EVENT,
+  fetchOpenActionItemCounts,
+  openActionItemsWarning,
+} from "@/services/reportActionItemService";
 import { describeSupabaseError, withWriteRetry } from "@/lib/supabaseRetry";
 import { createBatchedRowLookup } from "@/lib/batchedRowLookup";
 import { usePersistentState } from "@/hooks/usePersistentState";
@@ -837,6 +842,25 @@ export default function JobDetail() {
   const [jobAssets, setJobAssets] = useState<Asset[]>(
     () => cachedJobAssets?.assets ?? [],
   );
+  // Open action items per report, for the badge on report rows
+  const [actionItemCounts, setActionItemCounts] = useState<
+    Record<string, number>
+  >({});
+  const jobAssetIdsKey = jobAssets.map((a) => a.id).join(",");
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const ids = jobAssetIdsKey ? jobAssetIdsKey.split(",") : [];
+      const counts = await fetchOpenActionItemCounts(ids);
+      if (!cancelled) setActionItemCounts(counts);
+    };
+    load();
+    window.addEventListener(ACTION_ITEMS_CHANGED_EVENT, load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(ACTION_ITEMS_CHANGED_EVENT, load);
+    };
+  }, [jobAssetIdsKey]);
   /**
    * True from the first byte of fetchJobAssets until the list is on screen.
    *
@@ -5793,6 +5817,12 @@ export default function JobDetail() {
         if (!confirmed) return;
       }
 
+      // Sending is allowed with open action items, but say which ones first.
+      if (newStatus === "sent") {
+        const warning = await openActionItemsWarning([assetId]);
+        if (warning && !confirm(`Mark this report as sent?${warning}`)) return;
+      }
+
       // Coming back from Issue: ask what was fixed (the note dialog doubles as
       // the "are you sure") so the next reviewer can check it.
       if (
@@ -7237,8 +7267,11 @@ export default function JobDetail() {
       return;
     }
 
+    const actionItemsWarning = await openActionItemsWarning(
+      approvedAssets.map((a) => a.id),
+    );
     const confirmed = confirm(
-      `Are you sure you want to mark ${approvedAssets.length} approved report${approvedAssets.length !== 1 ? "s" : ""} as sent?`,
+      `Are you sure you want to mark ${approvedAssets.length} approved report${approvedAssets.length !== 1 ? "s" : ""} as sent?${actionItemsWarning}`,
     );
 
     if (!confirmed) return;
@@ -7354,8 +7387,11 @@ export default function JobDetail() {
       return;
     }
 
+    const actionItemsWarning = await openActionItemsWarning(
+      selectedApprovedAssets.map((a) => a.id),
+    );
     const confirmed = confirm(
-      `Are you sure you want to mark ${selectedApprovedAssets.length} selected report${selectedApprovedAssets.length !== 1 ? "s" : ""} as sent?`,
+      `Are you sure you want to mark ${selectedApprovedAssets.length} selected report${selectedApprovedAssets.length !== 1 ? "s" : ""} as sent?${actionItemsWarning}`,
     );
 
     if (!confirmed) return;
@@ -12498,6 +12534,20 @@ export default function JobDetail() {
                                               />
                                               {getAssetParts(asset).reportType ||
                                                 "Untitled Report"}
+                                              {(actionItemCounts[asset.id] ||
+                                                0) > 0 && (
+                                                <span
+                                                  className="ml-2 inline-flex items-center rounded-none bg-brand/10 px-1.5 py-0.5 text-xs font-semibold text-brand whitespace-nowrap"
+                                                  title="Open action items: things to do or tell the customer"
+                                                >
+                                                  {actionItemCounts[asset.id]}{" "}
+                                                  action
+                                                  {actionItemCounts[asset.id] ===
+                                                  1
+                                                    ? ""
+                                                    : "s"}
+                                                </span>
+                                              )}
                                             </TableCell>
                                             <TableCell className="font-medium">
                                               {getAssetParts(asset)

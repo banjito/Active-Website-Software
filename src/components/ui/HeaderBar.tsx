@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell,
+  ClipboardList,
   User as UserIcon,
   Settings,
   LogOut,
@@ -53,6 +54,13 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { navigateFromShortcut } from "@/lib/shortcutNavigation";
 import { cn } from "@/lib/utils";
 import { useSiteLogos } from "@/services/siteThemeService";
+import {
+  ACTION_ITEMS_CHANGED_EVENT,
+  actionItemReportPath,
+  fetchMyUnseenActionItems,
+  markActionItemSeen,
+  type UnseenActionItem,
+} from "@/services/reportActionItemService";
 
 type ReviewNotification = {
   jobId: string;
@@ -157,6 +165,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const canSeeDemoMode = !!user;
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  // Action items this person was told about and hasn't opened yet
+  const [actionItemNotices, setActionItemNotices] = useState<
+    UnseenActionItem[]
+  >([]);
   const [headerTooltip, setHeaderTooltip] = useState<HeaderTooltip>(null);
 
   const showTooltip = (e: React.MouseEvent, text: string) => {
@@ -287,12 +299,47 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     ).length;
 
   const totalUnreadCount =
-    (canApproveReports ? reportUnseenCount : 0) + calibrationUnreadCount;
+    (canApproveReports ? reportUnseenCount : 0) +
+    calibrationUnreadCount +
+    actionItemNotices.length;
 
   const showNotificationBell =
     canApproveReports ||
     calibrationNotificationCount > 0 ||
-    reportUnseenCount > 0;
+    reportUnseenCount > 0 ||
+    actionItemNotices.length > 0;
+
+  // Reload when the bell opens and whenever an action item changes anywhere.
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const items = await fetchMyUnseenActionItems(user.id);
+        if (!cancelled) setActionItemNotices(items);
+      } catch (e) {
+        // Best effort: the bell still works without these
+        console.warn("[HeaderBar] Failed to load action item notices:", e);
+      }
+    };
+    load();
+    window.addEventListener(ACTION_ITEMS_CHANGED_EVENT, load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(ACTION_ITEMS_CHANGED_EVENT, load);
+    };
+  }, [user?.id, isNotificationsOpen]);
+
+  const openActionItemNotice = async (item: UnseenActionItem) => {
+    setIsNotificationsOpen(false);
+    setActionItemNotices((prev) => prev.filter((i) => i.id !== item.id));
+    if (user?.id) await markActionItemSeen(item.id, user.id);
+    const path = actionItemReportPath(item);
+    // Report pages open the item; uploaded PDFs have no page, so go to the job.
+    navigate(
+      path === `/jobs/${item.job_id}` ? path : `${path}?actionItem=${item.id}`,
+    );
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -1486,6 +1533,33 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                                 : "items"}
                             </div>
                           </button>
+                          {actionItemNotices.length > 0 && (
+                            <div>
+                              <div className="px-4 pt-3 pb-1 text-sm font-medium text-neutral-900 dark:text-white flex items-center gap-2">
+                                <ClipboardList className="h-4 w-4 text-brand" />
+                                New action items
+                              </div>
+                              {actionItemNotices.slice(0, 8).map((item) => (
+                                <button
+                                  key={item.id}
+                                  onClick={() => openActionItemNotice(item)}
+                                  className="w-full text-left px-4 py-2 hover:bg-neutral-50 dark:hover:bg-dark-200 flex flex-col"
+                                >
+                                  <span className="text-sm text-neutral-900 dark:text-white truncate">
+                                    <span className="font-mono text-xs text-brand mr-1.5">
+                                      #{item.item_code}
+                                    </span>
+                                    {item.title}
+                                  </span>
+                                  {item.report_name && (
+                                    <span className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                                      {item.report_name}
+                                    </span>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       ) : detailStatus === "needs_calibration" ||
                         detailStatus === "equipment_out_of_cal" ? (

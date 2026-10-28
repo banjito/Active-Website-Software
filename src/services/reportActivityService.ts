@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 // report (an assets row). Table and trigger are in database/migrations/report_activity.sql.
 // Status changes are logged by the database; the app only adds fix notes.
 
-export type ReportActivityKind = 'status_change' | 'review_comment' | 'fix_note';
+export type ReportActivityKind = 'status_change' | 'review_comment' | 'fix_note' | 'action_item';
 
 export interface ReportActivity {
   id: number;
@@ -123,7 +123,7 @@ export async function addFixNote(assetId: string, note: string): Promise<void> {
   if (error) throw error;
 }
 
-const escapeHtml = (s: string) =>
+export const escapeHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 const formatWhen = (iso: string) =>

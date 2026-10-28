@@ -8,6 +8,10 @@ import {
   reportStatusLabel,
   type ReportActivity,
 } from "@/services/reportActivityService";
+import {
+  ACTION_ITEM_STATUS_LABELS,
+  type ActionItemStatus,
+} from "@/services/reportActionItemService";
 
 interface ReportHistoryDialogProps {
   assetId: string;
@@ -38,6 +42,13 @@ const formatWhen = (iso: string) =>
 function describe(row: ReportActivity): string {
   if (row.kind === "fix_note") return "Fix note";
   if (row.kind === "review_comment") return "Reviewer note updated";
+  if (row.kind === "action_item") {
+    const label = (s: string | null) =>
+      ACTION_ITEM_STATUS_LABELS[s as ActionItemStatus] ?? s ?? "";
+    return row.from_status
+      ? `Action item ${label(row.from_status)} → ${label(row.to_status)}`
+      : "Action item added";
+  }
   return `${reportStatusLabel(row.from_status)} → ${reportStatusLabel(row.to_status)}`;
 }
 
@@ -136,7 +147,7 @@ export const ReportHistoryDialog: React.FC<ReportHistoryDialogProps> = ({
                 <li key={row.id} className="flex gap-3 pb-4">
                   <span
                     className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-none ${
-                      row.kind === "fix_note"
+                      row.kind === "fix_note" || row.kind === "action_item"
                         ? "bg-brand"
                         : row.kind === "review_comment"
                           ? "bg-neutral-400"

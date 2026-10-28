@@ -7,11 +7,19 @@
 --
 -- Kept out of neta_ops.assets on purpose: writing to every assets row would fire
 -- its backup and snapshot triggers and touch every report.
--- Only report: and custom-form: assets are numbered, not uploaded files.
+-- Numbered: reports built in the app (report: and custom-form: assets), and
+-- uploaded PDF reports once they are in review. Other uploads (drawings etc.)
+-- never go to review, so they never get a number.
 -- A report on more than one job is numbered on the job it was linked to first.
 --
 -- Safe to run again: the fill-in at the bottom only numbers reports that have
 -- no number yet, so rerunning it also fills any gaps the trigger missed.
+
+-- assets, job_assets and jobs are busy: creating the foreign keys and triggers
+-- below has to wait for saves in progress, and everything after it waits too.
+-- Give up after 5 seconds instead. All or nothing: if it stops with "lock
+-- timeout", nothing was changed, so run it again a bit later.
+SET lock_timeout = '5s';
 
 BEGIN;
 
@@ -32,6 +40,15 @@ CREATE TABLE IF NOT EXISTS neta_ops.report_numbers (
 );
 
 CREATE INDEX IF NOT EXISTS idx_report_numbers_code ON neta_ops.report_numbers (report_code);
+
+-- Creating a table in neta_ops auto-attaches triggers that copy every row change
+-- into neta_ops.backup_reports (neta_ops.fn_on_create_table_snapshot). These rows
+-- are counters, not report data, and copying each one into that big table made
+-- the fill-in below too slow for the SQL editor, so take them off.
+DROP TRIGGER IF EXISTS trg_snapshot_report_numbers_ins ON neta_ops.report_numbers;
+DROP TRIGGER IF EXISTS trg_snapshot_report_numbers_upd ON neta_ops.report_numbers;
+DROP TRIGGER IF EXISTS trg_snapshot_job_report_counters_ins ON neta_ops.job_report_counters;
+DROP TRIGGER IF EXISTS trg_snapshot_job_report_counters_upd ON neta_ops.job_report_counters;
 
 REVOKE ALL ON TABLE neta_ops.job_report_counters FROM anon, authenticated;
 GRANT ALL ON TABLE neta_ops.job_report_counters TO service_role;
@@ -67,7 +84,12 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM neta_ops.assets a
     WHERE a.id = p_asset_id
-      AND (a.file_url LIKE 'report:%' OR a.file_url LIKE 'custom-form:%')
+      AND (
+        a.file_url LIKE 'report:%'
+        OR a.file_url LIKE 'custom-form:%'
+        OR (a.file_url ILIKE '%.pdf'
+            AND a.status IN ('ready_for_review', 'issue', 'approved', 'sent'))
+      )
   ) THEN
     RETURN;
   END IF;
@@ -118,12 +140,36 @@ $$;
 
 REVOKE ALL ON FUNCTION neta_ops.job_assets_assign_report_number() FROM PUBLIC, anon;
 
+-- An uploaded PDF already on a job gets its number when it's sent for review
+CREATE OR REPLACE FUNCTION neta_ops.assets_assign_report_number() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+  BEGIN
+    PERFORM neta_ops.assign_report_number(NEW.id);
+  EXCEPTION WHEN OTHERS THEN
+    RAISE WARNING 'assign_report_number failed for asset %: %', NEW.id, SQLERRM;
+  END;
+  RETURN NEW;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION neta_ops.assets_assign_report_number() FROM PUBLIC, anon;
+
 -- Created before the fill-in so a report linked while this runs waits for it,
 -- then gets the next number
-DROP TRIGGER IF EXISTS trg_job_assets_report_number ON neta_ops.job_assets;
-CREATE TRIGGER trg_job_assets_report_number
+CREATE OR REPLACE TRIGGER trg_job_assets_report_number
   AFTER INSERT OR UPDATE OF asset_id ON neta_ops.job_assets
   FOR EACH ROW EXECUTE FUNCTION neta_ops.job_assets_assign_report_number();
+
+-- Writes only to report_numbers, never back to assets. CREATE OR REPLACE takes a
+-- lighter lock than DROP + CREATE, so reads keep working while it waits.
+CREATE OR REPLACE TRIGGER trg_assets_report_number
+  AFTER UPDATE OF status ON neta_ops.assets
+  FOR EACH ROW
+  WHEN (NEW.status = 'ready_for_review' AND OLD.status IS DISTINCT FROM NEW.status)
+  EXECUTE FUNCTION neta_ops.assets_assign_report_number();
 
 -- ---------------------------------------------------------------------------
 -- Fill-in: number existing reports per job, oldest first
@@ -135,7 +181,12 @@ WITH firsts AS (
   SELECT DISTINCT ON (ja.asset_id) ja.asset_id, ja.job_id
   FROM neta_ops.job_assets ja
   JOIN neta_ops.assets a ON a.id = ja.asset_id
-  WHERE (a.file_url LIKE 'report:%' OR a.file_url LIKE 'custom-form:%')
+  WHERE (
+      a.file_url LIKE 'report:%'
+      OR a.file_url LIKE 'custom-form:%'
+      OR (a.file_url ILIKE '%.pdf'
+          AND a.status IN ('ready_for_review', 'issue', 'approved', 'sent'))
+    )
     AND NOT EXISTS (SELECT 1 FROM neta_ops.report_numbers rn WHERE rn.asset_id = ja.asset_id)
   ORDER BY ja.asset_id, ja.created_at, ja.id
 ),

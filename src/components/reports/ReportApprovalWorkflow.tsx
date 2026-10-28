@@ -74,6 +74,15 @@ import {
   issueRoundsHtml,
 } from "@/services/reportActivityService";
 import { fetchReportCode } from "@/services/reportNumberService";
+import {
+  ACTION_ITEMS_CHANGED_EVENT,
+  actionItemsHtml,
+  fetchActionItems,
+  fetchOpenActionItemCounts,
+  fetchOpenActionItems,
+} from "@/services/reportActionItemService";
+import { openActionItemsDialog } from "./common/ActionItemsDialog";
+import confirmDialog from "@/components/ui/confirmDialog";
 
 // A report's title is the stored asset name, "<report type> - <asset identifier>".
 // The list shows the identifier as the headline and the report type underneath,
@@ -101,6 +110,10 @@ export function ReportApprovalWorkflow({
 }: ReportApprovalWorkflowProps) {
   const { user } = useAuth();
   const [reports, setReports] = useState<TechnicalReport[]>([]);
+  // Open action items per report, for the badge beside the status
+  const [actionItemCounts, setActionItemCounts] = useState<
+    Record<string, number>
+  >({});
   const [selectedReport, setSelectedReport] = useState<TechnicalReport | null>(
     null,
   );
@@ -203,6 +216,21 @@ export function ReportApprovalWorkflow({
     canApprove: false,
     canExport: false,
   });
+
+  // Open action item badges for the reports on screen; refresh when one changes.
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const counts = await fetchOpenActionItemCounts(reports.map((r) => r.id));
+      if (!cancelled) setActionItemCounts(counts);
+    };
+    load();
+    window.addEventListener(ACTION_ITEMS_CHANGED_EVENT, load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(ACTION_ITEMS_CHANGED_EVENT, load);
+    };
+  }, [reports]);
 
   // When jobId changes, update filters
   useEffect(() => {
@@ -1435,6 +1463,36 @@ export function ReportApprovalWorkflow({
       console.warn("[ViewDialog] Review history unavailable:", e);
     }
 
+    // Action items on this report. The box's button opens the full dialog;
+    // wireActionItems() hooks it up once the modal markup is in the page.
+    const buildActionItemsHtml = async () => {
+      try {
+        return actionItemsHtml(await fetchActionItems(report.id), !!reportCode);
+      } catch (e) {
+        console.warn("[ViewDialog] Action items unavailable:", e);
+        return "";
+      }
+    };
+    const actionItemsSectionHtml = `<div id="review-action-items-section">${await buildActionItemsHtml()}</div>`;
+    const wireActionItems = () => {
+      const btn = document.getElementById("review-action-items-btn");
+      if (!btn) return;
+      btn.onclick = async () => {
+        await openActionItemsDialog({
+          assetId: report.id,
+          jobId: report.job_id,
+          reportCode,
+          reportName: report.title,
+          userId: user?.id || "",
+        });
+        const section = document.getElementById("review-action-items-section");
+        if (section) {
+          section.innerHTML = await buildActionItemsHtml();
+          wireActionItems();
+        }
+      };
+    };
+
     // Create modal completely outside of React
     // This survives component unmounts
     let modalContainer = document.getElementById("report-view-modal-root");
@@ -1484,6 +1542,7 @@ export function ReportApprovalWorkflow({
                   </button>
                 </div>
                 ${reviewHistoryHtml}
+                ${actionItemsSectionHtml}
                 ${
                   canReview
                     ? `
@@ -1525,6 +1584,8 @@ export function ReportApprovalWorkflow({
           </div>
         </div>
       `;
+
+      wireActionItems();
 
       // Add close handler
       const closeBtn = document.getElementById("report-view-close-btn");
@@ -1809,6 +1870,7 @@ export function ReportApprovalWorkflow({
                 }
               </div>
               ${reviewHistoryHtml}
+              ${actionItemsSectionHtml}
               ${
                 canReview
                   ? `
@@ -1857,6 +1919,8 @@ export function ReportApprovalWorkflow({
     // session (reported by ReportWrapper via postMessage).
     let inEditMode = false;
     let hasUnsavedChanges = false;
+
+    wireActionItems();
 
     // Add close handler
     const closeBtn = document.getElementById("report-view-close-btn");
@@ -2230,6 +2294,21 @@ export function ReportApprovalWorkflow({
       user?.id,
     );
     if (!user) return;
+
+    // Sending is allowed with open action items, but say which ones first.
+    const openItems = await fetchOpenActionItems([report.id]);
+    if (
+      openItems.length > 0 &&
+      !(await confirmDialog({
+        title: `Send with ${openItems.length} open action item${openItems.length === 1 ? "" : "s"}?`,
+        description: openItems
+          .map((i) => `#${i.item_code}: ${i.title}`)
+          .join(" · "),
+        confirmLabel: "Send anyway",
+      }))
+    ) {
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -2633,6 +2712,15 @@ export function ReportApprovalWorkflow({
                     <div className="flex items-center gap-2">
                       {getStatusBadge(report.status)}
                       {renderFlaggedBadge(report.id)}
+                      {(actionItemCounts[report.id] || 0) > 0 && (
+                        <span
+                          className="inline-flex items-center px-1.5 py-0.5 rounded-none text-xs font-semibold bg-brand/10 text-brand whitespace-nowrap"
+                          title="Open action items: things to do or tell the customer"
+                        >
+                          {actionItemCounts[report.id]} action
+                          {actionItemCounts[report.id] === 1 ? "" : "s"}
+                        </span>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>

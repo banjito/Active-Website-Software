@@ -334,11 +334,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     setIsNotificationsOpen(false);
     setActionItemNotices((prev) => prev.filter((i) => i.id !== item.id));
     if (user?.id) await markActionItemSeen(item.id, user.id);
+    // Opens the item on its report, or on the job's Action items tab for
+    // uploaded PDFs, which have no report page.
     const path = actionItemReportPath(item);
-    // Report pages open the item; uploaded PDFs have no page, so go to the job.
-    navigate(
-      path === `/jobs/${item.job_id}` ? path : `${path}?actionItem=${item.id}`,
-    );
+    navigate(`${path}${path.includes("?") ? "&" : "?"}actionItem=${item.id}`);
   };
 
   useEffect(() => {

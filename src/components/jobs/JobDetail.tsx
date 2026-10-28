@@ -76,6 +76,7 @@ import {
   updateAssetReportStatus,
 } from "@/lib/services/assetReportStatus";
 import { ensureFixNote } from "@/components/reports/common/fixNoteDialog";
+import { JobActionItems } from "./JobActionItems";
 import {
   ACTION_ITEMS_CHANGED_EVENT,
   fetchOpenActionItemCounts,
@@ -3417,6 +3418,7 @@ export default function JobDetail() {
         "checklist",
         "reports",
         "report-audit",
+        "action-items",
         "after-action",
         "profitability",
       ].includes(tabParam)
@@ -4798,6 +4800,7 @@ export default function JobDetail() {
           alert: openReportFlagCount > 0,
         },
         { key: "report-audit", label: "Audit" },
+        { key: "action-items", label: "Action items" },
       ],
     },
     {
@@ -13275,6 +13278,24 @@ export default function JobDetail() {
                       )}
                     </CardContent>
                   </div>
+                )}
+
+                {activeTab === "action-items" && job && (
+                  <CardContent>
+                    <JobActionItems
+                      jobId={job.id}
+                      reports={jobAssets.map((a) => {
+                        const parts = getAssetParts(a);
+                        return {
+                          id: a.id,
+                          label:
+                            [parts.reportType, parts.assetIdentifier]
+                              .filter(Boolean)
+                              .join(" · ") || a.name,
+                        };
+                      })}
+                    />
+                  </CardContent>
                 )}
 
                 {activeTab === "equipment-assets" && job && (

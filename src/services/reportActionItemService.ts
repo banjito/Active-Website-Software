@@ -95,6 +95,22 @@ export async function fetchActionItems(assetId: string): Promise<ActionItem[]> {
   return (data || []) as ActionItem[];
 }
 
+/** Every item on these reports, any status. For the job's Action items tab. */
+export async function fetchActionItemsForAssets(assetIds: string[]): Promise<ActionItem[]> {
+  const items: ActionItem[] = [];
+  // Chunked so a big job doesn't overflow the request URL
+  for (let i = 0; i < assetIds.length; i += 200) {
+    const { data, error } = await supabase
+      .schema('neta_ops')
+      .from('report_action_items')
+      .select(ITEM_COLUMNS)
+      .in('asset_id', assetIds.slice(i, i + 200));
+    if (error) throw error;
+    items.push(...((data || []) as ActionItem[]));
+  }
+  return items;
+}
+
 /**
  * Open action items per report, keyed by asset id, for badges on report lists.
  * Best effort: a failure (or the table not existing yet) yields {}.
@@ -380,11 +396,14 @@ export async function markActionItemSeen(itemId: string, userId: string): Promis
   if (error) console.warn('[actionItems] Failed to mark seen:', error);
 }
 
-/** App route for a report's page; uploaded PDFs have none, so they open the job. */
+/**
+ * App route for a report's page; uploaded PDFs have none, so they open the
+ * job's Action items tab. Add `actionItem=<id>` to open one item there.
+ */
 export function actionItemReportPath(item: { job_id: string; file_url?: string | null }): string {
   const url = item.file_url || '';
   if (/^(report|custom-form):\/jobs\//.test(url)) return url.replace(/^(report|custom-form):/, '');
-  return `/jobs/${item.job_id}`;
+  return `/jobs/${item.job_id}?tab=action-items`;
 }
 
 /** Fired after any action item change so badges and the bell refresh. */

@@ -8,10 +8,7 @@ import {
   reportStatusLabel,
   type ReportActivity,
 } from "@/services/reportActivityService";
-import {
-  ACTION_ITEM_STATUS_LABELS,
-  type ActionItemStatus,
-} from "@/services/reportActionItemService";
+import { actionItemStatusLabel } from "@/services/reportActionItemService";
 
 interface ReportHistoryDialogProps {
   assetId: string;
@@ -43,8 +40,7 @@ function describe(row: ReportActivity): string {
   if (row.kind === "fix_note") return "Fix note";
   if (row.kind === "review_comment") return "Reviewer note updated";
   if (row.kind === "action_item") {
-    const label = (s: string | null) =>
-      ACTION_ITEM_STATUS_LABELS[s as ActionItemStatus] ?? s ?? "";
+    const label = actionItemStatusLabel;
     return row.from_status
       ? `Action item ${label(row.from_status)} → ${label(row.to_status)}`
       : "Action item added";

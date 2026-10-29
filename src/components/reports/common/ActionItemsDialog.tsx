@@ -12,6 +12,7 @@ import {
   ACTION_ITEM_PRIORITY_LABELS,
   ACTION_ITEM_STATUS_LABELS,
   ACTION_ITEM_STATUS_NOTE_HINTS,
+  actionItemStatusLabel,
   isOpenActionItem,
   type ActionItem,
   type ActionItemCategory,
@@ -64,8 +65,6 @@ interface UserOption {
 
 const STATUS_STYLES: Record<ActionItemStatus, string> = {
   unaddressed: "bg-brand/10 text-brand",
-  verbally_communicated:
-    "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200",
   formally_notified:
     "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200",
   closed:
@@ -448,7 +447,7 @@ const ItemDetailView: React.FC<{
   const describeUpdate = (u: ActionItemDetail["updates"][number]) => {
     if (!u.to_status) return "Note";
     if (!u.from_status) return "Opened";
-    return `${ACTION_ITEM_STATUS_LABELS[u.from_status]} → ${ACTION_ITEM_STATUS_LABELS[u.to_status]}`;
+    return `${actionItemStatusLabel(u.from_status)} → ${actionItemStatusLabel(u.to_status)}`;
   };
 
   return (

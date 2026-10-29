@@ -9,7 +9,6 @@ import { escapeHtml, fetchUserNames } from '@/services/reportActivityService';
 
 export type ActionItemStatus =
   | 'unaddressed'
-  | 'verbally_communicated'
   | 'formally_notified'
   | 'closed'
   | 'archived';
@@ -39,30 +38,36 @@ export type ActionItemPriority = 'low' | 'normal' | 'high' | 'urgent';
 // Order is the order they appear in menus and filters.
 export const ACTION_ITEM_STATUS_LABELS: Record<ActionItemStatus, string> = {
   unaddressed: 'Unaddressed',
-  verbally_communicated: 'Verbally communicated',
   formally_notified: 'Formally notified',
   closed: 'Closed',
   archived: 'Archive',
 };
 
 /**
- * Still open: the customer hasn't been formally notified. Verbally communicated
- * counts as open (requester, 2026-10-29): only Formally notified, Closed and
- * Archive clear an item from badges, counts and the front page.
+ * Still open: the customer hasn't been formally notified. Only Formally
+ * notified, Closed and Archive clear an item from badges, counts and the front
+ * page. (A "Verbally communicated" status existed briefly on 2026-10-29; telling
+ * the customer verbally doesn't close an item, so it was dropped.)
  */
-export const OPEN_ACTION_ITEM_STATUSES: ActionItemStatus[] = ['unaddressed', 'verbally_communicated'];
+export const OPEN_ACTION_ITEM_STATUSES: ActionItemStatus[] = ['unaddressed'];
 
 export const isOpenActionItem = (status: ActionItemStatus) =>
   OPEN_ACTION_ITEM_STATUSES.includes(status);
 
 /** Prompt for the required note when moving an item to each status. */
 export const ACTION_ITEM_STATUS_NOTE_HINTS: Record<ActionItemStatus, string> = {
-  unaddressed: 'Why it needs attention again',
-  verbally_communicated: 'Who you told, e.g. Told Jim (site lead) at walkdown',
+  unaddressed: 'Why it needs attention again, or who you told verbally',
   formally_notified: 'How and to whom, e.g. Emailed Jim / in AMP report / customer CX system',
   closed: 'What closed it out',
   archived: 'Why it no longer applies',
 };
+
+/** Label for any status, including ones no longer offered, for timelines. */
+export const actionItemStatusLabel = (status: string | null | undefined) =>
+  !status
+    ? ''
+    : ACTION_ITEM_STATUS_LABELS[status as ActionItemStatus] ??
+      (status === 'verbally_communicated' ? 'Verbally communicated' : status);
 
 export const ACTION_ITEM_CATEGORY_LABELS: Record<ActionItemCategory, string> = {
   cosmetic_damage: 'Cosmetic damage',
@@ -283,7 +288,7 @@ export async function fetchOpenActionItems(assetIds: string[]): Promise<ActionIt
 export async function openActionItemsWarning(assetIds: string[]): Promise<string> {
   const items = await fetchOpenActionItems(assetIds);
   if (items.length === 0) return '';
-  const lines = items.slice(0, 10).map((i) => `#${i.item_code}: ${i.title} (${ACTION_ITEM_STATUS_LABELS[i.status]})`);
+  const lines = items.slice(0, 10).map((i) => `#${i.item_code}: ${i.title}`);
   if (items.length > 10) lines.push(`...and ${items.length - 10} more`);
   return `\n\n${items.length} action item${items.length === 1 ? '' : 's'} not yet formally notified to the customer:\n${lines.join('\n')}`;
 }

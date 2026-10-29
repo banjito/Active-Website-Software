@@ -10,9 +10,9 @@ import {
 } from "@/services/reportActionItemService";
 
 /**
- * Portal front page: jobs with open action items (Unaddressed or Verbally
- * communicated, i.e. not yet formally notified to the customer), so leads and
- * PMs can jump straight to them. Same look as ApprovedShortcuts.
+ * Portal front page: jobs with open (Unaddressed) action items, i.e. not yet
+ * formally notified to the customer, so leads and PMs can jump straight to
+ * them. Same look as ApprovedShortcuts.
  */
 interface JobGroup {
   jobId: string;
@@ -20,7 +20,6 @@ interface JobGroup {
   jobNumber?: string;
   division?: string;
   unaddressed: number;
-  verbal: number;
   oldest: string;
 }
 
@@ -72,13 +71,11 @@ export const ActionItemShortcuts: React.FC = () => {
             jobNumber: jb.job_number,
             division: jb.division,
             unaddressed: 0,
-            verbal: 0,
             oldest: i.created_at,
           };
         }
         const g = groupMap[i.job_id];
-        if (i.status === "unaddressed") g.unaddressed += 1;
-        else g.verbal += 1;
+        g.unaddressed += 1;
         if (new Date(i.created_at) < new Date(g.oldest)) g.oldest = i.created_at;
       });
 
@@ -172,16 +169,9 @@ export const ActionItemShortcuts: React.FC = () => {
                   )}
                 </div>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                  {g.unaddressed > 0 && (
-                    <span className="font-medium text-brand">
-                      {g.unaddressed} unaddressed
-                    </span>
-                  )}
-                  {g.verbal > 0 && (
-                    <span className="text-blue-700 dark:text-blue-300">
-                      {g.verbal} verbally communicated
-                    </span>
-                  )}
+                  <span className="font-medium text-brand">
+                    {g.unaddressed} unaddressed
+                  </span>
                   <div className="flex items-center">
                     <Clock className="h-4 w-4 text-neutral-400 mr-1" />
                     <span className={`font-medium ${urgencyColor(g.oldest)}`}>

@@ -2473,14 +2473,14 @@ const LVCircuitBreakerMTS23Report: React.FC = () => {
               width: "100%",
             }}
           >
-            7.6.1 Low Voltage Circuit Breaker Test Sheet MTS 23
+            Low Voltage Breaker
           </h1>
         </div>
         <div
           className="text-right font-extrabold text-xl"
           style={{ color: "#1a4e7c" }}
         >
-          NETA - ATS {getSectionNumber(formData.breakerType)}
+          NETA - MTS {getSectionNumber(formData.breakerType)}
           <div className="hidden print:block mt-2">
             <div
               className={`pass-fail-status-box ${getPassFailBadgeClass(formData.status)}`}

@@ -214,6 +214,8 @@ export function OpportunitiesCalendarView() {
         allDay: true,
         backgroundColor: getEventColor(opp),
         borderColor: getEventColor(opp),
+        classNames:
+          getEventColor(opp) === "var(--cal-no-quote)" ? ["cal-no-quote"] : [],
         extendedProps: { opportunityId: opp.id, opportunity: opp },
       };
     })
@@ -224,6 +226,7 @@ export function OpportunitiesCalendarView() {
     allDay: boolean;
     backgroundColor: string;
     borderColor: string;
+    classNames: string[];
     extendedProps: {
       opportunityId: string;
       opportunity: OpportunityCalendarItem;
@@ -344,6 +347,9 @@ export function OpportunitiesCalendarView() {
         .opportunities-calendar .fc-daygrid-day-frame {
           min-height: 0;
         }
+        .dark .opportunities-calendar .fc-event.cal-no-quote {
+          box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
+        }
         .opportunities-calendar .fc-event {
           border: none;
           border-radius: 6px;
@@ -434,7 +440,7 @@ export function OpportunitiesCalendarView() {
             title="Not submitting a quote for this opportunity"
           >
             <span
-              className="w-2.5 h-2.5 rounded-none bg-[var(--cal-no-quote)]"
+              className="w-2.5 h-2.5 rounded-none bg-[var(--cal-no-quote)] dark:ring-1 dark:ring-white/40"
               aria-hidden
             />{" "}
             No Quote

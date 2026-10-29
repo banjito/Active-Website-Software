@@ -212,7 +212,7 @@ function getEstimateApprovalColor(status: string | null | undefined) {
       return "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100";
     case "no_quote":
     case "no quote":
-      return "bg-neutral-100 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400";
+      return "bg-neutral-100 text-neutral-500 dark:bg-black dark:text-white dark:ring-1 dark:ring-inset dark:ring-white/30";
     default:
       return "bg-neutral-100 text-neutral-500 dark:bg-dark-200 dark:text-neutral-500";
   }
@@ -3151,7 +3151,7 @@ export default function OpportunityList() {
                               e.target.value,
                             )
                           }
-                          className={`min-w-[140px] px-2 py-1 text-xs font-semibold rounded-none border-0 cursor-pointer focus:ring-2 focus:ring-brand focus:ring-offset-0 dark:bg-transparent ${getStatusColor(
+                          className={`min-w-[140px] px-2 py-1 text-xs font-semibold rounded-none border-0 cursor-pointer focus:ring-2 focus:ring-brand focus:ring-offset-0 ${getStatusColor(
                             opportunity.status,
                           )}`}
                           onClick={(e) => e.stopPropagation()}
@@ -3190,7 +3190,7 @@ export default function OpportunityList() {
                             )
                           }
                           disabled={!(opportunity as any).latest_estimate_id}
-                          className={`min-w-[140px] px-2 py-1 text-xs font-semibold rounded-none border-0 cursor-pointer focus:ring-2 focus:ring-brand focus:ring-offset-0 disabled:opacity-70 disabled:cursor-not-allowed dark:bg-transparent ${getEstimateApprovalColor(
+                          className={`min-w-[140px] px-2 py-1 text-xs font-semibold rounded-none border-0 cursor-pointer focus:ring-2 focus:ring-brand focus:ring-offset-0 disabled:opacity-70 disabled:cursor-not-allowed ${getEstimateApprovalColor(
                             (opportunity as any).estimate_approval_status,
                           )}`}
                           onClick={(e) => e.stopPropagation()}
@@ -3270,7 +3270,7 @@ export default function OpportunityList() {
                               e.target.value,
                             )
                           }
-                          className={`min-w-[160px] px-2 py-1 text-xs font-semibold rounded-none border-0 cursor-pointer focus:ring-2 focus:ring-brand focus:ring-offset-0 dark:bg-transparent ${getOpportunityTypeColor(
+                          className={`min-w-[160px] px-2 py-1 text-xs font-semibold rounded-none border-0 cursor-pointer focus:ring-2 focus:ring-brand focus:ring-offset-0 ${getOpportunityTypeColor(
                             getOpportunityTypeValue(opportunity),
                           )}`}
                           onClick={(e) => e.stopPropagation()}

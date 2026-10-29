@@ -245,7 +245,7 @@ export const ReportStatusButton: React.FC = () => {
     };
   }, [assetId]);
 
-  // Open action item count for the toolbar badge.
+  // Unaddressed action item count for the toolbar badge.
   useEffect(() => {
     if (!assetId) return;
     let cancelled = false;

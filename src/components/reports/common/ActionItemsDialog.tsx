@@ -11,6 +11,7 @@ import {
   ACTION_ITEM_CATEGORY_LABELS,
   ACTION_ITEM_PRIORITY_LABELS,
   ACTION_ITEM_STATUS_LABELS,
+  ACTION_ITEM_STATUS_NOTE_HINTS,
   type ActionItem,
   type ActionItemCategory,
   type ActionItemDetail,
@@ -61,12 +62,14 @@ interface UserOption {
 }
 
 const STATUS_STYLES: Record<ActionItemStatus, string> = {
-  open: "bg-brand/10 text-brand",
-  told_customer:
+  unaddressed: "bg-brand/10 text-brand",
+  verbally_communicated:
     "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200",
+  formally_notified:
+    "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200",
   closed:
     "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200",
-  not_needed:
+  archived:
     "bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300",
 };
 
@@ -585,6 +588,10 @@ const ItemDetailView: React.FC<{
             <label htmlFor={`action-item-status-${item.id}`} className="form-label">
               Status
             </label>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              Changing it needs a short note: who was told and/or how (email,
+              AMP report, the customer's system).
+            </p>
             <div className="flex flex-col sm:flex-row gap-2">
               <select
                 id={`action-item-status-${item.id}`}
@@ -602,11 +609,16 @@ const ItemDetailView: React.FC<{
                 id={`action-item-status-note-${item.id}`}
                 value={statusNote}
                 onChange={(e) => setStatusNote(e.target.value)}
-                placeholder="Note (optional), e.g. Told Jim at walkdown"
+                placeholder={
+                  status === item.status
+                    ? "Pick a new status first"
+                    : `Required: ${ACTION_ITEM_STATUS_NOTE_HINTS[status]}`
+                }
+                aria-label="Who was told, and/or how (required)"
                 className="form-input flex-1 rounded-none"
               />
               <Button
-                disabled={busy || status === item.status}
+                disabled={busy || status === item.status || !statusNote.trim()}
                 onClick={() =>
                   run(async () => {
                     await setActionItemStatus(item.id, status, statusNote);
@@ -716,7 +728,7 @@ export const ActionItemsDialog: React.FC<ActionItemsDialogProps> = ({
   const nextCode = reportCode
     ? `${reportCode}-${Math.max(0, ...(items || []).map((i) => i.item_number)) + 1}`
     : null;
-  const openCount = (items || []).filter((i) => i.status === "open").length;
+  const openCount = (items || []).filter((i) => i.status === "unaddressed").length;
 
   const heading =
     view.mode === "new"
@@ -823,7 +835,7 @@ export const ActionItemsDialog: React.FC<ActionItemsDialogProps> = ({
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
                   {items.length === 0
                     ? "Things that still need doing or telling the customer, even though the report passes."
-                    : `${openCount} open of ${items.length}`}
+                    : `${openCount} unaddressed of ${items.length}`}
                 </p>
                 <Button
                   size="sm"

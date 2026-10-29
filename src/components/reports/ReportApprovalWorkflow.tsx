@@ -110,7 +110,7 @@ export function ReportApprovalWorkflow({
 }: ReportApprovalWorkflowProps) {
   const { user } = useAuth();
   const [reports, setReports] = useState<TechnicalReport[]>([]);
-  // Open action items per report, for the badge beside the status
+  // Unaddressed action items per report, for the badge beside the status
   const [actionItemCounts, setActionItemCounts] = useState<
     Record<string, number>
   >({});
@@ -217,7 +217,7 @@ export function ReportApprovalWorkflow({
     canExport: false,
   });
 
-  // Open action item badges for the reports on screen; refresh when one changes.
+  // Unaddressed action item badges for the reports on screen; refresh when one changes.
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -2295,12 +2295,12 @@ export function ReportApprovalWorkflow({
     );
     if (!user) return;
 
-    // Sending is allowed with open action items, but say which ones first.
+    // Sending is allowed with unaddressed action items, but say which ones first.
     const openItems = await fetchOpenActionItems([report.id]);
     if (
       openItems.length > 0 &&
       !(await confirmDialog({
-        title: `Send with ${openItems.length} open action item${openItems.length === 1 ? "" : "s"}?`,
+        title: `Send with ${openItems.length} unaddressed action item${openItems.length === 1 ? "" : "s"}?`,
         description: openItems
           .map((i) => `#${i.item_code}: ${i.title}`)
           .join(" · "),
@@ -2715,7 +2715,7 @@ export function ReportApprovalWorkflow({
                       {(actionItemCounts[report.id] || 0) > 0 && (
                         <span
                           className="inline-flex items-center px-1.5 py-0.5 rounded-none text-xs font-semibold bg-brand/10 text-brand whitespace-nowrap"
-                          title="Open action items: things to do or tell the customer"
+                          title="Unaddressed action items: things to do or tell the customer"
                         >
                           {actionItemCounts[report.id]} action
                           {actionItemCounts[report.id] === 1 ? "" : "s"}

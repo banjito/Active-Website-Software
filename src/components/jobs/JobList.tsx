@@ -23,6 +23,11 @@ import {
 } from "react-router-dom";
 import { useDivision } from "../../App";
 import { JobNotifications } from "./JobNotifications";
+import { JobActionItems } from "./JobActionItems";
+import {
+  ACTION_ITEMS_CHANGED_EVENT,
+  fetchUnaddressedActionItemCount,
+} from "@/services/reportActionItemService";
 import { Database } from "@/types/supabase"; // Assuming this is the correct path to your generated types
 import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -238,6 +243,23 @@ export default function JobList() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  // Action items button beside the status tabs: swaps the jobs table for a
+  // list of action items on every job.
+  const [showActionItems, setShowActionItems] = useState(false);
+  const [unaddressedCount, setUnaddressedCount] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const n = await fetchUnaddressedActionItemCount();
+      if (!cancelled) setUnaddressedCount(n);
+    };
+    load();
+    window.addEventListener(ACTION_ITEMS_CHANGED_EVENT, load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(ACTION_ITEMS_CHANGED_EVENT, load);
+    };
+  }, []);
   const [sortField, setSortField] = useState<JobSortField>("job_number");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
@@ -1853,7 +1875,7 @@ export default function JobList() {
       </div>
 
       {/* Status Tabs */}
-      <div className="mt-6">
+      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
         <div
           className="inline-flex rounded-none shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden"
           role="tablist"
@@ -1868,7 +1890,7 @@ export default function JobList() {
               { key: "billed", label: "Billed" },
             ] as { key: StatusFilter; label: string }[]
           ).map((t) => {
-            const active = statusFilter === t.key;
+            const active = !showActionItems && statusFilter === t.key;
             return (
               <button
                 key={t.key}
@@ -1885,14 +1907,49 @@ export default function JobList() {
                     ? " border-r border-neutral-200 dark:border-neutral-700"
                     : "")
                 }
-                onClick={() => setStatusFilter(t.key)}
+                onClick={() => {
+                  setStatusFilter(t.key);
+                  setShowActionItems(false);
+                }}
               >
                 {t.label}
               </button>
             );
           })}
         </div>
+        {/* Set apart from the status tabs: it's a different list, not a filter */}
+        <button
+          type="button"
+          aria-pressed={showActionItems}
+          onClick={() => setShowActionItems((prev) => !prev)}
+          className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-none border shadow-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+            showActionItems
+              ? "bg-brand text-white border-brand"
+              : "bg-white dark:bg-dark-150 text-neutral-700 dark:text-neutral-200 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-dark-100"
+          }`}
+        >
+          Action items
+          {unaddressedCount > 0 && (
+            <span
+              className={`min-w-[18px] px-1 text-[11px] font-bold leading-[18px] text-center rounded-none ${
+                showActionItems ? "bg-white text-brand" : "bg-brand text-white"
+              }`}
+              title={`${unaddressedCount} unaddressed`}
+            >
+              {unaddressedCount}
+            </span>
+          )}
+        </button>
       </div>
+
+      {showActionItems && (
+        <div className="mt-6">
+          <JobActionItems />
+        </div>
+      )}
+
+      {!showActionItems && (
+        <>
 
       {/* Search Section */}
       <div className="mt-6">
@@ -2296,6 +2353,8 @@ export default function JobList() {
           </div>
         </div>
       </div>
+        </>
+      )}
 
       {/* Job Creation Form Dialog */}
       <Dialog

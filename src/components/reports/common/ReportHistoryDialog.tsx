@@ -45,6 +45,11 @@ function describe(row: ReportActivity): string {
       ? `Action item ${label(row.from_status)} → ${label(row.to_status)}`
       : "Action item added";
   }
+  if (row.kind === "field_flag") {
+    if (row.to_status === "resolved") return "Flag marked fixed";
+    if (row.to_status === "removed") return "Flag removed";
+    return "Field flagged";
+  }
   return `${reportStatusLabel(row.from_status)} → ${reportStatusLabel(row.to_status)}`;
 }
 
@@ -145,7 +150,9 @@ export const ReportHistoryDialog: React.FC<ReportHistoryDialogProps> = ({
                     className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-none ${
                       row.kind === "fix_note" || row.kind === "action_item"
                         ? "bg-brand"
-                        : row.kind === "review_comment"
+                        : row.kind === "field_flag"
+                          ? "bg-red-600"
+                          : row.kind === "review_comment"
                           ? "bg-neutral-400"
                           : DOT_STYLES[row.to_status || ""] || "bg-neutral-400"
                     }`}

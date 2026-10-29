@@ -82,6 +82,10 @@ import {
   fetchOpenActionItemCounts,
   openActionItemsWarning,
 } from "@/services/reportActionItemService";
+import {
+  FIELD_FLAGS_CHANGED_EVENT,
+  fetchOpenFieldFlagCounts,
+} from "@/services/reportFieldFlagService";
 import { describeSupabaseError, withWriteRetry } from "@/lib/supabaseRetry";
 import { createBatchedRowLookup } from "@/lib/batchedRowLookup";
 import { usePersistentState } from "@/hooks/usePersistentState";
@@ -862,6 +866,29 @@ export default function JobDetail() {
       window.removeEventListener(ACTION_ITEMS_CHANGED_EVENT, load);
     };
   }, [jobAssetIdsKey]);
+  // Open reviewer field flags per report, for the "N fields flagged" tag.
+  // Keyed on status too: the tag only shows while a report is being fixed or re-reviewed.
+  const [fieldFlagCounts, setFieldFlagCounts] = useState<
+    Record<string, number>
+  >({});
+  const jobAssetFlagKey = jobAssets
+    .map((a: any) => `${a.id}:${a.status || ""}:${a.approved_at || ""}`)
+    .join(",");
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const counts = await fetchOpenFieldFlagCounts(jobAssets as any[]);
+      if (!cancelled) setFieldFlagCounts(counts);
+    };
+    load();
+    window.addEventListener(FIELD_FLAGS_CHANGED_EVENT, load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(FIELD_FLAGS_CHANGED_EVENT, load);
+    };
+    // jobAssets is read through the key so unrelated edits don't refetch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobAssetFlagKey]);
   /**
    * True from the first byte of fetchJobAssets until the list is on screen.
    *
@@ -12549,6 +12576,19 @@ export default function JobDetail() {
                                                   1
                                                     ? ""
                                                     : "s"}
+                                                </span>
+                                              )}
+                                              {(fieldFlagCounts[asset.id] ||
+                                                0) > 0 && (
+                                                <span
+                                                  className="ml-2 inline-flex items-center rounded-none bg-red-50 px-1.5 py-0.5 text-xs font-semibold text-red-700 whitespace-nowrap dark:bg-red-900/30 dark:text-red-300"
+                                                  title="Fields the reviewer flagged for the tech to fix"
+                                                >
+                                                  {fieldFlagCounts[asset.id]}{" "}
+                                                  {fieldFlagCounts[asset.id] ===
+                                                  1
+                                                    ? "field flagged"
+                                                    : "fields flagged"}
                                                 </span>
                                               )}
                                             </TableCell>

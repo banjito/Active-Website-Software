@@ -81,6 +81,11 @@ import {
   fetchOpenActionItemCounts,
   fetchOpenActionItems,
 } from "@/services/reportActionItemService";
+import {
+  FIELD_FLAGS_CHANGED_EVENT,
+  fetchOpenFieldFlagCounts,
+  fetchOpenFieldFlags,
+} from "@/services/reportFieldFlagService";
 import { openActionItemsDialog } from "./common/ActionItemsDialog";
 import confirmDialog from "@/components/ui/confirmDialog";
 
@@ -103,6 +108,8 @@ const EYE_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height=
 const PRINTER_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>`;
 const PENCIL_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`;
 
+const FLAG_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>`;
+
 export function ReportApprovalWorkflow({
   division,
   jobId,
@@ -112,6 +119,10 @@ export function ReportApprovalWorkflow({
   const [reports, setReports] = useState<TechnicalReport[]>([]);
   // Open action items per report, for the badge beside the status
   const [actionItemCounts, setActionItemCounts] = useState<
+    Record<string, number>
+  >({});
+  // Open reviewer field flags per report, for the "N fields flagged" tag
+  const [fieldFlagCounts, setFieldFlagCounts] = useState<
     Record<string, number>
   >({});
   const [selectedReport, setSelectedReport] = useState<TechnicalReport | null>(
@@ -229,6 +240,21 @@ export function ReportApprovalWorkflow({
     return () => {
       cancelled = true;
       window.removeEventListener(ACTION_ITEMS_CHANGED_EVENT, load);
+    };
+  }, [reports]);
+
+  // Field flag tags for the reports on screen.
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const counts = await fetchOpenFieldFlagCounts(reports);
+      if (!cancelled) setFieldFlagCounts(counts);
+    };
+    load();
+    window.addEventListener(FIELD_FLAGS_CHANGED_EVENT, load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(FIELD_FLAGS_CHANGED_EVENT, load);
     };
   }, [reports]);
 
@@ -1426,6 +1452,13 @@ export function ReportApprovalWorkflow({
       userPermissions.canReview &&
       (report.status === "approved" || report.status === "sent");
     const showEditToggle = canReview || canEditLocked;
+    // Reviewers can flag exact fields on a report waiting for review, or add
+    // more to one already sent back as an Issue.
+    const canFlagFields =
+      canReview ||
+      (userPermissions.canReview &&
+        // Asset rows carry "issue" through untyped.
+        ["issue", "rejected"].includes(String(report.status)));
 
     // Resolve the human-readable Job # (e.g. 26015) so it can be appended to
     // the modal title: "LV Circuit Breaker ATS 25 - C/B#1 - #26015".
@@ -1519,10 +1552,10 @@ export function ReportApprovalWorkflow({
                 <h2 style="font-size:1.125rem;font-weight:600;margin:0;">${displayTitle}</h2>
               </div>
               <div style="display:flex;align-items:center;gap:0.75rem;">
-                <span style="padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.75rem;font-weight:500;background:${report.status === "submitted" ? "#fef3c7" : report.status === "approved" ? "#d1fae5" : "#fee2e2"};color:${report.status === "submitted" ? "#92400e" : report.status === "approved" ? "#065f46" : "#991b1b"};">
+                <span style="padding:0.25rem 0.75rem;border-radius:0;font-size:0.75rem;font-weight:500;background:${report.status === "submitted" ? "#fef3c7" : report.status === "approved" ? "#d1fae5" : "#fee2e2"};color:${report.status === "submitted" ? "#92400e" : report.status === "approved" ? "#065f46" : "#991b1b"};">
                   ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}
                 </span>
-                <button id="report-view-close-btn" style="padding:0.5rem 1rem;background:#f3f4f6;border:1px solid #d1d5db;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;">
+                <button id="report-view-close-btn" style="padding:0.5rem 1rem;background:#f3f4f6;border:1px solid #d1d5db;border-radius:0;cursor:pointer;font-size:0.875rem;">
                   Close
                 </button>
               </div>
@@ -1534,10 +1567,10 @@ export function ReportApprovalWorkflow({
               <div style="width:300px;flex-shrink:0;border-right:1px solid #e5e7eb;background:white;display:flex;flex-direction:column;overflow-y:auto;padding:1rem;gap:1rem;">
                 <!-- Preview / Print toolbar -->
                 <div style="display:flex;gap:0.5rem;">
-                  <button id="report-preview-btn" title="Open in new tab" style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#2563eb;">
+                  <button id="report-preview-btn" title="Open in new tab" style="width:40px;height:40px;border-radius:0;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#2563eb;">
                     ${EYE_ICON_SVG}
                   </button>
-                  <button id="report-print-btn" title="Print" style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#525252;">
+                  <button id="report-print-btn" title="Print" style="width:40px;height:40px;border-radius:0;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#525252;">
                     ${PRINTER_ICON_SVG}
                   </button>
                 </div>
@@ -1551,17 +1584,17 @@ export function ReportApprovalWorkflow({
                   <textarea
                     id="review-comments-input"
                     placeholder="Add comments about this report (required for rejection)..."
-                    style="width:100%;flex:1;min-height:120px;padding:0.5rem 0.75rem;border:1px solid #d1d5db;border-radius:0.375rem;font-size:0.875rem;resize:none;box-sizing:border-box;"
+                    style="width:100%;flex:1;min-height:120px;padding:0.5rem 0.75rem;border:1px solid #d1d5db;border-radius:0;font-size:0.875rem;resize:none;box-sizing:border-box;"
                   ></textarea>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:0.5rem;">
-                  <button id="review-approve-btn" style="padding:0.625rem 1rem;background:#16a34a;border:none;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:white;font-weight:500;">
+                  <button id="review-approve-btn" style="padding:0.625rem 1rem;background:#16a34a;border:none;border-radius:0;cursor:pointer;font-size:0.875rem;color:white;font-weight:500;">
                     ✓ Save & Approve
                   </button>
-                  <button id="review-reject-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #fca5a5;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:#dc2626;font-weight:500;">
+                  <button id="review-reject-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #fca5a5;border-radius:0;cursor:pointer;font-size:0.875rem;color:#dc2626;font-weight:500;">
                     ✕ Reject / Mark as Issue
                   </button>
-                  <button id="review-archive-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #d1d5db;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:#374151;font-weight:500;">
+                  <button id="review-archive-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #d1d5db;border-radius:0;cursor:pointer;font-size:0.875rem;color:#374151;font-weight:500;">
                     Archive
                   </button>
                 </div>
@@ -1838,10 +1871,10 @@ export function ReportApprovalWorkflow({
               <h2 style="font-size:1.125rem;font-weight:600;margin:0;">${displayTitle}</h2>
             </div>
             <div style="display:flex;align-items:center;gap:0.75rem;">
-              <span style="padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.75rem;font-weight:500;background:${report.status === "submitted" ? "#fef3c7" : report.status === "approved" ? "#d1fae5" : "#fee2e2"};color:${report.status === "submitted" ? "#92400e" : report.status === "approved" ? "#065f46" : "#991b1b"};">
+              <span style="padding:0.25rem 0.75rem;border-radius:0;font-size:0.75rem;font-weight:500;background:${report.status === "submitted" ? "#fef3c7" : report.status === "approved" ? "#d1fae5" : "#fee2e2"};color:${report.status === "submitted" ? "#92400e" : report.status === "approved" ? "#065f46" : "#991b1b"};">
                 ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}
               </span>
-              <button id="report-view-close-btn" style="padding:0.5rem 1rem;background:#f3f4f6;border:1px solid #d1d5db;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;">
+              <button id="report-view-close-btn" style="padding:0.5rem 1rem;background:#f3f4f6;border:1px solid #d1d5db;border-radius:0;cursor:pointer;font-size:0.875rem;">
                 Close
               </button>
             </div>
@@ -1853,17 +1886,27 @@ export function ReportApprovalWorkflow({
             <div style="width:300px;flex-shrink:0;border-right:1px solid #e5e7eb;background:white;display:flex;flex-direction:column;overflow-y:auto;padding:1rem;gap:1rem;">
               <!-- Preview / Print toolbar (same icon-button UI as the report header) -->
               <div style="display:flex;gap:0.5rem;">
-                <button id="report-preview-btn" title="Open in new tab" style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#2563eb;">
+                <button id="report-preview-btn" title="Open in new tab" style="width:40px;height:40px;border-radius:0;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#2563eb;">
                   ${EYE_ICON_SVG}
                 </button>
-                <button id="report-print-btn" title="Print" style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#525252;">
+                <button id="report-print-btn" title="Print" style="width:40px;height:40px;border-radius:0;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#525252;">
                   ${PRINTER_ICON_SVG}
                 </button>
                 ${
                   showEditToggle
                     ? `
-                <button id="report-edit-btn" title="Edit report" style="width:40px;height:40px;border-radius:9999px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:${BRAND_COLOR};">
+                <button id="report-edit-btn" title="Edit report" style="width:40px;height:40px;border-radius:0;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:${BRAND_COLOR};">
                   ${PENCIL_ICON_SVG}
+                </button>
+                `
+                    : ""
+                }
+                ${
+                  canFlagFields
+                    ? `
+                <button id="report-flag-btn" title="Flag fields" style="position:relative;width:40px;height:40px;border-radius:0;display:flex;align-items:center;justify-content:center;border:1px solid #fca5a5;cursor:pointer;color:#dc2626;background:white;">
+                  ${FLAG_ICON_SVG}
+                  <span id="report-flag-count" style="display:none;position:absolute;top:-7px;right:-7px;min-width:18px;height:18px;padding:0 4px;border-radius:0;background:#171717;color:white;font-size:11px;font-weight:600;line-height:18px;text-align:center;"></span>
                 </button>
                 `
                     : ""
@@ -1880,17 +1923,17 @@ export function ReportApprovalWorkflow({
                 <textarea
                   id="review-comments-input"
                   placeholder="Add comments about this report (required for rejection)..."
-                  style="width:100%;flex:1;min-height:120px;padding:0.5rem 0.75rem;border:1px solid #d1d5db;border-radius:0.375rem;font-size:0.875rem;resize:none;box-sizing:border-box;"
+                  style="width:100%;flex:1;min-height:120px;padding:0.5rem 0.75rem;border:1px solid #d1d5db;border-radius:0;font-size:0.875rem;resize:none;box-sizing:border-box;"
                 ></textarea>
               </div>
               <div style="display:flex;flex-direction:column;gap:0.5rem;">
-                <button id="review-approve-btn" style="padding:0.625rem 1rem;background:#16a34a;border:none;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:white;font-weight:500;">
+                <button id="review-approve-btn" style="padding:0.625rem 1rem;background:#16a34a;border:none;border-radius:0;cursor:pointer;font-size:0.875rem;color:white;font-weight:500;">
                   ✓ Save & Approve
                 </button>
-                <button id="review-reject-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #fca5a5;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:#dc2626;font-weight:500;">
+                <button id="review-reject-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #fca5a5;border-radius:0;cursor:pointer;font-size:0.875rem;color:#dc2626;font-weight:500;">
                   ✕ Reject / Mark as Issue
                 </button>
-                <button id="review-archive-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #d1d5db;border-radius:0.375rem;cursor:pointer;font-size:0.875rem;color:#374151;font-weight:500;">
+                <button id="review-archive-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #d1d5db;border-radius:0;cursor:pointer;font-size:0.875rem;color:#374151;font-weight:500;">
                   Archive
                 </button>
               </div>
@@ -1987,6 +2030,59 @@ export function ReportApprovalWorkflow({
       }
     };
 
+    // Flag toggle: field flags need the live report (the preview is a print
+    // copy without the real fields), so load it with ?flag=true, which turns
+    // flag mode on. In edit mode the report is already live: just toggle.
+    let inFlagView = false;
+    const flagBtn = document.getElementById("report-flag-btn");
+    let flagModeOn = false;
+    const flagCountBadge = document.getElementById("report-flag-count");
+    const setFlagCount = (count: number) => {
+      if (!flagCountBadge) return;
+      flagCountBadge.textContent = String(count);
+      flagCountBadge.style.display = count > 0 ? "block" : "none";
+    };
+    if (canFlagFields) {
+      fetchOpenFieldFlags(report.id)
+        .then((rows) => {
+          // Flags from before the last approval belong to an old round.
+          const approvedAt = report.approved_at ? Date.parse(report.approved_at) : null;
+          setFlagCount(
+            approvedAt
+              ? rows.filter((r) => Date.parse(r.created_at) > approvedAt).length
+              : rows.length,
+          );
+        })
+        .catch((e) => console.warn("[ViewDialog] Field flags unavailable:", e));
+    }
+
+    const applyFlagChrome = () => {
+      if (flagBtn) {
+        const on = inFlagView || flagModeOn;
+        flagBtn.style.background = on ? "#dc2626" : "white";
+        flagBtn.style.color = on ? "white" : "#dc2626";
+        flagBtn.setAttribute("title", inFlagView ? "Back to preview" : "Flag fields");
+      }
+    };
+
+    if (flagBtn) {
+      flagBtn.onclick = () => {
+        const iframe = getPreviewIframe();
+        if (!iframe) return;
+        if (inEditMode) {
+          iframe.contentWindow?.postMessage(
+            { type: "fieldFlagsToggle" },
+            window.location.origin,
+          );
+          return;
+        }
+        inFlagView = !inFlagView;
+        flagModeOn = false;
+        iframe.src = inFlagView ? `${openReportUrl}&flag=true` : fullReportUrl;
+        applyFlagChrome();
+      };
+    }
+
     if (editBtn) {
       editBtn.onclick = () => {
         const iframe = getPreviewIframe();
@@ -2009,11 +2105,23 @@ export function ReportApprovalWorkflow({
           inEditMode = true;
           iframe.src = `${openReportUrl}&edit=true`;
         }
+        // Either way the frame reloads with flag mode off.
+        inFlagView = false;
+        flagModeOn = false;
+        applyFlagChrome();
         applyEditModeChrome();
       };
     }
 
     const messageHandler = (e: MessageEvent) => {
+      if (
+        e.data?.type === "fieldFlagsState" &&
+        e.origin === window.location.origin
+      ) {
+        flagModeOn = !!e.data.on;
+        setFlagCount(Number(e.data.count) || 0);
+        applyFlagChrome();
+      }
       if (e.data?.type === "reportEditState") {
         hasUnsavedChanges = !!e.data.isEditing;
         onEditStateChange();
@@ -2719,6 +2827,17 @@ export function ReportApprovalWorkflow({
                         >
                           {actionItemCounts[report.id]} action
                           {actionItemCounts[report.id] === 1 ? "" : "s"}
+                        </span>
+                      )}
+                      {(fieldFlagCounts[report.id] || 0) > 0 && (
+                        <span
+                          className="inline-flex items-center px-1.5 py-0.5 rounded-none text-xs font-semibold bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 whitespace-nowrap"
+                          title="Fields the reviewer flagged for the tech to fix"
+                        >
+                          {fieldFlagCounts[report.id]}{" "}
+                          {fieldFlagCounts[report.id] === 1
+                            ? "field flagged"
+                            : "fields flagged"}
                         </span>
                       )}
                     </div>

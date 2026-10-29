@@ -4,7 +4,12 @@ import { supabase } from '@/lib/supabase';
 // report (an assets row). Table and trigger are in database/migrations/report_activity.sql.
 // Status changes are logged by the database; the app only adds fix notes.
 
-export type ReportActivityKind = 'status_change' | 'review_comment' | 'fix_note' | 'action_item';
+export type ReportActivityKind =
+  | 'status_change'
+  | 'review_comment'
+  | 'fix_note'
+  | 'action_item'
+  | 'field_flag';
 
 export interface ReportActivity {
   id: number;

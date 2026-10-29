@@ -53,6 +53,11 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ReportStatusButton } from "@/components/reports/common/ReportStatusButton";
 import { ensureFixNote } from "@/components/reports/common/fixNoteDialog";
 import {
+  FieldFlagsOverlay,
+  FlaggedFieldsList,
+  useReportFieldFlags,
+} from "@/components/reports/common/fieldFlags/ReportFieldFlags";
+import {
   JOB_INFO_EDITABLE_CSS,
   collectJobInfoFields,
   isSaveOrEditButtonLabel,
@@ -174,6 +179,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     sessionStorage.getItem("useGlobalJobs") === "true";
 
   const isReportPage = isReportFormPath(location.pathname);
+  // Reviewer field flags (custom forms skip Layout and mount their own).
+  const fieldFlags = useReportFieldFlags(isReportPage);
 
   const getJobIdFromReportPath = (): string | null => {
     if (!isReportPage) return null;
@@ -691,7 +698,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   // If embedded mode, render children without any chrome
   if (isEmbedded) {
-    return <div className="min-h-screen w-full">{children}</div>;
+    return (
+      <>
+        <div className="min-h-screen w-full" data-ff-root="">
+          {children}
+        </div>
+        <FieldFlagsOverlay ctrl={fieldFlags} />
+      </>
+    );
   }
 
   // Render the appropriate menu items
@@ -1046,18 +1060,24 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   ) : null;
 
   const mainContent = (
-    <main className="flex-1 min-w-0 p-3 sm:p-4 lg:p-6 overflow-x-auto overflow-y-auto print:overflow-visible">
-      {reviewIssue && (
+    <main
+      className="flex-1 min-w-0 p-3 sm:p-4 lg:p-6 overflow-x-auto overflow-y-auto print:overflow-visible"
+      data-ff-root=""
+    >
+      {(reviewIssue || fieldFlags.showFlags) && (
         <div className="print:hidden mb-4 px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-none flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 mt-0.5 text-red-600 dark:text-red-400 flex-shrink-0" />
           <div className="min-w-0">
             <p className="text-sm font-semibold text-red-800 dark:text-red-200">
               Reviewer flagged an issue
             </p>
-            <p className="text-sm text-red-700 dark:text-red-300 whitespace-pre-wrap break-words">
-              {reviewIssue.comments}
-            </p>
-            {(reviewIssue.reviewer || reviewIssue.reviewedAt) && (
+            {reviewIssue?.comments && (
+              <p className="text-sm text-red-700 dark:text-red-300 whitespace-pre-wrap break-words">
+                {reviewIssue.comments}
+              </p>
+            )}
+            <FlaggedFieldsList ctrl={fieldFlags} />
+            {reviewIssue && (reviewIssue.reviewer || reviewIssue.reviewedAt) && (
               <p className="mt-1 text-xs text-red-600 dark:text-red-400">
                 {[
                   reviewIssue.reviewer,
@@ -1101,6 +1121,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       )}
       {children}
+      <FieldFlagsOverlay ctrl={fieldFlags} />
     </main>
   );
 

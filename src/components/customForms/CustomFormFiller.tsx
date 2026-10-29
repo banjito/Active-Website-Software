@@ -19,6 +19,11 @@ import { ReportWrapper } from "@/components/reports/ReportWrapper";
 import { ReportPhotosButton } from "@/components/reports/common/ReportPhotos";
 import { ReportStatusButton } from "@/components/reports/common/ReportStatusButton";
 import {
+  FieldFlagsOverlay,
+  FlaggedFieldsList,
+  useReportFieldFlags,
+} from "@/components/reports/common/fieldFlags/ReportFieldFlags";
+import {
   newReportId,
   reportIdFromUrl,
 } from "@/components/reports/common/reportIdentity";
@@ -72,6 +77,8 @@ export const CustomFormFiller: React.FC = () => {
     instanceId: string;
   }>();
   const navigate = useNavigate();
+  // Custom forms skip the app Layout, so they mount reviewer field flags here.
+  const fieldFlags = useReportFieldFlags(true);
   const { user } = useAuth();
   const { jobDetails } = useJobDetails(jobId);
 
@@ -616,8 +623,19 @@ export const CustomFormFiller: React.FC = () => {
     <ReportWrapper>
       <CustomFormPrintHeader template={template} status={status} />
 
-      <div className="min-h-screen bg-neutral-50 dark:bg-dark-200 p-4 md:p-6 print:min-h-0 print:bg-white print:p-0">
+      <div
+        className="min-h-screen bg-neutral-50 dark:bg-dark-200 p-4 md:p-6 print:min-h-0 print:bg-white print:p-0"
+        data-ff-root=""
+      >
         <div className="max-w-5xl mx-auto print:max-w-none">
+          {fieldFlags.showFlags && (
+            <div className="print:hidden mb-4 px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-none">
+              <p className="text-sm font-semibold text-red-800 dark:text-red-200">
+                Reviewer flagged an issue
+              </p>
+              <FlaggedFieldsList ctrl={fieldFlags} />
+            </div>
+          )}
           <div className="custom-form-container bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-4 md:p-6 print:shadow-none print:border-0 print:rounded-none print:p-0">
             <div className="print:hidden flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b border-neutral-200 dark:border-neutral-700">
               <div className="flex items-center gap-4">
@@ -705,6 +723,7 @@ export const CustomFormFiller: React.FC = () => {
           </div>
         </div>
       </div>
+      <FieldFlagsOverlay ctrl={fieldFlags} />
     </ReportWrapper>
   );
 };

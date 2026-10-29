@@ -239,6 +239,7 @@ export const ReportPhotosButton: React.FC<ReportPhotosButtonProps> = ({
         className="relative px-2 py-2 text-sm rounded-none text-white bg-neutral-600 border border-neutral-600 hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-500"
         title={onButtonMouseEnter ? undefined : "Report Photos"}
         aria-label="Report Photos"
+        data-flag-target="Photos"
       >
         <Camera className="w-6 h-6" />
         {photos.length > 0 && (

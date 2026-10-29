@@ -52,6 +52,7 @@ import {
   type AuthorProfile,
 } from "../../services/interactionsService";
 import { AuthorAvatar } from "../sales/AuthorAvatar";
+import CustomerLostOpportunities from "./CustomerLostOpportunities";
 import { formatStatusLabel } from "@/utils/formatters";
 
 interface Contact {
@@ -1361,6 +1362,8 @@ export default function CustomerDetail() {
                   )}
                 </div>
               </div>
+
+              <CustomerLostOpportunities customerId={id} />
 
               {/* Two-column layout for Contacts and Documents */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

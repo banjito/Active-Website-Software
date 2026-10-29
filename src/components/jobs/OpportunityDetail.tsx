@@ -59,6 +59,11 @@ import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
 import { PDFEditor } from "../pdf/PDFEditor";
 import OpportunityNotes from "./OpportunityNotes";
 import OpportunityRfis from "./OpportunityRfis";
+import MarkLostModal, {
+  LostInfo,
+  lostFields,
+  lostReasonLabel,
+} from "./MarkLostModal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import CopyEstimateToOpportunityModal, {
   type CopyTargetOpportunity,
@@ -740,6 +745,9 @@ export default function OpportunityDetail() {
   const [isConvertingToJob, setIsConvertingToJob] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const [isStatusEditing, setIsStatusEditing] = useState(false);
+  // "inline" = status badge dropdown, "edit" = edit form
+  const [lostPrompt, setLostPrompt] = useState<null | "inline" | "edit">(null);
+  const [pendingLost, setPendingLost] = useState<LostInfo | null>(null);
   const [isEstimateApprovalEditing, setIsEstimateApprovalEditing] =
     useState(false);
   const [isDocumentsStageEditing, setIsDocumentsStageEditing] = useState(false);
@@ -2312,6 +2320,16 @@ export default function OpportunityDetail() {
       updatePayload.opportunity_created_date = opportunityCreatedDate;
       updatePayload.letter_proposal_date = letterProposalDate;
 
+      // Lost needs a reason first
+      if (editFormData.status === "lost" && opportunity.status !== "lost") {
+        if (!pendingLost) {
+          setLostPrompt("edit");
+          setIsSubmitting(false);
+          return;
+        }
+        Object.assign(updatePayload, lostFields(pendingLost, user?.id));
+      }
+
       // Helper to check if error is about a missing column
       const isColumnMissingError = (err: any) => {
         if (!err) return false;
@@ -2697,6 +2715,17 @@ export default function OpportunityDetail() {
     const { name, value } = e.target;
     console.log("Input changed:", { name, value });
 
+    // Lost needs a reason first; the modal sets the status on save
+    if (
+      name === "status" &&
+      value === "lost" &&
+      editFormData.status !== "lost" &&
+      opportunity?.status !== "lost"
+    ) {
+      setLostPrompt("edit");
+      return;
+    }
+
     setEditFormData((prev) => {
       const updated = { ...prev, [name]: value };
 
@@ -3050,21 +3079,29 @@ export default function OpportunityDetail() {
     }
   };
 
-  const handleStatusChange = async (newStatus: string) => {
+  const handleStatusChange = async (newStatus: string, lost?: LostInfo) => {
     if (!opportunity?.id || !user) return;
 
+    // Lost needs a reason first; the modal calls back with it
+    if (newStatus === "lost" && opportunity.status !== "lost" && !lost) {
+      setIsStatusEditing(false);
+      setLostPrompt("inline");
+      return;
+    }
+
     try {
+      const extra = lost ? lostFields(lost, user.id) : {};
       const { error } = await supabase
         .schema("business")
         .from("opportunities")
-        .update({ status: newStatus })
+        .update({ status: newStatus, ...extra })
         .eq("id", opportunity.id);
 
       if (error) throw error;
 
       // Update the local state for all status changes
       setOpportunity((prev) =>
-        prev ? { ...prev, status: newStatus as any } : null,
+        prev ? { ...prev, status: newStatus as any, ...extra } : null,
       );
 
       setIsStatusEditing(false);
@@ -5181,6 +5218,15 @@ export default function OpportunityDetail() {
                           </span>
                         </button>
                       )}
+                      {opportunity.status === "lost" &&
+                        opportunity.lost_reason_category && (
+                          <p className="text-xs text-neutral-700 dark:text-neutral-200 mt-1">
+                            <span className="font-semibold">
+                              {lostReasonLabel(opportunity.lost_reason_category)}:
+                            </span>{" "}
+                            {opportunity.lost_reason}
+                          </p>
+                        )}
                       {opportunity.status !== "awarded" &&
                         opportunity.status !== "lost" &&
                         !opportunity.job_id && (
@@ -6509,6 +6555,20 @@ export default function OpportunityDetail() {
           </Dialog>
         </div>
       </div>
+      <MarkLostModal
+        isOpen={lostPrompt !== null}
+        quoteNumber={opportunity?.quote_number}
+        onCancel={() => setLostPrompt(null)}
+        onSave={async (info) => {
+          if (lostPrompt === "edit") {
+            setPendingLost(info);
+            setEditFormData((prev) => ({ ...prev, status: "lost" }));
+          } else {
+            await handleStatusChange("lost", info);
+          }
+          setLostPrompt(null);
+        }}
+      />
     </div>
   );
 }

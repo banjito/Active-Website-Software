@@ -159,6 +159,10 @@ export interface Opportunity {
   documents_stage?: string;
   in_pipeline_projection?: boolean;
   exclude_from_quoted_total?: boolean;
+  lost_reason_category?: string | null;
+  lost_reason?: string | null;
+  lost_at?: string | null;
+  lost_by?: string | null;
   subcontractor_agreements?: SubcontractorAgreement[];
 }
 

@@ -2,8 +2,7 @@
 // pages and SKM PDF pages. Replaces the fancypagestyles and titlepages in the
 // LaTeX version.
 #import "project.typ": *
-
-#let myorange = rgb(242, 103, 34)
+#import "brand.typ": *
 
 // LaTeX's font sizes at 12pt, so the covers match the original.
 #let fs = (small: 10.95pt, large: 14.4pt, Large: 17.28pt, Huge: 24.88pt)
@@ -19,6 +18,7 @@
   // = is \section (numbered); == and === are \subsection* and \subsubsection*.
   set heading(numbering: "1")
   show heading: set block(above: 1.6em, below: 1em)
+  show heading: set text(fill: ink)
   show heading.where(level: 1): set text(size: fs.Large)
   show heading.where(level: 2): set text(size: fs.large)
   show heading.where(level: 2): set heading(numbering: none)
@@ -94,22 +94,22 @@
   caption: [Incident Energy Categories and Associated Buses Identified],
 )
 
-// Cover page: orange bar down the left edge, header and footer artwork,
+// Cover page: brand bar down the left edge, header and footer artwork,
 // bold centered text, no page header or footer.
 #let cover-page(body) = page(
   header: none,
   footer: none,
   margin: (x: 1.5cm, y: 0cm),
-  background: place(left + top, rect(width: 0.8cm, height: 100%, fill: myorange)),
+  background: place(left + top, cover-bar),
   {
     set align(center)
-    set text(weight: "bold", hyphenate: false)
+    set text(weight: "bold", hyphenate: false, fill: ink)
     set par(spacing: 0.4em, justify: false)
-    image("/Pictures/Cover Header.png", width: 100%)
+    cover-header
     text(fs.small, preparedbyaddress)
     body
     v(1fr)
-    image("/Pictures/Cover Footer.png", width: 100%)
+    cover-footer
   },
 )
 
@@ -136,7 +136,7 @@
 // Title page in front of each SKM section.
 #let title-page(heading, logo-width) = page(header: none, footer: none, {
   set align(center)
-  set text(weight: "bold", hyphenate: false)
+  set text(weight: "bold", hyphenate: false, fill: ink)
   set par(spacing: 0.4em, justify: false)
   v(1cm)
   text(fs.large)[Report \##projectnumber]
@@ -149,7 +149,7 @@
   v(2cm)
   text(fs.large, mydate)
   v(1fr)
-  image("/Pictures/AMP-Logo.png", width: logo-width)
+  logo(logo-width)
 })
 
 // A section after a study's text: a title page, then the body under its own

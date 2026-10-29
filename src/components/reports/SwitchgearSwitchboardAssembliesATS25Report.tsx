@@ -1616,57 +1616,64 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
             </div>
             <div className="overflow-x-auto">
               {/* Measured table */}
-              <table className="w-full min-w-[1100px] divide-y divide-neutral-200 dark:divide-neutral-700 table-fixed">
+              <table className="w-full min-w-[720px] divide-y divide-neutral-200 dark:divide-neutral-700 table-fixed">
                 <colgroup>
-                  <col style={{ width: "23%" }} />
-                  <col style={{ width: "8%" }} />
-                  <col style={{ width: "8%" }} />
-                  <col style={{ width: "8%" }} />
-                  <col style={{ width: "8%" }} />
-                  <col style={{ width: "8%" }} />
-                  <col style={{ width: "8%" }} />
-                  <col style={{ width: "9%" }} />
-                  <col style={{ width: "9.5%" }} />
-                  <col style={{ width: "10.5%" }} />
+                  <col style={{ width: "22%" }} />
+                  <col style={{ width: "7.5%" }} />
+                  <col style={{ width: "7.5%" }} />
+                  <col style={{ width: "7.5%" }} />
+                  <col style={{ width: "7.5%" }} />
+                  <col style={{ width: "7.5%" }} />
+                  <col style={{ width: "7.5%" }} />
+                  <col style={{ width: "10%" }} />
+                  <col style={{ width: "10%" }} />
+                  <col style={{ width: "13%" }} />
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-left text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Bus Section
                     </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       A-Phase
                     </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       B-Phase
                     </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       C-Phase
                     </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Neutral
                     </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Ground
                     </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Units
                     </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Value Deviation
                     </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Criteria
                     </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
+                    <th className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider">
                       Results
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                   {formData.contactResistance.map((row, i) => (
-                    <tr key={i}>
-                      <td className="px-3 py-2">
+                    <tr
+                      key={i}
+                      className={
+                        formData.contactEvaluation[i]?.result === "FAIL"
+                          ? "bg-red-100 dark:bg-red-900/40 print:bg-white"
+                          : undefined
+                      }
+                    >
+                      <td className="px-1 py-2">
                         <div className="print:hidden flex items-center gap-1">
                           <input
                             value={row.busSection}
@@ -1734,7 +1741,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                           "ground",
                         ] as const
                       ).map((key) => (
-                        <td key={key} className="px-3 py-2">
+                        <td key={key} className="px-1 py-2">
                           <div className="print:hidden">
                             <input
                               value={row[key]}
@@ -1755,7 +1762,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                           </div>
                         </td>
                       ))}
-                      <td className="px-3 py-2">
+                      <td className="px-1 py-2">
                         <div className="print:hidden">
                           <select
                             value={formData.contactUnit}
@@ -1779,10 +1786,10 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                           {formData.contactUnit}
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-center text-sm text-neutral-900 dark:text-white">
+                      <td className="px-1 py-2 text-center text-sm text-neutral-900 dark:text-white">
                         {formData.contactEvaluation[i]?.deviation ?? "N/A"}
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="px-1 py-2">
                         <div className="print:hidden">
                           <select
                             value={formData.contactEvaluation[i]?.criteria ?? "<50%"}
@@ -1810,7 +1817,7 @@ const SwitchgearSwitchboardAssembliesATS25Report: React.FC = () => {
                           {formData.contactEvaluation[i]?.criteria}
                         </div>
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="px-1 py-2">
                         <div className="print:hidden">
                           <select
                             value={formData.contactEvaluation[i]?.result ?? "N/A"}

@@ -19,7 +19,7 @@ const fromFolder = (files: Record<string, unknown>, folder: string) =>
 
 export const POWER_SYSTEM_STUDY: ReportTemplate = {
   id: "power-system-study",
-  name: "Arc Flash Hazard Analysis",
+  name: "Arc Flash Hazard Analysis - AMP Report",
   sources: fromFolder(
     import.meta.glob("./power-system-study/*.typ", { query: "?raw", import: "default", eager: true }),
     "./power-system-study",
@@ -45,6 +45,28 @@ export const POWER_SYSTEM_STUDY: ReportTemplate = {
   },
 };
 
+/** The same report in C&E Design's logo and colors. Its folder holds only the
+ *  files that differ (brand.typ, project.typ, the logo); the rest is shared. */
+export const CE_POWER_SYSTEM_STUDY: ReportTemplate = {
+  id: "ce-power-system-study",
+  name: "Arc Flash Hazard Analysis - C&E Design Report",
+  sources: {
+    ...POWER_SYSTEM_STUDY.sources,
+    ...fromFolder(
+      import.meta.glob("./ce-power-system-study/*.typ", { query: "?raw", import: "default", eager: true }),
+      "./ce-power-system-study",
+    ),
+  },
+  assets: {
+    ...POWER_SYSTEM_STUDY.assets,
+    ...fromFolder(
+      import.meta.glob("./ce-power-system-study/Pictures/*", { query: "?url", import: "default", eager: true }),
+      "./ce-power-system-study",
+    ),
+  },
+  fieldLabels: POWER_SYSTEM_STUDY.fieldLabels,
+};
+
 /** The fields a template reads from the job: `field("key", "sample")` in project.typ. */
 export const templateFields = (projectTyp: string) =>
   [...projectTyp.matchAll(/field\(\s*"([^"]+)"\s*,\s*"((?:[^"\\]|\\.)*)"\s*\)/g)].map((m) => ({
@@ -62,7 +84,7 @@ export const templatePdfSlots = (sources: Record<string, string>) =>
   );
 
 /** Templates bundled with ampOS. Saved templates start from one of these. */
-export const BUILT_IN_TEMPLATES: ReportTemplate[] = [POWER_SYSTEM_STUDY];
+export const BUILT_IN_TEMPLATES: ReportTemplate[] = [POWER_SYSTEM_STUDY, CE_POWER_SYSTEM_STUDY];
 
 /** The bundled template that supplies a saved template's pictures and field labels. */
 export const baseTemplateFor = (id: string | null | undefined) =>

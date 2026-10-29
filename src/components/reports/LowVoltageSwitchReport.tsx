@@ -107,7 +107,11 @@ const applyTemperatureCorrection = (
   tcf: number,
 ): Measurement => {
   if (measurement.isEmpty || measurement.value === null) {
-    return { value: null, isEmpty: true };
+    // Text like "N/A" or "-" (test not required) carries over as-is
+    const text = measurement.raw?.trim();
+    return text
+      ? { value: null, isEmpty: false, raw: text }
+      : { value: null, isEmpty: true };
   }
   const correctedValue = measurement.value * tcf;
   return {
@@ -659,7 +663,8 @@ const getTemperatureCorrectedValue = (
   measurement: Measurement,
   tcf: number,
 ): string => {
-  if (measurement.isEmpty || measurement.value === null) return "";
+  if (measurement.isEmpty || measurement.value === null)
+    return measurement.raw?.trim() ?? "";
   return (
     (isGreaterThan(measurement) ? ">" : "") +
     (measurement.value * tcf).toFixed(2)

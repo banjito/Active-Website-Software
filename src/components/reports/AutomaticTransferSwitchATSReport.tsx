@@ -353,10 +353,10 @@ const calculateTempCorrectedReading = (
   tcf: number,
 ): string => {
   // Keep a leading > or < (e.g. ">22" = over the meter's range).
-  const match = String(reading ?? "")
-    .trim()
-    .match(/^([<>]=?)?\s*(-?\d*\.?\d+)/);
-  if (!match) return "";
+  const text = String(reading ?? "").trim();
+  const match = text.match(/^([<>]=?)?\s*(-?\d*\.?\d+)/);
+  // Text like "N/A" or "-" (test not required) carries over as-is
+  if (!match) return text;
   return `${match[1] ?? ""}${(parseFloat(match[2]) * tcf).toFixed(2)}`;
 };
 

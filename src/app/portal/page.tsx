@@ -51,6 +51,7 @@ import { Portal } from "@/lib/roles";
 import { ReviewShortcuts } from "@/components/shortcuts/ReviewShortcuts";
 import { IssueShortcuts } from "@/components/shortcuts/IssueShortcuts";
 import { ApprovedShortcuts } from "@/components/shortcuts/ApprovedShortcuts";
+import { ActionItemShortcuts } from "@/components/shortcuts/ActionItemShortcuts";
 import { supabase } from "@/lib/supabase";
 import { companyConfig } from "@/lib/companyConfig";
 import {
@@ -164,6 +165,8 @@ export default function PortalLanding() {
   const [showReviewShortcuts, setShowReviewShortcuts] = useState(false);
   const [showIssueShortcuts, setShowIssueShortcuts] = useState(false);
   const [showApprovedShortcuts, setShowApprovedShortcuts] = useState(false);
+  // Open action items list: shown by default, hidden per visit with its button
+  const [showActionItemShortcuts, setShowActionItemShortcuts] = useState(true);
   const [defaultToShow, setDefaultToShow] = useState(false);
   const [defaultToShowReview, setDefaultToShowReview] = useState(false);
   const [defaultToShowIssue, setDefaultToShowIssue] = useState(false);
@@ -176,6 +179,7 @@ export default function PortalLanding() {
     showReviewShortcuts: true,
     showIssueShortcuts: true,
     showApprovedShortcuts: true,
+    showActionItemShortcuts: true,
     showAnnouncements: true,
     hiddenPortals: [] as string[],
   });
@@ -529,6 +533,7 @@ export default function PortalLanding() {
             restPrefs.showIssueShortcuts ?? prev.showIssueShortcuts,
           // Explicitly default showApprovedShortcuts to true if not set in DB
           showApprovedShortcuts: restPrefs.showApprovedShortcuts ?? true,
+          showActionItemShortcuts: restPrefs.showActionItemShortcuts ?? true,
           showAnnouncements: restPrefs.showAnnouncements ?? true,
           hiddenPortals: restPrefs.hiddenPortals ?? prev.hiddenPortals,
         }));
@@ -603,6 +608,7 @@ export default function PortalLanding() {
               ...parsed,
               // Explicitly ensure showApprovedShortcuts defaults to true if not set
               showApprovedShortcuts: parsed.showApprovedShortcuts ?? true,
+              showActionItemShortcuts: parsed.showActionItemShortcuts ?? true,
               showAnnouncements: parsed.showAnnouncements ?? true,
             }));
           } catch (e) {
@@ -2103,6 +2109,59 @@ export default function PortalLanding() {
         {showApprovedShortcuts && (
           <div className="px-4 sm:px-6 lg:px-8">
             <ApprovedShortcuts />
+          </div>
+        )}
+      </div>
+
+      {/* Action Item Shortcuts Section: jobs with action items not yet
+          formally notified to the customer */}
+      <div
+        className={`mt-6 max-w-[1400px] mx-auto ${!portalPreferences.showActionItemShortcuts && !isEditMode ? "hidden" : ""}`}
+      >
+        {isEditMode && (
+          <div className="flex items-center justify-between mb-4 p-3 mx-4 sm:mx-6 lg:mx-8 bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
+            <span className="text-sm font-medium text-neutral-700 dark:text-white">
+              Action Item Shortcuts Section
+            </span>
+            <button
+              onClick={() => togglePortalPreference("showActionItemShortcuts")}
+              className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none ${
+                portalPreferences.showActionItemShortcuts
+                  ? "bg-brand"
+                  : "bg-neutral-300 dark:bg-neutral-600"
+              }`}
+            >
+              <span
+                className={`inline-block h-3 w-3 transform rounded-none bg-white transition-transform ${
+                  portalPreferences.showActionItemShortcuts
+                    ? "translate-x-5"
+                    : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+        )}
+        <div className="flex justify-between items-center mb-2 px-4 sm:px-6 lg:px-8">
+          <h3 className="text-lg font-medium">Action Item Shortcuts</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowActionItemShortcuts((prev) => !prev)}
+            className="text-neutral-500 hover:text-neutral-700 dark:text-white dark:hover:text-white shrink-0"
+            leftIcon={
+              showActionItemShortcuts ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )
+            }
+          >
+            {showActionItemShortcuts ? "Hide" : "Show"}
+          </Button>
+        </div>
+        {showActionItemShortcuts && (
+          <div className="px-4 sm:px-6 lg:px-8">
+            <ActionItemShortcuts />
           </div>
         )}
       </div>

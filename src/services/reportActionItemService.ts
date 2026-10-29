@@ -45,6 +45,16 @@ export const ACTION_ITEM_STATUS_LABELS: Record<ActionItemStatus, string> = {
   archived: 'Archive',
 };
 
+/**
+ * Still open: the customer hasn't been formally notified. Verbally communicated
+ * counts as open (requester, 2026-10-29): only Formally notified, Closed and
+ * Archive clear an item from badges, counts and the front page.
+ */
+export const OPEN_ACTION_ITEM_STATUSES: ActionItemStatus[] = ['unaddressed', 'verbally_communicated'];
+
+export const isOpenActionItem = (status: ActionItemStatus) =>
+  OPEN_ACTION_ITEM_STATUSES.includes(status);
+
 /** Prompt for the required note when moving an item to each status. */
 export const ACTION_ITEM_STATUS_NOTE_HINTS: Record<ActionItemStatus, string> = {
   unaddressed: 'Why it needs attention again',
@@ -205,22 +215,22 @@ export async function fetchActionItemsAcrossJobs(limit = 2000): Promise<ActionIt
   }));
 }
 
-/** How many items are unaddressed across every job. Best effort: 0 on failure. */
-export async function fetchUnaddressedActionItemCount(): Promise<number> {
+/** How many items are open (not yet formally notified) across every job. Best effort: 0 on failure. */
+export async function fetchOpenActionItemCount(): Promise<number> {
   const { count, error } = await supabase
     .schema('neta_ops')
     .from('report_action_items')
     .select('id', { count: 'exact', head: true })
-    .eq('status', 'unaddressed');
+    .in('status', OPEN_ACTION_ITEM_STATUSES);
   if (error) {
-    console.warn('[actionItems] Failed to count unaddressed items:', error);
+    console.warn('[actionItems] Failed to count open items:', error);
     return 0;
   }
   return count || 0;
 }
 
 /**
- * Unaddressed action items per report, keyed by asset id, for badges on report lists.
+ * Open action items per report, keyed by asset id, for badges on report lists.
  * Best effort: a failure (or the table not existing yet) yields {}.
  */
 export async function fetchOpenActionItemCounts(
@@ -235,7 +245,7 @@ export async function fetchOpenActionItemCounts(
         .schema('neta_ops')
         .from('report_action_items')
         .select('asset_id')
-        .eq('status', 'unaddressed')
+        .in('status', OPEN_ACTION_ITEM_STATUSES)
         .in('asset_id', assetIds.slice(i, i + 200));
       if (error) throw error;
       (data || []).forEach((row: any) => {
@@ -249,7 +259,7 @@ export async function fetchOpenActionItemCounts(
   return counts;
 }
 
-/** Unaddressed items on these reports, for the "send to customer" warning. Best effort. */
+/** Open items on these reports, for the "send to customer" warning. Best effort. */
 export async function fetchOpenActionItems(assetIds: string[]): Promise<ActionItem[]> {
   const items: ActionItem[] = [];
   for (let i = 0; i < assetIds.length; i += 200) {
@@ -257,7 +267,7 @@ export async function fetchOpenActionItems(assetIds: string[]): Promise<ActionIt
       .schema('neta_ops')
       .from('report_action_items')
       .select(ITEM_COLUMNS)
-      .eq('status', 'unaddressed')
+      .in('status', OPEN_ACTION_ITEM_STATUSES)
       .in('asset_id', assetIds.slice(i, i + 200))
       .order('item_code', { ascending: true });
     if (error) {
@@ -269,13 +279,13 @@ export async function fetchOpenActionItems(assetIds: string[]): Promise<ActionIt
   return items;
 }
 
-/** Extra lines for a "mark as sent" confirm that list unaddressed action items; "" when none. */
+/** Extra lines for a "mark as sent" confirm that list open action items; "" when none. */
 export async function openActionItemsWarning(assetIds: string[]): Promise<string> {
   const items = await fetchOpenActionItems(assetIds);
   if (items.length === 0) return '';
-  const lines = items.slice(0, 10).map((i) => `#${i.item_code}: ${i.title}`);
+  const lines = items.slice(0, 10).map((i) => `#${i.item_code}: ${i.title} (${ACTION_ITEM_STATUS_LABELS[i.status]})`);
   if (items.length > 10) lines.push(`...and ${items.length - 10} more`);
-  return `\n\n${items.length} unaddressed action item${items.length === 1 ? '' : 's'} (to tell the customer):\n${lines.join('\n')}`;
+  return `\n\n${items.length} action item${items.length === 1 ? '' : 's'} not yet formally notified to the customer:\n${lines.join('\n')}`;
 }
 
 export async function fetchActionItemDetail(item: ActionItem): Promise<ActionItemDetail> {
@@ -527,14 +537,14 @@ export function notifyActionItemsChanged(assetId: string) {
  * is wired by the caller to open the full dialog.
  */
 export function actionItemsHtml(items: ActionItem[], hasReportNumber: boolean): string {
-  const open = items.filter((i) => i.status === 'unaddressed').length;
+  const open = items.filter((i) => isOpenActionItem(i.status)).length;
   const rows = items
     .map(
       (i) => `
       <div style="display:flex;gap:0.5rem;align-items:baseline;font-size:0.8125rem;">
         <span style="font-family:ui-monospace,monospace;font-size:0.75rem;color:${BRAND_COLOR};white-space:nowrap;">#${escapeHtml(i.item_code)}</span>
         <span style="flex:1;min-width:0;color:#111827;overflow-wrap:anywhere;">${escapeHtml(i.title)}</span>
-        <span style="font-size:0.75rem;color:${i.status === 'unaddressed' ? BRAND_COLOR : '#6b7280'};white-space:nowrap;">${ACTION_ITEM_STATUS_LABELS[i.status]}</span>
+        <span style="font-size:0.75rem;color:${isOpenActionItem(i.status) ? BRAND_COLOR : '#6b7280'};white-space:nowrap;">${ACTION_ITEM_STATUS_LABELS[i.status]}</span>
       </div>`,
     )
     .join('');
@@ -549,7 +559,7 @@ export function actionItemsHtml(items: ActionItem[], hasReportNumber: boolean): 
   return `
     <div style="border:1px solid #e5e7eb;padding:0.75rem;display:flex;flex-direction:column;gap:0.5rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;">
-        <span style="font-size:0.875rem;font-weight:600;color:#111827;">Action items${open ? ` (${open} unaddressed)` : ''}</span>
+        <span style="font-size:0.875rem;font-weight:600;color:#111827;">Action items${open ? ` (${open} open)` : ''}</span>
         ${button}
       </div>
       ${rows}${empty}

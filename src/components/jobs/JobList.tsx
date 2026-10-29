@@ -26,7 +26,7 @@ import { JobNotifications } from "./JobNotifications";
 import { JobActionItems } from "./JobActionItems";
 import {
   ACTION_ITEMS_CHANGED_EVENT,
-  fetchUnaddressedActionItemCount,
+  fetchOpenActionItemCount,
 } from "@/services/reportActionItemService";
 import { Database } from "@/types/supabase"; // Assuming this is the correct path to your generated types
 import { addDefaultFilesToJob } from "../../lib/services/defaultJobFiles";
@@ -246,12 +246,12 @@ export default function JobList() {
   // Action items button beside the status tabs: swaps the jobs table for a
   // list of action items on every job.
   const [showActionItems, setShowActionItems] = useState(false);
-  const [unaddressedCount, setUnaddressedCount] = useState(0);
+  const [openActionItemCount, setOpenActionItemCount] = useState(0);
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      const n = await fetchUnaddressedActionItemCount();
-      if (!cancelled) setUnaddressedCount(n);
+      const n = await fetchOpenActionItemCount();
+      if (!cancelled) setOpenActionItemCount(n);
     };
     load();
     window.addEventListener(ACTION_ITEMS_CHANGED_EVENT, load);
@@ -1929,14 +1929,14 @@ export default function JobList() {
           }`}
         >
           Action items
-          {unaddressedCount > 0 && (
+          {openActionItemCount > 0 && (
             <span
               className={`min-w-[18px] px-1 text-[11px] font-bold leading-[18px] text-center rounded-none ${
                 showActionItems ? "bg-white text-brand" : "bg-brand text-white"
               }`}
-              title={`${unaddressedCount} unaddressed`}
+              title={`${openActionItemCount} open (not yet formally notified)`}
             >
-              {unaddressedCount}
+              {openActionItemCount}
             </span>
           )}
         </button>

@@ -16,6 +16,7 @@ import {
   type ActionItemStatus,
   fetchActionItemsAcrossJobs,
   fetchActionItemsForAssets,
+  isOpenActionItem,
 } from "@/services/reportActionItemService";
 
 /**
@@ -37,11 +38,12 @@ interface Row extends ActionItem {
   job_title: string | null;
 }
 
-type Filter = ActionItemStatus | "all";
+// "open" = not yet formally notified (Unaddressed or Verbally communicated)
+type Filter = "open" | ActionItemStatus | "all";
 type SortField = "code" | "title" | "report" | "job" | "category" | "status" | "priority" | "created";
 
 const STATUS_ORDER = Object.keys(ACTION_ITEM_STATUS_LABELS) as ActionItemStatus[];
-const FILTERS: Filter[] = [...STATUS_ORDER, "all"];
+const FILTERS: Filter[] = ["open", ...STATUS_ORDER, "all"];
 const PRIORITY_ORDER = ["low", "normal", "high", "urgent"];
 
 const formatDate = (iso: string) =>
@@ -59,7 +61,7 @@ export const JobActionItems: React.FC<JobActionItemsProps> = ({ jobId, reports }
   const allJobs = !jobId;
   const [items, setItems] = useState<Row[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<Filter>("unaddressed");
+  const [filter, setFilter] = useState<Filter>("open");
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<SortField>(allJobs ? "created" : "code");
   const [sortDirection, setSortDirection] = useState<SortDirection>(allJobs ? "desc" : "asc");
@@ -122,7 +124,10 @@ export const JobActionItems: React.FC<JobActionItemsProps> = ({ jobId, reports }
 
   const counts = useMemo(() => {
     const c = Object.fromEntries(FILTERS.map((f) => [f, 0])) as Record<Filter, number>;
-    (items || []).forEach((i) => (c[i.status] += 1));
+    (items || []).forEach((i) => {
+      c[i.status] += 1;
+      if (isOpenActionItem(i.status)) c.open += 1;
+    });
     c.all = items?.length ?? 0;
     return c;
   }, [items]);
@@ -130,7 +135,7 @@ export const JobActionItems: React.FC<JobActionItemsProps> = ({ jobId, reports }
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
     const list = (items || []).filter((i) => {
-      if (filter !== "all" && i.status !== filter) return false;
+      if (filter === "open" ? !isOpenActionItem(i.status) : filter !== "all" && i.status !== filter) return false;
       if (!q) return true;
       return [i.item_code, i.title, i.description || "", i.report_label, i.job_number || "", i.job_title || ""]
         .join(" ")
@@ -194,7 +199,9 @@ export const JobActionItems: React.FC<JobActionItemsProps> = ({ jobId, reports }
         ? "No action items match your search."
         : filter === "all"
           ? "No action items."
-          : `No action items are ${ACTION_ITEM_STATUS_LABELS[filter].toLowerCase()}.`;
+          : filter === "open"
+            ? "Nothing open: every item has been formally notified, closed or archived."
+            : `No action items are ${ACTION_ITEM_STATUS_LABELS[filter].toLowerCase()}.`;
 
   return (
     <div className="flex flex-col gap-4">
@@ -222,7 +229,7 @@ export const JobActionItems: React.FC<JobActionItemsProps> = ({ jobId, reports }
                   : "text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-dark-100"
               }`}
             >
-              {f === "all" ? "All" : ACTION_ITEM_STATUS_LABELS[f]} ({counts[f]})
+              {f === "all" ? "All" : f === "open" ? "Open" : ACTION_ITEM_STATUS_LABELS[f]} ({counts[f]})
             </button>
           ))}
         </div>

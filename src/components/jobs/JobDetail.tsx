@@ -843,7 +843,7 @@ export default function JobDetail() {
   const [jobAssets, setJobAssets] = useState<Asset[]>(
     () => cachedJobAssets?.assets ?? [],
   );
-  // Unaddressed action items per report, for the badge on report rows
+  // Open action items per report, for the badge on report rows
   const [actionItemCounts, setActionItemCounts] = useState<
     Record<string, number>
   >({});
@@ -5820,7 +5820,7 @@ export default function JobDetail() {
         if (!confirmed) return;
       }
 
-      // Sending is allowed with unaddressed action items, but say which ones first.
+      // Sending is allowed with open action items, but say which ones first.
       if (newStatus === "sent") {
         const warning = await openActionItemsWarning([assetId]);
         if (warning && !confirm(`Mark this report as sent?${warning}`)) return;
@@ -12541,7 +12541,7 @@ export default function JobDetail() {
                                                 0) > 0 && (
                                                 <span
                                                   className="ml-2 inline-flex items-center rounded-none bg-brand/10 px-1.5 py-0.5 text-xs font-semibold text-brand whitespace-nowrap"
-                                                  title="Unaddressed action items: things to do or tell the customer"
+                                                  title="Open action items: not yet formally notified to the customer"
                                                 >
                                                   {actionItemCounts[asset.id]}{" "}
                                                   action

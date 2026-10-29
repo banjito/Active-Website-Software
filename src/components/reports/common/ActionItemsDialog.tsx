@@ -12,6 +12,7 @@ import {
   ACTION_ITEM_PRIORITY_LABELS,
   ACTION_ITEM_STATUS_LABELS,
   ACTION_ITEM_STATUS_NOTE_HINTS,
+  isOpenActionItem,
   type ActionItem,
   type ActionItemCategory,
   type ActionItemDetail,
@@ -728,7 +729,7 @@ export const ActionItemsDialog: React.FC<ActionItemsDialogProps> = ({
   const nextCode = reportCode
     ? `${reportCode}-${Math.max(0, ...(items || []).map((i) => i.item_number)) + 1}`
     : null;
-  const openCount = (items || []).filter((i) => i.status === "unaddressed").length;
+  const openCount = (items || []).filter((i) => isOpenActionItem(i.status)).length;
 
   const heading =
     view.mode === "new"
@@ -835,7 +836,7 @@ export const ActionItemsDialog: React.FC<ActionItemsDialogProps> = ({
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
                   {items.length === 0
                     ? "Things that still need doing or telling the customer, even though the report passes."
-                    : `${openCount} unaddressed of ${items.length}`}
+                    : `${openCount} open of ${items.length}`}
                 </p>
                 <Button
                   size="sm"

@@ -2082,8 +2082,18 @@ const LVCircuitBreakerMTS23Report: React.FC = () => {
     }
   }, [formData.insulationResistance.temperature]);
 
-  // Autofill tested settings (Current Sensing) from As Left device settings so the tables stay in sync
+  // Autofill tested settings (Current Sensing) from As Left device settings so the tables stay in sync.
+  // Only copies a row when its As Left source actually changes. Loading a saved report must not
+  // overwrite tested settings the tech typed by hand.
+  const prevTestedSourcesRef = React.useRef<Record<string, string> | null>(
+    null,
+  );
   React.useEffect(() => {
+    if (loading) {
+      prevTestedSourcesRef.current = null;
+      return;
+    }
+
     const asLeft = formData.deviceSettings.asLeft;
     const tested = formData.currentSensing.testedSettings;
     const thermalMagneticTypes = ["TMF", "TMD", "TMA", "TF", "TA", "MF", "MA"];
@@ -2100,57 +2110,36 @@ const LVCircuitBreakerMTS23Report: React.FC = () => {
           }
         : null;
 
-    const longTimeSource = isThermalMagnetic ? asLeft.thermal : asLeft.longTime;
-    const shortTimeSource = isThermalMagnetic
-      ? asLeft.magnetic
-      : asLeft.shortTime;
+    // Thermal-magnetic types (TMF, TMD, TMA, TF, TA, MF, MA) have no instantaneous or ground fault rows
+    const sources: Record<
+      string,
+      { setting: string; delay: string; i2t: string } | null
+    > = {
+      longTime: copy(isThermalMagnetic ? asLeft.thermal : asLeft.longTime),
+      shortTime: copy(isThermalMagnetic ? asLeft.magnetic : asLeft.shortTime),
+      instantaneous: isThermalMagnetic ? null : copy(asLeft.instantaneous),
+      groundFault: isThermalMagnetic ? null : copy(asLeft.groundFault),
+    };
+    const keys: Record<string, string> = {};
+    for (const k of Object.keys(sources)) {
+      keys[k] = JSON.stringify(sources[k]);
+    }
+
+    // First run after a load: remember the As Left values, copy nothing
+    const prev = prevTestedSourcesRef.current;
+    prevTestedSourcesRef.current = keys;
+    if (!prev) return;
 
     const updates: Partial<typeof tested> = {};
-    if (longTimeSource) {
-      const v = copy(longTimeSource);
+    for (const k of Object.keys(sources) as Array<keyof typeof tested>) {
+      const v = sources[k];
+      if (!v || keys[k] === prev[k]) continue;
       if (
-        v &&
-        (v.setting !== tested.longTime.setting ||
-          v.delay !== tested.longTime.delay ||
-          v.i2t !== tested.longTime.i2t)
+        v.setting !== tested[k].setting ||
+        v.delay !== tested[k].delay ||
+        v.i2t !== tested[k].i2t
       ) {
-        updates.longTime = v;
-      }
-    }
-    if (shortTimeSource) {
-      const v = copy(shortTimeSource);
-      if (
-        v &&
-        (v.setting !== tested.shortTime.setting ||
-          v.delay !== tested.shortTime.delay ||
-          v.i2t !== tested.shortTime.i2t)
-      ) {
-        updates.shortTime = v;
-      }
-    }
-    // Thermal-magnetic types (TMF, TMD, TMA, TF, TA, MF, MA) have no instantaneous or ground fault rows
-    if (!isThermalMagnetic) {
-      if (asLeft.instantaneous) {
-        const v = copy(asLeft.instantaneous);
-        if (
-          v &&
-          (v.setting !== tested.instantaneous.setting ||
-            v.delay !== tested.instantaneous.delay ||
-            v.i2t !== tested.instantaneous.i2t)
-        ) {
-          updates.instantaneous = v;
-        }
-      }
-      if (asLeft.groundFault) {
-        const v = copy(asLeft.groundFault);
-        if (
-          v &&
-          (v.setting !== tested.groundFault.setting ||
-            v.delay !== tested.groundFault.delay ||
-            v.i2t !== tested.groundFault.i2t)
-        ) {
-          updates.groundFault = v;
-        }
+        updates[k] = v;
       }
     }
 
@@ -2164,6 +2153,7 @@ const LVCircuitBreakerMTS23Report: React.FC = () => {
       }));
     }
   }, [
+    loading,
     formData.tripType,
     formData.deviceSettings.asLeft.longTime?.setting,
     formData.deviceSettings.asLeft.longTime?.delay,
@@ -3603,7 +3593,8 @@ const LVCircuitBreakerMTS23Report: React.FC = () => {
               );
 
               return (
-                <div className="grid grid-cols-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {renderTable("asFound")}
                   {renderTable("asLeft")}
                 </div>
               );

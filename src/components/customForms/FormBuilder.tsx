@@ -50,19 +50,20 @@ import {
   Settings,
   Plus,
   ArrowLeft,
-  PanelLeftOpen,
+
   Globe,
   LayoutPanelTop,
   Lock,
   Trash2,
   AlertTriangle,
+  FileCode2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Card, { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
-import { ComponentLibrarySidebar } from "./ComponentLibrarySidebar";
+import { ComponentInsertPoint } from "./ComponentInsertPoint";
 import { FormCanvas } from "./FormCanvas";
 import { confirmDialog } from "@/components/ui/confirmDialog";
 import {
@@ -96,6 +97,13 @@ import {
   deleteSavedComponent,
   type SavedComponent,
 } from "@/lib/customForms/savedComponents";
+import {
+  applyVariant,
+  appliedVariantOf,
+  stripLibraryMeta,
+  keepLibraryMeta,
+  variantsOf,
+} from "@/lib/customForms/componentVariants";
 import { SavedComponentsDialog } from "./SavedComponentsDialog";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useReportCssIsolation } from "./runtime/useReportCssIsolation";
@@ -219,31 +227,6 @@ export const FormBuilder: React.FC = () => {
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(true); // open by default so component library is visible when editing
-
-  // Below 1400px the library, the section editor and the canvas do not all
-  // fit; together they left the canvas a sliver. One side panel at a time
-  // there: the editor hides the library while it is open, and bringing the
-  // library back closes the editor. Checked live, so resizing the window
-  // with both open cannot get round it.
-  const [narrowScreen, setNarrowScreen] = useState(
-    () => typeof window !== "undefined" && window.innerWidth < 1400,
-  );
-  useEffect(() => {
-    const query = window.matchMedia("(max-width: 1399px)");
-    const update = () => setNarrowScreen(query.matches);
-    update();
-    query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
-  }, []);
-  const libraryShown = showSidebar && !(narrowScreen && selectedSectionId !== null);
-  const showLibrary = () => {
-    if (narrowScreen && selectedSectionId !== null) {
-      setSelectedSectionId(null);
-      setFormulaEditingSectionId(null);
-    }
-    setShowSidebar(true);
-  };
   const [activeId, setActiveId] = useState<string | null>(null);
   // The pointer's last on-screen height, read when a drag ends.
   const lastPointerY = useRef<number | null>(null);
@@ -682,13 +665,22 @@ export const FormBuilder: React.FC = () => {
     setActiveId(null);
   };
 
-  const addSection = (componentType: ComponentType, insertAtIndex?: number) => {
+  const addSection = (
+    componentType: ComponentType,
+    insertAtIndex?: number,
+    variantId?: string,
+  ) => {
     const componentDef = getComponentDefinition(componentType);
     if (!componentDef) return;
 
-    const mergedDefault = getMergedDefaultConfig(
+    const fullDefault = getMergedDefaultConfig(
       componentType,
       componentDefaultOverrides,
+    );
+    // The section gets a plain copy: the chosen variant applied, no variant data.
+    const mergedDefault = applyVariant(
+      fullDefault,
+      variantsOf(fullDefault).find((v) => v.id === variantId),
     );
     const index = insertAtIndex ?? template.structure.sections.length;
     const newSection: SectionConfig = {
@@ -726,7 +718,12 @@ export const FormBuilder: React.FC = () => {
   ) => {
     const index = insertAtIndex ?? template.structure.sections.length;
     const newSection: SectionConfig = {
-      ...savedConfig,
+      // Library-only data (variants, category) never goes into a form; a
+      // variant, if chosen, was applied by the caller.
+      ...stripLibraryMeta(savedConfig),
+      ...("appliedVariant" in savedConfig && savedConfig.appliedVariant
+        ? { appliedVariant: savedConfig.appliedVariant }
+        : {}),
       id: `section-${Date.now()}`,
       order: index,
       showInPrint: savedConfig.showInPrint !== false,
@@ -1085,7 +1082,8 @@ export const FormBuilder: React.FC = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-neutral-50 dark:bg-dark-200">
+    // The whole page scrolls (header included), so the top bar can be scrolled past.
+    <div className="min-h-screen flex flex-col bg-neutral-50 dark:bg-dark-200">
       {/* Top Bar */}
       <div className="bg-white dark:bg-dark-150 border-b dark:border-neutral-700 px-3 md:px-6 py-3 md:py-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
@@ -1316,104 +1314,106 @@ export const FormBuilder: React.FC = () => {
         </div>
       </div>
 
-      <TypedCalculationEditor
-        structure={template.structure}
-        onChange={(structure) => {
-          setTemplate((previous) => ({ ...previous, structure }));
-          setIsDirty(true);
-          setFormulaEditingSectionId(null);
-        }}
-      />
-
-      {/* Unpublished changes. Forms render the published version, so a draft
-          that has moved on is invisible in the app until it is released. */}
-      {publishState === "draft_ahead_of_published" && (
-        <div className="shrink-0 border-b border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2">
-          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-          <span className="flex-1">
-            This draft has changes that are not published. New forms still use
-            the last published version.
-          </span>
-          <button
-            type="button"
-            onClick={handlePublishToggle}
-            disabled={isPublishing}
-            className="shrink-0 px-2 py-1 font-medium rounded border border-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 disabled:opacity-50"
-          >
-            {isPublishing ? "Publishing…" : "Publish changes"}
-          </button>
-        </div>
-      )}
-
-      {/* Draft validation. Drafts save with errors; publishing does not. */}
-      {validationReport && validationReport.issues.length > 0 && (
-        <div
-          className={`shrink-0 border-b px-4 py-2 text-xs ${
-            validationReport.ok
-              ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200"
-              : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-900 dark:text-red-200"
-          }`}
-        >
-          <div className="flex items-center gap-2 font-medium">
-            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-            {validationReport.errors.length > 0
-              ? `${validationReport.errors.length} problem${validationReport.errors.length === 1 ? "" : "s"} blocking publication`
-              : `${validationReport.warnings.length} warning${validationReport.warnings.length === 1 ? "" : "s"}`}
-          </div>
-          <ul className="mt-1 space-y-0.5 max-h-24 overflow-y-auto">
-            {[...validationReport.errors, ...validationReport.warnings]
-              .slice(0, 8)
-              .map((issue, index) => (
-                <li key={`${issue.code}-${index}`} className="flex gap-1.5">
-                  <span className="font-mono opacity-60 shrink-0">
-                    {issue.severity === "error" ? "error" : "warn"}
-                  </span>
-                  <span>{issue.message}</span>
-                </li>
-              ))}
-            {validationReport.issues.length > 8 && (
-              <li className="opacity-70">
-                and {validationReport.issues.length - 8} more
-              </li>
-            )}
-          </ul>
-        </div>
-      )}
-
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex">
         <DndContext
           sensors={sensors}
           collisionDetection={builderCollisions}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
-          {/* Left Sidebar - Component Library (Toggleable) */}
-          {libraryShown ? (
-            <ComponentLibrarySidebar
-              savedComponents={savedComponents}
-              onViewSavedComponent={(saved) => setViewingSavedComponent(saved)}
-              onHide={() => setShowSidebar(false)}
+          {/* Center - Form Canvas */}
+          <div className="flex-1 min-w-0 p-4 md:p-6 lg:min-w-[min(26rem,50%)]">
+            {/* Typed calculations, publish and validation notices scroll with
+                the canvas instead of staying frozen above it. */}
+            <div className="-mx-4 -mt-4 md:-mx-6 md:-mt-6 mb-4">
+            <TypedCalculationEditor
+              structure={template.structure}
+              onChange={(structure) => {
+                setTemplate((previous) => ({ ...previous, structure }));
+                setIsDirty(true);
+                setFormulaEditingSectionId(null);
+              }}
             />
-          ) : (
-            <div className="w-12 shrink-0 bg-white dark:bg-dark-150 p-2 flex justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={showLibrary}
-                title="Show component library"
-                aria-label="Show component library"
-                className="h-9 w-9 rounded-none p-0 [&>span:first-child]:mr-0 border-none"
-                leftIcon={<PanelLeftOpen className="w-4 h-4" />}
-              />
-            </div>
-          )}
 
-          {/* Center - Form Canvas. Its minimum width makes a wide section
-              editor give way instead of squeezing the canvas to a sliver.
-              Capped at half the row so canvas and editor minimums together
-              never push the editor's close button off the edge. */}
-          <div className="flex-1 overflow-auto p-4 md:p-6 lg:min-w-[min(26rem,50%)]">
+            {/* Unpublished changes. Forms render the published version, so a draft
+                that has moved on is invisible in the app until it is released. */}
+            {publishState === "draft_ahead_of_published" && (
+              <div className="shrink-0 border-b border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                <span className="flex-1">
+                  This draft has changes that are not published. New forms still use
+                  the last published version.
+                </span>
+                <button
+                  type="button"
+                  onClick={handlePublishToggle}
+                  disabled={isPublishing}
+                  className="shrink-0 px-2 py-1 font-medium rounded border border-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 disabled:opacity-50"
+                >
+                  {isPublishing ? "Publishing…" : "Publish changes"}
+                </button>
+              </div>
+            )}
+
+            {/* Draft validation. Drafts save with errors; publishing does not. */}
+            {validationReport && validationReport.issues.length > 0 && (
+              <div
+                className={`shrink-0 border-b px-4 py-2 text-xs ${
+                  validationReport.ok
+                    ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200"
+                    : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-900 dark:text-red-200"
+                }`}
+              >
+                <div className="flex items-center gap-2 font-medium">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                  {validationReport.errors.length > 0
+                    ? `${validationReport.errors.length} problem${validationReport.errors.length === 1 ? "" : "s"} blocking publication`
+                    : `${validationReport.warnings.length} warning${validationReport.warnings.length === 1 ? "" : "s"}`}
+                </div>
+                <ul className="mt-1 space-y-0.5 max-h-24 overflow-y-auto">
+                  {[...validationReport.errors, ...validationReport.warnings]
+                    .slice(0, 8)
+                    .map((issue, index) => (
+                      <li key={`${issue.code}-${index}`} className="flex gap-1.5">
+                        <span className="font-mono opacity-60 shrink-0">
+                          {issue.severity === "error" ? "error" : "warn"}
+                        </span>
+                        <span>{issue.message}</span>
+                      </li>
+                    ))}
+                  {validationReport.issues.length > 8 && (
+                    <li className="opacity-70">
+                      and {validationReport.issues.length - 8} more
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+            </div>
+            {/* Formulas are edited on the canvas, so the section editor modal
+                steps aside meanwhile. "Done" brings it back. */}
+            {formulaEditingSectionId && (
+              <div className="sticky top-0 z-20 mb-4 flex items-center justify-between gap-3 rounded-none border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 px-3 py-2">
+                <span className="flex items-center gap-2 text-sm text-amber-900 dark:text-amber-100 min-w-0">
+                  <FileCode2 className="w-4 h-4 shrink-0" />
+                  <span className="truncate">
+                    Editing formulas for "
+                    {template.structure.sections.find(
+                      (s) => s.id === formulaEditingSectionId,
+                    )?.title ?? "section"}
+                    "
+                  </span>
+                </span>
+                <Button
+                  size="sm"
+                  onClick={() => setFormulaEditingSectionId(null)}
+                  className="rounded-none bg-brand hover:bg-brand-dark border-none shrink-0"
+                >
+                  Done
+                </Button>
+              </div>
+            )}
             <FormCanvas
               sections={template.structure.sections}
               structure={template.structure}
@@ -1428,6 +1428,22 @@ export const FormBuilder: React.FC = () => {
               onSectionRegenerate={regenerateSection}
               formulaEditingSectionId={formulaEditingSectionId}
               onCellFormulaChange={handleCellFormulaChange}
+              renderInsertPoint={(index) => (
+                <ComponentInsertPoint
+                  savedComponents={savedComponents}
+                  builtinOverrides={componentDefaultOverrides}
+                  onAddBuiltin={(type, variantId) => addSection(type, index, variantId)}
+                  onAddSaved={(saved, variant) =>
+                    // A variant copy is not linked back: "Update saved component"
+                    // would overwrite the full component with the trimmed one.
+                    addSectionFromSaved(
+                      applyVariant(saved.section_config, variant),
+                      index,
+                      variant ? undefined : saved.id,
+                    )
+                  }
+                />
+              )}
               onRequestEditFormulas={(sectionId) => {
                 if (template.structure.expressions !== undefined) {
                   toast("Use the Typed calculations panel above to edit stable formulas.");
@@ -1447,20 +1463,27 @@ export const FormBuilder: React.FC = () => {
                   <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
                     Start Building Your Form
                   </h3>
-                  <Button
-                    onClick={showLibrary}
-                    className="bg-brand hover:bg-brand-dark border-none"
-                    leftIcon={<PanelLeftOpen className="w-4 h-4" />}
-                  >
-                    Show Components
-                  </Button>
+                  <ComponentInsertPoint
+                    alwaysVisible
+                    label="Add your first component"
+                    savedComponents={savedComponents}
+                    builtinOverrides={componentDefaultOverrides}
+                    onAddBuiltin={(type, variantId) => addSection(type, 0, variantId)}
+                    onAddSaved={(saved, variant) =>
+                      addSectionFromSaved(
+                        applyVariant(saved.section_config, variant),
+                        0,
+                        variant ? undefined : saved.id,
+                      )
+                    }
+                  />
                 </div>
               </div>
             )}
           </div>
 
-          {/* Right Sidebar - Section Editor */}
-          {selectedSectionId && (
+          {/* Section Editor modal - hidden while that section's formulas are edited on the canvas */}
+          {selectedSectionId && formulaEditingSectionId !== selectedSectionId && (
             <SectionEditor
               section={
                 template.structure.sections.find(
@@ -1499,8 +1522,20 @@ export const FormBuilder: React.FC = () => {
                   (s) => s.id === selectedSectionId,
                 )?.componentType === ComponentType.CUSTOM_TABLE
                   ? undefined
-                  : async (sectionFromEditor) => {
-                      if (!sectionFromEditor || !user?.id) return;
+                  : async (editedSection) => {
+                      if (!editedSection || !user?.id) return;
+                      if (appliedVariantOf(editedSection)) {
+                        toast.error(
+                          `This section is the "${appliedVariantOf(editedSection)}" variant, so it can't become the default. Edit the component in the component editor instead.`,
+                          { duration: 6000 },
+                        );
+                        return;
+                      }
+                      // Keep the default's variants, which a form section never carries.
+                      const sectionFromEditor = keepLibraryMeta(
+                        editedSection,
+                        componentDefaultOverrides[editedSection.componentType],
+                      );
                       const { error } = await saveComponentDefaultOverride(
                         sectionFromEditor.componentType,
                         sectionFromEditor,
@@ -1526,7 +1561,12 @@ export const FormBuilder: React.FC = () => {
                       if (sectionFromEditor.savedComponentId) {
                         const updateErr = await updateSavedComponent(
                           sectionFromEditor.savedComponentId,
-                          sectionFromEditor,
+                          keepLibraryMeta(
+                            editedSection,
+                            savedComponents.find(
+                              (s) => s.id === sectionFromEditor.savedComponentId,
+                            )?.section_config,
+                          ),
                         );
                         if (updateErr.error) {
                           toast.error(
@@ -1556,7 +1596,8 @@ export const FormBuilder: React.FC = () => {
                 if (!name?.trim()) return;
                 const result = await saveSavedComponent(
                   name.trim(),
-                  sectionFromEditor,
+                  // A new component starts fresh, even if this section came from a variant.
+                  { ...sectionFromEditor, appliedVariant: undefined } as SectionConfig,
                   user.id,
                 );
                 if ("error" in result) {
@@ -1574,9 +1615,20 @@ export const FormBuilder: React.FC = () => {
               }}
               onUpdateSavedComponent={async (sectionFromEditor) => {
                 if (!sectionFromEditor?.savedComponentId || !user?.id) return;
+                if (appliedVariantOf(sectionFromEditor)) {
+                  toast.error(
+                    "This section is a variant copy, so it can't overwrite the full component. Edit the component in the component editor instead.",
+                  );
+                  return;
+                }
                 const updateErr = await updateSavedComponent(
                   sectionFromEditor.savedComponentId,
-                  sectionFromEditor,
+                  keepLibraryMeta(
+                    sectionFromEditor,
+                    savedComponents.find(
+                      (s) => s.id === sectionFromEditor.savedComponentId,
+                    )?.section_config,
+                  ),
                 );
                 if (updateErr.error) {
                   toast.error(

@@ -269,6 +269,15 @@ export interface SectionConfig {
    */
   v2?: SectionTableOverlay;
 
+  // Library-only (component editor). Never present on a section in a form;
+  // see lib/customForms/componentVariants.ts.
+  /** Named variants of a library component (base minus some parts). */
+  variants?: import('@/lib/customForms/componentVariants').ComponentVariant[];
+  /** Component-list category for a custom component. */
+  libraryCategory?: string;
+  /** On a form section: the variant it was made from. */
+  appliedVariant?: string;
+
   // Custom styling
   styles?: {
     backgroundColor?: string;

@@ -98,6 +98,7 @@ import EngineeringJobRoute from "./app/engineering/jobs/[id]/page";
 import { EncryptionSettings } from "./components/admin/EncryptionSettings";
 import FeaturesFixesPage from "./app/features-fixes/page";
 import FormBuilder from "./components/customForms/FormBuilder";
+import ComponentEditor from "./components/customForms/ComponentEditor";
 import CustomFormFiller from "./components/customForms/CustomFormFiller";
 import CustomFormTemplates from "./pages/CustomFormTemplates";
 import CustomFormPreview from "./pages/CustomFormPreview";
@@ -779,6 +780,16 @@ function App() {
                     element={
                       <RequireAuth>
                         <CustomFormPreview />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/custom-forms/components"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <ComponentEditor />
+                        </Layout>
                       </RequireAuth>
                     }
                   />

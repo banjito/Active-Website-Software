@@ -216,7 +216,10 @@ const SectionPreview: React.FC<SectionPreviewProps> = ({
     getSettingValue,
     setSettingValue,
     conditionValues,
-    maxBodyRows: isFormulaEditing ? undefined : CANVAS_PREVIEW_ROWS,
+    // Checklists (e.g. Visual and Mechanical Inspection) are short text rows,
+    // so show them in full; tables still preview a few rows.
+    maxBodyRows:
+      isFormulaEditing || kind === "checklist" ? undefined : CANVAS_PREVIEW_ROWS,
     rowGutter: isFormulaEditing
       ? {
           header: "#",
@@ -927,6 +930,8 @@ interface FormCanvasProps {
     formula: string,
   ) => void;
   onRequestEditFormulas?: (sectionId: string) => void;
+  /** Render an "add component here" control; `index` is where in the section order it inserts. */
+  renderInsertPoint?: (index: number) => React.ReactNode;
 }
 
 export const FormCanvas: React.FC<FormCanvasProps> = ({
@@ -941,6 +946,7 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
   formulaEditingSectionId = null,
   onCellFormulaChange,
   onRequestEditFormulas,
+  renderInsertPoint,
 }) => {
   const { setNodeRef } = useDroppable({ id: "form-canvas" });
   const ordered = [...sections].sort((a, b) => a.order - b.order);
@@ -1077,6 +1083,12 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
         <div className="space-y-3 md:space-y-4">
           {units.map((unit) => (
             <React.Fragment key={unit.id}>
+              {renderInsertPoint?.(
+                ordered.findIndex(
+                  (s) =>
+                    s.id === (unit.type === "group" ? unit.sections[0]?.id : unit.id),
+                ),
+              )}
               {breaks.has(unit.id) && (
                 <PageBreakMarker
                   onRemove={() =>
@@ -1109,6 +1121,7 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
               )}
             </React.Fragment>
           ))}
+          {units.length > 0 && renderInsertPoint?.(ordered.length)}
         </div>
       </SortableContext>
 

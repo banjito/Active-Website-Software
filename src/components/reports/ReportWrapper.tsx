@@ -772,6 +772,14 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
             min-width: 0 !important;
           }
 
+          /* Static cell text: same size as the rest of the table, no extra
+             padding on top of the cell's own (it doubled the row height). */
+          #report-container .custom-form-container td .cf-static-text {
+            font-size: inherit !important;
+            line-height: inherit !important;
+            padding: 0 !important;
+          }
+
           /* Field labels (CUSTOMER, SERIAL NUMBER, etc.) */
           #report-container .custom-form-container td div[class*="uppercase"] {
             font-size: 8px !important;

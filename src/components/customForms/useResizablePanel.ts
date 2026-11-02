@@ -1,5 +1,5 @@
 /**
- * A drag-to-resize width for a right-hand panel.
+ * A drag-to-resize width for a side panel (right-hand by default).
  *
  * The section editor holds a grid that is wider than the default panel, so it
  * needs to be widened rather than scrolled sideways. The chosen width is kept
@@ -16,6 +16,8 @@ export interface ResizablePanelOptions {
   minWidth?: number;
   /** Cap as a share of the window, so the panel can never swallow the canvas. */
   maxViewportFraction?: number;
+  /** Which side of the screen the panel sits on; its handle is on the other edge. */
+  side?: "left" | "right";
 }
 
 function readStored(key: string, fallback: number): number {
@@ -34,10 +36,13 @@ export function useResizablePanel({
   defaultWidth,
   minWidth = 320,
   maxViewportFraction = 0.8,
+  side = "right",
 }: ResizablePanelOptions) {
   const [width, setWidth] = useState(defaultWidth);
   const [isResizing, setIsResizing] = useState(false);
   const frame = useRef<number | null>(null);
+  // A left panel grows with the pointer; measured from the panel's left edge.
+  const leftEdge = useRef(0);
 
   useEffect(() => {
     setWidth(readStored(storageKey, defaultWidth));
@@ -55,10 +60,16 @@ export function useResizablePanel({
     if (!isResizing) return;
 
     const onMove = (event: PointerEvent) => {
-      // The panel is on the right, so its width grows as the pointer moves left.
+      // A right panel grows as the pointer moves left; a left one as it moves right.
       if (frame.current !== null) cancelAnimationFrame(frame.current);
       frame.current = requestAnimationFrame(() =>
-        setWidth(clamp(window.innerWidth - event.clientX)),
+        setWidth(
+          clamp(
+            side === "left"
+              ? event.clientX - leftEdge.current
+              : window.innerWidth - event.clientX,
+          ),
+        ),
       );
     };
     const onUp = () => setIsResizing(false);
@@ -80,7 +91,7 @@ export function useResizablePanel({
       document.body.style.cursor = previousCursor;
       if (frame.current !== null) cancelAnimationFrame(frame.current);
     };
-  }, [isResizing, clamp]);
+  }, [isResizing, clamp, side]);
 
   useEffect(() => {
     if (isResizing) return;
@@ -101,7 +112,8 @@ export function useResizablePanel({
   /** Keyboard resizing, so the panel is not mouse-only. */
   const onHandleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
-      const step = event.shiftKey ? 64 : 16;
+      // Arrow toward the open side widens the panel.
+      const step = (event.shiftKey ? 64 : 16) * (side === "left" ? -1 : 1);
       if (event.key === "ArrowLeft") {
         event.preventDefault();
         setWidth((current) => clamp(current + step));
@@ -113,13 +125,17 @@ export function useResizablePanel({
         setWidth(clamp(defaultWidth));
       }
     },
-    [clamp, defaultWidth],
+    [clamp, defaultWidth, side],
   );
 
   return {
     width,
     isResizing,
-    startResize: () => setIsResizing(true),
+    /** For a left panel, pass the panel's left edge (getBoundingClientRect().left). */
+    startResize: (panelLeft?: unknown) => {
+      if (typeof panelLeft === "number") leftEdge.current = panelLeft;
+      setIsResizing(true);
+    },
     onHandleKeyDown,
     resetWidth: () => setWidth(clamp(defaultWidth)),
   };

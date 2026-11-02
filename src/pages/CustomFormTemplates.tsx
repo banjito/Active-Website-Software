@@ -26,6 +26,12 @@ import {
   Sparkles,
   Upload,
   X,
+  Puzzle,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+  ChevronDown,
+  PenLine,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
@@ -48,6 +54,14 @@ import {
 import { hasRegisteredConversion } from "@/lib/customForms/conversions";
 import type { ExcelImportDraft } from "@/lib/customForms/excel/types";
 import GenerateFromFileDialog from "@/components/customForms/GenerateFromFileDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/DropdownMenu";
+
+type SortKey = "name" | "neta" | "status" | "updated";
 
 interface Template {
   id: string;
@@ -69,6 +83,11 @@ export const CustomFormTemplates: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [publishingId, setPublishingId] = useState<string | null>(null);
+
+
+  // Table sort, by name A→Z unless a header is clicked
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortAsc, setSortAsc] = useState(true);
 
   // AI-assisted generation from a hard-coded report
   const [showAiModal, setShowAiModal] = useState(false);
@@ -206,12 +225,66 @@ export const CustomFormTemplates: React.FC = () => {
     }
   };
 
-  const filteredTemplates = templates.filter(
-    (template) =>
-      template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.neta_section?.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const q = searchQuery.toLowerCase();
+  const filteredTemplates = templates
+    .filter(
+      (template) =>
+        template.name.toLowerCase().includes(q) ||
+        template.description?.toLowerCase().includes(q) ||
+        template.neta_section?.toLowerCase().includes(q),
+    )
+    .sort((a, b) => {
+      let result: number;
+      if (sortKey === "updated") {
+        result = new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime();
+      } else if (sortKey === "status") {
+        result = Number(b.is_published) - Number(a.is_published);
+      } else {
+        const av = (sortKey === "neta" ? a.neta_section : a.name) ?? "";
+        const bv = (sortKey === "neta" ? b.neta_section : b.name) ?? "";
+        // Blank NETA sections sink to the bottom either way.
+        if (!av !== !bv) return av ? -1 : 1;
+        result = av.localeCompare(bv, undefined, { numeric: true, sensitivity: "base" });
+      }
+      // Ties fall back to name so the order is always stable.
+      if (result === 0 && sortKey !== "name") {
+        result = a.name.localeCompare(b.name, undefined, { numeric: true });
+      }
+      return sortAsc ? result : -result;
+    });
+
+  const toggleSort = (key: SortKey) => {
+    if (key === sortKey) {
+      setSortAsc((v) => !v);
+    } else {
+      setSortKey(key);
+      // Dates read best newest-first; text A→Z.
+      setSortAsc(key !== "updated");
+    }
+  };
+
+  const SortHeader: React.FC<{ id: SortKey; label: string; className?: string }> = ({
+    id,
+    label,
+    className = "",
+  }) => {
+    const active = sortKey === id;
+    const Arrow = !active ? ArrowUpDown : sortAsc ? ArrowUp : ArrowDown;
+    return (
+      <th className={`py-2 font-medium ${className}`}>
+        <button
+          type="button"
+          onClick={() => toggleSort(id)}
+          className={`inline-flex items-center gap-1 uppercase tracking-wide hover:text-brand ${
+            active ? "text-brand" : ""
+          }`}
+        >
+          {label}
+          <Arrow className={`w-3 h-3 ${active ? "" : "opacity-40"}`} />
+        </button>
+      </th>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -226,44 +299,85 @@ export const CustomFormTemplates: React.FC = () => {
     );
   }
 
+  const iconBtn =
+    "p-1.5 rounded-none text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-dark-100 disabled:opacity-40";
+
+  const createMenu = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 h-10 px-4 text-sm font-medium text-white bg-brand hover:bg-brand-dark rounded-none"
+        >
+          <Plus className="w-4 h-4" />
+          Create Template
+          <ChevronDown className="w-4 h-4" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-[16rem]">
+        <DropdownMenuItem
+          onSelect={() => navigate("/custom-forms/builder")}
+          className="flex items-start gap-2"
+        >
+          <PenLine className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>
+            <span className="block font-medium">Create Manually</span>
+            <span className="block text-xs text-neutral-500 dark:text-neutral-400">
+              Start from a blank form in the builder
+            </span>
+          </span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onSelect={() => setShowExcelModal(true)}
+          className="flex items-start gap-2"
+        >
+          <Upload className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>
+            <span className="block font-medium">Generate from File</span>
+            <span className="block text-xs text-neutral-500 dark:text-neutral-400">
+              Rebuild a spreadsheet as a draft, step by step
+            </span>
+          </span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onSelect={() => {
+            setReportSearch("");
+            setShowAiModal(true);
+          }}
+          className="flex items-start gap-2"
+        >
+          <Sparkles className="w-4 h-4 mt-0.5 shrink-0 text-brand" />
+          <span>
+            <span className="block font-medium">Generate with AI</span>
+            <span className="block text-xs text-neutral-500 dark:text-neutral-400">
+              Draft a template from an existing report
+            </span>
+          </span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-dark-200 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
               <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
                 Custom Form Templates
               </h1>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
-                onClick={() => setShowExcelModal(true)}
+                onClick={() => navigate("/custom-forms/components")}
                 variant="outline"
-                title="Rebuild a spreadsheet as a draft template, step by step. Calculations are translated from the file and checked against its saved results."
-                leftIcon={<Upload className="w-4 h-4" />}
+                leftIcon={<Puzzle className="w-4 h-4" />}
               >
-                Generate from File
+                Components
               </Button>
-              <Button
-                onClick={() => {
-                  setReportSearch("");
-                  setShowAiModal(true);
-                }}
-                variant="outline"
-                className="border-brand text-brand hover:bg-brand/10"
-                leftIcon={<Sparkles className="w-4 h-4" />}
-              >
-                Generate with AI
-              </Button>
-              <Button
-                onClick={() => navigate("/custom-forms/builder")}
-                className="bg-brand hover:bg-brand-dark"
-                leftIcon={<Plus className="w-4 h-4" />}
-              >
-                Create Template
-              </Button>
+              {createMenu}
             </div>
           </div>
 
@@ -280,7 +394,7 @@ export const CustomFormTemplates: React.FC = () => {
           </div>
         </div>
 
-        {/* Templates Grid */}
+        {/* Template list */}
         {filteredTemplates.length === 0 ? (
           <Card>
             <CardContent className="py-12">
@@ -294,145 +408,134 @@ export const CustomFormTemplates: React.FC = () => {
                     ? "Try adjusting your search criteria"
                     : "Create your first custom form template to get started"}
                 </p>
-                {!searchQuery && (
-                  <Button
-                    onClick={() => navigate("/custom-forms/builder")}
-                    className="bg-brand hover:bg-brand-dark"
-                    leftIcon={<Plus className="w-4 h-4" />}
-                  >
-                    Create Your First Template
-                  </Button>
-                )}
+                {!searchQuery && <div className="flex justify-center">{createMenu}</div>}
               </div>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTemplates.map((template) => (
-              <Card
-                key={template.id}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <CardTitle className="text-lg truncate">
-                          {template.name}
-                        </CardTitle>
-                        {template.is_published ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-none">
-                            <Globe className="w-4 h-4" />
-                            Published
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-neutral-100 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400 rounded-none">
-                            <Lock className="w-3 h-3" />
-                            Draft
-                          </span>
-                        )}
-                      </div>
+          <div className="overflow-x-auto bg-white dark:bg-dark-150 border border-neutral-200 dark:border-dark-200 rounded-none">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-neutral-200 dark:border-dark-200 text-left text-xs text-neutral-500 dark:text-neutral-400">
+                  <SortHeader id="name" label="Name" className="px-4" />
+                  <SortHeader id="neta" label="NETA" className="px-3" />
+                  <SortHeader id="status" label="Status" className="px-3" />
+                  <SortHeader id="updated" label="Updated" className="px-3" />
+                  <th className="px-3 py-2 font-medium uppercase tracking-wide text-right">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100 dark:divide-dark-200">
+                {filteredTemplates.map((template) => (
+                  <tr
+                    key={template.id}
+                    className="hover:bg-neutral-50 dark:hover:bg-dark-100"
+                  >
+                    <td className="px-4 py-2 max-w-md">
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/custom-forms/builder/${template.id}`)}
+                        className="font-medium text-neutral-900 dark:text-white hover:text-brand text-left truncate max-w-full block"
+                        title="Open in builder"
+                      >
+                        {template.name}
+                      </button>
+                      {template.description && (
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                          {template.description}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
                       {template.neta_section && (
-                        <span className="inline-block px-2 py-1 text-xs font-medium bg-brand text-white rounded">
+                        <span className="inline-block px-2 py-0.5 text-xs font-medium bg-brand text-white rounded-none">
                           {template.neta_section}
                         </span>
                       )}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {template.description && (
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 line-clamp-2">
-                      {template.description}
-                    </p>
-                  )}
-
-                  <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
-                    Updated {new Date(template.updated_at).toLocaleDateString()}
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() =>
-                          navigate(`/custom-forms/preview/${template.id}`)
-                        }
-                        className="flex-1 bg-brand hover:bg-brand-dark"
-                        leftIcon={<Eye className="w-4 h-4" />}
-                      >
-                        Preview
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        onClick={() =>
-                          handleTogglePublish(
-                            template.id,
-                            template.is_published,
-                          )
-                        }
-                        disabled={publishingId === template.id}
-                        variant={template.is_published ? "outline" : "primary"}
-                        className={`flex-1 ${template.is_published ? "border-green-500 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" : "bg-green-600 hover:bg-green-700 text-white"}`}
-                        title={
-                          template.is_published
-                            ? "Unpublish — hide from jobs"
-                            : "Publish — make available in jobs"
-                        }
-                        leftIcon={
-                          template.is_published ? (
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      {template.is_published ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-none">
+                          <Globe className="w-3 h-3" />
+                          Published
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-neutral-100 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400 rounded-none">
+                          <Lock className="w-3 h-3" />
+                          Draft
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-xs text-neutral-500 dark:text-neutral-400">
+                      {new Date(template.updated_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex items-center justify-end gap-0.5">
+                        <button
+                          type="button"
+                          className={iconBtn}
+                          onClick={() => navigate(`/custom-forms/preview/${template.id}`)}
+                          title="Preview"
+                          aria-label="Preview"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          className={`${iconBtn} ${template.is_published ? "text-green-600 dark:text-green-400" : ""}`}
+                          onClick={() =>
+                            handleTogglePublish(template.id, template.is_published)
+                          }
+                          disabled={publishingId === template.id}
+                          title={
+                            publishingId === template.id
+                              ? "Publishing…"
+                              : template.is_published
+                                ? "Unpublish — hide from jobs"
+                                : "Publish — make available in jobs"
+                          }
+                          aria-label={template.is_published ? "Unpublish" : "Publish"}
+                        >
+                          {template.is_published ? (
                             <Lock className="w-4 h-4" />
                           ) : (
                             <Globe className="w-4 h-4" />
-                          )
-                        }
-                      >
-                        {publishingId === template.id
-                          ? "Publishing..."
-                          : template.is_published
-                            ? "Unpublish"
-                            : "Publish"}
-                      </Button>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() =>
-                          navigate(`/custom-forms/builder/${template.id}`)
-                        }
-                        className="[&>span:first-child]:mr-0 border-none"
-                        leftIcon={<Edit className="w-4 h-4" />}
-                      ></Button>
-
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDuplicateTemplate(template.id)}
-                        title="Duplicate template"
-                        aria-label="Duplicate template"
-                        className="[&>span:first-child]:mr-0 border-none"
-                        leftIcon={<Copy className="w-4 h-4" />}
-                      />
-
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() =>
-                          handleDeleteTemplate(template.id, template.name)
-                        }
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 [&>span:first-child]:mr-0 border-none"
-                        title="Delete template"
-                        aria-label="Delete template"
-                        leftIcon={<Trash2 className="w-4 h-4" />}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          className={iconBtn}
+                          onClick={() => navigate(`/custom-forms/builder/${template.id}`)}
+                          title="Edit"
+                          aria-label="Edit"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          className={iconBtn}
+                          onClick={() => handleDuplicateTemplate(template.id)}
+                          title="Duplicate template"
+                          aria-label="Duplicate template"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          className={`${iconBtn} hover:text-red-600 dark:hover:text-red-400`}
+                          onClick={() => handleDeleteTemplate(template.id, template.name)}
+                          title="Delete template"
+                          aria-label="Delete template"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

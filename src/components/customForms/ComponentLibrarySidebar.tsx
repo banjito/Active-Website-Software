@@ -40,7 +40,7 @@ import {
 import type { SavedComponent } from "@/lib/customForms/savedComponents";
 import { ComponentDefinition } from "@/lib/types/customForms";
 
-const iconMap: Record<string, any> = {
+export const iconMap: Record<string, any> = {
   FileText,
   Zap,
   Eye,

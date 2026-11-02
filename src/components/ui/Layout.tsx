@@ -695,6 +695,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const useHeaderBarLayout = !isMeetingsPage;
   // The Engineering portal navigates with its own tabs, so no sidebar there.
   const isEngineeringPortal = /^\/engineering(\/|$)/.test(location.pathname);
+  // Custom form pages (templates, builder, component editor) need the full width, so no sidebar there.
+  const isFormBuilder = location.pathname.startsWith("/custom-forms/");
 
   // If embedded mode, render children without any chrome
   if (isEmbedded) {
@@ -1015,7 +1017,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     );
   }
 
-  const sidebar = !isMeetingsPage && !isEngineeringPortal ? (
+  const sidebar = !isMeetingsPage && !isEngineeringPortal && !isFormBuilder ? (
     <div
       ref={sidebarRef}
       className={`
@@ -1311,7 +1313,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="flex min-h-0 flex-1 min-w-0">
           {sidebar}
           <div className="flex flex-col flex-1 min-w-0">
-            {(!isEngineeringPortal || isReportPage) && (
+            {(!isEngineeringPortal || isReportPage) && !isFormBuilder && (
             <div
               className={`flex items-center gap-2 px-3 py-2 border-b border-neutral-200 dark:border-dark-200 print:hidden ${
                 isReportPage ? "" : "lg:hidden"

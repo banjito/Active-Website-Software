@@ -61,6 +61,13 @@ import {
   type FormData,
 } from "@/lib/customForms/runtime";
 import { DocumentBody } from "./runtime/SectionFrame";
+import {
+  PAPER_CLASS,
+  PAPER_TOOLBAR_CLASS,
+  PaperViewStyles,
+  PaperViewToggle,
+  usePaperView,
+} from "./runtime/PaperView";
 import { useApplyMutation, useFillChrome } from "./runtime/FillChrome";
 import {
   CustomFormPrintHeader,
@@ -389,6 +396,7 @@ export const CustomFormFiller: React.FC = () => {
     [jobDetails, user],
   );
 
+  const paper = usePaperView();
   const chrome = useFillChrome({
     template,
     formData,
@@ -622,12 +630,13 @@ export const CustomFormFiller: React.FC = () => {
   return (
     <ReportWrapper>
       <CustomFormPrintHeader template={template} status={status} />
+      {paper.on && <PaperViewStyles />}
 
       <div
-        className="min-h-screen bg-neutral-50 dark:bg-dark-200 p-4 md:p-6 print:min-h-0 print:bg-white print:p-0"
+        className={`min-h-screen bg-neutral-50 dark:bg-dark-200 p-4 md:p-6 print:min-h-0 print:bg-white print:p-0 ${paper.on ? PAPER_CLASS : ""}`}
         data-ff-root=""
       >
-        <div className="max-w-5xl mx-auto print:max-w-none">
+        <div className={paper.on ? "print:max-w-none" : "max-w-5xl mx-auto print:max-w-none"}>
           {fieldFlags.showFlags && (
             <div className="print:hidden mb-4 px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-none">
               <p className="text-sm font-semibold text-red-800 dark:text-red-200">
@@ -636,8 +645,11 @@ export const CustomFormFiller: React.FC = () => {
               <FlaggedFieldsList ctrl={fieldFlags} />
             </div>
           )}
-          <div className="custom-form-container bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-4 md:p-6 print:shadow-none print:border-0 print:rounded-none print:p-0">
-            <div className="print:hidden flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b border-neutral-200 dark:border-neutral-700">
+          <div
+            className="custom-form-container bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-4 md:p-6 print:shadow-none print:border-0 print:rounded-none print:p-0"
+            style={paper.sheetStyle}
+          >
+            <div className={`${PAPER_TOOLBAR_CLASS} print:hidden flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b border-neutral-200 dark:border-neutral-700`}>
               <div className="flex items-center gap-4">
                 <Button
                   variant="ghost"
@@ -685,6 +697,7 @@ export const CustomFormFiller: React.FC = () => {
                 {template.structure.settings?.includePassFail !== false && (
                   <StatusToggleButton status={status} onChange={setStatus} />
                 )}
+                <PaperViewToggle paper={paper} />
                 {/* Report Photos (renders nothing on unsaved instances) */}
                 <ReportPhotosButton />
                 <button
@@ -719,6 +732,9 @@ export const CustomFormFiller: React.FC = () => {
               </div>
             </div>
 
+            {paper.on && (
+              <CustomFormPrintHeader template={template} status={status} onScreen />
+            )}
             <DocumentBody template={template} chrome={chrome} />
           </div>
         </div>

@@ -13,9 +13,6 @@ import {
   Trash2,
   Eye,
   EyeOff,
-  Link2,
-  Calculator,
-  Type,
   Save,
   ChevronDown,
   FileCode2,
@@ -23,7 +20,7 @@ import {
   Columns,
 } from "lucide-react";
 import { TableGridEditor } from "./TableGridEditor";
-import { useResizablePanel } from "./useResizablePanel";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/Dialog";
 import {
   fillBodyGaps,
   fillHeaderGaps,
@@ -429,47 +426,28 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
     }
   };
 
-  const { width, isResizing, startResize, onHandleKeyDown, resetWidth } =
-    useResizablePanel({
-      storageKey: "customForms.sectionEditorWidth",
-      defaultWidth: 384,
-      minWidth: 320,
-    });
-
+  // A wide modal rather than a side panel: the grid editor and long field
+  // lists need the room, and the canvas behind them isn't edited meanwhile.
   return (
-    <div
-      // Shrinks (down to 280px) before the canvas does, so a panel widened on
-      // a big screen cannot squeeze the canvas on a smaller one. With the
-      // canvas's own minimum this still fits a 1024px window.
-      className="relative bg-white dark:bg-dark-150 border-l dark:border-neutral-700 flex flex-col overflow-hidden min-w-[280px]"
-      style={{ width }}
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
-      {/* Drag the left edge to widen. The grid editor is often wider than the
-          default panel, and scrolling a grid sideways to read its headers is
-          worse than making room for it. */}
-      <div
-        role="separator"
-        aria-orientation="vertical"
-        aria-label="Resize panel"
-        tabIndex={0}
-        onPointerDown={(event) => {
-          event.preventDefault();
-          startResize();
-        }}
-        onDoubleClick={resetWidth}
-        onKeyDown={onHandleKeyDown}
-        title="Drag to resize. Double-click to reset."
-        className={`absolute left-0 top-0 bottom-0 w-1.5 -ml-0.5 cursor-col-resize z-10 transition-colors ${
-          isResizing ? "bg-brand" : "bg-transparent hover:bg-brand/40"
-        } focus:outline-none focus:bg-brand/60`}
-      />
-      {/* Header */}
-      <div className="p-4 border-b dark:border-neutral-700 flex items-center justify-between gap-2">
-        {/* Wraps on a narrow panel so the close button is never pushed off. */}
+    <DialogContent
+      aria-describedby={undefined}
+      className="w-[min(72rem,95vw)] max-w-none h-[90vh] p-0 gap-0 flex flex-col overflow-hidden"
+    >
+      {/* Header. Right padding leaves room for the dialog's close button. */}
+      <div className="p-4 pr-12 border-b dark:border-neutral-700 flex items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2 min-w-0">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white shrink-0">
+          <DialogTitle className="text-lg font-semibold text-neutral-900 dark:text-white shrink-0">
             Edit Section
-          </h2>
+            <span className="ml-2 font-normal text-neutral-500 dark:text-neutral-400">
+              {section.title}
+            </span>
+          </DialogTitle>
           {(onSaveAsDefault ||
             onSaveAsNewComponent ||
             onUpdateSavedComponent) && (
@@ -544,12 +522,6 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
             </DropdownMenu>
           )}
         </div>
-        <button
-          onClick={onClose}
-          className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 rounded shrink-0"
-        >
-          <X className="w-5 h-5" />
-        </button>
       </div>
 
       {/* Editor Content */}
@@ -861,7 +833,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     {(section.aboveTableFields || []).map((f, idx) => (
                       <div
                         key={f.id}
-                        className="p-2 rounded border border-neutral-200 dark:border-neutral-600 space-y-1.5 bg-neutral-50/50 dark:bg-dark-100/50"
+                        className="px-2 py-1.5 rounded-none border border-neutral-200 dark:border-neutral-600 space-y-1.5 bg-neutral-50/50 dark:bg-dark-100/50"
                       >
                         <div className="flex items-center gap-2">
                           <Input
@@ -922,72 +894,30 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                           </button>
                         </div>
                         {f.type === FieldType.SELECT && (
-                          <div className="pl-1 space-y-1">
-                            <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                              Options:
-                            </span>
-                            {(f.options || []).map((opt, oIdx) => (
-                              <div
-                                key={oIdx}
-                                className="flex items-center gap-1"
-                              >
-                                <Input
-                                  value={opt?.label ?? opt?.value ?? ""}
-                                  onChange={(e) => {
-                                    const next = [
-                                      ...(section.aboveTableFields || []),
-                                    ];
-                                    const opts = [...(next[idx].options || [])];
-                                    opts[oIdx] = {
-                                      label: e.target.value,
-                                      value: e.target.value,
-                                    };
-                                    next[idx] = { ...next[idx], options: opts };
-                                    onUpdate({ aboveTableFields: next });
-                                  }}
-                                  className="text-xs h-7 flex-1"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const next = [
-                                      ...(section.aboveTableFields || []),
-                                    ];
-                                    next[idx] = {
-                                      ...next[idx],
-                                      options: (next[idx].options || []).filter(
-                                        (_, i) => i !== oIdx,
-                                      ),
-                                    };
-                                    onUpdate({ aboveTableFields: next });
-                                  }}
-                                  className="p-1 text-neutral-400 hover:text-red-600"
-                                >
-                                  <X className="w-3 h-3" />
-                                </button>
-                              </div>
-                            ))}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const next = [
-                                  ...(section.aboveTableFields || []),
-                                ];
-                                const opts = [
+                          <InlineOptionsEditor
+                            options={f.options || []}
+                            onChange={(opts) => {
+                              const next = [
+                                ...(section.aboveTableFields || []),
+                              ];
+                              next[idx] = { ...next[idx], options: opts };
+                              onUpdate({ aboveTableFields: next });
+                            }}
+                            onAdd={() => {
+                              const next = [
+                                ...(section.aboveTableFields || []),
+                              ];
+                              const n = (next[idx].options?.length || 0) + 1;
+                              next[idx] = {
+                                ...next[idx],
+                                options: [
                                   ...(next[idx].options || []),
-                                  {
-                                    label: `Option ${(next[idx].options?.length || 0) + 1}`,
-                                    value: `Option ${(next[idx].options?.length || 0) + 1}`,
-                                  },
-                                ];
-                                next[idx] = { ...next[idx], options: opts };
-                                onUpdate({ aboveTableFields: next });
-                              }}
-                              className="text-[10px] text-brand hover:underline"
-                            >
-                              + Add option
-                            </button>
-                          </div>
+                                  { label: `Option ${n}`, value: `Option ${n}` },
+                                ],
+                              };
+                              onUpdate({ aboveTableFields: next });
+                            }}
+                          />
                         )}
                       </div>
                     ))}
@@ -1077,7 +1007,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     items={section.columns?.map((c) => c.id) || []}
                     strategy={verticalListSortingStrategy}
                   >
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       {section.columns?.map((column, index) => (
                         <SortableColumnEditor
                           key={column.id}
@@ -1530,7 +1460,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     items={section.fields?.map((f) => f.id) || []}
                     strategy={verticalListSortingStrategy}
                   >
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       {section.fields?.map((field, index) => (
                         <SortableFieldEditor
                           key={field.id}
@@ -1653,7 +1583,8 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
         )}
 
       </div>
-    </div>
+    </DialogContent>
+    </Dialog>
   );
 };
 
@@ -1754,7 +1685,6 @@ const ColumnEditor: React.FC<{
   dragHandleProps,
   onSectionUpdate,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const field = column.field;
   const behavior = field.cellBehavior ?? "user";
   const refOptions = buildFieldRefOptions(
@@ -1843,9 +1773,21 @@ const ColumnEditor: React.FC<{
     return opt?.refToken ?? "";
   };
 
+  const refGroups = Array.from(
+    new Map(refOptions.map((o) => [o.sectionId, o.sectionTitle])).entries(),
+  );
+  const showOptions =
+    behavior === "user" && field.type === FieldType.SELECT;
+  const showFormulaRefs = behavior === "calculate" && refOptions.length > 0;
+  const showStaticRows = behavior === "static" && staticRows.length > 0;
+  const showVisibleWhen = !!settingFields && settingFields.length > 0;
+  const hasSecondRow =
+    showOptions || showFormulaRefs || showStaticRows || showVisibleWhen;
+
   return (
-    <div className="bg-neutral-50 dark:bg-dark-100 rounded p-3 space-y-2">
-      <div className="flex items-center justify-between">
+    <div className="bg-neutral-50 dark:bg-dark-100 rounded-none px-2 py-1.5 space-y-1.5">
+      {/* Row 1: the column's main settings on one line */}
+      <div className="flex flex-wrap items-center gap-2">
         {dragHandleProps && (
           <button
             type="button"
@@ -1855,458 +1797,332 @@ const ColumnEditor: React.FC<{
             <GripVertical className="w-3.5 h-3.5" />
           </button>
         )}
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex-1 text-left text-sm font-medium text-neutral-900 dark:text-white"
-        >
-          {column.label}
-        </button>
+        <input
+          value={column.label}
+          onChange={(e) => onUpdate({ label: e.target.value })}
+          placeholder="Column label"
+          title="Column label"
+          className={`${inlineInputCls} flex-1 min-w-[10rem] font-medium`}
+        />
+        <input
+          value={column.width || ""}
+          onChange={(e) => onUpdate({ width: e.target.value || undefined })}
+          placeholder="Width"
+          title="Column width (e.g. 25%, 100px, auto)"
+          className={`${inlineInputCls} w-20`}
+        />
+        {allSections.length > 0 && (
+          <select
+            value={behavior}
+            onChange={(e) =>
+              handleBehaviorChange(
+                e.target.value as "user" | "populate" | "calculate" | "static",
+              )
+            }
+            title="Cell value"
+            className={`${inlineInputCls} w-40`}
+          >
+            <option value="user">User entry</option>
+            <option value="populate">Populate from field</option>
+            <option value="calculate">Calculate from formula</option>
+            <option value="static">Static text</option>
+          </select>
+        )}
+        {behavior === "user" && (
+          <select
+            value={field.type}
+            onChange={(e) => {
+              const newType = e.target.value as FieldType;
+              const updates: Partial<FieldConfig> = { type: newType };
+              if (
+                newType === FieldType.SELECT &&
+                !(field.options && field.options.length)
+              ) {
+                updates.options = [{ label: "Option 1", value: "Option 1" }];
+              }
+              onUpdate({ field: { ...field, ...updates } });
+            }}
+            title="Input type"
+            className={`${inlineInputCls} w-32`}
+          >
+            <option value={FieldType.TEXT}>Text</option>
+            <option value={FieldType.NUMBER}>Number</option>
+            <option value={FieldType.DATE}>Date</option>
+            <option value={FieldType.SELECT}>Dropdown</option>
+            <option value={FieldType.RADIO}>Radio buttons</option>
+            <option value={FieldType.TEXTAREA}>Text Area</option>
+            <option value={FieldType.CHECKBOX}>Checkbox</option>
+          </select>
+        )}
+        {behavior === "populate" && (
+          <select
+            value={getPopulateFromValue()}
+            onChange={(e) => handlePopulateFromSelect(e.target.value)}
+            title="Copy value from (pick section, column, and row)"
+            className={`${inlineInputCls} flex-1 min-w-[12rem]`}
+          >
+            <option value="">— Copy value from… —</option>
+            {refGroups.map(([sectionId, sectionTitle]) => (
+              <optgroup key={sectionId} label={sectionTitle}>
+                {refOptions
+                  .filter((o) => o.sectionId === sectionId)
+                  .map((opt) => (
+                    <option key={opt.refToken} value={opt.refToken}>
+                      {opt.friendlyRef} — {opt.description}
+                    </option>
+                  ))}
+              </optgroup>
+            ))}
+          </select>
+        )}
+        {behavior === "calculate" && (
+          <input
+            value={field.calculation?.formula ?? ""}
+            onChange={(e) =>
+              onUpdate({
+                field: {
+                  ...field,
+                  calculation: {
+                    formula: e.target.value,
+                    dependsOn: field.calculation?.dependsOn ?? [],
+                  },
+                },
+              })
+            }
+            placeholder="Formula, e.g. {JD.TCF} * value or {IR.C1.R2}"
+            title="Use refs like {IR.C1.R2} (table) or {JD.TCF} (Job Details temperature correction factor)"
+            className={`${inlineInputCls} flex-1 min-w-[12rem] font-mono`}
+          />
+        )}
+        {behavior === "static" && (
+          <input
+            value={field.staticValue ?? ""}
+            onChange={(e) =>
+              onUpdate({ field: { ...field, staticValue: e.target.value } })
+            }
+            placeholder="Same text for every row"
+            title="Same text for every row"
+            className={`${inlineInputCls} w-48`}
+          />
+        )}
+        {field.unit !== undefined && (
+          <input
+            value={field.unit}
+            onChange={(e) => onUpdate({ field: { ...field, unit: e.target.value } })}
+            placeholder="Unit"
+            title="Unit (e.g. kV, A, Ω)"
+            className={`${inlineInputCls} w-16`}
+          />
+        )}
+        <label className="flex items-center gap-1 text-xs text-neutral-700 dark:text-neutral-300 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={!!field.required}
+            onChange={(e) =>
+              onUpdate({ field: { ...field, required: e.target.checked } })
+            }
+            className="rounded-none"
+          />
+          Required
+        </label>
         <button
           onClick={onDelete}
           className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
+          title="Delete column"
         >
           <Trash2 className="w-3 h-3" />
         </button>
       </div>
 
-      {isExpanded && (
-        <div className="space-y-2 pt-2 border-t dark:border-neutral-700">
-          <Input
-            value={column.label}
-            onChange={(e) => onUpdate({ label: e.target.value })}
-            placeholder="Column label"
-            className="text-xs"
-          />
-
-          <div>
-            <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">
-              Column width (e.g. 25%, 100px, auto)
-            </label>
-            <Input
-              value={column.width || ""}
-              onChange={(e) => onUpdate({ width: e.target.value || undefined })}
-              placeholder="auto"
-              className="text-xs"
+      {/* Row 2: only when the chosen cell setting needs more room */}
+      {hasSecondRow && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pl-6">
+          {showOptions && (
+            <InlineOptionsEditor
+              options={field.options || []}
+              onChange={(options) => onUpdate({ field: { ...field, options } })}
+              onAdd={() => {
+                if (onAppendOption) return onAppendOption();
+                const n = (field.options || []).length + 1;
+                onUpdate({
+                  field: {
+                    ...field,
+                    options: [
+                      ...(field.options || []),
+                      { label: `Option ${n}`, value: `Option ${n}` },
+                    ],
+                  },
+                });
+              }}
             />
-          </div>
-
-          {/* Conditional table: show column only when these setting values are selected */}
-          {settingFields && settingFields.length > 0 && (
-            <div className="space-y-1.5 pt-1 border-t border-neutral-200 dark:border-neutral-600">
-              <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300 block">
-                Show column when
-              </label>
-              <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                Leave all unchecked to show for every selection.
-              </p>
-              {settingFields.map((sf) => {
-                const current = column.visibleWhen?.[sf.id];
-                const currentList = Array.isArray(current)
-                  ? current
-                  : current
-                    ? [current]
-                    : [];
-                return (
-                  <div
-                    key={sf.id}
-                    className="flex flex-wrap items-center gap-1.5 text-[10px]"
-                  >
-                    <span className="text-neutral-500 dark:text-neutral-400">
-                      {sf.label}:
-                    </span>
-                    {sf.options.map((opt) => {
-                      const checked = currentList.includes(opt.value);
-                      return (
-                        <label
-                          key={opt.value}
-                          className="flex items-center gap-1 cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={(e) => {
-                              const nextList = e.target.checked
-                                ? [
-                                    ...currentList.filter(
-                                      (v) => v !== opt.value,
-                                    ),
-                                    opt.value,
-                                  ]
-                                : currentList.filter((v) => v !== opt.value);
-                              const vw = { ...(column.visibleWhen || {}) };
-                              if (nextList.length === 0) delete vw[sf.id];
-                              else
-                                vw[sf.id] =
-                                  nextList.length === 1
-                                    ? nextList[0]
-                                    : nextList;
-                              onUpdate({ visibleWhen: vw });
-                            }}
-                            className="rounded"
-                          />
-                          <span>{opt.label || opt.value}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
           )}
 
-          {/* Cell value: User entry | Populate from report | Calculate from report */}
-          {allSections.length > 0 && (
-            <div className="space-y-2">
-              <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 block">
-                Cell value
+          {showFormulaRefs && (
+            <select
+              className={`${inlineInputCls} w-72 font-mono`}
+              onChange={(e) => {
+                const token = e.target.value;
+                if (!token) return;
+                const current = field.calculation?.formula ?? "";
+                onUpdate({
+                  field: {
+                    ...field,
+                    calculation: {
+                      formula: current + (current ? " " : "") + token,
+                      dependsOn: field.calculation?.dependsOn ?? [],
+                    },
+                  },
+                });
+                e.target.value = "";
+              }}
+            >
+              <option value="">Insert reference…</option>
+              {refGroups.map(([sectionId, sectionTitle]) => (
+                <optgroup key={sectionId} label={sectionTitle}>
+                  {refOptions
+                    .filter((o) => o.sectionId === sectionId)
+                    .map((opt) => (
+                      <option key={opt.refToken} value={opt.friendlyRef}>
+                        {opt.friendlyRef} — {opt.description}
+                      </option>
+                    ))}
+                </optgroup>
+              ))}
+            </select>
+          )}
+
+          {showStaticRows && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
+                Per row (overrides):
               </span>
-              <div className="flex flex-col gap-1.5">
-                <label className="flex items-center gap-2 cursor-pointer">
+              {staticRows.map((r) => (
+                <label key={r.index} className="flex items-center gap-1">
+                  <span className="text-[10px] text-neutral-500 dark:text-neutral-400 max-w-[6rem] truncate">
+                    {r.label}
+                  </span>
                   <input
-                    type="radio"
-                    name={`cell-${column.id}`}
-                    checked={behavior === "user"}
-                    onChange={() => handleBehaviorChange("user")}
-                    className="rounded"
-                  />
-                  <Type className="w-3.5 h-3.5 text-neutral-500" />
-                  <span className="text-xs">User entry</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name={`cell-${column.id}`}
-                    checked={behavior === "populate"}
-                    onChange={() => handleBehaviorChange("populate")}
-                    className="rounded"
-                  />
-                  <Link2 className="w-3.5 h-3.5 text-neutral-500" />
-                  <span className="text-xs">Populate from field</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name={`cell-${column.id}`}
-                    checked={behavior === "calculate"}
-                    onChange={() => handleBehaviorChange("calculate")}
-                    className="rounded"
-                  />
-                  <Calculator className="w-3.5 h-3.5 text-neutral-500" />
-                  <span className="text-xs">Calculate from formula</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name={`cell-${column.id}`}
-                    checked={behavior === "static"}
-                    onChange={() => handleBehaviorChange("static")}
-                    className="rounded"
-                  />
-                  <Type className="w-3.5 h-3.5 text-neutral-500" />
-                  <span className="text-xs">Static text</span>
-                </label>
-              </div>
-
-              {behavior === "static" && (
-                <div className="mt-2 space-y-2 pt-2 border-t border-neutral-200 dark:border-neutral-600">
-                  <div>
-                    <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">
-                      Same text for every row
-                    </label>
-                    <Input
-                      value={field.staticValue ?? ""}
-                      onChange={(e) =>
-                        onUpdate({
-                          field: { ...field, staticValue: e.target.value },
-                        })
-                      }
-                      placeholder="e.g. Satisfactory"
-                      className="text-xs"
-                    />
-                  </div>
-                  {staticRows.length > 0 && (
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-neutral-500 dark:text-neutral-400 block">
-                        Or set a value per row (overrides the above)
-                      </label>
-                      {staticRows.map((r) => (
-                        <div key={r.index} className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-neutral-500 dark:text-neutral-400 w-24 shrink-0 truncate">
-                            {r.label}
-                          </span>
-                          <Input
-                            value={
-                              parentSection?.staticCells?.[
-                                `row${r.index}_${column.id}`
-                              ] ?? ""
-                            }
-                            onChange={(e) => setStaticCell(r.index, e.target.value)}
-                            placeholder="—"
-                            className="flex-1 text-xs h-7"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {behavior === "user" && (
-                <div className="mt-2 space-y-2 pt-2 border-t border-neutral-200 dark:border-neutral-600">
-                  <label className="text-xs font-medium text-neutral-700 dark:text-neutral-300 block">
-                    Input type
-                  </label>
-                  <select
-                    value={field.type}
-                    onChange={(e) => {
-                      const newType = e.target.value as FieldType;
-                      const updates: Partial<FieldConfig> = { type: newType };
-                      if (
-                        newType === FieldType.SELECT &&
-                        !(field.options && field.options.length)
-                      ) {
-                        updates.options = [
-                          { label: "Option 1", value: "Option 1" },
-                        ];
-                      }
-                      onUpdate({ field: { ...field, ...updates } });
-                    }}
-                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none focus:ring-2 focus:ring-brand focus:border-brand text-neutral-900 dark:text-white"
-                  >
-                    <option value={FieldType.TEXT}>Text</option>
-                    <option value={FieldType.NUMBER}>Number</option>
-                    <option value={FieldType.DATE}>Date</option>
-                    <option value={FieldType.SELECT}>Dropdown (select)</option>
-                    <option value={FieldType.RADIO}>Radio buttons</option>
-                  </select>
-                  {field.type === FieldType.SELECT && (
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-neutral-600 dark:text-neutral-400">
-                          Dropdown options ({(field.options || []).length})
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const currentOptions = field.options || [];
-                            onUpdate({
-                              field: {
-                                ...field,
-                                options: [
-                                  ...currentOptions,
-                                  {
-                                    label: `Option ${currentOptions.length + 1}`,
-                                    value: `Option ${currentOptions.length + 1}`,
-                                  },
-                                ],
-                              },
-                            });
-                          }}
-                          className="h-6 px-2 text-xs border border-neutral-300 dark:border-neutral-600 rounded hover:bg-neutral-100 dark:hover:bg-dark-200 inline-flex items-center gap-1"
-                        >
-                          <Plus className="w-3 h-3" />
-                          Add option
-                        </button>
-                      </div>
-                      <ul className="space-y-1 max-h-40 overflow-y-auto">
-                        {(field.options || []).map((opt, idx) => (
-                          <li
-                            key={`${field.id}-opt-${idx}`}
-                            className="flex items-center gap-1.5"
-                          >
-                            <Input
-                              value={opt?.label ?? ""}
-                              onChange={(e) => {
-                                const next = [...(field.options || [])];
-                                next[idx] = {
-                                  label: e.target.value,
-                                  value: e.target.value,
-                                };
-                                onUpdate({
-                                  field: { ...field, options: next },
-                                });
-                              }}
-                              placeholder="Option text"
-                              className="flex-1 text-xs h-7"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const next = (field.options || []).filter(
-                                  (_, i) => i !== idx,
-                                );
-                                onUpdate({
-                                  field: { ...field, options: next },
-                                });
-                              }}
-                              className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400 shrink-0"
-                              title="Remove option"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                      {(field.options || []).length === 0 && (
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                          Add options above so users can pick a value.
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {behavior === "populate" && (
-                <div className="mt-2">
-                  <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">
-                    Copy value from (pick section, column, and row)
-                  </label>
-                  <select
-                    value={getPopulateFromValue()}
-                    onChange={(e) => handlePopulateFromSelect(e.target.value)}
-                    className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none focus:ring-2 focus:ring-brand focus:border-brand text-neutral-900 dark:text-white"
-                  >
-                    <option value="">— Select a field —</option>
-                    {Array.from(
-                      new Map(
-                        refOptions.map((o) => [o.sectionId, o.sectionTitle]),
-                      ).entries(),
-                    ).map(([sectionId, sectionTitle]) => (
-                      <optgroup key={sectionId} label={sectionTitle}>
-                        {refOptions
-                          .filter((o) => o.sectionId === sectionId)
-                          .map((opt) => (
-                            <option key={opt.refToken} value={opt.refToken}>
-                              {opt.friendlyRef} — {opt.description}
-                            </option>
-                          ))}
-                      </optgroup>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {behavior === "calculate" && (
-                <div className="mt-2 space-y-1.5">
-                  <label className="text-xs text-neutral-500 dark:text-neutral-400 block">
-                    Formula — use refs like {"{IR.C1.R2}"} (table) or{" "}
-                    {"{JD.TCF}"} (Job Details TCF)
-                  </label>
-                  <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                    Job Details: {"{JD.TCF}"} = Temperature Correction Factor
-                    (from temp/humidity). Add a Job Details section to the form
-                    to use it.
-                  </p>
-                  <Textarea
-                    value={field.calculation?.formula ?? ""}
-                    onChange={(e) =>
-                      onUpdate({
-                        field: {
-                          ...field,
-                          calculation: {
-                            formula: e.target.value,
-                            dependsOn: field.calculation?.dependsOn ?? [],
-                          },
-                        },
-                      })
+                    value={
+                      parentSection?.staticCells?.[`row${r.index}_${column.id}`] ??
+                      ""
                     }
-                    placeholder="e.g. {JD.TCF} * value or {IR.C1.R2}"
-                    rows={2}
-                    className="text-xs font-mono"
+                    onChange={(e) => setStaticCell(r.index, e.target.value)}
+                    placeholder="—"
+                    className={`${inlineInputCls} w-28`}
                   />
-                  <div className="flex flex-wrap gap-1">
-                    {refOptions.slice(0, 8).map((opt) => (
-                      <button
-                        key={opt.refToken}
-                        type="button"
-                        onClick={() => {
-                          const current = field.calculation?.formula ?? "";
-                          onUpdate({
-                            field: {
-                              ...field,
-                              calculation: {
-                                formula:
-                                  current +
-                                  (current ? " " : "") +
-                                  opt.friendlyRef,
-                                dependsOn: field.calculation?.dependsOn ?? [],
-                              },
-                            },
-                          });
-                        }}
-                        className="px-2 py-1 text-xs font-mono bg-neutral-200 dark:bg-neutral-600 rounded hover:bg-brand hover:text-white dark:hover:bg-brand-dark"
-                        title={`${opt.friendlyRef} — ${opt.description}`}
-                      >
-                        {opt.friendlyRef}
-                      </button>
-                    ))}
-                    {refOptions.length > 8 && (
-                      <span className="text-xs text-neutral-500">
-                        +{refOptions.length - 8} more below
-                      </span>
-                    )}
-                  </div>
-                  <select
-                    className="w-full mt-1 px-2 py-1 text-xs font-mono bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none"
-                    onChange={(e) => {
-                      const token = e.target.value;
-                      if (!token) return;
-                      const current = field.calculation?.formula ?? "";
-                      onUpdate({
-                        field: {
-                          ...field,
-                          calculation: {
-                            formula: current + (current ? " " : "") + token,
-                            dependsOn: field.calculation?.dependsOn ?? [],
-                          },
-                        },
-                      });
-                      e.target.value = "";
-                    }}
-                  >
-                    <option value="">
-                      Insert reference (pick section, column, row)…
-                    </option>
-                    {Array.from(
-                      new Map(
-                        refOptions.map((o) => [o.sectionId, o.sectionTitle]),
-                      ).entries(),
-                    ).map(([sectionId, sectionTitle]) => (
-                      <optgroup key={sectionId} label={sectionTitle}>
-                        {refOptions
-                          .filter((o) => o.sectionId === sectionId)
-                          .map((opt) => (
-                            <option key={opt.refToken} value={opt.friendlyRef}>
-                              {opt.friendlyRef} — {opt.description}
-                            </option>
-                          ))}
-                      </optgroup>
-                    ))}
-                  </select>
-                </div>
-              )}
+                </label>
+              ))}
             </div>
           )}
 
-          <FieldEditor
-            field={column.field}
-            onUpdate={(updates) =>
-              onUpdate({ field: { ...column.field, ...updates } })
-            }
-            onAppendOption={onAppendOption}
-            onDelete={() => {}}
-            hideDelete
-            compact
-          />
+          {showVisibleWhen &&
+            settingFields!.map((sf) => {
+              const current = column.visibleWhen?.[sf.id];
+              const currentList = Array.isArray(current)
+                ? current
+                : current
+                  ? [current]
+                  : [];
+              return (
+                <div
+                  key={sf.id}
+                  className="flex flex-wrap items-center gap-1.5 text-[10px]"
+                  title="Show this column only when these values are selected. Leave all unchecked to always show."
+                >
+                  <span className="text-neutral-500 dark:text-neutral-400">
+                    Show when {sf.label}:
+                  </span>
+                  {sf.options.map((opt) => {
+                    const checked = currentList.includes(opt.value);
+                    return (
+                      <label
+                        key={opt.value}
+                        className="flex items-center gap-1 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            const nextList = e.target.checked
+                              ? [
+                                  ...currentList.filter((v) => v !== opt.value),
+                                  opt.value,
+                                ]
+                              : currentList.filter((v) => v !== opt.value);
+                            const vw = { ...(column.visibleWhen || {}) };
+                            if (nextList.length === 0) delete vw[sf.id];
+                            else
+                              vw[sf.id] =
+                                nextList.length === 1 ? nextList[0] : nextList;
+                            onUpdate({ visibleWhen: vw });
+                          }}
+                          className="rounded-none"
+                        />
+                        <span>{opt.label || opt.value}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              );
+            })}
         </div>
       )}
     </div>
   );
 };
 
+/** Shared look for the small inline inputs/selects in field and column rows. */
+export const inlineInputCls =
+  "h-7 px-2 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand text-neutral-900 dark:text-white";
+
+/** Dropdown options laid out side by side so a field stays within two rows. */
+export const InlineOptionsEditor: React.FC<{
+  options: { label: string; value: string }[];
+  onChange: (next: { label: string; value: string }[]) => void;
+  onAdd: () => void;
+  addDisabled?: boolean;
+}> = ({ options, onChange, onAdd, addDisabled }) => (
+  <div className="flex flex-wrap items-center gap-1.5">
+    <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
+      Options ({options.length}):
+    </span>
+    {options.map((opt, idx) => (
+      <div key={idx} className="flex items-center">
+        <input
+          value={opt?.label ?? opt?.value ?? ""}
+          onChange={(e) => {
+            const next = [...options];
+            next[idx] = { label: e.target.value, value: e.target.value };
+            onChange(next);
+          }}
+          placeholder="Option text"
+          className={`${inlineInputCls} w-32`}
+        />
+        <button
+          type="button"
+          onClick={() => onChange(options.filter((_, i) => i !== idx))}
+          className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
+          title="Remove option"
+        >
+          <X className="w-3 h-3" />
+        </button>
+      </div>
+    ))}
+    <button
+      type="button"
+      onClick={onAdd}
+      disabled={addDisabled}
+      className="h-7 px-2 text-xs border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-100 dark:hover:bg-dark-200 inline-flex items-center gap-1 disabled:opacity-50 disabled:pointer-events-none"
+    >
+      <Plus className="w-3 h-3" />
+      Add
+    </button>
+  </div>
+);
+
 /**
- * Field Editor for individual fields
+ * Field Editor for individual fields.
+ * Row 1 holds every setting; row 2 only appears for dropdown options.
  */
 const FieldEditor: React.FC<{
   field: FieldConfig;
@@ -2325,11 +2141,9 @@ const FieldEditor: React.FC<{
   onDelete,
   onAppendOption,
   hideDelete,
-  compact,
   dragHandleProps,
   gridColumns,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(!compact);
   const [addOptionCooldown, setAddOptionCooldown] = useState(false);
 
   const handleAddOption = () => {
@@ -2350,8 +2164,8 @@ const FieldEditor: React.FC<{
   };
 
   return (
-    <div className="bg-neutral-50 dark:bg-dark-100 rounded p-3 space-y-2">
-      <div className="flex items-center justify-between">
+    <div className="bg-neutral-50 dark:bg-dark-100 rounded-none px-2 py-1.5 space-y-1.5">
+      <div className="flex flex-wrap items-center gap-2">
         {dragHandleProps && (
           <button
             type="button"
@@ -2361,187 +2175,121 @@ const FieldEditor: React.FC<{
             <GripVertical className="w-3.5 h-3.5" />
           </button>
         )}
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex-1 text-left text-sm font-medium text-neutral-900 dark:text-white"
+        <input
+          value={field.label}
+          onChange={(e) => onUpdate({ label: e.target.value })}
+          placeholder="Field label"
+          title="Field label"
+          className={`${inlineInputCls} flex-1 min-w-[10rem] font-medium`}
+        />
+        <select
+          value={field.type}
+          onChange={(e) => {
+            const newType = e.target.value as FieldType;
+            const updates: Partial<FieldConfig> = { type: newType };
+            if (
+              newType === FieldType.SELECT &&
+              !(field.options && field.options.length)
+            ) {
+              updates.options = [];
+            }
+            onUpdate(updates);
+          }}
+          title="Field type"
+          className={`${inlineInputCls} w-32`}
         >
-          {field.label}
-        </button>
+          <option value={FieldType.TEXT}>Text</option>
+          <option value={FieldType.NUMBER}>Number</option>
+          <option value={FieldType.DATE}>Date</option>
+          <option value={FieldType.SELECT}>Select</option>
+          <option value={FieldType.RADIO}>Radio buttons</option>
+          <option value={FieldType.TEXTAREA}>Text Area</option>
+          <option value={FieldType.CHECKBOX}>Checkbox</option>
+        </select>
+
+        {field.unit !== undefined && (
+          <input
+            value={field.unit}
+            onChange={(e) => onUpdate({ unit: e.target.value })}
+            placeholder="Unit"
+            title="Unit (e.g. kV, A, Ω)"
+            className={`${inlineInputCls} w-16`}
+          />
+        )}
+
+        {/* Field size within the component grid (width = columns spanned, height = rows spanned) */}
+        {gridColumns != null && gridColumns > 1 && (
+          <>
+            <label
+              className="flex items-center gap-1 text-[10px] text-neutral-500 dark:text-neutral-400"
+              title="Width (columns)"
+            >
+              W
+              <select
+                value={field.colSpan ?? 1}
+                onChange={(e) =>
+                  onUpdate({
+                    colSpan: Math.max(1, parseInt(e.target.value, 10) || 1),
+                  })
+                }
+                className={`${inlineInputCls} w-16`}
+              >
+                {Array.from({ length: gridColumns }).map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {i + 1}/{gridColumns}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label
+              className="flex items-center gap-1 text-[10px] text-neutral-500 dark:text-neutral-400"
+              title="Height (rows)"
+            >
+              H
+              <input
+                type="number"
+                min={1}
+                value={field.rowSpan ?? 1}
+                onChange={(e) =>
+                  onUpdate({
+                    rowSpan: Math.max(1, parseInt(e.target.value, 10) || 1),
+                  })
+                }
+                className={`${inlineInputCls} w-14`}
+              />
+            </label>
+          </>
+        )}
+
+        <label className="flex items-center gap-1 text-xs text-neutral-700 dark:text-neutral-300 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={!!field.required}
+            onChange={(e) => onUpdate({ required: e.target.checked })}
+            className="rounded-none"
+          />
+          Required
+        </label>
+
         {!hideDelete && (
           <button
             onClick={onDelete}
             className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
+            title="Delete field"
           >
             <Trash2 className="w-3 h-3" />
           </button>
         )}
       </div>
 
-      {isExpanded && (
-        <div className="space-y-2 pt-2 border-t dark:border-neutral-700">
-          <Input
-            value={field.label}
-            onChange={(e) => onUpdate({ label: e.target.value })}
-            placeholder="Field label"
-            className="text-xs"
+      {field.type === FieldType.SELECT && (
+        <div className="pl-6">
+          <InlineOptionsEditor
+            options={field.options || []}
+            onChange={(options) => onUpdate({ options })}
+            onAdd={handleAddOption}
+            addDisabled={addOptionCooldown}
           />
-
-          <select
-            value={field.type}
-            onChange={(e) => {
-              const newType = e.target.value as FieldType;
-              const updates: Partial<FieldConfig> = { type: newType };
-              if (
-                newType === FieldType.SELECT &&
-                !(field.options && field.options.length)
-              ) {
-                updates.options = [];
-              }
-              onUpdate(updates);
-            }}
-            className="px-2 py-1 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand text-neutral-900 dark:text-white text-xs"
-          >
-            <option value={FieldType.TEXT}>Text</option>
-            <option value={FieldType.NUMBER}>Number</option>
-            <option value={FieldType.DATE}>Date</option>
-            <option value={FieldType.SELECT}>Select</option>
-            <option value={FieldType.RADIO}>Radio buttons</option>
-            <option value={FieldType.TEXTAREA}>Text Area</option>
-            <option value={FieldType.CHECKBOX}>Checkbox</option>
-          </select>
-
-          {field.type === FieldType.SELECT && (
-            <div className="space-y-2 pt-1 border-t dark:border-neutral-700">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                  Dropdown options ({(field.options || []).length})
-                </span>
-                <button
-                  type="button"
-                  onClick={handleAddOption}
-                  disabled={addOptionCooldown}
-                  className="h-6 px-2 text-xs shrink-0 border border-neutral-300 dark:border-neutral-600 rounded hover:bg-neutral-100 dark:hover:bg-dark-200 inline-flex items-center gap-1 disabled:opacity-50 disabled:pointer-events-none"
-                >
-                  <Plus className="w-3 h-3" />
-                  {addOptionCooldown ? "…" : "Add"}
-                </button>
-              </div>
-              <ul className="space-y-1.5 max-h-[280px] overflow-y-auto overflow-x-hidden pr-1 min-h-[2rem]">
-                {(field.options || []).map((opt, idx) => (
-                  <li
-                    key={`${field.id}-opt-${idx}`}
-                    className="flex items-center gap-1.5"
-                  >
-                    <Input
-                      value={opt?.label ?? ""}
-                      onChange={(e) => {
-                        const next = [...(field.options || [])];
-                        next[idx] = {
-                          label: e.target.value,
-                          value: e.target.value,
-                        };
-                        onUpdate({ options: next });
-                      }}
-                      placeholder="Option text"
-                      className="flex-1 text-xs h-7"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const next = (field.options || []).filter(
-                          (_, i) => i !== idx,
-                        );
-                        onUpdate({ options: next });
-                      }}
-                      className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400 shrink-0"
-                      title="Remove option"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              {(field.options || []).length === 0 && (
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  No options yet. Click Add to define dropdown choices.
-                </p>
-              )}
-
-              {(field.options || []).length > 8 && (
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  Scroll above to see all options. You can add as many as you
-                  need.
-                </p>
-              )}
-            </div>
-          )}
-
-          {field.unit !== undefined && (
-            <Input
-              value={field.unit}
-              onChange={(e) => onUpdate({ unit: e.target.value })}
-              placeholder="Unit (e.g., kV, A, Ω)"
-              className="text-xs"
-            />
-          )}
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id={`required-${field.id}`}
-              checked={field.required}
-              onChange={(e) => onUpdate({ required: e.target.checked })}
-              className="rounded text-xs"
-            />
-            <label
-              htmlFor={`required-${field.id}`}
-              className="text-xs text-neutral-700 dark:text-neutral-300"
-            >
-              Required
-            </label>
-          </div>
-
-          {/* Field size within the component grid (width = columns spanned, height = rows spanned) */}
-          {gridColumns != null && gridColumns > 1 && (
-            <div className="pt-2 border-t dark:border-neutral-700 grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">
-                  Width (columns)
-                </label>
-                <select
-                  value={field.colSpan ?? 1}
-                  onChange={(e) =>
-                    onUpdate({
-                      colSpan: Math.max(1, parseInt(e.target.value, 10) || 1),
-                    })
-                  }
-                  className="w-full px-2 py-1.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none focus:ring-2 focus:ring-brand focus:border-brand text-neutral-900 dark:text-white"
-                >
-                  {Array.from({ length: gridColumns }).map((_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {i + 1} of {gridColumns}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">
-                  Height (rows)
-                </label>
-                <Input
-                  type="number"
-                  min={1}
-                  value={field.rowSpan ?? 1}
-                  onChange={(e) =>
-                    onUpdate({
-                      rowSpan: Math.max(1, parseInt(e.target.value, 10) || 1),
-                    })
-                  }
-                  className="text-xs"
-                />
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>
@@ -2549,51 +2297,34 @@ const FieldEditor: React.FC<{
 };
 
 /**
- * Checklist Item Editor
+ * Checklist Item Editor – NETA section and description on one line.
  */
 const ChecklistItemEditor: React.FC<{
   item: any;
   onUpdate: (updates: any) => void;
   onDelete: () => void;
-}> = ({ item, onUpdate, onDelete }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  return (
-    <div className="bg-neutral-50 dark:bg-dark-100 rounded p-3 space-y-2">
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex-1 text-left text-sm font-medium text-neutral-900 dark:text-white"
-        >
-          {item.netaSection || "No section"}:{" "}
-          {item.description.substring(0, 40)}...
-        </button>
-        <button
-          onClick={onDelete}
-          className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
-        >
-          <Trash2 className="w-3 h-3" />
-        </button>
-      </div>
-
-      {isExpanded && (
-        <div className="space-y-2 pt-2 border-t dark:border-neutral-700">
-          <Input
-            value={item.netaSection}
-            onChange={(e) => onUpdate({ netaSection: e.target.value })}
-            placeholder="NETA Section (e.g., 7.3.3.A.1)"
-            className="text-xs"
-          />
-
-          <Textarea
-            value={item.description}
-            onChange={(e) => onUpdate({ description: e.target.value })}
-            placeholder="Description"
-            rows={3}
-            className="text-xs"
-          />
-        </div>
-      )}
-    </div>
-  );
-};
+}> = ({ item, onUpdate, onDelete }) => (
+  <div className="bg-neutral-50 dark:bg-dark-100 rounded-none px-2 py-1.5 flex items-center gap-2">
+    <input
+      value={item.netaSection ?? ""}
+      onChange={(e) => onUpdate({ netaSection: e.target.value })}
+      placeholder="NETA Section (e.g., 7.3.3.A.1)"
+      title="NETA Section"
+      className={`${inlineInputCls} w-40 shrink-0`}
+    />
+    <input
+      value={item.description ?? ""}
+      onChange={(e) => onUpdate({ description: e.target.value })}
+      placeholder="Description"
+      title={item.description}
+      className={`${inlineInputCls} flex-1 min-w-0`}
+    />
+    <button
+      onClick={onDelete}
+      className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
+      title="Delete item"
+    >
+      <Trash2 className="w-3 h-3" />
+    </button>
+  </div>
+);

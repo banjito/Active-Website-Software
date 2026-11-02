@@ -146,7 +146,7 @@ export const SectionFrame: React.FC<SectionFrameProps> = ({
       {/* The accent rule is a border, so it prints without the browser's
           "background graphics" option. Not `w-full h-1`: the app-wide print
           CSS turns that into a black rule. */}
-      <div className={`border-t-4 print:border-t-2 border-brand mb-3 print:mb-1 print:break-after-avoid ${firstOnPaper ? "print:hidden" : ""}`} />
+      <div className={`border-t-4 print:border-t-2 border-brand mb-3 print:mb-1 print:break-after-avoid ${firstOnPaper ? "print:hidden cf-paper-hide" : ""}`} />
       <div className="flex items-center gap-2 mb-3 print:mb-1 print:break-after-avoid">
         <h2 className="text-lg font-semibold print:text-sm text-neutral-900 dark:text-white print:text-black print:break-after-avoid">
           {section.title}
@@ -338,7 +338,7 @@ export const DocumentBody: React.FC<DocumentBodyProps> = ({
     firstOnPaper = false,
   ): React.ReactNode => {
     if (isPageBreakBlock(block)) {
-      return <div key={block.id} className="hidden print:block print:break-after-page" />;
+      return <div key={block.id} className="cf-page-break hidden print:block print:break-after-page" />;
     }
 
     if (isLayoutBlock(block)) {

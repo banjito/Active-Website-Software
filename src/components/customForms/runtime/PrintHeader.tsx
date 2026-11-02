@@ -75,14 +75,18 @@ export const StatusBox: React.FC<{ status: CustomFormStatus }> = ({
 export const CustomFormPrintHeader: React.FC<{
   template: CustomFormTemplate;
   status: CustomFormStatus;
-}> = ({ template, status }) => {
+  /** Render on screen (paper view) instead of only in print. */
+  onScreen?: boolean;
+}> = ({ template, status, onScreen = false }) => {
   const settings = template.structure.settings;
   if (!isEnabled(settings?.includePrintHeader)) return null;
 
   // No rule of its own: the first section's accent rule sits right below it,
   // and the two together printed as a heavy double line.
   return (
-    <div className="print:flex hidden items-center justify-between pb-2 mb-2">
+    <div
+      className={`${onScreen ? "flex print:hidden" : "print:flex hidden"} items-center justify-between pb-2 mb-2`}
+    >
       <div
         style={{ width: "120px", display: "flex", justifyContent: "flex-start" }}
       >
@@ -104,7 +108,7 @@ export const CustomFormPrintHeader: React.FC<{
           <span className="text-base">NETA - {template.netaSection}</span>
         )}
         {isEnabled(settings?.includePassFail) && (
-          <div className="hidden print:block">
+          <div className={onScreen ? "block" : "hidden print:block"}>
             <StatusBox status={status} />
           </div>
         )}

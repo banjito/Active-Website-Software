@@ -152,7 +152,7 @@ function withPrintText(control: React.ReactNode, text: string): React.ReactNode 
   return (
     <>
       <div className="contents print:hidden">{control}</div>
-      <span className="hidden print:block whitespace-pre-wrap break-words">{text}</span>
+      <span className="cf-print-text hidden print:block whitespace-pre-wrap break-words">{text}</span>
     </>
   );
 }
@@ -170,7 +170,7 @@ export function createInteractiveControlRenderer(
 
     if (field.cellBehavior === "static") {
       return (
-        <span className="block w-full px-2 py-1.5 text-sm text-neutral-900 dark:text-white">
+        <span className="cf-static-text block w-full px-2 py-1.5 text-sm text-neutral-900 dark:text-white">
           {staticText(slot)}
         </span>
       );

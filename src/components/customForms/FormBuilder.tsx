@@ -65,6 +65,8 @@ import { Input } from "@/components/ui/Input";
 import Card, { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 import { ReflowDialog } from "./ReflowDialog";
+import { EquipmentTypesDialog } from "./EquipmentTypesDialog";
+import { fetchEquipmentTypeList } from "@/lib/customForms/equipmentTypes";
 import { useLookupTables } from "@/lib/customForms/lookupLibrary";
 import type { ComponentVariant } from "@/lib/customForms/componentVariants";
 import { FormCanvas } from "./FormCanvas";
@@ -97,7 +99,6 @@ import {
   fetchSavedComponents,
   saveSavedComponent,
   updateSavedComponent,
-  deleteSavedComponent,
   type SavedComponent,
 } from "@/lib/customForms/savedComponents";
 import {
@@ -107,7 +108,6 @@ import {
   keepLibraryMeta,
   variantsOf,
 } from "@/lib/customForms/componentVariants";
-import { SavedComponentsDialog } from "./SavedComponentsDialog";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useReportCssIsolation } from "./runtime/useReportCssIsolation";
 import { regenerateSectionWithPrompt } from "@/lib/customForms/excel/generate";
@@ -162,8 +162,6 @@ export const FormBuilder: React.FC = () => {
 
   // User-saved components (custom tables etc.) that appear in the library
   const [savedComponents, setSavedComponents] = useState<SavedComponent[]>([]);
-  const [viewingSavedComponent, setViewingSavedComponent] =
-    useState<SavedComponent | null>(null);
   const refetchSavedComponents = useCallback(() => {
     fetchSavedComponents().then(setSavedComponents);
   }, []);
@@ -709,6 +707,13 @@ export const FormBuilder: React.FC = () => {
   };
 
   const [reflowOpen, setReflowOpen] = useState(false);
+  // The equipment types list, for the template's "Equipment" picker.
+  const [equipmentOptions, setEquipmentOptions] = useState<string[]>([]);
+  const [equipmentDialogOpen, setEquipmentDialogOpen] = useState(false);
+  useEffect(() => {
+    fetchEquipmentTypeList().then(setEquipmentOptions).catch(() => setEquipmentOptions([]));
+  }, []);
+  const equipmentType = template.structure.settings?.equipmentType;
   // Formulas may read the shared lookup tables; re-render once they load.
   useLookupTables();
 
@@ -1158,7 +1163,7 @@ export const FormBuilder: React.FC = () => {
             <span className="hidden md:inline">Back</span>
           </Button>
 
-          <div className="grid flex-1 min-w-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_clamp(160px,30%,320px)] lg:self-center">
+          <div className="grid flex-1 min-w-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_clamp(160px,22%,260px)_clamp(160px,22%,260px)] lg:self-center">
             <div className="min-w-0 flex flex-col gap-1">
               <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                 Form title
@@ -1172,6 +1177,44 @@ export const FormBuilder: React.FC = () => {
                 placeholder="Untitled form"
                 className="h-10 text-base font-semibold md:text-lg"
               />
+            </div>
+
+            {/* Which equipment this form tests: its components are offered first. */}
+            <div className="min-w-0 flex flex-col gap-1">
+              <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                Equipment type
+              </label>
+              <select
+                value={equipmentType ?? ""}
+                onChange={(e) => {
+                  if (e.target.value === "__manage") {
+                    setEquipmentDialogOpen(true);
+                    return;
+                  }
+                  const value = e.target.value || undefined;
+                  setTemplate((prev) => ({
+                    ...prev,
+                    structure: {
+                      ...prev.structure,
+                      settings: { ...(prev.structure.settings as any), equipmentType: value },
+                    },
+                  }));
+                  setIsDirty(true);
+                }}
+                className="h-10 px-2 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand"
+                title="Components for this equipment (and Global ones) are offered first when adding"
+              >
+                <option value="">Any equipment</option>
+                {equipmentOptions.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+                {equipmentType && !equipmentOptions.includes(equipmentType) && (
+                  <option value={equipmentType}>{equipmentType}</option>
+                )}
+                <option value="__manage">Edit the list…</option>
+              </select>
             </div>
 
             <div
@@ -1474,11 +1517,20 @@ export const FormBuilder: React.FC = () => {
                 </Button>
               </div>
             )}
+            <EquipmentTypesDialog
+              open={equipmentDialogOpen}
+              onClose={() => setEquipmentDialogOpen(false)}
+              onChanged={(list) => {
+                setEquipmentOptions(list);
+                refetchSavedComponents();
+              }}
+            />
             <ReflowDialog
               open={reflowOpen}
               structure={template.structure}
               savedComponents={savedComponents}
               builtinOverrides={componentDefaultOverrides}
+              equipmentType={equipmentType}
               makeBuiltinSection={buildBuiltinSection}
               makeSavedSection={buildSavedSection}
               onApply={(structure) => {
@@ -1708,30 +1760,6 @@ export const FormBuilder: React.FC = () => {
           </DragOverlay>
         </DndContext>
       </div>
-
-      <SavedComponentsDialog
-        open={!!viewingSavedComponent}
-        onOpenChange={(open) => !open && setViewingSavedComponent(null)}
-        savedComponents={viewingSavedComponent ? [viewingSavedComponent] : []}
-        onRefetch={refetchSavedComponents}
-        onAddToForm={(sectionConfig, savedComponentId, selectForEdit) => {
-          addSectionFromSaved(
-            sectionConfig,
-            undefined,
-            savedComponentId,
-            selectForEdit ?? false,
-          );
-        }}
-        onDelete={async (id) => {
-          const { error } = await deleteSavedComponent(id);
-          if (error) {
-            toast.error(error.message || "Could not delete component.");
-            throw error;
-          }
-          toast.success("Saved component removed from library.");
-          setViewingSavedComponent(null);
-        }}
-      />
 
       {actionTooltip && (
         <div

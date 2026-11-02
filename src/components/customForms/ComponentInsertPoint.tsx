@@ -20,7 +20,8 @@ import {
   type ComponentVariant,
   type LibraryConfig,
 } from "@/lib/customForms/componentVariants";
-import { iconMap } from "./ComponentLibrarySidebar";
+import { fitsEquipmentType } from "@/lib/customForms/equipmentTypes";
+import { iconMap } from "./componentIcons";
 
 const CATEGORY_LABELS: Record<string, string> = {
   info: "Info",
@@ -48,6 +49,11 @@ interface ComponentInsertPointProps {
   /** No variantId = the full (base) component. */
   onAddBuiltin: (type: ComponentType, variantId?: string) => void;
   onAddSaved: (saved: SavedComponent, variant?: ComponentVariant) => void;
+  /**
+   * The template's equipment type. Its components and the Global ones are
+   * listed; "Show all" reveals the rest.
+   */
+  equipmentType?: string;
   /** Always show the line (e.g. the empty canvas), not only on hover. */
   alwaysVisible?: boolean;
   label?: string;
@@ -56,6 +62,7 @@ interface ComponentInsertPointProps {
 export const ComponentInsertPoint: React.FC<ComponentInsertPointProps> = ({
   savedComponents,
   builtinOverrides = {},
+  equipmentType,
   onAddBuiltin,
   onAddSaved,
   alwaysVisible = false,
@@ -63,6 +70,8 @@ export const ComponentInsertPoint: React.FC<ComponentInsertPointProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [showAll, setShowAll] = useState(false);
+  const filterByEquipment = !!equipmentType && !showAll;
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -82,6 +91,7 @@ export const ComponentInsertPoint: React.FC<ComponentInsertPointProps> = ({
   const q = search.trim().toLowerCase();
   const saved = savedComponents
     .filter((s) => s.name.toLowerCase().includes(q))
+    .filter((s) => !filterByEquipment || fitsEquipmentType(s.section_config, equipmentType))
     .sort(
       (a, b) =>
         CATEGORY_ORDER.indexOf(savedCategory(a)) - CATEGORY_ORDER.indexOf(savedCategory(b)) ||
@@ -91,6 +101,10 @@ export const ComponentInsertPoint: React.FC<ComponentInsertPointProps> = ({
     (c) =>
       c.name.toLowerCase().includes(q) ||
       c.description.toLowerCase().includes(q),
+  ).filter(
+    (c) =>
+      !filterByEquipment ||
+      fitsEquipmentType({ ...(builtinOverrides[c.id] ?? {}), componentType: c.id }, equipmentType),
   );
   const categories = Array.from(new Set(builtins.map((c) => c.category)));
 
@@ -157,6 +171,14 @@ export const ComponentInsertPoint: React.FC<ComponentInsertPointProps> = ({
               />
             </div>
           </div>
+          {equipmentType && (
+            <div className="px-2 py-1 flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400 border-b border-neutral-100 dark:border-dark-200">
+              <span>{showAll ? "All components" : `For ${equipmentType} + Global`}</span>
+              <button type="button" onClick={() => setShowAll((v) => !v)} className="text-brand hover:underline">
+                {showAll ? `Only ${equipmentType}` : "Show all"}
+              </button>
+            </div>
+          )}
           <div className="flex-1 overflow-y-auto p-1">
             {saved.length > 0 && (
               <div className="mb-2">

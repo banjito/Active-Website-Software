@@ -804,6 +804,8 @@ const FieldLabel: React.FC<{
   // into the next column's label.
   <div className={`${density.label} [overflow-wrap:anywhere]`}>
     {field.label}
+    {/* Job Details reads "Customer:" over its value, like the built reports. */}
+    {v1Section.componentType === "job-info" && field.label && !/[:?]$/.test(field.label.trim()) && ":"}
     {field.unit && (
       <span className="text-neutral-400 ml-1 normal-case">({field.unit})</span>
     )}
@@ -916,6 +918,10 @@ export const SectionBodyV2: React.FC<SectionBodyV2Props> = ({
                         rowSpan={slot.rowSpan > 1 ? slot.rowSpan : undefined}
                         className={[
                           `border ${BORDER} px-3 py-2 align-top`,
+                          // Job Details: label and value centred in each cell.
+                          v1Section.componentType === "job-info"
+                            ? "text-center [&_input]:text-center [&_select]:text-center"
+                            : "",
                           state.printable ? "" : "print:hidden",
                         ]
                           .filter(Boolean)

@@ -215,6 +215,36 @@ export function createInteractiveControlRenderer(
       );
     }
 
+    // Temperature: °F typed, °C shown beside it ("87°F (31°C)"). Always writes
+    // the section's "temperature", which recomputes °C and the TCF.
+    if (v1FieldOf(slot.section, field.id)?.type === "temperature") {
+      const ro = !!options.readOnly || !!slot.readOnly;
+      const row = options.formData[slot.stateKey] ?? {};
+      const f = row.temperature ?? "";
+      const c = row.temperatureCelsius;
+      const cText = c !== undefined && c !== "" && !isNaN(Number(c)) ? `${Math.round(Number(c))}°C` : "";
+      const printed = f !== "" ? `${f}°F${cText ? ` (${cText})` : ""}` : "";
+      return withPrintText(
+        <div className="flex items-center justify-center gap-1 min-w-0">
+          <input
+            type="text"
+            inputMode="decimal"
+            size={1}
+            value={f}
+            readOnly={ro}
+            onChange={(e) => onFieldChange(slot.stateKey, "temperature", e.target.value)}
+            placeholder="68"
+            title="Temperature (°F)"
+            className={`${ro ? READ_ONLY_CONTROL_CLASSES : CONTROL_CLASSES} w-16 text-center`}
+          />
+          <span className="shrink-0 text-xs text-neutral-600 dark:text-neutral-300 whitespace-nowrap">
+            °F{cText && ` (${cText})`}
+          </span>
+        </div>,
+        printed,
+      );
+    }
+
     // Photos have no V2 control of their own; recognise them by the builder's field.
     if (v1FieldOf(slot.section, field.id)?.type === "photo") {
       const ro = !!options.readOnly || !!slot.readOnly;
@@ -318,8 +348,10 @@ export function createInteractiveControlRenderer(
           printedDate(value),
         );
 
-      case "number":
-        return withPrintText(
+      case "number": {
+        // A suffix ("%") sits right after the value, on screen and on paper.
+        const suffix = v1FieldOf(slot.section, field.id)?.valueSuffix ?? "";
+        const input = (
           <input
             type="text"
             inputMode="numeric"
@@ -329,9 +361,20 @@ export function createInteractiveControlRenderer(
             placeholder={field.placeholder}
             readOnly={readOnly}
             className={classes}
-          />,
-          String(value ?? ""),
+          />
         );
+        return withPrintText(
+          suffix ? (
+            <div className="flex items-center gap-1 min-w-0">
+              {input}
+              <span className="shrink-0 text-xs text-neutral-600 dark:text-neutral-300">{suffix}</span>
+            </div>
+          ) : (
+            input
+          ),
+          value === "" || value == null ? "" : `${String(value)}${suffix}`,
+        );
+      }
 
       case "temperature-humidity":
         return (

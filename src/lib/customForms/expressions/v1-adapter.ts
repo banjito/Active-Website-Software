@@ -2,6 +2,7 @@ import type { SectionConfig } from "@/lib/types/customForms";
 import { getSectionReferenceCode } from "@/lib/customForms/formCellResolution";
 import { expressionReferences, parseExpression } from "@/lib/customForms/expressions/parser";
 import { type Result, type ExpressionIssue } from "@/lib/customForms/expressions/types";
+import { knownUnit } from "@/lib/customForms/expressions/resources";
 
 /** No positional variant: a migrated reference must be bound to a durable id. */
 export type StableExpressionReference =
@@ -35,19 +36,24 @@ export interface TranslatedV1Expression {
  * (notably blank-as-zero and V1's comparison-prefix strings such as '<2200').
  */
 export function translateV1Expression(source: string, context: V1TranslationContext): Result<TranslatedV1Expression> {
+  // Reference ids can't hold spaces, so "{IR.C3 in MΩ}" is read as "{IR.C3|MΩ}".
+  source = source.replace(/\{([^{}]*?)\s+in\s+([^{}\s]+)\s*\}/gi, (_, path, unit) => `{${String(path).trim()}|${unit}}`);
   const parsed = parseExpression(source);
   if (!parsed.ok) return parsed;
   const references = new Map<string, StableExpressionReference>();
   const replacements: Array<{ start: number; end: number; text: string }> = [];
   const issues: ExpressionIssue[] = [];
   for (const token of expressionReferences(parsed.value)) {
-    const [sectionToken, second, third, ...extra] = token.id.split(".");
+    // "{IR.C3 in MΩ}": a reading converted into MΩ (see unitResolution.ts).
+    const [path, targetUnit] = token.id.split("|") as [string, string | undefined];
+    const [sectionToken, second, third, ...extra] = path.split(".");
     const exact = context.sections.find((section) => section.id === sectionToken);
     const matches = exact ? [exact] : context.sections.filter((section) => getSectionReferenceCode(section).toLowerCase() === sectionToken.toLowerCase());
     const reject = (message: string) => issues.push({ start: token.start, end: token.end, code: "v1.reference", message, referenceId: token.id });
     if (matches.length !== 1) { reject(`Reference "${token.id}" has an unknown or ambiguous section.`); continue; }
     if (!second || extra.length) { reject(`Unsupported V1 reference "${token.id}".`); continue; }
     const section = matches[0];
+    let sourceUnit: string | undefined;
     const columnMatch = second.match(/^C(\d+)$/i);
     let reference: StableExpressionReference;
     if (columnMatch || third !== undefined) {
@@ -69,16 +75,31 @@ export function translateV1Expression(source: string, context: V1TranslationCont
       const rowIds = context.rowIdsBySection.get(section.id)!;
       if (new Set(rowIds).size !== rowIds.length) { reject(`Section "${section.id}" has duplicate row ids.`); continue; }
       reference = { scope: "cell", tableId: section.id, rowId, columnId: column.id };
+      sourceUnit = column.field?.unit;
     } else {
       const fieldId = second.toUpperCase() === "TCF" && section.componentType === "job-info" ? "tcf" : second;
       const fields = [...(section.fields ?? []), ...(section.aboveTableFields ?? []), ...(section.settingFields ?? []), ...(section.field ? [section.field] : [])];
       const derivedJobField = section.componentType === "job-info" && ["temperature", "temperatureCelsius", "tcf", "humidity"].includes(fieldId);
       if (!fields.some((field) => field.id === fieldId) && !derivedJobField) { reject(`Unknown field in "${token.id}".`); continue; }
       reference = { scope: "field", sectionId: section.id, fieldId };
+      // Setting dropdowns carry no unit; only real fields do.
+      sourceUnit = (fields.find((field) => field.id === fieldId) as { unit?: string } | undefined)?.unit;
     }
     const id = expressionReferenceId(reference);
+    let text = `{${id}}`;
+    if (targetUnit) {
+      // Typed calculations convert at compile time, so the reading's unit has to
+      // be fixed on the column/field; one picked on the form isn't known here.
+      const from = sourceUnit?.trim();
+      if (!from || !knownUnit(from)) {
+        reject(`"${token.id}" converts into ${targetUnit}, but typed calculations need the reading's unit fixed on its column or field. Set its Unit, or remove " in ${targetUnit}".`);
+        continue;
+      }
+      if (!knownUnit(targetUnit)) { reject(`Unknown unit "${targetUnit}" in "${token.id}".`); continue; }
+      if (from !== targetUnit) text = `convert({${id}}, ${JSON.stringify(from)}, ${JSON.stringify(targetUnit)})`;
+    }
     references.set(id, reference);
-    replacements.push({ start: token.start, end: token.end, text: `{${id}}` });
+    replacements.push({ start: token.start, end: token.end, text });
   }
   if (issues.length) return { ok: false, issues };
   let translated = source;

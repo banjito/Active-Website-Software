@@ -31,71 +31,22 @@ export const COMPONENT_LIBRARY: ComponentDefinition[] = [
       order: 0,
       showInPrint: true,
       referenceCode: 'JD',
-      layout: 'five-column',
+      layout: 'six-column',
       fields: [
-        {
-          id: 'customer',
-          label: 'Customer',
-          type: FieldType.TEXT,
-          required: true
-        },
-        {
-          id: 'siteAddress',
-          label: 'Site Address',
-          type: FieldType.TEXT,
-          required: true
-        },
-        {
-          id: 'jobNumber',
-          label: 'Job #',
-          type: FieldType.TEXT,
-          required: true
-        },
-        {
-          id: 'user',
-          label: 'User',
-          type: FieldType.TEXT
-        },
-        {
-          id: 'date',
-          label: 'Date',
-          type: FieldType.DATE,
-          required: true
-        },
-        {
-          id: 'technicians',
-          label: 'Technicians',
-          type: FieldType.TEXT,
-          required: true
-        },
-        {
-          id: 'identifier',
-          label: 'Identifier',
-          type: FieldType.TEXT
-        },
-        {
-          id: 'substation',
-          label: 'Substation',
-          type: FieldType.TEXT
-        },
-        {
-          id: 'eqptLocation',
-          label: 'Eqpt. Location',
-          type: FieldType.TEXT
-        },
-        {
-          id: 'temperatureHumidity',
-          label: 'Temp °F / °C, Humidity',
-          type: FieldType.TEMPERATURE_HUMIDITY,
-          defaultTemperature: 68,
-          defaultHumidity: 50
-        },
-        {
-          id: 'tcf',
-          label: 'TCF',
-          type: FieldType.NUMBER,
-          readOnly: true
-        }
+        // Row 1
+        { id: 'customer', label: 'Customer', type: FieldType.TEXT, required: true },
+        { id: 'temperature', label: 'Temp', type: FieldType.TEMPERATURE, defaultValue: 68 },
+        { id: 'jobNumber', label: 'Job #', type: FieldType.TEXT, required: true },
+        { id: 'technicians', label: 'Technicians', type: FieldType.TEXT, required: true },
+        { id: 'date', label: 'Date', type: FieldType.DATE, required: true },
+        { id: 'identifier', label: 'Identifier', type: FieldType.TEXT },
+        // Row 2
+        { id: 'siteAddress', label: 'Address', type: FieldType.TEXT, required: true },
+        { id: 'tcf', label: 'TCF', type: FieldType.NUMBER, readOnly: true },
+        { id: 'humidity', label: 'Humidity', type: FieldType.NUMBER, defaultValue: 50, valueSuffix: '%' },
+        { id: 'substation', label: 'Substation', type: FieldType.TEXT },
+        { id: 'eqptLocation', label: 'Eqpt. Location', type: FieldType.TEXT },
+        { id: 'user', label: 'User', type: FieldType.TEXT },
       ]
     }
   },

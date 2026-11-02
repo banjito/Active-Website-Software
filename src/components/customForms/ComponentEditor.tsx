@@ -36,6 +36,15 @@ import { LiveComponentEditor } from "./LiveComponentEditor";
 import { ComponentVariantsPanel } from "./ComponentVariantsPanel";
 import { FormulaRefHover } from "./FormulaRefHover";
 import { TableLayoutEditor } from "./TableLayoutEditor";
+import { AiProgress } from "./AiProgress";
+import { EquipmentTypePicker } from "./EquipmentTypePicker";
+import { EquipmentTypesDialog } from "./EquipmentTypesDialog";
+import {
+  equipmentTypesLabel,
+  equipmentTypesOf,
+  fetchEquipmentTypeList,
+  isGlobal,
+} from "@/lib/customForms/equipmentTypes";
 import { useLookupTables } from "@/lib/customForms/lookupLibrary";
 import { applyVariant, variantsOf } from "@/lib/customForms/componentVariants";
 import { useResizablePanel } from "./useResizablePanel";
@@ -116,6 +125,8 @@ interface ListEntry {
   updatedAt?: string;
   builtinType?: ComponentType;
   saved?: SavedComponent;
+  /** Equipment types ("*" = Global). */
+  equipment: string[];
 }
 
 const LIST_PREFS_KEY = "customForms.componentList";
@@ -166,6 +177,7 @@ export const ComponentEditor: React.FC = () => {
   const [aiOpen, setAiOpen] = useState(false);
   const [aiText, setAiText] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
+  const [aiStartedAt, setAiStartedAt] = useState(0);
   // Top-bar toggle: the form preview replaces the editor.
   const [showPreview, setShowPreview] = useState(false);
   // Formulas may read the shared lookup tables; re-render once they load.
@@ -212,6 +224,13 @@ export const ComponentEditor: React.FC = () => {
   const [listShow, setListShow] = useState<ListShow>(listPrefs.show);
   const [listCategory, setListCategory] = useState(listPrefs.category);
   const [listSort, setListSort] = useState<ListSort>(listPrefs.sort);
+  // Equipment filter: "all", "__global", "__unassigned" or a type name.
+  const [listEquipment, setListEquipment] = useState<string>("all");
+  const [equipmentOptions, setEquipmentOptions] = useState<string[]>([]);
+  const [equipmentDialogOpen, setEquipmentDialogOpen] = useState(false);
+  useEffect(() => {
+    fetchEquipmentTypeList().then(setEquipmentOptions).catch(() => setEquipmentOptions([]));
+  }, []);
   useEffect(() => {
     try {
       window.localStorage.setItem(
@@ -311,6 +330,7 @@ export const ComponentEditor: React.FC = () => {
             ComponentType.CUSTOM_TABLE,
           );
     setAiBusy(true);
+    setAiStartedAt(Date.now());
     try {
       const built = await regenerateSectionWithPrompt(base, text);
       if (!built?.length) {
@@ -472,6 +492,7 @@ export const ComponentEditor: React.FC = () => {
       description: c.description,
       edited: !!overrides[c.id],
       builtinType: c.id,
+      equipment: equipmentTypesOf({ ...(overrides[c.id] ?? {}), componentType: c.id }),
     }));
     const custom: ListEntry[] = saved.map((s) => {
       const def = getComponentDefinition(s.section_config.componentType);
@@ -485,6 +506,7 @@ export const ComponentEditor: React.FC = () => {
         edited: false,
         updatedAt: s.updated_at,
         saved: s,
+        equipment: equipmentTypesOf(s.section_config),
       };
     });
     return [...custom, ...builtins];
@@ -496,6 +518,15 @@ export const ComponentEditor: React.FC = () => {
       if (listShow === "builtin" && e.kind !== "builtin") return false;
       if (listShow === "edited" && !e.edited) return false;
       if (listCategory !== "all" && e.category !== listCategory) return false;
+      if (listEquipment === "__global" && !isGlobal(e.equipment)) return false;
+      if (listEquipment === "__unassigned" && e.equipment.length) return false;
+      // A type shows its own components and the Global ones every report uses.
+      if (
+        !["all", "__global", "__unassigned"].includes(listEquipment) &&
+        !isGlobal(e.equipment) &&
+        !e.equipment.includes(listEquipment)
+      )
+        return false;
       return (
         !q ||
         e.name.toLowerCase().includes(q) ||
@@ -524,7 +555,7 @@ export const ComponentEditor: React.FC = () => {
           return byName(a, b);
       }
     });
-  }, [entries, listShow, listCategory, listSort, q]);
+  }, [entries, listShow, listCategory, listSort, q, listEquipment]);
 
   const isProtected =
     selection?.kind === "builtin" && PROTECTED_TYPES.has(selection.type);
@@ -545,7 +576,7 @@ export const ComponentEditor: React.FC = () => {
   const roomy = listPanel.width >= 380;
   const filterSelect =
     "h-7 min-w-0 px-1 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none text-neutral-900 dark:text-white";
-  const filtersActive = listShow !== "all" || listCategory !== "all" || !!q;
+  const filtersActive = listShow !== "all" || listCategory !== "all" || listEquipment !== "all" || !!q;
 
   return (
     <div
@@ -656,6 +687,27 @@ export const ComponentEditor: React.FC = () => {
           </div>
           <div className="flex gap-1">
             <select
+              value={listEquipment}
+              onChange={(e) => {
+                if (e.target.value === "__manage") setEquipmentDialogOpen(true);
+                else setListEquipment(e.target.value);
+              }}
+              title="Equipment type (a type also shows the Global components)"
+              className={`${filterSelect} flex-1`}
+            >
+              <option value="all">All equipment</option>
+              <option value="__global">Global only</option>
+              <option value="__unassigned">Unassigned</option>
+              {equipmentOptions.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+              <option value="__manage">Edit the list…</option>
+            </select>
+          </div>
+          <div className="flex gap-1">
+            <select
               value={listCategory}
               onChange={(e) => setListCategory(e.target.value)}
               title="Category"
@@ -693,6 +745,7 @@ export const ComponentEditor: React.FC = () => {
                   setSearch("");
                   setListShow("all");
                   setListCategory("all");
+                  setListEquipment("all");
                 }}
               >
                 Clear filters
@@ -744,6 +797,7 @@ export const ComponentEditor: React.FC = () => {
                     </span>
                     {roomy && (
                       <span className="block truncate text-[11px] font-normal text-neutral-500 dark:text-neutral-400">
+                        {equipmentTypesLabel(e.equipment)} ·{" "}
                         {e.kind === "saved" ? e.typeName : CATEGORY_LABELS[e.category] ?? e.category}
                         {e.updatedAt &&
                           ` · updated ${new Date(e.updatedAt).toLocaleDateString()}`}
@@ -798,9 +852,17 @@ export const ComponentEditor: React.FC = () => {
                 <X className="w-4 h-4" />
               </button>
             </div>
+            {aiBusy && (
+              <AiProgress
+                steps={[{ id: "drafting", label: "AI is building the component", expectedSeconds: 25 }]}
+                current="drafting"
+                startedAt={aiStartedAt}
+              />
+            )}
             <textarea
               value={aiText}
               onChange={(e) => setAiText(e.target.value)}
+              disabled={aiBusy}
               rows={3}
               autoFocus
               placeholder="e.g. Insulation resistance table with columns Phase, Test Voltage (kV), 1 Min (MΩ), 10 Min (MΩ) and a calculated PI column; rows A-B, B-C, C-A"
@@ -854,6 +916,15 @@ export const ComponentEditor: React.FC = () => {
                 {selection?.kind === "builtin" ? "Built-in" : "Custom"} ·{" "}
                 {typeName}
               </span>
+              <label className="flex items-center gap-1 text-xs text-neutral-600 dark:text-neutral-300">
+                Equipment
+                <EquipmentTypePicker
+                  value={equipmentTypesOf(draft)}
+                  options={equipmentOptions}
+                  onChange={(equipmentTypes) => updateDraft({ equipmentTypes })}
+                  onManage={() => setEquipmentDialogOpen(true)}
+                />
+              </label>
               {selection?.kind !== "builtin" && (
                 <label className="flex items-center gap-1 text-xs text-neutral-600 dark:text-neutral-300">
                   Category
@@ -1021,6 +1092,15 @@ export const ComponentEditor: React.FC = () => {
         )}
       </main>
 
+      <EquipmentTypesDialog
+        open={equipmentDialogOpen}
+        onClose={() => setEquipmentDialogOpen(false)}
+        onChanged={(list) => {
+          setEquipmentOptions(list);
+          // Renames and removals re-tag saved components; show the new tags.
+          load();
+        }}
+      />
       {editorOpen && draft && (
         <SectionEditor
           section={draft}

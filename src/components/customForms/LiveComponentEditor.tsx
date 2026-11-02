@@ -29,6 +29,7 @@ import {
 } from "@/lib/types/customForms";
 import {
   contactResistanceRowLabels,
+  groupedFieldColumnCount,
   resolveRowCount,
 } from "@/lib/customForms/runtime/layout";
 import { InlineOptionsEditor, inlineInputCls } from "./SectionEditor";
@@ -50,6 +51,7 @@ import {
   splitAsFoundAsLeft,
 } from "@/lib/customForms/asFoundAsLeft";
 import { resultRuleField } from "@/lib/customForms/resultRules";
+import { hasCombinedTemperatureField, splitTemperatureHumidity } from "@/lib/customForms/temperatureFields";
 import { useLookupTables } from "@/lib/customForms/lookupLibrary";
 import { resolveDeviation } from "./runtime/SectionBody";
 
@@ -64,7 +66,8 @@ const FIELD_TYPES: { value: FieldType; label: string }[] = [
   { value: FieldType.TEXTAREA, label: "Text Area" },
   { value: FieldType.CHECKBOX, label: "Checkbox" },
   { value: FieldType.CALCULATED, label: "Calculated" },
-  { value: FieldType.TEMPERATURE_HUMIDITY, label: "Temp / Humidity" },
+  { value: FieldType.TEMPERATURE, label: "Temperature (°F with °C)" },
+  { value: FieldType.TEMPERATURE_HUMIDITY, label: "Temp / Humidity (combined)" },
   { value: FieldType.SIGNATURE, label: "Signature" },
   { value: FieldType.PHOTO, label: "Photos" },
 ];
@@ -75,12 +78,12 @@ const LAYOUTS: { value: NonNullable<SectionConfig["layout"]>; cols: number }[] =
   { value: "three-column", cols: 3 },
   { value: "four-column", cols: 4 },
   { value: "five-column", cols: 5 },
+  { value: "six-column", cols: 6 },
 ];
 
 /** Grid width of a grouped-field component (mirrors the filler). */
 function gridColumnsFor(section: SectionConfig): number {
-  if (section.componentType === ComponentType.JOB_INFO) return 5;
-  return LAYOUTS.find((l) => l.value === section.layout)?.cols ?? 1;
+  return groupedFieldColumnCount(section);
 }
 
 /** Move an item one place left/right in a list. */
@@ -929,11 +932,11 @@ const LiveFields: React.FC<{
       ) : (
         <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
           <span>Click a field to change it. Drag its right edge to widen it.</span>
-          {section.componentType !== ComponentType.JOB_INFO && (
+          {(
             <label className="ml-auto flex items-center gap-1">
               Columns
               <select
-                value={section.layout ?? "single-column"}
+                value={section.layout ?? (section.componentType === ComponentType.JOB_INFO ? "five-column" : "single-column")}
                 onChange={(e) =>
                   onUpdate({ layout: e.target.value as SectionConfig["layout"] })
                 }
@@ -1461,6 +1464,21 @@ export const LiveComponentEditor: React.FC<{
           <ChartSettings section={section} allSections={[section]} onUpdate={onUpdate} />
           <SectionContent section={section} />
         </>
+      )}
+      {hasCombinedTemperatureField(section.fields) && (
+        <div className="flex flex-wrap items-center gap-2 px-3 py-2 text-xs border border-brand/40 bg-brand/5">
+          <span className="text-neutral-700 dark:text-neutral-200">
+            Temperature and humidity share one box here. The newer layout shows them separately:
+            Temp as "87°F (31°C)" and Humidity as "21%".
+          </span>
+          <button
+            type="button"
+            onClick={() => onUpdate({ fields: splitTemperatureHumidity(section.fields!) })}
+            className="ml-auto h-7 px-2 text-xs text-white bg-brand hover:bg-brand-dark rounded-none"
+          >
+            Use separate Temp and Humidity
+          </button>
+        </div>
       )}
       {section.fields && <LiveFields section={section} onUpdate={onUpdate} />}
       {section.field && <LiveSingleField section={section} onUpdate={onUpdate} />}

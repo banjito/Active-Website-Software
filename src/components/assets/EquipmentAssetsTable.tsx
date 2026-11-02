@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  LineChart,
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
@@ -62,6 +63,7 @@ import {
 import { ContextMenu } from "@/components/ui/ContextMenu";
 import { InnerFolderRow } from "@/components/folders/InnerFolderRow";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { AssetTrendsDialog } from "./AssetTrendsDialog";
 import type { EquipmentAssetWithCounts } from "@/lib/types/assetTracking";
 import type { FolderNode, SubstationFolder } from "@/lib/types/substationFolders";
 import type { SubstationFoldersApi } from "@/hooks/useSubstationFolders";
@@ -314,6 +316,8 @@ export function EquipmentAssetsTable({
 }: EquipmentAssetsTableProps) {
   /** Which rows have their linked reports expanded. Transient — not worth persisting. */
   const [expandedReports, setExpandedReports] = useState<string[]>([]);
+  // The asset whose trends window is open.
+  const [trendAsset, setTrendAsset] = useState<EquipmentAssetWithCounts | null>(null);
   /**
    * Ticked rows. Deliberately not persisted: coming back to a page and finding 47 items
    * still selected is how the wrong 47 items get acted on.
@@ -1895,8 +1899,19 @@ export function EquipmentAssetsTable({
                     >
                       <TableCell colSpan={columnCount} className="py-2">
                         <div className="flex flex-col gap-1 pl-8">
-                          <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                          <span className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                             Reports on {asset.identifier}
+                            {linkedReports.some((r) => r.url?.startsWith("custom-form:")) && (
+                              <button
+                                type="button"
+                                onClick={() => setTrendAsset(asset)}
+                                className="inline-flex items-center gap-1 normal-case tracking-normal font-medium text-brand hover:underline"
+                                title="Chart readings across this equipment's reports"
+                              >
+                                <LineChart className="h-3.5 w-3.5" />
+                                Trend results
+                              </button>
+                            )}
                           </span>
                           {linkedReports.map((report) => (
                             <div key={report.id} className="flex items-center gap-2">
@@ -1943,6 +1958,14 @@ export function EquipmentAssetsTable({
             )}
           </TableBody>
         </Table>
+        {trendAsset && (
+          <AssetTrendsDialog
+            open
+            assetId={trendAsset.id}
+            assetName={trendAsset.identifier}
+            onClose={() => setTrendAsset(null)}
+          />
+        )}
       </div>
 
       {contextMenu && (

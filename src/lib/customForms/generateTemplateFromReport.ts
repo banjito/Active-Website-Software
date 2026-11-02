@@ -51,8 +51,12 @@ function buildComponentCatalog() {
  * Generate a draft template from a report file.
  * Returns the template structure (not yet persisted).
  */
+/** The steps of a generation, reported as each one starts (for a progress display). */
+export type GenerateStage = "reading" | "drafting" | "checking";
+
 export async function generateTemplateFromReport(
   report: ReportOption,
+  onStage?: (stage: GenerateStage) => void,
 ): Promise<CustomFormTemplate> {
   // A hand-built, tested conversion beats a model's first draft. Use it when
   // one exists; the AI is the fallback for reports nobody has converted yet.
@@ -62,7 +66,10 @@ export async function generateTemplateFromReport(
   const loader = reportModules[report.path];
   if (!loader) throw new Error(`Report not found: ${report.path}`);
 
+  onStage?.("reading");
   const reportSource = await loader();
+
+  onStage?.("drafting");
 
   const { data, error } = await supabase.functions.invoke(
     "generate-form-template",
@@ -75,6 +82,7 @@ export async function generateTemplateFromReport(
     },
   );
 
+  onStage?.("checking");
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
   if (!data?.template?.structure) {

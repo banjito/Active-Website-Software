@@ -185,6 +185,13 @@ export const getTCF = (celsius: number): number => {
 };
 
 /**
+ * TCF the way the built reports read it: the temperature rounded to the
+ * nearest whole °C, then that row of the table (87°F = 30.56°C → 31°C → 1.664).
+ * Custom forms use this so their TCF matches the printed reports.
+ */
+export const getRoundedTCF = (celsius: number): number => getTCF(Math.round(celsius));
+
+/**
  * Apply temperature correction to a value
  */
 export const applyTCF = (value: number, tcf: number): number => {

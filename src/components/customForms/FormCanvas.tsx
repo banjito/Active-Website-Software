@@ -9,6 +9,7 @@
 
 import React from "react";
 import { FormulaRefHover } from "./FormulaRefHover";
+import { AiProgress } from "./AiProgress";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -447,11 +448,13 @@ const SortableSection: React.FC<SortableSectionProps> = ({
   const [prompting, setPrompting] = React.useState(false);
   const [instruction, setInstruction] = React.useState("");
   const [rebuilding, setRebuilding] = React.useState(false);
+  const [rebuildStartedAt, setRebuildStartedAt] = React.useState(0);
   const [rebuildError, setRebuildError] = React.useState<string | null>(null);
 
   const runRegenerate = async () => {
     if (!onRegenerate || rebuilding || !instruction.trim()) return;
     setRebuilding(true);
+    setRebuildStartedAt(Date.now());
     setRebuildError(null);
     try {
       await onRegenerate(instruction);
@@ -641,6 +644,15 @@ const SortableSection: React.FC<SortableSectionProps> = ({
               Cancel
             </button>
           </div>
+          {rebuilding && (
+            <div className="mt-2">
+              <AiProgress
+                steps={[{ id: "drafting", label: "AI is rebuilding this section", expectedSeconds: 25 }]}
+                current="drafting"
+                startedAt={rebuildStartedAt}
+              />
+            </div>
+          )}
           {rebuildError && (
             <p className="mt-1 text-[11px] text-red-700 dark:text-red-300">{rebuildError}</p>
           )}

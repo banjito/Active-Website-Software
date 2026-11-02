@@ -187,7 +187,7 @@ function removeRowIndexes(section: SectionConfig, remove: Set<number>): SectionC
 
 /** The config without library-only keys, ready to drop into a form. */
 export function stripLibraryMeta(config: Partial<SectionConfig>): Partial<SectionConfig> {
-  const { variants: _v, libraryCategory: _c, appliedVariant: _a, ...rest } = config as Partial<LibraryConfig>;
+  const { variants: _v, libraryCategory: _c, appliedVariant: _a, equipmentTypes: _e, ...rest } = config as Partial<LibraryConfig>;
   return rest as Partial<SectionConfig>;
 }
 
@@ -263,5 +263,6 @@ export function keepLibraryMeta(
   const out = { ...next } as LibraryConfig;
   if (out.variants === undefined && prev.variants) out.variants = prev.variants;
   if (out.libraryCategory === undefined && prev.libraryCategory) out.libraryCategory = prev.libraryCategory;
+  if (out.equipmentTypes === undefined && prev.equipmentTypes) out.equipmentTypes = prev.equipmentTypes;
   return out;
 }

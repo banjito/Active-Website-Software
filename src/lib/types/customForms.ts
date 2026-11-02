@@ -75,6 +75,8 @@ export const FieldType = {
   CALCULATED: 'calculated',
   /** Single cell: Temp °F input, °C/TCF read-only, Humidity input */
   TEMPERATURE_HUMIDITY: 'temperature-humidity',
+  /** Temperature in °F with °C beside it, e.g. "87°F (31°C)". Fills the TCF. */
+  TEMPERATURE: 'temperature',
   /** Drawn signature with printed name and date. */
   SIGNATURE: 'signature',
   /** Photos placed in the report where the field sits. */
@@ -131,6 +133,8 @@ export interface FieldConfig {
    * "nameplate.kva" (tables: first row). See lib/customForms/assetFill.ts.
    */
   assetSource?: string;
+  /** Shown right after the value on screen and paper, e.g. "%" → "21%". */
+  valueSuffix?: string;
   /** For TEMPERATURE_HUMIDITY: the labels inside the control. */
   subLabels?: {
     fahrenheit?: string;
@@ -276,7 +280,7 @@ export interface SectionConfig {
   
   // For grouped fields (nameplate data, test equipment)
   fields?: FieldConfig[];
-  layout?: 'single-column' | 'two-column' | 'three-column' | 'four-column' | 'five-column' | 'grid';
+  layout?: 'single-column' | 'two-column' | 'three-column' | 'four-column' | 'five-column' | 'six-column' | 'grid';
   
   // For visual inspection checklists
   checklistItems?: {
@@ -349,6 +353,11 @@ export interface SectionConfig {
   variants?: import('@/lib/customForms/componentVariants').ComponentVariant[];
   /** Component-list category for a custom component. */
   libraryCategory?: string;
+  /**
+   * Equipment types this library component is for ("*" = Global, every
+   * report). See lib/customForms/equipmentTypes.ts.
+   */
+  equipmentTypes?: string[];
   /** On a form section: the variant it was made from. */
   appliedVariant?: string;
 
@@ -385,6 +394,8 @@ export interface CustomFormTemplate {
 }
 
 export interface CustomFormSettings {
+  /** The equipment this template tests; the builder offers its components first. */
+  equipmentType?: string;
   includePassFail: boolean;
   includeJobInfo: boolean;
   includePrintHeader: boolean;

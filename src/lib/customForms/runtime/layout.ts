@@ -19,13 +19,13 @@ export function contactResistanceRowLabels(section: SectionConfig): string[] {
 }
 
 /**
- * How many grid columns a grouped-field section packs into. Job info is always
- * five wide regardless of the stored layout, which is how every renderer has
- * always treated it.
+ * How many grid columns a grouped-field section packs into. Job Details
+ * follows its layout like any other section (five wide when it has none).
  */
 export function groupedFieldColumnCount(section: SectionConfig): number {
-  if (section.componentType === "job-info") return 5;
   switch (section.layout) {
+    case "six-column":
+      return 6;
     case "five-column":
       return 5;
     case "four-column":
@@ -35,7 +35,8 @@ export function groupedFieldColumnCount(section: SectionConfig): number {
     case "two-column":
       return 2;
     default:
-      return 1;
+      // Job Details was always five wide before it had a choice.
+      return section.componentType === "job-info" ? 5 : 1;
   }
 }
 

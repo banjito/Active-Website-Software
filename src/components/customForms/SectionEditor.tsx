@@ -25,6 +25,7 @@ import { ResultRuleEditor, DEFAULT_RESULT_RULE } from "./ResultRuleEditor";
 import { EquipmentPickerSettings } from "./EquipmentPickerSettings";
 import { AssetSourceSelect } from "./AssetSourceSelect";
 import { ChartSettings } from "./ChartSettings";
+import { hasCombinedTemperatureField, splitTemperatureHumidity } from "@/lib/customForms/temperatureFields";
 import {
   combineAsFoundAsLeft,
   pairForColumn,
@@ -244,8 +245,9 @@ interface SectionEditorProps {
 
 /** Number of grid columns a grouped-field component renders with (mirrors the filler). */
 function layoutColumnCount(section: SectionConfig): number {
-  if (section.componentType === ComponentType.JOB_INFO) return 5;
   switch (section.layout) {
+    case "six-column":
+      return 6;
     case "five-column":
       return 5;
     case "four-column":
@@ -255,7 +257,7 @@ function layoutColumnCount(section: SectionConfig): number {
     case "two-column":
       return 2;
     default:
-      return 1;
+      return section.componentType === ComponentType.JOB_INFO ? 5 : 1;
   }
 }
 
@@ -1420,18 +1422,14 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
             </h3>
 
             <div className="space-y-3">
-              {/* Layout — Job Details is fixed 5 wide × 2 down; others can choose */}
+              {/* Layout — how many columns the fields pack into */}
               <div>
                 <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                   Layout
                 </label>
-                {section.componentType === ComponentType.JOB_INFO ? (
-                  <div className="px-3 py-2 rounded-none bg-neutral-100 dark:bg-dark-200 text-neutral-700 dark:text-neutral-300 text-sm border border-neutral-200 dark:border-neutral-600">
-                    5 columns, 2 rows (fixed for Job Details)
-                  </div>
-                ) : (
+                {(
                   <select
-                    value={section.layout || "single-column"}
+                    value={section.layout || (section.componentType === ComponentType.JOB_INFO ? "five-column" : "single-column")}
                     onChange={(e) =>
                       onUpdate({ layout: e.target.value as any })
                     }
@@ -1442,10 +1440,26 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     <option value="three-column">Three Columns</option>
                     <option value="four-column">Four Columns</option>
                     <option value="five-column">Five Columns</option>
+                    <option value="six-column">Six Columns</option>
                     <option value="grid">Grid</option>
                   </select>
                 )}
               </div>
+
+              {hasCombinedTemperatureField(section.fields) && (
+                <div className="flex flex-wrap items-center gap-2 px-3 py-2 text-xs border border-brand/40 bg-brand/5">
+                  <span className="text-neutral-700 dark:text-neutral-200">
+                    Temperature and humidity share one box. Split them into Temp ("87°F (31°C)") and Humidity ("21%")?
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onUpdate({ fields: splitTemperatureHumidity(section.fields!) })}
+                    className="ml-auto h-7 px-2 text-xs text-white bg-brand hover:bg-brand-dark rounded-none"
+                  >
+                    Use separate fields
+                  </button>
+                </div>
+              )}
 
               {/* Field List */}
               <div>
@@ -2280,6 +2294,7 @@ const FieldEditor: React.FC<{
           <option value={FieldType.RADIO}>Radio buttons</option>
           <option value={FieldType.TEXTAREA}>Text Area</option>
           <option value={FieldType.CHECKBOX}>Checkbox</option>
+          <option value={FieldType.TEMPERATURE}>Temperature (°F with °C)</option>
           <option value={FieldType.SIGNATURE}>Signature</option>
           <option value={FieldType.PHOTO}>Photos</option>
         </select>

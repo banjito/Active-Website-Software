@@ -55,6 +55,15 @@ import {
 import { hasRegisteredConversion } from "@/lib/customForms/conversions";
 import type { ExcelImportDraft } from "@/lib/customForms/excel/types";
 import GenerateFromFileDialog from "@/components/customForms/GenerateFromFileDialog";
+import { AiProgress, type AiProgressStep } from "@/components/customForms/AiProgress";
+
+/** What "Generate with AI" goes through, with rough timings for the bar. */
+const GENERATE_STEPS: AiProgressStep[] = [
+  { id: "reading", label: "Reading the report's source", expectedSeconds: 2 },
+  { id: "drafting", label: "AI is drafting the template", expectedSeconds: 45 },
+  { id: "checking", label: "Checking the draft", expectedSeconds: 2 },
+  { id: "saving", label: "Saving the draft template", expectedSeconds: 2 },
+];
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -94,6 +103,9 @@ export const CustomFormTemplates: React.FC = () => {
   const [showAiModal, setShowAiModal] = useState(false);
   const [reportSearch, setReportSearch] = useState("");
   const [generatingReport, setGeneratingReport] = useState<string | null>(null);
+  // Progress of the run in flight: which step, and when it started.
+  const [generateStage, setGenerateStage] = useState<string>("reading");
+  const [generateStartedAt, setGenerateStartedAt] = useState(0);
   const [showExcelModal, setShowExcelModal] = useState(false);
   const reports = React.useMemo(() => listReports(), []);
   const filteredReports = reports.filter((r) =>
@@ -107,11 +119,14 @@ export const CustomFormTemplates: React.FC = () => {
   const handleGenerateFromReport = async (report: ReportOption) => {
     if (generatingReport) return;
     setGeneratingReport(report.path);
+    setGenerateStage("reading");
+    setGenerateStartedAt(Date.now());
     const toastId = toast.loading(
       `Generating template from ${report.fileName}…`,
     );
     try {
-      const template = await generateTemplateFromReport(report);
+      const template = await generateTemplateFromReport(report, setGenerateStage);
+      setGenerateStage("saving");
 
       const { data, error } = await supabase
         .schema("neta_ops")
@@ -586,7 +601,17 @@ export const CustomFormTemplates: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-6 pb-3">
+            {generatingReport && (
+              <div className="px-6 pt-5 pb-4 border-b border-neutral-200 dark:border-neutral-700">
+                <AiProgress
+                  steps={GENERATE_STEPS}
+                  current={generateStage}
+                  startedAt={generateStartedAt}
+                  detail={reports.find((r) => r.path === generatingReport)?.fileName}
+                />
+              </div>
+            )}
+            <div className={`p-6 pb-3 ${generatingReport ? "hidden" : ""}`}>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 w-5 h-5" />
                 <Input
@@ -600,7 +625,7 @@ export const CustomFormTemplates: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 pb-6">
+            <div className={`flex-1 overflow-y-auto px-6 pb-6 ${generatingReport ? "hidden" : ""}`}>
               {filteredReports.length === 0 ? (
                 <p className="text-center text-neutral-500 dark:text-neutral-400 py-8">
                   No reports match your search.

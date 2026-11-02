@@ -11,6 +11,12 @@ import { calibrationState, equipmentWarnings, reportTestDate, effectiveDueDate, 
 import { applyAssetSources } from "@/lib/customForms/assetFill";
 import { chartData } from "@/lib/customForms/chart";
 import { copyPreviousReadings } from "@/lib/customForms/copyPrevious";
+import { buildTrend, trendChange, trendCsv, trendDate } from "@/lib/customForms/assetTrends";
+import { groupedFieldColumnCount } from "@/lib/customForms/runtime/layout";
+import { applyFieldChange } from "@/lib/customForms/runtime/fieldChange";
+import { splitTemperatureHumidity } from "@/lib/customForms/temperatureFields";
+import { equipmentTypesLabel, equipmentTypesOf, fitsEquipmentType, retagEquipmentType } from "@/lib/customForms/equipmentTypes";
+import { stripLibraryMeta } from "@/lib/customForms/componentVariants";
 import { combineAsFoundAsLeft, copyAsFoundToAsLeft, pairedHeaderRows, splitAsFoundAsLeft } from "@/lib/customForms/asFoundAsLeft";
 import {
   convertUnits,
@@ -591,6 +597,83 @@ check("copying the last report fills empty readings, never this visit's details"
   assert.equal(formData.jd, undefined, "job details are not copied");
   assert.equal(formData.sig, undefined, "signatures are not copied");
   assert.equal(copied, 1);
+});
+check("an asset trend charts one reading across reports, in one unit", () => {
+  const structure = { sections: [
+    { id: "jd", componentType: "job-info", title: "Job", order: 0, showInPrint: true, fields: [{ id: "date", label: "Date", type: "date" }] },
+    { id: "ir", componentType: "custom-table", title: "IR", order: 1, showInPrint: true, referenceCode: "IR", rows: 2,
+      columns: [
+        { id: "pts", label: "Test points", field: { id: "pts", label: "Points", type: "text", cellBehavior: "static" } },
+        { id: "ag", label: "A-G", field: { id: "ag", label: "A-G", type: "number" } },
+        { id: "unit", label: "Units", field: { id: "unit", label: "Units", type: "select", defaultValue: "MΩ" } },
+      ],
+      staticCells: { row0_pts: "Pole to Pole", row1_pts: "Pole to Frame" } },
+  ] } as any;
+  const report = (id: string, date: string, ag: string, unit?: string) => ({
+    instanceId: id, templateId: "t", jobId: "j", structure, date, dateFromForm: true,
+    data: { jd: { date }, ir_row0: { ag, ...(unit ? { unit } : {}) } },
+  });
+  const reports = [report("b", "2025-06-01", "1.5", "GΩ"), report("a", "2024-06-01", "2000")];
+  const { series, points } = buildTrend({ reports, sectionId: "ir", columnIds: ["ag"], rows: [0], unit: "MΩ" });
+  assert.equal(series[0].label, "A-G · Pole to Pole");
+  // Oldest first; 1.5 GΩ shows as 1500 MΩ beside last year's 2000 MΩ.
+  assert.deepEqual(points.map((p) => [p.date, p[series[0].key]]), [["2024-06-01", 2000], ["2025-06-01", 1500]]);
+  assert.equal(Math.round(trendChange(points, series[0].key)!), -25);
+  assert.equal(trendCsv(series, points).split(String.fromCharCode(10))[0], "Test date,A-G · Pole to Pole");
+  assert.deepEqual(trendDate(structure, { jd: {} }, "2023-01-05T10:00:00Z"), { date: "2023-01-05", fromForm: false });
+});
+check("typed calculations convert {X in UNIT} when the unit is fixed, and say why when it isn't", () => {
+  const typedSections = [{
+    id: "ht", componentType: "custom-table", title: "Hipot", order: 0, showInPrint: true, referenceCode: "HT",
+    columns: [
+      { id: "kv", label: "Test kV", field: { id: "kv", label: "kV", type: "number", unit: "kV" } },
+      { id: "r", label: "Reading", field: { id: "r", label: "Reading", type: "number" } },
+    ],
+  }] as any;
+  const ctx = { sections: typedSections, rowIdsBySection: new Map([["ht", ["row-a"]]]), currentRowIndex: 0 };
+  const fixed = unwrap(translateV1Expression("{HT.C1 in V} * 2", ctx));
+  assert.match(fixed.source, /^convert\(\{cell\/ht\/row-a\/kv\}, "kV", "V"\) \* 2$/);
+  errorCode(translateV1Expression("{HT.C2 in MΩ}", ctx), "v1.reference");
+  // A pass/fail rule also runs in a typed template: blank stays blank there too.
+  const rule = unwrap(translateV1Expression(compileResultRule({ reading: "{HT.C2}", test: "atLeast", limit: "100" } as ResultRule), ctx));
+  const id = [...rule.references.keys()][0];
+  assert.equal(unwrap(evaluate(rule.source, { [id]: 150 }, { [id]: "number" })), "PASS");
+  assert.equal(unwrap(evaluate(rule.source, { [id]: 40 }, { [id]: "number" })), "FAIL");
+  assert.equal(unwrap(evaluate(rule.source, {}, { [id]: "number" })), null);
+});
+check("Job Details can be six wide, and Temp / Humidity split into their own fields", () => {
+  const jd = (layout?: string) => ({ id: "jd", componentType: "job-info", title: "Job", order: 0, showInPrint: true, layout, fields: [] }) as any;
+  assert.equal(groupedFieldColumnCount(jd("six-column")), 6);
+  assert.equal(groupedFieldColumnCount(jd()), 5, "an older Job Details with no layout stays five wide");
+  const split = splitTemperatureHumidity([
+    { id: "customer", label: "Customer", type: "text" },
+    { id: "temperatureHumidity", label: "Temp", type: "temperature-humidity", defaultTemperature: 70, defaultHumidity: 40 },
+    { id: "tcf", label: "TCF", type: "number" },
+  ] as any);
+  assert.deepEqual(split.map((f) => [f.id, f.type]), [["customer", "text"], ["temperature", "temperature"], ["humidity", "number"], ["tcf", "number"]]);
+  assert.equal(split[1].defaultValue, 70);
+  assert.equal(split[2].valueSuffix, "%");
+});
+check("the built reports' TCF (rounded °C) is available as a lookup", () => {
+  const jdSections = [{ id: "jd", componentType: "job-info", title: "Job", order: 0, showInPrint: true, referenceCode: "JD", fields: [] }] as any;
+  const data = applyFieldChange({}, "jd", "temperature", "87");
+  // Custom forms now read the TCF as the built reports do: 30.56 °C rounds to 31 °C.
+  assert.equal(data.jd.tcf, "1.664");
+  assert.equal(evaluateFormula('lookup("neta.tcf", round({JD.temperatureCelsius}))', data, "jd", 0, jdSections), "1.664");
+  assert.equal(evaluateFormula('lookup("neta.tcf_liquid_filled", round({JD.temperatureCelsius}))', data, "jd", 0, jdSections), "2.146");
+});
+check("components can belong to equipment types, or be Global", () => {
+  const nameplate = { componentType: "custom-table", equipmentTypes: ["Medium Voltage Switch"] } as any;
+  assert.equal(fitsEquipmentType(nameplate, "Medium Voltage Switch"), true);
+  assert.equal(fitsEquipmentType(nameplate, "Transformer"), false);
+  // Comments and Test Equipment are Global by default: on every report.
+  assert.equal(fitsEquipmentType({ componentType: "comments" } as any, "Transformer"), true);
+  assert.deepEqual(equipmentTypesOf({ componentType: "test-equipment" } as any), ["*"]);
+  assert.equal(equipmentTypesLabel([]), "Unassigned");
+  assert.deepEqual(retagEquipmentType(["A", "B"], "A", "C"), ["C", "B"]);
+  assert.deepEqual(retagEquipmentType(["A", "B"], "A", null), ["B"]);
+  // The tag is library-only: a form section never carries it.
+  assert.equal((stripLibraryMeta(nameplate) as any).equipmentTypes, undefined);
 });
 check("the report status is the worst result", () => {
   assert.equal(worstResult(["PASS", "PASS"]), "PASS");

@@ -55,7 +55,7 @@ import {
   type RowInstanceV2,
 } from "@/lib/customForms/instanceState";
 import { validateInstanceStructure } from "@/lib/customForms/compile";
-import { fahrenheitToCelsius, getTCF } from "@/lib/utils/temperatureCorrection";
+import { fahrenheitToCelsius, getRoundedTCF } from "@/lib/utils/temperatureCorrection";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import {
   defaultSettingValue,
@@ -201,7 +201,7 @@ export const CustomFormFiller: React.FC = () => {
       const celsius = fahrenheitToCelsius(fahrenheit);
       initial.temperature = String(fahrenheit);
       initial.temperatureCelsius = celsius.toFixed(2);
-      initial.tcf = getTCF(celsius).toFixed(3);
+      initial.tcf = getRoundedTCF(celsius).toFixed(3);
       if (humidity != null) initial.humidity = String(humidity);
     };
 

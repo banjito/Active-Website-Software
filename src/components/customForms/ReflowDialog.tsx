@@ -53,7 +53,7 @@ import {
 import { ARRANGE_KINDS, KIND_HINTS, KIND_ICONS, minimumFor } from "./FormCanvas";
 import { sortedSections } from "@/lib/customForms/runtime";
 import { ComponentInsertPoint } from "./ComponentInsertPoint";
-import { iconMap } from "./ComponentLibrarySidebar";
+import { iconMap } from "./componentIcons";
 
 const DRAG_TYPE = "application/x-reflow-unit";
 
@@ -66,6 +66,8 @@ interface ReflowDialogProps {
   structure: CustomFormStructure;
   savedComponents: SavedComponent[];
   builtinOverrides: Record<string, Partial<SectionConfig>>;
+  /** The template's equipment type: its components (and Global ones) come first. */
+  equipmentType?: string;
   /** A new section for a built-in (optionally a variant of it), not yet placed. */
   makeBuiltinSection: (type: ComponentType, variantId?: string) => SectionConfig | null;
   /** A new section from a saved component (optionally a variant of it), not yet placed. */
@@ -79,6 +81,7 @@ export const ReflowDialog: React.FC<ReflowDialogProps> = ({
   structure,
   savedComponents,
   builtinOverrides,
+  equipmentType,
   makeBuiltinSection,
   makeSavedSection,
   onApply,
@@ -169,6 +172,7 @@ export const ReflowDialog: React.FC<ReflowDialogProps> = ({
       label={label}
       savedComponents={savedComponents}
       builtinOverrides={builtinOverrides}
+      equipmentType={equipmentType}
       onAddBuiltin={(type, variantId) => insertAt(index, makeBuiltinSection(type, variantId))}
       onAddSaved={(saved, variant) => insertAt(index, makeSavedSection(saved, variant))}
     />

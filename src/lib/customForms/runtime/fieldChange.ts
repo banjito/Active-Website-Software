@@ -3,12 +3,13 @@
  */
 
 import type { CustomFormTemplate } from "@/lib/types/customForms";
-import { fahrenheitToCelsius, getTCF } from "@/lib/utils/temperatureCorrection";
+import { fahrenheitToCelsius, getRoundedTCF } from "@/lib/utils/temperatureCorrection";
 import type { FormData } from "./rowMutations";
 
 /**
  * Write one field. Typing a temperature also recomputes the Celsius reading
  * and the temperature correction factor, which formulas address as {JD.TCF}.
+ * The TCF reads the table at the nearest whole °C, as the built reports do.
  */
 export function applyFieldChange(
   formData: FormData,
@@ -25,7 +26,7 @@ export function applyFieldChange(
     } else if (!isNaN(parseFloat(value))) {
       const celsius = fahrenheitToCelsius(parseFloat(value));
       section.temperatureCelsius = celsius.toFixed(2);
-      section.tcf = getTCF(celsius).toFixed(3);
+      section.tcf = getRoundedTCF(celsius).toFixed(3);
     }
   }
 
@@ -76,7 +77,7 @@ export function seedTemperatureDefaults(
       ...existing,
       temperature: String(fahrenheit),
       temperatureCelsius: celsius.toFixed(2),
-      tcf: getTCF(celsius).toFixed(3),
+      tcf: getRoundedTCF(celsius).toFixed(3),
       humidity:
         existing.humidity !== undefined && existing.humidity !== ""
           ? existing.humidity

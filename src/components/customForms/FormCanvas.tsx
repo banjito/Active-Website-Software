@@ -8,6 +8,7 @@
  */
 
 import React from "react";
+import { FormulaRefHover } from "./FormulaRefHover";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -211,6 +212,8 @@ const SectionPreview: React.FC<SectionPreviewProps> = ({
 
   const chrome: SectionChrome = {
     mode: "edit",
+    // Charts find their table among the form's sections.
+    formSections: () => allSections,
     density: "compact",
     renderControl: isFormulaEditing ? renderFormulaCell : placeholder,
     getSettingValue,
@@ -665,7 +668,7 @@ const SortableSection: React.FC<SortableSectionProps> = ({
 // Layout: groups, the arrange bar, page break markers
 // ---------------------------------------------------------------------------
 
-const KIND_ICONS: Record<LayoutGroupKind, LucideIcon> = {
+export const KIND_ICONS: Record<LayoutGroupKind, LucideIcon> = {
   "side-by-side": Columns2,
   grid: LayoutGrid,
   strip: RectangleHorizontal,
@@ -673,7 +676,7 @@ const KIND_ICONS: Record<LayoutGroupKind, LucideIcon> = {
   "keep-together": Rows2,
 };
 
-const KIND_HINTS: Record<LayoutGroupKind, string> = {
+export const KIND_HINTS: Record<LayoutGroupKind, string> = {
   "side-by-side": "Next to each other in one row",
   grid: "In rows of a set number of columns",
   strip: "Inside one bordered box",
@@ -681,7 +684,7 @@ const KIND_HINTS: Record<LayoutGroupKind, string> = {
   "keep-together": "Never split across two printed pages",
 };
 
-const ARRANGE_KINDS: LayoutGroupKind[] = [
+export const ARRANGE_KINDS: LayoutGroupKind[] = [
   "side-by-side",
   "grid",
   "strip",
@@ -690,26 +693,28 @@ const ARRANGE_KINDS: LayoutGroupKind[] = [
 ];
 
 /** Side by side and grid need at least two sections to mean anything. */
-const minimumFor = (kind: LayoutGroupKind) =>
+export const minimumFor = (kind: LayoutGroupKind) =>
   kind === "side-by-side" || kind === "grid" ? 2 : 1;
 
 const smallSelect =
   "h-7 px-1.5 text-xs border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand";
 
-const PageBreakMarker: React.FC<{ onRemove: () => void }> = ({ onRemove }) => (
+const PageBreakMarker: React.FC<{ onRemove?: () => void }> = ({ onRemove }) => (
   <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
     <div className="flex-1 border-t-2 border-dashed border-neutral-300 dark:border-neutral-600" />
     <Scissors className="w-3 h-3" />
     New printed page
-    <button
-      type="button"
-      onClick={onRemove}
-      className="p-0.5 rounded-none text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
-      title="Remove page break"
-      aria-label="Remove page break"
-    >
-      <X className="w-3 h-3" />
-    </button>
+    {onRemove && (
+      <button
+        type="button"
+        onClick={onRemove}
+        className="p-0.5 rounded-none text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
+        title="Remove page break"
+        aria-label="Remove page break"
+      >
+        <X className="w-3 h-3" />
+      </button>
+    )}
     <div className="flex-1 border-t-2 border-dashed border-neutral-300 dark:border-neutral-600" />
   </div>
 );
@@ -718,7 +723,8 @@ interface CanvasGroupProps {
   unit: Extract<LayoutUnit, { type: "group" }>;
   pageBreakBefore: boolean;
   onUpdate: (patch: Partial<Omit<LayoutGroupConfig, "id" | "sectionIds">>) => void;
-  onUngroup: () => void;
+  /** Absent when grouping is done in the Re-flow dialog. */
+  onUngroup?: () => void;
   /** Absent for the first block, which already starts a page. */
   onTogglePageBreak?: () => void;
   renderMember: (section: SectionConfig, index: number, count: number) => React.ReactNode;
@@ -856,6 +862,7 @@ const CanvasGroup: React.FC<CanvasGroupProps> = ({
               <Scissors className="w-4 h-4" />
             </button>
           )}
+          {onUngroup && (
           <button
             type="button"
             onClick={onUngroup}
@@ -865,6 +872,7 @@ const CanvasGroup: React.FC<CanvasGroupProps> = ({
             <Ungroup className="w-3.5 h-3.5" />
             Ungroup
           </button>
+          )}
         </div>
       </div>
 
@@ -932,6 +940,12 @@ interface FormCanvasProps {
   onRequestEditFormulas?: (sectionId: string) => void;
   /** Render an "add component here" control; `index` is where in the section order it inserts. */
   renderInsertPoint?: (index: number) => React.ReactNode;
+  /**
+   * Allow arranging on the canvas: dragging to reorder, ticking sections to
+   * group, page breaks, moving within / out of groups. Off when all of that
+   * happens in the Re-flow dialog.
+   */
+  reorderable?: boolean;
 }
 
 export const FormCanvas: React.FC<FormCanvasProps> = ({
@@ -947,6 +961,7 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
   onCellFormulaChange,
   onRequestEditFormulas,
   renderInsertPoint,
+  reorderable = true,
 }) => {
   const { setNodeRef } = useDroppable({ id: "form-canvas" });
   const ordered = [...sections].sort((a, b) => a.order - b.order);
@@ -1002,11 +1017,11 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
       onCellFormulaChange={onCellFormulaChange}
       onRequestEditFormulas={onRequestEditFormulas}
       arrangeSelected={picked.includes(section.id)}
-      onToggleArrange={ordered.length > 1 ? () => toggleArrange(section.id) : undefined}
-      dragDisabled={options.inGroup}
+      onToggleArrange={reorderable && ordered.length > 1 ? () => toggleArrange(section.id) : undefined}
+      dragDisabled={options.inGroup || !reorderable}
       pageBreakBefore={breaks.has(section.id)}
       onTogglePageBreak={
-        options.inGroup || section.id === units[0]?.id
+        !reorderable || options.inGroup || section.id === units[0]?.id
           ? undefined
           : () => onStructureChange((current) => togglePageBreakBefore(current, section.id))
       }
@@ -1019,6 +1034,13 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
     index: number,
     count: number,
   ) => {
+    if (!reorderable) {
+      return (
+        <div key={section.id} className="min-w-0">
+          {renderSection(section, { inGroup: true })}
+        </div>
+      );
+    }
     const across = group.kind === "side-by-side" || group.kind === "grid";
     const Earlier = across ? ChevronLeft : ChevronUp;
     const Later = across ? ChevronRight : ChevronDown;
@@ -1070,7 +1092,9 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
 
   return (
     <div ref={setNodeRef} className={`w-full mx-auto ${picked.length > 0 ? "pb-44 md:pb-24" : ""}`}>
-      {ordered.length > 1 && (
+      {/* Rest on a cell or field for a second to see its formula reference. */}
+      <FormulaRefHover sections={ordered}>
+      {reorderable && ordered.length > 1 && (
         <p className="mb-3 text-xs text-neutral-500 dark:text-neutral-400">
           Tick two or more sections to put them side by side, in a grid, or in a box.
         </p>
@@ -1091,8 +1115,10 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
               )}
               {breaks.has(unit.id) && (
                 <PageBreakMarker
-                  onRemove={() =>
-                    onStructureChange((current) => togglePageBreakBefore(current, unit.id))
+                  onRemove={
+                    reorderable
+                      ? () => onStructureChange((current) => togglePageBreakBefore(current, unit.id))
+                      : undefined
                   }
                 />
               )}
@@ -1105,11 +1131,13 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
                   onUpdate={(patch) =>
                     onStructureChange((current) => updateGroup(current, unit.id, patch))
                   }
-                  onUngroup={() =>
-                    onStructureChange((current) => ungroup(current, unit.id))
+                  onUngroup={
+                    reorderable
+                      ? () => onStructureChange((current) => ungroup(current, unit.id))
+                      : undefined
                   }
                   onTogglePageBreak={
-                    unit.id === units[0]?.id
+                    !reorderable || unit.id === units[0]?.id
                       ? undefined
                       : () =>
                           onStructureChange((current) => togglePageBreakBefore(current, unit.id))
@@ -1124,6 +1152,7 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
           {units.length > 0 && renderInsertPoint?.(ordered.length)}
         </div>
       </SortableContext>
+      </FormulaRefHover>
 
       {picked.length > 0 && (
         // Floats at the bottom of the window, so ticking a box never shifts the

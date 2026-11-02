@@ -29,6 +29,7 @@ const KIND_LABELS: Record<VariantPartKind, string> = {
   row: "Rows",
   field: "Fields",
   item: "Checklist items",
+  line: "Value Deviation lines",
 };
 
 const tabCls = (active: boolean) =>
@@ -110,16 +111,7 @@ export const ComponentVariantsPanel: React.FC<{
       </div>
 
       {!active ? (
-        <>
-          {variants.length === 0 && (
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Need a version with fewer parts (e.g. 3-wire without the N columns)?
-              Click <span className="font-medium text-brand">Add variant</span>{" "}
-              instead of making a separate component.
-            </p>
-          )}
-          {children}
-        </>
+        <>{children}</>
       ) : (
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">

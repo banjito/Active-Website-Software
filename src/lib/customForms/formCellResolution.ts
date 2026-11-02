@@ -4,6 +4,8 @@
  */
 
 import { parseExpression } from '@/lib/customForms/expressions/parser';
+import { getLookupResources } from '@/lib/customForms/lookupRegistry';
+import { convertReading, resolveSourceUnit, splitUnitRef } from '@/lib/customForms/unitResolution';
 import { evaluateNode, inferNode } from '@/lib/customForms/expressions/semantics';
 import type { ExpressionValue } from '@/lib/customForms/expressions/types';
 import type { FieldConfig, SectionConfig } from '@/lib/types/customForms';
@@ -240,6 +242,24 @@ function substituteRefs(
   return substituteRefsTracked(formula, formData, currentSectionId, currentRowIndex, sections).text;
 }
 
+/** The unit a referenced value was entered in (see unitResolution.ts). */
+function refSourceUnit(
+  formData: Record<string, Record<string, any>>,
+  sections: SectionConfig[],
+  resolved: { sectionId: string; fieldId: string; rowIndex?: number },
+  value: unknown
+): string | undefined {
+  const section = sections.find((s) => s.id === resolved.sectionId);
+  const rowKey = resolved.rowIndex != null ? `${resolved.sectionId}_row${resolved.rowIndex}` : resolved.sectionId;
+  return resolveSourceUnit({
+    section,
+    fieldId: resolved.fieldId,
+    value,
+    rowData: formData?.[rowKey],
+    sectionData: formData?.[resolved.sectionId],
+  });
+}
+
 interface SubstitutedRef {
   /** A table cell (a reading), as opposed to a single field such as the TCF. */
   isCell: boolean;
@@ -254,15 +274,34 @@ function substituteRefsTracked(
   sections: SectionConfig[] = []
 ): { text: string; refs: SubstitutedRef[] } {
   const refs: SubstitutedRef[] = [];
+  const usesLookup = /\blookup\s*\(/i.test(formula);
+  // A formula that tests for blanks (isnull) gets null for an empty reading,
+  // so it can tell "not measured" from zero. Others keep counting blanks as 0.
+  const blankAware = /\bisnull\s*\(/i.test(formula);
   const re = /\{([^}]+)\}/g;
-  const text = formula.replace(re, (_, path) => {
-    const parts = path.trim().split('.').filter(Boolean);
+  const text = formula.replace(re, (_, rawPath) => {
+    // {IR.C3 in MΩ}: the reading converted into MΩ from the unit it was entered in.
+    const { path, unit } = splitUnitRef(rawPath);
+    const parts = path.split('.').filter(Boolean);
     const resolved = resolveRef(parts, sections, currentRowIndex);
     if (resolved) {
       const val = getValueAt(formData, resolved.sectionId, resolved.fieldId, resolved.rowIndex);
-      const num = parseNumericValue(val);
-      refs.push({ isCell: resolved.rowIndex != null, blank: !isFinite(num) });
-      return isFinite(num) ? String(num) : '0';
+      let num = parseNumericValue(val);
+      if (unit && isFinite(num)) {
+        const converted = convertReading(num, refSourceUnit(formData, sections, resolved, val), unit);
+        num = converted == null ? NaN : converted;
+      }
+      const text = val != null ? String(val).trim() : '';
+      refs.push({
+        isCell: resolved.rowIndex != null,
+        // A text key for a lookup is an entry, not a blank.
+        blank: !isFinite(num) && !(usesLookup && text !== ''),
+      });
+      if (isFinite(num)) return String(num);
+      // Formulas with a lookup may key on text (a voltage class like "600V").
+      // Only those get text: elsewhere a word still counts as 0, as it always has.
+      if (usesLookup && text !== '') return JSON.stringify(text);
+      return blankAware ? 'null' : '0';
     }
     refs.push({ isCell: false, blank: true });
     return '0';
@@ -305,8 +344,10 @@ function safeEvalExpression(expr: string): ExpressionValue | null {
   try {
     // Every reference is already a literal, so there is nothing to type but
     // the literals themselves. A type error still means "no answer".
-    inferNode(parsed.value, () => "number");
-    return evaluateNode(parsed.value, () => null);
+    // Shared lookup tables and the TCF curve are available to every formula.
+    const resources = getLookupResources();
+    inferNode(parsed.value, () => "number", resources);
+    return evaluateNode(parsed.value, () => null, resources);
   } catch {
     return null;
   }
@@ -325,7 +366,7 @@ function detectRefPrefix(
   const re = /\{([^}]+)\}/g;
   let m;
   while ((m = re.exec(formula)) !== null) {
-    const parts = m[1].trim().split('.').filter(Boolean);
+    const parts = splitUnitRef(m[1]).path.split('.').filter(Boolean);
     const resolved = resolveRef(parts, sections, currentRowIndex);
     if (resolved) {
       const val = getValueAt(formData, resolved.sectionId, resolved.fieldId, resolved.rowIndex);
@@ -372,6 +413,8 @@ function isSingleReference(formula: string): boolean {
   const trimmed = formula.trim();
   const refs = trimmed.match(/\{[^}]+\}/g);
   if (!refs || refs.length !== 1) return false;
+  // "{IR.C3 in MΩ}" converts, so it goes through the full evaluation.
+  if (splitUnitRef(refs[0].slice(1, -1)).unit) return false;
   const withoutRef = trimmed.replace(/\{[^}]+\}/g, '').trim();
   return withoutRef === '';
 }

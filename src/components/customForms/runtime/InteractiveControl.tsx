@@ -11,6 +11,38 @@ import React from "react";
 import type { FieldConfig, SectionConfig } from "@/lib/types/customForms";
 import { cellKey, type ControlSlot } from "@/lib/customForms/runtime";
 import { getCellValue } from "@/lib/customForms/formCellResolution";
+import { resultTone, type ResultTone } from "@/lib/customForms/resultRules";
+import { SignatureField } from "./SignatureField";
+import { PhotoField } from "./PhotoField";
+
+/** The builder's own field for a slot (the renderer passes a V2 shim). */
+function v1FieldOf(section: SectionConfig, fieldId: string): FieldConfig | undefined {
+  return (
+    section.fields?.find((f) => f.id === fieldId) ??
+    (section.field?.id === fieldId ? section.field : undefined) ??
+    section.columns?.find((c) => c.field.id === fieldId)?.field
+  );
+}
+
+const TONE_STYLE: Record<ResultTone, React.CSSProperties> = {
+  pass: { color: "#15803d", background: "#f0fdf4", borderColor: "#86efac" },
+  fail: { color: "#b91c1c", background: "#fef2f2", borderColor: "#fca5a5" },
+  limited: { color: "#b45309", background: "#fffbeb", borderColor: "#fcd34d" },
+};
+
+/**
+ * A calculated PASS / FAIL / LIMITED SERVICE, shown as a coloured tag on
+ * screen and on paper (print-color-adjust keeps the colours when printing).
+ */
+const ResultBadge: React.FC<{ value: string; tone: ResultTone }> = ({ value, tone }) => (
+  <span
+    className="cf-result inline-block px-1.5 py-0.5 text-xs font-bold border rounded-none whitespace-nowrap"
+    style={{ ...TONE_STYLE[tone], WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" } as React.CSSProperties}
+    data-result={tone}
+  >
+    {value}
+  </span>
+);
 
 export const CONTROL_CLASSES =
   "w-full min-w-0 px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-600 rounded bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand";
@@ -81,14 +113,21 @@ const TemperatureHumidity: React.FC<{
   formData: Record<string, any>;
   onFieldChange: InteractiveControlOptions["onFieldChange"];
   readOnly: boolean;
-}> = ({ stateKey, formData, onFieldChange, readOnly }) => {
+  field?: FieldConfig;
+}> = ({ stateKey, formData, onFieldChange, readOnly, field }) => {
   const data = formData[stateKey] ?? {};
+  const labels = {
+    fahrenheit: field?.subLabels?.fahrenheit || "°F",
+    celsius: field?.subLabels?.celsius || "°C",
+    tcf: field?.subLabels?.tcf || "TCF",
+    humidity: field?.subLabels?.humidity || "Humidity %",
+  };
   const inputClasses =
     "temp-humidity-input w-10 min-w-[2.5rem] max-w-full px-2 py-1 border border-neutral-300 dark:border-neutral-500 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:ring-1 focus:ring-brand focus:border-brand text-xs";
   return (
     <div className="temp-humidity-one-line flex flex-wrap items-center gap-x-2 gap-y-1 text-xs border border-neutral-200 dark:border-neutral-600 rounded px-2 py-1.5 bg-white dark:bg-dark-100 w-full max-w-full min-w-0">
       <span className="shrink-0 font-medium text-neutral-600 dark:text-neutral-400">
-        °F
+        {labels.fahrenheit}
       </span>
       <input
         type="text"
@@ -96,11 +135,11 @@ const TemperatureHumidity: React.FC<{
         value={data.temperature ?? ""}
         readOnly={readOnly}
         onChange={(e) => onFieldChange(stateKey, "temperature", e.target.value)}
-        placeholder="68"
+        placeholder={String(field?.defaultTemperature ?? 68)}
         title="Temperature (°F)"
         className={`temp-humidity-f ${inputClasses}`}
       />
-      <span className="text-neutral-400 dark:text-neutral-500 shrink-0">°C</span>
+      <span className="text-neutral-400 dark:text-neutral-500 shrink-0">{labels.celsius}</span>
       <span
         className="temp-humidity-c min-w-[2.5rem] text-neutral-600 dark:text-neutral-400 shrink-0 tabular-nums"
         title="Calculated"
@@ -108,7 +147,7 @@ const TemperatureHumidity: React.FC<{
         {data.temperatureCelsius ?? ""}
       </span>
       <span className="text-neutral-400 dark:text-neutral-500 shrink-0">
-        TCF
+        {labels.tcf}
       </span>
       <span
         className="temp-humidity-tcf min-w-[2rem] text-neutral-600 dark:text-neutral-400 shrink-0 tabular-nums"
@@ -117,7 +156,7 @@ const TemperatureHumidity: React.FC<{
         {data.tcf ?? ""}
       </span>
       <span className="shrink-0 text-neutral-600 dark:text-neutral-400">
-        Humidity %
+        {labels.humidity}
       </span>
       <input
         type="text"
@@ -125,7 +164,7 @@ const TemperatureHumidity: React.FC<{
         value={data.humidity ?? ""}
         readOnly={readOnly}
         onChange={(e) => onFieldChange(stateKey, "humidity", e.target.value)}
-        placeholder="50"
+        placeholder={String(field?.defaultHumidity ?? 50)}
         title="Humidity (%)"
         className={`temp-humidity-hum ${inputClasses}`}
       />
@@ -152,7 +191,7 @@ function withPrintText(control: React.ReactNode, text: string): React.ReactNode 
   return (
     <>
       <div className="contents print:hidden">{control}</div>
-      <span className="cf-print-text hidden print:block whitespace-pre-wrap break-words">{text}</span>
+      <span className="hidden print:block whitespace-pre-wrap break-words cf-print-text">{text}</span>
     </>
   );
 }
@@ -176,6 +215,18 @@ export function createInteractiveControlRenderer(
       );
     }
 
+    // Photos have no V2 control of their own; recognise them by the builder's field.
+    if (v1FieldOf(slot.section, field.id)?.type === "photo") {
+      const ro = !!options.readOnly || !!slot.readOnly;
+      return (
+        <PhotoField
+          value={options.formData[slot.stateKey]?.[field.id]}
+          readOnly={ro}
+          onChange={(next) => onFieldChange(slot.stateKey, field.id, next)}
+        />
+      );
+    }
+
     // V2-only controls. `field` carries a best-effort V1 shape for chromes
     // that predate V2, but where a real V2 control exists it wins.
     const v2 = renderV2Control(slot, options, onFieldChange);
@@ -185,6 +236,13 @@ export function createInteractiveControlRenderer(
     const readOnly = resolved.readOnly || !!options.readOnly || !!slot.readOnly;
     const value = resolved.value;
     const classes = readOnly ? READ_ONLY_CONTROL_CLASSES : CONTROL_CLASSES;
+
+    // Calculated results (pass/fail rules, or any formula giving PASS / FAIL)
+    // show as a coloured tag rather than plain text.
+    if (field.cellBehavior === "calculate" || field.resultRule) {
+      const tone = resultTone(value);
+      if (tone) return <ResultBadge value={String(value)} tone={tone} />;
+    }
     const change = (next: any) => onFieldChange(slot.stateKey, field.id, next);
 
     switch (field.type) {
@@ -282,6 +340,7 @@ export function createInteractiveControlRenderer(
             formData={formData}
             onFieldChange={onFieldChange}
             readOnly={readOnly}
+            field={field}
           />
         );
 
@@ -442,36 +501,24 @@ function renderV2Control(
     }
 
     case "signature": {
-      // Phase 4 owns capture. Until then this records who attested and when,
-      // which is the part the document actually needs to carry.
-      const signedBy = options.formData[slot.stateKey]?.[
-        `${slot.field.id}__signedBy`
-      ] as string | undefined;
-      const signedAt = options.formData[slot.stateKey]?.[
-        `${slot.field.id}__signedAt`
-      ] as string | undefined;
+      // The name is the field's own value; older forms kept it in __signedBy.
+      const row = options.formData[slot.stateKey] ?? {};
+      const id = slot.field.id;
       return (
-        <div className="border border-neutral-200 dark:border-neutral-600 rounded p-2">
-          <input
-            type="text"
-            value={signedBy ?? ""}
-            readOnly={readOnly}
-            placeholder="Name"
-            onChange={(e) =>
-              onFieldChange(
-                slot.stateKey,
-                `${slot.field.id}__signedBy`,
-                e.target.value,
-              )
-            }
-            className={readOnly ? READ_ONLY_CONTROL_CLASSES : CONTROL_CLASSES}
-          />
-          <div className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
-            {signedAt
-              ? `Attested ${new Date(signedAt).toLocaleString()}`
-              : "Not yet attested"}
-          </div>
-        </div>
+        <SignatureField
+          label={slot.field.label}
+          readOnly={readOnly}
+          value={{
+            name: (row[id] ?? row[`${id}__signedBy`] ?? "") as string,
+            image: (row[`${id}__signature`] ?? "") as string,
+            signedAt: (row[`${id}__signedAt`] ?? "") as string,
+          }}
+          onChange={(patch) => {
+            if (patch.name !== undefined) onFieldChange(slot.stateKey, id, patch.name);
+            if (patch.image !== undefined) onFieldChange(slot.stateKey, `${id}__signature`, patch.image);
+            if (patch.signedAt !== undefined) onFieldChange(slot.stateKey, `${id}__signedAt`, patch.signedAt);
+          }}
+        />
       );
     }
 

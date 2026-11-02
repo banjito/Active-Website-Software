@@ -6,6 +6,12 @@ import { EXPRESSION_ENGINE_VERSION, EXPRESSION_LIMITS, type ExpressionValue, typ
 import { expressionReferenceId, translateV1Expression } from "@/lib/customForms/expressions/v1-adapter";
 import { VALID_FIXTURES } from "@/lib/customForms/__fixtures__/v1Templates";
 import { evaluateFormula } from "@/lib/customForms/formCellResolution";
+import { compileResultRule, worstResult, type ResultRule } from "@/lib/customForms/resultRules";
+import { calibrationState, equipmentWarnings, reportTestDate, effectiveDueDate, indexCalibrationRecords, isEquipmentColumn, resolveEquipmentFill, rowDueDate } from "@/lib/customForms/equipment";
+import { applyAssetSources } from "@/lib/customForms/assetFill";
+import { chartData } from "@/lib/customForms/chart";
+import { copyPreviousReadings } from "@/lib/customForms/copyPrevious";
+import { combineAsFoundAsLeft, copyAsFoundToAsLeft, pairedHeaderRows, splitAsFoundAsLeft } from "@/lib/customForms/asFoundAsLeft";
 import {
   convertUnits,
   interpolateCurve,
@@ -389,6 +395,209 @@ check("V1 waits for a reading, then counts a blank as zero", () => {
   const translated = unwrap(translateV1Expression("{JD.tcf} * 2", context));
   assert.equal(unwrap(evaluate(translated.source, {}, { [tcfReference]: "number" })), null);
 });
+check("pass/fail result rules judge readings and leave blanks blank", () => {
+  const judge = (rule: ResultRule, row: Record<string, string>) =>
+    evaluateFormula(compileResultRule(rule), { "sec-ir_row0": row }, "sec-ir", 0, sections);
+  const min = { reading: "{sec-ir.sameRow.a}", test: "atLeast", limit: "100" } as ResultRule;
+  assert.equal(judge(min, { a: "150" }), "PASS");
+  assert.equal(judge(min, { a: "100" }), "PASS", "on the limit passes");
+  assert.equal(judge(min, { a: "40" }), "FAIL");
+  assert.equal(judge(min, {}), "", "no reading is no result");
+  // A limit from another cell that is filled must not turn a blank reading into FAIL.
+  const fromCell = { ...min, limit: "{sec-ir.sameRow.b}" } as ResultRule;
+  assert.equal(judge(fromCell, { b: "100" }), "");
+  assert.equal(judge(fromCell, { a: "99", b: "100" }), "FAIL");
+  const banded = { ...min, limitedLimit: "50" } as ResultRule;
+  assert.equal(judge(banded, { a: "60" }), "LIMITED SERVICE");
+  assert.equal(judge(banded, { a: "20" }), "FAIL");
+  const max = { reading: "{sec-ir.sameRow.a}", test: "atMost", limit: "10" } as ResultRule;
+  assert.equal(judge(max, { a: "12" }), "FAIL");
+  const window = { reading: "{sec-ir.sameRow.a}", test: "between", limit: "5", limitHigh: "10" } as ResultRule;
+  assert.equal(judge(window, { a: "7" }), "PASS");
+  assert.equal(judge(window, { a: "11" }), "FAIL");
+  const pct = { reading: "{sec-ir.sameRow.a}", test: "withinPercent", limit: "200", percent: 5 } as ResultRule;
+  assert.equal(judge(pct, { a: "209" }), "PASS");
+  assert.equal(judge(pct, { a: "211" }), "FAIL");
+  assert.equal(judge({ ...min, passText: "OK", failText: "BAD" } as ResultRule, { a: "1" }), "BAD");
+});
+check("equipment calibration is expired, due soon or fine", () => {
+  const today = new Date(2026, 10, 2);
+  assert.equal(calibrationState("2026-11-01", today).kind, "expired");
+  assert.deepEqual(calibrationState("2026-11-02", today), { kind: "soon", days: 0 });
+  assert.deepEqual(calibrationState("2026-11-20", today), { kind: "soon", days: 18 });
+  assert.equal(calibrationState("2027-06-01", today).kind, "ok");
+  assert.equal(calibrationState("", today).kind, "unknown");
+  assert.equal(calibrationState("2026-10-01T00:00:00+00:00", today).kind, "expired");
+  // "Due soon" is the Test Equipment page's 60 days.
+  assert.equal(calibrationState("2026-12-30", today).kind, "soon");
+  assert.equal(calibrationState("2027-01-02", today).kind, "ok");
+});
+check("calibration is judged on the report's test date, not today", () => {
+  const structure = { sections: [
+    { id: "jd", componentType: "job-info", title: "Job", order: 0, showInPrint: true, fields: [{ id: "date", label: "Date", type: "date" }] },
+  ] } as any;
+  const tested = reportTestDate(structure, { jd: { date: "2026-03-10" } })!;
+  assert.equal(tested.iso, "2026-03-10");
+  // Due 2026-04-01: fine when tested in March (22 days to go), though long past today.
+  assert.equal(calibrationState("2026-04-01", tested.date).kind, "soon");
+  assert.equal(calibrationState("2026-03-01", tested.date).kind, "expired");
+  // No test date on the form: no check at all, never against today.
+  assert.equal(reportTestDate(structure, {}), null);
+  const te = { id: "eq", componentType: "test-equipment", title: "TE", order: 0, showInPrint: true, rows: 1,
+    columns: [{ id: "equipment", label: "Equipment", field: { id: "equipment", label: "Equipment", type: "text" } }] } as any;
+  const expiredRow = { eq_row0: { equipment: "Megger", __calibrationDue_equipment: "2020-01-01" } };
+  assert.equal(equipmentWarnings({ sections: [te] } as any, expiredRow, null).length, 0);
+  assert.equal(equipmentWarnings({ sections: [te] } as any, expiredRow, tested.date).length, 1);
+});
+check("the form follows the equipment's current calibration record", () => {
+  const record = { id: "e1", amp_id: "AMP-7", serial_number: "SN9", calibration_date: "2026-01-31", calibration_due_date: null, calibration_interval_months: 1 };
+  // No due date: calibration date + interval, month-end safe, as on the equipment page.
+  assert.equal(effectiveDueDate(record), "2026-02-28");
+  const section = {
+    id: "eq", componentType: "test-equipment", title: "TE", order: 0, showInPrint: true,
+    columns: [
+      { id: "equipment", label: "Equipment", field: { id: "equipment", label: "Equipment", type: "text" } },
+      { id: "ampId", label: "AMP ID", field: { id: "ampId", label: "AMP ID", type: "text" } },
+    ],
+  } as any;
+  const live = indexCalibrationRecords([{ ...record, calibration_due_date: "2027-05-01" }]);
+  // Saved with the old date, but the equipment has since been recalibrated.
+  const row = { equipment: "Megger", ampId: "amp-7", __calibrationDue_equipment: "2026-01-01" };
+  assert.equal(rowDueDate(section, "equipment", row, live), "2027-05-01", "found by AMP id");
+  assert.equal(rowDueDate(section, "equipment", row), "2026-01-01", "without the table, the saved date");
+});
+check("a picked equipment record fills the row's columns by name", () => {
+  const section = {
+    id: "eq", componentType: "test-equipment", title: "Test Equipment", order: 0, showInPrint: true,
+    columns: [
+      { id: "equipment", label: "Equipment", field: { id: "equipment", label: "Equipment", type: "text" } },
+      { id: "serialNumber", label: "Serial Number", field: { id: "serialNumber", label: "Serial", type: "text" } },
+      { id: "ampId", label: "AMP ID", field: { id: "ampId", label: "AMP ID", type: "text" } },
+      { id: "calibrationDate", label: "Calibration Date", field: { id: "calibrationDate", label: "Cal", type: "date" } },
+      { id: "calibrationDue", label: "Calibration Due", field: { id: "calibrationDue", label: "Due", type: "date" } },
+    ],
+  } as any;
+  assert.ok(isEquipmentColumn(section, "equipment"));
+  assert.ok(!isEquipmentColumn(section, "serialNumber"));
+  assert.deepEqual(resolveEquipmentFill(section, "equipment"), {
+    serialNumber: "serialNumber", ampId: "ampId", calibrationDate: "calibrationDate", calibrationDue: "calibrationDue",
+  });
+});
+check("a reference in a unit converts the reading from the unit it was entered in", () => {
+  const irSections = [{
+    id: "ir", componentType: "custom-table", title: "IR", order: 0, showInPrint: true, referenceCode: "IR",
+    columns: [
+      { id: "reading", label: "Reading", field: { id: "reading", label: "Reading", type: "number" } },
+      { id: "unit", label: "Units", field: { id: "unit", label: "Units", type: "select", defaultValue: "MΩ" } },
+      { id: "kv", label: "Test kV", field: { id: "kv", label: "kV", type: "number", unit: "kV" } },
+      { id: "chosen", label: "Chosen", field: { id: "chosen", label: "Chosen", type: "number" } },
+    ],
+    v2: { columnUnits: { chosen: { options: ["mΩ", "Ω"], default: "mΩ", scope: "column" } } },
+  }] as any;
+  const at = (formula: string, row: Record<string, string>, section: Record<string, string> = {}) =>
+    evaluateFormula(formula, { ir_row0: row, ir: section }, "ir", 0, irSections);
+  // The row's Units column says GΩ: 1.2 GΩ is 1200 MΩ.
+  assert.equal(at("{IR.C1 in MΩ}", { reading: "1.2", unit: "GΩ" }), "1200");
+  // Its default (MΩ) applies until someone picks another unit.
+  assert.equal(at("{IR.C1 in GΩ}", { reading: "500" }), "0.5");
+  // A unit typed with the number wins.
+  assert.equal(at("{IR.C1 in MΩ}", { reading: "2 GΩ", unit: "MΩ" }), "2000");
+  // A column's fixed unit.
+  assert.equal(at("{IR.C3 in V}", { kv: "5" }), "5000");
+  // A column unit chooser, then its default.
+  assert.equal(at("{IR.C4 in Ω}", { chosen: "250" }), "0.25");
+  assert.equal(at("{IR.C4 in mΩ}", { chosen: "2" }, { __units_chosen: "Ω" }), "2000");
+  // Asking for a unit of another kind gives a blank, not a wrong number.
+  assert.equal(at("{IR.C1 in kV}", { reading: "5", unit: "MΩ" }), "");
+  // No unit in the reference: unchanged, as before.
+  assert.equal(at("{IR.C1} * 2", { reading: "1.2", unit: "GΩ" }), "2.4");
+  // A pass/fail rule compared in MΩ: 1.2 GΩ clears a 100 MΩ minimum.
+  const rule = { reading: "{IR.C1}", test: "atLeast", limit: "100", unit: "MΩ" } as ResultRule;
+  assert.equal(at(compileResultRule(rule), { reading: "1.2", unit: "GΩ" }), "PASS");
+  assert.equal(at(compileResultRule(rule), { reading: "0.05", unit: "GΩ" }), "FAIL");
+});
+check("a column splits into As Found / As Left and back", () => {
+  const base = {
+    id: "ds", componentType: "custom-table", title: "Settings", order: 0, showInPrint: true, rows: 2,
+    columns: [
+      { id: "fn", label: "Function", width: "40%", field: { id: "fn", label: "Function", type: "text" } },
+      { id: "set", label: "Setting", width: "60%", field: { id: "set", label: "Setting", type: "text" } },
+    ],
+  } as any;
+  const split = { ...base, ...splitAsFoundAsLeft(base, "set") };
+  assert.deepEqual(split.columns.map((c: any) => c.id), ["fn", "set", "set_left"]);
+  assert.equal(split.columns[1].width, "30.0%");
+  // The original column keeps its id and data key, so readings stay put.
+  assert.equal(split.columns[1].field.id, "set");
+  const header = pairedHeaderRows(split.id, split.columns, split.asFoundAsLeft.pairs)!;
+  assert.deepEqual(header[0].cells.map((c) => [c.label, c.colSpan ?? 1, c.rowSpan ?? 1]), [["Function", 1, 2], ["Setting", 2, 1]]);
+  assert.deepEqual(header[1].cells.map((c) => c.label), ["As Found", "As Left"]);
+  const copied = copyAsFoundToAsLeft(split, { ds_row0: { set: "4" }, ds_row1: { set: "6", set_left: "5" } });
+  assert.equal(copied.formData.ds_row0.set_left, "4");
+  assert.equal(copied.formData.ds_row1.set_left, "5", "a typed As Left is kept");
+  assert.equal(copied.copied, 1);
+  const back = { ...split, ...combineAsFoundAsLeft(split, "set_left") };
+  assert.deepEqual(back.columns.map((c: any) => [c.id, c.label, c.width]), [["fn", "Function", "40%"], ["set", "Setting", "60.0%"]]);
+  assert.equal(back.asFoundAsLeft, undefined);
+});
+check("asset-sourced fields fill from the equipment, empty ones only unless overwriting", () => {
+  const asset = { id: "a", site_id: "s", identifier: "SWGR-1", manufacturer: "Square D", nameplate_data: { kva: "1500" } } as any;
+  const sections = [
+    { id: "np", componentType: "custom-table", title: "Nameplate", order: 0, showInPrint: true,
+      fields: [
+        { id: "mfr", label: "Maker", type: "text", assetSource: "manufacturer" },
+        { id: "size", label: "Size", type: "text", assetSource: "nameplate.kva" },
+        { id: "other", label: "Other", type: "text" },
+      ] },
+    { id: "tb", componentType: "custom-table", title: "Table", order: 1, showInPrint: true,
+      columns: [{ id: "eq", label: "Equipment", field: { id: "eq", label: "Equipment", type: "text", assetSource: "identifier" } }] },
+  ] as any;
+  const { form, filled } = applyAssetSources(sections, asset, { np: { mfr: "GE" } });
+  assert.equal(form.np.mfr, "GE", "a typed value is kept");
+  assert.equal(form.np.size, "1500");
+  assert.equal(form.np.other, undefined);
+  assert.equal(form.tb_row0.eq, "SWGR-1", "a table column fills its first row");
+  assert.equal(filled, 2);
+  assert.equal(applyAssetSources(sections, asset, { np: { mfr: "GE" } }, true).form.np.mfr, "Square D");
+});
+check("a chart reads its table's columns, calculated ones included", () => {
+  const td = {
+    id: "td", componentType: "custom-table", title: "Tan Delta", order: 0, showInPrint: true, referenceCode: "TD", rows: 4,
+    columns: [
+      { id: "kv", label: "Test kV", field: { id: "kv", label: "kV", type: "number" } },
+      { id: "td", label: "Tan δ", field: { id: "td", label: "TD", type: "number" } },
+      { id: "dbl", label: "Double", field: { id: "dbl", label: "Double", type: "number", cellBehavior: "calculate", calculation: { formula: "{TD.C2} * 2", dependsOn: [] } } },
+    ],
+  } as any;
+  const data = { td_row0: { kv: "8", td: "0.3" }, td_row1: { kv: "4", td: "0.2" }, td_row2: { kv: "12" }, td_row3: {} };
+  const result = chartData({ source: "td", xColumn: 1, series: [{ column: 2 }, { column: 3 }], type: "line" }, [td], data);
+  assert.equal(result.numericX, true);
+  // Rows without readings are left out, and the rest sort along x.
+  assert.deepEqual(result.points.map((p) => [p.x, p.s0, p.s1]), [[4, 0.2, 0.4], [8, 0.3, 0.6]]);
+  assert.equal(chartData({ source: "ZZ", xColumn: 1, series: [{ column: 2 }], type: "line" }, [td], data).points.length, 0);
+});
+check("copying the last report fills empty readings, never this visit's details", () => {
+  const structure = { sections: [
+    { id: "jd", componentType: "job-info", title: "Job", order: 0, showInPrint: true, fields: [{ id: "date", label: "Date", type: "date" }] },
+    { id: "ir", componentType: "custom-table", title: "IR", order: 1, showInPrint: true, rows: 2,
+      columns: [{ id: "a", label: "A", field: { id: "a", label: "A", type: "number" } }] },
+    { id: "sig", componentType: "signatures", title: "Sign", order: 2, showInPrint: true,
+      fields: [{ id: "tech", label: "Tech", type: "signature" }] },
+  ] } as any;
+  const previous = { jd: { date: "2025-01-01" }, ir_row0: { a: "100" }, ir_row1: { a: "200" }, sig: { tech: "Old Tech" } };
+  const { formData, copied } = copyPreviousReadings(structure, { ir_row1: { a: "250" } }, previous);
+  assert.equal(formData.ir_row0.a, "100");
+  assert.equal(formData.ir_row1.a, "250", "a reading already entered is kept");
+  assert.equal(formData.jd, undefined, "job details are not copied");
+  assert.equal(formData.sig, undefined, "signatures are not copied");
+  assert.equal(copied, 1);
+});
+check("the report status is the worst result", () => {
+  assert.equal(worstResult(["PASS", "PASS"]), "PASS");
+  assert.equal(worstResult(["PASS", "LIMITED SERVICE"]), "LIMITED SERVICE");
+  assert.equal(worstResult(["LIMITED SERVICE", "FAIL", "PASS"]), "FAIL");
+  assert.equal(worstResult(["", "n/a"]), null);
+});
 check("exp computes the exponential, and overflow is an error not infinity", () => {
   assert.equal(unwrap(evaluate("exp(0)", {}, {})), 1);
   assert.equal(unwrap(evaluate("round(0.1758 * exp(0.0256 * 20), 3)", {}, {})), 0.293);
@@ -555,6 +764,33 @@ check("duplicate lookup keys are refused", () => {
     curves: new Map(),
   });
   assert.ok(issues.some((issue) => issue.code === "lookup.duplicateKey"), JSON.stringify(issues));
+});
+
+// "Up to" tables: NETA criteria are bands of a rating, not exact values.
+const bandTable: LookupTable = {
+  id: "bands", keyType: "number", valueType: "number", match: "range", fallback: null,
+  columns: ["minimum"],
+  entries: [
+    { key: 250, value: 500, values: { minimum: 25 } },
+    { key: 600, value: 1000, values: { minimum: 100 } },
+    { key: 5000, value: 2500, values: { minimum: 1000 } },
+  ],
+};
+const bandResources: ExpressionResources = { lookups: new Map([[bandTable.id, bandTable]]), curves: new Map() };
+check("a range lookup reads the smallest band at or above the value", () => {
+  assert.equal(unwrap(evaluateWith('lookup("bands", {v})', { v: 480 }, { v: "number" }, bandResources)), 1000);
+});
+check("a range lookup on a band's exact limit stays in that band", () => {
+  assert.equal(unwrap(evaluateWith('lookup("bands", {v})', { v: 600 }, { v: "number" }, bandResources)), 1000);
+});
+check("a range lookup above the last band falls back", () => {
+  assert.equal(unwrap(evaluateWith('lookup("bands", {v})', { v: 15000 }, { v: "number" }, bandResources)), null);
+});
+check("a lookup can read a named extra column", () => {
+  assert.equal(unwrap(evaluateWith('lookup("bands", {v}, "minimum")', { v: 208 }, { v: "number" }, bandResources)), 25);
+});
+check("a lookup naming a column the table lacks blocks compilation", () => {
+  errorCode(compileWith('lookup("bands", 480, "nope")', {}, bandResources), "lookup.column");
 });
 
 console.log("\nPhase 3: interpolation");

@@ -127,6 +127,8 @@ export interface SectionChrome {
   conditionValues?(): Record<string, any>;
   /** Resolved report-context bindings, by binding id. */
   bindingValues?(): Record<string, unknown>;
+  /** Every section of the form, for sections that read others (charts). */
+  formSections?(): SectionConfig[];
 
   /** Stable row identities for a section, from the instance state. */
   instanceRowsFor?(sectionId: string): RowInstanceV2[] | undefined;

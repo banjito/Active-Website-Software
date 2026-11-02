@@ -9,7 +9,9 @@
  */
 
 import React from "react";
-import { Plus, Minus } from "lucide-react";
+import { copyAsFoundToAsLeft } from "@/lib/customForms/asFoundAsLeft";
+import {
+  Copy, Plus, Minus } from "lucide-react";
 import type { CustomFormTemplate, SectionConfig } from "@/lib/types/customForms";
 import {
   applyFieldChange,
@@ -113,6 +115,7 @@ export function useFillChrome(options: FillChromeOptions): SectionChrome {
     // touched still resolves through the section's declared default.
     conditionValues: () => formData,
     bindingValues: () => bindingValues ?? {},
+    formSections: () => template?.structure.sections ?? [],
     instanceRowsFor: (sectionId) => instanceRows?.[sectionId],
     generatorCountsFor: (sectionId) => generatorCounts?.[sectionId],
     setSettingValue: readOnly
@@ -145,10 +148,25 @@ export function useFillChrome(options: FillChromeOptions): SectionChrome {
 
     renderSectionHeader: (section, info) => {
       if (readOnly) return null;
-      if (classifySection(section) !== "contact-resistance") return null;
-      if (!canAddRow(section, info.rowCount)) return null;
+      // As Found / As Left tables: one click copies the readings across.
+      const copyButton = section.asFoundAsLeft?.pairs?.length ? (
+        <button
+          type="button"
+          onClick={() =>
+            applyMutation((t, d) => ({ template: t, formData: copyAsFoundToAsLeft(section, d).formData }))
+          }
+          title="Fill every empty As Left cell with its As Found reading"
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand border border-brand rounded-none hover:bg-brand/10 print:hidden"
+        >
+          <Copy className="w-3.5 h-3.5" /> Copy As Found → As Left
+        </button>
+      ) : null;
+      const canAdd = classifySection(section) === "contact-resistance" && canAddRow(section, info.rowCount);
+      if (!copyButton && !canAdd) return null;
+      if (!canAdd) return <div className="flex justify-end items-center mb-2">{copyButton}</div>;
       return (
-        <div className="flex justify-end items-center mb-2">
+        <div className="flex justify-end items-center gap-2 mb-2">
+          {copyButton}
           <button
             type="button"
             onClick={() =>

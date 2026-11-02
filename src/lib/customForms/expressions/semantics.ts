@@ -80,7 +80,7 @@ export function inferNode(node: ExpressionNode, referenceType: (id: string) => I
         if: [3, 3], coalesce: [2, Infinity], isnull: [1, 1], isnumber: [1, 1], textmatches: [3, 3],
         min: [1, Infinity], max: [1, Infinity], avg: [1, Infinity], sum: [1, Infinity],
         abs: [1, 1], sqrt: [1, 1], exp: [1, 1], round: [1, 2], concat: [1, Infinity],
-        verdict: [1, 1], lookup: [2, 2], interpolate: [2, 2], convert: [3, 3],
+        verdict: [1, 1], lookup: [2, 3], interpolate: [2, 2], convert: [3, 3],
       };
       const signature = Object.prototype.hasOwnProperty.call(arity, name) ? arity[name] : undefined;
       if (!signature) throw new ExpressionFailure("function.unknown", `Unknown function "${name}".`, node);
@@ -117,7 +117,14 @@ export function inferNode(node: ExpressionNode, referenceType: (id: string) => I
         const tableId = literalName(node.args[0], "lookup table");
         const table = resources.lookups.get(tableId);
         if (!table) throw new ExpressionFailure("lookup.unknown", `Unknown lookup table "${tableId}".`, node.args[0]);
-        requireType(types[1], [table.keyType], node.args[1]);
+        // A range table reads its keys as numbers whatever they were typed as.
+        requireType(types[1], [table.match === "range" ? "number" : table.keyType], node.args[1]);
+        if (node.args.length === 3) {
+          const column = literalName(node.args[2], "lookup column");
+          if (!(table.columns ?? []).includes(column)) {
+            throw new ExpressionFailure("lookup.column", `Lookup table "${tableId}" has no column "${column}".`, node.args[2]);
+          }
+        }
         return table.valueType;
       }
       if (name === "interpolate") {
@@ -306,7 +313,8 @@ export function evaluateNode(node: ExpressionNode, read: (id: string, span: Sour
       }
       if (name === "lookup") {
         const table = resources.lookups.get((node.args[0] as { value: string }).value)!;
-        return lookupValue(table, values[1] as string | number);
+        const column = node.args.length === 3 ? (node.args[2] as { value: string }).value : undefined;
+        return lookupValue(table, values[1] as string | number, column);
       }
       if (name === "interpolate") {
         const curve = resources.curves.get((node.args[0] as { value: string }).value)!;

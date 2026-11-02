@@ -17,6 +17,8 @@ import {
   PanelLeftOpen,
   Copy,
   SlidersHorizontal,
+  Eye,
+  PencilLine,
   Sparkles,
   X,
   Plus,
@@ -32,6 +34,10 @@ import { SectionEditor } from "./SectionEditor";
 import { SectionContent } from "./FormPreview";
 import { LiveComponentEditor } from "./LiveComponentEditor";
 import { ComponentVariantsPanel } from "./ComponentVariantsPanel";
+import { FormulaRefHover } from "./FormulaRefHover";
+import { TableLayoutEditor } from "./TableLayoutEditor";
+import { useLookupTables } from "@/lib/customForms/lookupLibrary";
+import { applyVariant, variantsOf } from "@/lib/customForms/componentVariants";
 import { useResizablePanel } from "./useResizablePanel";
 import { regenerateSectionWithPrompt } from "@/lib/customForms/excel/generate";
 import {
@@ -160,7 +166,47 @@ export const ComponentEditor: React.FC = () => {
   const [aiOpen, setAiOpen] = useState(false);
   const [aiText, setAiText] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
+  // Top-bar toggle: the form preview replaces the editor.
   const [showPreview, setShowPreview] = useState(false);
+  // Formulas may read the shared lookup tables; re-render once they load.
+  useLookupTables();
+  // The page fills the window below the app header; only the component list
+  // and the editor scroll, never the page.
+  const pageRef = useRef<HTMLDivElement>(null);
+  const [pageHeight, setPageHeight] = useState<number>();
+  React.useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+    const fit = () => {
+      const el = pageRef.current;
+      if (!el) return;
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      setPageHeight(Math.max(320, window.innerHeight - top));
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    // Belt and braces: whatever else in the app layout adds a few pixels
+    // (padding, a scrollbar, a banner), the page itself must not scroll here.
+    // Every scrollable ancestor is locked while this page is open.
+    const locked: { el: HTMLElement; overflow: string }[] = [];
+    for (
+      let el: HTMLElement | null = pageRef.current?.parentElement ?? null;
+      el;
+      el = el.parentElement
+    ) {
+      const { overflowY } = window.getComputedStyle(el);
+      if (overflowY === "auto" || overflowY === "scroll" || el === document.body || el === document.documentElement) {
+        locked.push({ el, overflow: el.style.overflow });
+        el.scrollTop = 0;
+        el.style.overflow = "hidden";
+      }
+    }
+    return () => {
+      window.removeEventListener("resize", fit);
+      locked.forEach(({ el, overflow }) => {
+        el.style.overflow = overflow;
+      });
+    };
+  }, []);
   const [listPrefs] = useState(readListPrefs);
   const [listOpen, setListOpen] = useState(listPrefs.open);
   const [listShow, setListShow] = useState<ListShow>(listPrefs.show);
@@ -368,6 +414,35 @@ export const ComponentEditor: React.FC = () => {
     load();
   };
 
+  /** "Discard changes": back to the last saved version, after a confirm. */
+  const handleDiscardChanges = async () => {
+    if (!isDirty) return;
+    const ok = await confirmDialog({
+      title: "Discard changes?",
+      description: "Everything since the last save is lost.",
+      confirmLabel: "Discard",
+      cancelLabel: "Keep editing",
+      destructive: true,
+    });
+    if (ok) handleRevert();
+  };
+
+  /** "Discard draft": drop an unsaved new component entirely. */
+  const handleDiscardDraft = async () => {
+    const ok = await confirmDialog({
+      title: `Discard "${name || "New component"}"?`,
+      description: "This new component was never saved, so it will be gone.",
+      confirmLabel: "Discard draft",
+      cancelLabel: "Keep editing",
+      destructive: true,
+    });
+    if (!ok) return;
+    setSelection(null);
+    setDraft(null);
+    setIsDirty(false);
+    setEditorOpen(false);
+  };
+
   const handleRevert = () => {
     if (!selection) return;
     if (selection.kind === "builtin") {
@@ -473,7 +548,12 @@ export const ComponentEditor: React.FC = () => {
   const filtersActive = listShow !== "all" || listCategory !== "all" || !!q;
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] lg:h-[calc(100vh-5rem)] min-h-0 bg-neutral-50 dark:bg-dark-100">
+    <div
+      ref={pageRef}
+      style={{ height: pageHeight }}
+      // Cancels the app layout's bottom padding, which would add a page scroll.
+      className="flex h-[calc(100vh-5rem)] min-h-0 overflow-hidden -mb-3 sm:-mb-4 lg:-mb-6 bg-neutral-50 dark:bg-dark-100"
+    >
       {/* Component list (hide-able, drag the right edge to widen) */}
       {!listOpen ? (
         <div className="w-10 shrink-0 flex flex-col items-center gap-2 py-3 border-r border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-150">
@@ -811,6 +891,23 @@ export const ComponentEditor: React.FC = () => {
                 >
                   All settings
                 </Button>
+                {!showPreview && <TableLayoutEditor section={draft} onUpdate={updateDraft} compact />}
+                <Button
+                  variant={showPreview ? "primary" : "outline"}
+                  size="sm"
+                  onClick={() => setShowPreview((v) => !v)}
+                  className={showPreview ? "bg-brand hover:bg-brand-dark" : ""}
+                  title={showPreview ? "Back to editing" : "See it as it will look on the form"}
+                  leftIcon={
+                    showPreview ? (
+                      <PencilLine className="w-3.5 h-3.5" />
+                    ) : (
+                      <Eye className="w-3.5 h-3.5" />
+                    )
+                  }
+                >
+                  {showPreview ? "Edit" : "Preview"}
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -820,15 +917,27 @@ export const ComponentEditor: React.FC = () => {
                 >
                   Duplicate
                 </Button>
-                {selection?.kind !== "new" && (
+                {selection?.kind === "new" ? (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleRevert}
+                    onClick={handleDiscardDraft}
+                    className="text-red-600 hover:text-red-700 hover:border-red-300 dark:text-red-400"
+                    title="Throw away this new component without saving it"
+                    leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+                  >
+                    Discard draft
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDiscardChanges}
                     disabled={!isDirty}
+                    title="Go back to the last saved version"
                     leftIcon={<Undo2 className="w-3.5 h-3.5" />}
                   >
-                    Revert
+                    Discard changes
                   </Button>
                 )}
                 {selection?.kind === "saved" && (
@@ -866,36 +975,48 @@ export const ComponentEditor: React.FC = () => {
               </div>
             )}
 
-            <div className="flex-1 overflow-auto p-6">
+            {/* Rest on a cell or field for a second to see its formula reference.
+                On a variant tab the numbering follows that variant's columns. */}
+            <FormulaRefHover
+              className="flex-1 overflow-auto p-6"
+              sections={[
+                variantTab
+                  ? applyVariant(draft, variantsOf(draft).find((v) => v.id === variantTab))
+                  : draft,
+              ]}
+            >
               <div className="max-w-6xl mx-auto bg-white dark:bg-dark-150 border border-neutral-200 dark:border-dark-200 rounded-none p-4">
-                <ComponentVariantsPanel
-                  section={draft}
-                  onUpdate={updateDraft}
-                  activeId={variantTab}
-                  onActiveChange={setVariantTab}
-                >
-                  <LiveComponentEditor section={draft} onUpdate={updateDraft} />
-                </ComponentVariantsPanel>
-              </div>
-              {/* A variant tab has its own preview. */}
-              <div className={`max-w-6xl mx-auto mt-4 ${variantTab ? "hidden" : ""}`}>
-                <button
-                  type="button"
-                  onClick={() => setShowPreview((v) => !v)}
-                  className="text-xs font-medium text-neutral-500 dark:text-neutral-400 hover:text-brand"
-                >
-                  {showPreview ? "Hide" : "Show"} form preview
-                </button>
-                {showPreview && (
-                  <div className="mt-2 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-dark-200 rounded-none p-4">
+                {showPreview ? (
+                  // On a variant tab, the preview is that variant.
+                  <>
                     <div className="text-sm font-semibold text-neutral-700 dark:text-neutral-200 mb-2 border-b border-neutral-200 dark:border-neutral-600 pb-1">
                       {draft.title}
+                      {variantTab && (
+                        <span className="ml-2 text-xs font-normal text-brand">
+                          {variantsOf(draft).find((v) => v.id === variantTab)?.name}
+                        </span>
+                      )}
                     </div>
-                    <SectionContent section={draft} />
-                  </div>
+                    <SectionContent
+                      section={
+                        variantTab
+                          ? applyVariant(draft, variantsOf(draft).find((v) => v.id === variantTab))
+                          : draft
+                      }
+                    />
+                  </>
+                ) : (
+                  <ComponentVariantsPanel
+                    section={draft}
+                    onUpdate={updateDraft}
+                    activeId={variantTab}
+                    onActiveChange={setVariantTab}
+                  >
+                    <LiveComponentEditor section={draft} onUpdate={updateDraft} />
+                  </ComponentVariantsPanel>
                 )}
               </div>
-            </div>
+            </FormulaRefHover>
           </>
         )}
       </main>

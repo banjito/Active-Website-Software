@@ -18,6 +18,7 @@ import {
   type FieldConfig,
   type SectionConfig,
 } from "@/lib/types/customForms";
+import { pairedHeaderRows } from "@/lib/customForms/asFoundAsLeft";
 import { classifySection } from "../runtime/sectionKind";
 import {
   groupedFieldColumnCount,
@@ -104,6 +105,8 @@ function controlFromV1(field: FieldConfig): ControlV2 {
       return { type: "checkbox" };
     case "calculated":
       return { type: "derived" };
+    case "signature":
+      return { type: "signature", roleId: field.id, roleLabel: field.label };
     case "temperature-humidity":
       return {
         type: "temperature-humidity",
@@ -321,7 +324,10 @@ function tableFromV1(section: SectionConfig): TableV2 {
     header:
       overlay?.header && overlay.header.length > 0
         ? overlay.header
-        : [implicitHeaderRow(withUnits)],
+        : // As Found / As Left pairs share a heading; otherwise one plain row.
+          (section.asFoundAsLeft?.pairs?.length
+            ? pairedHeaderRows(section.id, withUnits, section.asFoundAsLeft.pairs)
+            : null) ?? [implicitHeaderRow(withUnits)],
     body: overlay?.body && overlay.body.length > 0 ? overlay.body : body,
     footer: overlay?.footer ?? [],
     units: overlay?.units,

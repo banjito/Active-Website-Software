@@ -128,7 +128,13 @@ export const StatusToggleButton: React.FC<{
   status: CustomFormStatus;
   onChange: (next: CustomFormStatus) => void;
   disabled?: boolean;
-}> = ({ status, onChange, disabled }) => (
+  /**
+   * Set when the template has pass/fail result columns: the status follows
+   * them ("auto") until the user clicks; `onAuto` hands it back.
+   */
+  autoState?: { manual: boolean; onAuto: () => void };
+}> = ({ status, onChange, disabled, autoState }) => (
+  <span className="inline-flex items-stretch">
   <button
     type="button"
     disabled={disabled}
@@ -140,7 +146,27 @@ export const StatusToggleButton: React.FC<{
           ? "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500"
           : "bg-yellow-500 text-black hover:bg-yellow-600 focus:ring-yellow-400"
     }`}
+    title={
+      autoState && !autoState.manual
+        ? "Set from the form's results. Click to choose by hand."
+        : "Click to change"
+    }
   >
     {status}
+    {autoState && !autoState.manual && (
+      <span className="ml-1.5 text-[10px] font-semibold opacity-80">AUTO</span>
+    )}
   </button>
+  {autoState?.manual && (
+    <button
+      type="button"
+      onClick={autoState.onAuto}
+      disabled={disabled}
+      className="px-2 text-xs border border-l-0 border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-600 dark:text-neutral-300 hover:text-brand hover:border-brand"
+      title="Let the form's pass/fail results set the status again"
+    >
+      Auto
+    </button>
+  )}
+  </span>
 );

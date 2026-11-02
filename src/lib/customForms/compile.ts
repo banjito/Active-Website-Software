@@ -287,7 +287,7 @@ function validateSection(section: SectionConfig, issues: TemplateIssue[]) {
   }
 
   const kind = classifySection(section);
-  if (kind === "empty") {
+  if (kind === "empty" && !section.chart) {
     issues.push({
       severity: "warning",
       code: "section.empty",

@@ -27,6 +27,7 @@ import {
   Upload,
   X,
   Puzzle,
+  Table2,
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
@@ -376,6 +377,14 @@ export const CustomFormTemplates: React.FC = () => {
                 leftIcon={<Puzzle className="w-4 h-4" />}
               >
                 Components
+              </Button>
+              <Button
+                onClick={() => navigate("/custom-forms/lookups")}
+                variant="outline"
+                title="Shared tables (e.g. NETA criteria) formulas can read with lookup()"
+                leftIcon={<Table2 className="w-4 h-4" />}
+              >
+                Lookup tables
               </Button>
               {createMenu}
             </div>

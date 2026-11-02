@@ -15,6 +15,7 @@
 import type { SectionConfig } from '@/lib/types/customForms';
 import { removeColumn } from '@/lib/customForms/v2/authoring';
 import { resolveRowCount } from '@/lib/customForms/runtime/layout';
+import { resolveDeviation } from '@/lib/customForms/deviation';
 
 export interface ComponentVariant {
   id: string;
@@ -30,6 +31,8 @@ export interface ComponentVariant {
   hiddenFieldIds?: string[];
   /** Checklist item ids left out. */
   hiddenItemIds?: string[];
+  /** Contact resistance Value Deviation lines (Neutral, Ground, ...) left out. */
+  hiddenLineIds?: string[];
 }
 
 /** Library-only keys stored in a component's config. */
@@ -46,7 +49,7 @@ export interface LibraryMeta {
 
 export type LibraryConfig = SectionConfig & LibraryMeta;
 
-export type VariantPartKind = 'column' | 'row' | 'field' | 'item';
+export type VariantPartKind = 'column' | 'row' | 'field' | 'item' | 'line';
 
 export interface VariantPart {
   kind: VariantPartKind;
@@ -107,6 +110,12 @@ export function variantParts(section: SectionConfig): VariantPart[] {
     })
   );
 
+  if (section.componentType === 'contact-resistance' && section.showDeviation !== false) {
+    resolveDeviation(section).extraRows.forEach((line) =>
+      parts.push({ kind: 'line', id: line.id, label: line.label })
+    );
+  }
+
   return parts;
 }
 
@@ -118,7 +127,9 @@ export function hiddenKey(kind: VariantPartKind): keyof ComponentVariant {
       ? 'hiddenRowIds'
       : kind === 'field'
         ? 'hiddenFieldIds'
-        : 'hiddenItemIds';
+        : kind === 'line'
+          ? 'hiddenLineIds'
+          : 'hiddenItemIds';
 }
 
 export function isPartHidden(variant: ComponentVariant, part: VariantPart): boolean {
@@ -215,6 +226,15 @@ export function applyVariant<T extends Partial<SectionConfig>>(
   const hiddenItems = new Set(variant.hiddenItemIds ?? []);
   if (hiddenItems.size && s.checklistItems) {
     s = { ...s, checklistItems: s.checklistItems.filter((it) => !hiddenItems.has(it.id)) };
+  }
+
+  const hiddenLines = new Set(variant.hiddenLineIds ?? []);
+  if (hiddenLines.size) {
+    const dev = resolveDeviation(s);
+    s = {
+      ...s,
+      deviation: { ...(s.deviation ?? {}), extraRows: dev.extraRows.filter((l) => !hiddenLines.has(l.id)) },
+    };
   }
 
   return { ...s, appliedVariant: variant.name } as unknown as T;

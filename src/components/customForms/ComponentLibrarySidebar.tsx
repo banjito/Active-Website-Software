@@ -9,6 +9,9 @@ import React, { useState } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  PenLine,
+  Camera,
+  LineChart,
   Search,
   FileText,
   Zap,
@@ -41,6 +44,9 @@ import type { SavedComponent } from "@/lib/customForms/savedComponents";
 import { ComponentDefinition } from "@/lib/types/customForms";
 
 export const iconMap: Record<string, any> = {
+  PenLine,
+  Camera,
+  LineChart,
   FileText,
   Zap,
   Eye,

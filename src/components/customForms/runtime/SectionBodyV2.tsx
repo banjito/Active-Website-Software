@@ -12,6 +12,7 @@
  */
 
 import React from "react";
+import { refAttrs } from "@/components/customForms/FormulaRefHover";
 import { FieldType, type FieldConfig, type SectionConfig } from "@/lib/types/customForms";
 import type {
   CellV2,
@@ -390,6 +391,9 @@ const TableRenderer: React.FC<TableProps> = ({
                     key={cell.id}
                     colSpan={colSpan > 1 ? colSpan : undefined}
                     rowSpan={rowSpan > 1 ? rowSpan : undefined}
+                    {...(colSpan === 1 && visibleColumns[columnIndex]
+                      ? refAttrs(v1Section.id, { columnId: visibleColumns[columnIndex].id })
+                      : {})}
                     className={`border ${BORDER} bg-neutral-50 dark:bg-dark-200 align-top [overflow-wrap:anywhere] ${density.th} ${ALIGN_CLASS[cell.align ?? "left"]}`}
                     style={
                       colSpan === 1 && visibleColumns[columnIndex]?.width
@@ -667,6 +671,9 @@ const BodyCell: React.FC<{
     <td
       colSpan={colSpan > 1 ? colSpan : undefined}
       rowSpan={rowSpan > 1 ? rowSpan : undefined}
+      {...(column && row.dataIndex >= 0
+        ? refAttrs(v1Section.id, { columnId: column.id, rowIndex: row.dataIndex })
+        : {})}
       className={[
         `border ${BORDER}`,
         density.td,
@@ -820,6 +827,8 @@ export interface SectionBodyV2Props {
   scope: ConditionScope;
   wrapperStyle?: React.CSSProperties;
   rowStyle?: React.CSSProperties;
+  /** A second piece of a split table: the setting dropdowns already show on the first. */
+  hideSettings?: boolean;
 }
 
 export const SectionBodyV2: React.FC<SectionBodyV2Props> = ({
@@ -829,11 +838,12 @@ export const SectionBodyV2: React.FC<SectionBodyV2Props> = ({
   scope,
   wrapperStyle,
   rowStyle,
+  hideSettings = false,
 }) => {
   const density = DENSITIES[chrome.density ?? "normal"];
   const content = section.content;
 
-  const settingsBar = (
+  const settingsBar = hideSettings ? null : (
     <SettingsBar
       v1Section={v1Section}
       section={section}
@@ -901,6 +911,7 @@ export const SectionBodyV2: React.FC<SectionBodyV2Props> = ({
                     return (
                       <td
                         key={field.id}
+                        {...refAttrs(v1Section.id, { fieldId: field.id })}
                         colSpan={slot.colSpan > 1 ? slot.colSpan : undefined}
                         rowSpan={slot.rowSpan > 1 ? slot.rowSpan : undefined}
                         className={[
@@ -959,7 +970,10 @@ export const SectionBodyV2: React.FC<SectionBodyV2Props> = ({
           >
             <tbody>
               <tr style={rowStyle}>
-                <td className={`border ${BORDER} px-3 py-2`}>
+                <td
+                  className={`border ${BORDER} px-3 py-2`}
+                  {...refAttrs(v1Section.id, { fieldId: field.id })}
+                >
                   <FieldLabel
                     v1Section={v1Section}
                     field={field}
@@ -1004,9 +1018,13 @@ export const SectionBodyV2: React.FC<SectionBodyV2Props> = ({
           >
             <thead>
               <tr>
-                {["NETA Section", "Description", "Result"].map((label) => (
+                {[
+                  v1Section.checklistHeaders?.section || "NETA Section",
+                  v1Section.checklistHeaders?.description || "Description",
+                  v1Section.checklistHeaders?.result || "Result",
+                ].map((label, i) => (
                   <th
-                    key={label}
+                    key={i}
                     className={`border ${BORDER} bg-neutral-50 dark:bg-dark-200 ${density.th}`}
                   >
                     {label}

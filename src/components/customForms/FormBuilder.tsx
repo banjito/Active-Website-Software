@@ -56,6 +56,7 @@ import {
   Lock,
   Trash2,
   AlertTriangle,
+  ListOrdered,
   FileCode2,
 } from "lucide-react";
 
@@ -63,7 +64,9 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Card, { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
-import { ComponentInsertPoint } from "./ComponentInsertPoint";
+import { ReflowDialog } from "./ReflowDialog";
+import { useLookupTables } from "@/lib/customForms/lookupLibrary";
+import type { ComponentVariant } from "@/lib/customForms/componentVariants";
 import { FormCanvas } from "./FormCanvas";
 import { confirmDialog } from "@/components/ui/confirmDialog";
 import {
@@ -664,6 +667,50 @@ export const FormBuilder: React.FC = () => {
 
     setActiveId(null);
   };
+
+  /** A new section for a built-in (or one of its variants), not yet placed. */
+  const buildBuiltinSection = (
+    componentType: ComponentType,
+    variantId?: string,
+  ): SectionConfig | null => {
+    const componentDef = getComponentDefinition(componentType);
+    if (!componentDef) return null;
+    const fullDefault = getMergedDefaultConfig(componentType, componentDefaultOverrides);
+    const config = applyVariant(
+      fullDefault,
+      variantsOf(fullDefault).find((v) => v.id === variantId),
+    );
+    return {
+      ...config,
+      id: `section-${Date.now()}`,
+      componentType,
+      title: (config.title as string) || componentDef.name,
+      order: 0,
+      showInPrint: config.showInPrint !== false,
+    } as SectionConfig;
+  };
+
+  /** A new section from a saved component (or one of its variants), not yet placed. */
+  const buildSavedSection = (
+    saved: SavedComponent,
+    variant?: ComponentVariant,
+  ): SectionConfig => {
+    const config = applyVariant(saved.section_config, variant);
+    return {
+      ...stripLibraryMeta(config),
+      ...(config.appliedVariant ? { appliedVariant: config.appliedVariant } : {}),
+      id: `section-${Date.now()}`,
+      order: 0,
+      showInPrint: config.showInPrint !== false,
+      // A variant copy is not linked back: "Update saved component" would
+      // overwrite the full component with the trimmed one.
+      ...(variant ? {} : { savedComponentId: saved.id }),
+    } as SectionConfig;
+  };
+
+  const [reflowOpen, setReflowOpen] = useState(false);
+  // Formulas may read the shared lookup tables; re-render once they load.
+  useLookupTables();
 
   const addSection = (
     componentType: ComponentType,
@@ -1414,6 +1461,34 @@ export const FormBuilder: React.FC = () => {
                 </Button>
               </div>
             )}
+            {template.structure.sections.length > 0 && (
+              <div className="mb-3 flex items-center justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setReflowOpen(true)}
+                  title="Reorder and add components"
+                  leftIcon={<ListOrdered className="w-4 h-4" />}
+                >
+                  Re-flow / add components
+                </Button>
+              </div>
+            )}
+            <ReflowDialog
+              open={reflowOpen}
+              structure={template.structure}
+              savedComponents={savedComponents}
+              builtinOverrides={componentDefaultOverrides}
+              makeBuiltinSection={buildBuiltinSection}
+              makeSavedSection={buildSavedSection}
+              onApply={(structure) => {
+                setTemplate((prev) => ({ ...prev, structure }));
+                setIsDirty(true);
+                setSelectedSectionId(null);
+                setFormulaEditingSectionId(null);
+              }}
+              onClose={() => setReflowOpen(false)}
+            />
             <FormCanvas
               sections={template.structure.sections}
               structure={template.structure}
@@ -1428,22 +1503,7 @@ export const FormBuilder: React.FC = () => {
               onSectionRegenerate={regenerateSection}
               formulaEditingSectionId={formulaEditingSectionId}
               onCellFormulaChange={handleCellFormulaChange}
-              renderInsertPoint={(index) => (
-                <ComponentInsertPoint
-                  savedComponents={savedComponents}
-                  builtinOverrides={componentDefaultOverrides}
-                  onAddBuiltin={(type, variantId) => addSection(type, index, variantId)}
-                  onAddSaved={(saved, variant) =>
-                    // A variant copy is not linked back: "Update saved component"
-                    // would overwrite the full component with the trimmed one.
-                    addSectionFromSaved(
-                      applyVariant(saved.section_config, variant),
-                      index,
-                      variant ? undefined : saved.id,
-                    )
-                  }
-                />
-              )}
+              reorderable={false}
               onRequestEditFormulas={(sectionId) => {
                 if (template.structure.expressions !== undefined) {
                   toast("Use the Typed calculations panel above to edit stable formulas.");
@@ -1463,20 +1523,13 @@ export const FormBuilder: React.FC = () => {
                   <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
                     Start Building Your Form
                   </h3>
-                  <ComponentInsertPoint
-                    alwaysVisible
-                    label="Add your first component"
-                    savedComponents={savedComponents}
-                    builtinOverrides={componentDefaultOverrides}
-                    onAddBuiltin={(type, variantId) => addSection(type, 0, variantId)}
-                    onAddSaved={(saved, variant) =>
-                      addSectionFromSaved(
-                        applyVariant(saved.section_config, variant),
-                        0,
-                        variant ? undefined : saved.id,
-                      )
-                    }
-                  />
+                  <Button
+                    onClick={() => setReflowOpen(true)}
+                    className="bg-brand hover:bg-brand-dark border-none"
+                    leftIcon={<Plus className="w-4 h-4" />}
+                  >
+                    Add components
+                  </Button>
                 </div>
               </div>
             )}

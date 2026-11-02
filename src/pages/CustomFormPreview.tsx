@@ -7,6 +7,14 @@
  */
 
 import React, { useState, useEffect } from "react";
+import { reportTestDate } from "@/lib/customForms/equipment";
+import { useLookupTables } from "@/lib/customForms/lookupLibrary";
+import { useAutoStatus } from "@/components/customForms/runtime/useAutoStatus";
+import {
+  EquipmentCalibrationBanner,
+  useEquipmentControlOverride,
+  useLiveEquipmentCalibration,
+} from "@/components/customForms/runtime/EquipmentControl";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { toast } from "react-hot-toast";
@@ -59,6 +67,8 @@ export const CustomFormPreview: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState<FormData>({});
   const [status, setStatus] = useState<CustomFormStatus>("PASS");
+  // Status follows the pass/fail result columns until set by hand.
+  const autoStatus = useAutoStatus(template?.structure, formData, setStatus);
 
   useEffect(() => {
     if (!templateId) return;
@@ -113,11 +123,20 @@ export const CustomFormPreview: React.FC = () => {
   );
 
   const paper = usePaperView();
+  // Formulas may read the shared lookup tables; re-render once they load.
+  useLookupTables();
+  // Equipment-search columns work in the preview too (nothing is saved).
+  // Calibration from the Test Equipment table, so warnings follow the equipment's record.
+  const liveCalibration = useLiveEquipmentCalibration(template?.structure, formData);
+  // Calibration is judged on the report's test date, not today.
+  const testDate = React.useMemo(() => reportTestDate(template?.structure, formData), [template, formData]);
+  const renderControlOverride = useEquipmentControlOverride(formData, setFormData, false, liveCalibration, testDate);
   const chrome = useFillChrome({
     template,
     formData,
     applyMutation,
     setFormData,
+    renderControlOverride,
   });
 
   if (isLoading) {
@@ -189,7 +208,18 @@ export const CustomFormPreview: React.FC = () => {
                   <Printer className="w-5 h-5" />
                 </button>
                 {template.structure.settings?.includePassFail !== false && (
-                  <StatusToggleButton status={status} onChange={setStatus} />
+                  <StatusToggleButton
+                    status={status}
+                    onChange={(next) => {
+                      setStatus(next);
+                      autoStatus.setManual(true);
+                    }}
+                    autoState={
+                      autoStatus.available
+                        ? { manual: autoStatus.manual, onAuto: () => autoStatus.setManual(false) }
+                        : undefined
+                    }
+                  />
                 )}
               </div>
             </div>
@@ -197,6 +227,7 @@ export const CustomFormPreview: React.FC = () => {
             {paper.on && (
               <CustomFormPrintHeader template={template} status={status} onScreen />
             )}
+            <EquipmentCalibrationBanner structure={template.structure} formData={formData} live={liveCalibration} />
             <DocumentBody template={template} chrome={chrome} />
           </div>
         </div>

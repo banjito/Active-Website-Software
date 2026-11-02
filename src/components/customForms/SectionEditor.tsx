@@ -20,6 +20,17 @@ import {
   Columns,
 } from "lucide-react";
 import { TableGridEditor } from "./TableGridEditor";
+import { TableLayoutEditor } from "./TableLayoutEditor";
+import { ResultRuleEditor, DEFAULT_RESULT_RULE } from "./ResultRuleEditor";
+import { EquipmentPickerSettings } from "./EquipmentPickerSettings";
+import { AssetSourceSelect } from "./AssetSourceSelect";
+import { ChartSettings } from "./ChartSettings";
+import {
+  combineAsFoundAsLeft,
+  pairForColumn,
+  splitAsFoundAsLeft,
+} from "@/lib/customForms/asFoundAsLeft";
+import { resultRuleField } from "@/lib/customForms/resultRules";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/Dialog";
 import {
   fillBodyGaps,
@@ -662,6 +673,16 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
               allSections={allSections}
             />
           </div>
+        )}
+
+        {/* What a chart plots */}
+        {section.chart && (
+          <ChartSettings section={section} allSections={allSections} onUpdate={onUpdate} />
+        )}
+
+        {/* Arrange, split and combine this component's tables */}
+        {section.columns && (
+          <TableLayoutEditor section={section} onUpdate={onUpdate} />
         )}
 
         {/* Table Settings (for table-based components) */}
@@ -1717,6 +1738,7 @@ const ColumnEditor: React.FC<{
     onUpdate({
       field: {
         ...field,
+        resultRule: undefined,
         cellBehavior: next,
         ...(next === "user" && {
           populateFrom: undefined,
@@ -1778,11 +1800,13 @@ const ColumnEditor: React.FC<{
   );
   const showOptions =
     behavior === "user" && field.type === FieldType.SELECT;
-  const showFormulaRefs = behavior === "calculate" && refOptions.length > 0;
+  const isResult = !!field.resultRule;
+  const showEquipment = behavior === "user" && !isResult && !!parentSection;
+  const showFormulaRefs = behavior === "calculate" && !isResult && refOptions.length > 0;
   const showStaticRows = behavior === "static" && staticRows.length > 0;
   const showVisibleWhen = !!settingFields && settingFields.length > 0;
   const hasSecondRow =
-    showOptions || showFormulaRefs || showStaticRows || showVisibleWhen;
+    showOptions || showFormulaRefs || showStaticRows || showVisibleWhen || isResult || showEquipment;
 
   return (
     <div className="bg-neutral-50 dark:bg-dark-100 rounded-none px-2 py-1.5 space-y-1.5">
@@ -1813,12 +1837,15 @@ const ColumnEditor: React.FC<{
         />
         {allSections.length > 0 && (
           <select
-            value={behavior}
-            onChange={(e) =>
-              handleBehaviorChange(
-                e.target.value as "user" | "populate" | "calculate" | "static",
-              )
-            }
+            value={isResult ? "result" : behavior}
+            onChange={(e) => {
+              const next = e.target.value;
+              if (next === "result") {
+                onUpdate({ field: resultRuleField(field, field.resultRule ?? DEFAULT_RESULT_RULE) });
+                return;
+              }
+              handleBehaviorChange(next as "user" | "populate" | "calculate" | "static");
+            }}
             title="Cell value"
             className={`${inlineInputCls} w-40`}
           >
@@ -1826,6 +1853,7 @@ const ColumnEditor: React.FC<{
             <option value="populate">Populate from field</option>
             <option value="calculate">Calculate from formula</option>
             <option value="static">Static text</option>
+            <option value="result">Pass / Fail result</option>
           </select>
         )}
         {behavior === "user" && (
@@ -1875,7 +1903,7 @@ const ColumnEditor: React.FC<{
             ))}
           </select>
         )}
-        {behavior === "calculate" && (
+        {behavior === "calculate" && !isResult && (
           <input
             value={field.calculation?.formula ?? ""}
             onChange={(e) =>
@@ -1914,6 +1942,11 @@ const ColumnEditor: React.FC<{
             className={`${inlineInputCls} w-16`}
           />
         )}
+        <AssetSourceSelect
+          column
+          value={field.assetSource}
+          onChange={(assetSource) => onUpdate({ field: { ...field, assetSource } })}
+        />
         <label className="flex items-center gap-1 text-xs text-neutral-700 dark:text-neutral-300 cursor-pointer">
           <input
             type="checkbox"
@@ -1925,6 +1958,26 @@ const ColumnEditor: React.FC<{
           />
           Required
         </label>
+        {parentSection && onSectionUpdate && (
+          <button
+            type="button"
+            onClick={() =>
+              onSectionUpdate(
+                pairForColumn(parentSection, column.id)
+                  ? combineAsFoundAsLeft(parentSection, column.id)
+                  : splitAsFoundAsLeft(parentSection, column.id),
+              )
+            }
+            className="h-7 px-1.5 text-[10px] border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-600 dark:text-neutral-300 hover:border-brand hover:text-brand"
+            title={
+              pairForColumn(parentSection, column.id)
+                ? "Back to one column (the As Left column and its readings are removed)"
+                : "Split into As Found and As Left columns under one heading"
+            }
+          >
+            {pairForColumn(parentSection, column.id) ? "Combine AF/AL" : "As Found / As Left"}
+          </button>
+        )}
         <button
           onClick={onDelete}
           className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
@@ -1955,6 +2008,28 @@ const ColumnEditor: React.FC<{
                 });
               }}
             />
+          )}
+
+          {showEquipment && (
+            <div className="basis-full">
+              <EquipmentPickerSettings
+                section={parentSection!}
+                columnId={column.id}
+                field={field}
+                onChange={(next) => onUpdate({ field: next })}
+              />
+            </div>
+          )}
+
+          {isResult && parentSection && (
+            <div className="basis-full">
+              <ResultRuleEditor
+                section={parentSection}
+                columnId={column.id}
+                rule={field.resultRule!}
+                onChange={(rule) => onUpdate({ field: resultRuleField(field, rule) })}
+              />
+            </div>
           )}
 
           {showFormulaRefs && (
@@ -2205,6 +2280,8 @@ const FieldEditor: React.FC<{
           <option value={FieldType.RADIO}>Radio buttons</option>
           <option value={FieldType.TEXTAREA}>Text Area</option>
           <option value={FieldType.CHECKBOX}>Checkbox</option>
+          <option value={FieldType.SIGNATURE}>Signature</option>
+          <option value={FieldType.PHOTO}>Photos</option>
         </select>
 
         {field.unit !== undefined && (
@@ -2260,6 +2337,8 @@ const FieldEditor: React.FC<{
             </label>
           </>
         )}
+
+        <AssetSourceSelect value={field.assetSource} onChange={(assetSource) => onUpdate({ assetSource })} />
 
         <label className="flex items-center gap-1 text-xs text-neutral-700 dark:text-neutral-300 cursor-pointer">
           <input

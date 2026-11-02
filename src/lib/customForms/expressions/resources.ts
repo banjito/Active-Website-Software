@@ -25,6 +25,8 @@ import {
 export interface LookupEntry {
   key: string | number;
   value: string | number | boolean;
+  /** Values for the table's extra columns, read with lookup(table, key, "column"). */
+  values?: Readonly<Record<string, string | number | boolean | null>>;
 }
 
 export interface LookupTable {
@@ -34,6 +36,15 @@ export interface LookupTable {
   entries: readonly LookupEntry[];
   /** Returned when no entry matches. Null when the table has no default. */
   fallback?: string | number | boolean | null;
+  /**
+   * How a key finds its row. "exact" (the default) needs an equal key.
+   * "range" is for numeric tables read as "up to": the row with the smallest
+   * key at or above the value wins, so keys 250, 600, 5000 read 480 as the
+   * 600 row. A value above the last key falls back.
+   */
+  match?: "exact" | "range";
+  /** Names of extra value columns (beyond `value`), e.g. ["minimumMegohms"]. */
+  columns?: readonly string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -338,16 +349,38 @@ export function validateResources(
 // Evaluation
 // ---------------------------------------------------------------------------
 
-/** Exact-match lookup. A miss returns the table's fallback, or null. */
+/** The row a key selects, per the table's match mode, or undefined. */
+export function lookupEntry(
+  table: LookupTable,
+  key: string | number,
+): LookupEntry | undefined {
+  if (table.match === "range") {
+    const wanted = Number(key);
+    if (!Number.isFinite(wanted)) return undefined;
+    let best: LookupEntry | undefined;
+    for (const entry of table.entries) {
+      const limit = Number(entry.key);
+      if (limit >= wanted && (best === undefined || limit < Number(best.key))) best = entry;
+    }
+    return best;
+  }
+  const wanted = String(key);
+  return table.entries.find((entry) => String(entry.key) === wanted);
+}
+
+/**
+ * Lookup. A miss returns the table's fallback, or null. With `column`, the
+ * value of that extra column on the matched row (null if it has none).
+ */
 export function lookupValue(
   table: LookupTable,
   key: string | number,
+  column?: string,
 ): string | number | boolean | null {
-  const wanted = String(key);
-  for (const entry of table.entries) {
-    if (String(entry.key) === wanted) return entry.value;
-  }
-  return table.fallback ?? null;
+  const entry = lookupEntry(table, key);
+  if (!entry) return table.fallback ?? null;
+  if (column) return entry.values?.[column] ?? null;
+  return entry.value;
 }
 
 /**

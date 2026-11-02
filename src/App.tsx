@@ -99,6 +99,7 @@ import { EncryptionSettings } from "./components/admin/EncryptionSettings";
 import FeaturesFixesPage from "./app/features-fixes/page";
 import FormBuilder from "./components/customForms/FormBuilder";
 import ComponentEditor from "./components/customForms/ComponentEditor";
+import CustomFormLookupTables from "./pages/CustomFormLookupTables";
 import CustomFormFiller from "./components/customForms/CustomFormFiller";
 import CustomFormTemplates from "./pages/CustomFormTemplates";
 import CustomFormPreview from "./pages/CustomFormPreview";
@@ -780,6 +781,16 @@ function App() {
                     element={
                       <RequireAuth>
                         <CustomFormPreview />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/custom-forms/lookups"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <CustomFormLookupTables />
+                        </Layout>
                       </RequireAuth>
                     }
                   />

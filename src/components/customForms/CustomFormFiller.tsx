@@ -8,12 +8,13 @@
  */
 
 import React, { useState, useEffect, useRef } from "react";
+import { reportTestDate } from "@/lib/customForms/equipment";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { useJobDetails } from "@/lib/hooks/useJobDetails";
 import { toast } from "@/components/ui/toast";
-import { ArrowLeft, Save, Printer, Check } from "lucide-react";
+import { Database, History, ArrowLeft, Save, Printer, Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ReportWrapper } from "@/components/reports/ReportWrapper";
 import { ReportPhotosButton } from "@/components/reports/common/ReportPhotos";
@@ -29,6 +30,9 @@ import {
 } from "@/components/reports/common/reportIdentity";
 import { ensureReportAssetLink } from "@/components/reports/linkReportAsset";
 import { useEquipmentAssetPrefill } from "@/components/reports/useEquipmentAssetPrefill";
+import { applyAssetSources } from "@/lib/customForms/assetFill";
+import { copyPreviousReadings } from "@/lib/customForms/copyPrevious";
+import { confirmDialog } from "@/components/ui/confirmDialog";
 import { applyAssetToCustomForm } from "@/lib/assetFormPrefill";
 import {
   CustomFormTemplate,
@@ -52,7 +56,6 @@ import {
 } from "@/lib/customForms/instanceState";
 import { validateInstanceStructure } from "@/lib/customForms/compile";
 import { fahrenheitToCelsius, getTCF } from "@/lib/utils/temperatureCorrection";
-import { EquipmentAutocomplete } from "@/components/equipment/EquipmentAutocomplete";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import {
   defaultSettingValue,
@@ -61,6 +64,21 @@ import {
   type FormData,
 } from "@/lib/customForms/runtime";
 import { DocumentBody } from "./runtime/SectionFrame";
+import { useLookupTables } from "@/lib/customForms/lookupLibrary";
+import { computeAutoStatus, useAutoStatus } from "./runtime/useAutoStatus";
+import { EquipmentCalibrationBanner, useEquipmentControlOverride, useLiveEquipmentCalibration } from "./runtime/EquipmentControl";
+import {
+  clearLocalDraft,
+  loadLocalDraft,
+  localDraftKey,
+  saveLocalDraft,
+  type LocalDraft,
+} from "@/lib/customForms/localDraft";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+  resetSaveStatus,
+} from "@/components/reports/common/autoSaveStatus";
 import {
   PAPER_CLASS,
   PAPER_TOOLBAR_CLASS,
@@ -95,6 +113,39 @@ export const CustomFormFiller: React.FC = () => {
   const [justSaved, setJustSaved] = useState(false);
   const [formData, setFormData] = useState<FormData>({});
   const [status, setStatus] = useState<CustomFormStatus>("PASS");
+
+  /*
+   * Autosave. Only the technician's own edits count as changes (the form also
+   * fills itself in on open: job details, defaults, the asset), so opening a
+   * report never writes it. editCount goes up on every edit; savedEditCount is
+   * the edit a save covered. They differ while there are unsaved changes.
+   */
+  const [editCount, setEditCount] = useState(0);
+  const [savedEditCount, setSavedEditCount] = useState(0);
+  const editCountRef = useRef(0);
+  editCountRef.current = editCount;
+  const hasUnsavedChanges = editCount !== savedEditCount;
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+  const [autoSaving, setAutoSaving] = useState(false);
+  const savingRef = useRef(false);
+  const [pendingDraft, setPendingDraft] = useState<LocalDraft | null>(null);
+  const draftKey = localDraftKey(jobId, templateId, instanceId);
+  const formDataRef = useRef(formData);
+  formDataRef.current = formData;
+  const statusRef = useRef(status);
+  statusRef.current = status;
+  /** When the server copy was last written, to tell a stale browser draft from a fresh one. */
+  const serverUpdatedAtRef = useRef<number | null>(null);
+  const setFormDataByUser: React.Dispatch<React.SetStateAction<FormData>> = React.useCallback(
+    (update) => {
+      setFormData(update);
+      setEditCount((n) => n + 1);
+    },
+    [],
+  );
+
+  // Status follows the pass/fail result columns until set by hand.
+  const autoStatus = useAutoStatus(template?.structure, formData, setStatus);
 
   // Which row this form writes to. After the first save the id is in the
   // address bar, put there with replaceState -- which useParams cannot see, so
@@ -210,8 +261,93 @@ export const CustomFormFiller: React.FC = () => {
         ["job-info", "nameplate-data", "extended-nameplate"].includes(s.componentType),
       )
       .map((s) => ({ id: s.id, fieldIds: (s.fields ?? []).map((f) => f.id) }));
-    setFormData((prev) => applyAssetToCustomForm(equipmentAsset, sections, prev));
+    setFormData((prev) => {
+      const byName = applyAssetToCustomForm(equipmentAsset, sections, prev);
+      // Fields the builder pointed at an asset value; on a new report the asset
+      // beats the form's starting defaults.
+      return applyAssetSources(template.structure.sections, equipmentAsset, byName, true).form;
+    });
   }, [template, equipmentAsset, shouldPrefillAsset]);
+
+  /**
+   * "Copy from last report": the most recent other report of this form on the
+   * same equipment, its readings copied into fields that are still empty.
+   */
+  const [copyingPrevious, setCopyingPrevious] = useState(false);
+  const copyFromLastReport = async () => {
+    if (!template || !equipmentAsset || !templateId) return;
+    setCopyingPrevious(true);
+    try {
+      const { data: links, error } = await supabase
+        .schema("neta_ops")
+        .from("assets")
+        .select("file_url, created_at")
+        .eq("equipment_asset_id", equipmentAsset.id)
+        .like("file_url", `custom-form:/jobs/%/custom-form/${templateId}/%`)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      const previousId = (links ?? [])
+        .map((l: any) => String(l.file_url).split("/").pop())
+        .find((id) => id && id !== existingInstanceId);
+      if (!previousId) {
+        toast({ title: `No earlier ${template.name} on ${equipmentAsset.identifier || "this equipment"} to copy from.` });
+        return;
+      }
+      const { data: row, error: rowError } = await supabase
+        .schema("neta_ops")
+        .from("custom_form_instances")
+        .select("data, updated_at, created_at")
+        .eq("id", previousId)
+        .maybeSingle();
+      if (rowError) throw rowError;
+      if (!row) {
+        toast({ title: "The earlier report could not be opened." });
+        return;
+      }
+      const when = new Date(row.updated_at ?? row.created_at).toLocaleDateString();
+      const ok = await confirmDialog({
+        title: `Copy readings from the report of ${when}?`,
+        description:
+          "Only empty fields are filled. Job details, temperature, signatures and photos are not copied.",
+        confirmLabel: "Copy readings",
+        cancelLabel: "Cancel",
+      });
+      if (!ok) return;
+      const previous = projectStateToRuntime(adaptStoredData(parseStoredData(row.data), template.structure));
+      const result = copyPreviousReadings(template.structure, formData, previous);
+      if (!result.copied) {
+        toast({ title: "Nothing to copy: those fields are already filled in." });
+        return;
+      }
+      setFormDataByUser(result.formData);
+      toast({ title: `Copied ${result.copied} value${result.copied === 1 ? "" : "s"} from ${when}`, variant: "success" });
+    } catch (e: any) {
+      console.error("Copy from last report failed:", e);
+      toast({ title: e?.message || "Could not copy from the last report", variant: "destructive" });
+    } finally {
+      setCopyingPrevious(false);
+    }
+  };
+
+  /** "Fill from asset": fill whatever is still empty from the linked equipment. */
+  const fillFromAsset = () => {
+    if (!template || !equipmentAsset) return;
+    const sections = template.structure.sections
+      .filter((s) =>
+        ["job-info", "nameplate-data", "extended-nameplate"].includes(s.componentType),
+      )
+      .map((s) => ({ id: s.id, fieldIds: (s.fields ?? []).map((f) => f.id) }));
+    const before = formData;
+    const byName = applyAssetToCustomForm(equipmentAsset, sections, before);
+    const result = applyAssetSources(template.structure.sections, equipmentAsset, byName, false);
+    if (result.form === before) {
+      toast({ title: "Nothing to fill: the asset's values are already in, or those fields are filled." });
+      return;
+    }
+    setFormDataByUser(result.form);
+    toast({ title: `Filled from ${equipmentAsset.identifier || "the asset"}`, variant: "success" });
+  };
 
   // Contact-resistance sections open with their named rows already in place.
   useEffect(() => {
@@ -296,6 +432,9 @@ export const CustomFormFiller: React.FC = () => {
       });
 
       if (instanceRow) {
+        serverUpdatedAtRef.current = instanceRow.updated_at
+          ? new Date(instanceRow.updated_at).getTime()
+          : null;
         setExistingInstanceId(instanceRow.id);
         setStatus((instanceRow.status as CustomFormStatus) || "PASS");
         setRevision(
@@ -305,13 +444,27 @@ export const CustomFormFiller: React.FC = () => {
         const state = adaptStoredData(stored, resolved.structure);
         stateRef.current = state;
         setInstanceRows(state.tableRows);
-        setFormData(projectStateToRuntime(state));
+        const loaded = projectStateToRuntime(state);
+        setFormData(loaded);
+        // A saved status that disagrees with the results was chosen by hand: keep it.
+        const fromResults = computeAutoStatus(resolved.structure, loaded);
+        autoStatus.setManual(
+          !!instanceRow.status && fromResults !== null && instanceRow.status !== fromResults,
+        );
       }
     } catch (e) {
       console.error("Error loading template/instance:", e);
       toast({ title: e instanceof Error ? e.message : "Failed to load form", variant: "destructive" });
     } finally {
       setIsLoading(false);
+      // Unsaved work left in this browser (closed tab, crash, lost signal)?
+      const draft = loadLocalDraft(draftKey);
+      if (draft && (!serverUpdatedAtRef.current || draft.savedAt > serverUpdatedAtRef.current)) {
+        setPendingDraft(draft);
+      } else if (draft) {
+        // The server copy is newer (saved elsewhere since): this draft is stale.
+        clearLocalDraft(draftKey);
+      }
     }
   };
 
@@ -319,56 +472,19 @@ export const CustomFormFiller: React.FC = () => {
     template,
     formData,
     setTemplate,
-    setFormData,
+    setFormDataByUser,
   );
 
   /**
-   * Test-equipment rows search the equipment catalogue and fill the serial
-   * number, AMP id and calibration date from the chosen record.
+   * Equipment-search columns (the Test Equipment component's, and any column
+   * set up as one) search the equipment catalogue, fill serial / AMP id /
+   * calibration from the chosen record, and warn about expired calibration.
    */
-  const renderControlOverride = React.useCallback(
-    (slot: ControlSlot): React.ReactNode | null => {
-      if (slot.section.componentType !== "test-equipment") return null;
-      if (slot.cell?.colId !== "equipment") return null;
-      const stateKey = slot.stateKey;
-      return (
-        <EquipmentAutocomplete
-          value={formData[stateKey]?.equipment ?? ""}
-          onChange={(v) =>
-            setFormData((prev) => ({
-              ...prev,
-              [stateKey]: { ...(prev[stateKey] || {}), equipment: v },
-            }))
-          }
-          onSelect={(equipment) => {
-            const raw = equipment.calibration_date;
-            const calibrationDate = raw
-              ? (typeof raw === "string"
-                  ? raw
-                  : ((raw as Date).toISOString?.() ?? "")
-                ).slice(0, 10)
-              : "";
-            setFormData((prev) => ({
-              ...prev,
-              [stateKey]: {
-                ...(prev[stateKey] || {}),
-                equipment: equipment.equipment_name,
-                serialNumber: equipment.serial_number ?? "",
-                ampId: equipment.amp_id ?? "",
-                calibrationDate,
-              },
-            }));
-          }}
-          placeholder="Search equipment..."
-          // Sizing only: this class lands on the autocomplete's wrapper, and
-          // the full control styling here gave the cell a second border and a
-          // second helping of padding.
-          className="w-full min-w-0"
-        />
-      );
-    },
-    [formData],
-  );
+  // Calibration from the Test Equipment table, so warnings follow the equipment's record.
+  const liveCalibration = useLiveEquipmentCalibration(template?.structure, formData);
+  // Calibration is judged on the report's test date, not today.
+  const testDate = React.useMemo(() => reportTestDate(template?.structure, formData), [template, formData]);
+  const renderControlOverride = useEquipmentControlOverride(formData, setFormDataByUser, false, liveCalibration, testDate);
 
   /** Report context the template's declarative bindings resolve against. */
   const bindingValues = React.useMemo(
@@ -397,11 +513,13 @@ export const CustomFormFiller: React.FC = () => {
   );
 
   const paper = usePaperView();
+  // Formulas may read the shared lookup tables; re-render once they load.
+  useLookupTables();
   const chrome = useFillChrome({
     template,
     formData,
     applyMutation,
-    setFormData,
+    setFormData: setFormDataByUser,
     renderControlOverride,
     bindingValues,
     instanceRows,
@@ -456,15 +574,28 @@ export const CustomFormFiller: React.FC = () => {
     });
   };
 
-  const handleSave = async () => {
+  /**
+   * Save the form. `silent` is the autosave: no toasts, and a failure shows the
+   * shared "not saved" banner instead (it stays until a save works).
+   */
+  const handleSave = async (options: { silent?: boolean } = {}) => {
+    const silent = !!options.silent;
     if (!template || !jobId || !user) {
-      toast({
-        title: "Missing template, job, or user",
-        variant: "destructive",
-      });
+      if (!silent) {
+        toast({
+          title: "Missing template, job, or user",
+          variant: "destructive",
+        });
+      }
       return;
     }
-    setIsSaving(true);
+    if (savingRef.current) return;
+    savingRef.current = true;
+    // Edits made while this save is in flight still count as unsaved.
+    const coveredEdit = editCountRef.current;
+    if (silent) setAutoSaving(true);
+    else setIsSaving(true);
+    let saved = false;
     try {
       if (template.structure.expressions !== undefined && (!versioningReady || !pinnedVersion)) {
         throw new Error("Typed reports must be created from a published version. Reopen this report after publishing the template.");
@@ -473,10 +604,9 @@ export const CustomFormFiller: React.FC = () => {
       // corrupt state is rejected rather than written over good data.
       const check = validateInstanceStructure(formData, template.structure);
       if (check.corrupt) {
-        toast({
-          title: check.issues[0]?.message ?? "Form data is corrupt; not saved",
-          variant: "destructive",
-        });
+        const message = check.issues[0]?.message ?? "Form data is corrupt; not saved";
+        if (silent) reportSaveFailed(message);
+        else toast({ title: message, variant: "destructive" });
         return;
       }
 
@@ -535,17 +665,18 @@ export const CustomFormFiller: React.FC = () => {
         if (error) throw error;
 
         if (versioningReady && revision != null && !updated?.length) {
-          toast({
-            title:
-              "Someone else saved this form since you opened it. Reload before saving so their work is not overwritten.",
-            variant: "destructive",
-          });
+          const message =
+            "Someone else saved this form since you opened it. Reload before saving so their work is not overwritten.";
+          // Shown either way: autosave must not keep retrying over someone's work.
+          reportSaveFailed(message);
+          if (!silent) toast({ title: message, variant: "destructive" });
           return;
         }
         if (updated?.[0]?.revision != null) setRevision(updated[0].revision);
         else if (revision != null) setRevision(revision + 1);
 
-        toast({ title: "Form updated", variant: "success" });
+        if (!silent) toast({ title: "Form updated", variant: "success" });
+        saved = true;
       } else {
         // Claim the id before the request goes out and upsert on it, so a save
         // that runs twice overwrites the same row instead of creating a copy.
@@ -579,6 +710,9 @@ export const CustomFormFiller: React.FC = () => {
 
         setExistingInstanceId(newInstanceId);
         setRevision(1);
+        saved = true;
+        // The draft was keyed "new"; this form now has an id of its own.
+        clearLocalDraft(draftKey);
         toast({ title: "Form saved and linked to job", variant: "success" });
         // Stay on the report: swap the /new URL for the saved instance URL
         // without a router navigation (which would remount and reload the
@@ -594,13 +728,80 @@ export const CustomFormFiller: React.FC = () => {
       window.setTimeout(() => setJustSaved(false), 2000);
     } catch (e: any) {
       console.error("Save error:", e);
-      toast({
-        title: e?.message || "Failed to save form",
-        variant: "destructive",
-      });
+      if (silent) {
+        reportSaveFailed(e);
+      } else {
+        toast({
+          title: e?.message || "Failed to save form",
+          variant: "destructive",
+        });
+      }
     } finally {
+      savingRef.current = false;
       setIsSaving(false);
+      setAutoSaving(false);
+      if (saved) {
+        reportSaveSucceeded();
+        setSavedEditCount(coveredEdit);
+        setLastSavedAt(Date.now());
+        serverUpdatedAtRef.current = Date.now();
+        // Nothing typed during the save: the server has it all.
+        if (editCountRef.current === coveredEdit) clearLocalDraft(liveDraftKey);
+      }
     }
+  };
+
+  // Once a new form is saved it has an id; its browser copy follows it.
+  const liveDraftKey = localDraftKey(jobId, templateId, existingInstanceId ?? instanceId);
+
+  // Keep a copy of unsaved work in this browser as it is typed.
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const timer = window.setTimeout(() => {
+      saveLocalDraft(liveDraftKey, { formData: formDataRef.current, status: statusRef.current, savedAt: Date.now() });
+    }, 800);
+    return () => window.clearTimeout(timer);
+  }, [editCount, hasUnsavedChanges, liveDraftKey]);
+
+  // A report that is already saved also saves itself, a few seconds after the
+  // last edit (never a locked/approved one, and never a brand-new form, which
+  // is created on the first manual save).
+  useEffect(() => {
+    if (!hasUnsavedChanges || !existingInstanceId || pendingDraft) return;
+    const timer = window.setTimeout(() => {
+      const locked = document.getElementById("report-container")?.dataset.reportLocked === "true";
+      if (!locked) handleSave({ silent: true });
+    }, 4000);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editCount, existingInstanceId, hasUnsavedChanges, pendingDraft]);
+
+  // Leaving with unsaved changes asks first.
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+      return "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [hasUnsavedChanges]);
+
+  // The shared "not saved" banner belongs to this report only.
+  useEffect(() => () => resetSaveStatus(), []);
+
+  const restoreDraft = () => {
+    if (!pendingDraft) return;
+    setFormData(pendingDraft.formData);
+    if (pendingDraft.status) setStatus(pendingDraft.status as CustomFormStatus);
+    setPendingDraft(null);
+    // Restored work is unsaved work: keep it in the browser and save it as usual.
+    setEditCount((n) => n + 1);
+  };
+  const discardDraft = () => {
+    clearLocalDraft(draftKey);
+    setPendingDraft(null);
   };
 
   if (isLoading) {
@@ -695,9 +896,44 @@ export const CustomFormFiller: React.FC = () => {
               </div>
               <div className="flex items-center gap-2">
                 {template.structure.settings?.includePassFail !== false && (
-                  <StatusToggleButton status={status} onChange={setStatus} />
+                  <StatusToggleButton
+                    status={status}
+                    onChange={(next) => {
+                      setStatus(next);
+                      autoStatus.setManual(true);
+                      setEditCount((n) => n + 1);
+                    }}
+                    autoState={
+                      autoStatus.available
+                        ? { manual: autoStatus.manual, onAuto: () => autoStatus.setManual(false) }
+                        : undefined
+                    }
+                  />
                 )}
                 <PaperViewToggle paper={paper} />
+                {equipmentAsset && (
+                  <button
+                    type="button"
+                    onClick={fillFromAsset}
+                    className="h-10 px-3 flex items-center gap-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-700 dark:text-neutral-200 hover:border-brand hover:text-brand"
+                    title={`Fill empty fields from ${equipmentAsset.identifier || "this report's equipment"} (identifier, location, nameplate…)`}
+                  >
+                    <Database className="w-4 h-4" />
+                    Fill from asset
+                  </button>
+                )}
+                {equipmentAsset && (
+                  <button
+                    type="button"
+                    onClick={copyFromLastReport}
+                    disabled={copyingPrevious}
+                    className="h-10 px-3 flex items-center gap-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-700 dark:text-neutral-200 hover:border-brand hover:text-brand disabled:opacity-50"
+                    title="Copy readings from the last report of this form on the same equipment (empty fields only)"
+                  >
+                    <History className="w-4 h-4" />
+                    {copyingPrevious ? "Looking…" : "Copy from last report"}
+                  </button>
+                )}
                 {/* Report Photos (renders nothing on unsaved instances) */}
                 <ReportPhotosButton />
                 <button
@@ -709,9 +945,24 @@ export const CustomFormFiller: React.FC = () => {
                 >
                   <Printer className="w-6 h-6" />
                 </button>
+                {/* Where the work stands: saved, saving, or only on this device. */}
+                <span
+                  className="text-xs text-neutral-500 dark:text-neutral-400 whitespace-nowrap"
+                  aria-live="polite"
+                >
+                  {autoSaving
+                    ? "Saving…"
+                    : hasUnsavedChanges
+                      ? existingInstanceId
+                        ? "Unsaved changes"
+                        : "Not saved yet · kept on this device"
+                      : lastSavedAt
+                        ? `Saved ${new Date(lastSavedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`
+                        : ""}
+                </span>
                 <button
                   type="button"
-                  onClick={handleSave}
+                  onClick={() => handleSave()}
                   disabled={isSaving}
                   className={`flex h-10 w-10 items-center justify-center rounded-none text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                     justSaved
@@ -735,6 +986,29 @@ export const CustomFormFiller: React.FC = () => {
             {paper.on && (
               <CustomFormPrintHeader template={template} status={status} onScreen />
             )}
+            {pendingDraft && (
+              <div className="mb-4 flex flex-wrap items-center gap-3 px-4 py-3 text-sm border border-brand bg-brand/5 rounded-none print:hidden">
+                <span className="font-medium text-neutral-900 dark:text-white">
+                  Unsaved changes from{" "}
+                  {new Date(pendingDraft.savedAt).toLocaleString([], {
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}{" "}
+                  were found on this device.
+                </span>
+                <span className="ml-auto flex gap-2">
+                  <Button size="sm" onClick={restoreDraft} className="bg-brand hover:bg-brand-dark">
+                    Restore them
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={discardDraft}>
+                    Discard
+                  </Button>
+                </span>
+              </div>
+            )}
+            <EquipmentCalibrationBanner structure={template.structure} formData={formData} live={liveCalibration} />
             <DocumentBody template={template} chrome={chrome} />
           </div>
         </div>

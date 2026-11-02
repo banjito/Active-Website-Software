@@ -1225,7 +1225,7 @@ export const COMPONENT_LIBRARY: ComponentDefinition[] = [
   {
     id: ComponentType.TEST_EQUIPMENT,
     name: 'Test Equipment Used',
-    description: 'Test equipment with lookup from field equipment table (Equipment, Serial, AMP ID, Cal Date)',
+    description: 'Test equipment with lookup from field equipment table (Equipment, Serial, AMP ID, Cal Date, Cal Due); warns when calibration has expired',
     icon: 'Wrench',
     category: 'equipment',
     defaultConfig: {
@@ -1242,7 +1242,7 @@ export const COMPONENT_LIBRARY: ComponentDefinition[] = [
         {
           id: 'equipment',
           label: 'Equipment',
-          width: '25%',
+          width: '24%',
           field: {
             id: 'equipment',
             label: 'Equipment',
@@ -1252,7 +1252,7 @@ export const COMPONENT_LIBRARY: ComponentDefinition[] = [
         {
           id: 'serialNumber',
           label: 'Serial Number',
-          width: '25%',
+          width: '19%',
           field: {
             id: 'serialNumber',
             label: 'Serial Number',
@@ -1262,7 +1262,7 @@ export const COMPONENT_LIBRARY: ComponentDefinition[] = [
         {
           id: 'ampId',
           label: 'AMP ID',
-          width: '25%',
+          width: '19%',
           field: {
             id: 'ampId',
             label: 'AMP ID',
@@ -1272,10 +1272,20 @@ export const COMPONENT_LIBRARY: ComponentDefinition[] = [
         {
           id: 'calibrationDate',
           label: 'Calibration Date',
-          width: '25%',
+          width: '19%',
           field: {
             id: 'calibrationDate',
             label: 'Calibration Date',
+            type: FieldType.DATE
+          }
+        },
+        {
+          id: 'calibrationDue',
+          label: 'Calibration Due',
+          width: '19%',
+          field: {
+            id: 'calibrationDue',
+            label: 'Calibration Due',
             type: FieldType.DATE
           }
         }
@@ -1518,6 +1528,53 @@ export const COMPONENT_LIBRARY: ComponentDefinition[] = [
         }
       ]
     }
+  },
+
+  {
+    id: ComponentType.SIGNATURES,
+    name: 'Signatures',
+    description: 'Drawn signatures with printed name and date (technician, reviewer, customer)',
+    icon: 'PenLine',
+    category: 'other',
+    defaultConfig: {
+      componentType: ComponentType.SIGNATURES,
+      title: 'Signatures',
+      order: 98,
+      showInPrint: true,
+      layout: 'two-column',
+      fields: [
+        { id: 'technicianSignature', label: 'Technician', type: FieldType.SIGNATURE },
+        { id: 'reviewerSignature', label: 'Reviewed by', type: FieldType.SIGNATURE },
+      ],
+    },
+  },
+  {
+    id: ComponentType.PHOTOS,
+    name: 'Photos',
+    description: 'Photos with captions, placed in the report where this section sits',
+    icon: 'Camera',
+    category: 'other',
+    defaultConfig: {
+      componentType: ComponentType.PHOTOS,
+      title: 'Photos',
+      order: 97,
+      showInPrint: true,
+      field: { id: 'photos', label: 'Photos', type: FieldType.PHOTO },
+    },
+  },
+  {
+    id: ComponentType.CHART,
+    name: 'Chart',
+    description: 'Plots columns of a table on the form (e.g. Tan Delta vs test voltage); updates as readings are entered and prints with the report',
+    icon: 'LineChart',
+    category: 'testing',
+    defaultConfig: {
+      componentType: ComponentType.CHART,
+      title: 'Chart',
+      order: 60,
+      showInPrint: true,
+      chart: { series: [], type: 'line', height: 260 },
+    },
   },
 
   {

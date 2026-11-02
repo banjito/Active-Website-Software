@@ -27,9 +27,31 @@ import {
   type FieldConfig,
   type SectionConfig,
 } from "@/lib/types/customForms";
-import { resolveRowCount } from "@/lib/customForms/runtime/layout";
-import { SectionContent } from "./FormPreview";
+import {
+  contactResistanceRowLabels,
+  resolveRowCount,
+} from "@/lib/customForms/runtime/layout";
 import { InlineOptionsEditor, inlineInputCls } from "./SectionEditor";
+import { TableGridEditor } from "./TableGridEditor";
+import {
+  pieceColumnIds,
+  pieceFlex,
+  resolveTableLayout,
+} from "@/lib/customForms/tableLayout";
+import { refAttrs } from "./FormulaRefHover";
+import { ResultRuleEditor, DEFAULT_RESULT_RULE } from "./ResultRuleEditor";
+import { EquipmentPickerSettings } from "./EquipmentPickerSettings";
+import { AssetSourceSelect } from "./AssetSourceSelect";
+import { ChartSettings } from "./ChartSettings";
+import { SectionContent } from "./FormPreview";
+import {
+  combineAsFoundAsLeft,
+  pairForColumn,
+  splitAsFoundAsLeft,
+} from "@/lib/customForms/asFoundAsLeft";
+import { resultRuleField } from "@/lib/customForms/resultRules";
+import { useLookupTables } from "@/lib/customForms/lookupLibrary";
+import { resolveDeviation } from "./runtime/SectionBody";
 
 type Behavior = NonNullable<FieldConfig["cellBehavior"]>;
 
@@ -41,6 +63,10 @@ const FIELD_TYPES: { value: FieldType; label: string }[] = [
   { value: FieldType.RADIO, label: "Radio buttons" },
   { value: FieldType.TEXTAREA, label: "Text Area" },
   { value: FieldType.CHECKBOX, label: "Checkbox" },
+  { value: FieldType.CALCULATED, label: "Calculated" },
+  { value: FieldType.TEMPERATURE_HUMIDITY, label: "Temp / Humidity" },
+  { value: FieldType.SIGNATURE, label: "Signature" },
+  { value: FieldType.PHOTO, label: "Photos" },
 ];
 
 const LAYOUTS: { value: NonNullable<SectionConfig["layout"]>; cols: number }[] = [
@@ -116,6 +142,39 @@ const MockControl: React.FC<{ field: FieldConfig }> = ({ field }) => {
   }
 };
 
+/**
+ * "Insert lookup…": adds lookup("table", {?}) to a formula, so nobody has to
+ * remember table ids. {?} is then replaced with the cell holding the key.
+ */
+const LookupInsert: React.FC<{ onInsert: (text: string) => void }> = ({ onInsert }) => {
+  const { tables } = useLookupTables();
+  if (!tables.length) return null;
+  return (
+    <select
+      value=""
+      onChange={(e) => {
+        if (!e.target.value) return;
+        const [id, column] = e.target.value.split("|");
+        onInsert(`lookup("${id}", {?}${column ? `, "${column}"` : ""})`);
+      }}
+      title="Insert a lookup from a shared table (Custom Forms → Lookup tables)"
+      className={`${inlineInputCls} w-36`}
+    >
+      <option value="">Insert lookup…</option>
+      {tables.map((t) => (
+        <optgroup key={t.id} label={`${t.name}${t.engineeringVerified ? "" : " (unverified)"}`}>
+          <option value={t.id}>{t.valueLabel || "Value"}</option>
+          {(t.columns ?? []).map((c) => (
+            <option key={c} value={`${t.id}|${c}`}>
+              {c}
+            </option>
+          ))}
+        </optgroup>
+      ))}
+    </select>
+  );
+};
+
 /** Floating bar of settings for whatever is selected. */
 const Toolbar: React.FC<{ title: string; children: React.ReactNode }> = ({
   title,
@@ -176,6 +235,115 @@ const FieldTypeControls: React.FC<{
       />
       Required
     </label>
+    {field.type !== FieldType.TEMPERATURE_HUMIDITY && (
+      <AssetSourceSelect value={field.assetSource} onChange={(assetSource) => onChange({ assetSource })} />
+    )}
+    <label
+      className="flex items-center gap-1 text-xs text-neutral-700 dark:text-neutral-300 cursor-pointer"
+      title="Shown but not editable on the form"
+    >
+      <input
+        type="checkbox"
+        checked={!!field.readOnly}
+        onChange={(e) => onChange({ readOnly: e.target.checked || undefined })}
+        className="rounded-none"
+      />
+      Read-only
+    </label>
+    {field.type !== FieldType.TEMPERATURE_HUMIDITY && field.type !== FieldType.CHECKBOX && (
+      <>
+        <input
+          value={field.placeholder ?? ""}
+          onChange={(e) => onChange({ placeholder: e.target.value || undefined })}
+          placeholder="Placeholder"
+          title="Hint shown in the empty field"
+          className={`${inlineInputCls} w-28`}
+        />
+        <input
+          value={field.defaultValue ?? ""}
+          onChange={(e) => onChange({ defaultValue: e.target.value || undefined })}
+          placeholder="Default value"
+          title="Value the field starts with on a new form"
+          className={`${inlineInputCls} w-28`}
+        />
+      </>
+    )}
+    {(field.calculation || field.type === FieldType.CALCULATED) && (
+      <input
+        value={field.calculation?.formula ?? ""}
+        onChange={(e) =>
+          onChange({
+            calculation: {
+              formula: e.target.value,
+              dependsOn: field.calculation?.dependsOn ?? [],
+            },
+          })
+        }
+        placeholder="Formula, e.g. (fahrenheit - 32) * 5 / 9"
+        title="Calculated from other fields in this section (use their ids)"
+        className={`${inlineInputCls} w-64 font-mono`}
+      />
+    )}
+    {(field.calculation || field.type === FieldType.CALCULATED) && (
+      <LookupInsert
+        onInsert={(text) => {
+          const current = field.calculation?.formula ?? "";
+          onChange({
+            calculation: {
+              formula: current ? `${current} ${text}` : text,
+              dependsOn: field.calculation?.dependsOn ?? [],
+            },
+          });
+        }}
+      />
+    )}
+    {field.type === FieldType.TEMPERATURE_HUMIDITY && (
+      <div className="basis-full flex flex-wrap items-center gap-1.5 text-[10px] text-neutral-500">
+        Labels:
+        {(
+          [
+            ["fahrenheit", "°F"],
+            ["celsius", "°C"],
+            ["tcf", "TCF"],
+            ["humidity", "Humidity %"],
+          ] as const
+        ).map(([key, fallback]) => (
+          <input
+            key={key}
+            value={field.subLabels?.[key] ?? ""}
+            onChange={(e) =>
+              onChange({
+                subLabels: { ...(field.subLabels ?? {}), [key]: e.target.value || undefined },
+              })
+            }
+            placeholder={fallback}
+            title={`Label for ${fallback}`}
+            className={`${inlineInputCls} w-20`}
+          />
+        ))}
+        Defaults:
+        <input
+          type="number"
+          value={field.defaultTemperature ?? ""}
+          onChange={(e) =>
+            onChange({ defaultTemperature: e.target.value === "" ? undefined : Number(e.target.value) })
+          }
+          placeholder="68 °F"
+          title="Default temperature (°F)"
+          className={`${inlineInputCls} w-16`}
+        />
+        <input
+          type="number"
+          value={field.defaultHumidity ?? ""}
+          onChange={(e) =>
+            onChange({ defaultHumidity: e.target.value === "" ? undefined : Number(e.target.value) })
+          }
+          placeholder="50 %"
+          title="Default humidity (%)"
+          className={`${inlineInputCls} w-16`}
+        />
+      </div>
+    )}
     {(field.type === FieldType.SELECT || field.type === FieldType.RADIO) && (
       <div className="basis-full">
         <InlineOptionsEditor
@@ -203,12 +371,39 @@ const FieldTypeControls: React.FC<{
 const LiveTable: React.FC<{
   section: SectionConfig;
   onUpdate: (u: Partial<SectionConfig>) => void;
-}> = ({ section, onUpdate }) => {
+  /** One piece of a split table: only these columns. Edits still apply to the whole table. */
+  visibleColumnIds?: string[];
+  /** The first piece carries row labels, the row count and "add column". */
+  primary?: boolean;
+}> = ({ section, onUpdate, visibleColumnIds, primary = true }) => {
   const cols = section.columns ?? [];
+  // Clicking the selected column again unselects it. Read on mousedown, since
+  // the header input's focus re-selects the column before the click lands.
+  const wasSelected = useRef(false);
+  const toggleProps = (id: string) => ({
+    onMouseDown: () => {
+      wasSelected.current = selectedIdRef.current === id;
+    },
+    onClick: () => setSelectedId(wasSelected.current ? null : id),
+  });
+  const shownCols = visibleColumnIds
+    ? cols.filter((c) => visibleColumnIds.includes(c.id))
+    : cols;
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selectedIdRef = useRef(selectedId);
+  selectedIdRef.current = selectedId;
   const headerRefs = useRef<Record<string, HTMLTableCellElement | null>>({});
 
   const conditional = !!section.conditionalRows?.length;
+  // Contact resistance numbers its rows "Section 1, Section 2…"; editable here.
+  const labelled = !conditional && section.componentType === ComponentType.CONTACT_RESISTANCE;
+  const rowLabels = labelled ? contactResistanceRowLabels(section) : [];
+  const setRowLabel = (r: number, label: string) => {
+    const next = [...rowLabels];
+    while (next.length <= r) next.push("");
+    next[r] = label;
+    onUpdate({ defaultRowLabels: next });
+  };
   const rowCount = conditional
     ? section.conditionalRows!.length
     : resolveRowCount(section);
@@ -222,8 +417,13 @@ const LiveTable: React.FC<{
   const updateField = (i: number, patch: Partial<FieldConfig>) =>
     updateColumn(i, { field: { ...cols[i].field, ...patch } });
 
-  const setBehavior = (i: number, next: Behavior) =>
+  const setBehavior = (i: number, next: Behavior | "result") => {
+    if (next === "result") {
+      updateColumn(i, { field: resultRuleField(cols[i].field, cols[i].field.resultRule ?? DEFAULT_RESULT_RULE) });
+      return;
+    }
     updateField(i, {
+      resultRule: undefined,
       cellBehavior: next,
       ...(next === "user" && {
         populateFrom: undefined,
@@ -237,6 +437,7 @@ const LiveTable: React.FC<{
         readOnly: true,
       }),
     });
+  };
 
   const setStaticCell = (row: number, colId: string, value: string) => {
     const key = `row${row}_${colId}`;
@@ -270,12 +471,21 @@ const LiveTable: React.FC<{
     setSelectedId(id);
   };
 
-  /** Drag the line between column i and i+1; their combined width stays the same. */
+  /**
+   * Drag the line between shown column i and i+1; their combined width stays
+   * the same. In a split piece only the shown columns change, keeping the share
+   * of the table they had, so other pieces are unaffected.
+   */
   const startResize = (i: number, e: React.PointerEvent) => {
-    const widths = cols.map(
+    const widths = shownCols.map(
       (c) => headerRefs.current[c.id]?.getBoundingClientRect().width ?? 100,
     );
     const total = widths.reduce((a, b) => a + b, 0) || 1;
+    const allPercent = shownCols.every((c) => c.width?.endsWith("%"));
+    const share =
+      visibleColumnIds && allPercent
+        ? shownCols.reduce((sum, c) => sum + parseFloat(c.width!), 0)
+        : 100;
     const pair = widths[i] + widths[i + 1];
     const MIN = 32;
     trackDrag(e, (dx) => {
@@ -283,12 +493,10 @@ const LiveTable: React.FC<{
       const next = [...widths];
       next[i] = left;
       next[i + 1] = pair - left;
-      setColumns(
-        cols.map((c, k) => ({
-          ...c,
-          width: `${((next[k] / total) * 100).toFixed(1)}%`,
-        })),
+      const widthOf = new Map(
+        shownCols.map((c, k) => [c.id, `${((next[k] / total) * share).toFixed(1)}%`]),
       );
+      setColumns(cols.map((c) => (widthOf.has(c.id) ? { ...c, width: widthOf.get(c.id) } : c)));
     });
   };
 
@@ -307,20 +515,22 @@ const LiveTable: React.FC<{
   };
 
   const behavior: Behavior = selected?.field.cellBehavior ?? "user";
+  const isResult = !!selected?.field.resultRule;
 
   return (
     <div>
       {selected ? (
         <Toolbar title={selected.label || "Column"}>
           <select
-            value={behavior}
-            onChange={(e) => setBehavior(selIndex, e.target.value as Behavior)}
+            value={isResult ? "result" : behavior}
+            onChange={(e) => setBehavior(selIndex, e.target.value as Behavior | "result")}
             title="What goes in this column's cells"
             className={`${inlineInputCls} w-40`}
           >
             <option value="user">User entry</option>
             <option value="static">Static text</option>
             <option value="calculate">Calculated</option>
+            <option value="result">Pass / Fail result</option>
             <option value="populate" disabled={behavior !== "populate"}>
               Copied from field (all settings)
             </option>
@@ -331,6 +541,42 @@ const LiveTable: React.FC<{
               onChange={(patch) => updateField(selIndex, patch)}
             />
           )}
+          {behavior === "user" && !isResult && selected.field.type === FieldType.NUMBER && (
+            <label
+              className="flex items-center gap-1 text-[11px] text-neutral-500 dark:text-neutral-400"
+              title="Which column says what unit these readings are in. Auto: a unit typed with the number, a unit chooser, this column's own unit, then the row's Units column."
+            >
+              Unit from
+              <select
+                value={selected.field.unitSource?.column ?? ""}
+                onChange={(e) =>
+                  updateField(selIndex, {
+                    unitSource: e.target.value ? { column: e.target.value } : undefined,
+                  })
+                }
+                className={`${inlineInputCls} w-28`}
+              >
+                <option value="">Auto</option>
+                {cols
+                  .filter((c) => c.id !== selected.id)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.label || c.id}
+                    </option>
+                  ))}
+              </select>
+            </label>
+          )}
+          {behavior === "user" && !isResult && (
+            <div className="basis-full">
+              <EquipmentPickerSettings
+                section={section}
+                columnId={selected.id}
+                field={selected.field}
+                onChange={(field) => updateColumn(selIndex, { field })}
+              />
+            </div>
+          )}
           {behavior === "static" && (
             <input
               value={selected.field.staticValue ?? ""}
@@ -339,7 +585,17 @@ const LiveTable: React.FC<{
               className={`${inlineInputCls} w-64`}
             />
           )}
-          {behavior === "calculate" && (
+          {isResult && (
+            <div className="basis-full">
+              <ResultRuleEditor
+                section={section}
+                columnId={selected.id}
+                rule={selected.field.resultRule!}
+                onChange={(rule) => updateColumn(selIndex, { field: resultRuleField(selected.field, rule) })}
+              />
+            </div>
+          )}
+          {behavior === "calculate" && !isResult && (
             <input
               value={selected.field.calculation?.formula ?? ""}
               onChange={(e) =>
@@ -350,8 +606,22 @@ const LiveTable: React.FC<{
                   },
                 })
               }
-              placeholder="Formula, e.g. {IR.C1} * 2"
+              placeholder="Formula, e.g. {IR.C1 in MΩ} * 2"
+              title='Add "in UNIT" to a reference to convert it, e.g. {IR.C1 in MΩ}'
               className={`${inlineInputCls} w-64 font-mono`}
+            />
+          )}
+          {behavior === "calculate" && !isResult && (
+            <LookupInsert
+              onInsert={(text) => {
+                const current = selected.field.calculation?.formula ?? "";
+                updateField(selIndex, {
+                  calculation: {
+                    formula: current ? `${current} ${text}` : text,
+                    dependsOn: selected.field.calculation?.dependsOn ?? [],
+                  },
+                });
+              }}
             />
           )}
           <div className="ml-auto flex items-center gap-0.5">
@@ -373,11 +643,44 @@ const LiveTable: React.FC<{
             >
               <ChevronRight className="w-4 h-4" />
             </button>
+            {pairForColumn(section, selected.id) ? (
+              <button
+                type="button"
+                className="h-7 px-2 text-[11px] border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-700 dark:text-neutral-200 hover:border-brand hover:text-brand"
+                onClick={() => {
+                  const pair = pairForColumn(section, selected.id)!;
+                  onUpdate(combineAsFoundAsLeft(section, selected.id));
+                  setSelectedId(pair.foundId);
+                }}
+                title="Back to one column (the As Left column and its readings are removed)"
+              >
+                Combine As Found / As Left
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="h-7 px-2 text-[11px] border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-700 dark:text-neutral-200 hover:border-brand hover:text-brand"
+                onClick={() => onUpdate(splitAsFoundAsLeft(section, selected.id))}
+                title="Make this an As Found column with an As Left column beside it, under one heading"
+              >
+                Split As Found / As Left
+              </button>
+            )}
             <button
               type="button"
               className={`${iconBtn} hover:text-red-600`}
               onClick={() => {
-                setColumns(cols.filter((_, k) => k !== selIndex));
+                const pair = pairForColumn(section, selected.id);
+                // Deleting half of a pair forgets the pairing too.
+                if (pair) {
+                  const pairs = (section.asFoundAsLeft?.pairs ?? []).filter((p) => p !== pair);
+                  onUpdate({
+                    columns: cols.filter((_, k) => k !== selIndex),
+                    asFoundAsLeft: pairs.length ? { pairs } : undefined,
+                  });
+                } else {
+                  setColumns(cols.filter((_, k) => k !== selIndex));
+                }
                 setSelectedId(null);
               }}
               title="Delete column"
@@ -397,19 +700,22 @@ const LiveTable: React.FC<{
         <table className="w-full table-fixed border-collapse text-xs">
           <thead>
             <tr>
-              {conditional && (
+              {primary && (conditional || labelled) && (
                 <th className="w-28 border border-neutral-300 dark:border-neutral-600 bg-neutral-100 dark:bg-dark-200 px-2 py-1.5 text-left font-medium text-neutral-500">
-                  Row
+                  {labelled ? "Row label" : "Row"}
                 </th>
               )}
-              {cols.map((col, i) => (
+              {shownCols.map((col, vi) => {
+                const i = cols.indexOf(col);
+                return (
                 <th
                   key={col.id}
                   ref={(el) => {
                     headerRefs.current[col.id] = el;
                   }}
                   style={col.width ? { width: col.width } : undefined}
-                  onClick={() => setSelectedId(col.id)}
+                  {...toggleProps(col.id)}
+                  {...refAttrs(section.id, { columnId: col.id })}
                   className={`relative border border-neutral-300 dark:border-neutral-600 bg-neutral-100 dark:bg-dark-200 p-0 ${
                     col.id === selectedId ? "outline outline-2 -outline-offset-2 outline-brand" : ""
                   }`}
@@ -420,16 +726,18 @@ const LiveTable: React.FC<{
                     onFocus={() => setSelectedId(col.id)}
                     className="w-full bg-transparent px-2 py-1.5 text-center text-xs font-semibold text-neutral-900 dark:text-white focus:outline-none"
                   />
-                  {i < cols.length - 1 && (
+                  {vi < shownCols.length - 1 && (
                     <div
-                      onPointerDown={(e) => startResize(i, e)}
+                      onPointerDown={(e) => startResize(vi, e)}
                       onClick={(e) => e.stopPropagation()}
                       className="absolute top-0 -right-1.5 z-10 h-full w-3 cursor-col-resize hover:bg-brand/40"
                       title="Drag to resize"
                     />
                   )}
                 </th>
-              ))}
+                );
+              })}
+              {primary && (
               <th className="w-9 border border-dashed border-neutral-300 dark:border-neutral-600 p-0">
                 <button
                   type="button"
@@ -440,12 +748,13 @@ const LiveTable: React.FC<{
                   <Plus className="w-4 h-4" />
                 </button>
               </th>
+              )}
             </tr>
           </thead>
           <tbody>
             {Array.from({ length: rowCount }).map((_, r) => (
               <tr key={r}>
-                {conditional && (
+                {primary && conditional && (
                   <td className="border border-neutral-300 dark:border-neutral-600 p-0">
                     <input
                       value={section.conditionalRows![r].label}
@@ -460,13 +769,24 @@ const LiveTable: React.FC<{
                     />
                   </td>
                 )}
-                {cols.map((col) => {
+                {primary && labelled && (
+                  <td className="border border-neutral-300 dark:border-neutral-600 p-0">
+                    <input
+                      value={rowLabels[r] ?? ""}
+                      onChange={(e) => setRowLabel(r, e.target.value)}
+                      placeholder={`Row ${r + 1}`}
+                      className="w-full bg-transparent px-2 py-1 text-xs text-neutral-700 dark:text-neutral-200 focus:outline-none"
+                    />
+                  </td>
+                )}
+                {shownCols.map((col) => {
                   const b = col.field.cellBehavior ?? "user";
                   const isSel = col.id === selectedId;
                   return (
                     <td
                       key={col.id}
-                      onClick={() => setSelectedId(col.id)}
+                      {...toggleProps(col.id)}
+                      {...refAttrs(section.id, { columnId: col.id, rowIndex: r })}
                       className={`border border-neutral-300 dark:border-neutral-600 h-7 cursor-pointer ${
                         isSel ? "bg-brand/5" : "hover:bg-neutral-50 dark:hover:bg-dark-100"
                       } ${b === "static" ? "p-0" : "px-2 py-1"}`}
@@ -479,6 +799,12 @@ const LiveTable: React.FC<{
                           placeholder={col.field.staticValue || "Static text"}
                           className="w-full h-7 bg-transparent px-2 text-xs text-neutral-900 dark:text-white placeholder:text-neutral-500 focus:outline-none"
                         />
+                      ) : col.field.resultRule ? (
+                        <span className="text-[11px] font-bold">
+                          <span className="text-green-700">PASS</span>
+                          <span className="text-neutral-400"> / </span>
+                          <span className="text-red-700">FAIL</span>
+                        </span>
                       ) : b === "calculate" ? (
                         <span className="block truncate font-mono text-[11px] text-amber-600 dark:text-amber-400">
                           = {col.field.calculation?.formula || "formula"}
@@ -491,13 +817,14 @@ const LiveTable: React.FC<{
                     </td>
                   );
                 })}
-                <td />
+                {primary && <td />}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
+      {primary && (
       <div className="mt-2 flex items-center gap-1 text-xs text-neutral-600 dark:text-neutral-300">
         Rows:
         <button
@@ -519,6 +846,7 @@ const LiveTable: React.FC<{
           <Plus className="w-3.5 h-3.5" />
         </button>
       </div>
+      )}
     </div>
   );
 };
@@ -534,6 +862,7 @@ const LiveFields: React.FC<{
   const fields = section.fields ?? [];
   const n = gridColumnsFor(section);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const fieldWasSelected = useRef(false);
   const gridRef = useRef<HTMLDivElement>(null);
 
   const selIndex = fields.findIndex((f) => f.id === selectedId);
@@ -629,7 +958,11 @@ const LiveFields: React.FC<{
         {fields.map((field, i) => (
           <div
             key={field.id}
-            onClick={() => setSelectedId(field.id)}
+            onMouseDown={() => {
+              fieldWasSelected.current = selectedId === field.id;
+            }}
+            onClick={() => setSelectedId(fieldWasSelected.current ? null : field.id)}
+            {...refAttrs(section.id, { fieldId: field.id })}
             style={{
               gridColumn: `span ${Math.min(field.colSpan ?? 1, n)}`,
               gridRow: `span ${field.rowSpan ?? 1}`,
@@ -692,19 +1025,93 @@ const LiveChecklist: React.FC<{
   const cell = "border border-neutral-300 dark:border-neutral-600 p-0";
   const input =
     "w-full bg-transparent px-2 py-1 text-xs text-neutral-900 dark:text-white focus:outline-none focus:bg-brand/5";
+  const headers = section.checklistHeaders ?? {};
+  const setHeader = (key: "section" | "description" | "result", value: string) =>
+    onUpdate({ checklistHeaders: { ...headers, [key]: value || undefined } });
+  const headInput =
+    "w-full bg-transparent px-2 py-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-200 focus:outline-none focus:bg-brand/5";
+  // Which item's result choices are open for editing ("all" = every item).
+  const [editingResults, setEditingResults] = useState<string | null>(null);
+  const toOptions = (list: string[] = []) => list.map((v) => ({ label: v, value: v }));
+  const fromOptions = (list: { label: string }[]) => list.map((o) => o.label);
+  const resultsTarget =
+    editingResults === "all" ? items[0] : items.find((it) => it.id === editingResults);
+  const setResults = (next: string[]) =>
+    setItems(
+      items.map((it) =>
+        editingResults === "all" || it.id === editingResults ? { ...it, resultOptions: next } : it,
+      ),
+    );
 
   return (
+    <div>
+    {editingResults && resultsTarget ? (
+      <Toolbar
+        title={
+          editingResults === "all"
+            ? "Result choices · all items"
+            : `Result choices · ${resultsTarget.netaSection || resultsTarget.description || "item"}`
+        }
+      >
+        <InlineOptionsEditor
+          options={toOptions(resultsTarget.resultOptions)}
+          onChange={(next) => setResults(fromOptions(next))}
+          onAdd={() =>
+            setResults([
+              ...(resultsTarget.resultOptions ?? []),
+              `Option ${(resultsTarget.resultOptions?.length ?? 0) + 1}`,
+            ])
+          }
+        />
+        <button
+          type="button"
+          className="ml-auto text-xs text-neutral-500 hover:text-brand"
+          onClick={() => setEditingResults(null)}
+        >
+          Done
+        </button>
+      </Toolbar>
+    ) : (
+      <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+        <span>Click a heading to rename it, or a Result cell to change that item's choices.</span>
+        {items.length > 0 && (
+          <button
+            type="button"
+            className="ml-auto text-brand hover:underline"
+            onClick={() => setEditingResults("all")}
+            title="Set the same result choices on every item"
+          >
+            Edit result choices for all items
+          </button>
+        )}
+      </div>
+    )}
     <table className="w-full table-fixed border-collapse text-xs">
       <thead>
         <tr className="bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300">
-          <th className="w-32 border border-neutral-300 dark:border-neutral-600 px-2 py-1.5 text-left">
-            NETA Section
+          <th className="w-32 border border-neutral-300 dark:border-neutral-600 p-0">
+            <input
+              value={headers.section ?? ""}
+              onChange={(e) => setHeader("section", e.target.value)}
+              placeholder="NETA Section"
+              className={headInput}
+            />
           </th>
-          <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1.5 text-left">
-            Description
+          <th className="border border-neutral-300 dark:border-neutral-600 p-0">
+            <input
+              value={headers.description ?? ""}
+              onChange={(e) => setHeader("description", e.target.value)}
+              placeholder="Description"
+              className={headInput}
+            />
           </th>
-          <th className="w-36 border border-neutral-300 dark:border-neutral-600 px-2 py-1.5 text-left">
-            Result
+          <th className="w-36 border border-neutral-300 dark:border-neutral-600 p-0">
+            <input
+              value={headers.result ?? ""}
+              onChange={(e) => setHeader("result", e.target.value)}
+              placeholder="Result"
+              className={headInput}
+            />
           </th>
           <th className="w-9 border border-neutral-300 dark:border-neutral-600" />
         </tr>
@@ -733,8 +1140,15 @@ const LiveChecklist: React.FC<{
                 className={input}
               />
             </td>
-            <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-[11px] text-neutral-400 truncate">
+            <td
+              onClick={() => setEditingResults(item.id)}
+              className={`border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-[11px] text-neutral-400 truncate cursor-pointer hover:bg-brand/5 ${
+                editingResults === item.id ? "outline outline-2 -outline-offset-2 outline-brand" : ""
+              }`}
+              title={(item.resultOptions ?? []).join(", ") || "No choices yet"}
+            >
               ▾ {item.resultOptions?.[0] ?? "Result"}
+              <span className="ml-1 text-neutral-300">({item.resultOptions?.length ?? 0})</span>
             </td>
             <td className="border border-neutral-300 dark:border-neutral-600 text-center">
               <button
@@ -772,6 +1186,253 @@ const LiveChecklist: React.FC<{
         </tr>
       </tbody>
     </table>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Contact resistance: Value Deviation tables
+// ---------------------------------------------------------------------------
+
+const LiveDeviation: React.FC<{
+  section: SectionConfig;
+  onUpdate: (u: Partial<SectionConfig>) => void;
+  /** Draw only this table (where the table layout puts it). */
+  part?: "phase" | "lines" | "combined";
+  /** Only the switch and the choices; the tables are drawn by the layout. */
+  settingsOnly?: boolean;
+}> = ({ section, onUpdate, part, settingsOnly = false }) => {
+  const dev = resolveDeviation(section);
+  const own = section.deviation ?? {};
+  const set = (patch: Partial<NonNullable<SectionConfig["deviation"]>>) =>
+    onUpdate({ deviation: { ...own, ...patch } });
+  const toOptions = (list: string[]) => list.map((v) => ({ label: v, value: v }));
+  const fromOptions = (list: { label: string }[]) => list.map((o) => o.label);
+  const optionsRow = (
+    label: string,
+    list: string[],
+    onChange: (next: string[]) => void,
+  ) => (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="w-28 shrink-0 text-[11px] font-medium text-neutral-600 dark:text-neutral-300">
+        {label}
+      </span>
+      <InlineOptionsEditor
+        options={toOptions(list)}
+        onChange={(next) => onChange(fromOptions(next))}
+        onAdd={() => onChange([...list, `Option ${list.length + 1}`])}
+      />
+    </div>
+  );
+  const head = "border border-neutral-300 dark:border-neutral-600 bg-neutral-100 dark:bg-dark-200 p-0";
+  const headInput =
+    "w-full bg-transparent px-2 py-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-200 focus:outline-none focus:bg-brand/5";
+  const cellInput =
+    "w-full bg-transparent px-2 py-1 text-xs text-neutral-800 dark:text-neutral-100 focus:outline-none focus:bg-brand/5";
+
+  const headings = (
+    <tr>
+      {(["label", "criteria", "results"] as const).map((key) => (
+        <th key={key} className={head}>
+          <input
+            value={dev.headers[key] ?? ""}
+            onChange={(e) => set({ headers: { ...(own.headers ?? {}), [key]: e.target.value } })}
+            className={headInput}
+          />
+        </th>
+      ))}
+    </tr>
+  );
+
+  const phaseTable = (
+            <table className="w-full table-fixed border-collapse text-xs">
+              <thead>{headings}</thead>
+              <tbody>
+                <tr>
+                  <td className="border border-neutral-300 dark:border-neutral-600 p-0">
+                    <input
+                      value={dev.phaseLabel}
+                      onChange={(e) => set({ phaseLabel: e.target.value })}
+                      title="Shown on every row (one per table row above)"
+                      className={cellInput}
+                    />
+                  </td>
+                  <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-[11px] text-neutral-400">
+                    ▾ {dev.phaseCriteriaDefault}
+                  </td>
+                  <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-[11px] text-neutral-400">
+                    ▾ {dev.phaseResultDefault}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+  );
+  const linesTable = (withHead: boolean) => (
+            <table className="w-full table-fixed border-collapse text-xs">
+              {withHead && <thead>{headings}</thead>}
+              <tbody>
+                {dev.extraRows.map((row, i) => (
+                  <tr key={row.id}>
+                    <td className="border border-neutral-300 dark:border-neutral-600 p-0">
+                      <div className="flex items-center">
+                        <input
+                          value={row.label}
+                          onChange={(e) =>
+                            set({
+                              extraRows: dev.extraRows.map((r, k) =>
+                                k === i ? { ...r, label: e.target.value } : r,
+                              ),
+                            })
+                          }
+                          className={cellInput}
+                        />
+                        <button
+                          type="button"
+                          className={`${iconBtn} hover:text-red-600`}
+                          onClick={() => set({ extraRows: dev.extraRows.filter((_, k) => k !== i) })}
+                          title="Remove line"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </td>
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-[11px] text-neutral-400">
+                      ▾ {dev.extraDefault}
+                    </td>
+                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-[11px] text-neutral-400">
+                      ▾ {dev.extraDefault}
+                    </td>
+                  </tr>
+                ))}
+                <tr>
+                  <td colSpan={3} className="border border-dashed border-neutral-300 dark:border-neutral-600 p-0">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        set({
+                          extraRows: [
+                            ...dev.extraRows,
+                            { id: `line${Date.now().toString(36)}`, label: "New line: N/A" },
+                          ],
+                        })
+                      }
+                      className="w-full py-1 flex items-center justify-center gap-1 text-xs text-brand hover:bg-brand/10"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Add line
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+  );
+
+  // Placed by the table layout: just that table (or both, merged).
+  if (part) {
+    if (section.showDeviation === false) return null;
+    if (part === "phase") return phaseTable;
+    if (part === "lines") return linesTable(true);
+    return (
+      <div className="[&>table+table]:-mt-px">
+        {phaseTable}
+        {linesTable(false)}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3 border-t border-dashed border-neutral-300 dark:border-neutral-600 pt-3">
+      <label className="flex items-center gap-2 text-xs font-medium text-neutral-700 dark:text-neutral-200">
+        <input
+          type="checkbox"
+          checked={section.showDeviation !== false}
+          onChange={(e) => onUpdate({ showDeviation: e.target.checked })}
+          className="rounded-none"
+        />
+        Show the Value Deviation tables
+      </label>
+      {section.showDeviation !== false && (
+        <>
+          {!settingsOnly && (
+            <div className="grid gap-4 md:grid-cols-2 items-start">
+              {phaseTable}
+              {linesTable(true)}
+            </div>
+          )}
+          <div className="space-y-1.5">
+            {optionsRow("Per-row criteria", dev.phaseCriteriaOptions, (v) => set({ phaseCriteriaOptions: v }))}
+            {optionsRow("Per-row results", dev.phaseResultOptions, (v) => set({ phaseResultOptions: v }))}
+            {optionsRow("Line criteria", dev.extraCriteriaOptions, (v) => set({ extraCriteriaOptions: v }))}
+            {optionsRow("Line results", dev.extraResultOptions, (v) => set({ extraResultOptions: v }))}
+            <div className="flex flex-wrap items-center gap-2 text-[11px] text-neutral-600 dark:text-neutral-300">
+              <span className="w-28 shrink-0 font-medium">Starting values</span>
+              per-row criteria
+              <select
+                value={dev.phaseCriteriaDefault}
+                onChange={(e) => set({ phaseCriteriaDefault: e.target.value })}
+                className={`${inlineInputCls} w-24`}
+              >
+                {dev.phaseCriteriaOptions.map((o) => (
+                  <option key={o}>{o}</option>
+                ))}
+              </select>
+              per-row result
+              <select
+                value={dev.phaseResultDefault}
+                onChange={(e) => set({ phaseResultDefault: e.target.value })}
+                className={`${inlineInputCls} w-24`}
+              >
+                {dev.phaseResultOptions.map((o) => (
+                  <option key={o}>{o}</option>
+                ))}
+              </select>
+              lines
+              <input
+                value={dev.extraDefault}
+                onChange={(e) => set({ extraDefault: e.target.value })}
+                className={`${inlineInputCls} w-20`}
+              />
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Single field (Comments, Custom Text, ...)
+// ---------------------------------------------------------------------------
+
+const LiveSingleField: React.FC<{
+  section: SectionConfig;
+  onUpdate: (u: Partial<SectionConfig>) => void;
+}> = ({ section, onUpdate }) => {
+  const field = section.field!;
+  const update = (patch: Partial<FieldConfig>) => onUpdate({ field: { ...field, ...patch } });
+  return (
+    <div className="space-y-2">
+      <Toolbar title="Field">
+        <input
+          value={field.label}
+          onChange={(e) => update({ label: e.target.value })}
+          placeholder="Field label"
+          className={`${inlineInputCls} w-48 font-medium`}
+        />
+        <FieldTypeControls field={field} onChange={update} />
+      </Toolbar>
+      <div
+        className="border border-neutral-300 dark:border-neutral-600 px-2 py-1"
+        {...refAttrs(section.id, { fieldId: field.id })}
+      >
+        <div className="text-[11px] font-medium text-neutral-700 dark:text-neutral-200">{field.label}</div>
+        <div className={`${field.type === FieldType.TEXTAREA ? "h-16" : "h-5"} flex items-start border-b border-neutral-200 dark:border-neutral-700`}>
+          <span className="text-[11px] text-neutral-400 truncate">
+            {field.placeholder || field.defaultValue || ""}
+          </span>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -781,8 +1442,11 @@ export const LiveComponentEditor: React.FC<{
   section: SectionConfig;
   onUpdate: (updates: Partial<SectionConfig>) => void;
 }> = ({ section, onUpdate }) => {
-  // Merged-cell (V2) tables have a layout this view can't edit safely.
-  const live = !section.v2 && !!(section.columns || section.fields || section.checklistItems);
+  // Merged-cell (V2) tables get the grid editor instead of the simple table.
+  const isV2 = !!section.v2;
+  // A custom table layout: the editor shows the tables arranged the same way.
+  const layout = section.tableLayout && section.columns ? resolveTableLayout(section) : null;
+  const firstColumnsPiece = layout?.rows.flat().find((p) => p.kind === "columns")?.id;
 
   return (
     <div className="space-y-4">
@@ -792,23 +1456,56 @@ export const LiveComponentEditor: React.FC<{
         placeholder="Section title"
         className="w-full bg-transparent border-b border-neutral-200 dark:border-neutral-600 pb-1 text-sm font-semibold text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-brand"
       />
-      {!live && (
+      {section.chart && (
         <>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            This component can't be edited in place. Use All settings above.
-          </p>
+          <ChartSettings section={section} allSections={[section]} onUpdate={onUpdate} />
           <SectionContent section={section} />
         </>
       )}
-      {live && section.fields && (
-        <LiveFields section={section} onUpdate={onUpdate} />
+      {section.fields && <LiveFields section={section} onUpdate={onUpdate} />}
+      {section.field && <LiveSingleField section={section} onUpdate={onUpdate} />}
+      {section.columns &&
+        (isV2 ? (
+          <TableGridEditor section={section} onUpdate={onUpdate} allSections={[section]} />
+        ) : layout ? (
+          // Same arrangement as the form: pieces in rows, side by side.
+          <div className="space-y-4">
+            {layout.rows.map((row, r) => (
+              <div key={r} className="flex flex-wrap items-start gap-4">
+                {row.map((piece) => (
+                  <div key={piece.id} style={pieceFlex(piece)}>
+                    {piece.kind === "columns" ? (
+                      <LiveTable
+                        section={section}
+                        onUpdate={onUpdate}
+                        visibleColumnIds={pieceColumnIds(section, piece)}
+                        primary={piece.id === firstColumnsPiece}
+                      />
+                    ) : (
+                      <LiveDeviation
+                        section={section}
+                        onUpdate={onUpdate}
+                        part={
+                          piece.kind === "deviation-phase"
+                            ? "phase"
+                            : piece.kind === "deviation-lines"
+                              ? "lines"
+                              : "combined"
+                        }
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <LiveTable section={section} onUpdate={onUpdate} />
+        ))}
+      {section.componentType === ComponentType.CONTACT_RESISTANCE && (
+        <LiveDeviation section={section} onUpdate={onUpdate} settingsOnly={!!layout} />
       )}
-      {live && section.columns && (
-        <LiveTable section={section} onUpdate={onUpdate} />
-      )}
-      {live && section.checklistItems && (
-        <LiveChecklist section={section} onUpdate={onUpdate} />
-      )}
+      {section.checklistItems && <LiveChecklist section={section} onUpdate={onUpdate} />}
     </div>
   );
 };

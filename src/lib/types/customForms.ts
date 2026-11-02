@@ -29,6 +29,10 @@ export const ComponentType = {
   /** Table whose rows are shown/hidden based on dropdown "settings" (e.g. Primary=4 rows, Secondary=2) */
   CONDITIONAL_TABLE: 'conditional-table',
   CUSTOM_TEXT: 'custom-text',
+  /** A chart of another table's columns (see lib/customForms/chart.ts). */
+  CHART: 'chart',
+  SIGNATURES: 'signatures',
+  PHOTOS: 'photos',
   FUSE_DATA: 'fuse-data',
   VOLTAGE_READINGS: 'voltage-readings',
   CURRENT_READINGS: 'current-readings',
@@ -71,6 +75,10 @@ export const FieldType = {
   CALCULATED: 'calculated',
   /** Single cell: Temp °F input, °C/TCF read-only, Humidity input */
   TEMPERATURE_HUMIDITY: 'temperature-humidity',
+  /** Drawn signature with printed name and date. */
+  SIGNATURE: 'signature',
+  /** Photos placed in the report where the field sits. */
+  PHOTO: 'photo',
 } as const;
 
 export type FieldType = (typeof FieldType)[keyof typeof FieldType];
@@ -103,6 +111,33 @@ export interface FieldConfig {
   /** For TEMPERATURE_HUMIDITY: default °F and % (e.g. 68, 50) */
   defaultTemperature?: number;
   defaultHumidity?: number;
+  /**
+   * For a pass/fail result column: the rule (reading, test, limit). Compiled
+   * into `calculation.formula`; see lib/customForms/resultRules.ts.
+   */
+  resultRule?: import('@/lib/customForms/resultRules').ResultRule;
+  /**
+   * For a table column: an equipment search that fills the row from the
+   * test equipment list. See lib/customForms/equipment.ts.
+   */
+  equipmentPicker?: import('@/lib/customForms/equipment').EquipmentPickerConfig;
+  /**
+   * For a table column: where its readings' unit comes from, when it isn't the
+   * row's "Units" column or a unit chooser. See lib/customForms/unitResolution.ts.
+   */
+  unitSource?: { column?: string };
+  /**
+   * The equipment-asset value this field fills from, e.g. "manufacturer" or
+   * "nameplate.kva" (tables: first row). See lib/customForms/assetFill.ts.
+   */
+  assetSource?: string;
+  /** For TEMPERATURE_HUMIDITY: the labels inside the control. */
+  subLabels?: {
+    fahrenheit?: string;
+    celsius?: string;
+    tcf?: string;
+    humidity?: string;
+  };
   /** For grouped-field grid layout: how many grid columns this field spans (default 1).
    *  Lets the builder widen a field instead of relying on equal auto-sizing. */
   colSpan?: number;
@@ -192,6 +227,26 @@ export interface SectionTableOverlay {
   print?: import('@/lib/customForms/v2/schema').TablePrintV2;
 }
 
+/**
+ * Contact resistance "Value Deviation" tables. Every piece is optional; the
+ * renderer falls back to DEFAULT_DEVIATION (runtime/SectionBody.tsx), which is
+ * what the tables always showed.
+ */
+export interface DeviationConfig {
+  headers?: { label?: string; criteria?: string; results?: string };
+  /** Text in the first cell of each per-row (phase) line. */
+  phaseLabel?: string;
+  phaseCriteriaOptions?: string[];
+  phaseCriteriaDefault?: string;
+  phaseResultOptions?: string[];
+  phaseResultDefault?: string;
+  /** Fixed lines in the second table (Neutral, Ground, ...). */
+  extraRows?: { id: string; label: string }[];
+  extraCriteriaOptions?: string[];
+  extraResultOptions?: string[];
+  extraDefault?: string;
+}
+
 export interface SectionConfig {
   id: string;
   componentType: ComponentType;
@@ -247,6 +302,25 @@ export interface SectionConfig {
   showDeviation?: boolean;
   /** For contact-resistance: default labels for first column (e.g. Section 1, Section 2, ...). */
   defaultRowLabels?: string[];
+  /** For contact-resistance: wording and choices of the Value Deviation tables. */
+  deviation?: DeviationConfig;
+  /**
+   * How the component's tables are arranged (pieces in rows; split/combined
+   * tables). Absent = the original fixed arrangement. See tableLayout.ts.
+   */
+  tableLayout?: import('@/lib/customForms/tableLayout').TableLayout;
+  /**
+   * Columns split into As Found / As Left pairs. See lib/customForms/asFoundAsLeft.ts.
+   */
+  asFoundAsLeft?: { pairs: import('@/lib/customForms/asFoundAsLeft').AsFoundAsLeftPair[] };
+  /** For a chart section: what it plots. See lib/customForms/chart.ts. */
+  chart?: import('@/lib/customForms/chart').ChartConfig;
+  /** For checklists: the column headings. */
+  checklistHeaders?: {
+    section?: string;
+    description?: string;
+    result?: string;
+  };
 
   /** When set, add/remove rows on this section also updates all sections with the same id (linked tables). */
   rowCountLinkGroupId?: string;
@@ -321,8 +395,16 @@ export interface LookupTableDefinition {
   id: string;
   keyType: 'string' | 'number';
   valueType: 'string' | 'number' | 'boolean';
-  entries: { key: string | number; value: string | number | boolean }[];
+  entries: {
+    key: string | number;
+    value: string | number | boolean;
+    values?: Record<string, string | number | boolean | null>;
+  }[];
   fallback?: string | number | boolean | null;
+  /** "range" = numeric "up to" rows (see expressions/resources.ts). */
+  match?: 'exact' | 'range';
+  /** Extra value columns, read with lookup(table, key, "column"). */
+  columns?: string[];
 }
 
 export interface InterpolationCurveDefinition {

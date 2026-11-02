@@ -1,5 +1,5 @@
 # electron-builder config for ampOS Offline.
-# Phase 0 baseline; auto-update feeds are wired in Phase 6.
+# Release with scripts/release-offline.mjs.
 appId: com.ampreports.offlinereports
 productName: ampOS Offline
 copyright: Copyright © Amp Reports
@@ -8,12 +8,21 @@ directories:
   output: release
   buildResources: build-resources
 
+# Where installed apps look for new versions (latest.yml / latest-mac.yml). Same
+# address as the portal's download buttons. The repo must stay public, or move
+# this feed, because the app reads it without logging in.
+publish:
+  provider: generic
+  url: https://github.com/banjito/Active-Website-Software/releases/latest/download
+
 # What ships inside the asar. The compiled Electron processes plus the built
 # renderer (emitted by `npm run electron:build`). The renderer is fully bundled
-# by Vite, so the ONLY runtime node_module needed is the native better-sqlite3
-# (and its `bindings`/`file-uri-to-path` helpers). Everything else in this
-# webapp's package.json (puppeteer, react-pdf, …) is excluded to keep the app
-# small — otherwise electron-builder drags in the entire web dependency tree.
+# by Vite, so the only runtime node_modules needed are the native better-sqlite3
+# (with its `bindings`/`file-uri-to-path` helpers) and electron-updater (with
+# everything it requires). The release script fails if the updater can't load.
+# Everything else in this webapp's package.json (puppeteer, react-pdf, …) is
+# excluded to keep the app small — otherwise electron-builder drags in the
+# entire web dependency tree.
 files:
   - electron/build/**/*
   - electron/renderer-dist/**/*
@@ -21,12 +30,30 @@ files:
   - "node_modules/better-sqlite3/**/*"
   - "node_modules/bindings/**/*"
   - "node_modules/file-uri-to-path/**/*"
+  - "node_modules/electron-updater/**/*"
+  - "node_modules/builder-util-runtime/**/*"
+  - "node_modules/debug/**/*"
+  - "node_modules/ms/**/*"
+  - "node_modules/sax/**/*"
+  - "node_modules/fs-extra/**/*"
+  - "node_modules/graceful-fs/**/*"
+  - "node_modules/jsonfile/**/*"
+  - "node_modules/universalify/**/*"
+  - "node_modules/js-yaml/**/*"
+  - "node_modules/argparse/**/*"
+  - "node_modules/lazy-val/**/*"
+  - "node_modules/lodash.escaperegexp/**/*"
+  - "node_modules/lodash.isequal/**/*"
+  - "node_modules/semver/**/*"
+  - "node_modules/tiny-typed-emitter/**/*"
 
 extraResources:
   - from: build-resources/icon.png
     to: build-resources/icon.png
   - from: build-resources/icon-dark.png
     to: build-resources/icon-dark.png
+  - from: build-resources/icon.ico
+    to: build-resources/icon.ico
 
 # better-sqlite3 (added in Phase 1) is a native module and must stay unpacked.
 asarUnpack:
@@ -40,10 +67,15 @@ win:
   target:
     - nsis
     - msi
-  artifactName: ${productName}_${version}_${arch}.${ext}
+  # The portal's download button and the updater both use this file, so the
+  # name is fixed. No spaces: GitHub rewrites them and updates would 404.
+  artifactName: ampOS-Offline-Windows-x64-Setup.${ext}
 
 mac:
   category: public.app-category.business
+  # The updater picks the Apple Silicon file by finding "arm64" in its name, so
+  # the portal's fixed-name zip is a separate copy (see release-offline.mjs).
+  artifactName: ampOS-Offline-${version}-${arch}-mac.${ext}
   target:
     - target: dmg
       arch: [arm64, x64]

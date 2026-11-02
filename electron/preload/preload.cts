@@ -37,6 +37,19 @@ const api = {
       hash?: string;
     }) => ipcRenderer.invoke("pdf:export", opts ?? {}),
   },
+  // Auto-update status. The updater itself runs in the main process.
+  updates: {
+    state: (): Promise<{ currentVersion: string; readyVersion: string | null }> =>
+      ipcRenderer.invoke("updates:state"),
+    install: () => ipcRenderer.invoke("updates:install"),
+    onReady: (callback: (version: string) => void) => {
+      const listener = (_evt: unknown, version: string) => callback(version);
+      ipcRenderer.on("updates:ready", listener);
+      return () => {
+        ipcRenderer.removeListener("updates:ready", listener);
+      };
+    },
+  },
 };
 
 contextBridge.exposeInMainWorld("electronAPI", api);

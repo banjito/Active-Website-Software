@@ -8,6 +8,7 @@ import { DemoModeProvider } from "@/lib/DemoModeContext";
 import SavedReportsPage from "./SavedReportsPage";
 import ReportListPage from "./ReportListPage";
 import ReportHost from "./ReportHost";
+import UpdateNotice from "./UpdateNotice";
 
 /**
  * Standalone offline reporting app. Deliberately NOT the full ampOS shell and
@@ -29,6 +30,7 @@ export default function OfflineApp() {
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <DemoModeProvider>
             <Toaster position="top-right" />
+            <UpdateNotice />
             <HashRouter>
               <Routes>
                 <Route path="/" element={<SavedReportsPage />} />

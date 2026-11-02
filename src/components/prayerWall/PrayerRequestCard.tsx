@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Dialog } from "@headlessui/react";
-import { CheckCircle2, HeartHandshake, Trash2, X } from "lucide-react";
+import { CheckCircle2, HeartHandshake, Pencil, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { formatRelativeSafe } from "@/lib/formatRelativeSafe";
@@ -10,17 +10,22 @@ import { PRAYER_NOTE_MAX, PrayerRequest } from "@/services/prayerWallService";
 interface PrayerRequestCardProps {
   request: PrayerRequest;
   busy?: boolean;
+  /** Admins can edit, answer or delete any request. */
+  isAdmin?: boolean;
   onTogglePraying: (request: PrayerRequest) => void;
   onMarkAnswered: (request: PrayerRequest, note: string) => Promise<void>;
   onDelete: (request: PrayerRequest) => Promise<void>;
+  onEdit: (request: PrayerRequest) => void;
 }
 
 export function PrayerRequestCard({
   request,
   busy = false,
+  isAdmin = false,
   onTogglePraying,
   onMarkAnswered,
   onDelete,
+  onEdit,
 }: PrayerRequestCardProps) {
   const [answerOpen, setAnswerOpen] = useState(false);
   const [answerNote, setAnswerNote] = useState("");
@@ -93,8 +98,18 @@ export function PrayerRequestCard({
           )}
         </div>
 
-        {request.is_mine && (
+        {(request.is_mine || isAdmin) && (
           <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              onClick={() => onEdit(request)}
+              disabled={busy}
+              className="rounded-none p-1.5 text-neutral-500 hover:text-brand dark:text-neutral-400 disabled:opacity-50"
+              aria-label="Edit request"
+              title="Edit"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
             {!isAnswered && (
               <button
                 type="button"

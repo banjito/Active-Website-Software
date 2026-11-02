@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { OctagonAlert } from "lucide-react";
+import { OctagonAlert, Paperclip } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/Button";
@@ -76,8 +76,7 @@ export const FloatingIssueReporter: React.FC = () => {
     })();
   }, [open, allUsers.length]);
 
-  const onSelectFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = Array.from(e.target.files || []);
+  const addFiles = (selected: File[]) => {
     const uploads: UploadingFile[] = selected.map((file) => ({
       file,
       previewUrl:
@@ -86,7 +85,30 @@ export const FloatingIssueReporter: React.FC = () => {
           : "",
     }));
     setFiles((prev) => [...prev, ...uploads]);
+  };
+
+  const onSelectFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    addFiles(Array.from(e.target.files || []));
     if (inputRef.current) inputRef.current.value = "";
+  };
+
+  const onPasteDescription = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    // Excel and Word also put a picture of copied text on the clipboard.
+    // When there is text, paste it as text instead of attaching that picture.
+    if (e.clipboardData.getData("text/plain")) return;
+    const pasted = Array.from(e.clipboardData.files)
+      .filter((f) => f.type.startsWith("image/"))
+      .map((f) =>
+        // Clipboard images can arrive unnamed; the upload path needs the extension.
+        f.name
+          ? f
+          : new File([f], `pasted-${Date.now()}.${f.type.split("/")[1] || "png"}`, {
+              type: f.type,
+            }),
+      );
+    if (pasted.length === 0) return;
+    e.preventDefault();
+    addFiles(pasted);
   };
 
   const removeFile = (idx: number) => {
@@ -221,7 +243,7 @@ export const FloatingIssueReporter: React.FC = () => {
       )}
 
       {open && (
-        <div className="w-[360px] max-w-[92vw] bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-none shadow-2xl p-4">
+        <div className="w-[360px] max-w-[92vw] max-h-[calc(100vh-2rem)] overflow-y-auto overflow-x-hidden bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 rounded-none shadow-2xl p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
               {type === "issue" ? "Report an Issue" : "Request a Feature"}
@@ -236,21 +258,36 @@ export const FloatingIssueReporter: React.FC = () => {
           </div>
 
           <div className="space-y-3">
-            <div>
-              <label className="form-label block mb-1">Type</label>
-              <select
-                value={type}
-                onChange={(e) =>
-                  setType(e.target.value as "issue" | "feature_request")
-                }
-                className="form-select"
-              >
-                <option value="issue">Issue</option>
-                <option value="feature_request">Feature Request</option>
-              </select>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="form-label block text-sm">Type</label>
+                <select
+                  value={type}
+                  onChange={(e) =>
+                    setType(e.target.value as "issue" | "feature_request")
+                  }
+                  className="form-select"
+                >
+                  <option value="issue">Issue</option>
+                  <option value="feature_request">Feature Request</option>
+                </select>
+              </div>
+              <div>
+                <label className="form-label block text-sm">Priority</label>
+                <select
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value as any)}
+                  className="form-select"
+                >
+                  <option value="low">Low</option>
+                  <option value="normal">Normal</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
             </div>
             <div>
-              <label className="form-label block mb-1">Title</label>
+              <label className="form-label block text-sm">Title</label>
               <input
                 type="text"
                 value={title}
@@ -260,30 +297,20 @@ export const FloatingIssueReporter: React.FC = () => {
               />
             </div>
             <div>
-              <label className="form-label block mb-1">Description</label>
+              <label className="form-label block text-sm">Description</label>
+              {/* The ! is required: 16 reports add a global 200px textarea
+                  minimum that leaks onto other pages. */}
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                rows={4}
-                className="form-textarea"
-                placeholder="Steps to reproduce, expected vs actual behavior..."
+                onPaste={onPasteDescription}
+                rows={3}
+                className="form-textarea !min-h-[4rem] resize-y"
+                placeholder="What happened? Paste screenshots here."
               />
             </div>
             <div>
-              <label className="form-label block mb-1">Priority</label>
-              <select
-                value={priority}
-                onChange={(e) => setPriority(e.target.value as any)}
-                className="form-select"
-              >
-                <option value="low">Low</option>
-                <option value="normal">Normal</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
-              </select>
-            </div>
-            <div>
-              <label className="form-label block mb-1">
+              <label className="form-label block text-sm">
                 Interested Parties
               </label>
               <div className="relative">
@@ -367,73 +394,83 @@ export const FloatingIssueReporter: React.FC = () => {
               )}
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="form-label">Attachments</label>
-                <input
-                  ref={inputRef}
-                  type="file"
-                  accept="*/*"
-                  multiple
-                  onChange={onSelectFiles}
-                />
+            {files.length > 0 && (
+              <div className="grid grid-cols-5 gap-2">
+                {files.map((f, idx) => (
+                  <div key={idx} className="relative group">
+                    {f.previewUrl ? (
+                      <img
+                        src={f.previewUrl}
+                        alt={f.file.name}
+                        className="w-full h-12 object-cover rounded-none border border-neutral-200 dark:border-neutral-700"
+                      />
+                    ) : (
+                      <div className="w-full h-12 flex items-center justify-center rounded-none border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-100 text-xs text-neutral-600 dark:text-neutral-300 p-1 text-center">
+                        <span className="line-clamp-2 break-all">
+                          {f.file.name}
+                        </span>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => removeFile(idx)}
+                      className="absolute top-0 right-0 bg-black/70 text-white rounded-none w-5 h-5 text-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                      aria-label={`Remove ${f.file.name}`}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
               </div>
-              {files.length > 0 && (
-                <div className="grid grid-cols-5 gap-2">
-                  {files.map((f, idx) => (
-                    <div key={idx} className="relative group">
-                      {f.previewUrl ? (
-                        <img
-                          src={f.previewUrl}
-                          alt={f.file.name}
-                          className="w-full h-16 object-cover rounded border border-neutral-200 dark:border-neutral-700"
-                        />
-                      ) : (
-                        <div className="w-full h-16 flex items-center justify-center rounded border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-100 text-xs text-neutral-600 dark:text-neutral-300 p-1 text-center">
-                          <span className="line-clamp-2 break-all">
-                            {f.file.name}
-                          </span>
-                        </div>
-                      )}
-                      <button
-                        onClick={() => removeFile(idx)}
-                        className="absolute -top-2 -right-2 bg-black/70 text-white rounded-none w-6 h-6 text-xs opacity-0 group-hover:opacity-100"
-                        aria-label="Remove"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            )}
 
-            <div className="text-xs text-neutral-500 dark:text-neutral-400">
+            <div
+              className="truncate text-xs text-neutral-500 dark:text-neutral-400"
+              title={pageUrl}
+            >
               Page: {pageUrl || "unknown"}
             </div>
 
             {error && <div className="text-sm text-red-600">{error}</div>}
             {success && <div className="text-sm text-green-600">{success}</div>}
 
-            <div className="flex items-center justify-end gap-2 pt-1">
+            <input
+              ref={inputRef}
+              type="file"
+              accept="*/*"
+              multiple
+              onChange={onSelectFiles}
+              className="hidden"
+            />
+            <div className="flex items-center justify-between gap-2 pt-1">
               <Button
-                variant="secondary"
-                onClick={() => {
-                  resetForm();
-                  setOpen(false);
-                }}
-                className="bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
+                variant="ghost"
+                size="sm"
+                onClick={() => inputRef.current?.click()}
+                leftIcon={<Paperclip className="h-4 w-4" aria-hidden />}
                 disabled={submitting}
               >
-                Cancel
+                Attach
               </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="bg-brand hover:bg-brand-dark text-white"
-              >
-                {submitting ? "Submitting..." : "Submit"}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    resetForm();
+                    setOpen(false);
+                  }}
+                  className="bg-white dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600"
+                  disabled={submitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                  className="bg-brand hover:bg-brand-dark text-white"
+                >
+                  {submitting ? "Submitting..." : "Submit"}
+                </Button>
+              </div>
             </div>
           </div>
         </div>

@@ -105,6 +105,23 @@ export async function markPrayerAnswered(requestId: string, note: string): Promi
   if (error) throw new Error(describeSupabaseError(error));
 }
 
+/** Authors can edit their own; the RPC also lets admins and superusers edit any. */
+export async function updatePrayerRequest(
+  requestId: string,
+  input: { body: string; title?: string },
+): Promise<void> {
+  const { error } = await withWriteRetry(
+    () =>
+      supabase.schema("common").rpc("prayer_request_update", {
+        p_request_id: requestId,
+        p_body: input.body,
+        p_title: input.title?.trim() || null,
+      }),
+    { label: "prayer_request_update" },
+  );
+  if (error) throw new Error(describeSupabaseError(error));
+}
+
 export async function deletePrayerRequest(requestId: string): Promise<void> {
   const { error } = await withWriteRetry(
     () =>

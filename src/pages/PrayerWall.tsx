@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { toast } from "@/components/ui/toast";
+import { isSuperUser } from "@/lib/roles";
 import { cn } from "@/lib/utils";
+import { PrayerEditDialog } from "@/components/prayerWall/PrayerEditDialog";
 import { PrayerRequestCard } from "@/components/prayerWall/PrayerRequestCard";
 import {
   deletePrayerRequest,
@@ -14,6 +16,7 @@ import {
   markPrayerAnswered,
   postPrayerRequest,
   togglePraying,
+  updatePrayerRequest,
   PRAYER_BODY_MAX,
   PRAYER_PAGE_SIZE,
   PRAYER_TITLE_MAX,
@@ -35,14 +38,18 @@ const EMPTY_COPY: Record<PrayerFilter, string> = {
 
 export default function PrayerWall() {
   const { user } = useAuth();
+  // Must match common.prayer_wall_is_admin.
+  const role = user?.user_metadata?.role;
+  const isAdmin = role === "Admin" || role === "Super Admin" || isSuperUser(user?.email);
 
-  const [filter, setFilter] = useState<PrayerFilter>("all");
+  const [filter, setFilter] = useState<PrayerFilter>("active");
   const [items, setItems] = useState<PrayerRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
+  const [editing, setEditing] = useState<PrayerRequest | null>(null);
 
   // Compose box
   const [title, setTitle] = useState("");
@@ -218,6 +225,26 @@ export default function PrayerWall() {
       const message = err instanceof Error ? err.message : "Could not update.";
       console.error("PrayerWall: mark answered failed", err);
       toast({ title: "Could not mark answered", description: message, variant: "destructive" });
+      throw err;
+    } finally {
+      setBusy(request.id, false);
+    }
+  };
+
+  const handleSaveEdit = async (
+    request: PrayerRequest,
+    input: { title: string; body: string },
+  ) => {
+    setBusy(request.id, true);
+    try {
+      await updatePrayerRequest(request.id, input);
+      const fresh = await fetchPrayerRequest(request.id);
+      if (fresh) setItems((prev) => prev.map((r) => (r.id === fresh.id ? fresh : r)));
+      toast({ title: "Request updated", variant: "success" });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not save.";
+      console.error("PrayerWall: edit failed", err);
+      toast({ title: "Could not save", description: message, variant: "destructive" });
       throw err;
     } finally {
       setBusy(request.id, false);
@@ -423,9 +450,11 @@ export default function PrayerWall() {
               key={r.id}
               request={r}
               busy={busyIds.has(r.id)}
+              isAdmin={isAdmin}
               onTogglePraying={handleTogglePraying}
               onMarkAnswered={handleMarkAnswered}
               onDelete={handleDelete}
+              onEdit={setEditing}
             />
           ))}
           {hasMore && (
@@ -440,6 +469,15 @@ export default function PrayerWall() {
             </div>
           )}
         </div>
+      )}
+
+      {editing && (
+        <PrayerEditDialog
+          key={editing.id}
+          request={editing}
+          onClose={() => setEditing(null)}
+          onSave={handleSaveEdit}
+        />
       )}
     </div>
   );

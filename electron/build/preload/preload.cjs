@@ -32,6 +32,18 @@ const api = {
     pdf: {
         export: (opts) => electron_1.ipcRenderer.invoke("pdf:export", opts ?? {}),
     },
+    // Auto-update status. The updater itself runs in the main process.
+    updates: {
+        state: () => electron_1.ipcRenderer.invoke("updates:state"),
+        install: () => electron_1.ipcRenderer.invoke("updates:install"),
+        onReady: (callback) => {
+            const listener = (_evt, version) => callback(version);
+            electron_1.ipcRenderer.on("updates:ready", listener);
+            return () => {
+                electron_1.ipcRenderer.removeListener("updates:ready", listener);
+            };
+        },
+    },
 };
 electron_1.contextBridge.exposeInMainWorld("electronAPI", api);
 //# sourceMappingURL=preload.cjs.map

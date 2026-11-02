@@ -139,7 +139,14 @@ export default function SavedReportsPage() {
   const [query, setQuery] = useState("");
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const [hypeLine] = useState(pickHypeLine);
+  const [appVersion, setAppVersion] = useState<string | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    void (window as any).electronAPI?.updates
+      ?.state()
+      .then((state: { currentVersion: string }) => setAppVersion(state.currentVersion));
+  }, []);
   // Export mode: rows become checkboxes and a bar at the bottom exports them.
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
@@ -273,6 +280,7 @@ export default function SavedReportsPage() {
   return (
     <div className="min-h-screen bg-neutral-100 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <TopBar
+        subtitle={appVersion ? `Version ${appVersion}` : undefined}
         actions={
           <button onClick={() => navigate("/new")} className={primaryButtonClass}>
             <Icon d={ICONS.plus} />

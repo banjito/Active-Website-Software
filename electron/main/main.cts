@@ -28,12 +28,19 @@ import {
   runQuery,
   type QueryIntent,
 } from "../db/store.cjs";
+import { initUpdates, runUpdaterTest } from "./updater.cjs";
 
 // Vite dev server URL (see `npm run electron:dev`). When unset we load the
 // packaged renderer from disk.
 const DEV_SERVER_URL = process.env.ELECTRON_RENDERER_URL;
 
 app.setName("ampOS Offline");
+
+// Windows ties a running app to its installed shortcut (and that shortcut's
+// icon) by this ID. Must match appId in electron-builder.yml.
+if (process.platform === "win32") {
+  app.setAppUserModelId("com.ampreports.offlinereports");
+}
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -60,6 +67,11 @@ function updateDockIcon(): void {
 }
 
 function createWindow(): void {
+  // Set the Windows taskbar icon directly so a stale Windows icon cache can't
+  // show a blank page in its place.
+  const windowsIcon =
+    process.platform === "win32" ? getBuildResourcePath("icon.ico") : undefined;
+
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 960,
@@ -68,6 +80,7 @@ function createWindow(): void {
     backgroundColor: "#f5f5f5", // neutral-100, the app's (light-only) page color
     show: false,
     title: "ampOS Offline",
+    ...(windowsIcon ? { icon: windowsIcon } : {}),
     webPreferences: {
       preload: path.join(__dirname, "../preload/preload.cjs"),
       contextIsolation: true,
@@ -122,6 +135,11 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  if (process.env.ELECTRON_UPDATER_TEST) {
+    runUpdaterTest();
+    return;
+  }
+
   updateDockIcon();
   nativeTheme.on("updated", updateDockIcon);
 
@@ -134,6 +152,7 @@ app.whenReady().then(() => {
     : path.join(app.getPath("userData"), "ampreports.sqlite");
   initStore(dbPath);
   ipcMain.handle("db:query", (_evt, intent: QueryIntent) => runQuery(intent));
+  initUpdates();
 
   // PDF export over IPC (renderer can trigger export of its own report).
   ipcMain.handle(

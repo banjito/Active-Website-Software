@@ -49,10 +49,16 @@ const fs = __importStar(require("fs"));
 const os = __importStar(require("os"));
 const path = __importStar(require("path"));
 const store_cjs_1 = require("../db/store.cjs");
+const updater_cjs_1 = require("./updater.cjs");
 // Vite dev server URL (see `npm run electron:dev`). When unset we load the
 // packaged renderer from disk.
 const DEV_SERVER_URL = process.env.ELECTRON_RENDERER_URL;
 electron_1.app.setName("ampOS Offline");
+// Windows ties a running app to its installed shortcut (and that shortcut's
+// icon) by this ID. Must match appId in electron-builder.yml.
+if (process.platform === "win32") {
+    electron_1.app.setAppUserModelId("com.ampreports.offlinereports");
+}
 let mainWindow = null;
 function getBuildResourcePath(fileName) {
     return [
@@ -72,6 +78,9 @@ function updateDockIcon() {
     electron_1.app.dock?.setIcon(electron_1.nativeImage.createFromPath(iconPath).resize({ width: 256, height: 256 }));
 }
 function createWindow() {
+    // Set the Windows taskbar icon directly so a stale Windows icon cache can't
+    // show a blank page in its place.
+    const windowsIcon = process.platform === "win32" ? getBuildResourcePath("icon.ico") : undefined;
     mainWindow = new electron_1.BrowserWindow({
         width: 1440,
         height: 960,
@@ -80,6 +89,7 @@ function createWindow() {
         backgroundColor: "#f5f5f5", // neutral-100, the app's (light-only) page color
         show: false,
         title: "ampOS Offline",
+        ...(windowsIcon ? { icon: windowsIcon } : {}),
         webPreferences: {
             preload: path.join(__dirname, "../preload/preload.cjs"),
             contextIsolation: true,
@@ -123,6 +133,10 @@ function createWindow() {
     });
 }
 electron_1.app.whenReady().then(() => {
+    if (process.env.ELECTRON_UPDATER_TEST) {
+        (0, updater_cjs_1.runUpdaterTest)();
+        return;
+    }
     updateDockIcon();
     electron_1.nativeTheme.on("updated", updateDockIcon);
     // Open the offline SQLite store under the OS app-data dir and expose the
@@ -134,6 +148,7 @@ electron_1.app.whenReady().then(() => {
         : path.join(electron_1.app.getPath("userData"), "ampreports.sqlite");
     (0, store_cjs_1.initStore)(dbPath);
     electron_1.ipcMain.handle("db:query", (_evt, intent) => (0, store_cjs_1.runQuery)(intent));
+    (0, updater_cjs_1.initUpdates)();
     // PDF export over IPC (renderer can trigger export of its own report).
     electron_1.ipcMain.handle("pdf:export", (evt, opts) => {
         const win = electron_1.BrowserWindow.fromWebContents(evt.sender);

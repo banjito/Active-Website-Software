@@ -51,6 +51,7 @@ import {
 } from "../../lib/types/index";
 import EstimateSheet from "../estimates/EstimateSheet";
 import SimpleEstimateEditor from "../estimates/SimpleEstimateEditor";
+import FullEstimateBuilder from "../estimates/full/FullEstimateBuilder";
 import { Button } from "@/components/ui/Button";
 import { useJobDetails } from "../../lib/hooks/useJobDetails";
 import { DivisionAnalyticsDialog } from "../analytics/DivisionAnalyticsDialog";
@@ -796,6 +797,7 @@ export default function OpportunityDetail() {
   >(false);
   const [activeEstimateId, setActiveEstimateId] = useState<string | null>(null);
   const [showSimpleEstimate, setShowSimpleEstimate] = useState(false);
+  const [showFullEstimate, setShowFullEstimate] = useState(false);
   const [isDraft, setIsDraft] = useState(false);
   // Keep a ref in sync so the (id, showEstimate)-scoped estimateSaved listener
   // can read the latest draft state without re-subscribing on every toggle.
@@ -5930,7 +5932,7 @@ export default function OpportunityDetail() {
                           className="flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 px-3 py-2 rounded-none font-medium transition-colors"
                         >
                           <FilePlus2 className="h-4 w-4 shrink-0" />
-                          <span>New Full Estimate</span>
+                          <span>New Advanced Estimate</span>
                         </button>
                         <button
                           onClick={() => {
@@ -5942,6 +5944,19 @@ export default function OpportunityDetail() {
                           <Zap className="h-4 w-4 shrink-0" />
                           <span>New Simple Estimate</span>
                         </button>
+                        {/* Local only until the Review step is built. */}
+                        {import.meta.env.DEV && (
+                          <button
+                            onClick={() => {
+                              setShowEstimate(false);
+                              setShowFullEstimate(true);
+                            }}
+                            className="sm:col-span-2 flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 rounded-none px-3 py-2 text-sm font-medium transition-colors"
+                          >
+                            <FilePlus2 className="h-4 w-4 shrink-0" />
+                            <span>New Full Estimate</span>
+                          </button>
+                        )}
                       </div>
                       <button
                         onClick={() => {
@@ -6026,6 +6041,34 @@ export default function OpportunityDetail() {
                             onCancel={() => setShowSimpleEstimate(false)}
                             onSaved={(row) => {
                               setShowSimpleEstimate(false);
+                              setActiveEstimateId(row.id);
+                              setShowEstimate("view");
+                              setEstimateOpenSignal((s) => s + 1);
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </Dialog>
+                  {/* New Full Estimate: only the builder's own Close button closes
+                      this, so a stray click can't lose work. */}
+                  <Dialog
+                    open={showFullEstimate}
+                    onClose={() => {}}
+                    className="fixed inset-0 z-50 overflow-y-auto"
+                  >
+                    <div className="flex items-center justify-center min-h-screen">
+                      <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+                      <div className="relative bg-white dark:bg-dark-150 rounded-none w-[98%] h-[95vh] overflow-y-auto mx-auto p-6 shadow-xl my-4">
+                        <Dialog.Title className="sr-only">
+                          New Full Estimate
+                        </Dialog.Title>
+                        {showFullEstimate && (
+                          <FullEstimateBuilder
+                            opportunityId={id || ""}
+                            onClose={(row) => {
+                              setShowFullEstimate(false);
+                              if (!row) return;
                               setActiveEstimateId(row.id);
                               setShowEstimate("view");
                               setEstimateOpenSignal((s) => s + 1);

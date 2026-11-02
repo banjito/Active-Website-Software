@@ -80,7 +80,7 @@ const ToastContainer: React.FC<ToastProps> = ({
   return (
     <div
       className={`
-        fixed top-4 right-4 z-50 max-w-sm
+        fixed top-4 right-4 z-[10000] max-w-sm
         transform transition-all duration-300 ease-in-out
         ${isVisible ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"}
         ${getVariantStyles()}

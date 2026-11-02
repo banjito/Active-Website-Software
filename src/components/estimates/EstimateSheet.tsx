@@ -64,6 +64,20 @@ import {
   resolveMobilizationBreakdown,
   resolveTravelNonLaborCost,
   summarizeEstimateSnapshot,
+  toPriceNumber as toNum,
+  isStructuralLineItem,
+  calculateMaterialExtension,
+  calculateExpenseExtension,
+  calculateLaborUnit,
+  calculateLaborTotal,
+  computeLineItemTotals,
+  computeDaysOnsite,
+  computeLaborRateSplit,
+  getPricingFactors,
+  computeMaterialExpenseBase,
+  computeWorkLaborCost,
+  computeTravelLaborCost,
+  computeBaseFinalValue,
 } from "../../lib/estimatePricing";
 import {
   fmtMoney,
@@ -80,6 +94,8 @@ import {
 import { useUserPreferences } from "../../hooks/useUserPreferences";
 import { ProposalScopeNotesModal } from "./ProposalScopeNotesModal";
 import ScopeLibraryPickerModal from "./ScopeLibraryPickerModal";
+import FullEstimateBuilder from "./full/FullEstimateBuilder";
+import { isFullEstimateData } from "./full/fullEstimateData";
 import EstimateNumberInput from "@/components/estimates/EstimateNumberInput";
 import CopyEstimateToOpportunityModal, {
   CopyTargetOpportunity,
@@ -129,7 +145,7 @@ const styles = {
   formInput: {
     padding: "8px",
     border: "1px solid var(--border-color)",
-    borderRadius: "4px",
+    borderRadius: 0,
     backgroundColor: "var(--input-bg)",
     color: "var(--text-color)",
   },
@@ -169,7 +185,7 @@ const styles = {
     width: "95%",
     padding: "5px",
     border: "1px solid var(--border-color)",
-    borderRadius: "4px",
+    borderRadius: 0,
     textAlign: "center" as const,
     backgroundColor: "var(--input-bg)",
     color: "var(--text-color)",
@@ -199,7 +215,7 @@ const styles = {
     marginLeft: "auto",
     backgroundColor: "var(--summary-bg)",
     padding: "15px",
-    borderRadius: "4px",
+    borderRadius: 0,
   },
   // Flat, full-width block for sections rendered inside a SectionNav panel
   // (the panel already provides the card frame + padding).
@@ -435,8 +451,6 @@ const createDefaultLineItems = (): EstimateLineItem[] =>
 const isEstimateSectionRow = (item: any) => item?.rowType === "section";
 const isEstimateSubsectionRow = (item: any) => item?.rowType === "subsection";
 const isEstimateBlankRow = (item: any) => item?.rowType === "blank";
-const isStructuralLineItem = (item: any) =>
-  isEstimateSectionRow(item) || isEstimateSubsectionRow(item) || isEstimateBlankRow(item);
 
 const normalizeEstimateLineItem = (item: any): EstimateLineItem => {
   const rowType: EstimateLineItemRowType =
@@ -825,8 +839,7 @@ export default function EstimateSheet({
   // that only the net-term factors affect the FINAL price. Material markup is
   // left untouched.
   const [netTermsOnly, setNetTermsOnly] = useState<boolean>(false);
-  const taxFactor = netTermsOnly ? 1.0 : 1.09;
-  const finalMarkupDivisor = netTermsOnly ? 1.0 : 0.96;
+  const { taxFactor, finalMarkupDivisor } = getPricingFactors(netTermsOnly);
 
   // Manual price override: when on, the FINAL (M-F) value is forced to the exact
   // dollar amount the user types (e.g. a $1,950 minimum call-out fee) instead of
@@ -1937,13 +1950,20 @@ export default function EstimateSheet({
   // Modified save function to handle new quotes
   async function saveQuote() {
     if (!user) {
-      alert("You must be logged in to save a quote.");
+      toast({
+        title: "You must be logged in to save a quote.",
+        variant: "warning",
+      });
       return;
     }
 
     // Ensure opportunityId is valid
     if (!opportunityId) {
-      alert("Cannot save quote: Opportunity ID is missing.");
+      toast({
+        title: "Cannot save quote: Opportunity ID is missing.",
+        variant: "destructive",
+        persistent: true,
+      });
       return;
     }
 
@@ -2178,9 +2198,11 @@ export default function EstimateSheet({
           }
         } else {
           console.error("Insert operation did not return data.");
-          alert(
-            "Quote saved, but failed to retrieve confirmation. Please refresh.",
-          );
+          toast({
+            title: "Quote saved, but failed to retrieve confirmation. Please refresh.",
+            variant: "warning",
+            persistent: true,
+          });
           // Refetch to ensure we have the latest data
           await fetchEstimateData(true);
         }
@@ -2189,7 +2211,12 @@ export default function EstimateSheet({
       if (result.error) throw result.error;
     } catch (error: any) {
       console.error("Error saving quote:", error);
-      alert(`Error saving quote: ${error.message}`);
+      toast({
+        title: "Error saving quote",
+        description: error.message,
+        variant: "destructive",
+        persistent: true,
+      });
     } finally {
       setIsSaving(false);
       // Allow global refreshes again after save/close
@@ -2245,7 +2272,11 @@ export default function EstimateSheet({
 
     const quoteToDuplicate = quotes.find((q) => q.id === quoteId);
     if (!quoteToDuplicate) {
-      alert("Could not find estimate to duplicate.");
+      toast({
+        title: "Could not find estimate to duplicate.",
+        variant: "destructive",
+        persistent: true,
+      });
       return;
     }
 
@@ -2300,7 +2331,7 @@ export default function EstimateSheet({
         loadQuoteData(newQuote);
         setIsNewQuote(false);
         setHasQuote(true);
-        alert("Estimate duplicated successfully!");
+        toast({ title: "Estimate duplicated", variant: "success" });
 
         // Notify listeners to refresh
         window.dispatchEvent(
@@ -2311,7 +2342,11 @@ export default function EstimateSheet({
       }
     } catch (e) {
       console.error("Error duplicating estimate:", e);
-      alert("Failed to duplicate estimate");
+      toast({
+        title: "Failed to duplicate estimate",
+        variant: "destructive",
+        persistent: true,
+      });
     } finally {
       setIsSaving(false);
     }
@@ -2327,13 +2362,20 @@ export default function EstimateSheet({
   ) {
     if (!quoteId || !user) return;
     if (target.id === opportunityId) {
-      alert("That estimate already belongs to this opportunity.");
+      toast({
+        title: "That estimate already belongs to this opportunity.",
+        variant: "warning",
+      });
       return;
     }
 
     const quoteToCopy = quotes.find((q) => q.id === quoteId);
     if (!quoteToCopy) {
-      alert("Could not find estimate to copy.");
+      toast({
+        title: "Could not find estimate to copy.",
+        variant: "destructive",
+        persistent: true,
+      });
       return;
     }
 
@@ -2428,10 +2470,17 @@ export default function EstimateSheet({
         target.title ||
         target.customer_name ||
         "the selected opportunity";
-      alert(`Estimate copied to ${targetLabel} as ${newQuoteNumber}.`);
+      toast({
+        title: `Estimate copied to ${targetLabel} as ${newQuoteNumber}.`,
+        variant: "success",
+      });
     } catch (e) {
       console.error("Error copying estimate to opportunity:", e);
-      alert("Failed to copy estimate to the selected opportunity.");
+      toast({
+        title: "Failed to copy estimate to the selected opportunity.",
+        variant: "destructive",
+        persistent: true,
+      });
     } finally {
       setIsSaving(false);
     }
@@ -2490,56 +2539,6 @@ export default function EstimateSheet({
     setShowSaturdayHours(false);
     setShowSundayHours(false);
     setIsOpen(true);
-  };
-
-  // Function to calculate material extension - handles both string and number inputs
-  const calculateMaterialExtension = (
-    quantity: number | string,
-    price: number | string,
-  ) => {
-    const qtyNum =
-      typeof quantity === "string" ? parseFloat(quantity) || 0 : quantity || 0;
-    const priceNum =
-      typeof price === "string" ? parseFloat(price) || 0 : price || 0;
-    return qtyNum * priceNum;
-  };
-
-  // Function to calculate expense extension - handles both string and number inputs
-  const calculateExpenseExtension = (
-    quantity: number | string,
-    price: number | string,
-  ) => {
-    const qtyNum =
-      typeof quantity === "string" ? parseFloat(quantity) || 0 : quantity || 0;
-    const priceNum =
-      typeof price === "string" ? parseFloat(price) || 0 : price || 0;
-    return qtyNum * priceNum;
-  };
-
-  // Function to calculate labor unit - handles both string and number inputs
-  const calculateLaborUnit = (men: number | string, hours: number | string) => {
-    const menNum = typeof men === "string" ? parseFloat(men) || 0 : men || 0;
-    const hoursNum =
-      typeof hours === "string" ? parseFloat(hours) || 0 : hours || 0;
-    return menNum * hoursNum;
-  };
-
-  // Function to calculate labor total - handles both string and number inputs
-  const calculateLaborTotal = (
-    quantity: number | string,
-    men: number | string,
-    hours: number | string,
-  ) => {
-    const qtyNum =
-      typeof quantity === "string" ? parseFloat(quantity) || 0 : quantity || 0;
-    return qtyNum * calculateLaborUnit(men, hours);
-  };
-
-  // Helper function to safely convert string or number to number for calculations
-  const toNum = (value: number | string | undefined | null): number => {
-    if (value === undefined || value === null || value === "") return 0;
-    if (typeof value === "number") return Number.isFinite(value) ? value : 0;
-    return parseFloat(value) || 0;
   };
 
   // Helper function to format numbers with commas
@@ -2639,112 +2638,22 @@ export default function EstimateSheet({
       ...(estimateData.hoursSummary || {}),
     };
 
-    let sovMaterialTotal = 0;
-    let sovExpenseTotal = 0;
-    let sovLaborTotal = 0;
-    let sovLaborHours = 0;
-    sovItems.forEach((item) => {
-      if (isStructuralLineItem(item)) return;
-      sovMaterialTotal += calculateMaterialExtension(
-        item.quantity,
-        item.materialPrice,
-      );
-      sovExpenseTotal += calculateExpenseExtension(
-        item.quantity,
-        item.expensePrice,
-      );
-      sovLaborTotal += calculateLaborTotal(
-        item.quantity,
-        item.laborMen,
-        item.laborHours,
-      );
-      sovLaborHours +=
-        calculateLaborUnit(item.laborMen, item.laborHours) *
-        toNum(item.quantity);
-    });
-
-    let nonSovMaterialTotal = 0;
-    let nonSovExpenseTotal = 0;
-    let nonSovLaborTotal = 0;
-    let nonSovLaborHours = 0;
-    nonSovItems.forEach((item) => {
-      if (isStructuralLineItem(item)) return;
-      nonSovMaterialTotal += calculateMaterialExtension(
-        item.quantity,
-        item.materialPrice,
-      );
-      nonSovExpenseTotal += calculateExpenseExtension(
-        item.quantity,
-        item.expensePrice,
-      );
-      nonSovLaborTotal += calculateLaborTotal(
-        item.quantity,
-        item.laborMen,
-        item.laborHours,
-      );
-      nonSovLaborHours +=
-        calculateLaborUnit(item.laborMen, item.laborHours) *
-        toNum(item.quantity);
-    });
-
-    const totalWorkHours = sovLaborHours + nonSovLaborHours;
-    const hoursPerDay = toNum(hoursSummary.hoursPerDay);
-    let straightTimeHours = 0;
-    let overtimeHours = 0;
-    let doubleTimeHours = 0;
-    if (totalWorkHours > 0 && hoursPerDay > 0) {
-      const totalDays = Math.ceil(totalWorkHours / hoursPerDay);
-      for (let day = 0; day < totalDays; day++) {
-        const hoursThisDay = Math.min(
-          hoursPerDay,
-          totalWorkHours - day * hoursPerDay,
-        );
-        if (hoursThisDay <= 8) {
-          straightTimeHours += hoursThisDay;
-        } else if (hoursThisDay <= 12) {
-          straightTimeHours += 8;
-          overtimeHours += hoursThisDay - 8;
-        } else {
-          straightTimeHours += 8;
-          overtimeHours += 4;
-          doubleTimeHours += hoursThisDay - 12;
-        }
-      }
-    }
+    const calculatedValues = computeLineItemTotals(sovItems, nonSovItems);
+    const { sovLaborHours, nonSovLaborHours } = calculatedValues;
+    const totalWorkHours = calculatedValues.totalLaborHours;
+    const { straightTimeHours, overtimeHours, doubleTimeHours } =
+      computeLaborRateSplit(totalWorkHours, toNum(hoursSummary.hoursPerDay));
 
     let totalTravelHours = 0;
     if (estimateTravelData) {
       totalTravelHours = computeTravelTotals(estimateTravelData).laborHours;
     }
 
-    const calculatedValues = {
-      subtotalMaterial: sovMaterialTotal + nonSovMaterialTotal,
-      subtotalExpense: sovExpenseTotal + nonSovExpenseTotal,
-      subtotalLabor: sovLaborTotal + nonSovLaborTotal,
-      totalMaterial: sovMaterialTotal + nonSovMaterialTotal,
-      totalExpense: sovExpenseTotal + nonSovExpenseTotal,
-      totalLabor: sovLaborTotal + nonSovLaborTotal,
-      grandTotal:
-        sovMaterialTotal +
-        nonSovMaterialTotal +
-        sovExpenseTotal +
-        nonSovExpenseTotal +
-        sovLaborTotal +
-        nonSovLaborTotal,
-      nonSovMaterial: nonSovMaterialTotal,
-      nonSovExpense: nonSovExpenseTotal,
-      nonSovLabor: nonSovLaborTotal,
+    const daysOnsite = computeDaysOnsite(
       sovLaborHours,
-      nonSovLaborHours,
-      totalLaborHours: totalWorkHours,
-    };
-
-    const menNum = toNum(hoursSummary.men);
-    const hoursPerDayNum = toNum(hoursSummary.hoursPerDay);
-    const daysOnsite =
-      menNum > 0 && hoursPerDayNum > 0
-        ? sovLaborHours / (menNum * hoursPerDayNum)
-        : 0;
+      hoursSummary.men,
+      hoursSummary.hoursPerDay,
+    );
 
     return {
       ...estimateData,
@@ -2799,7 +2708,10 @@ export default function EstimateSheet({
       );
 
     if (selectedItems.length === 0) {
-      alert("Select at least one SOV line item.");
+      toast({
+        title: "Select at least one SOV line item.",
+        variant: "warning",
+      });
       return;
     }
 
@@ -2807,7 +2719,7 @@ export default function EstimateSheet({
     const targetQuote = quotes.find((q) => q.id === copyTargetQuoteId);
     const isNewTarget = copyTargetQuoteId === "__new__";
     if (!isNewTarget && !targetQuote) {
-      alert("Choose a target estimate.");
+      toast({ title: "Choose a target estimate.", variant: "warning" });
       return;
     }
 
@@ -2883,7 +2795,7 @@ export default function EstimateSheet({
               detail: { opportunityId, estimateId: newQuote.id },
             }),
           );
-          alert("SOV items copied.");
+          toast({ title: "SOV items copied.", variant: "success" });
         }
         return;
       }
@@ -2936,15 +2848,22 @@ export default function EstimateSheet({
             detail: { opportunityId, estimateId: updatedQuote.id },
           }),
         );
-        alert(
-          currentQuoteId === updatedQuote.id
-            ? "SOV items copied."
-            : "SOV items copied and target estimate opened.",
-        );
+        toast({
+          title:
+            currentQuoteId === updatedQuote.id
+              ? "SOV items copied."
+              : "SOV items copied and target estimate opened.",
+          variant: "success",
+        });
       }
     } catch (error: any) {
       console.error("Error copying SOV items:", error);
-      alert(`Failed to copy SOV items: ${error.message || "Unknown error"}`);
+      toast({
+        title: "Failed to copy SOV items",
+        description: error.message || "Unknown error",
+        variant: "destructive",
+        persistent: true,
+      });
     } finally {
       setIsCopyingSovItems(false);
     }
@@ -3239,7 +3158,10 @@ export default function EstimateSheet({
   const handleRedistributeSovItems = async () => {
     if (!user) return;
     if (isNewQuote) {
-      alert("Save this estimate before splitting it.");
+      toast({
+        title: "Save this estimate before splitting it.",
+        variant: "warning",
+      });
       return;
     }
     const sourceQuote = quotes[selectedQuoteIndex];
@@ -3247,7 +3169,10 @@ export default function EstimateSheet({
 
     const preview = buildRedistributionPreview();
     if (!preview) {
-      alert("Select at least one SOV line item and a destination.");
+      toast({
+        title: "Select at least one SOV line item and a destination.",
+        variant: "warning",
+      });
       return;
     }
 
@@ -3353,12 +3278,21 @@ export default function EstimateSheet({
           detail: { opportunityId, estimateId: updatedSource.id },
         }),
       );
-      alert(
-        `Split applied. Any saved letter proposal using these estimates is now out of date and should be regenerated.`,
-      );
+      toast({
+        title: "Split applied",
+        description:
+          "Any saved letter proposal using these estimates is now out of date and should be regenerated.",
+        variant: "warning",
+        persistent: true,
+      });
     } catch (error: any) {
       console.error("Error redistributing SOV items:", error);
-      alert(`Failed to split: ${error.message || "Unknown error"}`);
+      toast({
+        title: "Failed to split",
+        description: error.message || "Unknown error",
+        variant: "destructive",
+        persistent: true,
+      });
     } finally {
       setIsRedistributing(false);
     }
@@ -3415,10 +3349,15 @@ export default function EstimateSheet({
           detail: { opportunityId, estimateId: restoredSource.id },
         }),
       );
-      alert("Split undone.");
+      toast({ title: "Split undone.", variant: "success" });
     } catch (error: any) {
       console.error("Error undoing redistribution:", error);
-      alert(`Failed to undo: ${error.message || "Unknown error"}`);
+      toast({
+        title: "Failed to undo",
+        description: error.message || "Unknown error",
+        variant: "destructive",
+        persistent: true,
+      });
     } finally {
       setIsRedistributing(false);
     }
@@ -3432,16 +3371,8 @@ export default function EstimateSheet({
     });
 
   // Travel labor cost from the Labor Hours Tracking table
-  const getTravelLaborCost = () => {
-    return (
-      toNum(data.hoursSummary.travelStraightTimeHours) *
-        toNum(hourlyRates.straightTime) +
-      toNum(data.hoursSummary.travelOvertimeHours) *
-        toNum(hourlyRates.overtime) +
-      toNum(data.hoursSummary.travelDoubleTimeHours) *
-        toNum(hourlyRates.doubleTime)
-    );
-  };
+  const getTravelLaborCost = () =>
+    computeTravelLaborCost(data.hoursSummary, hourlyRates);
 
   // Total travel cost (for display): travel labor from tracking table + non-labor from travel section
   const getTotalTravelCost = () => {
@@ -3449,93 +3380,51 @@ export default function EstimateSheet({
   };
 
   // Shared material + expense base used by all day-type scenarios
-  const getMaterialExpenseBase = () => {
-    return (
-      toNum(data.calculatedValues.totalMaterial) *
-        taxFactor *
-        toNum(materialMarkup) +
-      toNum(data.calculatedValues.totalExpense) * taxFactor +
-      toNum(data.calculatedValues.nonSovExpense) * 1.0
-    );
-  };
+  const getMaterialExpenseBase = () =>
+    computeMaterialExpenseBase(data.calculatedValues, materialMarkup, taxFactor);
 
   // Work labor cost from the M-F Labor Hours Tracking table
-  const getWorkLaborCost = () => {
-    return (
-      toNum(data.hoursSummary.straightTimeHours) *
-        toNum(hourlyRates.straightTime) +
-      toNum(data.hoursSummary.overtimeHours) * toNum(hourlyRates.overtime) +
-      toNum(data.hoursSummary.doubleTimeHours) * toNum(hourlyRates.doubleTime)
-    );
-  };
+  const getWorkLaborCost = () =>
+    computeWorkLaborCost(data.hoursSummary, hourlyRates);
 
   // FINAL before the optional final markup — Monday-Friday scenario
-  const getBaseFinalValue = () => {
-    if (manualPriceOverride) {
-      return Math.max(0, toNum(manualPriceValue));
-    }
-    return Math.ceil(
-      (getMaterialExpenseBase() +
-        getWorkLaborCost() +
-        getTravelLaborCost() +
-        getTravelNonLaborCost()) /
-        finalMarkupDivisor,
+  const getBaseFinalValue = () =>
+    computeBaseFinalValue(
+      {
+        materialExpenseBase: getMaterialExpenseBase(),
+        workLabor: getWorkLaborCost(),
+        travelLabor: getTravelLaborCost(),
+        travelNonLabor: getTravelNonLaborCost(),
+      },
+      finalMarkupDivisor,
+      manualPriceOverride ? toNum(manualPriceValue) : null,
     );
-  };
 
   // Helper function to get the exact FINAL value (G54) as shown in UI — Monday-Friday scenario
   const getFinalValue = () =>
     applyFinalMarkup(getBaseFinalValue(), finalMarkupMultiplier);
 
-  // FINAL value for Saturday scenario
-  const getSaturdayFinalValue = () => {
-    if (manualPriceOverride) return getFinalValue();
-    const sat = data.saturdayHoursSummary;
-    if (!sat) return getFinalValue();
-    const workLabor =
-      toNum(sat.straightTimeHours) * toNum(hourlyRates.straightTime) +
-      toNum(sat.overtimeHours) * toNum(hourlyRates.overtime) +
-      toNum(sat.doubleTimeHours) * toNum(hourlyRates.doubleTime);
-    const travelLabor =
-      toNum(sat.travelStraightTimeHours) * toNum(hourlyRates.straightTime) +
-      toNum(sat.travelOvertimeHours) * toNum(hourlyRates.overtime) +
-      toNum(sat.travelDoubleTimeHours) * toNum(hourlyRates.doubleTime);
+  // FINAL for a Saturday or Sunday/Holiday hours table
+  const getDayFinalValue = (dayHours: any) => {
+    if (manualPriceOverride || !dayHours) return getFinalValue();
     return applyFinalMarkup(
-      Math.ceil(
-        (getMaterialExpenseBase() +
-          workLabor +
-          travelLabor +
-          getTravelNonLaborCost()) /
-          finalMarkupDivisor,
+      computeBaseFinalValue(
+        {
+          materialExpenseBase: getMaterialExpenseBase(),
+          workLabor: computeWorkLaborCost(dayHours, hourlyRates),
+          travelLabor: computeTravelLaborCost(dayHours, hourlyRates),
+          travelNonLabor: getTravelNonLaborCost(),
+        },
+        finalMarkupDivisor,
       ),
       finalMarkupMultiplier,
     );
   };
 
-  // FINAL value for Sunday/Holiday scenario
-  const getSundayFinalValue = () => {
-    if (manualPriceOverride) return getFinalValue();
-    const sun = data.sundayHoursSummary;
-    if (!sun) return getFinalValue();
-    const workLabor =
-      toNum(sun.straightTimeHours) * toNum(hourlyRates.straightTime) +
-      toNum(sun.overtimeHours) * toNum(hourlyRates.overtime) +
-      toNum(sun.doubleTimeHours) * toNum(hourlyRates.doubleTime);
-    const travelLabor =
-      toNum(sun.travelStraightTimeHours) * toNum(hourlyRates.straightTime) +
-      toNum(sun.travelOvertimeHours) * toNum(hourlyRates.overtime) +
-      toNum(sun.travelDoubleTimeHours) * toNum(hourlyRates.doubleTime);
-    return applyFinalMarkup(
-      Math.ceil(
-        (getMaterialExpenseBase() +
-          workLabor +
-          travelLabor +
-          getTravelNonLaborCost()) /
-          finalMarkupDivisor,
-      ),
-      finalMarkupMultiplier,
-    );
-  };
+  const getSaturdayFinalValue = () =>
+    getDayFinalValue(data.saturdayHoursSummary);
+
+  const getSundayFinalValue = () => getDayFinalValue(data.sundayHoursSummary);
 
   // At-a-glance NET 30 breakdown of the FINAL (M-F) sell price into labor, travel, and materials.
   // Each cost bucket is grossed up by the same final mark-up (÷0.96) and NET 30 term factor that
@@ -4111,132 +4000,26 @@ export default function EstimateSheet({
       overtimeHours: data.hoursSummary.overtimeHours,
       doubleTimeHours: data.hoursSummary.doubleTimeHours,
     });
-    const newCalculated = { ...data.calculatedValues };
-
-    // SOV totals
-    let sovMaterialTotal = 0;
-    let sovExpenseTotal = 0;
-    let sovLaborTotal = 0;
-    let sovLaborHours = 0;
-
-    data.sovItems.forEach((item) => {
-      if (isStructuralLineItem(item)) return;
-
-      const materialExtension = calculateMaterialExtension(
-        item.quantity,
-        item.materialPrice,
-      );
-      const expenseExtension = calculateExpenseExtension(
-        item.quantity,
-        item.expensePrice,
-      );
-      const laborItemTotal = calculateLaborTotal(
-        item.quantity,
-        item.laborMen,
-        item.laborHours,
-      );
-
-      sovMaterialTotal += materialExtension;
-      sovExpenseTotal += expenseExtension;
-      sovLaborTotal += laborItemTotal;
-      sovLaborHours +=
-        calculateLaborUnit(item.laborMen, item.laborHours) *
-        toNum(item.quantity);
-    });
-
-    // Non-SOV totals
-    let nonSovMaterialTotal = 0;
-    let nonSovExpenseTotal = 0;
-    let nonSovLaborTotal = 0;
-    let nonSovLaborHours = 0;
-
-    data.nonSovItems.forEach((item) => {
-      if (isStructuralLineItem(item)) return;
-
-      const materialExtension = calculateMaterialExtension(
-        item.quantity,
-        item.materialPrice,
-      );
-      const expenseExtension = calculateExpenseExtension(
-        item.quantity,
-        item.expensePrice,
-      );
-      const laborItemTotal = calculateLaborTotal(
-        item.quantity,
-        item.laborMen,
-        item.laborHours,
-      );
-
-      nonSovMaterialTotal += materialExtension;
-      nonSovExpenseTotal += expenseExtension;
-      nonSovLaborTotal += laborItemTotal;
-      nonSovLaborHours +=
-        calculateLaborUnit(item.laborMen, item.laborHours) *
-        toNum(item.quantity);
-    });
-
-    // Update calculated values
-    newCalculated.subtotalMaterial = sovMaterialTotal + nonSovMaterialTotal;
-    newCalculated.subtotalExpense = sovExpenseTotal + nonSovExpenseTotal;
-    newCalculated.subtotalLabor = sovLaborTotal + nonSovLaborTotal;
-    newCalculated.nonSovMaterial = nonSovMaterialTotal;
-    newCalculated.nonSovExpense = nonSovExpenseTotal;
-    newCalculated.nonSovLabor = nonSovLaborTotal;
-    newCalculated.sovLaborHours = sovLaborHours;
-    newCalculated.nonSovLaborHours = nonSovLaborHours;
-    newCalculated.totalLaborHours = sovLaborHours + nonSovLaborHours;
-
-    newCalculated.totalMaterial = newCalculated.subtotalMaterial;
-    newCalculated.totalExpense = newCalculated.subtotalExpense;
-    newCalculated.totalLabor = newCalculated.subtotalLabor;
-
-    newCalculated.grandTotal =
-      newCalculated.totalMaterial +
-      newCalculated.totalExpense +
-      newCalculated.totalLabor;
+    const newCalculated = {
+      ...data.calculatedValues,
+      ...computeLineItemTotals(data.sovItems, data.nonSovItems),
+    };
 
     // Calculate hours summary
-    const totalWorkHours = sovLaborHours + nonSovLaborHours;
+    const { sovLaborHours, nonSovLaborHours } = newCalculated;
+    const totalWorkHours = newCalculated.totalLaborHours;
     // Days onsite calculated from SOV hours only (excludes non-SOV hours like PM/reports)
     // This is used to calculate travel trips to the site
-    const menNum = toNum(data.hoursSummary.men);
-    const hoursPerDayNum = toNum(data.hoursSummary.hoursPerDay);
-    const daysOnsite =
-      menNum > 0 && hoursPerDayNum > 0
-        ? sovLaborHours / (menNum * hoursPerDayNum)
-        : 0;
+    const daysOnsite = computeDaysOnsite(
+      sovLaborHours,
+      data.hoursSummary.men,
+      data.hoursSummary.hoursPerDay,
+    );
 
     // Calculate labor rate breakdown based on hours per day
     // 0-8 hours per day = straight time, >8-12 = overtime, >12 = double time
-    const hoursPerDay = hoursPerDayNum;
-    let straightTimeHours = 0;
-    let overtimeHours = 0;
-    let doubleTimeHours = 0;
-
-    if (totalWorkHours > 0 && hoursPerDay > 0) {
-      const totalDays = Math.ceil(totalWorkHours / hoursPerDay);
-
-      for (let day = 0; day < totalDays; day++) {
-        const hoursThisDay = Math.min(
-          hoursPerDay,
-          totalWorkHours - day * hoursPerDay,
-        );
-
-        if (hoursThisDay <= 8) {
-          // All hours are straight time
-          straightTimeHours += hoursThisDay;
-        } else if (hoursThisDay <= 12) {
-          // First 8 hours are straight time, rest is overtime
-          straightTimeHours += 8;
-          overtimeHours += hoursThisDay - 8;
-        } else {
-          // First 8 hours are straight time, next 4 are overtime, rest is double time
-          straightTimeHours += 8;
-          overtimeHours += 4;
-          doubleTimeHours += hoursThisDay - 12;
-        }
-      }
-    }
+    const { straightTimeHours, overtimeHours, doubleTimeHours } =
+      computeLaborRateSplit(totalWorkHours, toNum(data.hoursSummary.hoursPerDay));
 
     // Calculate travel hours from travel data
     let totalTravelHours = 0;
@@ -4723,7 +4506,7 @@ export default function EstimateSheet({
             type="checkbox"
             checked={letterShowAllTerms}
             onChange={(e) => setLetterShowAllTerms(e.target.checked)}
-            className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
+            className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded-none"
           />
           <span className="text-sm text-neutral-700 dark:text-neutral-200">
             Show all payment terms (NET 30, 60, 90)
@@ -4745,7 +4528,7 @@ export default function EstimateSheet({
                   e.target.value as "net30" | "net60" | "net90",
                 )
               }
-              className="w-full px-2 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded text-sm bg-white dark:bg-dark-100 dark:text-white"
+              className="w-full px-2 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-none text-sm bg-white dark:bg-dark-100 dark:text-white"
             >
               {PAYMENT_TERM_OPTIONS.map((term) => {
                 const allowed = isTermAllowed(customerTerms, term.value);
@@ -5217,7 +5000,9 @@ export default function EstimateSheet({
           return `<tr class="amp-sov-blank-row"><td colspan="${columnCount}" style="${makeCellStyle({ right: false, bottom, blank: true })}">&nbsp;</td></tr>`;
         }
 
-        const name = escapeLetterHtml(item?.item || "");
+        const name = escapeLetterHtml(
+          [item?.item, item?.size].filter(Boolean).join(", "),
+        );
         if (isEstimateSectionRow(item)) {
           return `<tr class="amp-sov-section-row"><td colspan="${columnCount}" style="${makeCellStyle({ right: false, bottom, section: true, align: "center" })}">${name}</td></tr>`;
         }
@@ -5885,33 +5670,10 @@ export default function EstimateSheet({
     }
     // "Net terms only" override for this saved quote (falls back to off).
     const parsedNetTermsOnly = !!parsedData.netTermsOnly;
-    const parsedTaxFactor = parsedNetTermsOnly ? 1.0 : 1.09;
-    const parsedFinalMarkupDivisor = parsedNetTermsOnly ? 1.0 : 0.96;
-    // --- Build the material + expense base (shared across all day-type scenarios) ---
-    function getMaterialExpenseBaseParsed(parsed: any) {
-      const cv = parsed.calculatedValues || {};
-      return (
-        (cv.totalMaterial || 0) * parsedTaxFactor * materialMarkup +
-        (cv.totalExpense || 0) * parsedTaxFactor +
-        (cv.nonSovExpense || 0) * 1.0
-      );
-    }
-    // Work labor cost for a given hours summary
-    function getWorkLaborCostParsed(hs: any) {
-      return (
-        (hs?.straightTimeHours || 0) * hourlyRates.straightTime +
-        (hs?.overtimeHours || 0) * hourlyRates.overtime +
-        (hs?.doubleTimeHours || 0) * hourlyRates.doubleTime
-      );
-    }
-    // Travel labor cost from hours summary (now tracked in labor table)
-    function getTravelLaborCostParsed(hs: any) {
-      return (
-        (hs?.travelStraightTimeHours || 0) * hourlyRates.straightTime +
-        (hs?.travelOvertimeHours || 0) * hourlyRates.overtime +
-        (hs?.travelDoubleTimeHours || 0) * hourlyRates.doubleTime
-      );
-    }
+    const {
+      taxFactor: parsedTaxFactor,
+      finalMarkupDivisor: parsedFinalMarkupDivisor,
+    } = getPricingFactors(parsedNetTermsOnly);
     function formatCurrency(amount: number) {
       return new Intl.NumberFormat("en-US", {
         style: "currency",
@@ -5950,22 +5712,33 @@ export default function EstimateSheet({
     const getParsedTravelNonLaborCost = () =>
       resolveTravelNonLaborCost(parsedTravel, parsedData);
     const hs = parsedData.hoursSummary || {};
-    const matExpBase = getMaterialExpenseBaseParsed(parsedData);
+    // Shared across all day-type scenarios
+    const matExpBase = computeMaterialExpenseBase(
+      parsedData.calculatedValues,
+      materialMarkup,
+      parsedTaxFactor,
+    );
     const travelNonLabor = getParsedTravelNonLaborCost();
     // Manual price override forces the FINAL value to the exact saved amount.
     const parsedManualOverride = !!parsedData.manualPriceOverride;
     const parsedFinalMarkup = getFinalMarkupMultiplier(parsedData);
-    const baseFinalValue = applyFinalMarkup(
-      parsedManualOverride
-        ? Math.max(0, toNum(parsedData.manualPriceValue))
-        : Math.ceil(
-            (matExpBase +
-              getWorkLaborCostParsed(hs) +
-              getTravelLaborCostParsed(hs) +
-              travelNonLabor) /
-              parsedFinalMarkupDivisor,
-          ),
-      parsedFinalMarkup,
+    const getParsedDayFinal = (dayHS: any, manualPrice?: number | null) =>
+      applyFinalMarkup(
+        computeBaseFinalValue(
+          {
+            materialExpenseBase: matExpBase,
+            workLabor: computeWorkLaborCost(dayHS, hourlyRates),
+            travelLabor: computeTravelLaborCost(dayHS, hourlyRates),
+            travelNonLabor,
+          },
+          parsedFinalMarkupDivisor,
+          manualPrice,
+        ),
+        parsedFinalMarkup,
+      );
+    const baseFinalValue = getParsedDayFinal(
+      hs,
+      parsedManualOverride ? toNum(parsedData.manualPriceValue) : null,
     );
     const finalValue = baseFinalValue * (singleLetterScopeQuantity || 1);
 
@@ -5976,30 +5749,12 @@ export default function EstimateSheet({
     const hasSundayPricing = !!parsedData.showSundayHours && !!sunHS;
     const satBaseFinalValue =
       hasSaturdayPricing && !parsedManualOverride
-        ? applyFinalMarkup(
-            Math.ceil(
-              (matExpBase +
-                getWorkLaborCostParsed(satHS) +
-                getTravelLaborCostParsed(satHS) +
-                travelNonLabor) /
-                parsedFinalMarkupDivisor,
-            ),
-            parsedFinalMarkup,
-          )
+        ? getParsedDayFinal(satHS)
         : baseFinalValue;
     const satFinalValue = satBaseFinalValue * (singleLetterScopeQuantity || 1);
     const sunBaseFinalValue =
       hasSundayPricing && !parsedManualOverride
-        ? applyFinalMarkup(
-            Math.ceil(
-              (matExpBase +
-                getWorkLaborCostParsed(sunHS) +
-                getTravelLaborCostParsed(sunHS) +
-                travelNonLabor) /
-                parsedFinalMarkupDivisor,
-            ),
-            parsedFinalMarkup,
-          )
+        ? getParsedDayFinal(sunHS)
         : baseFinalValue;
     const sunFinalValue = sunBaseFinalValue * (singleLetterScopeQuantity || 1);
     // Read the override off this quote's own saved data, the same way the
@@ -6332,8 +6087,10 @@ export default function EstimateSheet({
         originalQuoteIndex === selectedQuoteIndex && selectedQuoteIndex >= 0
           ? netTermsOnly
           : !!parsedData.netTermsOnly;
-      const scopeTaxFactor = scopeNetTermsOnly ? 1.0 : 1.09;
-      const scopeFinalMarkupDivisor = scopeNetTermsOnly ? 1.0 : 0.96;
+      const {
+        taxFactor: scopeTaxFactor,
+        finalMarkupDivisor: scopeFinalMarkupDivisor,
+      } = getPricingFactors(scopeNetTermsOnly);
       const scopeFinalMarkup =
         originalQuoteIndex === selectedQuoteIndex && selectedQuoteIndex >= 0
           ? finalMarkupMultiplier
@@ -6349,26 +6106,6 @@ export default function EstimateSheet({
           : parsedData.manualPriceOverride
             ? Math.max(0, toNum(parsedData.manualPriceValue))
             : null;
-
-      // Calculate final value for this quote
-      function getFinalNumeratorWithoutTravel(parsed: any) {
-        const cv = parsed.calculatedValues || {};
-        const hs = parsed.hoursSummary || {};
-        const totalMaterial = cv.totalMaterial || 0;
-        const totalExpense = cv.totalExpense || 0;
-        const nonSovExpense = cv.nonSovExpense || 0;
-        const straightTimeHours = hs.straightTimeHours || 0;
-        const overtimeHours = hs.overtimeHours || 0;
-        const doubleTimeHours = hs.doubleTimeHours || 0;
-        return (
-          totalMaterial * scopeTaxFactor * materialMarkup +
-          totalExpense * scopeTaxFactor +
-          nonSovExpense * 1.0 +
-          straightTimeHours * quoteHourlyRates.straightTime +
-          overtimeHours * quoteHourlyRates.overtime +
-          doubleTimeHours * quoteHourlyRates.doubleTime
-        );
-      }
 
       // Get travel cost
       const parsedTravel = (() => {
@@ -6396,36 +6133,35 @@ export default function EstimateSheet({
       })();
 
       // Material/expense base (shared across day-type scenarios)
-      const cv = parsedData.calculatedValues || {};
-      const matExpBase =
-        (cv.totalMaterial || 0) * scopeTaxFactor * materialMarkup +
-        (cv.totalExpense || 0) * scopeTaxFactor +
-        (cv.nonSovExpense || 0) * 1.0;
+      const matExpBase = computeMaterialExpenseBase(
+        parsedData.calculatedValues,
+        materialMarkup,
+        scopeTaxFactor,
+      );
 
       const hs = parsedData.hoursSummary || {};
-      const workLabor =
-        (hs.straightTimeHours || 0) * quoteHourlyRates.straightTime +
-        (hs.overtimeHours || 0) * quoteHourlyRates.overtime +
-        (hs.doubleTimeHours || 0) * quoteHourlyRates.doubleTime;
-      const travelLabor =
-        (hs.travelStraightTimeHours || 0) * quoteHourlyRates.straightTime +
-        (hs.travelOvertimeHours || 0) * quoteHourlyRates.overtime +
-        (hs.travelDoubleTimeHours || 0) * quoteHourlyRates.doubleTime;
       const travelNonLabor = resolveTravelNonLaborCost(
         parsedTravel,
         parsedData,
       );
       const travelNonLaborSafe = Math.max(0, travelNonLabor);
 
-      const finalValue = applyFinalMarkup(
-        scopeManualOverride != null
-          ? scopeManualOverride
-          : Math.ceil(
-              (matExpBase + workLabor + travelLabor + travelNonLaborSafe) /
-                scopeFinalMarkupDivisor,
-            ),
-        scopeFinalMarkup,
-      );
+      const calcDayValue = (dayHS: any, manualPrice?: number | null) =>
+        applyFinalMarkup(
+          computeBaseFinalValue(
+            {
+              materialExpenseBase: matExpBase,
+              workLabor: computeWorkLaborCost(dayHS, quoteHourlyRates),
+              travelLabor: computeTravelLaborCost(dayHS, quoteHourlyRates),
+              travelNonLabor: travelNonLaborSafe,
+            },
+            scopeFinalMarkupDivisor,
+            manualPrice,
+          ),
+          scopeFinalMarkup,
+        );
+
+      const finalValue = calcDayValue(hs, scopeManualOverride);
       const validFinalValue =
         isNaN(finalValue) || !isFinite(finalValue) ? 0 : finalValue;
 
@@ -6434,25 +6170,6 @@ export default function EstimateSheet({
       const sunHS = parsedData.sundayHoursSummary;
       const hasSat = !!parsedData.showSaturdayHours && !!satHS;
       const hasSun = !!parsedData.showSundayHours && !!sunHS;
-
-      const calcDayValue = (dayHS: any) => {
-        const wl =
-          (dayHS?.straightTimeHours || 0) * quoteHourlyRates.straightTime +
-          (dayHS?.overtimeHours || 0) * quoteHourlyRates.overtime +
-          (dayHS?.doubleTimeHours || 0) * quoteHourlyRates.doubleTime;
-        const tl =
-          (dayHS?.travelStraightTimeHours || 0) *
-            quoteHourlyRates.straightTime +
-          (dayHS?.travelOvertimeHours || 0) * quoteHourlyRates.overtime +
-          (dayHS?.travelDoubleTimeHours || 0) * quoteHourlyRates.doubleTime;
-        return applyFinalMarkup(
-          Math.ceil(
-            (matExpBase + wl + tl + travelNonLaborSafe) /
-              scopeFinalMarkupDivisor,
-          ),
-          scopeFinalMarkup,
-        );
-      };
 
       const satFinalValue =
         hasSat && scopeManualOverride == null
@@ -7055,7 +6772,10 @@ export default function EstimateSheet({
       const currentContent = (letterEditorRef.current?.innerHTML || "").trim();
       let bodyHtml = currentContent || letterHtml || "";
       if (!bodyHtml) {
-        alert("Nothing to print. Please generate the letter first.");
+        toast({
+          title: "Nothing to print. Please generate the letter first.",
+          variant: "warning",
+        });
         try {
           printWindow.close();
         } catch {}
@@ -7271,6 +6991,14 @@ export default function EstimateSheet({
       ? quotes[selectedQuoteIndex]
       : null;
   const isSimpleSelected = !!selectedSimpleQuote;
+  // Full estimates open in the guided builder instead of this sheet.
+  const selectedFullQuote =
+    !isNewQuote &&
+    selectedQuoteIndex >= 0 &&
+    isFullEstimateData(quotes[selectedQuoteIndex]?.data)
+      ? quotes[selectedQuoteIndex]
+      : null;
+  const hasOwnEditor = isSimpleSelected || !!selectedFullQuote;
 
   // Same reset the "letter" mode does, then jump straight to this quote's letter.
   const openLetterForSimpleQuote = (index: number) => {
@@ -7757,7 +7485,7 @@ export default function EstimateSheet({
                 </Button>
               ) : isViewMode ? (
                 <>
-                  {!isSimpleSelected && (
+                  {!hasOwnEditor && (
                     <Button
                       onClick={() => {
                         setJustSaved(false);
@@ -7808,7 +7536,7 @@ export default function EstimateSheet({
                   <button
                     onClick={saveQuote}
                     disabled={isSaving}
-                    className={`${isSimpleSelected ? "hidden" : "flex"} h-10 w-10 items-center justify-center rounded-none text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`${hasOwnEditor ? "hidden" : "flex"} h-10 w-10 items-center justify-center rounded-none text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                       justSaved
                         ? "bg-green-600 hover:bg-green-700 focus:ring-green-500"
                         : "bg-brand hover:bg-brand/90 focus:ring-brand"
@@ -8028,7 +7756,25 @@ export default function EstimateSheet({
                   </div>
                 )}
 
-                <div className={isSimpleSelected ? "hidden" : "mt-4"}>
+                {selectedFullQuote && (
+                  <div className="mt-4">
+                    <FullEstimateBuilder
+                      key={selectedFullQuote.id}
+                      opportunityId={opportunityId}
+                      estimate={selectedFullQuote}
+                      onSaved={(row) =>
+                        setQuotes((prev) =>
+                          prev.map((q) => (q.id === row.id ? row : q)),
+                        )
+                      }
+                      onGenerateLetter={() =>
+                        openLetterForSimpleQuote(selectedQuoteIndex)
+                      }
+                    />
+                  </div>
+                )}
+
+                <div className={hasOwnEditor ? "hidden" : "mt-4"}>
                   <div style={styles.app}>
                     {/* Status and Page Numbering Row */}
                     <div
@@ -8094,7 +7840,7 @@ export default function EstimateSheet({
                             padding: "6px 12px",
                             fontSize: "14px",
                             border: "1px solid var(--border-color)",
-                            borderRadius: "4px",
+                            borderRadius: 0,
                             backgroundColor: "var(--bg-color)",
                             color: "var(--text-color)",
                             cursor: isViewMode ? "not-allowed" : "pointer",
@@ -8224,7 +7970,7 @@ export default function EstimateSheet({
                         style={{
                           backgroundColor: "var(--summary-bg)",
                           padding: "15px",
-                          borderRadius: "4px",
+                          borderRadius: 0,
                           border: "1px solid var(--border-color)",
                         }}
                       >
@@ -8304,7 +8050,7 @@ export default function EstimateSheet({
                             fontSize: "12px",
                             padding: "4px 8px",
                             border: "1px solid var(--border-color)",
-                            borderRadius: "4px",
+                            borderRadius: 0,
                             backgroundColor: "var(--input-bg)",
                             color: "var(--text-color)",
                             cursor: isViewMode ? "default" : "pointer",
@@ -8865,7 +8611,7 @@ export default function EstimateSheet({
                                             fontSize: "14px",
                                             userSelect: "none",
                                             padding: "2px",
-                                            borderRadius: "2px",
+                                            borderRadius: 0,
                                             transition: "color 0.2s ease",
                                           }}
                                           title="Drag to reorder"
@@ -8923,7 +8669,7 @@ export default function EstimateSheet({
                                             display: "flex",
                                             alignItems: "center",
                                             justifyContent: "center",
-                                            borderRadius: "4px",
+                                            borderRadius: 0,
                                           }}
                                         >
                                           <BookOpen className="h-5 w-5" />
@@ -9689,7 +9435,7 @@ export default function EstimateSheet({
                                           fontSize: "14px",
                                           userSelect: "none",
                                           padding: "2px",
-                                          borderRadius: "2px",
+                                          borderRadius: 0,
                                           transition: "color 0.2s ease",
                                         }}
                                         title="Drag to reorder"
@@ -9744,7 +9490,7 @@ export default function EstimateSheet({
                                           display: "flex",
                                           alignItems: "center",
                                           justifyContent: "center",
-                                          borderRadius: "4px",
+                                          borderRadius: 0,
                                         }}
                                       >
                                         <BookOpen className="h-5 w-5" />
@@ -10682,14 +10428,7 @@ export default function EstimateSheet({
                                   padding: "12px 8px",
                                 }}
                               >
-                                {formatCurrency(
-                                  data.calculatedValues.totalMaterial *
-                                    taxFactor *
-                                    materialMarkup +
-                                    data.calculatedValues.totalExpense *
-                                      taxFactor +
-                                    data.calculatedValues.nonSovExpense * 1.0,
-                                )}
+                                {formatCurrency(getMaterialExpenseBase())}
                               </td>
                             </tr>
                           </tbody>
@@ -10705,7 +10444,7 @@ export default function EstimateSheet({
                           marginTop: "12px",
                           padding: "10px 12px",
                           border: "1px solid var(--border, #e5e5e5)",
-                          borderRadius: "6px",
+                          borderRadius: 0,
                           cursor: isViewMode ? "default" : "pointer",
                           fontSize: "13px",
                           lineHeight: 1.4,
@@ -10959,7 +10698,7 @@ export default function EstimateSheet({
                               style={{
                                 padding: "4px 10px",
                                 fontSize: "11px",
-                                borderRadius: "4px",
+                                borderRadius: 0,
                                 cursor: "pointer",
                                 backgroundColor: showSaturdayHours
                                   ? "var(--brand)"
@@ -10980,7 +10719,7 @@ export default function EstimateSheet({
                               style={{
                                 padding: "4px 10px",
                                 fontSize: "11px",
-                                borderRadius: "4px",
+                                borderRadius: 0,
                                 cursor: "pointer",
                                 backgroundColor: showSundayHours
                                   ? "var(--brand)"
@@ -11005,7 +10744,7 @@ export default function EstimateSheet({
                             marginBottom: "15px",
                             padding: "10px",
                             backgroundColor: "#f8f9fa",
-                            borderRadius: "4px",
+                            borderRadius: 0,
                             border: "1px solid #dee2e6",
                           }}
                         >
@@ -11079,7 +10818,7 @@ export default function EstimateSheet({
                                 backgroundColor: "transparent",
                                 color: "var(--brand)",
                                 border: "0.5px solid var(--brand)",
-                                borderRadius: "4px",
+                                borderRadius: 0,
                                 cursor: "pointer",
                               }}
                             >
@@ -11391,7 +11130,7 @@ export default function EstimateSheet({
                                           if (diff < 0.01) return "#d4edda";
                                           return "#fff3cd";
                                         })(),
-                                        borderRadius: "4px",
+                                        borderRadius: 0,
                                         margin: "4px 0",
                                         border: (() => {
                                           const quotedTravel = toNum(
@@ -11521,7 +11260,7 @@ export default function EstimateSheet({
                                               backgroundColor: "transparent",
                                               color: "var(--brand)",
                                               border: "0.5px solid var(--brand)",
-                                              borderRadius: "4px",
+                                              borderRadius: 0,
                                               cursor: "pointer",
                                             }}
                                           >
@@ -11796,7 +11535,7 @@ export default function EstimateSheet({
                                 backgroundColor: "transparent",
                                 color: "var(--brand)",
                                 border: "0.5px solid var(--brand)",
-                                borderRadius: "4px",
+                                borderRadius: 0,
                                 cursor: "pointer",
                               }}
                             >
@@ -11810,7 +11549,7 @@ export default function EstimateSheet({
                               marginBottom: "15px",
                               padding: "10px",
                               backgroundColor: "#fff3cd",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               border: "1px solid #ffc107",
                             }}
                           >
@@ -12134,7 +11873,7 @@ export default function EstimateSheet({
                                             if (diff < 0.01) return "#d4edda";
                                             return "#fff3cd";
                                           })(),
-                                          borderRadius: "4px",
+                                          borderRadius: 0,
                                           margin: "4px 0",
                                           border: (() => {
                                             const quotedTravel = toNum(
@@ -12524,7 +12263,7 @@ export default function EstimateSheet({
                                 backgroundColor: "transparent",
                                 color: "var(--brand)",
                                 border: "0.5px solid var(--brand)",
-                                borderRadius: "4px",
+                                borderRadius: 0,
                                 cursor: "pointer",
                               }}
                             >
@@ -12538,7 +12277,7 @@ export default function EstimateSheet({
                               marginBottom: "15px",
                               padding: "10px",
                               backgroundColor: "#f8d7da",
-                              borderRadius: "4px",
+                              borderRadius: 0,
                               border: "1px solid #f5c6cb",
                             }}
                           >
@@ -12860,7 +12599,7 @@ export default function EstimateSheet({
                                             if (diff < 0.01) return "#d4edda";
                                             return "#fff3cd";
                                           })(),
-                                          borderRadius: "4px",
+                                          borderRadius: 0,
                                           margin: "4px 0",
                                           border: (() => {
                                             const quotedTravel = toNum(
@@ -13979,7 +13718,7 @@ export default function EstimateSheet({
                                   maxWidth: "460px",
                                   padding: "10px 12px",
                                   border: "1px solid var(--border, #e5e5e5)",
-                                  borderRadius: "6px",
+                                  borderRadius: 0,
                                   fontSize: "13px",
                                   lineHeight: 1.4,
                                 }}
@@ -14570,7 +14309,7 @@ export default function EstimateSheet({
                                 : "var(--brand)",
                               color: quoteTextCopied ? "var(--brand)" : "white",
                               border: "0.5px solid var(--brand)",
-                              borderRadius: "6px",
+                              borderRadius: 0,
                               cursor: "pointer",
                             }}
                           >
@@ -14580,6 +14319,40 @@ export default function EstimateSheet({
                     </div>
                   </div>
                 </div>
+
+                {/* Pinned total: same FINAL (M-F) value as the Financial Summary */}
+                {!hasOwnEditor && (
+                  <div className="sticky bottom-0 z-20 mt-4 flex flex-wrap items-center gap-x-8 gap-y-1 border-t-2 border-brand bg-white dark:bg-dark-150 px-4 py-2 print:hidden">
+                    {[
+                      {
+                        label: "FINAL (M-F)",
+                        value: formatCurrency(getFinalValue()),
+                      },
+                      {
+                        label: "Total hours",
+                        value: formatNumber(data.hoursSummary.totalHours),
+                      },
+                      {
+                        label: "Days onsite",
+                        value: formatNumber(data.hoursSummary.daysOnsite),
+                      },
+                    ].map(({ label, value }) => (
+                      <div key={label}>
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-dark-500">
+                          {label}
+                        </div>
+                        <div className="text-lg font-bold tabular-nums text-neutral-900 dark:text-dark-900">
+                          {value}
+                        </div>
+                      </div>
+                    ))}
+                    {manualPriceOverride && (
+                      <span className="bg-brand px-2 py-1 text-xs font-semibold text-white">
+                        Manual price
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -14664,7 +14437,7 @@ export default function EstimateSheet({
                     );
                     setSingleLetterScopeQuantity(qty);
                   }}
-                  className="w-20 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded text-sm"
+                  className="w-20 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded-none text-sm"
                 />
               </div>
               <label className="flex items-center cursor-pointer mt-2">
@@ -14674,7 +14447,7 @@ export default function EstimateSheet({
                   onChange={(e) =>
                     setIncludeMobilizationWhenZero(e.target.checked)
                   }
-                  className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
+                  className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded-none"
                 />
                 <span className="text-sm text-neutral-700 dark:text-neutral-200">
                   Include mobilization in letter even when $0
@@ -14685,7 +14458,7 @@ export default function EstimateSheet({
                   type="checkbox"
                   checked={letterIncludeSovNotes}
                   onChange={(e) => setLetterIncludeSovNotes(e.target.checked)}
-                  className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
+                  className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded-none"
                 />
                 <span className="text-sm text-neutral-700 dark:text-neutral-200">
                   Include SOV item notes
@@ -14701,7 +14474,7 @@ export default function EstimateSheet({
                       type="checkbox"
                       checked={letterIncludeMF}
                       onChange={(e) => setLetterIncludeMF(e.target.checked)}
-                      className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
+                      className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded-none"
                     />
                     <span className="text-sm text-neutral-700 dark:text-neutral-200">
                       Monday - Friday
@@ -14717,7 +14490,7 @@ export default function EstimateSheet({
                         setLetterIncludeSaturday(e.target.checked)
                       }
                       disabled={!showSaturdayHours}
-                      className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
+                      className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded-none"
                     />
                     <span className="text-sm text-neutral-700 dark:text-neutral-200">
                       Saturday
@@ -14734,7 +14507,7 @@ export default function EstimateSheet({
                       checked={letterIncludeSunday}
                       onChange={(e) => setLetterIncludeSunday(e.target.checked)}
                       disabled={!showSundayHours}
-                      className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
+                      className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded-none"
                     />
                     <span className="text-sm text-neutral-700 dark:text-neutral-200">
                       Sunday / Holiday
@@ -14838,7 +14611,7 @@ export default function EstimateSheet({
                     type="checkbox"
                     checked={showIndividualPricing}
                     onChange={(e) => setShowIndividualPricing(e.target.checked)}
-                    className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
+                    className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded-none"
                   />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     Show individual pricing for each scope
@@ -14849,7 +14622,7 @@ export default function EstimateSheet({
                     type="checkbox"
                     checked={showGrandTotalPricing}
                     onChange={(e) => setShowGrandTotalPricing(e.target.checked)}
-                    className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
+                    className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded-none"
                   />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     Show grand total pricing for all scope
@@ -14862,7 +14635,7 @@ export default function EstimateSheet({
                     onChange={(e) =>
                       setIncludeMobilizationWhenZero(e.target.checked)
                     }
-                    className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
+                    className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded-none"
                   />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     Include mobilization in letter even when $0
@@ -14873,7 +14646,7 @@ export default function EstimateSheet({
                     type="checkbox"
                     checked={letterIncludeSovNotes}
                     onChange={(e) => setLetterIncludeSovNotes(e.target.checked)}
-                    className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
+                    className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded-none"
                   />
                   <span className="text-sm text-neutral-700 dark:text-neutral-300">
                     Include SOV item notes
@@ -14889,7 +14662,7 @@ export default function EstimateSheet({
                         type="checkbox"
                         checked={letterIncludeMF}
                         onChange={(e) => setLetterIncludeMF(e.target.checked)}
-                        className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
+                        className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded-none"
                       />
                       <span className="text-sm text-neutral-700 dark:text-neutral-300">
                         Monday - Friday
@@ -14905,7 +14678,7 @@ export default function EstimateSheet({
                           setLetterIncludeSaturday(e.target.checked)
                         }
                         disabled={!showSaturdayHours}
-                        className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
+                        className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded-none"
                       />
                       <span className="text-sm text-neutral-700 dark:text-neutral-300">
                         Saturday
@@ -14922,7 +14695,7 @@ export default function EstimateSheet({
                           setLetterIncludeSunday(e.target.checked)
                         }
                         disabled={!showSundayHours}
-                        className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
+                        className="mr-2 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded-none"
                       />
                       <span className="text-sm text-neutral-700 dark:text-neutral-300">
                         Sunday / Holiday
@@ -14988,7 +14761,7 @@ export default function EstimateSheet({
                           });
                         }
                       }}
-                      className="mr-3 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded"
+                      className="mr-3 h-5 w-5 text-brand focus:ring-brand border-neutral-300 rounded-none"
                     />
                     <label
                       htmlFor={`quote-${idx}`}
@@ -15027,7 +14800,7 @@ export default function EstimateSheet({
                             [idx]: qty,
                           }));
                         }}
-                        className="w-20 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded text-sm"
+                        className="w-20 px-2 py-1 border border-neutral-300 dark:border-neutral-600 rounded-none text-sm"
                       />
                     </div>
                   )}
@@ -15141,10 +14914,12 @@ export default function EstimateSheet({
                             // Prepend the new copy to the list (newest first)
                             setLetters((prev) => [inserted as any, ...prev]);
                           } catch (e: any) {
-                            alert(
-                              "Failed to duplicate: " +
-                                (e?.message || "Unknown error"),
-                            );
+                            toast({
+                              title: "Failed to duplicate",
+                              description: e?.message || "Unknown error",
+                              variant: "destructive",
+                              persistent: true,
+                            });
                           }
                         }}
                         className="bg-blue-600 text-white hover:bg-blue-700"
@@ -15187,10 +14962,12 @@ export default function EstimateSheet({
                               savedLetterHtmlRef.current = "";
                             }
                           } catch (e: any) {
-                            alert(
-                              "Failed to delete: " +
-                                (e?.message || "Unknown error"),
-                            );
+                            toast({
+                              title: "Failed to delete",
+                              description: e?.message || "Unknown error",
+                              variant: "destructive",
+                              persistent: true,
+                            });
                           }
                         }}
                         className="bg-red-600 text-white"
@@ -15272,12 +15049,14 @@ export default function EstimateSheet({
                             );
                           }, 100);
                         }
-                        alert("Letter deleted successfully");
+                        toast({ title: "Letter deleted", variant: "success" });
                       } catch (e: any) {
-                        alert(
-                          "Failed to delete letter: " +
-                            (e?.message || "Unknown error"),
-                        );
+                        toast({
+                          title: "Failed to delete letter",
+                          description: e?.message || "Unknown error",
+                          variant: "destructive",
+                          persistent: true,
+                        });
                       }
                     }}
                     className="bg-red-600 text-white hover:bg-red-700"
@@ -15293,7 +15072,10 @@ export default function EstimateSheet({
                       ""
                     ).trim();
                     if (!sourceHtml) {
-                      alert("Nothing to save. Please generate a letter first.");
+                      toast({
+                        title: "Nothing to save. Please generate a letter first.",
+                        variant: "warning",
+                      });
                       return;
                     }
 
@@ -15713,10 +15495,12 @@ export default function EstimateSheet({
                       }
                     } catch (e: any) {
                       console.error("Save letter failed", e);
-                      alert(
-                        "Failed to save letter: " +
-                          (e?.message || "Unknown error"),
-                      );
+                      toast({
+                        title: "Failed to save letter",
+                        description: e?.message || "Unknown error",
+                        variant: "destructive",
+                        persistent: true,
+                      });
                     } finally {
                       setIsSavingLetter(false);
                     }
@@ -15764,7 +15548,7 @@ export default function EstimateSheet({
                 <select
                   value={netaStandard}
                   onChange={(e) => applyNetaTextByValue(e.target.value)}
-                  className="border rounded px-2 py-1 flex-1 min-w-[220px]"
+                  className="border rounded-none px-2 py-1 flex-1 min-w-[220px]"
                 >
                   {NETA_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -15883,7 +15667,7 @@ export default function EstimateSheet({
                 fontSize: "11pt",
                 lineHeight: 1.5,
                 padding: 32,
-                borderRadius: 8,
+                borderRadius: 0,
                 boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
                 maxWidth: 900,
                 margin: "0 auto",

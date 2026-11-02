@@ -103,6 +103,204 @@ export function applyFinalMarkup(value: number, multiplier: number): number {
   return multiplier === 1 ? value : Math.ceil(value * multiplier);
 }
 
+/** Blank, bad or missing values count as 0, same as the estimate sheet's inputs. */
+export function toPriceNumber(value: number | string | undefined | null): number {
+  if (value === undefined || value === null || value === "") return 0;
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  return parseFloat(value) || 0;
+}
+
+/** Section, sub-section and blank rows carry no quantity or price. */
+export const isStructuralLineItem = (item: any) =>
+  item?.rowType === "section" ||
+  item?.rowType === "subsection" ||
+  item?.rowType === "blank";
+
+function calculateExtension(quantity: number | string, price: number | string) {
+  const qtyNum =
+    typeof quantity === "string" ? parseFloat(quantity) || 0 : quantity || 0;
+  const priceNum =
+    typeof price === "string" ? parseFloat(price) || 0 : price || 0;
+  return qtyNum * priceNum;
+}
+
+export const calculateMaterialExtension = calculateExtension;
+export const calculateExpenseExtension = calculateExtension;
+
+export function calculateLaborUnit(men: number | string, hours: number | string) {
+  const menNum = typeof men === "string" ? parseFloat(men) || 0 : men || 0;
+  const hoursNum =
+    typeof hours === "string" ? parseFloat(hours) || 0 : hours || 0;
+  return menNum * hoursNum;
+}
+
+export function calculateLaborTotal(
+  quantity: number | string,
+  men: number | string,
+  hours: number | string,
+) {
+  const qtyNum =
+    typeof quantity === "string" ? parseFloat(quantity) || 0 : quantity || 0;
+  return qtyNum * calculateLaborUnit(men, hours);
+}
+
+/** Dollar and hour totals for an estimate's rows. Saved as data.calculatedValues. */
+export function computeLineItemTotals(sovItems: any[], nonSovItems: any[]) {
+  const sumRows = (items: any[]) => {
+    let material = 0;
+    let expense = 0;
+    let labor = 0;
+    let laborHours = 0;
+    items.forEach((item) => {
+      if (isStructuralLineItem(item)) return;
+      material += calculateMaterialExtension(item.quantity, item.materialPrice);
+      expense += calculateExpenseExtension(item.quantity, item.expensePrice);
+      labor += calculateLaborTotal(
+        item.quantity,
+        item.laborMen,
+        item.laborHours,
+      );
+      laborHours +=
+        calculateLaborUnit(item.laborMen, item.laborHours) *
+        toPriceNumber(item.quantity);
+    });
+    return { material, expense, labor, laborHours };
+  };
+
+  const sov = sumRows(sovItems);
+  const nonSov = sumRows(nonSovItems);
+  const totalMaterial = sov.material + nonSov.material;
+  const totalExpense = sov.expense + nonSov.expense;
+  const totalLabor = sov.labor + nonSov.labor;
+
+  return {
+    subtotalMaterial: totalMaterial,
+    subtotalExpense: totalExpense,
+    subtotalLabor: totalLabor,
+    totalMaterial,
+    totalExpense,
+    totalLabor,
+    grandTotal: totalMaterial + totalExpense + totalLabor,
+    nonSovMaterial: nonSov.material,
+    nonSovExpense: nonSov.expense,
+    nonSovLabor: nonSov.labor,
+    sovLaborHours: sov.laborHours,
+    nonSovLaborHours: nonSov.laborHours,
+    totalLaborHours: sov.laborHours + nonSov.laborHours,
+  };
+}
+
+/** Days onsite come from SOV hours only (not PM or reports). Travel trips key off this. */
+export function computeDaysOnsite(
+  sovLaborHours: number,
+  men: number | string,
+  hoursPerDay: number | string,
+) {
+  const menNum = toPriceNumber(men);
+  const hoursPerDayNum = toPriceNumber(hoursPerDay);
+  return menNum > 0 && hoursPerDayNum > 0
+    ? sovLaborHours / (menNum * hoursPerDayNum)
+    : 0;
+}
+
+/** Each day: first 8 hours straight time, next 4 overtime, the rest double time. */
+export function computeLaborRateSplit(
+  totalWorkHours: number,
+  hoursPerDay: number,
+) {
+  let straightTimeHours = 0;
+  let overtimeHours = 0;
+  let doubleTimeHours = 0;
+
+  if (totalWorkHours > 0 && hoursPerDay > 0) {
+    const totalDays = Math.ceil(totalWorkHours / hoursPerDay);
+
+    for (let day = 0; day < totalDays; day++) {
+      const hoursThisDay = Math.min(
+        hoursPerDay,
+        totalWorkHours - day * hoursPerDay,
+      );
+
+      if (hoursThisDay <= 8) {
+        straightTimeHours += hoursThisDay;
+      } else if (hoursThisDay <= 12) {
+        straightTimeHours += 8;
+        overtimeHours += hoursThisDay - 8;
+      } else {
+        straightTimeHours += 8;
+        overtimeHours += 4;
+        doubleTimeHours += hoursThisDay - 12;
+      }
+    }
+  }
+
+  return { straightTimeHours, overtimeHours, doubleTimeHours };
+}
+
+/** "Net terms only" turns off the tax factor and the final markup divisor. */
+export function getPricingFactors(netTermsOnly: boolean) {
+  return {
+    taxFactor: netTermsOnly ? 1.0 : 1.09,
+    finalMarkupDivisor: netTermsOnly ? 1.0 : 0.96,
+  };
+}
+
+/**
+ * Material + expense dollars, shared by every day-type scenario.
+ * Note: totalExpense already includes nonSovExpense, so non-SOV expense counts twice here.
+ */
+export function computeMaterialExpenseBase(
+  calculatedValues: any,
+  materialMarkup: number | string,
+  taxFactor: number,
+) {
+  const cv = calculatedValues || {};
+  return (
+    toPriceNumber(cv.totalMaterial) * taxFactor * toPriceNumber(materialMarkup) +
+    toPriceNumber(cv.totalExpense) * taxFactor +
+    toPriceNumber(cv.nonSovExpense) * 1.0
+  );
+}
+
+export function computeWorkLaborCost(hours: any, rates: any) {
+  return (
+    toPriceNumber(hours?.straightTimeHours) * toPriceNumber(rates?.straightTime) +
+    toPriceNumber(hours?.overtimeHours) * toPriceNumber(rates?.overtime) +
+    toPriceNumber(hours?.doubleTimeHours) * toPriceNumber(rates?.doubleTime)
+  );
+}
+
+export function computeTravelLaborCost(hours: any, rates: any) {
+  return (
+    toPriceNumber(hours?.travelStraightTimeHours) *
+      toPriceNumber(rates?.straightTime) +
+    toPriceNumber(hours?.travelOvertimeHours) * toPriceNumber(rates?.overtime) +
+    toPriceNumber(hours?.travelDoubleTimeHours) *
+      toPriceNumber(rates?.doubleTime)
+  );
+}
+
+/** FINAL before the optional final markup. A manual price wins over the math. */
+export function computeBaseFinalValue(
+  costs: {
+    materialExpenseBase: number;
+    workLabor: number;
+    travelLabor: number;
+    travelNonLabor: number;
+  },
+  finalMarkupDivisor: number,
+  manualPrice?: number | null,
+) {
+  if (manualPrice != null) return Math.max(0, manualPrice);
+  return Math.ceil(
+    (costs.materialExpenseBase +
+      costs.workLabor +
+      costs.travelLabor +
+      costs.travelNonLabor) /
+      finalMarkupDivisor,
+  );
+}
+
 /** Pure mobilization-factor lookup that works with any factors object (not just component state). */
 export function computeMobilizationFactor(
   finalValue: number,
@@ -238,39 +436,36 @@ export function summarizeEstimateSnapshot(
 ) {
   const rates = getHourlyRatesForCombinedScope(parsedData);
   const factors = getMobilizationFactorsForCombinedScope(parsedData);
-  const netTerms = !!parsedData?.netTermsOnly;
-  const tax = netTerms ? 1.0 : 1.09;
-  const divisor = netTerms ? 1.0 : 0.96;
+  const { taxFactor, finalMarkupDivisor } = getPricingFactors(
+    !!parsedData?.netTermsOnly,
+  );
 
-  const cv = parsedData?.calculatedValues || {};
   const hs = parsedData?.hoursSummary || {};
 
-  const matExpBase =
-    (cv.totalMaterial || 0) * tax * materialMarkupValue +
-    (cv.totalExpense || 0) * tax +
-    (cv.nonSovExpense || 0) * 1.0;
-  const workLabor =
-    (hs.straightTimeHours || 0) * rates.straightTime +
-    (hs.overtimeHours || 0) * rates.overtime +
-    (hs.doubleTimeHours || 0) * rates.doubleTime;
-  const travelLabor =
-    (hs.travelStraightTimeHours || 0) * rates.straightTime +
-    (hs.travelOvertimeHours || 0) * rates.overtime +
-    (hs.travelDoubleTimeHours || 0) * rates.doubleTime;
+  const workLabor = computeWorkLaborCost(hs, rates);
+  const travelLabor = computeTravelLaborCost(hs, rates);
   const travelNonLabor = Math.max(
     0,
     resolveTravelNonLaborCost(travelData, parsedData),
   );
 
   const manual = parsedData?.manualPriceOverride
-    ? Math.max(0, Number(parsedData.manualPriceValue) || 0)
+    ? toPriceNumber(parsedData.manualPriceValue)
     : null;
-  const rawFinal =
-    manual != null
-      ? manual
-      : Math.ceil(
-          (matExpBase + workLabor + travelLabor + travelNonLabor) / divisor,
-        );
+  const rawFinal = computeBaseFinalValue(
+    {
+      materialExpenseBase: computeMaterialExpenseBase(
+        parsedData?.calculatedValues,
+        materialMarkupValue,
+        taxFactor,
+      ),
+      workLabor,
+      travelLabor,
+      travelNonLabor,
+    },
+    finalMarkupDivisor,
+    manual,
+  );
   const finalValue = Number.isFinite(rawFinal)
     ? applyFinalMarkup(rawFinal, getFinalMarkupMultiplier(parsedData))
     : 0;

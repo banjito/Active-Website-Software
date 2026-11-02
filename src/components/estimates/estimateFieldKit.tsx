@@ -14,11 +14,11 @@
 import type { ReactNode } from "react";
 
 export const INPUT_CLS =
-  "w-full text-sm rounded border px-2 py-1 bg-white dark:bg-dark-100 border-neutral-300 dark:border-dark-200 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-brand";
+  "w-full text-sm rounded-none border px-2 py-1 bg-white dark:bg-dark-100 border-neutral-300 dark:border-dark-200 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-brand";
 export const CALC_CLS =
-  "text-sm rounded border px-2 py-1 bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900 text-blue-800 dark:text-blue-200 font-medium";
+  "text-sm rounded-none border px-2 py-1 bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900 text-blue-800 dark:text-blue-200 font-medium";
 export const TOTAL_CLS =
-  "text-sm rounded border px-2 py-1 bg-orange-50 dark:bg-orange-950/40 border-orange-300 dark:border-orange-800 text-orange-800 dark:text-orange-200 font-semibold";
+  "text-sm rounded-none border px-2 py-1 bg-orange-50 dark:bg-orange-950/40 border-orange-300 dark:border-orange-800 text-orange-800 dark:text-orange-200 font-semibold";
 export const FIELD_LABEL_CLS =
   "text-[10px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400 mb-1";
 

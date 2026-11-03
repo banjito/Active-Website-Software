@@ -1,3 +1,4 @@
+import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useState, useEffect } from "react";
 import {
   useParams,
@@ -1374,10 +1375,10 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
               {formData.visualInspectionItems.map((item, index) => (
                 <tr key={index}>
                   <td className="p-2 border border-black">
-                    {item.netaSection}
+                    <NetaSectionLink value={item.netaSection} standard="ats-2025" />
                   </td>
                   <td className="p-2 border border-black">
-                    {item.description}
+                    <StandardRefText text={item.description} standard="ats-2025" />
                   </td>
                   <td className="p-2 border border-black text-center">
                     {item.results || ""}
@@ -2030,10 +2031,10 @@ const LowVoltagePanelboardSmallBreakerTestATSReport: React.FC = () => {
                   {formData.visualInspectionItems.map((item, index) => (
                     <tr key={index}>
                       <td className="px-3 py-2 whitespace-nowrap text-sm text-neutral-900 dark:text-white">
-                        {item.netaSection}
+                        <NetaSectionLink value={item.netaSection} standard="ats-2025" />
                       </td>
                       <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white whitespace-normal break-words">
-                        {item.description}
+                        <StandardRefText text={item.description} standard="ats-2025" />
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-center">
                         <select

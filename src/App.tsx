@@ -178,6 +178,10 @@ const DocsPage = lazy(() => loadDocs().then((m) => ({ default: m.DocsPage })));
 
 // PM dashboard: standalone for now, not linked from any menu.
 const PMDashboard = lazy(() => import("./app/pm-dashboard/PMDashboard"));
+
+// Standards reader (NETA ATS/MTS): linked from the portal and from report references.
+// Text lives in common.standard_sections, never in the bundle.
+const StandardsPage = lazy(() => import("./app/standards/StandardsPage"));
 const PMJobDetail = lazy(() => import("./app/pm-dashboard/PMJobDetail"));
 
 // Personal Wrapped mockup: standalone, not linked from any menu. Sample data only.
@@ -851,6 +855,25 @@ function App() {
                     ))}
                     <Route path="*" element={<DocsPage />} />
                   </Route>
+
+                  {/* Standards reader. Own chrome like the docs, so no <Layout>.
+                      Optional segments keep one mounted page across sections. */}
+                  <Route
+                    path="/standards/:standard?/:section?"
+                    element={
+                      <RequireAuth>
+                        <Suspense
+                          fallback={
+                            <div className="flex min-h-screen items-center justify-center">
+                              <LoadingSpinner size="md" />
+                            </div>
+                          }
+                        >
+                          <StandardsPage />
+                        </Suspense>
+                      </RequireAuth>
+                    }
+                  />
 
                   {/* The Help Center was replaced by the docs site above.
                       /help-center/* is redirected so links saved in older

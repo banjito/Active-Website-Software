@@ -1,3 +1,4 @@
+import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useState, useEffect } from "react";
 import {
   useParams,
@@ -2006,10 +2007,10 @@ const CurrentTransformerTestATSReport: React.FC = () => {
                   {formData.visualMechanicalInspection.map((item, index) => (
                     <tr key={item.netaSection}>
                       <td className="px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 align-top">
-                        {item.netaSection}
+                        <NetaSectionLink value={item.netaSection} standard="ats-2025" />
                       </td>
                       <td className="px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 align-top whitespace-normal break-words">
-                        {item.description}
+                        <StandardRefText text={item.description} standard="ats-2025" />
                       </td>
                       <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 align-top">
                         <select

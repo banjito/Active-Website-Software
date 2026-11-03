@@ -1,3 +1,4 @@
+import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -1633,10 +1634,10 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                   {formData.visualInspectionItems.map((item, idx) => (
                     <tr key={item.id}>
                       <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white">
-                        {item.id}
+                        <NetaSectionLink value={item.id} standard="ats-2025" />
                       </td>
                       <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white whitespace-normal break-words">
-                        {item.description}
+                        <StandardRefText text={item.description} standard="ats-2025" />
                       </td>
                       <td className="px-3 py-2">
                         <div className="print:hidden">
@@ -1732,7 +1733,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                 </div>
                 <div className="border rounded-none px-3 py-2 bg-neutral-50 dark:bg-dark-150">
                   <div className="text-xs font-semibold mb-1">
-                    Table 100.1 Criteria
+                    <StandardRef standard="ats-2025" num="100.1">Table 100.1</StandardRef> Criteria
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs">Value</span>
@@ -1807,7 +1808,7 @@ const PanelboardAssembliesATS25Report: React.FC = () => {
                       className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase"
                       colSpan={2}
                     >
-                      Table 100.1 Criteria
+                      <StandardRef standard="ats-2025" num="100.1">Table 100.1</StandardRef> Criteria
                     </th>
                     <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
                       Results

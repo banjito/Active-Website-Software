@@ -1419,6 +1419,15 @@ export default function PortalLanding() {
                   className="h-5 w-auto aspect-[16234/2378] shrink-0 transition-[filter] dark:invert group-hover:invert dark:group-hover:invert-0 translate-y-1"
                 />
               </Link>
+              {/* NETA standards reader (/standards). */}
+              <Link
+                to="/standards"
+                aria-label="NETA Standards"
+                className="inline-flex h-11 items-center gap-2 px-5 rounded-none border-none bg-neutral-200 text-base font-medium text-neutral-800 transition-colors hover:bg-brand hover:text-white dark:bg-dark-700 dark:text-white dark:hover:bg-brand focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
+              >
+                <BookOpen className="h-4 w-4 shrink-0" />
+                NETA Standards
+              </Link>
               <div className="relative">
                 <button
                   ref={offlineBtnRef}

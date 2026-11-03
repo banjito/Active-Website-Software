@@ -659,6 +659,7 @@ export const TechnicianListedView: React.FC<Props> = ({
             <div className="flex gap-2 items-center">
               <Button
                 variant="outline"
+                className="h-9"
                 onClick={goPrev}
                 leftIcon={<ChevronLeft className="w-4 h-4" />}
               >
@@ -666,6 +667,7 @@ export const TechnicianListedView: React.FC<Props> = ({
               </Button>
               <Button
                 variant="outline"
+                className="h-9"
                 onClick={goToday}
                 disabled={isCurrentWeek}
               >
@@ -673,6 +675,7 @@ export const TechnicianListedView: React.FC<Props> = ({
               </Button>
               <Button
                 variant="outline"
+                className="h-9"
                 onClick={goNext}
                 rightIcon={<ChevronRight className="w-4 h-4" />}
               >
@@ -687,7 +690,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => setIsTechFilterOpen(!isTechFilterOpen)}
-                  className="w-full px-3 py-2 text-left text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-200 flex items-center justify-between"
+                  className="w-full h-9 px-3 text-left text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-200 flex items-center justify-between"
                 >
                   <span>
                     {selectedTechIds.length === 0
@@ -829,6 +832,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                 <div className="relative">
                   <Button
                     variant="outline"
+                    className="h-9"
                     onClick={() => setIsHiddenMenuOpen((o) => !o)}
                     leftIcon={<UserMinus className="w-4 h-4" />}
                   >

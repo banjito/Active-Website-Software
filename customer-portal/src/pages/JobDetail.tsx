@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { ReportRow } from '@/components/ReportRow';
+import { PacketCoverRow } from '@/components/PacketCoverRow';
 import { dateSearchText, formatDate } from '@/lib/utils';
 
 export function JobDetail() {
@@ -236,7 +237,8 @@ export function JobDetail() {
                     )}
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-2">
+                  {packet.cover_pdf_path && <PacketCoverRow packet={packet} />}
                   {items.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
                       The reports in this packet aren’t available yet.

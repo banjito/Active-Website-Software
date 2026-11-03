@@ -338,8 +338,14 @@ export default function PMJobDetail() {
     );
   }
 
+  // Back to the list the person came from: My Jobs, or this job's location.
+  const fromScope = searchParams.get('scope');
   const backToList = () =>
-    navigate(`/pm-dashboard?month=${month}${job?.division ? `&division=${job.division}` : ''}`);
+    navigate(
+      `/pm-dashboard?month=${month}` +
+        (fromScope ? `&scope=${fromScope}` : '') +
+        (fromScope !== 'mine' && job?.division ? `&division=${job.division}` : ''),
+    );
 
   if (error || !job || !bundle) {
     return (
@@ -351,6 +357,18 @@ export default function PMJobDetail() {
           <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
           <p className="text-sm text-red-700 dark:text-red-300">{error ?? 'Job not found.'}</p>
         </div>
+      </div>
+    );
+  }
+
+  // A job's own PM sees only their jobs. The database enforces this for hours and the SOV.
+  if (!access.fullAccess && job.project_manager_id !== user?.id) {
+    return (
+      <div className="mx-auto max-w-7xl space-y-4 p-6">
+        <Button variant="ghost" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />} onClick={backToList}>
+          My Jobs
+        </Button>
+        <Notice>You're not the PM on this job. Ask the location's PM or an admin if it should be yours.</Notice>
       </div>
     );
   }

@@ -25,7 +25,7 @@ import {
   FileSpreadsheet,
   Plus,
   AlertTriangle,
-  ClipboardList,
+  Database,
 } from "lucide-react";
 import { Button } from "./Button";
 import { AssignDivisionLeadPopover } from "./AssignDivisionLeadPopover";
@@ -33,6 +33,9 @@ import { NewDivisionPopover } from "./NewDivisionPopover";
 import { isSuperUser } from "@/lib/roles";
 import {
   canOpenPmDashboard,
+  managesActiveJobs,
+} from "@/services/pmAccessService";
+import {
   fetchDivisionLeads,
   leadTitleFor,
   type DivisionLeads,
@@ -121,6 +124,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   useEffect(() => {
     refreshDivisionLeads();
   }, [refreshDivisionLeads]);
+
+  // A job's own PM gets "My Jobs" too, even without a PM role or a location.
+  const [managesJobs, setManagesJobs] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    void managesActiveJobs(user?.id).then((v) => alive && setManagesJobs(v));
+    return () => {
+      alive = false;
+    };
+  }, [user?.id]);
 
   // The division switcher reads common.divisions so an admin can add one without
   // a migration. Seeded with the built-in list, so the sidebar renders the same
@@ -881,19 +894,20 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </>
         )}
 
-        {/* PMs only: their PM Dashboard, inside the Field Tech portal and its cities */}
-        {showCitySwitcher && canOpenPmDashboard(user, divisionLeads) && (
+        {/* PMs only: "My Jobs" opens their PM Dashboard, inside the Field Tech portal and its cities */}
+        {showCitySwitcher &&
+          (managesJobs || canOpenPmDashboard(user, divisionLeads)) && (
           <Link to="/pm-dashboard" onClick={() => setIsMobileSidebarOpen(false)}>
             <Button
               variant="ghost"
-              leftIcon={<ClipboardList className="h-4 w-4" />}
+              leftIcon={<Database className="h-4 w-4" />}
               className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
                 location.pathname.startsWith("/pm-dashboard")
                   ? "bg-black/5 dark:bg-dark-50"
                   : ""
               }`}
             >
-              My jobs
+              My Jobs
             </Button>
           </Link>
         )}

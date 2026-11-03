@@ -193,9 +193,11 @@ export default function PortalLanding({
     // Last work-queue tab picked on /portal. Saved with the rest of these
     // prefs on the profile, so it survives sign-out and other devices.
     queueTab: null as string | null,
+    // Work-queue displays an Ops Manager / Admin turned off with the gear.
+    queueHidden: [] as string[],
   });
   const { setDivision } = useDivision();
-  const { isAdmin, checkPortalAccess } = usePermissions();
+  const { isAdmin, checkPortalAccess, getUserRole } = usePermissions();
   const [portalAnnouncements, setPortalAnnouncements] = useState<
     {
       id: string;
@@ -548,6 +550,7 @@ export default function PortalLanding({
           showAnnouncements: restPrefs.showAnnouncements ?? true,
           hiddenPortals: restPrefs.hiddenPortals ?? prev.hiddenPortals,
           queueTab: restPrefs.queueTab ?? prev.queueTab,
+          queueHidden: restPrefs.queueHidden ?? prev.queueHidden,
         }));
 
         // Also update localStorage for faster loading next time
@@ -1078,6 +1081,9 @@ export default function PortalLanding({
   };
 
   const isPortalHidden = (portalName: string) => {
+    // The "queue" home page has no edit mode, so nobody could un-hide a
+    // card there. Old hide choices only apply to the classic layout.
+    if (layout === "queue") return false;
     return portalPreferences.hiddenPortals.includes(portalName);
   };
 
@@ -1285,7 +1291,10 @@ export default function PortalLanding({
   return (
     <div className="min-h-screen bg-background text-foreground dark:bg-[#1e1e1e] dark:text-white">
       <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-neutral-200 dark:border-dark-200">
-        <HeaderBar onEnterEditMode={handleEnterEditMode} />
+        {/* No edit mode on the "queue" home page. */}
+        <HeaderBar
+          onEnterEditMode={layout === "queue" ? undefined : handleEnterEditMode}
+        />
       </div>
 
       {/* Easter egg: click the ampOS logo and Brian slowly creeps in from the left */}
@@ -1370,7 +1379,7 @@ export default function PortalLanding({
 
       {/* Hero Section */}
       <section
-        className={`relative overflow-hidden border-none bg-white dark:bg-[#1e1e1e] ${!portalPreferences.showWelcome && !isEditMode ? "hidden" : ""}`}
+        className={`relative overflow-hidden border-none bg-white dark:bg-[#1e1e1e] ${layout !== "queue" && !portalPreferences.showWelcome && !isEditMode ? "hidden" : ""}`}
       >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className={layout === "queue" ? "pt-10 pb-6" : "py-16"}>
@@ -1511,6 +1520,11 @@ export default function PortalLanding({
             announcementState={userAnnouncementState}
             onOpenDocument={openAckModal}
             savedTab={portalPreferences.queueTab}
+            canCustomize={isAdmin || getUserRole() === "Operations Manager"}
+            hiddenDisplays={portalPreferences.queueHidden ?? []}
+            onHiddenDisplaysChange={(next) =>
+              setPortalPreferences((prev) => ({ ...prev, queueHidden: next }))
+            }
             onTabChange={(key) =>
               setPortalPreferences((prev) =>
                 prev.queueTab === key ? prev : { ...prev, queueTab: key },

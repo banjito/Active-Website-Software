@@ -4,7 +4,7 @@
 // announcements and today's schedule.
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarDays, ChevronRight, Megaphone } from "lucide-react";
+import { CalendarDays, ChevronRight, Megaphone, Settings } from "lucide-react";
 import { ReviewShortcuts } from "@/components/shortcuts/ReviewShortcuts";
 import { IssueShortcuts } from "@/components/shortcuts/IssueShortcuts";
 import { ActionItemShortcuts } from "@/components/shortcuts/ActionItemShortcuts";
@@ -50,7 +50,16 @@ interface PortalWorkQueueProps {
   // Last tab picked, from the user's saved portal prefs (null until loaded).
   savedTab?: string | null;
   onTabChange?: (key: QueueKey) => void;
+  // Ops Managers and Admins get a gear to turn tabs / side cards on and off.
+  canCustomize?: boolean;
+  hiddenDisplays?: string[];
+  onHiddenDisplaysChange?: (next: string[]) => void;
 }
+
+const SIDE_DISPLAYS: { key: string; label: string }[] = [
+  { key: "announcements", label: "Announcements" },
+  { key: "today", label: "Today's schedule" },
+];
 
 // Same marker the home page and HR announcements use for sign-off documents.
 const ACK_DOC_RE = /📄 \[View & Acknowledge Document\]\(([^)]+)\)/;
@@ -102,6 +111,9 @@ export default function PortalWorkQueue({
   onOpenDocument,
   savedTab,
   onTabChange,
+  canCustomize = false,
+  hiddenDisplays = [],
+  onHiddenDisplaysChange,
 }: PortalWorkQueueProps) {
   const { user } = useAuth();
 
@@ -151,12 +163,42 @@ export default function PortalWorkQueue({
     };
   }, []);
 
+  // ---------- Gear: which displays show (Ops Managers / Admins) ----------
+  const hidden = canCustomize ? hiddenDisplays : [];
+  const visibleTabs = QUEUE_TABS.filter((t) => !hidden.includes(t.key));
+  const activeTab: QueueKey | null = visibleTabs.some((t) => t.key === tab)
+    ? tab
+    : (visibleTabs[0]?.key ?? null);
+  const showAnnouncements = !hidden.includes("announcements");
+  const showToday = !hidden.includes("today");
+  const showSide = showAnnouncements || showToday;
+  const [gearOpen, setGearOpen] = useState(false);
+
+  const toggleDisplay = (key: string) => {
+    const next = hidden.includes(key)
+      ? hidden.filter((k) => k !== key)
+      : [...hidden, key];
+    onHiddenDisplaysChange?.(next);
+  };
+
+  useEffect(() => {
+    if (!gearOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setGearOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [gearOpen]);
+
   // Each tab mounts its list the first time it's opened, so a home page
   // visit loads one list instead of four.
   const [opened, setOpened] = useState<Set<QueueKey>>(() => new Set([tab]));
   useEffect(() => {
-    setOpened((prev) => (prev.has(tab) ? prev : new Set(prev).add(tab)));
-  }, [tab]);
+    if (!activeTab) return;
+    setOpened((prev) =>
+      prev.has(activeTab) ? prev : new Set(prev).add(activeTab),
+    );
+  }, [activeTab]);
 
   // All four tab counts in one request (database/migrations/portal_queue_counts.sql).
   // If that function isn't there, each badge fills in when its tab is opened.
@@ -254,14 +296,15 @@ export default function PortalWorkQueue({
   return (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Work queue */}
-        <div className={`${card} lg:col-span-2 min-w-0`}>
+        <div className={`${card} ${showSide ? "lg:col-span-2" : "lg:col-span-3"} min-w-0`}>
+          <div className="relative flex border-b border-neutral-200 dark:border-dark-300">
           <div
             role="tablist"
             aria-label="Work queue"
-            className="flex flex-wrap border-b border-neutral-200 dark:border-dark-300"
+            className="flex flex-1 flex-wrap"
           >
-            {QUEUE_TABS.map((t) => {
-              const selected = tab === t.key;
+            {visibleTabs.map((t) => {
+              const selected = activeTab === t.key;
               const n = counts[t.key];
               return (
                 <button
@@ -294,25 +337,107 @@ export default function PortalWorkQueue({
               );
             })}
           </div>
+          {canCustomize && (
+            <>
+              <button
+                type="button"
+                aria-label="Choose what shows on the home page"
+                aria-haspopup="true"
+                aria-expanded={gearOpen}
+                onClick={() => setGearOpen((v) => !v)}
+                className={`flex w-11 shrink-0 items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+                  gearOpen
+                    ? "bg-brand/10 text-brand"
+                    : "text-neutral-500 hover:text-brand dark:text-neutral-400"
+                }`}
+              >
+                <Settings className="h-4 w-4" />
+              </button>
+              {gearOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-30"
+                    onClick={() => setGearOpen(false)}
+                  />
+                  {/* Floats over the list instead of pushing it down. */}
+                  <div
+                    role="group"
+                    aria-label="Show on home page"
+                    className="absolute right-0 top-full z-40 w-60 rounded-none border border-neutral-200 border-t-2 border-t-brand bg-white p-3 shadow-lg dark:border-dark-300 dark:bg-dark-150"
+                  >
+                    <p className="text-sm font-bold text-neutral-900 dark:text-white">
+                      Show on home page
+                    </p>
+                    <p className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                      Tabs
+                    </p>
+                    {QUEUE_TABS.map((t) => (
+                      <label
+                        key={t.key}
+                        htmlFor={`queue-show-${t.key}`}
+                        className="flex cursor-pointer items-center gap-2 py-1 text-sm text-neutral-800 dark:text-neutral-200"
+                      >
+                        <input
+                          id={`queue-show-${t.key}`}
+                          type="checkbox"
+                          checked={!hidden.includes(t.key)}
+                          onChange={() => toggleDisplay(t.key)}
+                          className="h-4 w-4 rounded-none accent-brand"
+                        />
+                        {t.label}
+                      </label>
+                    ))}
+                    <p className="mt-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                      Side column
+                    </p>
+                    {SIDE_DISPLAYS.map((d) => (
+                      <label
+                        key={d.key}
+                        htmlFor={`queue-show-${d.key}`}
+                        className="flex cursor-pointer items-center gap-2 py-1 text-sm text-neutral-800 dark:text-neutral-200"
+                      >
+                        <input
+                          id={`queue-show-${d.key}`}
+                          type="checkbox"
+                          checked={!hidden.includes(d.key)}
+                          onChange={() => toggleDisplay(d.key)}
+                          className="h-4 w-4 rounded-none accent-brand"
+                        />
+                        {d.label}
+                      </label>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          )}
+          </div>
           {/* A tab's list loads the first time it's opened, then stays mounted. */}
           <div className="max-h-[520px] overflow-y-auto p-4">
-            <div id="work-queue-panel-review" role="tabpanel" aria-labelledby="work-queue-tab-review" hidden={tab !== "review"}>
+            {!activeTab && (
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                All tabs are turned off. Use the gear to turn some back on.
+              </p>
+            )}
+            <div id="work-queue-panel-review" role="tabpanel" aria-labelledby="work-queue-tab-review" hidden={activeTab !== "review"}>
               {opened.has("review") && <ReviewShortcuts onCount={countHandlers.review} />}
             </div>
-            <div id="work-queue-panel-issue" role="tabpanel" aria-labelledby="work-queue-tab-issue" hidden={tab !== "issue"}>
+            <div id="work-queue-panel-issue" role="tabpanel" aria-labelledby="work-queue-tab-issue" hidden={activeTab !== "issue"}>
               {opened.has("issue") && <IssueShortcuts onCount={countHandlers.issue} />}
             </div>
-            <div id="work-queue-panel-action" role="tabpanel" aria-labelledby="work-queue-tab-action" hidden={tab !== "action"}>
+            <div id="work-queue-panel-action" role="tabpanel" aria-labelledby="work-queue-tab-action" hidden={activeTab !== "action"}>
               {opened.has("action") && <ActionItemShortcuts onCount={countHandlers.action} />}
             </div>
-            <div id="work-queue-panel-approved" role="tabpanel" aria-labelledby="work-queue-tab-approved" hidden={tab !== "approved"}>
+            <div id="work-queue-panel-approved" role="tabpanel" aria-labelledby="work-queue-tab-approved" hidden={activeTab !== "approved"}>
               {opened.has("approved") && <ApprovedShortcuts onCount={countHandlers.approved} />}
             </div>
           </div>
         </div>
 
         {/* Side column */}
+        {showSide && (
         <div className="flex min-w-0 flex-col gap-6">
+          {showAnnouncements && (
           <div className={card}>
             <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-dark-300">
               <h3 className="flex items-center gap-2 text-sm font-bold text-neutral-900 dark:text-white">
@@ -368,7 +493,9 @@ export default function PortalWorkQueue({
               })
             )}
           </div>
+          )}
 
+          {showToday && (
           <div className={card}>
             <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-dark-300">
               <h3 className="flex items-center gap-2 text-sm font-bold text-neutral-900 dark:text-white">
@@ -422,7 +549,9 @@ export default function PortalWorkQueue({
               })
             )}
           </div>
+          )}
         </div>
+        )}
       </div>
   );
 }

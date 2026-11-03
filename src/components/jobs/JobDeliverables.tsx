@@ -11,6 +11,7 @@ import {
   DialogFooter,
 } from "@/components/ui/Dialog";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { toast } from "@/components/ui/toast";
 
 interface Deliverable {
   id: string;
@@ -28,6 +29,7 @@ interface Deliverable {
   rejected_at: string | null;
   rejection_reason: string | null;
   delivered_at: string | null;
+  published_cover_pdf_path?: string | null;
 }
 
 interface CoverLetter {
@@ -42,6 +44,7 @@ interface Asset {
   id: string;
   name: string;
   file_url: string;
+  status: string | null;
 }
 
 interface JobDeliverablesProps {
@@ -65,6 +68,8 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
   const [selectedCoverLetterId, setSelectedCoverLetterId] =
     useState<string>("");
   const [saving, setSaving] = useState(false);
+  // Deliverable currently being published to ampOS ACCESS (one at a time).
+  const [publishingId, setPublishingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadDeliverables();
@@ -163,7 +168,7 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
       const { data: assetData, error: assetError } = await supabase
         .schema("neta_ops")
         .from("assets")
-        .select("id, name, file_url")
+        .select("id, name, file_url, status")
         .in("id", assetIds)
         .or("file_url.like.report:%,file_url.ilike.%.pdf"); // Get both report assets and PDF reports
 
@@ -257,9 +262,100 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
       alert(`Deliverable ${newStatus}`);
       loadDeliverables();
       setIsDetailDialogOpen(false);
+
+      // Delivered packets show in ampOS ACCESS; publish their PDFs in the
+      // background so the customer can open them.
+      if (newStatus === "delivered" && deliverable) {
+        void publishPacketToAccess(deliverable);
+      }
     } catch (error: any) {
       console.error("Error updating deliverable status:", error);
       alert(`Failed to update status: ${error.message}`);
+    }
+  };
+
+  // Call an edge function and surface its JSON `error` instead of the generic
+  // "non-2xx status code" message.
+  const invokeEdge = async (fn: string, body: Record<string, string>) => {
+    const { data, error } = await supabase.functions.invoke(fn, { body });
+    if (error) {
+      let detail = error.message;
+      const ctx = (error as { context?: Response }).context;
+      if (ctx && typeof ctx.json === "function") {
+        try {
+          const b = await ctx.json();
+          if (b?.error) detail = b.error;
+        } catch {
+          /* no json body */
+        }
+      }
+      throw new Error(detail);
+    }
+    const bodyError = (data as { error?: string } | null)?.error;
+    if (bodyError) throw new Error(bodyError);
+  };
+
+  // Publish a delivered packet to ampOS ACCESS: the cover letter
+  // (publish-deliverable-pdf) plus each report's PDF (publish-report-pdf).
+  // Renders run one at a time. Reports that aren't approved/sent are skipped:
+  // ACCESS can't show those anyway.
+  const publishPacketToAccess = async (deliverable: Deliverable) => {
+    if (publishingId) return;
+    setPublishingId(deliverable.id);
+    const errors: string[] = [];
+    let published = 0;
+    try {
+      try {
+        await invokeEdge("publish-deliverable-pdf", {
+          deliverableId: deliverable.id,
+        });
+        published++;
+      } catch (e) {
+        errors.push(`Cover letter: ${e instanceof Error ? e.message : e}`);
+      }
+
+      const reportIds =
+        coverLetters.find((c) => c.id === deliverable.cover_letter_id)
+          ?.selected_report_ids ?? [];
+      const reports = assets.filter(
+        (a) =>
+          reportIds.includes(a.id) &&
+          a.file_url?.startsWith("report:") &&
+          ["approved", "sent"].includes(String(a.status || "").toLowerCase()),
+      );
+      for (const r of reports) {
+        try {
+          await invokeEdge("publish-report-pdf", { assetId: r.id });
+          published++;
+        } catch (e) {
+          errors.push(`${r.name}: ${e instanceof Error ? e.message : e}`);
+        }
+      }
+
+      const skipped = reportIds.length - reports.length;
+      if (errors.length > 0) console.warn("ACCESS publish errors:", errors);
+      toast({
+        title:
+          errors.length === 0
+            ? "Packet published to ampOS ACCESS"
+            : "Packet partly published to ampOS ACCESS",
+        description: [
+          `${published} PDF(s) published.`,
+          skipped > 0
+            ? `${skipped} report(s) skipped (not approved, or an uploaded file).`
+            : "",
+          errors.length > 0
+            ? `${errors.length} failed: ${errors.slice(0, 2).join("; ")}`
+            : "",
+        ]
+          .filter(Boolean)
+          .join(" "),
+        variant: errors.length === 0 ? "success" : "warning",
+        persistent: errors.length > 0,
+      });
+      loadDeliverables();
+    } finally {
+      setPublishingId(null);
     }
   };
 
@@ -672,6 +768,20 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
                     className="bg-purple-600 hover:bg-purple-700 text-white"
                   >
                     Mark as Delivered
+                  </Button>
+                )}
+
+                {selectedDeliverable.status === "delivered" && (
+                  <Button
+                    onClick={() => publishPacketToAccess(selectedDeliverable)}
+                    disabled={publishingId !== null}
+                    title="Re-render the cover letter and report PDFs the customer sees in ampOS ACCESS"
+                  >
+                    {publishingId === selectedDeliverable.id
+                      ? "Publishing…"
+                      : selectedDeliverable.published_cover_pdf_path
+                        ? "Republish to ampOS ACCESS"
+                        : "Publish to ampOS ACCESS"}
                   </Button>
                 )}
 

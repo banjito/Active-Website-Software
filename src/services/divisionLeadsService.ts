@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabase";
-import { isSuperUser } from "@/lib/roles";
 
 /**
  * Who leads each division.
@@ -27,33 +26,6 @@ export const DIRECTOR_DIVISION_ID = "field_tech";
 
 export const leadTitleFor = (divisionId: string): string =>
   divisionId === DIRECTOR_DIVISION_ID ? "Director" : "Project Manager";
-
-/** Roles that may open the PM Dashboard. Keep in step with common.is_pm_or_admin(). */
-export const PM_DASHBOARD_ROLES = [
-  "Admin",
-  "Super Admin",
-  "Operations Manager",
-  "Project Manager",
-];
-
-/**
- * Who counts as a PM: the roles above, super users, or anyone named as a division lead.
- * Used by the PM Dashboard gate and the sidebar's "My jobs" link so the two never disagree.
- */
-export function canOpenPmDashboard(
-  user:
-    | { id?: string; email?: string | null; user_metadata?: { role?: string } }
-    | null
-    | undefined,
-  leads: DivisionLeads,
-): boolean {
-  if (!user) return false;
-  return (
-    isSuperUser(user.email) ||
-    PM_DASHBOARD_ROLES.includes(user.user_metadata?.role ?? "") ||
-    Object.values(leads).some((lead) => lead?.id === user.id)
-  );
-}
 
 export async function fetchDivisionLeads(): Promise<DivisionLeads> {
   const { data, error } = await supabase

@@ -4,6 +4,14 @@ import { getReportSlugFromFileUrl, REPORT_NAMES } from '@/components/reports/rep
 import { getQBOInvoicesByCustomer } from '@/services/quickbooksService';
 import { summarizeChangeOrders, type ChangeOrder } from '@/services/changeOrderService';
 import { sovPricePerLaborHour } from '@/lib/estimatePricing';
+import { ACTIVE_JOB_STATUSES } from '@/services/pmAccessService';
+import {
+  ChecklistSetupMissingError,
+  fetchChecklistItems,
+  fetchChecklistJobFacts,
+  fetchChecklistSteps,
+  summarizeJobChecklist,
+} from '@/services/jobChecklistService';
 import {
   OTHER_FILES_KEY,
   addEstimatesToLines,
@@ -29,6 +37,7 @@ export interface PmJob {
   quickbooks_project_id: string | null;
   estimated_man_hours: number | null;
   start_date: string | null;
+  project_manager_id: string | null;
 }
 
 /** Everything the dashboard needs to know about one job, apart from QuickBooks billing. */
@@ -46,6 +55,8 @@ export interface JobBundle {
   hoursByMonth: Record<string, number>;
   quotedAmount: number;
   approvedChangeOrders: number;
+  /** Change orders drafted or sent, not yet approved */
+  pendingChangeOrders: number;
 }
 
 export interface BundleResult {
@@ -54,11 +65,8 @@ export interface BundleResult {
   setupMissing: boolean;
 }
 
-// Jobs still being worked or billed. Finished, billed, and cancelled jobs drop off the list.
-const ACTIVE_STATUSES = ['pending', 'in_progress', 'progress_billing', 'ready_to_bill', 'on_hold'];
-
 const JOB_COLUMNS =
-  'id, job_number, title, status, division, customer_id, opportunity_id, quickbooks_project_id, estimated_man_hours, start_date';
+  'id, job_number, title, status, division, customer_id, opportunity_id, quickbooks_project_id, estimated_man_hours, start_date, project_manager_id';
 
 // Postgres "no such table/function", and PostgREST's versions of the same.
 const MISSING_CODES = new Set(['42P01', '42883', 'PGRST202', 'PGRST205']);
@@ -102,12 +110,87 @@ export async function fetchPmJobs(division: string): Promise<PmJob[]> {
     .from('jobs')
     .select(JOB_COLUMNS)
     .eq('division', division)
-    .in('status', ACTIVE_STATUSES)
+    .in('status', ACTIVE_JOB_STATUSES)
     .is('deleted_at', null)
     .order('job_number_numeric', { ascending: false, nullsFirst: false });
 
   if (error) throw new Error(describeSupabaseError(error));
   return withCustomerNames(data ?? []);
+}
+
+/** Active jobs where this person is the PM, at every location. */
+export async function fetchMyPmJobs(userId: string): Promise<PmJob[]> {
+  const { data, error } = await supabase
+    .schema('neta_ops')
+    .from('jobs')
+    .select(JOB_COLUMNS)
+    .eq('project_manager_id', userId)
+    .in('status', ACTIVE_JOB_STATUSES)
+    .is('deleted_at', null)
+    .order('job_number_numeric', { ascending: false, nullsFirst: false });
+
+  if (error) throw new Error(describeSupabaseError(error));
+  return withCustomerNames(data ?? []);
+}
+
+/** PM names for the location view. Names are nice-to-have: a failed lookup returns none. */
+export async function fetchPmNames(userIds: string[]): Promise<Record<string, string>> {
+  const names: Record<string, string> = {};
+  for (const ids of chunk([...new Set(userIds.filter(Boolean))], ID_CHUNK)) {
+    const { data, error } = await supabase
+      .schema('common')
+      .from('profiles')
+      .select('id, full_name, email')
+      .in('id', ids);
+    if (error) {
+      console.error('[PM Dashboard] PM names failed to load:', error);
+      return names;
+    }
+    for (const p of data ?? []) names[p.id] = p.full_name || p.email || '';
+  }
+  return names;
+}
+
+/** Checklist signals for the "Needs attention" column. */
+export interface JobAttention {
+  lateSteps: number;
+  noLead: boolean;
+}
+
+/**
+ * Late checklist steps and missing leads per job. Returns null when the checklist
+ * tables are not set up, so the column can simply leave those flags out.
+ */
+export async function fetchJobAttention(jobs: PmJob[]): Promise<Record<string, JobAttention> | null> {
+  const ids = jobs.map((j) => j.id);
+  if (ids.length === 0) return {};
+  try {
+    const [steps, items, facts] = await Promise.all([
+      fetchChecklistSteps(),
+      fetchChecklistItems(ids),
+      fetchChecklistJobFacts(ids),
+    ]);
+    const factsById = new Map(facts.map((f) => [f.id, f]));
+    const today = new Date();
+    const out: Record<string, JobAttention> = {};
+    for (const id of ids) {
+      const summary = summarizeJobChecklist(
+        steps,
+        items.filter((i) => i.job_id === id),
+        factsById.get(id),
+        today,
+      );
+      const lead = summary.statuses.find((st) => st.step.key === 'lead_assigned');
+      out[id] = {
+        lateSteps: summary.late,
+        noLead: !!lead && (lead.display === 'open' || lead.display === 'late'),
+      };
+    }
+    return out;
+  } catch (err) {
+    if (err instanceof ChecklistSetupMissingError) return null;
+    throw err;
+  }
 }
 
 export async function fetchPmJob(jobId: string): Promise<PmJob | null> {
@@ -290,7 +373,9 @@ export async function fetchEstimateOptions(job: PmJob): Promise<EstimateOption[]
   return ((data ?? []) as any[]).map(toEstimateOption);
 }
 
-async function fetchApprovedChangeOrders(jobIds: string[]): Promise<Map<string, number>> {
+async function fetchChangeOrderTotals(
+  jobIds: string[],
+): Promise<Map<string, { approved: number; pending: number }>> {
   const byJob = new Map<string, ChangeOrder[]>();
   for (const ids of chunk(jobIds, ID_CHUNK)) {
     const { data, error } = await supabase
@@ -306,7 +391,12 @@ async function fetchApprovedChangeOrders(jobIds: string[]): Promise<Map<string, 
       byJob.set(co.job_id, [...(byJob.get(co.job_id) ?? []), co]);
     }
   }
-  return new Map([...byJob].map(([jobId, cos]) => [jobId, summarizeChangeOrders(cos).approvedTotal]));
+  const totals = new Map<string, { approved: number; pending: number }>();
+  for (const [jobId, cos] of byJob) {
+    const summary = summarizeChangeOrders(cos);
+    totals.set(jobId, { approved: summary.approvedTotal, pending: summary.pendingCount });
+  }
+  return totals;
 }
 
 /** Reports marked sent to the customer, grouped by job. */
@@ -392,7 +482,7 @@ export async function loadJobBundles(jobs: PmJob[]): Promise<BundleResult> {
     fetchSavedLines(jobIds),
     fetchSentReports(jobIds),
     fetchHours(jobIds),
-    fetchApprovedChangeOrders(jobIds),
+    fetchChangeOrderTotals(jobIds),
   ]);
 
   const savedByJob = new Map<string, SovLine[]>();
@@ -423,7 +513,8 @@ export async function loadJobBundles(jobs: PmJob[]): Promise<BundleResult> {
       reports: jobReports,
       hoursByMonth: hours.hours.get(jobId) ?? {},
       quotedAmount,
-      approvedChangeOrders: changeOrders.get(jobId) ?? 0,
+      approvedChangeOrders: changeOrders.get(jobId)?.approved ?? 0,
+      pendingChangeOrders: changeOrders.get(jobId)?.pending ?? 0,
     };
   }
 

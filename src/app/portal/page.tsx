@@ -46,6 +46,7 @@ import { useAuth } from "../../lib/AuthContext";
 import { useDivision } from "../../App";
 import { AboutPopup } from "@/components/ui/AboutPopup";
 import { WelcomePopup } from "@/components/ui/WelcomePopup";
+import { WrappedDropGate, WrappedRewatchButton } from "@/app/wrapped/WrappedDropGate";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Portal } from "@/lib/roles";
 import { ReviewShortcuts } from "@/components/shortcuts/ReviewShortcuts";
@@ -1323,6 +1324,8 @@ export default function PortalLanding() {
         userEmail={user?.email}
       />
 
+      <WrappedDropGate paused={isWelcomeOpen} />
+
       {/* Edit Mode Banner */}
       {isEditMode && (
         <div className="bg-brand text-white py-3 px-4 sm:px-6 lg:px-8 sticky top-0 z-50 shadow-md">
@@ -1473,6 +1476,7 @@ export default function PortalLanding() {
                   </>
                 )}
               </div>
+              <WrappedRewatchButton />
             </div>
           </div>
         </div>

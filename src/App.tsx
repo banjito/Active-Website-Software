@@ -180,6 +180,8 @@ const DocsPage = lazy(() => loadDocs().then((m) => ({ default: m.DocsPage })));
 const PMDashboard = lazy(() => import("./app/pm-dashboard/PMDashboard"));
 const PMJobDetail = lazy(() => import("./app/pm-dashboard/PMJobDetail"));
 
+// Personal Wrapped mockup: standalone, not linked from any menu. Sample data only.
+
 // MUI X Date Pickers setup
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";

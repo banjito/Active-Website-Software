@@ -1,4 +1,5 @@
 import { supabase } from '../supabase';
+import { fetchFieldTechDivisions, fieldTechDivisionIds } from '@/services/divisionsService';
 import { SCHEMAS } from '../schema';
 import { 
   TechnicianAvailability,
@@ -60,7 +61,31 @@ const formatDisplayName = (name?: string, email?: string): string => {
 /**
  * Service for managing technician scheduling
  */
+// Field Tech (All) is spelled two ways ("field-tech" in URLs, "field_tech" in the sidebar).
+const FIELD_TECH_ALL = ['field-tech', 'field_tech'];
+let cityIdsCache: { at: number; ids: string[] } | null = null;
+
+/**
+ * Which division values a schedule should show.
+ * Field Tech (All) shows every field tech city combined, plus anything saved
+ * under "All" itself. Any other division shows only its own.
+ */
+async function scheduleDivisions(division?: string): Promise<string[] | null> {
+  if (!division) return null;
+  if (!FIELD_TECH_ALL.includes(division)) return [division];
+  if (!cityIdsCache || Date.now() - cityIdsCache.at > 60_000) {
+    cityIdsCache = {
+      at: Date.now(),
+      ids: fieldTechDivisionIds(await fetchFieldTechDivisions()),
+    };
+  }
+  return Array.from(new Set([...FIELD_TECH_ALL, ...cityIdsCache.ids]));
+}
+
 export const schedulingService = {
+  /** Ids of deactivated staff, so screens can leave them off the schedule. */
+  getDeactivatedUserIds,
+
   /**
    * Fetch all availabilities for a technician
    */
@@ -296,6 +321,7 @@ export const schedulingService = {
     // Note: Joining jobs might need adjustment based on portalType
     // This example assumes neta_ops.jobs for portalType 'neta'
     // Avoid cross-schema embeds to prevent PostgREST 400s; fetch flat rows
+    const divisions = await scheduleDivisions(division);
     let query = supabase
       .schema('common')
       .from('technician_assignments')
@@ -307,8 +333,8 @@ export const schedulingService = {
     if (technicianId) {
       query = query.eq('user_id', technicianId);
     }
-    if (division) {
-      query = query.eq('division', division);
+    if (divisions) {
+      query = query.in('division', divisions);
     }
 
     query = query.order('assignment_date', { ascending: true }).order('start_time', { ascending: true });
@@ -319,8 +345,12 @@ export const schedulingService = {
       return { data: base.data as any, error: base.error };
     }
 
+    // Deactivated staff never show on the schedule.
+    const deactivated = await getDeactivatedUserIds();
+    const rows = (base.data as any[]).filter((r) => !deactivated.has(r.user_id));
+    if (rows.length === 0) return { data: [], error: null };
+
     // Enrich with user/job in parallel (best-effort; tolerate failures)
-    const rows = base.data as any[];
     const enriched = await Promise.all(rows.map(async (r) => {
       let user = undefined as any;
       let job = undefined as any;
@@ -655,8 +685,9 @@ export const schedulingService = {
       .select('*')
       .eq('portal_type', portalType);
 
-    if (division) {
-      query = query.eq('division', division);
+    const divisions = await scheduleDivisions(division);
+    if (divisions) {
+      query = query.in('division', divisions);
     }
 
     // Ids of removed staff, so they don't appear as schedulable technicians.

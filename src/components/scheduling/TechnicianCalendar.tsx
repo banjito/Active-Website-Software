@@ -40,6 +40,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import dayjs from "dayjs";
 import { employeeEmailRegex, employeeNameEmailRegex } from "@/lib/companyConfig";
+import { canEditSchedule } from "@/lib/roles";
+import { unknownHoursEnd } from "@/lib/scheduleTime";
+import { useScheduleJobColors } from "@/components/scheduling/useScheduleJobColors";
+import { JobColorSwatches } from "@/components/scheduling/JobColorSwatches";
 
 interface TechnicianCalendarProps {
   portalType: PortalType;
@@ -51,12 +55,15 @@ interface TechnicianCalendarProps {
   selectedTechnician?: string;
   viewOnly?: boolean;
   showAllTechnicians?: boolean;
+  /** Bump to make the calendar reload (after an edit/delete elsewhere). */
+  refreshKey?: number;
 }
 
 export function TechnicianCalendar({
   portalType,
   division,
   onAssignmentClick,
+  refreshKey,
   onDateClick,
   onAddAvailability,
   onAddException,
@@ -88,6 +95,9 @@ export function TechnicianCalendar({
     dayjs().format("YYYY-MM"),
   );
   const [reloadKey, setReloadKey] = useState<number>(0);
+  useEffect(() => {
+    if (refreshKey) setReloadKey((k) => k + 1);
+  }, [refreshKey]);
 
   // Main-view filters (persist)
   const [mainFilterTechId, setMainFilterTechId] = useState<string>("");
@@ -158,25 +168,10 @@ export function TechnicianCalendar({
   const [qaJobSearch, setQaJobSearch] = useState<string>("");
   const [qaJobOpen, setQaJobOpen] = useState<boolean>(false);
 
-  // Store job colors (persisted in localStorage) - Initialize directly from localStorage
-  const [jobColors, setJobColors] = useState<Record<string, string>>(() => {
-    try {
-      const saved = localStorage.getItem("calendar_job_colors");
-      return saved ? JSON.parse(saved) : {};
-    } catch (error) {
-      console.error("Error loading job colors:", error);
-      return {};
-    }
-  });
-
-  // Save job colors to localStorage when they change
-  useEffect(() => {
-    try {
-      localStorage.setItem("calendar_job_colors", JSON.stringify(jobColors));
-    } catch (error) {
-      console.error("Error saving job colors:", error);
-    }
-  }, [jobColors]);
+  // Job colors, shared by everyone (saved in the database)
+  const { jobColors, setJobColor } = useScheduleJobColors(
+    canEditSchedule(user),
+  );
 
   // Update form color when job is selected
   useEffect(() => {
@@ -358,7 +353,11 @@ export function TechnicianCalendar({
           res = await supabase.schema("common").rpc("admin_get_users");
         }
         if (!res.error && res.data && mounted) {
-          const mapped = res.data.map((u: any) => ({
+          // Deactivated staff never show on the schedule.
+          const deactivated = await schedulingService.getDeactivatedUserIds();
+          const mapped = res.data
+            .filter((u: any) => !deactivated.has(u.id))
+            .map((u: any) => ({
             id: u.id,
             label: (u.raw_user_meta_data?.name ?? u.email) as string,
             email: u.email as string,
@@ -708,11 +707,11 @@ export function TechnicianCalendar({
   };
 
   const handleAddTechsToGroup = async () => {
-    if (!groupEvent || !groupEvent.job?.id) return;
+    if (viewOnly || !groupEvent || !groupEvent.job?.id) return;
     const jobId = groupEvent.job.id;
     const date = dayjs(groupEvent.start).format("YYYY-MM-DD");
     const startTime = gmStartTime;
-    const endTime = gmUnknownHours ? gmStartTime : gmEndTime;
+    const endTime = gmUnknownHours ? unknownHoursEnd(gmStartTime) : gmEndTime;
     const assigned = new Set(
       (groupEvent.technicians || []).map((t) => String(t.id)),
     );
@@ -898,10 +897,7 @@ export function TechnicianCalendar({
 
       // Store the job color
       if (qaForm.jobId && qaForm.color) {
-        setJobColors((prev) => ({
-          ...prev,
-          [qaForm.jobId]: qaForm.color,
-        }));
+        setJobColor(qaForm.jobId, qaForm.color);
       }
 
       const start = dayjs(qaForm.startDate);
@@ -918,7 +914,7 @@ export function TechnicianCalendar({
       const endTimeToUse = qaForm.isAllDay
         ? "23:59"
         : qaForm.unknownHours
-          ? qaForm.startTime
+          ? unknownHoursEnd(qaForm.startTime)
           : qaForm.endTime;
 
       const payloads = techIds.flatMap((tid) =>
@@ -1580,36 +1576,10 @@ export function TechnicianCalendar({
                 Job Color
               </label>
               <div className="space-y-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  {[
-                    "#ef4444",
-                    "#f97316",
-                    "#eab308",
-                    "#22c55e",
-                    "#3b82f6",
-                    "#8b5cf6",
-                    "#ec4899",
-                    "#64748b",
-                  ].map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => setQaForm((prev) => ({ ...prev, color }))}
-                      className={`w-8 h-8 rounded border-2 ${qaForm.color === color ? "border-neutral-900 dark:border-white" : "border-neutral-300 dark:border-neutral-600"}`}
-                      style={{ backgroundColor: color }}
-                      title={color}
-                    />
-                  ))}
-                  <input
-                    type="color"
-                    value={qaForm.color}
-                    onChange={(e) =>
-                      setQaForm((prev) => ({ ...prev, color: e.target.value }))
-                    }
-                    className="h-8 w-16 border rounded cursor-pointer dark:bg-dark-150 dark:border-neutral-700"
-                    title="Custom color"
-                  />
-                </div>
+                <JobColorSwatches
+                  value={qaForm.color}
+                  onChange={(color) => setQaForm((prev) => ({ ...prev, color }))}
+                />
                 <span className="text-xs text-neutral-600 dark:text-neutral-400">
                   {qaForm.jobId && jobColors[qaForm.jobId]
                     ? "Using saved color for this job"
@@ -1784,7 +1754,8 @@ export function TechnicianCalendar({
                 </div>
               )}
             </ul>
-            {/* Add technicians to this job/day */}
+            {/* Add technicians to this job/day (not in view-only, e.g. Field Tech (All)) */}
+            {!viewOnly && (
             <div className="pt-2 border-t dark:border-neutral-700">
               <div className="mb-2 text-sm font-medium text-neutral-800 dark:text-white">
                 Add Technicians
@@ -1896,6 +1867,7 @@ export function TechnicianCalendar({
                 </Button>
               </div>
             </div>
+            )}
             {(groupEvent?.technicians || []).length > 0 && (
               <div className="flex justify-end gap-2">
                 <Button

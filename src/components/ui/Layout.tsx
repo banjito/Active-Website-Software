@@ -732,9 +732,31 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       user?.user_metadata?.role === "Super Admin" ||
       isSuperUser(user?.email);
 
+    // Switching city keeps you on the same page when that page exists per
+    // division (e.g. /field-tech/scheduling -> /north_alabama/scheduling).
+    // Anything else (dashboard, a single job) goes to the city's default page.
+    const SAME_PAGE_SECTIONS = [
+      "scheduling",
+      "jobs",
+      "sites",
+      "customers",
+      "contacts",
+      "field-equipment",
+      "maintenance",
+      "reports",
+      "resources",
+    ];
     const handleCityClick = (cityId: string, path: string) => {
+      const [first, section, ...rest] = location.pathname
+        .split("/")
+        .filter(Boolean);
+      const onDivisionPage =
+        first === "field-tech" || fieldTechDivisions.some((d) => d.id === first);
+      const keepSection =
+        onDivisionPage && rest.length === 0 && SAME_PAGE_SECTIONS.includes(section);
+      const urlId = cityId === "field_tech" ? "field-tech" : cityId;
       setDivision(cityId);
-      navigate(path);
+      navigate(keepSection ? `/${urlId}/${section}` : path);
       setIsMobileSidebarOpen(false);
     };
 

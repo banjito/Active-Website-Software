@@ -20,12 +20,31 @@ import { supabase } from "@/lib/supabase";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { employeeEmailRegex, employeeNameEmailRegex } from "@/lib/companyConfig";
+import { useAuth } from "@/lib/AuthContext";
+import { canEditSchedule } from "@/lib/roles";
+import { useScheduleJobColors } from "@/components/scheduling/useScheduleJobColors";
+import { JobColorSwatches } from "@/components/scheduling/JobColorSwatches";
+import {
+  formatTimeRange,
+  mondayOf,
+  unknownHoursEnd,
+} from "@/lib/scheduleTime";
+import { toast } from "@/components/ui/toast";
+import { describeSupabaseError } from "@/lib/supabaseRetry";
+import { ChevronLeft, ChevronRight, Minus, Plus, UserMinus } from "lucide-react";
 
 type Props = {
   portalType: PortalType;
   division?: string;
   days?: number; // number of days to show (default 21)
   onAssignmentClick?: (assignment: TechnicianAssignment) => void;
+  /** Bump to reload assignments (after an edit/delete in the details popup). */
+  refreshKey?: number;
+  /**
+   * False on Field Tech (All): jobs are added from inside a division so
+   * each one lands on the right city's schedule. Edit/delete still work.
+   */
+  allowAdd?: boolean;
 };
 
 export const TechnicianListedView: React.FC<Props> = ({
@@ -33,11 +52,22 @@ export const TechnicianListedView: React.FC<Props> = ({
   division,
   days = 21,
   onAssignmentClick,
+  refreshKey,
+  allowAdd = true,
 }) => {
   const { maskJobTitle } = useDemoMode();
-  const [startDate, setStartDate] = useState<string>(
-    dayjs().format("YYYY-MM-DD"),
-  );
+  const { user } = useAuth();
+  // Same rule the database uses for editing schedules (Admin or Scheduler).
+  // Everyone else gets a read-only grid.
+  const canEdit = canEditSchedule(user);
+  const canAdd = canEdit && allowAdd;
+  // People removed from this division's schedule (shared for everyone).
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+  const [isHiddenMenuOpen, setIsHiddenMenuOpen] = useState<boolean>(false);
+  // Weeks start on Monday.
+  const [startDate, setStartDate] = useState<string>(() => mondayOf(dayjs()));
+  const [today, setToday] = useState<string>(dayjs().format("YYYY-MM-DD"));
+  const [qaSaving, setQaSaving] = useState<boolean>(false);
   const [technicians, setTechnicians] = useState<AvailableTechnician[]>([]);
   const [assignments, setAssignments] = useState<TechnicianAssignment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -57,7 +87,6 @@ export const TechnicianListedView: React.FC<Props> = ({
   );
   const [qaTechSearch, setQaTechSearch] = useState<string>("");
   const [qaJobSearch, setQaJobSearch] = useState<string>("");
-  const [qaJobOpen, setQaJobOpen] = useState<boolean>(false);
   const [qaForm, setQaForm] = useState({
     jobId: "",
     startDate: "",
@@ -70,25 +99,8 @@ export const TechnicianListedView: React.FC<Props> = ({
     color: "#3b82f6", // Default blue color
   });
 
-  // Store job colors (persisted in localStorage) - Initialize directly from localStorage
-  const [jobColors, setJobColors] = useState<Record<string, string>>(() => {
-    try {
-      const saved = localStorage.getItem("calendar_job_colors");
-      return saved ? JSON.parse(saved) : {};
-    } catch (error) {
-      console.error("Error loading job colors:", error);
-      return {};
-    }
-  });
-
-  // Save job colors to localStorage when they change
-  useEffect(() => {
-    try {
-      localStorage.setItem("calendar_job_colors", JSON.stringify(jobColors));
-    } catch (error) {
-      console.error("Error saving job colors:", error);
-    }
-  }, [jobColors]);
+  // Job colors, shared by everyone (saved in the database)
+  const { jobColors, setJobColor } = useScheduleJobColors(canEdit);
 
   // Update form color when job is selected
   useEffect(() => {
@@ -107,21 +119,20 @@ export const TechnicianListedView: React.FC<Props> = ({
     return dates;
   }, [startDate, days]);
 
-  // Auto-roll the view at midnight to keep today at the left
+  // At midnight: move the "today" highlight, and if the screen was on
+  // the current week, follow into the new week.
   useEffect(() => {
-    const updateAtMidnight = () => {
-      const msUntilMidnight = dayjs()
-        .endOf("day")
-        .add(1, "millisecond")
-        .diff(dayjs());
-      const t = setTimeout(
-        () => setStartDate(dayjs().format("YYYY-MM-DD")),
-        msUntilMidnight,
-      );
-      return () => clearTimeout(t);
-    };
-    return updateAtMidnight();
-  }, []);
+    const msUntilMidnight = dayjs()
+      .endOf("day")
+      .add(1, "millisecond")
+      .diff(dayjs());
+    const t = setTimeout(() => {
+      const prevWeek = mondayOf(dayjs(today));
+      setToday(dayjs().format("YYYY-MM-DD"));
+      setStartDate((cur) => (cur === prevWeek ? mondayOf(dayjs()) : cur));
+    }, msUntilMidnight);
+    return () => clearTimeout(t);
+  }, [today]);
 
   // Load jobs for quick-assign options
   useEffect(() => {
@@ -209,6 +220,77 @@ export const TechnicianListedView: React.FC<Props> = ({
     };
   }, [portalType, division]);
 
+  // Load people removed from this division's schedule
+  useEffect(() => {
+    let mounted = true;
+    setHiddenIds(new Set());
+    if (!division) return;
+    (async () => {
+      const { data, error } = await supabase
+        .schema("common")
+        .from("schedule_hidden_people")
+        .select("user_id")
+        .eq("division", division);
+      if (error) {
+        console.error("Failed to load removed people:", error);
+        return;
+      }
+      if (mounted) setHiddenIds(new Set((data || []).map((r: any) => r.user_id)));
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [division]);
+
+  // Remove a person from (or add them back to) this division's schedule.
+  // Optimistic: the row moves right away, and flips back if the save fails.
+  const setPersonHidden = async (
+    techId: string,
+    name: string,
+    hide: boolean,
+    offerUndo = true,
+  ) => {
+    if (!division) return;
+    const flip = (toHidden: boolean) =>
+      setHiddenIds((prev) => {
+        const next = new Set(prev);
+        if (toHidden) next.add(techId);
+        else next.delete(techId);
+        return next;
+      });
+    flip(hide);
+    const table = supabase.schema("common").from("schedule_hidden_people");
+    const { error } = hide
+      ? await table.upsert(
+          { division, user_id: techId },
+          { onConflict: "division,user_id", ignoreDuplicates: true },
+        )
+      : await table.delete().eq("division", division).eq("user_id", techId);
+    if (error) {
+      console.error("Failed to update schedule people:", error);
+      flip(!hide);
+      toast({
+        title: hide ? `Couldn't remove ${name}` : `Couldn't add back ${name}`,
+        description: describeSupabaseError(error),
+        variant: "destructive",
+      });
+      return;
+    }
+    if (offerUndo) {
+      toast({
+        title: hide
+          ? `Removed ${name} from this schedule`
+          : `Added ${name} back`,
+        variant: "success",
+        duration: 8000,
+        action: {
+          label: "Undo",
+          onClick: () => setPersonHidden(techId, name, !hide, false),
+        },
+      });
+    }
+  };
+
   // Fetch assignments for range (all technicians)
   useEffect(() => {
     let mounted = true;
@@ -236,6 +318,27 @@ export const TechnicianListedView: React.FC<Props> = ({
     };
   }, [dateList, portalType, division]);
 
+  // Reload assignments quietly (no spinner) after a save, edit, or delete.
+  const reloadAssignments = async () => {
+    const { data, error: loadErr } =
+      await schedulingService.getTechnicianAssignments(
+        undefined,
+        portalType,
+        dayListFirst(dateList),
+        dayListLast(dateList),
+        division,
+      );
+    if (loadErr) {
+      console.error("Failed to reload assignments:", loadErr);
+      return;
+    }
+    setAssignments(data || []);
+  };
+  useEffect(() => {
+    if (refreshKey) reloadAssignments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey]);
+
   // Load users list to map IDs to names/email
   useEffect(() => {
     let mounted = true;
@@ -246,7 +349,11 @@ export const TechnicianListedView: React.FC<Props> = ({
           res = await supabase.schema("common").rpc("admin_get_users");
         }
         if (!res.error && res.data && mounted) {
-          const mapped = res.data.map((u: any) => ({
+          // Deactivated staff never show on the schedule.
+          const deactivated = await schedulingService.getDeactivatedUserIds();
+          const mapped = res.data
+            .filter((u: any) => !deactivated.has(u.id))
+            .map((u: any) => ({
             id: u.id,
             label: (u.raw_user_meta_data?.name ?? u.email) as string,
             email: u.email as string,
@@ -398,8 +505,26 @@ export const TechnicianListedView: React.FC<Props> = ({
     );
   }, [technicians, assignments, division, portalType, users]);
 
+  // Removed people stay hidden, except in weeks where they have a job
+  // (so a scheduled job never silently disappears from the grid).
+  const assignedIds = useMemo(
+    () => new Set(assignments.map((a) => a.user_id)),
+    [assignments],
+  );
+  const visibleTechs = useMemo(
+    () =>
+      displayTechs.filter(
+        (t) => !hiddenIds.has(t.user_id) || assignedIds.has(t.user_id),
+      ),
+    [displayTechs, hiddenIds, assignedIds],
+  );
+  const hiddenTechs = useMemo(
+    () => displayTechs.filter((t) => hiddenIds.has(t.user_id)),
+    [displayTechs, hiddenIds],
+  );
+
   const filteredTechs = useMemo(() => {
-    let result = displayTechs;
+    let result = visibleTechs;
 
     // Apply multi-select filter
     if (selectedTechIds.length > 0) {
@@ -415,13 +540,113 @@ export const TechnicianListedView: React.FC<Props> = ({
     }
 
     return result;
-  }, [displayTechs, techFilter, selectedTechIds]);
+  }, [visibleTechs, techFilter, selectedTechIds]);
 
   const goPrev = () =>
     setStartDate(dayjs(startDate).subtract(days, "day").format("YYYY-MM-DD"));
   const goNext = () =>
     setStartDate(dayjs(startDate).add(days, "day").format("YYYY-MM-DD"));
-  const goToday = () => setStartDate(dayjs().format("YYYY-MM-DD"));
+  const goToday = () => setStartDate(mondayOf(dayjs()));
+  const rangeLabel = `${dayjs(dayListFirst(dateList)).format("MMM D")} - ${dayjs(dayListLast(dateList)).format("MMM D, YYYY")}`;
+  const isCurrentWeek = dateList.includes(today);
+
+  const qaTechOptions = visibleTechs.filter(
+    (t) =>
+      !qaTechSearch ||
+      formatDisplayName(t.full_name, t.email)
+        .toLowerCase()
+        .includes(qaTechSearch.toLowerCase()),
+  );
+  const qaJobOptions = jobs.filter(
+    (j) =>
+      !qaJobSearch ||
+      String(j.label).toLowerCase().includes(qaJobSearch.toLowerCase()),
+  );
+
+  // Why Save is greyed out (shown next to the button).
+  const qaProblem = !qaForm.jobId
+    ? "Pick a job."
+    : qaSelectedTechnicians.length === 0
+      ? "Pick at least one person."
+      : !qaForm.startDate
+        ? "Pick a start date."
+        : qaForm.endDate && qaForm.endDate < qaForm.startDate
+          ? "End date is before start date."
+          : !qaForm.isAllDay &&
+              !qaForm.unknownHours &&
+              qaForm.endTime <= qaForm.startTime
+            ? "End time must be after start time."
+            : "";
+
+  const handleQuickAssignSave = async () => {
+    if (qaProblem || qaSaving) return;
+    setQaSaving(true);
+    try {
+      if (qaForm.color) setJobColor(qaForm.jobId, qaForm.color);
+
+      const days: string[] = [];
+      let cur = dayjs(qaForm.startDate).startOf("day");
+      const last = dayjs(qaForm.endDate || qaForm.startDate).startOf("day");
+      while (!cur.isAfter(last)) {
+        days.push(cur.format("YYYY-MM-DD"));
+        cur = cur.add(1, "day");
+      }
+
+      const startTime = qaForm.isAllDay ? "00:00" : qaForm.startTime;
+      const endTime = qaForm.isAllDay
+        ? "23:59"
+        : qaForm.unknownHours
+          ? unknownHoursEnd(qaForm.startTime)
+          : qaForm.endTime;
+
+      const payloads = qaSelectedTechnicians.flatMap((tid) =>
+        days.map((d) => ({
+          user_id: tid,
+          job_id: qaForm.jobId,
+          assignment_date: d,
+          start_time: startTime,
+          end_time: endTime,
+          status: "scheduled" as any,
+          notes: qaForm.notes || undefined,
+          portal_type: portalType,
+          division: division,
+        })),
+      );
+
+      const results = await Promise.all(
+        payloads.map((p) =>
+          schedulingService
+            .saveTechnicianAssignment(p as any)
+            .catch((e) => ({ data: null, error: e })),
+        ),
+      );
+      const failed = results.filter((r) => r.error);
+      await reloadAssignments();
+
+      if (failed.length === 0) {
+        const people = qaSelectedTechnicians.length;
+        toast({
+          title: `Assigned ${people} ${people === 1 ? "person" : "people"} for ${days.length} ${days.length === 1 ? "day" : "days"}`,
+          variant: "success",
+        });
+        setShowQuickAssign(false);
+      } else {
+        console.error("Failed to save assignment(s):", failed);
+        toast({
+          title:
+            failed.length === payloads.length
+              ? "Couldn't save the assignment"
+              : `Saved ${payloads.length - failed.length} of ${payloads.length}. ${failed.length} failed.`,
+          description: describeSupabaseError(failed[0].error as any),
+          variant: "destructive",
+          duration: 10000,
+        });
+        // Dialog stays open so nothing typed is lost.
+      }
+    } finally {
+      setQaSaving(false);
+    }
+  };
 
   return (
     <>
@@ -431,16 +656,31 @@ export const TechnicianListedView: React.FC<Props> = ({
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between mb-3">
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={goPrev}>
+            <div className="flex gap-2 items-center">
+              <Button
+                variant="outline"
+                onClick={goPrev}
+                leftIcon={<ChevronLeft className="w-4 h-4" />}
+              >
                 Prev
               </Button>
-              <Button variant="outline" onClick={goToday}>
-                Today
+              <Button
+                variant="outline"
+                onClick={goToday}
+                disabled={isCurrentWeek}
+              >
+                This Week
               </Button>
-              <Button variant="outline" onClick={goNext}>
+              <Button
+                variant="outline"
+                onClick={goNext}
+                rightIcon={<ChevronRight className="w-4 h-4" />}
+              >
                 Next
               </Button>
+              <span className="ml-2 text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                {rangeLabel}
+              </span>
             </div>
             <div className="flex gap-2 items-center">
               <div className="relative w-64">
@@ -488,10 +728,10 @@ export const TechnicianListedView: React.FC<Props> = ({
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              const allIds = displayTechs.map((t) => t.user_id);
+                              const allIds = visibleTechs.map((t) => t.user_id);
                               setSelectedTechIds(allIds);
                             }}
-                            className="flex-1 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                            className="flex-1 px-2 py-1 text-xs rounded-none border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-dark-200"
                           >
                             Select All
                           </button>
@@ -501,13 +741,13 @@ export const TechnicianListedView: React.FC<Props> = ({
                               e.stopPropagation();
                               setSelectedTechIds([]);
                             }}
-                            className="flex-1 px-2 py-1 text-xs bg-neutral-500 text-white rounded hover:bg-neutral-600"
+                            className="flex-1 px-2 py-1 text-xs rounded-none border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-dark-200"
                           >
                             Clear All
                           </button>
                         </div>
                       </div>
-                      {displayTechs
+                      {visibleTechs
                         .filter(
                           (t) =>
                             !techFilter ||
@@ -549,13 +789,13 @@ export const TechnicianListedView: React.FC<Props> = ({
                                   handleToggle();
                                 }}
                                 onClick={(e) => e.stopPropagation()}
-                                className="rounded border-neutral-300 dark:border-neutral-600"
+                                className="rounded-none border-neutral-300 dark:border-neutral-600"
                               />
                               <span>{displayName}</span>
                             </div>
                           );
                         })}
-                      {displayTechs.length === 0 && (
+                      {visibleTechs.length === 0 && (
                         <div className="px-3 py-2 text-sm text-neutral-500">
                           No technicians
                         </div>
@@ -564,10 +804,70 @@ export const TechnicianListedView: React.FC<Props> = ({
                   </>
                 )}
               </div>
+              {canEdit && !allowAdd && (
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                  Open a division above to add jobs
+                </span>
+              )}
+              {!canEdit && (
+                <span
+                  className="text-xs text-neutral-500 dark:text-neutral-400"
+                  title="Only Admins, Super Admins, and Schedulers can change the schedule."
+                >
+                  View only
+                  {user?.user_metadata?.role
+                    ? ` (your role: ${user.user_metadata.role})`
+                    : ""}
+                </span>
+              )}
               {selectedTechIds.length > 0 && (
                 <span className="text-xs px-2 py-1 rounded-none bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
                   {selectedTechIds.length} filtered
                 </span>
+              )}
+              {canEdit && hiddenTechs.length > 0 && (
+                <div className="relative">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsHiddenMenuOpen((o) => !o)}
+                    leftIcon={<UserMinus className="w-4 h-4" />}
+                  >
+                    Removed ({hiddenTechs.length})
+                  </Button>
+                  {isHiddenMenuOpen && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setIsHiddenMenuOpen(false)}
+                      />
+                      <div className="absolute right-0 z-50 mt-1 w-72 max-h-80 overflow-auto border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 shadow-lg">
+                        <div className="px-3 py-2 text-xs text-neutral-500 dark:text-neutral-400 border-b border-neutral-200 dark:border-neutral-700">
+                          Hidden from this division's schedule
+                        </div>
+                        {hiddenTechs.map((t) => {
+                          const n = formatDisplayName(t.full_name, t.email);
+                          return (
+                            <div
+                              key={t.user_id}
+                              className="flex items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-dark-200"
+                            >
+                              <span className="truncate">{n}</span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setPersonHidden(t.user_id, n, false)
+                                }
+                                className="shrink-0 text-xs font-medium text-brand hover:underline"
+                              >
+                                Add back
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -584,21 +884,42 @@ export const TechnicianListedView: React.FC<Props> = ({
                 <div className="sticky left-0 z-10 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 px-3 py-2 font-semibold">
                   Technician
                 </div>
-                {dateList.map((d) => (
-                  <div
-                    key={d}
-                    className="border border-neutral-200 dark:border-neutral-700 text-center px-2 py-2 text-sm bg-neutral-50 dark:bg-dark-200"
-                  >
-                    <div className="font-medium">{dayjs(d).format("ddd")}</div>
-                    <div className="text-xs">{dayjs(d).format("MM/DD")}</div>
-                  </div>
-                ))}
+                {dateList.map((d) => {
+                  const isToday = d === today;
+                  return (
+                    <div
+                      key={d}
+                      className={`border border-neutral-200 dark:border-neutral-700 text-center px-2 py-2 text-sm ${
+                        isToday
+                          ? "bg-brand/10 text-brand border-t-2 border-t-brand"
+                          : isWeekend(d)
+                            ? "bg-neutral-100 dark:bg-dark-100 text-neutral-500 dark:text-neutral-400"
+                            : "bg-neutral-50 dark:bg-dark-200"
+                      }`}
+                    >
+                      <div className="font-medium">
+                        {isToday ? "Today" : dayjs(d).format("ddd")}
+                      </div>
+                      <div className="text-xs">
+                        {dayjs(d).format(isToday ? "ddd MM/DD" : "MM/DD")}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Rows */}
               {loading ? (
                 <div className="p-6 text-center">
                   <LoadingSpinner size="md" />
+                </div>
+              ) : filteredTechs.length === 0 ? (
+                <div className="p-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
+                  No one to show. Clear the filter
+                  {canEdit && hiddenTechs.length > 0
+                    ? ", or add people back from Removed"
+                    : ""}
+                  .
                 </div>
               ) : (
                 filteredTechs.map((t) => {
@@ -609,6 +930,10 @@ export const TechnicianListedView: React.FC<Props> = ({
                     t.email ||
                     techId;
                   const rowMap = assignmentsByTechByDate.get(techId);
+                  const isHidden = hiddenIds.has(techId);
+                  const bookedDays = dateList.filter(
+                    (d) => (rowMap?.get(d)?.length || 0) > 0,
+                  ).length;
                   return (
                     <div
                       key={techId}
@@ -617,30 +942,104 @@ export const TechnicianListedView: React.FC<Props> = ({
                         gridTemplateColumns: `240px repeat(${dateList.length}, minmax(120px, 1fr))`,
                       }}
                     >
-                      <div className="sticky left-0 z-10 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 px-3 py-2 text-sm truncate">
-                        {name}
+                      <div
+                        className="group sticky left-0 z-10 bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 px-3 py-2 text-sm flex items-center gap-2 min-w-0"
+                        title={
+                          isHidden
+                            ? "Removed from this schedule. Showing because they have a job this week."
+                            : undefined
+                        }
+                      >
+                        {canEdit && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPersonHidden(techId, name, !isHidden);
+                            }}
+                            className={`shrink-0 w-4 h-4 rounded-none flex items-center justify-center text-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity ${
+                              isHidden
+                                ? "bg-neutral-500 hover:bg-neutral-600"
+                                : "bg-red-600 hover:bg-red-700"
+                            }`}
+                            title={
+                              isHidden
+                                ? `Add ${name} back to this schedule`
+                                : `Remove ${name} from this schedule`
+                            }
+                            aria-label={
+                              isHidden
+                                ? `Add ${name} back to this schedule`
+                                : `Remove ${name} from this schedule`
+                            }
+                          >
+                            {isHidden ? (
+                              <Plus className="w-3 h-3" strokeWidth={3} />
+                            ) : (
+                              <Minus className="w-3 h-3" strokeWidth={3} />
+                            )}
+                          </button>
+                        )}
+                        <span
+                          className={`truncate ${isHidden ? "italic text-neutral-400 dark:text-neutral-500" : ""}`}
+                        >
+                          {name}
+                        </span>
+                        {isHidden && (
+                          <span className="shrink-0 text-[10px] uppercase tracking-wide text-neutral-400 dark:text-neutral-500">
+                            Removed
+                          </span>
+                        )}
+                        {bookedDays > 0 && (
+                          <span
+                            className="ml-auto shrink-0 text-[11px] tabular-nums text-neutral-500 dark:text-neutral-400"
+                            title={`Booked ${bookedDays} of ${dateList.length} days`}
+                          >
+                            {bookedDays}/{dateList.length}
+                          </span>
+                        )}
                       </div>
                       {dateList.map((d) => {
                         const list = rowMap?.get(d) || [];
+                        const tint =
+                          d === today
+                            ? "bg-brand/5"
+                            : isWeekend(d)
+                              ? "bg-neutral-50 dark:bg-dark-200/60"
+                              : "";
                         return (
                           <div
                             key={d}
-                            className="border border-neutral-200 dark:border-neutral-700 px-2 py-1 min-h-[44px] cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-100"
-                            onClick={() => {
-                              setQaSelectedTechnicians([techId]);
-                              setQaForm((prev) => ({
-                                ...prev,
-                                startDate: d,
-                                endDate: d,
-                              }));
-                              setShowQuickAssign(true);
-                            }}
-                            title={`Click to add assignment for ${dayjs(d).format("MMM D")}`}
+                            className={`group/cell border border-neutral-200 dark:border-neutral-700 px-2 py-1 min-h-[44px] ${tint} ${
+                              canAdd
+                                ? "cursor-pointer hover:bg-neutral-100 dark:hover:bg-dark-100"
+                                : ""
+                            }`}
+                            onClick={
+                              canAdd
+                                ? () => {
+                                    setQaSelectedTechnicians([techId]);
+                                    setQaForm((prev) => ({
+                                      ...prev,
+                                      startDate: d,
+                                      endDate: d,
+                                    }));
+                                    setShowQuickAssign(true);
+                                  }
+                                : undefined
+                            }
+                            title={
+                              canAdd
+                                ? `Add a job for ${name} on ${dayjs(d).format("MMM D")}`
+                                : undefined
+                            }
                           >
                             {list.length === 0 ? (
-                              <div className="w-full h-full text-xs text-neutral-400">
-                                —
-                              </div>
+                              canAdd ? (
+                                <div className="w-full h-full min-h-[34px] flex items-center justify-center text-neutral-400 opacity-0 group-hover/cell:opacity-100 transition-opacity">
+                                  <Plus className="w-4 h-4" />
+                                </div>
+                              ) : null
                             ) : (
                               <div className="flex flex-col gap-1">
                                 {list
@@ -648,18 +1047,10 @@ export const TechnicianListedView: React.FC<Props> = ({
                                     a.start_time.localeCompare(b.start_time),
                                   )
                                   .map((a) => {
-                                    const isAllDay =
-                                      a.start_time?.startsWith("00:00") &&
-                                      (a.end_time?.startsWith("23:59") ||
-                                        a.end_time?.startsWith("24:00"));
-                                    const isUnknown =
-                                      a.start_time?.slice(0, 5) ===
-                                      a.end_time?.slice(0, 5);
-                                    const timeLabel = isAllDay
-                                      ? "All Day"
-                                      : isUnknown
-                                        ? "Unknown"
-                                        : `${a.start_time?.slice(0, 5)}-${a.end_time?.slice(0, 5)}`;
+                                    const timeLabel = formatTimeRange(
+                                      a.start_time,
+                                      a.end_time,
+                                    );
                                     const jobColor = a.job_id
                                       ? jobColors[a.job_id]
                                       : null;
@@ -677,7 +1068,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                                       <div
                                         key={a.id}
                                         title={`${maskJobTitle(a.job?.title) || ""}\nClick to view assignment details`}
-                                        className={`text-[11px] px-2 py-1 rounded border overflow-hidden whitespace-nowrap text-ellipsis cursor-pointer hover:opacity-80 transition-opacity ${!jobColor ? "border-neutral-200 dark:border-neutral-600 bg-white dark:bg-dark-150" : ""}`}
+                                        className={`text-[11px] px-2 py-1 rounded-none border overflow-hidden whitespace-nowrap text-ellipsis cursor-pointer hover:opacity-80 transition-opacity ${!jobColor ? "border-neutral-200 dark:border-neutral-600 bg-white dark:bg-dark-150" : ""}`}
                                         style={colorStyles}
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -710,69 +1101,64 @@ export const TechnicianListedView: React.FC<Props> = ({
         </CardContent>
       </Card>
 
-      {/* Quick Assign Dialog */}
+      {/* Quick Assign Dialog: landscape, three columns (who / what / when) */}
       <Dialog open={showQuickAssign} onOpenChange={setShowQuickAssign}>
-        <DialogContent>
+        <DialogContent className="w-[min(1040px,95vw)] max-w-none">
           <DialogHeader>
             <DialogTitle>Quick Assign</DialogTitle>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
-                Technicians
-              </label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Who */}
+            <div className="flex flex-col min-h-0">
+              <div className="flex items-baseline justify-between mb-1">
+                <label className="text-sm font-medium text-neutral-700 dark:text-white">
+                  Technicians
+                </label>
+                {qaSelectedTechnicians.length > 0 && (
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                    {qaSelectedTechnicians.length} selected
+                  </span>
+                )}
+              </div>
               <input
                 type="text"
                 placeholder="Search technicians..."
                 value={qaTechSearch}
                 onChange={(e) => setQaTechSearch(e.target.value)}
-                className="mb-2 w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
+                className="mb-2 w-full p-2 border rounded-none bg-white dark:bg-dark-150 border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white"
               />
-              <div className="max-h-48 overflow-auto border rounded-none dark:border-neutral-700">
-                {displayTechs
-                  .filter(
-                    (t) =>
-                      !qaTechSearch ||
-                      formatDisplayName(t.full_name, t.email)
-                        .toLowerCase()
-                        .includes(qaTechSearch.toLowerCase()),
-                  )
-                  .map((tech) => (
-                    <label
-                      key={tech.user_id}
-                      className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-200"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={qaSelectedTechnicians.includes(tech.user_id)}
-                        onChange={(e) => {
-                          const id = tech.user_id;
-                          setQaSelectedTechnicians((prev) =>
-                            e.target.checked
-                              ? [...prev, id]
-                              : prev.filter((t) => t !== id),
-                          );
-                        }}
-                      />
-                      <span>
-                        {formatDisplayName(tech.full_name, tech.email)}
-                      </span>
-                    </label>
-                  ))}
-                {displayTechs.filter(
-                  (t) =>
-                    !qaTechSearch ||
-                    formatDisplayName(t.full_name, t.email)
-                      .toLowerCase()
-                      .includes(qaTechSearch.toLowerCase()),
-                ).length === 0 && (
+              <div className="h-72 overflow-auto border rounded-none border-neutral-300 dark:border-neutral-700">
+                {qaTechOptions.map((tech) => (
+                  <label
+                    key={tech.user_id}
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-200"
+                  >
+                    <input
+                      type="checkbox"
+                      className="rounded-none"
+                      checked={qaSelectedTechnicians.includes(tech.user_id)}
+                      onChange={(e) => {
+                        const id = tech.user_id;
+                        setQaSelectedTechnicians((prev) =>
+                          e.target.checked
+                            ? [...prev, id]
+                            : prev.filter((t) => t !== id),
+                        );
+                      }}
+                    />
+                    <span>{formatDisplayName(tech.full_name, tech.email)}</span>
+                  </label>
+                ))}
+                {qaTechOptions.length === 0 && (
                   <div className="px-3 py-2 text-sm text-neutral-500">
                     No matching technicians
                   </div>
                 )}
               </div>
             </div>
-            <div>
+
+            {/* What */}
+            <div className="flex flex-col min-h-0">
               <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
                 Job
               </label>
@@ -781,276 +1167,168 @@ export const TechnicianListedView: React.FC<Props> = ({
                 placeholder="Search jobs..."
                 value={qaJobSearch}
                 onChange={(e) => setQaJobSearch(e.target.value)}
-                onFocus={() => setQaJobOpen(true)}
-                onBlur={() => setTimeout(() => setQaJobOpen(false), 100)}
-                className="mb-2 w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
+                className="mb-2 w-full p-2 border rounded-none bg-white dark:bg-dark-150 border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white"
               />
-              {qaJobOpen && (
-                <div className="max-h-48 overflow-auto border rounded-none dark:border-neutral-700">
-                  {[...jobs]
-                    .filter(
-                      (j) =>
-                        !qaJobSearch ||
-                        String(j.label)
-                          .toLowerCase()
-                          .includes(qaJobSearch.toLowerCase()),
-                    )
-                    .map((j) => (
-                      <button
-                        key={j.id}
-                        type="button"
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-dark-200 ${qaForm.jobId === j.id ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
-                        onMouseDown={() => {
-                          setQaForm((prev) => ({ ...prev, jobId: j.id }));
-                          setQaJobSearch(j.label);
-                          setQaJobOpen(false);
-                        }}
-                      >
-                        {j.label}
-                      </button>
-                    ))}
-                  {[...jobs].filter(
-                    (j) =>
-                      !qaJobSearch ||
-                      String(j.label)
-                        .toLowerCase()
-                        .includes(qaJobSearch.toLowerCase()),
-                  ).length === 0 && (
-                    <div className="px-3 py-2 text-sm text-neutral-500">
-                      No matching jobs
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
-                Start Date
-              </label>
-              <input
-                type="date"
-                value={qaForm.startDate}
-                onChange={(e) =>
-                  setQaForm((prev) => ({ ...prev, startDate: e.target.value }))
-                }
-                className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
-                End Date
-              </label>
-              <input
-                type="date"
-                value={qaForm.endDate}
-                onChange={(e) =>
-                  setQaForm((prev) => ({ ...prev, endDate: e.target.value }))
-                }
-                className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
+              <div className="h-44 overflow-auto border rounded-none border-neutral-300 dark:border-neutral-700">
+                {qaJobOptions.map((j) => (
+                  <button
+                    key={j.id}
+                    type="button"
+                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-neutral-50 dark:hover:bg-dark-200 ${
+                      qaForm.jobId === j.id
+                        ? "bg-brand/10 text-brand font-medium"
+                        : ""
+                    }`}
+                    onClick={() => {
+                      setQaForm((prev) => ({ ...prev, jobId: j.id }));
+                      setQaJobSearch(j.label);
+                    }}
+                  >
+                    {j.label}
+                  </button>
+                ))}
+                {qaJobOptions.length === 0 && (
+                  <div className="px-3 py-2 text-sm text-neutral-500">
+                    No matching jobs
+                  </div>
+                )}
+              </div>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mt-4 mb-1">
                 Job Color
               </label>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  {[
-                    "#ef4444",
-                    "#f97316",
-                    "#eab308",
-                    "#22c55e",
-                    "#3b82f6",
-                    "#8b5cf6",
-                    "#ec4899",
-                    "#64748b",
-                  ].map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => setQaForm((prev) => ({ ...prev, color }))}
-                      className={`w-8 h-8 rounded border-2 ${qaForm.color === color ? "border-neutral-900 dark:border-white" : "border-neutral-300 dark:border-neutral-600"}`}
-                      style={{ backgroundColor: color }}
-                      title={color}
-                    />
-                  ))}
+              <JobColorSwatches
+                value={qaForm.color}
+                onChange={(color) => setQaForm((prev) => ({ ...prev, color }))}
+              />
+              <span className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                {qaForm.jobId && jobColors[qaForm.jobId]
+                  ? "Using this job's saved color"
+                  : "Color will be saved for this job"}
+              </span>
+            </div>
+
+            {/* When */}
+            <div className="flex flex-col min-h-0">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
+                    Start Date
+                  </label>
                   <input
-                    type="color"
-                    value={qaForm.color}
+                    type="date"
+                    value={qaForm.startDate}
                     onChange={(e) =>
-                      setQaForm((prev) => ({ ...prev, color: e.target.value }))
+                      setQaForm((prev) => ({ ...prev, startDate: e.target.value }))
                     }
-                    className="h-8 w-16 border rounded cursor-pointer dark:bg-dark-150 dark:border-neutral-700"
-                    title="Custom color"
+                    className="w-full p-2 border rounded-none bg-white dark:bg-dark-150 border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white"
                   />
                 </div>
-                <span className="text-xs text-neutral-600 dark:text-neutral-400">
-                  {qaForm.jobId && jobColors[qaForm.jobId]
-                    ? "Using saved color for this job"
-                    : "New color will be saved for this job"}
-                </span>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
+                    End Date
+                  </label>
+                  <input
+                    type="date"
+                    value={qaForm.endDate}
+                    onChange={(e) =>
+                      setQaForm((prev) => ({ ...prev, endDate: e.target.value }))
+                    }
+                    className="w-full p-2 border rounded-none bg-white dark:bg-dark-150 border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
+                    Start Time
+                  </label>
+                  <input
+                    type="time"
+                    value={qaForm.startTime}
+                    onChange={(e) =>
+                      setQaForm((prev) => ({ ...prev, startTime: e.target.value }))
+                    }
+                    disabled={qaForm.isAllDay}
+                    className="w-full p-2 border rounded-none bg-white dark:bg-dark-150 border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white disabled:opacity-50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
+                    End Time
+                  </label>
+                  <input
+                    type="time"
+                    value={qaForm.endTime}
+                    onChange={(e) =>
+                      setQaForm((prev) => ({ ...prev, endTime: e.target.value }))
+                    }
+                    disabled={qaForm.unknownHours || qaForm.isAllDay}
+                    className="w-full p-2 border rounded-none bg-white dark:bg-dark-150 border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white disabled:opacity-50"
+                  />
+                </div>
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
-                Start Time
+              <div className="mt-2 flex gap-4 text-sm text-neutral-700 dark:text-white">
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="rounded-none"
+                    checked={qaForm.isAllDay}
+                    onChange={(e) =>
+                      setQaForm((prev) => ({
+                        ...prev,
+                        isAllDay: e.target.checked,
+                        unknownHours: e.target.checked ? false : prev.unknownHours,
+                      }))
+                    }
+                  />
+                  All Day
+                </label>
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="rounded-none"
+                    checked={qaForm.unknownHours}
+                    onChange={(e) =>
+                      setQaForm((prev) => ({
+                        ...prev,
+                        unknownHours: e.target.checked,
+                      }))
+                    }
+                    disabled={qaForm.isAllDay}
+                  />
+                  Unknown hours
+                </label>
+              </div>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-white mt-4 mb-1">
+                Notes
               </label>
-              <input
-                type="time"
-                value={qaForm.startTime}
+              <Textarea
+                value={qaForm.notes}
                 onChange={(e) =>
-                  setQaForm((prev) => ({ ...prev, startTime: e.target.value }))
+                  setQaForm((prev) => ({ ...prev, notes: e.target.value }))
                 }
-                className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700"
-                disabled={qaForm.isAllDay}
+                className="w-full flex-1 min-h-[96px]"
+                rows={4}
+                placeholder="Optional notes"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
-                End Time
-              </label>
-              <input
-                type="time"
-                value={qaForm.endTime}
-                onChange={(e) =>
-                  setQaForm((prev) => ({ ...prev, endTime: e.target.value }))
-                }
-                disabled={qaForm.unknownHours || qaForm.isAllDay}
-                className="w-full p-2 border rounded-none dark:bg-dark-150 dark:border-neutral-700 disabled:opacity-60"
-              />
-              <label className="mt-2 inline-flex items-center gap-2 text-sm text-neutral-700 dark:text-white">
-                <input
-                  type="checkbox"
-                  checked={qaForm.unknownHours}
-                  onChange={(e) =>
-                    setQaForm((prev) => ({
-                      ...prev,
-                      unknownHours: e.target.checked,
-                    }))
-                  }
-                  disabled={qaForm.isAllDay}
-                />
-                Unknown hours
-              </label>
-              <label className="mt-2 ml-4 inline-flex items-center gap-2 text-sm text-neutral-700 dark:text-white">
-                <input
-                  type="checkbox"
-                  checked={qaForm.isAllDay}
-                  onChange={(e) =>
-                    setQaForm((prev) => ({
-                      ...prev,
-                      isAllDay: e.target.checked,
-                      unknownHours: e.target.checked
-                        ? false
-                        : prev.unknownHours,
-                    }))
-                  }
-                />
-                All Day
-              </label>
-            </div>
           </div>
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-1">
-              Notes
-            </label>
-            <Textarea
-              value={qaForm.notes}
-              onChange={(e) =>
-                setQaForm((prev) => ({ ...prev, notes: e.target.value }))
-              }
-              className="w-full"
-              rows={3}
-              placeholder="Optional notes"
-            />
-          </div>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setShowQuickAssign(false)}>
+          <div className="flex items-center justify-end gap-2 mt-4">
+            {qaProblem && (
+              <span className="mr-auto text-xs text-neutral-500 dark:text-neutral-400">
+                {qaProblem}
+              </span>
+            )}
+            <Button
+              variant="outline"
+              onClick={() => setShowQuickAssign(false)}
+              disabled={qaSaving}
+            >
               Cancel
             </Button>
             <Button
-              onClick={async () => {
-                if (
-                  !qaForm.jobId ||
-                  !qaForm.startDate ||
-                  qaSelectedTechnicians.length === 0
-                )
-                  return;
-
-                // Store the job color
-                if (qaForm.jobId && qaForm.color) {
-                  setJobColors((prev) => ({
-                    ...prev,
-                    [qaForm.jobId]: qaForm.color,
-                  }));
-                }
-
-                try {
-                  const start = dayjs(qaForm.startDate);
-                  const end = qaForm.endDate ? dayjs(qaForm.endDate) : start;
-                  const days: string[] = [];
-                  let cur = start.startOf("day");
-                  const last = end.startOf("day");
-                  while (cur.isBefore(last) || cur.isSame(last)) {
-                    days.push(cur.format("YYYY-MM-DD"));
-                    cur = cur.add(1, "day");
-                  }
-
-                  const startTimeToUse = qaForm.isAllDay
-                    ? "00:00"
-                    : qaForm.startTime;
-                  const endTimeToUse = qaForm.isAllDay
-                    ? "23:59"
-                    : qaForm.unknownHours
-                      ? qaForm.startTime
-                      : qaForm.endTime;
-
-                  const payloads = qaSelectedTechnicians.flatMap((tid) =>
-                    days.map((d) => ({
-                      user_id: tid,
-                      job_id: qaForm.jobId,
-                      assignment_date: d,
-                      start_time: startTimeToUse,
-                      end_time: endTimeToUse,
-                      status: "scheduled" as any,
-                      notes: qaForm.notes || undefined,
-                      portal_type: portalType,
-                      division: division,
-                    })),
-                  );
-
-                  await Promise.all(
-                    payloads.map((p) =>
-                      schedulingService.saveTechnicianAssignment(p as any),
-                    ),
-                  );
-                  setShowQuickAssign(false);
-
-                  // Refresh assignments
-                  try {
-                    const start = dayListFirst(dateList);
-                    const end = dayListLast(dateList);
-                    const { data } =
-                      await schedulingService.getTechnicianAssignments(
-                        undefined,
-                        portalType,
-                        start,
-                        end,
-                        division,
-                      );
-                    setAssignments(data || []);
-                  } catch {}
-                } catch (e) {
-                  console.error("Failed to save assignment(s):", e);
-                }
-              }}
-              disabled={
-                !qaForm.jobId ||
-                !qaForm.startDate ||
-                qaSelectedTechnicians.length === 0
-              }
+              onClick={handleQuickAssignSave}
+              disabled={!!qaProblem || qaSaving}
             >
-              Save Assignment
+              {qaSaving ? "Saving..." : "Save Assignment"}
             </Button>
           </div>
         </DialogContent>
@@ -1058,6 +1336,11 @@ export const TechnicianListedView: React.FC<Props> = ({
     </>
   );
 };
+
+function isWeekend(d: string): boolean {
+  const day = dayjs(d).day();
+  return day === 0 || day === 6;
+}
 
 function dayListFirst(list: string[]): string {
   return list.length ? list[0] : dayjs().format("YYYY-MM-DD");

@@ -6,21 +6,17 @@ import Select from "@/components/ui/Select";
 import { Badge } from "@/components/ui/Badge";
 import { Clock, CalendarClock, Users, Award, Layers } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/Dialog";
 import { useAuth } from "@/lib/AuthContext";
 import { useDivision } from "@/App"; // Import from App.tsx instead of DivisionContext.tsx
 import { useParams, useNavigate } from "react-router-dom";
 import { PortalType, TechnicianAssignment } from "@/lib/types/scheduling";
 import { TechnicianCalendar } from "@/components/scheduling/TechnicianCalendar";
 import { TechnicianListedView } from "@/components/scheduling/TechnicianListedView";
-import dayjs from "dayjs";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { employeeNameEmailRegex } from "@/lib/companyConfig";
+import { canEditSchedule } from "@/lib/roles";
+import { AssignmentDetailsDialog } from "@/components/scheduling/AssignmentDetailsDialog";
+import { DivisionScheduleCards } from "@/components/scheduling/DivisionScheduleCards";
+import { useDivisions } from "@/hooks/useDivisions";
 
 interface TechCalendarProps {
   portalType: PortalType;
@@ -28,6 +24,10 @@ interface TechCalendarProps {
   viewOnly?: boolean;
   showAllTechnicians?: boolean;
 }
+
+// Orange underline tabs, same look as Project Tracker and Customer notes.
+const UNDERLINE_TAB =
+  "-mb-px rounded-none border-b-2 border-transparent px-4 py-2 text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 data-[state=active]:border-brand data-[state=active]:bg-transparent data-[state=active]:text-brand data-[state=active]:shadow-none dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-brand";
 
 export default function SchedulingPage() {
   const params = useParams();
@@ -39,25 +39,39 @@ export default function SchedulingPage() {
   const [selectedAssignment, setSelectedAssignment] =
     useState<TechnicianAssignment | null>(null);
   const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
+  // Bumped after an edit/delete so both views reload their assignments.
+  const [refreshKey, setRefreshKey] = useState(0);
+  const canEdit = canEditSchedule(user);
+  const allDivisions = useDivisions();
+
+  // The URL says "field-tech", but the sidebar knows Field Tech (All) as
+  // "field_tech". Setting the URL spelling made the sidebar hide the
+  // Divisions list and Field Equipment link.
+  const urlDivision = params.division as string | undefined;
+  const sidebarDivision =
+    urlDivision === "field-tech" ? "field_tech" : urlDivision;
+  // Schedule data keeps using the URL spelling, as it always has, so
+  // existing Field Tech (All) assignments still show.
+  const scheduleDivision = urlDivision || division;
 
   useEffect(() => {
-    if (params.division && params.division !== division) {
-      setDivision(params.division as string);
+    if (sidebarDivision && sidebarDivision !== division) {
+      setDivision(sidebarDivision);
     }
-  }, [params.division, division, setDivision]);
+  }, [sidebarDivision, division, setDivision]);
 
   useEffect(() => {
-    if (division) {
+    if (scheduleDivision) {
       // Every field tech division (including ones added from the sidebar) is neta.
-      if (["calibration", "armadillo"].includes(division)) {
+      if (["calibration", "armadillo"].includes(scheduleDivision)) {
         setPortalType("lab");
-      } else if (division === "scavenger") {
+      } else if (scheduleDivision === "scavenger") {
         setPortalType("scavenger");
       } else {
         setPortalType("neta");
       }
     }
-  }, [division]);
+  }, [scheduleDivision]);
 
   // Allow any authenticated user to access and edit the scheduler
   const canAccessScheduler = !!user;
@@ -69,7 +83,7 @@ export default function SchedulingPage() {
     }
   }, [user, navigate]);
 
-  if (!division || !user || !canAccessScheduler) {
+  if (!scheduleDivision || !user || !canAccessScheduler) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <LoadingSpinner size="md" />
@@ -77,192 +91,72 @@ export default function SchedulingPage() {
     );
   }
 
-  const formattedDivision = division
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+  // Field Tech (All) is a combined, read-only view with a card per city.
+  const isFieldTechAll = sidebarDivision === "field_tech";
+  // Same names the sidebar uses (e.g. "Decatur", not "North Alabama").
+  const divisionLabel =
+    allDivisions.find((d) => d.id === sidebarDivision)?.label ||
+    scheduleDivision
+      .split(/[_-]/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
 
   const handleAssignmentClick = (assignment: TechnicianAssignment) => {
     setSelectedAssignment(assignment);
     setShowAssignmentDialog(true);
   };
 
-  // Helper functions to always derive name from email (firstname.lastname format)
-  const deriveNameFromEmail = (email?: string | null): string | null => {
-    if (!email) return null;
-    const lower = String(email).toLowerCase();
-    const m = lower.match(employeeNameEmailRegex);
-    if (!m) return null;
-    const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-    return `${cap(m[1])} ${cap(m[2])}`;
-  };
-
-  const formatDisplayName = (name?: string, email?: string): string => {
-    // Always prioritize email-derived name (firstname.lastname format)
-    const derived = deriveNameFromEmail(email);
-    if (derived) return derived;
-
-    // Fallback to provided name or email
-    const n = (name || "").trim();
-    return n || email || "Unknown";
-  };
-
   return (
-    <PageLayout title={`${formattedDivision} Division - Scheduling`}>
+    <PageLayout title={`${divisionLabel} Scheduling`}>
       <div className="container mx-auto px-4 py-6">
         <div className="mb-4">
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-            {formattedDivision} Division - Scheduling
+            {divisionLabel} Scheduling
           </h1>
         </div>
 
+        {isFieldTechAll && <DivisionScheduleCards refreshKey={refreshKey} />}
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList>
-            <TabsTrigger value="listed">Listed View</TabsTrigger>
-            <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+          <TabsList className="flex h-auto w-full justify-start gap-2 rounded-none border-b border-neutral-200 bg-transparent p-0 dark:border-neutral-700 dark:bg-transparent">
+            <TabsTrigger value="listed" className={UNDERLINE_TAB}>
+              Listed View
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className={UNDERLINE_TAB}>
+              Calendar View
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="calendar" className="mt-6">
             <TechnicianCalendar
               portalType={portalType}
-              division={division}
+              division={scheduleDivision}
               showAllTechnicians={true}
               onAssignmentClick={handleAssignmentClick}
+              refreshKey={refreshKey}
+              viewOnly={isFieldTechAll}
             />
           </TabsContent>
 
           <TabsContent value="listed" className="mt-6">
             <TechnicianListedView
               portalType={portalType}
-              division={division}
+              division={scheduleDivision}
               days={7}
               onAssignmentClick={handleAssignmentClick}
+              refreshKey={refreshKey}
+              allowAdd={!isFieldTechAll}
             />
           </TabsContent>
         </Tabs>
 
-        {/* Assignment Details Dialog */}
-        <Dialog
+        <AssignmentDetailsDialog
+          assignment={selectedAssignment}
           open={showAssignmentDialog}
           onOpenChange={setShowAssignmentDialog}
-        >
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Assignment Details</DialogTitle>
-            </DialogHeader>
-
-            {selectedAssignment && (
-              <div className="space-y-4">
-                {/* Job Information */}
-                <div className="bg-neutral-50 dark:bg-dark-200 rounded-none p-4">
-                  <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
-                    Job Information
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs text-neutral-500 dark:text-neutral-400">
-                        Job Number
-                      </label>
-                      <p className="font-medium text-neutral-900 dark:text-white">
-                        {selectedAssignment.job?.job_number || "N/A"}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-xs text-neutral-500 dark:text-neutral-400">
-                        Job Title
-                      </label>
-                      <p className="font-medium text-neutral-900 dark:text-white">
-                        {selectedAssignment.job?.title || "N/A"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Assignment Information */}
-                <div className="bg-neutral-50 dark:bg-dark-200 rounded-none p-4">
-                  <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
-                    Assignment Details
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs text-neutral-500 dark:text-neutral-400">
-                        Assigned Technician
-                      </label>
-                      <p className="font-medium text-neutral-900 dark:text-white">
-                        {formatDisplayName(
-                          selectedAssignment.user?.user_metadata?.name,
-                          selectedAssignment.user?.email,
-                        )}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-xs text-neutral-500 dark:text-neutral-400">
-                        Date
-                      </label>
-                      <p className="font-medium text-neutral-900 dark:text-white">
-                        {dayjs(selectedAssignment.assignment_date).format(
-                          "MMMM D, YYYY",
-                        )}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-xs text-neutral-500 dark:text-neutral-400">
-                        Time
-                      </label>
-                      <p className="font-medium text-neutral-900 dark:text-white">
-                        {(() => {
-                          const isAllDay =
-                            selectedAssignment.start_time?.startsWith(
-                              "00:00",
-                            ) &&
-                            (selectedAssignment.end_time?.startsWith("23:59") ||
-                              selectedAssignment.end_time?.startsWith("24:00"));
-                          const isUnknown =
-                            selectedAssignment.start_time?.slice(0, 5) ===
-                            selectedAssignment.end_time?.slice(0, 5);
-
-                          if (isAllDay) return "All Day";
-                          if (isUnknown) return "Unknown Hours";
-                          return `${selectedAssignment.start_time?.slice(0, 5)} - ${selectedAssignment.end_time?.slice(0, 5)}`;
-                        })()}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-xs text-neutral-500 dark:text-neutral-400">
-                        Status
-                      </label>
-                      <p className="font-medium text-neutral-900 dark:text-white capitalize">
-                        {selectedAssignment.status || "scheduled"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Notes */}
-                {selectedAssignment.notes && (
-                  <div className="bg-neutral-50 dark:bg-dark-200 rounded-none p-4">
-                    <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-                      Notes
-                    </h3>
-                    <p className="text-sm text-neutral-900 dark:text-white whitespace-pre-wrap">
-                      {selectedAssignment.notes}
-                    </p>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowAssignmentDialog(false)}
-                  >
-                    Close
-                  </Button>
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+          canEdit={canEdit}
+          onChanged={() => setRefreshKey((k) => k + 1)}
+        />
       </div>
     </PageLayout>
   );

@@ -1,0 +1,399 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap");
+
+/* Personal Wrapped, a popup over the portal: serif type and ASCII art. The frame is
+   4:3 landscape at every size, and everything inside it is sized in cqw (1cqw is 1%
+   of the frame's width), so a slide scales as one piece and always fits. Colors stay
+   the same in light and dark mode; the accent follows the brand. Instrument Serif
+   comes from index.html and has one weight. */
+.wr-popup {
+  --wr-ink: #171717;
+  --wr-paper: #f5f5f5;
+  --wr-dim: #a3a3a3;
+  --wr-peach: color-mix(in srgb, var(--brand) 45%, white);
+  --wr-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  /* Room is left for the side arrows */
+  --wr-width: min(100vw - 160px, (100dvh - 32px) * 4 / 3, 880px);
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  overflow: hidden;
+  background: rgb(0 0 0 / 0.75);
+  font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-synthesis: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.wr-stage,
+.wr-popup-card {
+  position: relative;
+  flex-shrink: 0;
+  width: var(--wr-width);
+  height: calc(var(--wr-width) * 0.75);
+  overflow: hidden;
+  container-type: size;
+  border-radius: 0;
+}
+
+.wr-surface {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+
+.wr-slide {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.wr-tone-ink { background: var(--wr-ink); color: var(--wr-paper); }
+.wr-tone-orange { background: var(--brand); color: var(--wr-ink); }
+.wr-tone-paper { background: var(--wr-paper); color: var(--wr-ink); }
+
+.wr-body {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6cqw;
+  padding: 7cqw 5cqw 5cqw;
+}
+
+/* Words on one side, art on the other */
+.wr-split {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4cqw;
+  align-items: center;
+}
+
+.wr-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2cqw;
+  min-width: 0;
+}
+
+.wr-grow { flex: 1; min-height: 0; }
+.wr-accent { color: var(--brand); }
+.wr-center { align-self: center; justify-self: center; }
+
+/* Orange text disappears on the orange slides */
+.wr-tone-orange .wr-accent { color: var(--wr-paper); }
+
+/* Controls */
+.wr-chrome { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+
+.wr-progress {
+  position: absolute;
+  top: 2cqw;
+  left: 3cqw;
+  right: 3cqw;
+  display: flex;
+  gap: 0.6cqw;
+}
+
+.wr-progress i {
+  flex: 1;
+  height: 0.4cqw;
+  min-height: 2px;
+  background: currentColor;
+  opacity: 0.25;
+}
+
+.wr-progress i.on { opacity: 1; }
+
+.wr-close {
+  position: absolute;
+  top: 3.2cqw;
+  right: 2cqw;
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.wr-close svg { width: max(3cqw, 18px); height: max(3cqw, 18px); }
+
+.wr-sample {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.2cqw;
+  font-family: var(--wr-mono);
+  font-size: max(1.2cqw, 9px);
+  letter-spacing: 0.08em;
+  text-align: center;
+  opacity: 0.55;
+}
+
+.wr-arrow {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid var(--wr-dim);
+  border-radius: 0;
+  background: none;
+  color: var(--wr-paper);
+  cursor: pointer;
+}
+
+.wr-arrow:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+.wr-arrow:disabled { opacity: 0.3; cursor: default; }
+
+.wr-close:focus-visible,
+.wr-arrow:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* ASCII. Ligatures are off because the font would otherwise merge -> and ==. */
+.wr-ascii {
+  margin: 0;
+  font-family: var(--wr-mono);
+  font-variant-ligatures: none;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: pre;
+}
+
+.wr-bar {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* Type */
+.wr-top {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  font-family: var(--wr-mono);
+  font-size: max(1.6cqw, 9px);
+  letter-spacing: 0.08em;
+}
+
+.wr-logo-sm { display: block; width: 9cqw; height: auto; }
+.wr-logo-md { display: block; width: 18cqw; height: auto; }
+.wr-tone-ink .wr-logo-sm,
+.wr-tone-ink .wr-logo-md { filter: brightness(0) invert(0.96); }
+.wr-tone-orange .wr-logo-sm,
+.wr-tone-orange .wr-logo-md,
+.wr-tone-paper .wr-logo-sm,
+.wr-tone-paper .wr-logo-md { filter: brightness(0); }
+
+.wr-text { font-size: 3.4cqw; line-height: 1.2; }
+.wr-sm { font-size: 7cqw; line-height: 1; }
+.wr-md { font-size: 7cqw; line-height: 1.02; letter-spacing: -0.02em; }
+.wr-title { font-size: 8cqw; line-height: 1; letter-spacing: -0.02em; }
+.wr-lg { font-size: 7cqw; line-height: 1; letter-spacing: -0.02em; }
+.wr-thanks { font-size: 11cqw; line-height: 1; letter-spacing: -0.02em; }
+.wr-wrapped { font-size: 14cqw; line-height: 1; letter-spacing: -0.02em; font-style: italic; color: var(--brand); }
+.wr-xl { font-size: 22cqw; line-height: 0.85; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+
+/* Slide 3 */
+.wr-yoy { display: grid; grid-template-columns: 1fr 1fr; gap: 2cqw; align-items: end; }
+.wr-yoy > div { display: flex; flex-direction: column; gap: 0.8cqw; }
+.wr-yoy span { font-size: 6cqw; line-height: 1; font-variant-numeric: tabular-nums; }
+.wr-yoy em {
+  font-family: var(--wr-mono);
+  font-size: max(1.7cqw, 9px);
+  font-style: normal;
+  color: var(--wr-ink);
+}
+
+/* Slide 4 */
+.wr-ring { position: relative; justify-self: center; }
+.wr-ring b {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9cqw;
+  font-weight: 400;
+  color: var(--brand);
+}
+
+.wr-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2cqw 2cqw; font-size: 2.6cqw; line-height: 1.1; }
+.wr-legend > div { display: grid; grid-template-columns: 2.2cqw 1fr; column-gap: 1cqw; align-items: baseline; }
+.wr-legend i { font-family: var(--wr-mono); font-size: 2.6cqw; font-style: normal; }
+.wr-legend b { display: block; font-size: 4.4cqw; font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; }
+
+/* Slide 5 */
+.wr-boxes {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  font-family: var(--wr-mono);
+  font-size: 1.9cqw;
+  font-variant-ligatures: none;
+  line-height: 1.5;
+  white-space: pre;
+}
+.wr-boxes span { opacity: 0.3; }
+.wr-boxes span.on { opacity: 1; color: var(--brand); }
+
+/* Slide 7 */
+.wr-months { display: grid; align-items: end; }
+.wr-months > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6cqw;
+  font-family: var(--wr-mono);
+  font-size: max(1.7cqw, 9px);
+}
+.wr-months .wr-ascii { color: var(--wr-dim); }
+.wr-months .hi .wr-ascii { color: var(--brand); }
+.wr-months .hi b {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: 4.4cqw;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--brand);
+}
+
+/* Slide 8 and the invite. The planet runs off the right edge. */
+.wr-planet { position: absolute; top: 0; left: 0; }
+.wr-stats { display: grid; grid-template-columns: auto auto; justify-content: start; gap: 4cqw; }
+.wr-stats > div { display: flex; flex-direction: column; }
+.wr-stats b { font-size: 15cqw; font-weight: 400; line-height: 0.9; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.wr-stats em { font-size: 4.4cqw; line-height: 1; }
+
+/* Estimates. The vortex fills the slide and fades behind the words. */
+.wr-vortex {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0.5;
+  -webkit-mask-image: linear-gradient(to right, rgb(0 0 0 / 0.3) 10%, #000 65%);
+  mask-image: linear-gradient(to right, rgb(0 0 0 / 0.3) 10%, #000 65%);
+}
+
+/* Bigfoot. The flag fills the slide and leaves the cells behind him blank. */
+.wr-bigfoot {
+  position: absolute;
+  inset: 0;
+  animation: wr-fade 1200ms ease-out both;
+}
+
+.wr-bigfoot pre { position: absolute; top: 0; left: 0; }
+.wr-bigfoot-figure { color: var(--wr-ink); }
+.wr-bigfoot-figure span { display: inline-block; width: 0.6em; text-align: center; }
+
+/* Words sit on strips of paper so they read over the stripes */
+.wr-bigfoot-words { display: flex; flex-direction: column; gap: 1.6cqw; width: 39cqw; }
+.wr-bigfoot-words .wr-md { line-height: 1.3; }
+.wr-bigfoot-words span,
+.wr-on-flag .wr-top {
+  background: var(--wr-paper);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.wr-bigfoot-words span { padding: 0 0.12em; }
+.wr-on-flag .wr-top { align-self: flex-start; padding: 0.6cqw 1cqw; }
+
+.wr-fade { animation: wr-fade 1400ms ease-out var(--wr-delay, 0ms) both; }
+
+@keyframes wr-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Slide 9 */
+.wr-log { display: flex; flex-direction: column; gap: 1cqw; }
+.wr-log > div { display: grid; grid-template-columns: 5cqw 9cqw 1fr; align-items: baseline; }
+.wr-log i { font-family: var(--wr-mono); font-size: 2cqw; font-style: normal; color: var(--brand); }
+.wr-log b { font-size: 8cqw; font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; }
+.wr-log span { font-size: 3.6cqw; font-style: italic; line-height: 1.1; }
+
+/* The invite that opens the slides. Same frame, so nothing jumps when they open. */
+.wr-popup-card { animation: wr-popup-in 400ms ease-out both; }
+
+.wr-popup-left {
+  display: flex;
+  flex-direction: column;
+  width: 46cqw;
+}
+
+.wr-popup-open,
+.wr-popup-later {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  font-family: var(--wr-mono);
+  font-variant-ligatures: none;
+  cursor: pointer;
+}
+
+.wr-popup-open {
+  margin-top: 2cqw;
+  background: var(--wr-ink);
+  color: var(--wr-paper);
+  font-size: max(2.2cqw, 12px);
+}
+
+.wr-popup-open:hover { background: var(--brand); color: var(--wr-ink); }
+
+.wr-popup-later {
+  background: none;
+  color: var(--wr-ink);
+  font-size: max(1.8cqw, 11px);
+  opacity: 0.6;
+}
+
+.wr-popup-later:hover { opacity: 1; }
+
+.wr-popup-open:focus-visible,
+.wr-popup-later:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+@keyframes wr-popup-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Motion. Each slide remounts when shown, so this replays. */
+.wr-rise { animation: wr-rise 500ms cubic-bezier(0.2, 0.8, 0.2, 1) var(--wr-delay, 0ms) both; }
+
+@keyframes wr-rise {
+  from { opacity: 0; transform: translateY(2cqw); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wr-popup * { animation: none !important; }
+}
+
+/* Phones: no side arrows, so the frame can use the full width */
+@media (max-width: 520px) {
+  .wr-popup {
+    --wr-width: min(100vw - 16px, (100dvh - 16px) * 4 / 3);
+    gap: 0;
+  }
+  .wr-arrow { display: none; }
+}

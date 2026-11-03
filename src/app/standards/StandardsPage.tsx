@@ -14,8 +14,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, BookOpen, ChevronRight, Menu, Search, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { companyConfig } from "@/lib/companyConfig";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { HeaderBar } from "@/components/ui/HeaderBar";
 import { Markdown, extractHeadings } from "@/docs/lib/markdown";
 import { DocsToc } from "@/docs/components/DocsToc";
 import "@/docs/docs.css";
@@ -100,7 +99,7 @@ const STANDARDS: Record<string, StandardMeta> = {
     heroArt: "/img/2023-mts-letters.svg",
     // The ANSI/NETA logo recoloured to the MTS navy.
     logo: "/img/ansi-neta-blue.svg",
-    quick: [],
+    quick: ["7.6.1.1", "7.6.1.2", "7.1", "7.2.1.1", "7.3.3", "7.22.3", "B", "100.1", "100.5", "100.12.1", "100.14.1", "100.18"],
     comingSoon: true,
     // Solid navy art; lifted to a lighter blue on dark backgrounds. The bar's
     // dark colour is the same lift (navy x 2.2), so all three match.
@@ -439,14 +438,7 @@ function StandardsSidebar({
   const standards = listedStandards(rows);
   return (
     <div className="pb-16 pr-2">
-      <Link
-        to="/standards"
-        onClick={onNavigate}
-        data-active={activeKey === null && activeHome === null}
-        className="docs-sidebar-link mb-3 !font-medium"
-      >
-        All standards
-      </Link>
+      {/* The library (/standards) is the "Standards" title in the top bar. */}
       {standards.map((slug) => (
         <SidebarStandard
           key={slug}
@@ -583,12 +575,13 @@ function Library({ rows }: { rows: SectionRow[] }) {
               className="group flex flex-col"
             >
               {/* Artwork has a clear background: no frame needed. */}
-              <div className="flex aspect-[16/9] items-center justify-center transition-opacity group-hover:opacity-90">
+              <div className="flex aspect-[16/9] items-center justify-center">
                 {meta?.cover ? (
+                  // Hover: the artwork alone rises 5px.
                   <img
                     src={meta.cover}
                     alt={`${meta.label} cover`}
-                    className={`h-full w-full object-contain ${meta.coverClass ?? ""}`}
+                    className={`h-full w-full object-contain transition-transform duration-150 ease-out group-hover:-translate-y-[5px] group-focus-visible:-translate-y-[5px] motion-reduce:group-hover:translate-y-0 motion-reduce:group-focus-visible:translate-y-0 ${meta.coverClass ?? ""}`}
                   />
                 ) : (
                   <BookOpen className="h-12 w-12 text-neutral-300" />
@@ -683,9 +676,6 @@ function StandardHome({
               className={`h-11 w-auto sm:h-14 ${meta.logoClass ?? ""}`}
             />
           )}
-          <p className="mt-8 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
-            American National Standard
-          </p>
           <h1 className="mt-2 text-4xl font-semibold leading-tight tracking-tight text-neutral-900 xl:text-5xl dark:text-neutral-100">
             {standardLabel(slug)}
           </h1>
@@ -884,6 +874,19 @@ export default function StandardsPage() {
   const [bodyError, setBodyError] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  // The ampOS header bar + search bar stick together; the side rails sit just
+  // below them, so they need the pair's live height (it changes on mobile).
+  const chromeRef = useRef<HTMLDivElement>(null);
+  const [chromeHeight, setChromeHeight] = useState(137);
+  useEffect(() => {
+    const el = chromeRef.current;
+    if (!el) return;
+    const update = () => setChromeHeight(el.offsetHeight);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   const proseRef = useRef<HTMLDivElement>(null);
 
   // Sidebar list: everything except the text itself.
@@ -1124,7 +1127,7 @@ export default function StandardsPage() {
           )}
         </article>
 
-        <div className="docs-no-print docs-scroll sticky top-14 hidden h-[calc(100vh-3.5rem)] w-56 flex-shrink-0 overflow-y-auto py-10 xl:block">
+        <div className="docs-no-print docs-scroll sticky top-[var(--std-top)] hidden h-[calc(100vh-var(--std-top))] w-56 flex-shrink-0 overflow-y-auto py-10 xl:block">
           <DocsToc headings={headings} />
         </div>
       </div>
@@ -1132,9 +1135,17 @@ export default function StandardsPage() {
   }
 
   return (
-    <div className="docs-root std-root min-h-screen">
-      {/* Top bar. A <div>, not <header>: a browser extension hides <header>. */}
-      <div className="docs-no-print sticky top-0 z-40 border-b border-neutral-200 bg-white/85 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/85">
+    <div
+      className="docs-root std-root min-h-screen"
+      style={{ "--std-top": `${chromeHeight}px` } as React.CSSProperties}
+    >
+      {/* ampOS header bar, then the standards search bar, pinned together.
+          <div>s, not <header>: a browser extension hides <header>. */}
+      <div ref={chromeRef} className="docs-no-print sticky top-0 z-40">
+      <div className="border-b border-neutral-200 dark:border-dark-200">
+        <HeaderBar />
+      </div>
+      <div className="border-b border-neutral-200 bg-white/85 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/85">
         <div className="mx-auto flex h-14 max-w-[100rem] items-center gap-3 px-4 sm:px-6">
           <button
             type="button"
@@ -1156,22 +1167,12 @@ export default function StandardsPage() {
           <div className="flex flex-1 justify-center">
             <StandardsSearch inputRef={searchInputRef} />
           </div>
-
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Link
-              to="/portal"
-              className="flex items-center gap-1.5 rounded-none border border-neutral-200 px-2.5 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Back to {companyConfig.name}</span>
-            </Link>
-          </div>
         </div>
+      </div>
       </div>
 
       <div className="mx-auto flex max-w-[100rem] gap-8 px-4 sm:px-6">
-        <div className="docs-no-print docs-scroll sticky top-14 hidden h-[calc(100vh-3.5rem)] w-72 flex-shrink-0 overflow-y-auto py-8 lg:block">
+        <div className="docs-no-print docs-scroll sticky top-[var(--std-top)] hidden h-[calc(100vh-var(--std-top))] w-72 flex-shrink-0 overflow-y-auto py-8 lg:block">
           {rows && <StandardsSidebar rows={rows} activeKey={activeKey} activeHome={activeHome} />}
         </div>
         {main}

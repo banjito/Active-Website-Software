@@ -1,3 +1,4 @@
+import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useState, useEffect, useCallback } from "react";
 import {
   useParams,
@@ -1374,10 +1375,10 @@ const VoltagePotentialTransformerTestMTSReport: React.FC = () => {
                 ).map((item, index) => (
                   <tr key={item.netaSection}>
                     <td className="px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 align-top">
-                      {item.netaSection}
+                      <NetaSectionLink value={item.netaSection} standard="mts-2023" />
                     </td>
                     <td className="px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 align-top">
-                      {item.description}
+                      <StandardRefText text={item.description} standard="mts-2023" />
                     </td>
                     <td className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 align-top">
                       <select

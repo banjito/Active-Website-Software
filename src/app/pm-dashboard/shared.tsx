@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
-import { usePermissions } from '@/hooks/usePermissions';
 import { Button } from '@/components/ui/Button';
 import {
   DIRECTOR_DIVISION_ID,
+  canOpenPmDashboard,
   fetchDivisionLeads,
   type DivisionLeads,
 } from '@/services/divisionLeadsService';
 import { monthLabel, shiftMonth } from '@/utils/pmDashboardCalculations';
-
-const PM_ROLES = ['Operations Manager', 'Project Manager'];
 
 /**
  * Who may open the PM dashboard: admins, operations managers, and anyone named as a
@@ -19,7 +17,6 @@ const PM_ROLES = ['Operations Manager', 'Project Manager'];
  */
 export function usePmAccess() {
   const { user } = useAuth();
-  const { isAdmin, getUserRole } = usePermissions();
   const [leads, setLeads] = useState<DivisionLeads | null>(null);
 
   useEffect(() => {
@@ -34,7 +31,7 @@ export function usePmAccess() {
 
   return {
     loading: leads === null,
-    allowed: isAdmin || PM_ROLES.includes(getUserRole() ?? '') || ledDivisions.length > 0,
+    allowed: canOpenPmDashboard(user, leads ?? {}),
     /** The location this person is the project manager of, if any */
     leadDivision: ledDivisions.find((id) => id !== DIRECTOR_DIVISION_ID) ?? null,
   };

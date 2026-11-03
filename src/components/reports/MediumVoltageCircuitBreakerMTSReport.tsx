@@ -1,3 +1,4 @@
+import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useState, useEffect } from "react";
 import {
   useParams,
@@ -1476,10 +1477,10 @@ const MediumVoltageCircuitBreakerMTSReport: React.FC = () => {
                   {visualInspectionItemsList.map((item) => (
                     <tr key={item.id}>
                       <td className="px-3 py-2 whitespace-nowrap text-sm text-neutral-900 dark:text-white">
-                        {item.id}
+                        <NetaSectionLink value={item.id} standard="mts-2023" />
                       </td>
                       <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white whitespace-normal break-words">
-                        {item.description}
+                        <StandardRefText text={item.description} standard="mts-2023" />
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         <div className="print:hidden">

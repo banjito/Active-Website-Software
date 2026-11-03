@@ -88,7 +88,7 @@ export function ProcedureDrawer({ open, onClose, initialProcedureId }: Procedure
               <button
                 type="button"
                 onClick={() => setSelected(null)}
-                className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
+                className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-none text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
                 aria-label="Back to all procedures"
                 title="All procedures"
               >
@@ -111,7 +111,7 @@ export function ProcedureDrawer({ open, onClose, initialProcedureId }: Procedure
             <Link
               to={selected ? `/docs/${selected.slug}` : "/docs/procedures/overview"}
               onClick={onClose}
-              className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[13px] font-medium text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
+              className="inline-flex items-center gap-1.5 rounded-none px-2.5 py-1.5 text-[13px] font-medium text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
               title="Open in the documentation site"
             >
               <ExternalLink className="h-3.5 w-3.5" />
@@ -120,7 +120,7 @@ export function ProcedureDrawer({ open, onClose, initialProcedureId }: Procedure
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-none text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
               aria-label="Close"
             >
               <X className="h-4 w-4" />
@@ -151,7 +151,7 @@ export function ProcedureDrawer({ open, onClose, initialProcedureId }: Procedure
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Search procedures, equipment, or NETA section..."
-                    className="h-10 w-full rounded-md border border-neutral-300 bg-white pl-9 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                    className="h-10 w-full rounded-none border border-neutral-300 bg-white pl-9 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
                   />
                 </div>
               </div>
@@ -211,14 +211,14 @@ function ProcedureList({
           <button
             type="button"
             onClick={() => onSelect(procedure)}
-            className="group w-full rounded-lg border border-neutral-200 px-4 py-3 text-left transition-colors hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:border-neutral-700 dark:hover:bg-neutral-900"
+            className="group w-full rounded-none border border-neutral-200 px-4 py-3 text-left transition-colors hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:border-neutral-700 dark:hover:bg-neutral-900"
           >
             <span className="flex items-center gap-2">
               <span className="text-sm font-medium text-neutral-900 group-hover:text-brand dark:text-neutral-100">
                 {procedure.title}
               </span>
               {procedure.badge && (
-                <span className="rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-400">
+                <span className="rounded-none border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-400">
                   {procedure.badge}
                 </span>
               )}

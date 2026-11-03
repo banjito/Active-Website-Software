@@ -1,3 +1,4 @@
+import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useEffect, useState, useCallback } from "react";
 import { ReportHeader } from "@/components/reports/common/ReportHeader";
 import {
@@ -2452,7 +2453,7 @@ const LowVoltageAirSwitchMTS23Report: React.FC = () => {
             {/* Table 100.1 minimum, from the device's rated voltage */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-3 text-neutral-900 dark:text-white">
-                Table 100.1 Criteria
+                <StandardRef standard="mts-2023" num="100.1">Table 100.1</StandardRef> Criteria
               </h3>
               {(() => {
                 const minimum = insulationMinimum(

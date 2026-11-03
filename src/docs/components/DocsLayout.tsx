@@ -6,11 +6,11 @@
  * "Back to ampOS" exit.
  */
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { ArrowLeft, Menu, Search, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { companyConfig } from "@/lib/companyConfig";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { HeaderBar } from "@/components/ui/HeaderBar";
 import { DocsSidebar } from "./DocsSidebar";
 import { DocsSearch, DocsSearchProvider, useDocsSearch } from "./DocsSearch";
 import "../docs.css";
@@ -41,6 +41,19 @@ export function DocsLayout() {
   const { open: searchOpen, setOpen: setSearchOpen } = useDocsSearch();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const shortcutLabel = useShortcutLabel();
+  // The ampOS header bar + docs bar stick together; the side rails (and
+  // heading jumps) sit just below them, so they need the pair's live height.
+  const chromeRef = useRef<HTMLDivElement>(null);
+  const [chromeHeight, setChromeHeight] = useState(137);
+  useEffect(() => {
+    const el = chromeRef.current;
+    if (!el) return;
+    const update = () => setChromeHeight(el.offsetHeight);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // New page: start at the top, unless the URL points at an anchor.
   useEffect(() => {
@@ -73,14 +86,22 @@ export function DocsLayout() {
 
   return (
     <DocsSearchProvider value={openSearch}>
-    <div className="docs-root min-h-screen">
-      {/* Top bar. A <div>, not <header>: see DocsSidebar note. */}
-      <div className="docs-no-print sticky top-0 z-40 border-b border-neutral-200 bg-white/85 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/85">
+    <div
+      className="docs-root min-h-screen"
+      style={{ "--docs-top": `${chromeHeight}px` } as React.CSSProperties}
+    >
+      {/* ampOS header bar, then the docs bar, pinned together. <div>s, not
+          <header>: see DocsSidebar note. */}
+      <div ref={chromeRef} className="docs-no-print sticky top-0 z-40">
+      <div className="border-b border-neutral-200 dark:border-dark-200">
+        <HeaderBar />
+      </div>
+      <div className="border-b border-neutral-200 bg-white/85 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/85">
         <div className="mx-auto flex h-14 max-w-[100rem] items-center gap-3 px-4 sm:px-6">
           <button
             type="button"
             onClick={() => setMobileNavOpen(true)}
-            className="rounded-md p-1.5 text-neutral-500 transition-colors hover:bg-neutral-100 lg:hidden dark:hover:bg-neutral-800"
+            className="rounded-none p-1.5 text-neutral-500 transition-colors hover:bg-neutral-100 lg:hidden dark:hover:bg-neutral-800"
             aria-label="Open navigation"
           >
             <Menu className="h-5 w-5" />
@@ -100,31 +121,23 @@ export function DocsLayout() {
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 py-1.5 pl-2.5 pr-2 text-sm text-neutral-500 transition-colors hover:border-neutral-300 hover:text-neutral-700 sm:w-56 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:text-neutral-300"
+              className="flex items-center gap-2 rounded-none border border-neutral-200 bg-neutral-50 py-1.5 pl-2.5 pr-2 text-sm text-neutral-500 transition-colors hover:border-neutral-300 hover:text-neutral-700 sm:w-56 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700 dark:hover:text-neutral-300"
             >
               <Search className="h-4 w-4" />
               <span className="hidden flex-1 text-left sm:inline">Search docs…</span>
-              <kbd className="ml-auto hidden rounded border border-neutral-300 px-1.5 py-px text-[10px] font-medium sm:inline dark:border-neutral-700">
+              <kbd className="ml-auto hidden rounded-none border border-neutral-300 px-1.5 py-px text-[10px] font-medium sm:inline dark:border-neutral-700">
                 {shortcutLabel}
               </kbd>
             </button>
 
-            <ThemeToggle />
-
-            <Link
-              to="/portal"
-              className="flex items-center gap-1.5 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-800"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Back to {companyConfig.name}</span>
-            </Link>
           </div>
         </div>
+      </div>
       </div>
 
       <div className="mx-auto flex max-w-[100rem] gap-8 px-4 sm:px-6">
         {/* Desktop nav rail */}
-        <div className="docs-no-print docs-scroll sticky top-14 hidden h-[calc(100vh-3.5rem)] w-64 flex-shrink-0 overflow-y-auto py-8 lg:block">
+        <div className="docs-no-print docs-scroll sticky top-[var(--docs-top)] hidden h-[calc(100vh-var(--docs-top))] w-64 flex-shrink-0 overflow-y-auto py-8 lg:block">
           <DocsSidebar />
         </div>
 
@@ -147,7 +160,7 @@ export function DocsLayout() {
               <button
                 type="button"
                 onClick={() => setMobileNavOpen(false)}
-                className="rounded p-1 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                className="rounded-none p-1 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 aria-label="Close navigation"
               >
                 <X className="h-4 w-4" />

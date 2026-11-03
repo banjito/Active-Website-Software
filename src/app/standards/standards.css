@@ -115,3 +115,8 @@
     box-shadow: none;
   }
 }
+
+/* "On this page" links: land below the pinned ampOS + search bars. */
+.std-root .docs-prose [id] {
+  scroll-margin-top: calc(var(--std-top, 8.5rem) + 1rem);
+}

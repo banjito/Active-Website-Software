@@ -29,7 +29,9 @@ GROUP_NAMES = {
     "7.20": "Capacitors, Reactors, and Resistors",
 }
 
-SKIP_APPENDICES = {"C", "D", "E"}  # about NETA, comment / proposal forms
+# Appendices skipped by title: "About the InterNational Electrical Testing
+# Association" and the blank comment / proposal forms. Letters differ by book.
+SKIP_APPENDIX_TITLE = re.compile(r"^(About|Form for)\b", re.I)
 
 SMALL_WORDS = {"a", "an", "and", "as", "at", "by", "for", "in", "of", "on", "or", "the", "to", "with"}
 
@@ -90,38 +92,62 @@ def strip_chrome(page, std_label_re):
 
 # ------------------------------------------------------------------ TOC ---
 
+# MTS sometimes drops the space: "7.12.1.1Regulating Apparatus".
+NEW_TOC_ENTRY = re.compile(r"^(Table\s+\d|Appendix\s+[A-Z]\b|\d+\.\s+[A-Z]|\d+(\.\d+)+\.?\s*[A-Z])", re.I)
+TOC_PAGE = re.compile(r"^(.*?)\s*[.…]{2,}\s*(\d+)$")
+
+
 def parse_toc(pages, body_start):
+    """Contents pages -> ordered units. Handles '.....' and '……' leaders,
+    titles that wrap, parent tables listed without a page number, and books
+    that list tables as '100.1 ...' instead of 'Table 100.1 ...'."""
     entries = []
+    seen = set()
+
+    def add(text):
+        text = norm(re.sub(r"\s*[.…]{2,}\s*\d*$", "", text)).rstrip(".")
+        t = re.match(r"^Table\s+(100(?:\.\d+)+)\s+(.*)$", text, re.I)
+        a = re.match(r"^Appendix\s+([A-Z])\s*[-–—]\s*(.*)$", text)
+        c = re.match(r"^(\d+)\.\s+(.*)$", text)
+        s_ = re.match(r"^(\d+(?:\.\d+)+)\.?\s*([A-Z].*)$", text)
+        if t:
+            entry = {"kind": "table", "num": t.group(1), "title": norm(t.group(2))}
+        elif a:
+            entry = {"kind": "appendix", "num": a.group(1), "title": norm(a.group(2))}
+        elif c:
+            entry = {"kind": "chapter", "num": c.group(1), "title": norm(c.group(2))}
+        elif s_:
+            kind = "table" if s_.group(1).startswith("100.") else "section"
+            entry = {"kind": kind, "num": s_.group(1), "title": norm(s_.group(2))}
+        else:
+            return
+        key = (entry["kind"], entry["num"])
+        if key not in seen:  # "(continued)" repeats
+            seen.add(key)
+            entries.append(entry)
+
     buf = []
     for page in pages[:body_start]:
         if "CONTENTS" not in page:
             continue
         for line in page.split("\n"):
             s = norm(line)
-            if not s or s in ("CONTENTS", "TABLES", "APPENDICES") or "NETA" in s and len(s) < 25:
+            if not s or re.match(r"^(CONTENTS|TABLES|APPENDICES)\b(?!.*[.…]{2,})", s, re.I) or "NETA" in s and len(s) < 25:
+                if buf:
+                    add(" ".join(buf))
                 buf = []
                 continue
+            # A new entry starting while the last one never got a page number
+            # (a parent table heading): keep the last one as title-only.
+            if buf and NEW_TOC_ENTRY.match(s):
+                add(" ".join(buf))
+                buf = []
             buf.append(s)
-            joined = " ".join(buf)
-            m = re.match(r"^(.*?)\s*\.{2,}\s*(\d+)$", joined)
-            if not m:
-                if len(buf) > 3:
-                    buf = []
-                continue
-            buf = []
-            text, page_no = norm(m.group(1)), int(m.group(2))
-            t = re.match(r"^Table\s+(100(?:\.\d+)+)\s+(.*)$", text)
-            a = re.match(r"^Appendix\s+([A-Z])\s*-\s*(.*)$", text)
-            c = re.match(r"^(\d+)\.\s+(.*)$", text)
-            s_ = re.match(r"^(\d+(?:\.\d+)+)\s+(.*)$", text)
-            if t:
-                entries.append({"kind": "table", "num": t.group(1), "title": norm(t.group(2))})
-            elif a:
-                entries.append({"kind": "appendix", "num": a.group(1), "title": norm(a.group(2))})
-            elif c:
-                entries.append({"kind": "chapter", "num": c.group(1), "title": norm(c.group(2))})
-            elif s_:
-                entries.append({"kind": "section", "num": s_.group(1), "title": norm(s_.group(2))})
+            if TOC_PAGE.match(" ".join(buf)):
+                add(" ".join(buf))
+                buf = []
+            elif len(buf) > 3:
+                buf = []
     return entries
 
 
@@ -129,12 +155,28 @@ def parse_toc(pages, body_start):
 
 def heading_unit(line, by_key):
     """If this line is the heading of a TOC unit, return that unit's key."""
-    s = line.strip()
+    s = re.sub(r"\s*\(continued\)$", "", line.strip(), flags=re.I)
     # Appendix headings are centred, and their running headers are upper case.
-    m = re.match(r"^Appendix\s+([A-Z])\s*-\s*(.*)$", s, re.I)
+    # MTS puts the title on the next line ("APPENDIX A" / "Definitions").
+    m = re.match(r"^Appendix\s+([A-Z])(?:\s*[-–—]\s*(.*))?$", s, re.I)
     if m and ("appendix", m.group(1)) in by_key:
-        return by_key[("appendix", m.group(1))], m.group(2)
+        return by_key[("appendix", m.group(1))], m.group(2) or ""
+    # MTS tables: "TABLE 100.1" alone, centred, title on the following lines.
+    # A few are "Table 100.6.6"; for those, require centring so a prose line
+    # that happens to wrap at a table number is never taken for a heading.
+    m = re.match(r"^TABLE\s+(100(?:\.\d+)+)$", s, re.I)
+    if m and ("table", m.group(1)) in by_key and (
+        s.startswith("TABLE") or len(line) - len(line.lstrip()) >= 15
+    ):
+        return by_key[("table", m.group(1))], ""
     if len(line) - len(line.lstrip()) > 3:
+        return None, None
+    # A heading never has column gaps after it. "7.1  Switchgear ...  12  12  24"
+    # is a table row (MTS Appendix B), and must not be dropped as a heading.
+    # (Only the title is checked: "Table 100.1      Insulation ..." is fine.)
+    # Table headings are exempt: grid rows never start with "Table", and some
+    # titles carry layout gaps ("Shielded Power Cable      VLF (0.1 Hz) ...").
+    if not re.match(r"^Table\s", s, re.I) and re.search(r"\S {3,}\S", re.sub(r"^\S+\s+", "", s)):
         return None, None
     m = re.match(r"^Table\s+(100(?:\.\d+)+)\b\s*(.*)$", s)
     if m and ("table", m.group(1)) in by_key:
@@ -146,11 +188,12 @@ def heading_unit(line, by_key):
     m = re.match(r"^(\d+)\.\s+(.+)$", s)
     if m and ("chapter", m.group(1)) in by_key:
         unit = by_key[("chapter", m.group(1))]
-        heading = norm(m.group(2)).upper()
-        # Long chapter titles wrap: the first line is a prefix of the TOC title.
-        if heading == unit["title"].upper() or (len(heading) >= 10 and unit["title"].upper().startswith(heading)):
+        heading = norm(m.group(2))
+        # Chapter headings are upper case. Long ones wrap, and contents pages
+        # have typos ("ORANIZATION"), so the first word is enough.
+        if heading.isupper() and first_word(heading) == first_word(unit["title"]):
             return unit, m.group(2)
-    m = re.match(r"^(\d+(?:\.\d+)+)\s+(\S.*)$", s)
+    m = re.match(r"^(\d+(?:\.\d+)+)\.?\s+(\S.*)$", s)  # MTS: "7.8. Network Protectors"
     if m and ("section", m.group(1)) in by_key:
         unit = by_key[("section", m.group(1))]
         # Body titles can differ from the TOC ("Shielded Cables" vs "Cables"),
@@ -162,6 +205,20 @@ def heading_unit(line, by_key):
         ):
             return unit, m.group(2)
     return None, None
+
+
+# The book's title, repeated in capitals on divider pages.
+TITLE_PAGE_LINES = {
+    "STANDARD FOR",
+    "FOR",
+    "MAINTENANCE TESTING SPECIFICATIONS",
+    "ACCEPTANCE TESTING SPECIFICATIONS",
+    "ELECTRICAL POWER",
+    "EQUIPMENT AND SYSTEMS",
+    "EQUIPMENT & SYSTEMS",
+    "FOR ELECTRICAL POWER EQUIPMENT AND SYSTEMS",
+    "FOR ELECTRICAL POWER EQUIPMENT & SYSTEMS",
+}
 
 
 def split_units(pages, body_start, toc, std_label_re):
@@ -177,7 +234,11 @@ def split_units(pages, body_start, toc, std_label_re):
         lines, book_page = strip_chrome(pages[index], std_label_re)
         for line in lines:
             s = norm(line)
-            if s in ("TABLES", "APPENDICES"):
+            if re.match(r"^(TABLES|APPENDICES)( \(continued\))?$", s, re.I) or s in TITLE_PAGE_LINES:
+                continue
+            # Page-top repeats like "2.1 Codes, Standards, and Specification
+            # (continued)" (MTS): never content.
+            if len(s) < 120 and re.search(r"\(continued\)$", s, re.I):
                 continue
             unit, heading_text = heading_unit(line, by_key)
             if unit:
@@ -193,7 +254,8 @@ def split_units(pages, body_start, toc, std_label_re):
                 # including the wrapped second line of their title.
                 wrap_title = unit["title"].upper()
                 continue
-            if wrap_title and s and s.upper() in wrap_title and len(s) < len(wrap_title):
+            bare = re.sub(r"\s*\(continued\)$", "", s, flags=re.I)  # repeated title on later pages
+            if wrap_title and bare and bare.upper() in wrap_title and len(bare) < len(wrap_title):
                 if wrap_append and current.get("body_title") and s not in current["body_title"]:
                     current["body_title"] = norm(current["body_title"] + " " + s)
                 continue
@@ -269,18 +331,46 @@ def convert_text(lines, definitions=False):
             blocks.append(f"::: note\n{clean(state['text']['text'])}\n:::")
         elif k == "code":
             body = state["lines"]
-            pad = min(len(l) - len(l.lstrip()) for l in body if l.strip())
-            blocks.append("```\n" + "\n".join(l[pad:] for l in body) + "\n```")
+            # Two-column "code   title" lists read better as layout text.
+            table = auto_table(body, min_cols=3)
+            if table:
+                blocks.append(table)
+            else:
+                pad = min(len(l) - len(l.lstrip()) for l in body if l.strip())
+                blocks.append("```\n" + "\n".join(l[pad:] for l in body) + "\n```")
         state.clear()
         state["kind"] = None
         target["ref"] = None
 
-    for line in lines:
+    def layoutish(text):
+        return is_tabular(text) or bool(re.search(r"\S {6,}\S", text))
+
+    # Lone column-header words far to the right ("Visual &" above
+    # "Visual &   Mechanical &") belong to the grid that follows them.
+    grid_lead = set()
+    for i, line in enumerate(lines):
+        text = line.strip()
+        if text and len(line) - len(line.lstrip()) >= 40 and len(text) <= 25 and not layoutish(text):
+            nxt = next((l for l in lines[i + 1:] if l.strip()), "")
+            if layoutish(nxt.strip()):
+                grid_lead.add(i)
+
+    for index, line in enumerate(lines):
         if not line.strip():
             blank_before[0] = True
             if state["kind"] == "note":
                 flush()
             continue
+        if index in grid_lead and state["kind"] not in ("list", "bullets"):
+            if state["kind"] != "code":
+                flush()
+                state.update(kind="code", lines=[])
+            state["lines"].append(line)
+            continue
+        # MTS marks optional steps before the number: "*3.  Prior to ...".
+        starred = re.match(r"^(\s*)\*(\s*)(?=\d+\.\s|[a-z]\.\s|\([a-z0-9]{1,3}\)\s)", line)
+        if starred:
+            line = starred.group(1) + " " + line[starred.end():]
         indent = len(line) - len(line.lstrip())
         text = line.strip()
         after_blank = blank_before[0]
@@ -323,7 +413,7 @@ def convert_text(lines, definitions=False):
             if state["kind"] != "list" or indent < state["indent"] - 2:
                 flush()
                 state.update(kind="list", items=[], start=number, indent=indent)
-            item = {"text": optional(m.group(4)), "children": []}
+            item = {"text": ("**Optional:** " if starred else "") + optional(m.group(4)), "children": []}
             state["items"].append(item)
             target.update(ref=item, indent=text_indent)
             continue
@@ -332,7 +422,7 @@ def convert_text(lines, definitions=False):
         if m and indent > 0:
             label = f"{m.group(2)}." if MARKER_LET.match(line) else f"({m.group(2)})"
             text_indent = len(m.group(1)) + len(label) + len(m.group(3))
-            child = {"text": f"{label} {optional(m.group(4))}"}
+            child = {"text": f"{label} " + ("**Optional:** " if starred else "") + optional(m.group(4))}
             if state["kind"] == "list" and state["items"]:
                 state["items"][-1]["children"].append(child)
             else:
@@ -382,7 +472,31 @@ def convert_text(lines, definitions=False):
         target.update(ref=state["text"], indent=indent)
 
     flush()
-    return blocks
+    return tidy_blocks(blocks)
+
+
+def tidy_blocks(blocks):
+    """Drop paragraphs repeated as page headings ("Inspections and Tests ..."
+    on every page of a long table), then join consecutive tables that share
+    a header row: one table split across pages."""
+    seen = set()
+    kept = []
+    for b in blocks:
+        plain = not b.startswith(("|", "```", "#", ":::", "- ")) and not re.match(r"^\d+\. ", b)
+        if plain and len(b) > 20:
+            if b in seen:
+                continue
+            seen.add(b)
+        kept.append(b)
+    merged = []
+    for b in kept:
+        if merged and b.startswith("| ") and merged[-1].startswith("| "):
+            prev_lines, cur_lines = merged[-1].split("\n"), b.split("\n")
+            if prev_lines[0] == cur_lines[0] and len(cur_lines) > 2:
+                merged[-1] = "\n".join(prev_lines + cur_lines[2:])
+                continue
+        merged.append(b)
+    return merged
 
 
 # ------------------------------------------------------ table grids ---
@@ -395,14 +509,14 @@ def overlap(a, b):
     return max(0, min(a[1], b[1]) - max(a[0], b[0]))
 
 
-def auto_table(grid):
+def auto_table(grid, min_cols=2):
     """Turn a layout grid into a markdown table. Returns None when the column
     structure is not clear-cut; the caller then keeps the layout verbatim."""
     rows = [tokens(l) for l in grid if l.strip()]
     if len(rows) < 3:
         return None
     n = max(len(r) for r in rows)
-    if n < 2:
+    if n < max(2, min_cols):
         return None
     full = [r for r in rows if len(r) == n]
     if len(full) < 2:
@@ -412,6 +526,16 @@ def auto_table(grid):
         if spans[j][1] >= spans[j + 1][0]:
             return None
     first = next(i for i, r in enumerate(rows) if len(r) == n)
+
+    def numeric(row):
+        return any(re.search(r"\d", tok[2]) for tok in row)
+
+    # Multi-line headers ("Nominal / Rating of Equipment / (Volts)") come out
+    # as full rows too. Rows before the first one holding any digit are all
+    # header ("Any1 | No | Survey in 12 months" is data, so it stops there).
+    numeric_at = next((i for i, r in enumerate(rows) if numeric(r)), None)
+    if numeric_at is not None and first < numeric_at <= first + 4:
+        first = numeric_at
     header_rows, body_rows = rows[:first], rows[first:]
 
     def column_of(tok, strict):
@@ -551,10 +675,10 @@ def main():
         and "CONTENTS" not in p
     )
     toc = parse_toc(pages, body_start)
-    toc = [u for u in toc if not (u["kind"] == "appendix" and u["num"] in SKIP_APPENDICES)] + [
-        {"kind": "appendix", "num": n, "title": "(skipped)", "skip": True}
-        for n in sorted(SKIP_APPENDICES)
-    ]
+    for u in toc:
+        # Kept in order so their text is consumed, then dropped.
+        if u["kind"] == "appendix" and SKIP_APPENDIX_TITLE.match(u["title"]):
+            u["skip"] = True
     units = split_units(pages, body_start, toc, std_label_re)
     overrides = load_overrides(args.overrides, args.slug)
 
@@ -568,7 +692,8 @@ def main():
         body_title = u.get("body_title") or ""
         toc_title = u["title"]
         if u["kind"] == "chapter":
-            title = title_case(toc_title)
+            # The body heading, not the contents page (MTS: "ORANIZATION").
+            title = title_case(body_title if len(body_title) >= len(toc_title) - 3 else toc_title)
         elif body_title and not (toc_title.startswith(body_title) and len(toc_title) > len(body_title)):
             title = body_title
         else:

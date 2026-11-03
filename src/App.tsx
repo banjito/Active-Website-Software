@@ -648,14 +648,19 @@ function App() {
                       </RequireAuth>
                     }
                   />
+                  {/* Home page. "queue" layout = compact work queue in place of
+                      the old Announcements + shortcut lists. Back to the old
+                      page: drop the layout prop. */}
                   <Route
                     path="/portal"
                     element={
                       <RequireAuth>
-                        <PortalLanding />
+                        <PortalLanding layout="queue" />
                       </RequireAuth>
                     }
                   />
+                  {/* Old trial address for the new home page. */}
+                  <Route path="/portal2" element={<Navigate to="/portal" replace />} />
                   {/* AMPu owns everything under /ampu: catalog, transcript,
                       syllabus, lecture. See src/app/ampu/AmpuPage.tsx.
                       Like the docs, it deliberately skips the app <Layout>:

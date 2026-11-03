@@ -21,6 +21,13 @@ export function DocsToc({ headings }: { headings: DocsHeading[] }) {
 
     if (elements.length === 0) return;
 
+    // Height of the pinned bars above the content (ampOS header + docs or
+    // standards bar), set as a CSS variable by the page. 56px = old bar only.
+    const root = document.querySelector<HTMLElement>(".docs-root");
+    const rootStyle = root ? getComputedStyle(root) : null;
+    const chrome =
+      parseFloat(rootStyle?.getPropertyValue("--docs-top") || rootStyle?.getPropertyValue("--std-top") || "") || 56;
+
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -34,10 +41,10 @@ export function DocsToc({ headings }: { headings: DocsHeading[] }) {
 
         // Nothing in the band (long section): fall back to the last heading
         // scrolled past so the rail never goes blank.
-        const passed = elements.filter((element) => element.getBoundingClientRect().top < 120);
+        const passed = elements.filter((element) => element.getBoundingClientRect().top < chrome + 64);
         if (passed.length > 0) setActiveId(passed[passed.length - 1].id);
       },
-      { rootMargin: "-88px 0px -70% 0px", threshold: 0 },
+      { rootMargin: `-${Math.round(chrome + 32)}px 0px -70% 0px`, threshold: 0 },
     );
 
     elements.forEach((element) => observer.observe(element));

@@ -25,7 +25,7 @@ function NotFound({ slug }: { slug: string }) {
       </p>
       <Link
         to="/docs"
-        className="mt-6 inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+        className="mt-6 inline-flex items-center gap-2 rounded-none bg-brand px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to the docs home
@@ -97,7 +97,7 @@ export function DocsPage() {
             {previous ? (
               <Link
                 to={`/docs/${previous.slug}`}
-                className="group flex flex-col rounded-xl border border-neutral-200 px-4 py-3 transition-colors hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:border-neutral-700 dark:hover:bg-neutral-900"
+                className="group flex flex-col rounded-none border border-neutral-200 px-4 py-3 transition-colors hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:border-neutral-700 dark:hover:bg-neutral-900"
               >
                 <span className="flex items-center gap-1.5 text-xs text-neutral-500">
                   <ArrowLeft className="h-3 w-3" />
@@ -114,7 +114,7 @@ export function DocsPage() {
             {next && (
               <Link
                 to={`/docs/${next.slug}`}
-                className="group flex flex-col rounded-xl border border-neutral-200 px-4 py-3 text-right transition-colors hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:border-neutral-700 dark:hover:bg-neutral-900"
+                className="group flex flex-col rounded-none border border-neutral-200 px-4 py-3 text-right transition-colors hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:border-neutral-700 dark:hover:bg-neutral-900"
               >
                 <span className="flex items-center justify-end gap-1.5 text-xs text-neutral-500">
                   Next
@@ -130,7 +130,7 @@ export function DocsPage() {
       </article>
 
       {/* On this page */}
-      <div className="docs-no-print sticky top-14 hidden h-[calc(100vh-3.5rem)] w-56 flex-shrink-0 overflow-y-auto py-10 xl:block docs-scroll">
+      <div className="docs-no-print sticky top-[var(--docs-top)] hidden h-[calc(100vh-var(--docs-top))] w-56 flex-shrink-0 overflow-y-auto py-10 xl:block docs-scroll">
         <DocsToc headings={page.headings.filter((heading) => heading.level <= 3)} />
       </div>
     </div>

@@ -20,7 +20,9 @@ import {
 } from "@/lib/reviewShortcuts";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
-export const ReviewShortcuts: React.FC = () => {
+export const ReviewShortcuts: React.FC<{
+  onCount?: (count: number) => void;
+}> = ({ onCount }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [jobsWithReports, setJobsWithReports] = useState<
@@ -28,6 +30,12 @@ export const ReviewShortcuts: React.FC = () => {
   >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Lets a parent (the /portal2 tabs) show how many jobs this list holds.
+  useEffect(() => {
+    if (!loading) onCount?.(error ? 0 : jobsWithReports.length);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, error, jobsWithReports.length]);
 
   const loadJobs = useCallback(async (force = false) => {
     try {

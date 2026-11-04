@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { toast } from "@/components/ui/toast";
 import { useAuth } from "@/lib/AuthContext";
 import TimeClockSettings from "@/pages/hr/TimeClockSettings";
+import MissedTimeSettings from "@/pages/hr/MissedTimeSettings";
 import {
   approveTimeWeek,
   denyTimeWeek,
@@ -375,7 +376,13 @@ const Timesheets: React.FC = () => {
                                   ))}
                                   {hasExtra && (
                                     <div className="pl-4 text-neutral-600 dark:text-neutral-400">
-                                      {[extra.per_diem && "Per diem", Number(extra.miles) > 0 && `${Number(extra.miles)} miles`]
+                                      {[
+                                        extra.per_diem && "Per diem",
+                                        Number(extra.miles) > 0 &&
+                                          (extra.odometer_start != null && extra.odometer_end != null
+                                            ? `${Number(extra.miles)} miles (odometer ${Number(extra.odometer_start).toLocaleString()} to ${Number(extra.odometer_end).toLocaleString()})`
+                                            : `${Number(extra.miles)} miles`),
+                                      ]
                                         .filter(Boolean)
                                         .join(" · ")}
                                     </div>
@@ -406,6 +413,7 @@ const Timesheets: React.FC = () => {
       </div>
 
       {isPayroll && <TimeClockSettings />}
+      {isPayroll && <MissedTimeSettings />}
     </div>
   );
 };

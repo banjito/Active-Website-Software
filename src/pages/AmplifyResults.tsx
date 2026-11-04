@@ -445,7 +445,7 @@ const AmplifyResults: React.FC = () => {
                         type="button"
                         onClick={() => setRegenTarget(c)}
                         aria-label={`Regenerate ${c.label}`}
-                        className="p-2 text-neutral-400 opacity-0 transition-opacity hover:text-brand focus-visible:opacity-100 group-hover:opacity-100"
+                        className="p-2 text-neutral-400 opacity-0 touch:opacity-100 transition-opacity hover:text-brand focus-visible:opacity-100 group-hover:opacity-100"
                       >
                         <RefreshCw className="h-4 w-4" />
                       </button>
@@ -463,7 +463,7 @@ const AmplifyResults: React.FC = () => {
                         onClick={() => remove(c)}
                         disabled={deletingId === c.id}
                         aria-label={`Delete ${c.label}`}
-                        className="p-2 text-neutral-400 opacity-0 transition-opacity hover:text-red-600 focus-visible:opacity-100 group-hover:opacity-100 disabled:opacity-50 dark:hover:text-red-400"
+                        className="p-2 text-neutral-400 opacity-0 touch:opacity-100 transition-opacity hover:text-red-600 focus-visible:opacity-100 group-hover:opacity-100 disabled:opacity-50 dark:hover:text-red-400"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>

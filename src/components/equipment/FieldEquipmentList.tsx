@@ -3023,7 +3023,7 @@ export default function FieldEquipmentList() {
                                                       e.stopPropagation();
                                                       deleteTruck(truck);
                                                     }}
-                                                    className="opacity-0 group-hover:opacity-100 p-1 rounded text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                                    className="opacity-0 touch:opacity-100 group-hover:opacity-100 p-1 rounded text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
                                                     title="Remove from saved trucks"
                                                   >
                                                     <Trash2 className="h-3.5 w-3.5" />
@@ -3470,7 +3470,7 @@ export default function FieldEquipmentList() {
                                     e.stopPropagation();
                                     deleteCategory(category);
                                   }}
-                                  className="opacity-0 group-hover:opacity-100 p-1 rounded text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                  className="opacity-0 touch:opacity-100 group-hover:opacity-100 p-1 rounded text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
                                   title="Remove from saved categories"
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
@@ -3598,7 +3598,7 @@ export default function FieldEquipmentList() {
                                     e.stopPropagation();
                                     deleteLocation(location);
                                   }}
-                                  className="opacity-0 group-hover:opacity-100 p-1 rounded text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                  className="opacity-0 touch:opacity-100 group-hover:opacity-100 p-1 rounded text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
                                   title="Remove from saved locations"
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
@@ -3811,7 +3811,7 @@ export default function FieldEquipmentList() {
                                                 e.stopPropagation();
                                                 deleteSubComponentItem(item);
                                               }}
-                                              className="opacity-0 group-hover:opacity-100 p-1 rounded text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
+                                              className="opacity-0 touch:opacity-100 group-hover:opacity-100 p-1 rounded text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 transition-opacity"
                                               title="Remove from saved items"
                                             >
                                               <Trash2 className="h-3.5 w-3.5" />

@@ -18,22 +18,20 @@ export const useMobileDetection = (): MobileDetection => {
   useEffect(() => {
     const checkDevice = () => {
       const width = window.innerWidth;
-      const userAgent = navigator.userAgent;
       
-      // Mobile device detection
-      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent) ||
-                            ('ontouchstart' in window) ||
-                            (navigator.maxTouchPoints > 0);
-      
-      // Screen size detection
+      // Touch-first device: finger is the main pointer and there is no
+      // hover. Touchscreen laptops with a mouse/trackpad do not match.
+      const isTouchDevice =
+        window.matchMedia?.("(hover: none) and (pointer: coarse)").matches ??
+        false;
+
       const isSmallScreen = width <= 640;
-      const isTabletScreen = width > 640 && width <= 1024;
-      const isMobile = isMobileDevice || isSmallScreen;
-      
+      const isMobile = isSmallScreen || (isTouchDevice && width <= 1024);
+
       let deviceType: 'mobile' | 'tablet' | 'desktop' = 'desktop';
-      if (isSmallScreen || (isMobileDevice && width <= 768)) {
+      if (isSmallScreen || (isTouchDevice && width <= 768)) {
         deviceType = 'mobile';
-      } else if (isTabletScreen || (isMobileDevice && width <= 1024)) {
+      } else if (width <= 1024) {
         deviceType = 'tablet';
       }
 
@@ -43,15 +41,6 @@ export const useMobileDetection = (): MobileDetection => {
         screenWidth: width,
         deviceType
       });
-
-      // Add/remove mobile class to document
-      if (isMobile) {
-        document.documentElement.classList.add('mobile-device');
-        document.documentElement.classList.add('mobile-detected');
-      } else {
-        document.documentElement.classList.remove('mobile-device');
-        document.documentElement.classList.remove('mobile-detected');
-      }
     };
 
     // Initial check

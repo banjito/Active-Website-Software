@@ -354,7 +354,7 @@ const OilResults: React.FC = () => {
                       aria-label={`Delete ${c.label}`}
                       // Hidden until hover, but focus-visible keeps it
                       // reachable by keyboard.
-                      className="mr-3 shrink-0 p-2 text-neutral-400 opacity-0 transition-opacity hover:text-red-600 focus-visible:opacity-100 group-hover:opacity-100 disabled:opacity-50 dark:hover:text-red-400"
+                      className="mr-3 shrink-0 p-2 text-neutral-400 opacity-0 touch:opacity-100 transition-opacity hover:text-red-600 focus-visible:opacity-100 group-hover:opacity-100 disabled:opacity-50 dark:hover:text-red-400"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

@@ -961,7 +961,7 @@ export const TechnicianListedView: React.FC<Props> = ({
                               e.stopPropagation();
                               setPersonHidden(techId, name, !isHidden);
                             }}
-                            className={`shrink-0 w-4 h-4 rounded-none flex items-center justify-center text-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity ${
+                            className={`shrink-0 w-4 h-4 rounded-none flex items-center justify-center text-white opacity-0 touch:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity ${
                               isHidden
                                 ? "bg-neutral-500 hover:bg-neutral-600"
                                 : "bg-red-600 hover:bg-red-700"

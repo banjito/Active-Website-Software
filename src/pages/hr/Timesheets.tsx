@@ -3,7 +3,6 @@ import { Check, ChevronDown, ChevronLeft, ChevronRight, RotateCcw, Send, X } fro
 import { Button } from "@/components/ui/Button";
 import { toast } from "@/components/ui/toast";
 import { useAuth } from "@/lib/AuthContext";
-import { HrDashboard } from "@/pages/HrDashboard";
 import TimeClockSettings from "@/pages/hr/TimeClockSettings";
 import {
   approveTimeWeek,
@@ -16,24 +15,10 @@ import {
   sendTimeWeekToQuickBooks,
   TimeReviewRow,
   TimeWeekDetail,
+  PAYROLL_ROLES,
+  TIME_STATUS_LABEL as STATUS_LABEL,
+  TIME_STATUS_STYLE as STATUS_STYLE,
 } from "@/services/timeReviewService";
-
-// Same list the database uses for "sees everyone's time"
-const PAYROLL_ROLES = ["Admin", "Super Admin", "HR", "HR Rep", "HR Representative"];
-
-const STATUS_LABEL: Record<string, string> = {
-  open: "Not submitted",
-  submitted: "Submitted",
-  approved: "Approved",
-  denied: "Sent back",
-};
-
-const STATUS_STYLE: Record<string, string> = {
-  open: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300",
-  submitted: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300",
-  approved: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
-  denied: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300",
-};
 
 // Day strings are YYYY-MM-DD. Built from parts so the browser's time zone can't shift the day.
 const toYmd = (d: Date) =>
@@ -95,8 +80,8 @@ const Timesheets: React.FC = () => {
     setOpenId(null);
     setDetail(null);
     setNoteFor(null);
-    if (isPayroll) load();
-  }, [isPayroll, load]);
+    load();
+  }, [load]);
 
   const toggleRow = async (profileId: string) => {
     if (openId === profileId) {
@@ -147,9 +132,6 @@ const Timesheets: React.FC = () => {
       );
     }
   };
-
-  // Admin-only while TimeStAMP is being built. Everyone else keeps the page they had.
-  if (!isPayroll) return <HrDashboard />;
 
   const toReview = rows.filter((r) => r.status !== "approved").length;
 
@@ -255,6 +237,9 @@ const Timesheets: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      {/* Bosses only look for now. Approving sends hours to QuickBooks, which would
+                          double them while crews still clock in on QuickBooks Workforce. */}
+                      {isPayroll && (
                       <div className="flex justify-end gap-2">
                         {row.status === "approved" && !sendInfo[row.profile_id]?.qb_sent_at && (
                           <Button
@@ -311,6 +296,7 @@ const Timesheets: React.FC = () => {
                           </>
                         )}
                       </div>
+                      )}
                     </td>
                   </tr>
 
@@ -419,7 +405,7 @@ const Timesheets: React.FC = () => {
         </table>
       </div>
 
-      <TimeClockSettings />
+      {isPayroll && <TimeClockSettings />}
     </div>
   );
 };

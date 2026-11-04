@@ -571,14 +571,15 @@ export default function PipelineCalendarPage() {
     [jobs, selectedJobId],
   );
 
+  // Totals add up the jobs in the selected date range, so they match the list.
   const totals = useMemo(() => {
-    const awarded = filteredJobs
+    const awarded = sortedListJobs
       .filter((job) => job.status === "confirmed")
       .reduce((sum, job) => sum + job.amount, 0);
-    const expected = filteredJobs
+    const expected = sortedListJobs
       .filter((job) => job.status === "expected")
       .reduce((sum, job) => sum + job.amount, 0);
-    const dropped = filteredJobs
+    const dropped = sortedListJobs
       .filter((job) => job.status === "dropped")
       .reduce((sum, job) => sum + job.amount, 0);
 
@@ -588,7 +589,7 @@ export default function PipelineCalendarPage() {
       dropped,
       active: awarded + expected,
     };
-  }, [filteredJobs]);
+  }, [sortedListJobs]);
 
   const monthSegments = useMemo(
     () => getMonthSegments(viewStart, viewEnd),

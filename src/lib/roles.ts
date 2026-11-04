@@ -726,3 +726,12 @@ export const updateRole = (
       console.error('Error logging role change:', error);
     });
 }; 
+/**
+ * Who can add, edit, or delete schedule assignments.
+ * Must match the database rule common.is_admin_or_scheduler()
+ * (role "Admin" or "Super Admin", or any role containing "Scheduler").
+ */
+export const canEditSchedule = (user: any): boolean => {
+  const role = String(user?.user_metadata?.role || '');
+  return role === 'Admin' || role === 'Super Admin' || /scheduler/i.test(role);
+};

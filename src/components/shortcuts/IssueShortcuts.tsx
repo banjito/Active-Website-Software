@@ -15,11 +15,19 @@ interface JobGroup {
   oldest: string;
 }
 
-export const IssueShortcuts: React.FC = () => {
+export const IssueShortcuts: React.FC<{
+  onCount?: (count: number) => void;
+}> = ({ onCount }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [groups, setGroups] = useState<JobGroup[]>([]);
+
+  // Lets a parent (the /portal2 tabs) show how many jobs this list holds.
+  useEffect(() => {
+    if (!loading) onCount?.(error ? 0 : groups.length);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, error, groups.length]);
 
   useEffect(() => {
     fetchIssueGroups();

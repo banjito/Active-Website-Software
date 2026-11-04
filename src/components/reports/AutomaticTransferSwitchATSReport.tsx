@@ -1,3 +1,4 @@
+import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useState, useEffect, useCallback } from "react";
 import {
   useParams,
@@ -1969,10 +1970,10 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 {formData.visualInspectionItems.map((item, index) => (
                   <tr key={item.netaSection}>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm text-neutral-900 dark:text-white">
-                      {item.netaSection}
+                      <NetaSectionLink value={item.netaSection} standard="ats-2025" />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm text-neutral-900 dark:text-white">
-                      {item.description}
+                      <StandardRefText text={item.description} standard="ats-2025" />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-2 text-center">
                       <select

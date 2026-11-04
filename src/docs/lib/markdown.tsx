@@ -433,6 +433,9 @@ export function renderMarkdown(markdown: string, state?: RenderState): React.Rea
     // Ordered list -> numbered steps
     if (/^\s*\d+\.\s+/.test(line)) {
       const items: ListItem[] = [];
+      // Honor the first number ("5. ..."), so a list split by a note or table
+      // keeps counting instead of restarting at 1. Docs lists all start at 1.
+      const start = Number(/^\s*(\d+)\./.exec(line)?.[1] ?? 1);
       while (i < lines.length && (/^\s*\d+\.\s+/.test(lines[i]) || /^\s{2,}\S/.test(lines[i]))) {
         const ordered = /^\s*(\d+)\.\s+(.*)$/.exec(lines[i]);
         if (ordered) {
@@ -446,7 +449,12 @@ export function renderMarkdown(markdown: string, state?: RenderState): React.Rea
       }
       const k = nextKey();
       out.push(
-        <ol key={k} className="docs-steps">
+        <ol
+          key={k}
+          className="docs-steps"
+          start={start}
+          style={start !== 1 ? { counterReset: `docs-step ${start - 1}` } : undefined}
+        >
           {renderListItems(items, k)}
         </ol>,
       );

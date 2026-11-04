@@ -1,3 +1,4 @@
+import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useState, useEffect, useCallback } from "react";
 import { ReportHeader } from "./common/ReportHeader";
 import {
@@ -2375,10 +2376,10 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                   {formData.visualInspectionItems.map((item, index) => (
                     <tr key={index}>
                       <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-white text-sm">
-                        {item.netaSection}
+                        <NetaSectionLink value={item.netaSection} standard="ats-2025" />
                       </td>
                       <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-white text-sm">
-                        {item.description}
+                        <StandardRefText text={item.description} standard="ats-2025" />
                       </td>
                       <td className="px-3 py-2 border border-neutral-300 dark:border-neutral-600">
                         <div className="print:hidden">
@@ -2514,7 +2515,7 @@ const TwoSmallDryTyperXfmrATSReport: React.FC = (): JSX.Element | null => {
                       colSpan={2}
                       className="px-3 py-1 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-700 dark:text-white border border-neutral-300 dark:border-neutral-600"
                     >
-                      Table 100.5 Min. Value
+                      <StandardRef standard="ats-2025" num="100.5">Table 100.5</StandardRef> Min. Value
                     </th>
                   </tr>
                 </thead>

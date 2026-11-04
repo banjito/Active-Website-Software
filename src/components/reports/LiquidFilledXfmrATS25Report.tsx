@@ -1,3 +1,4 @@
+import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useEffect, useState } from "react";
 import {
   useParams,
@@ -2031,7 +2032,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                   {formData.visualInspectionItems.map((item, idx) => (
                     <tr key={item.id}>
                       <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white">
-                        {item.id}
+                        <NetaSectionLink value={item.id} standard="ats-2025" />
                       </td>
                       <td
                         className="px-3 py-2 text-sm text-neutral-900 dark:text-white"
@@ -2041,7 +2042,7 @@ const LiquidFilledXfmrATS25Report: React.FC = () => {
                           overflowWrap: "break-word",
                         }}
                       >
-                        {item.description}
+                        <StandardRefText text={item.description} standard="ats-2025" />
                       </td>
                       <td className="px-3 py-2">
                         <div className="print:hidden">

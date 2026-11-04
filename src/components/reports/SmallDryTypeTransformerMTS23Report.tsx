@@ -1,3 +1,4 @@
+import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   useParams,
@@ -1789,10 +1790,10 @@ const SmallDryTypeTransformerMTS23Report: React.FC = () => {
                   {formData.visualInspectionItems.map((item, idx) => (
                     <tr key={item.id}>
                       <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white">
-                        {item.id}
+                        <NetaSectionLink value={item.id} standard="mts-2023" />
                       </td>
                       <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white whitespace-normal break-words">
-                        {item.description}
+                        <StandardRefText text={item.description} standard="mts-2023" />
                       </td>
                       <td className="px-3 py-2">
                         <div className="print:hidden">
@@ -1928,7 +1929,7 @@ const SmallDryTypeTransformerMTS23Report: React.FC = () => {
                       className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[7px]"
                       colSpan={2}
                     >
-                      Table 100.5
+                      <StandardRef standard="mts-2023" num="100.5">Table 100.5</StandardRef>
                     </th>
                     <th
                       className="px-1 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase border border-neutral-200 dark:border-neutral-700 print:text-[7px] print:w-[8%]"

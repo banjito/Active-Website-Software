@@ -32,7 +32,10 @@ import {
   AlertCircle,
   Calendar,
   CheckCircle,
+  ChevronLeft,
+  ChevronRight,
   Clock,
+  X,
   XCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
@@ -40,6 +43,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import dayjs from "dayjs";
 import { employeeEmailRegex, employeeNameEmailRegex } from "@/lib/companyConfig";
+import { canEditSchedule } from "@/lib/roles";
+import { unknownHoursEnd } from "@/lib/scheduleTime";
+import { useScheduleJobColors } from "@/components/scheduling/useScheduleJobColors";
+import { JobColorSwatches } from "@/components/scheduling/JobColorSwatches";
 
 interface TechnicianCalendarProps {
   portalType: PortalType;
@@ -51,12 +58,15 @@ interface TechnicianCalendarProps {
   selectedTechnician?: string;
   viewOnly?: boolean;
   showAllTechnicians?: boolean;
+  /** Bump to make the calendar reload (after an edit/delete elsewhere). */
+  refreshKey?: number;
 }
 
 export function TechnicianCalendar({
   portalType,
   division,
   onAssignmentClick,
+  refreshKey,
   onDateClick,
   onAddAvailability,
   onAddException,
@@ -88,6 +98,9 @@ export function TechnicianCalendar({
     dayjs().format("YYYY-MM"),
   );
   const [reloadKey, setReloadKey] = useState<number>(0);
+  useEffect(() => {
+    if (refreshKey) setReloadKey((k) => k + 1);
+  }, [refreshKey]);
 
   // Main-view filters (persist)
   const [mainFilterTechId, setMainFilterTechId] = useState<string>("");
@@ -122,6 +135,19 @@ export function TechnicianCalendar({
         selectedTechs: selectedTechIds,
       }),
     );
+  // Filters are remembered automatically (no Save button). The first run is
+  // skipped so the empty starting values don't overwrite what was saved.
+  const filtersLoaded = useRef(false);
+  useEffect(() => {
+    if (!filtersLoaded.current) {
+      filtersLoaded.current = true;
+      return;
+    }
+    try {
+      saveMainFilters();
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mainFilterTechId, mainFilterJobId, techSearch, jobSearchMain, selectedTechIds]);
   const clearMainFilters = () => {
     setMainFilterTechId("");
     setMainFilterJobId("");
@@ -158,25 +184,9 @@ export function TechnicianCalendar({
   const [qaJobSearch, setQaJobSearch] = useState<string>("");
   const [qaJobOpen, setQaJobOpen] = useState<boolean>(false);
 
-  // Store job colors (persisted in localStorage) - Initialize directly from localStorage
-  const [jobColors, setJobColors] = useState<Record<string, string>>(() => {
-    try {
-      const saved = localStorage.getItem("calendar_job_colors");
-      return saved ? JSON.parse(saved) : {};
-    } catch (error) {
-      console.error("Error loading job colors:", error);
-      return {};
-    }
-  });
-
-  // Save job colors to localStorage when they change
-  useEffect(() => {
-    try {
-      localStorage.setItem("calendar_job_colors", JSON.stringify(jobColors));
-    } catch (error) {
-      console.error("Error saving job colors:", error);
-    }
-  }, [jobColors]);
+  // Job colors, shared by everyone (saved in the database)
+  const canEditCalendar = canEditSchedule(user);
+  const { jobColors, setJobColor } = useScheduleJobColors(canEditCalendar);
 
   // Update form color when job is selected
   useEffect(() => {
@@ -358,7 +368,11 @@ export function TechnicianCalendar({
           res = await supabase.schema("common").rpc("admin_get_users");
         }
         if (!res.error && res.data && mounted) {
-          const mapped = res.data.map((u: any) => ({
+          // Deactivated staff never show on the schedule.
+          const deactivated = await schedulingService.getDeactivatedUserIds();
+          const mapped = res.data
+            .filter((u: any) => !deactivated.has(u.id))
+            .map((u: any) => ({
             id: u.id,
             label: (u.raw_user_meta_data?.name ?? u.email) as string,
             email: u.email as string,
@@ -708,11 +722,11 @@ export function TechnicianCalendar({
   };
 
   const handleAddTechsToGroup = async () => {
-    if (!groupEvent || !groupEvent.job?.id) return;
+    if (viewOnly || !groupEvent || !groupEvent.job?.id) return;
     const jobId = groupEvent.job.id;
     const date = dayjs(groupEvent.start).format("YYYY-MM-DD");
     const startTime = gmStartTime;
-    const endTime = gmUnknownHours ? gmStartTime : gmEndTime;
+    const endTime = gmUnknownHours ? unknownHoursEnd(gmStartTime) : gmEndTime;
     const assigned = new Set(
       (groupEvent.technicians || []).map((t) => String(t.id)),
     );
@@ -898,10 +912,7 @@ export function TechnicianCalendar({
 
       // Store the job color
       if (qaForm.jobId && qaForm.color) {
-        setJobColors((prev) => ({
-          ...prev,
-          [qaForm.jobId]: qaForm.color,
-        }));
+        setJobColor(qaForm.jobId, qaForm.color);
       }
 
       const start = dayjs(qaForm.startDate);
@@ -918,7 +929,7 @@ export function TechnicianCalendar({
       const endTimeToUse = qaForm.isAllDay
         ? "23:59"
         : qaForm.unknownHours
-          ? qaForm.startTime
+          ? unknownHoursEnd(qaForm.startTime)
           : qaForm.endTime;
 
       const payloads = techIds.flatMap((tid) =>
@@ -952,229 +963,233 @@ export function TechnicianCalendar({
     <>
       <Card className="overflow-hidden">
         <CardHeader className="p-4">
-          <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-            <Calendar className="h-5 w-5" />
-            Technician Schedule{division && ` - ${division}`}
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 pr-3 mr-2 border-r dark:border-neutral-700">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  calendarRef.current?.getApi().prev();
-                }}
-              >
-                Prev
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  calendarRef.current?.getApi().today();
-                  setCurrentDate(dayjs().toDate());
-                }}
-              >
-                Today
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  calendarRef.current?.getApi().next();
-                }}
-              >
-                Next
-              </Button>
-              <span className="ml-1 text-sm font-medium text-neutral-800 dark:text-white">
-                {currentMonthLabel}
-              </span>
-              <input
-                type="month"
-                value={monthPicker}
-                onChange={(e) => {
-                  setMonthPicker(e.target.value);
-                  const dt = dayjs(`${e.target.value}-01`).toDate();
-                  setCurrentDate(dt);
-                  calendarRef.current?.getApi().gotoDate(dt);
-                }}
-                className="ml-2 border border-neutral-300 dark:border-neutral-600 rounded px-2 py-1 text-sm bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
-              />
-            </div>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsTechFocused(!isTechFocused)}
-                className="w-[280px] px-3 py-2 text-left text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-200 flex items-center justify-between"
-              >
-                <span>
-                  {selectedTechIds.length === 0
-                    ? "All Technicians"
-                    : `${selectedTechIds.length} Technician${selectedTechIds.length > 1 ? "s" : ""} Selected`}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9"
+              onClick={() => calendarRef.current?.getApi().prev()}
+              leftIcon={<ChevronLeft className="w-4 h-4" />}
+            >
+              Prev
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9"
+              disabled={monthPicker === dayjs().format("YYYY-MM")}
+              onClick={() => calendarRef.current?.getApi().today()}
+            >
+              This Month
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9"
+              onClick={() => calendarRef.current?.getApi().next()}
+              rightIcon={<ChevronRight className="w-4 h-4" />}
+            >
+              Next
+            </Button>
+            <span className="ml-2 text-sm font-medium text-neutral-700 dark:text-neutral-200">
+              {currentMonthLabel}
+            </span>
+
+            <div className="ml-auto flex flex-wrap items-center gap-2">
+              {!canEditCalendar ? (
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                  View only
                 </span>
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              ) : viewOnly ? (
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                  Open a division above to add jobs
+                </span>
+              ) : null}
+
+              {/* Technician filter */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsTechFocused(!isTechFocused)}
+                  className="w-56 h-9 px-3 text-left text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-200 flex items-center justify-between"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
-              {isTechFocused && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setIsTechFocused(false)}
-                  />
-                  <div className="absolute z-50 mt-1 w-full max-h-80 overflow-auto border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 shadow-lg">
-                    <div className="sticky top-0 bg-white dark:bg-dark-150 p-2 border-b border-neutral-200 dark:border-neutral-700">
-                      <Input
-                        placeholder="Search technician..."
-                        value={techSearch}
-                        onChange={(e) => setTechSearch(e.target.value)}
-                        className="w-full"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      <div className="flex gap-2 mt-2">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const allTechIds = mergedTechOpts
-                              .map((opt) => String(opt.value))
-                              .filter((id) => id);
-                            setSelectedTechIds(allTechIds);
-                          }}
-                          className="flex-1 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                          Select All
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedTechIds([]);
-                          }}
-                          className="flex-1 px-2 py-1 text-xs bg-neutral-500 text-white rounded hover:bg-neutral-600"
-                        >
-                          Clear All
-                        </button>
+                  <span className="truncate">
+                    {selectedTechIds.length === 0
+                      ? "All Technicians"
+                      : `${selectedTechIds.length} selected`}
+                  </span>
+                  <svg
+                    className="w-4 h-4 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+                {isTechFocused && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setIsTechFocused(false)}
+                    />
+                    <div className="absolute right-0 z-50 mt-1 w-64 max-h-80 overflow-auto border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 shadow-lg">
+                      <div className="sticky top-0 bg-white dark:bg-dark-150 p-2 border-b border-neutral-200 dark:border-neutral-700">
+                        <Input
+                          placeholder="Search technician..."
+                          value={techSearch}
+                          onChange={(e) => setTechSearch(e.target.value)}
+                          className="w-full"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedTechIds(
+                                mergedTechOpts
+                                  .map((opt) => String(opt.value))
+                                  .filter((id) => id),
+                              );
+                            }}
+                            className="flex-1 px-2 py-1 text-xs rounded-none border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-dark-200"
+                          >
+                            Select All
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedTechIds([]);
+                            }}
+                            className="flex-1 px-2 py-1 text-xs rounded-none border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-dark-200"
+                          >
+                            Clear All
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    {technicianOptions.map((opt) => {
-                      const techId = String(opt.value);
-                      const isSelected = selectedTechIds.includes(techId);
-
-                      const handleToggle = () => {
-                        if (techId === "") {
-                          // "All Technicians" option - clear selection
-                          setSelectedTechIds([]);
-                        } else {
-                          setSelectedTechIds((prev) =>
-                            prev.includes(techId)
-                              ? prev.filter((id) => id !== techId)
-                              : [...prev, techId],
-                          );
-                        }
-                      };
-
-                      return (
-                        <div
-                          key={techId}
-                          className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-dark-200 cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggle();
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={
-                              techId === ""
-                                ? selectedTechIds.length === 0
-                                : isSelected
-                            }
-                            onChange={(e) => {
+                      {technicianOptions.map((opt) => {
+                        const techId = String(opt.value);
+                        const isSelected = selectedTechIds.includes(techId);
+                        const handleToggle = () => {
+                          if (techId === "") {
+                            setSelectedTechIds([]);
+                          } else {
+                            setSelectedTechIds((prev) =>
+                              prev.includes(techId)
+                                ? prev.filter((id) => id !== techId)
+                                : [...prev, techId],
+                            );
+                          }
+                        };
+                        return (
+                          <div
+                            key={techId}
+                            className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-dark-200 cursor-pointer"
+                            onClick={(e) => {
                               e.stopPropagation();
                               handleToggle();
                             }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="rounded border-neutral-300 dark:border-neutral-600"
-                          />
-                          <span>{String(opt.label)}</span>
+                          >
+                            <input
+                              type="checkbox"
+                              checked={
+                                techId === ""
+                                  ? selectedTechIds.length === 0
+                                  : isSelected
+                              }
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                handleToggle();
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="rounded-none border-neutral-300 dark:border-neutral-600"
+                            />
+                            <span>{String(opt.label)}</span>
+                          </div>
+                        );
+                      })}
+                      {technicianOptions.length === 0 && (
+                        <div className="px-3 py-2 text-sm text-neutral-500">
+                          No technicians
                         </div>
-                      );
-                    })}
-                    {technicianOptions.length === 0 && (
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Job filter */}
+              <div className="relative">
+                {/* Plain input (the shared Input adds a bottom margin and taller padding). */}
+                <input
+                  type="text"
+                  placeholder="Filter by job..."
+                  value={jobSearchMain}
+                  onChange={(e) => {
+                    setJobSearchMain(e.target.value);
+                    if (!e.target.value) setMainFilterJobId("");
+                  }}
+                  onFocus={() => setIsJobFocused(true)}
+                  onBlur={() => setIsJobFocused(false)}
+                  className="w-56 h-9 pl-3 pr-8 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:border-brand"
+                />
+                {(jobSearchMain || mainFilterJobId) && (
+                  <button
+                    type="button"
+                    aria-label="Clear job filter"
+                    title="Clear job filter"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      setJobSearchMain("");
+                      setMainFilterJobId("");
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                {isJobFocused && (
+                  <div className="absolute right-0 z-50 mt-1 w-64 max-h-56 overflow-auto border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 shadow">
+                    {jobOptionsFiltered.map((opt) => (
+                      <button
+                        key={String(opt.value)}
+                        type="button"
+                        onMouseDown={() => {
+                          setMainFilterJobId(String(opt.value));
+                          setJobSearchMain(String(opt.label));
+                          setIsJobFocused(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-dark-200"
+                      >
+                        {String(opt.label)}
+                      </button>
+                    ))}
+                    {jobOptionsFiltered.length === 0 && (
                       <div className="px-3 py-2 text-sm text-neutral-500">
-                        No technicians
+                        No jobs
                       </div>
                     )}
                   </div>
-                </>
-              )}
-            </div>
-            <div className="relative">
-              <Input
-                placeholder="Search job..."
-                value={jobSearchMain}
-                onChange={(e) => setJobSearchMain(e.target.value)}
-                onFocus={() => setIsJobFocused(true)}
-                onBlur={() => setIsJobFocused(false)}
-                className="w-[260px]"
-              />
-              {isJobFocused && (
-                <div className="absolute z-50 mt-1 w-full max-h-56 overflow-auto border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 shadow">
-                  {jobOptionsFiltered.map((opt) => (
-                    <button
-                      key={String(opt.value)}
-                      type="button"
-                      onMouseDown={() => {
-                        setMainFilterJobId(String(opt.value));
-                        setJobSearchMain(String(opt.label));
-                        setIsJobFocused(false);
-                      }}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-dark-200"
-                    >
-                      {String(opt.label)}
-                    </button>
-                  ))}
-                  {jobOptionsFiltered.length === 0 && (
-                    <div className="px-3 py-2 text-sm text-neutral-500">
-                      No jobs
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-            <Button variant="outline" size="sm" onClick={clearMainFilters}>
-              Clear
-            </Button>
-            <Button variant="outline" size="sm" onClick={saveMainFilters}>
-              Save
-            </Button>
-            {(selectedTechIds.length > 0 || mainFilterJobId) && (
-              <div className="ml-2 flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-300">
-                <span>Active filters:</span>
-                {selectedTechIds.length > 0 && (
-                  <span className="px-2 py-1 rounded-none bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                    {selectedTechIds.length} Technician
-                    {selectedTechIds.length > 1 ? "s" : ""}
-                  </span>
-                )}
-                {mainFilterJobId && (
-                  <span className="px-2 py-1 rounded-none bg-neutral-100 dark:bg-dark-200">
-                    Job: {jobSearchMain || mainFilterJobId}
-                  </span>
                 )}
               </div>
-            )}
+
+              {(selectedTechIds.length > 0 || mainFilterJobId) && (
+                <button
+                  type="button"
+                  onClick={clearMainFilters}
+                  className="text-xs font-medium text-brand hover:underline"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
           </div>
         </CardHeader>
 
@@ -1182,7 +1197,7 @@ export function TechnicianCalendar({
           {/* schema warning intentionally hidden per request */}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 flex items-center">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-none mb-4 flex items-center">
               <AlertCircle className="h-5 w-5 mr-2" />
               <span>{error}</span>
             </div>
@@ -1191,16 +1206,13 @@ export function TechnicianCalendar({
           <div className="mt-2">
             {/* status badges removed per request */}
 
-            <div style={{ height: "600px" }}>
-              {loading ? (
-                <div className="flex justify-center items-center h-full">
-                  <div className="flex justify-center py-6">
-                    <LoadingSpinner size="md" />
-                  </div>
+            <div className="relative min-h-[600px]">
+              {loading && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 dark:bg-dark-150/60">
+                  <LoadingSpinner size="md" />
                 </div>
-              ) : (
+              )}
                 <FullCalendar
-                  key={`cal-${dayjs(currentDate).format("YYYY-MM")}`}
                   ref={calendarRef}
                   plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                   initialView={currentView}
@@ -1282,13 +1294,22 @@ export function TechnicianCalendar({
                   dayCellDidMount={(info) => {
                     // Fallback: ensure clicking any day cell opens the summary
                     info.el.style.cursor = "pointer";
-                    info.el.addEventListener("click", () => openDay(info.date));
+                    info.el.addEventListener("click", (e) => {
+                      // Clicks on a job (or "+N more") open their own popup.
+                      const t = e.target as HTMLElement | null;
+                      if (t?.closest(".fc-event, .fc-more-link, .fc-daygrid-more-link, .fc-popover")) return;
+                      openDay(info.date);
+                    });
                   }}
-                  editable={!viewOnly}
+                  // Off until drag-and-drop actually saves; before, a dragged
+                  // job looked moved but snapped back on reload.
+                  editable={false}
                   selectable={!viewOnly}
                   selectMirror={true}
                   dayMaxEvents={true}
                   weekends={true}
+                  // Weeks start on Sunday (matches pay periods).
+                  firstDay={0}
                   datesSet={handleDatesSet}
                   slotMinTime="06:00:00"
                   slotMaxTime="22:00:00"
@@ -1308,12 +1329,11 @@ export function TechnicianCalendar({
                     hour12: false,
                   }}
                 />
-              )}
             </div>
           </div>
         </CardContent>
       </Card>
-      /* Day schedule summary dialog */
+      {/* Day schedule summary dialog */}
       <Dialog open={showDaySchedule} onOpenChange={setShowDaySchedule}>
         <DialogContent>
           <DialogHeader>
@@ -1580,36 +1600,10 @@ export function TechnicianCalendar({
                 Job Color
               </label>
               <div className="space-y-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  {[
-                    "#ef4444",
-                    "#f97316",
-                    "#eab308",
-                    "#22c55e",
-                    "#3b82f6",
-                    "#8b5cf6",
-                    "#ec4899",
-                    "#64748b",
-                  ].map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => setQaForm((prev) => ({ ...prev, color }))}
-                      className={`w-8 h-8 rounded border-2 ${qaForm.color === color ? "border-neutral-900 dark:border-white" : "border-neutral-300 dark:border-neutral-600"}`}
-                      style={{ backgroundColor: color }}
-                      title={color}
-                    />
-                  ))}
-                  <input
-                    type="color"
-                    value={qaForm.color}
-                    onChange={(e) =>
-                      setQaForm((prev) => ({ ...prev, color: e.target.value }))
-                    }
-                    className="h-8 w-16 border rounded cursor-pointer dark:bg-dark-150 dark:border-neutral-700"
-                    title="Custom color"
-                  />
-                </div>
+                <JobColorSwatches
+                  value={qaForm.color}
+                  onChange={(color) => setQaForm((prev) => ({ ...prev, color }))}
+                />
                 <span className="text-xs text-neutral-600 dark:text-neutral-400">
                   {qaForm.jobId && jobColors[qaForm.jobId]
                     ? "Using saved color for this job"
@@ -1784,7 +1778,8 @@ export function TechnicianCalendar({
                 </div>
               )}
             </ul>
-            {/* Add technicians to this job/day */}
+            {/* Add technicians to this job/day (not in view-only, e.g. Field Tech (All)) */}
+            {!viewOnly && (
             <div className="pt-2 border-t dark:border-neutral-700">
               <div className="mb-2 text-sm font-medium text-neutral-800 dark:text-white">
                 Add Technicians
@@ -1896,6 +1891,7 @@ export function TechnicianCalendar({
                 </Button>
               </div>
             </div>
+            )}
             {(groupEvent?.technicians || []).length > 0 && (
               <div className="flex justify-end gap-2">
                 <Button

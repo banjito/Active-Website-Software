@@ -39,7 +39,7 @@ function SectionBlock({
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] font-semibold text-neutral-900 transition-colors hover:bg-neutral-100 dark:text-neutral-100 dark:hover:bg-neutral-800/60"
+        className="flex w-full items-center gap-2 rounded-none px-2 py-1.5 text-left text-[13px] font-semibold text-neutral-900 transition-colors hover:bg-neutral-100 dark:text-neutral-100 dark:hover:bg-neutral-800/60"
         aria-expanded={open}
       >
         <Icon className={`h-4 w-4 flex-shrink-0 ${isCurrent ? "text-brand" : "text-neutral-400"}`} />
@@ -69,7 +69,7 @@ function SectionBlock({
                       >
                         <span className="truncate">{item.title}</span>
                         {badge && (
-                          <span className="flex-shrink-0 rounded-full border border-neutral-200 px-1.5 py-px text-[9px] font-medium uppercase tracking-wide text-neutral-500 dark:border-neutral-700">
+                          <span className="flex-shrink-0 rounded-none border border-neutral-200 px-1.5 py-px text-[9px] font-medium uppercase tracking-wide text-neutral-500 dark:border-neutral-700">
                             {badge}
                           </span>
                         )}

@@ -180,7 +180,13 @@ const DocsPage = lazy(() => loadDocs().then((m) => ({ default: m.DocsPage })));
 
 // PM dashboard: standalone for now, not linked from any menu.
 const PMDashboard = lazy(() => import("./app/pm-dashboard/PMDashboard"));
+
+// Standards reader (NETA ATS/MTS): linked from the portal and from report references.
+// Text lives in common.standard_sections, never in the bundle.
+const StandardsPage = lazy(() => import("./app/standards/StandardsPage"));
 const PMJobDetail = lazy(() => import("./app/pm-dashboard/PMJobDetail"));
+
+// Personal Wrapped mockup: standalone, not linked from any menu. Sample data only.
 
 // MUI X Date Pickers setup
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -644,14 +650,19 @@ function App() {
                       </RequireAuth>
                     }
                   />
+                  {/* Home page. "queue" layout = compact work queue in place of
+                      the old Announcements + shortcut lists. Back to the old
+                      page: drop the layout prop. */}
                   <Route
                     path="/portal"
                     element={
                       <RequireAuth>
-                        <PortalLanding />
+                        <PortalLanding layout="queue" />
                       </RequireAuth>
                     }
                   />
+                  {/* Old trial address for the new home page. */}
+                  <Route path="/portal2" element={<Navigate to="/portal" replace />} />
                   {/* AMPu owns everything under /ampu: catalog, transcript,
                       syllabus, lecture. See src/app/ampu/AmpuPage.tsx.
                       Like the docs, it deliberately skips the app <Layout>:
@@ -871,6 +882,25 @@ function App() {
                     ))}
                     <Route path="*" element={<DocsPage />} />
                   </Route>
+
+                  {/* Standards reader. Own chrome like the docs, so no <Layout>.
+                      Optional segments keep one mounted page across sections. */}
+                  <Route
+                    path="/standards/:standard?/:section?"
+                    element={
+                      <RequireAuth>
+                        <Suspense
+                          fallback={
+                            <div className="flex min-h-screen items-center justify-center">
+                              <LoadingSpinner size="md" />
+                            </div>
+                          }
+                        >
+                          <StandardsPage />
+                        </Suspense>
+                      </RequireAuth>
+                    }
+                  />
 
                   {/* The Help Center was replaced by the docs site above.
                       /help-center/* is redirected so links saved in older

@@ -1,3 +1,4 @@
+import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAssetFormPrefill } from "./useAssetFormPrefill";
@@ -2303,10 +2304,10 @@ const PotentialTransformerATSReport: React.FC = () => {
                     className="hover:bg-neutral-50 dark:hover:bg-dark-200"
                   >
                     <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 whitespace-nowrap text-sm text-neutral-900 dark:text-white">
-                      {item.id}
+                      <NetaSectionLink value={item.id} standard="ats-2025" />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 text-sm text-neutral-900 dark:text-white whitespace-normal break-words">
-                      {item.description}
+                      <StandardRefText text={item.description} standard="ats-2025" />
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-700 print:border-black px-3 py-2 whitespace-nowrap">
                       <div className="print:hidden">

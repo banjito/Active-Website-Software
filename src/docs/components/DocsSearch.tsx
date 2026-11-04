@@ -125,7 +125,7 @@ export function DocsSearch({ open, onClose }: DocsSearchProps) {
       />
 
       <div
-        className="docs-root relative w-full max-w-xl overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-2xl dark:border-neutral-800 dark:bg-neutral-900"
+        className="docs-root relative w-full max-w-xl overflow-hidden rounded-none border border-neutral-200 bg-white shadow-2xl dark:border-neutral-800 dark:bg-neutral-900"
         onKeyDown={onKeyDown}
       >
         <div className="flex items-center gap-3 border-b border-neutral-200 px-4 dark:border-neutral-800">
@@ -140,7 +140,7 @@ export function DocsSearch({ open, onClose }: DocsSearchProps) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+            className="rounded-none p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
             aria-label="Close search"
           >
             <X className="h-4 w-4" />
@@ -167,7 +167,7 @@ export function DocsSearch({ open, onClose }: DocsSearchProps) {
               data-active={index === activeIndex}
               onMouseEnter={() => setActiveIndex(index)}
               onClick={() => go(hit)}
-              className="docs-search-hit flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors"
+              className="docs-search-hit flex w-full items-start gap-3 rounded-none px-3 py-2.5 text-left transition-colors"
             >
               {hit.anchor ? (
                 <Hash className="mt-0.5 h-4 w-4 flex-shrink-0 text-neutral-400" />
@@ -199,16 +199,16 @@ export function DocsSearch({ open, onClose }: DocsSearchProps) {
 
         <div className="flex items-center gap-4 border-t border-neutral-200 px-4 py-2 text-[11px] text-neutral-500 dark:border-neutral-800">
           <span className="flex items-center gap-1">
-            <kbd className="rounded border border-neutral-300 px-1 dark:border-neutral-700">↑</kbd>
-            <kbd className="rounded border border-neutral-300 px-1 dark:border-neutral-700">↓</kbd>
+            <kbd className="rounded-none border border-neutral-300 px-1 dark:border-neutral-700">↑</kbd>
+            <kbd className="rounded-none border border-neutral-300 px-1 dark:border-neutral-700">↓</kbd>
             to navigate
           </span>
           <span className="flex items-center gap-1">
-            <kbd className="rounded border border-neutral-300 px-1 dark:border-neutral-700">↵</kbd>
+            <kbd className="rounded-none border border-neutral-300 px-1 dark:border-neutral-700">↵</kbd>
             to open
           </span>
           <span className="flex items-center gap-1">
-            <kbd className="rounded border border-neutral-300 px-1 dark:border-neutral-700">esc</kbd>
+            <kbd className="rounded-none border border-neutral-300 px-1 dark:border-neutral-700">esc</kbd>
             to close
           </span>
         </div>

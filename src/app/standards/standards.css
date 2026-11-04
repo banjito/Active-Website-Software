@@ -1,0 +1,122 @@
+/* Standards reader (/standards). Builds on docs.css; everything here is
+   scoped to .std-root so the docs site is untouched. */
+
+/* Square corners everywhere, including docs pieces reused here. */
+.std-root .docs-prose *,
+.std-root .docs-prose *::before,
+.std-root .docs-sidebar-link {
+  border-radius: 0 !important;
+}
+
+/* Long titles wrap instead of truncating. */
+.std-root .std-sidebar-link {
+  align-items: flex-start;
+}
+
+.std-root .std-num {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: rgb(var(--docs-fg));
+}
+
+.std-root .docs-sidebar-link[data-active="true"] .std-num {
+  color: var(--brand);
+}
+
+/* Tables carry numbers, so line them up. */
+.std-root .docs-table td {
+  font-variant-numeric: tabular-nums;
+}
+
+.std-mark {
+  background-color: color-mix(in srgb, var(--brand) 25%, transparent);
+  color: inherit;
+  padding: 0 1px;
+}
+
+/* ------------------------------------------------------------------ *
+ * Standard home hero (/standards/:standard)
+ *
+ * One fill (the cover's colour or gradient) masked to two shapes: a
+ * full-width bar under the buttons, and the letters-only artwork
+ * (e.g. 2025-ats-letters.svg) pinned bottom-right so "2025 ATS" stands on
+ * that bar. The letters file is the cover clipped at y=1120, a little into
+ * the bar, so the bar's bottom edge is drawn once, by CSS, and stays
+ * straight. Rebuild it if the cover changes.
+ *
+ * Per-standard values arrive as inline custom properties (STANDARDS[slug].art
+ * in StandardsPage.tsx): --letters-frac (last letter's right edge / width),
+ * --bar-frac (bar height / height), --art-bg, --art-bg-dark. All covers share
+ * a 2626 x 1477 viewBox (ratio 1.7779).
+ * Small screens get the bar only; the letters would collide with the text.
+ * ------------------------------------------------------------------ */
+.std-hero {
+  --bar-h: 2.5rem;
+  padding-bottom: calc(var(--bar-h) + 2.5rem);
+}
+
+.std-hero-art {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--bar-h);
+  background: var(--art-bg, linear-gradient(to top right, rgb(0 52 104), rgb(108 179 63)));
+}
+
+.dark .std-hero-art {
+  background: var(--art-bg-dark, var(--art-bg, linear-gradient(to top right, rgb(0 52 104), rgb(108 179 63))));
+}
+
+@media (min-width: 1024px) {
+  .std-hero-letters {
+    --art-h: 12rem;
+    --art-w: calc(var(--art-h) * 1.7779);
+    --letters-w: calc(var(--art-w) * var(--letters-frac, 0.6043));
+    --bar-h: calc(var(--art-h) * var(--bar-frac, 0.2785));
+  }
+
+  .std-hero-letters .std-hero-text {
+    max-width: calc(100% - var(--letters-w) - 3rem);
+  }
+
+  .std-hero-letters .std-hero-art {
+    height: var(--art-h);
+    /* Artwork shifted right so the last letter ends at the edge (the
+       bar-only part past it hangs off and is clipped), plus the bar. */
+    -webkit-mask:
+      var(--art-url) right calc(var(--art-w) * (var(--letters-frac, 0.6043) - 1)) bottom 0 / var(--art-w) var(--art-h) no-repeat,
+      linear-gradient(#000 0 0) left bottom / 100% var(--bar-h) no-repeat;
+    mask:
+      var(--art-url) right calc(var(--art-w) * (var(--letters-frac, 0.6043) - 1)) bottom 0 / var(--art-w) var(--art-h) no-repeat,
+      linear-gradient(#000 0 0) left bottom / 100% var(--bar-h) no-repeat;
+  }
+}
+
+@media (min-width: 1280px) {
+  .std-hero-letters {
+    --art-h: 15rem;
+  }
+}
+
+/* Step a report link pointed at ("#A.9"): brief highlight, then fade. */
+.std-root .std-flash {
+  animation: std-flash 2.6s ease-out;
+}
+
+@keyframes std-flash {
+  0%,
+  35% {
+    background-color: color-mix(in srgb, var(--brand) 18%, transparent);
+    box-shadow: -0.5rem 0 0 0 color-mix(in srgb, var(--brand) 18%, transparent);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
+/* "On this page" links: land below the pinned ampOS + search bars. */
+.std-root .docs-prose [id] {
+  scroll-margin-top: calc(var(--std-top, 8.5rem) + 1rem);
+}

@@ -322,6 +322,8 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
     "/hr/data/org-chart",
     "/hr/compliance/document-acknowledgment",
     "/hr/self-service/manager-portal",
+    // Bosses see their own people's hours. The database decides who those are.
+    "/hr/time-attendance/timesheets",
     "/hr/onboarding/your-onboarding",
     "/hr/onboarding/sign-form",
     "/hr/handbook",
@@ -687,6 +689,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
           { path: "/hr/data/employee-profiles", label: "Employee Profiles" },
           { path: "/hr/data/org-chart", label: "Org Chart" },
           { path: "/hr/self-service/manager-portal", label: "Manager Portal" },
+          { path: "/hr/time-attendance/timesheets", label: "Timesheets" },
         ];
   const searchableNavItems = [
     ...standaloneNavItems,
@@ -1000,6 +1003,15 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                       active={pathMatches(
                         location.pathname,
                         "/hr/self-service/manager-portal",
+                      )}
+                    />
+                    <NavLinkRow
+                      to="/hr/time-attendance/timesheets"
+                      icon={<Clock className="h-3.5 w-3.5" />}
+                      label="Timesheets"
+                      active={pathMatches(
+                        location.pathname,
+                        "/hr/time-attendance/timesheets",
                       )}
                     />
                   </>

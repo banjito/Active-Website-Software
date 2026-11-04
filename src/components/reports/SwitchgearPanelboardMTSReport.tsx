@@ -1,3 +1,4 @@
+import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useState, useEffect, useCallback } from "react";
 import { ReportHeader } from "@/components/reports/common/ReportHeader";
 import {
@@ -1552,10 +1553,10 @@ const SwitchgearPanelboardMTSReport: React.FC = () => {
                   {formData.visualInspectionItems.map((item, index) => (
                     <tr key={item.id}>
                       <td className="px-6 py-4 text-sm font-medium text-neutral-900 dark:text-white">
-                        {item.id}
+                        <NetaSectionLink value={item.id} standard="mts-2023" />
                       </td>
                       <td className="px-6 py-4 text-sm text-neutral-700 dark:text-white whitespace-normal break-words">
-                        {item.description}
+                        <StandardRefText text={item.description} standard="mts-2023" />
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="print:hidden">

@@ -11,6 +11,20 @@
 -- The packet only exposes asset ids; the portal still resolves each report
 -- through common.customer_report_assets() + the customer-report-download edge
 -- function, so a packet can never widen what a customer may actually open.
+--
+-- cover_pdf_path: storage path of the packet's cover letter PDF, written by the
+-- publish-deliverable-pdf edge function when staff mark a packet Delivered.
+-- The bucket is private; customer-report-download signs it after re-checking
+-- the packet is in this function's result for the calling customer.
+--
+-- Safe to re-run.
+
+BEGIN;
+
+SET LOCAL lock_timeout = '5s';
+
+ALTER TABLE neta_ops.deliverables
+  ADD COLUMN IF NOT EXISTS published_cover_pdf_path text;
 
 -- DROP first: CREATE OR REPLACE can't change a function's return type, so adding
 -- columns to the RETURNS TABLE requires dropping the old definition.
@@ -25,7 +39,8 @@ RETURNS TABLE (
   status text,
   delivered_at timestamptz,
   created_at timestamptz,
-  report_asset_ids uuid[]
+  report_asset_ids uuid[],
+  cover_pdf_path text
 )
 LANGUAGE sql
 STABLE
@@ -40,7 +55,8 @@ AS $$
     d.status,
     d.delivered_at,
     d.created_at,
-    COALESCE(gd.selected_report_ids, '{}')::uuid[]
+    COALESCE(gd.selected_report_ids, '{}')::uuid[],
+    d.published_cover_pdf_path
   FROM neta_ops.deliverables d
   JOIN neta_ops.jobs j ON j.id = d.job_id
   LEFT JOIN neta_ops.generated_documents gd ON gd.id = d.cover_letter_id
@@ -51,3 +67,5 @@ AS $$
 $$;
 
 GRANT EXECUTE ON FUNCTION common.customer_deliverables() TO authenticated;
+
+COMMIT;

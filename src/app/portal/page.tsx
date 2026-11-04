@@ -46,6 +46,7 @@ import { useAuth } from "../../lib/AuthContext";
 import { useDivision } from "../../App";
 import { AboutPopup } from "@/components/ui/AboutPopup";
 import { WelcomePopup } from "@/components/ui/WelcomePopup";
+import { WrappedDropGate, WrappedRewatchButton } from "@/app/wrapped/WrappedDropGate";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Portal } from "@/lib/roles";
 import { ReviewShortcuts } from "@/components/shortcuts/ReviewShortcuts";
@@ -78,6 +79,7 @@ import ScuteShimmer from "@/components/portal/ScuteShimmer";
 import OfficeWindows from "@/components/portal/OfficeWindows";
 import SwitchgearWireframe from "@/components/portal/SwitchgearWireframe";
 import GlyphGlitch from "@/components/portal/GlyphGlitch";
+import PortalWorkQueue, { PortalGreeting } from "@/components/portal/PortalWorkQueue";
 
 /**
  * CSS-mask style for painting an SVG in the current text color.
@@ -107,7 +109,13 @@ function maskStyle(url: string, size = "contain"): React.CSSProperties {
   };
 }
 
-export default function PortalLanding() {
+export default function PortalLanding({
+  layout = "classic",
+}: {
+  // "queue" = the live home page layout (set on the /portal route in App.tsx).
+  // "classic" = the old Announcements + shortcut lists, kept until cleanup.
+  layout?: "classic" | "queue";
+} = {}) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { logoUrl, hideLogo } = useSiteLogos();
@@ -182,9 +190,14 @@ export default function PortalLanding() {
     showActionItemShortcuts: true,
     showAnnouncements: true,
     hiddenPortals: [] as string[],
+    // Last work-queue tab picked on /portal. Saved with the rest of these
+    // prefs on the profile, so it survives sign-out and other devices.
+    queueTab: null as string | null,
+    // Work-queue displays an Ops Manager / Admin turned off with the gear.
+    queueHidden: [] as string[],
   });
   const { setDivision } = useDivision();
-  const { isAdmin, checkPortalAccess } = usePermissions();
+  const { isAdmin, checkPortalAccess, getUserRole } = usePermissions();
   const [portalAnnouncements, setPortalAnnouncements] = useState<
     {
       id: string;
@@ -536,6 +549,8 @@ export default function PortalLanding() {
           showActionItemShortcuts: restPrefs.showActionItemShortcuts ?? true,
           showAnnouncements: restPrefs.showAnnouncements ?? true,
           hiddenPortals: restPrefs.hiddenPortals ?? prev.hiddenPortals,
+          queueTab: restPrefs.queueTab ?? prev.queueTab,
+          queueHidden: restPrefs.queueHidden ?? prev.queueHidden,
         }));
 
         // Also update localStorage for faster loading next time
@@ -1066,6 +1081,9 @@ export default function PortalLanding() {
   };
 
   const isPortalHidden = (portalName: string) => {
+    // The "queue" home page has no edit mode, so nobody could un-hide a
+    // card there. Old hide choices only apply to the classic layout.
+    if (layout === "queue") return false;
     return portalPreferences.hiddenPortals.includes(portalName);
   };
 
@@ -1273,7 +1291,10 @@ export default function PortalLanding() {
   return (
     <div className="min-h-screen bg-background text-foreground dark:bg-[#1e1e1e] dark:text-white">
       <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-neutral-200 dark:border-dark-200">
-        <HeaderBar onEnterEditMode={handleEnterEditMode} />
+        {/* No edit mode on the "queue" home page. */}
+        <HeaderBar
+          onEnterEditMode={layout === "queue" ? undefined : handleEnterEditMode}
+        />
       </div>
 
       {/* Easter egg: click the ampOS logo and Brian slowly creeps in from the left */}
@@ -1323,6 +1344,8 @@ export default function PortalLanding() {
         userEmail={user?.email}
       />
 
+      <WrappedDropGate paused={isWelcomeOpen} />
+
       {/* Edit Mode Banner */}
       {isEditMode && (
         <div className="bg-brand text-white py-3 px-4 sm:px-6 lg:px-8 sticky top-0 z-50 shadow-md">
@@ -1356,10 +1379,10 @@ export default function PortalLanding() {
 
       {/* Hero Section */}
       <section
-        className={`relative overflow-hidden border-none bg-white dark:bg-[#1e1e1e] ${!portalPreferences.showWelcome && !isEditMode ? "hidden" : ""}`}
+        className={`relative overflow-hidden border-none bg-white dark:bg-[#1e1e1e] ${layout !== "queue" && !portalPreferences.showWelcome && !isEditMode ? "hidden" : ""}`}
       >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-16">
+          <div className={layout === "queue" ? "pt-10 pb-6" : "py-16"}>
             {isEditMode && (
               <div className="flex items-center justify-between mb-4 p-3 bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
                 <span className="text-sm font-medium text-neutral-700 dark:text-white">
@@ -1383,6 +1406,7 @@ export default function PortalLanding() {
                 </button>
               </div>
             )}
+            {layout === "queue" && <PortalGreeting />}
             {!hideLogo && (
               <button
                 type="button"
@@ -1415,6 +1439,15 @@ export default function PortalLanding() {
                   alt="ampOS Docs"
                   className="h-5 w-auto aspect-[16234/2378] shrink-0 transition-[filter] dark:invert group-hover:invert dark:group-hover:invert-0 translate-y-1"
                 />
+              </Link>
+              {/* NETA standards reader (/standards). */}
+              <Link
+                to="/standards"
+                aria-label="NETA Standards"
+                className="inline-flex h-11 items-center gap-2 px-5 rounded-none border-none bg-neutral-200 text-base font-medium text-neutral-800 transition-colors hover:bg-brand hover:text-white dark:bg-dark-700 dark:text-white dark:hover:bg-brand focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
+              >
+                <BookOpen className="h-4 w-4 shrink-0" />
+                NETA Standards
               </Link>
               <div className="relative">
                 <button
@@ -1473,11 +1506,34 @@ export default function PortalLanding() {
                   </>
                 )}
               </div>
+              <WrappedRewatchButton />
             </div>
           </div>
         </div>
       </section>
 
+      {/* "queue" layout swaps Announcements + shortcut lists for one compact work queue. */}
+      {layout === "queue" ? (
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <PortalWorkQueue
+            announcements={portalAnnouncements}
+            announcementState={userAnnouncementState}
+            onOpenDocument={openAckModal}
+            savedTab={portalPreferences.queueTab}
+            canCustomize={isAdmin || getUserRole() === "Operations Manager"}
+            hiddenDisplays={portalPreferences.queueHidden ?? []}
+            onHiddenDisplaysChange={(next) =>
+              setPortalPreferences((prev) => ({ ...prev, queueHidden: next }))
+            }
+            onTabChange={(key) =>
+              setPortalPreferences((prev) =>
+                prev.queueTab === key ? prev : { ...prev, queueTab: key },
+              )
+            }
+          />
+        </div>
+      ) : (
+      <>
       {/* Announcements Section - Top of page */}
       <div
         className={`max-w-[1400px] mx-auto mt-8 ${!portalPreferences.showAnnouncements && !isEditMode ? "hidden" : ""}`}
@@ -1823,6 +1879,8 @@ export default function PortalLanding() {
           </div>
         ) : null}
       </div>
+      </>
+      )}
 
       {/* View & Acknowledge document modal */}
       <Dialog
@@ -1919,6 +1977,9 @@ export default function PortalLanding() {
         </DialogContent>
       </Dialog>
 
+      {/* "queue" layout drops these four lists; PortalWorkQueue shows them as tabs. */}
+      {layout !== "queue" && (
+      <>
       {/* Review Shortcuts Section */}
       <div
         className={`mt-6 max-w-[1400px] mx-auto ${!portalPreferences.showReviewShortcuts && !isEditMode ? "hidden" : ""}`}
@@ -2165,9 +2226,13 @@ export default function PortalLanding() {
           </div>
         )}
       </div>
+      </>
+      )}
 
       {/* Portal Section */}
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      <main
+        className={`max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 ${layout === "queue" ? "pt-10 pb-24" : "py-24"}`}
+      >
         {isEditMode && (
           <div className="mb-8 p-6 bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-neutral-700">
             <div className="flex items-center justify-between mb-4">

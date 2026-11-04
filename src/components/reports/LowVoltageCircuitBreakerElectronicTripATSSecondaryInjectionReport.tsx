@@ -1,3 +1,4 @@
+import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useState, useEffect } from "react";
 import {
   useParams,
@@ -1372,10 +1373,10 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
               {formData.visualInspectionItems.map((item, index) => (
                 <tr key={item.id}>
                   <td className="border border-neutral-300 print:border-black px-3 py-2 text-sm break-words">
-                    {item.id}
+                    <NetaSectionLink value={item.id} standard="ats-2025" />
                   </td>
                   <td className="border border-neutral-300 print:border-black px-3 py-2 text-sm whitespace-normal break-words">
-                    {item.description}
+                    <StandardRefText text={item.description} standard="ats-2025" />
                   </td>
                   <td className="border border-neutral-300 print:border-black px-3 py-2 text-sm">
                     {item.result}
@@ -2268,10 +2269,10 @@ const LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport: React.F
                     {formData.visualInspectionItems.map((item, index) => (
                       <tr key={item.id}>
                         <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm text-neutral-900 dark:text-white break-words">
-                          {item.id}
+                          <NetaSectionLink value={item.id} standard="ats-2025" />
                         </td>
                         <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm text-neutral-900 dark:text-white whitespace-normal break-words">
-                          {item.description}
+                          <StandardRefText text={item.description} standard="ats-2025" />
                         </td>
                         <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2">
                           <select

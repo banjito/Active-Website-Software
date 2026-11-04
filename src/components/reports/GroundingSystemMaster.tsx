@@ -1,3 +1,4 @@
+import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -981,7 +982,7 @@ const GroundingSystemMaster: React.FC = () => {
                       2. Verify tightness of accessible bolted electrical
                       connections by calibrated torque-wrench method in
                       accordance with manufacturer&apos;s published data or
-                      Table 100.12.
+                      <StandardRef standard="mts-2023" num="100.12">Table 100.12</StandardRef>.
                     </td>
                     <td className="border border-neutral-300 dark:border-neutral-600 px-3 py-2">
                       <select
@@ -1899,7 +1900,7 @@ const GroundingSystemMaster: React.FC = () => {
                             2. Verify tightness of accessible bolted electrical
                             connections by calibrated torque-wrench method in
                             accordance with manufacturer&apos;s published data
-                            or Table 100.12.
+                            or <StandardRef standard="mts-2023" num="100.12">Table 100.12</StandardRef>.
                           </td>
                           <td className="border border-black px-2 py-1 align-top">
                             {alternateReportData.visualMechanicalResults[2]}

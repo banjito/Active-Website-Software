@@ -1,3 +1,4 @@
+import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   useParams,
@@ -2702,10 +2703,10 @@ const LiquidXfmrVisualMTSReport: React.FC = () => {
                 {formData.visualMechanicalInspection.map((item, index) => (
                   <tr key={item.netaSection}>
                     <td className="px-3 py-2 text-sm font-medium text-neutral-900 dark:text-white">
-                      {item.netaSection}
+                      <NetaSectionLink value={item.netaSection} standard="mts-2023" />
                     </td>
                     <td className="px-3 py-2 text-sm text-neutral-700 dark:text-white">
-                      {item.description}
+                      <StandardRefText text={item.description} standard="mts-2023" />
                     </td>
                     <td className="px-3 py-2">
                       <div className="print:hidden">

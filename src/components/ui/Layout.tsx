@@ -25,11 +25,16 @@ import {
   FileSpreadsheet,
   Plus,
   AlertTriangle,
+  Database,
 } from "lucide-react";
 import { Button } from "./Button";
 import { AssignDivisionLeadPopover } from "./AssignDivisionLeadPopover";
 import { NewDivisionPopover } from "./NewDivisionPopover";
 import { isSuperUser } from "@/lib/roles";
+import {
+  canOpenPmDashboard,
+  managesActiveJobs,
+} from "@/services/pmAccessService";
 import {
   fetchDivisionLeads,
   leadTitleFor,
@@ -119,6 +124,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   useEffect(() => {
     refreshDivisionLeads();
   }, [refreshDivisionLeads]);
+
+  // A job's own PM gets "My Jobs" too, even without a PM role or a location.
+  const [managesJobs, setManagesJobs] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    void managesActiveJobs(user?.id).then((v) => alive && setManagesJobs(v));
+    return () => {
+      alive = false;
+    };
+  }, [user?.id]);
 
   // The division switcher reads common.divisions so an admin can add one without
   // a migration. Seeded with the built-in list, so the sidebar renders the same
@@ -734,9 +749,31 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       user?.user_metadata?.role === "Super Admin" ||
       isSuperUser(user?.email);
 
+    // Switching city keeps you on the same page when that page exists per
+    // division (e.g. /field-tech/scheduling -> /north_alabama/scheduling).
+    // Anything else (dashboard, a single job) goes to the city's default page.
+    const SAME_PAGE_SECTIONS = [
+      "scheduling",
+      "jobs",
+      "sites",
+      "customers",
+      "contacts",
+      "field-equipment",
+      "maintenance",
+      "reports",
+      "resources",
+    ];
     const handleCityClick = (cityId: string, path: string) => {
+      const [first, section, ...rest] = location.pathname
+        .split("/")
+        .filter(Boolean);
+      const onDivisionPage =
+        first === "field-tech" || fieldTechDivisions.some((d) => d.id === first);
+      const keepSection =
+        onDivisionPage && rest.length === 0 && SAME_PAGE_SECTIONS.includes(section);
+      const urlId = cityId === "field_tech" ? "field-tech" : cityId;
       setDivision(cityId);
-      navigate(path);
+      navigate(keepSection ? `/${urlId}/${section}` : path);
       setIsMobileSidebarOpen(false);
     };
 
@@ -859,6 +896,23 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </>
         )}
 
+        {/* PMs only: "My Jobs" opens their PM Dashboard, inside the Field Tech portal and its cities */}
+        {showCitySwitcher &&
+          (managesJobs || canOpenPmDashboard(user, divisionLeads)) && (
+          <Link to="/pm-dashboard" onClick={() => setIsMobileSidebarOpen(false)}>
+            <Button
+              variant="ghost"
+              leftIcon={<Database className="h-4 w-4" />}
+              className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
+                location.pathname.startsWith("/pm-dashboard")
+                  ? "bg-black/5 dark:bg-dark-50"
+                  : ""
+              }`}
+            >
+              My Jobs
+            </Button>
+          </Link>
+        )}
         <Link
           to={`${basePath}/customers`}
           onClick={() => setIsMobileSidebarOpen(false)}

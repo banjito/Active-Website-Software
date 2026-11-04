@@ -1,26 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
-import { usePermissions } from '@/hooks/usePermissions';
 import { Button } from '@/components/ui/Button';
 import {
   DIRECTOR_DIVISION_ID,
   fetchDivisionLeads,
   type DivisionLeads,
 } from '@/services/divisionLeadsService';
+import { canOpenPmDashboard, managesActiveJobs } from '@/services/pmAccessService';
 import { monthLabel, shiftMonth } from '@/utils/pmDashboardCalculations';
 
-const PM_ROLES = ['Operations Manager', 'Project Manager'];
-
 /**
- * Who may open the PM dashboard: admins, operations managers, and anyone named as a
- * division lead. Mirrors common.is_pm_or_admin() in pm_dashboard.sql, which is what
- * actually guards the data.
+ * Who may open the PM dashboard, and how much they see.
+ *   fullAccess   admins, PM roles, division leads: any location. Mirrors common.is_pm_or_admin().
+ *   managesJobs  PM on at least one active job: their own jobs. Mirrors common.is_job_pm().
+ * The database functions are what actually guard the data.
  */
 export function usePmAccess() {
   const { user } = useAuth();
-  const { isAdmin, getUserRole } = usePermissions();
   const [leads, setLeads] = useState<DivisionLeads | null>(null);
+  const [managesJobs, setManagesJobs] = useState<boolean | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -30,14 +29,36 @@ export function usePmAccess() {
     };
   }, []);
 
+  useEffect(() => {
+    let alive = true;
+    void managesActiveJobs(user?.id).then((v) => alive && setManagesJobs(v));
+    return () => {
+      alive = false;
+    };
+  }, [user?.id]);
+
   const ledDivisions = Object.keys(leads ?? {}).filter((id) => leads?.[id]?.id === user?.id);
+  const fullAccess = canOpenPmDashboard(user, leads ?? {});
 
   return {
-    loading: leads === null,
-    allowed: isAdmin || PM_ROLES.includes(getUserRole() ?? '') || ledDivisions.length > 0,
+    loading: leads === null || managesJobs === null,
+    allowed: fullAccess || managesJobs === true,
+    /** Can look at any location, not just their own jobs */
+    fullAccess,
+    /** PM on at least one active job */
+    managesJobs: managesJobs === true,
     /** The location this person is the project manager of, if any */
     leadDivision: ledDivisions.find((id) => id !== DIRECTOR_DIVISION_ID) ?? null,
   };
+}
+
+/** First name from the profile, falling back to the start of the email. */
+export function firstNameOf(
+  user: { email?: string | null; user_metadata?: { name?: string } } | null | undefined,
+): string {
+  return (
+    (user?.user_metadata?.name || '').trim().split(/\s+/)[0] || user?.email?.split('@')[0] || ''
+  );
 }
 
 const money = new Intl.NumberFormat('en-US', {

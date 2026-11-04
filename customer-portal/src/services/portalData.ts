@@ -74,6 +74,8 @@ export interface Deliverable {
   delivered_at: string | null;
   created_at: string | null;
   report_asset_ids: string[] | null;
+  /** Storage path of the cover letter PDF; null until staff publish it. */
+  cover_pdf_path: string | null;
 }
 
 export interface Company {
@@ -351,11 +353,24 @@ export function countAssetsByJob(
  * stays private.
  */
 export async function getReportDownloadUrl(assetId: string): Promise<string> {
+  return invokeDownload({ asset_id: assetId });
+}
+
+/**
+ * Signed URL for a delivered Report Packet's cover letter PDF. The edge
+ * function re-checks (via customer_deliverables) that the packet belongs to the
+ * signed-in customer before signing.
+ */
+export async function getPacketCoverDownloadUrl(
+  deliverableId: string,
+): Promise<string> {
+  return invokeDownload({ deliverable_id: deliverableId });
+}
+
+async function invokeDownload(body: Record<string, string>): Promise<string> {
   const { data, error } = await supabase.functions.invoke(
     "customer-report-download",
-    {
-      body: { asset_id: assetId },
-    },
+    { body },
   );
   if (error) {
     let detail = error.message;

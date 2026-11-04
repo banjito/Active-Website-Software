@@ -31,7 +31,7 @@ import {
   resolveTableRows,
   type RuntimeRowV2,
 } from "@/lib/customForms/v2/rows";
-import { fitColumnWidths, rowStateKey } from "@/lib/customForms/runtime/layout";
+import { fitChecklistWidths, fitColumnWidths, rowStateKey } from "@/lib/customForms/runtime/layout";
 import type {
   ControlSlot,
   SectionChrome,
@@ -1016,12 +1016,22 @@ export const SectionBodyV2: React.FC<SectionBodyV2Props> = ({
         rowCount: items.length,
         shownRowCount: shown.length,
       };
+      // Without widths the browser sizes columns to their text, as it always has.
+      const checklistWidths = fitChecklistWidths(v1Section.checklistColumnWidths);
+      const hasChecklistWidths = checklistWidths.some(Boolean);
       return (
         <div className="overflow-x-auto" style={wrapperStyle}>
           {settingsBar}
           <table
-            className={`min-w-full border-collapse border ${BORDER} ${density.table}`}
+            className={`${hasChecklistWidths ? "w-full table-fixed" : "min-w-full"} border-collapse border ${BORDER} ${density.table}`}
           >
+            {hasChecklistWidths && (
+              <colgroup>
+                {checklistWidths.map((width, i) => (
+                  <col key={i} style={{ width }} />
+                ))}
+              </colgroup>
+            )}
             <thead>
               <tr>
                 {[

@@ -325,6 +325,12 @@ export interface SectionConfig {
     description?: string;
     result?: string;
   };
+  /** For checklists: percentage width per column (e.g., "20%"). */
+  checklistColumnWidths?: {
+    section?: string;
+    description?: string;
+    result?: string;
+  };
 
   /** When set, add/remove rows on this section also updates all sections with the same id (linked tables). */
   rowCountLinkGroupId?: string;

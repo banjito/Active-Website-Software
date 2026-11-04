@@ -29,9 +29,11 @@ import {
 } from "@/lib/types/customForms";
 import {
   contactResistanceRowLabels,
+  fitChecklistWidths,
   groupedFieldColumnCount,
   resolveRowCount,
 } from "@/lib/customForms/runtime/layout";
+import { ChecklistWidthInput } from "./ChecklistWidthInput";
 import { InlineOptionsEditor, inlineInputCls } from "./SectionEditor";
 import { TableGridEditor } from "./TableGridEditor";
 import {
@@ -1031,6 +1033,10 @@ const LiveChecklist: React.FC<{
   const headers = section.checklistHeaders ?? {};
   const setHeader = (key: "section" | "description" | "result", value: string) =>
     onUpdate({ checklistHeaders: { ...headers, [key]: value || undefined } });
+  const widths = section.checklistColumnWidths ?? {};
+  const setWidth = (key: "section" | "description" | "result", value: string) =>
+    onUpdate({ checklistColumnWidths: { ...widths, [key]: value || undefined } });
+  const [sectionWidth, descriptionWidth, resultWidth] = fitChecklistWidths(widths);
   const headInput =
     "w-full bg-transparent px-2 py-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-200 focus:outline-none focus:bg-brand/5";
   // Which item's result choices are open for editing ("all" = every item).
@@ -1076,7 +1082,7 @@ const LiveChecklist: React.FC<{
       </Toolbar>
     ) : (
       <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
-        <span>Click a heading to rename it, or a Result cell to change that item's choices.</span>
+        <span>Click a heading to rename it, set column widths under the headings, or click a Result cell to change that item's choices.</span>
         {items.length > 0 && (
           <button
             type="button"
@@ -1092,7 +1098,10 @@ const LiveChecklist: React.FC<{
     <table className="w-full table-fixed border-collapse text-xs">
       <thead>
         <tr className="bg-neutral-100 dark:bg-dark-200 text-neutral-600 dark:text-neutral-300">
-          <th className="w-32 border border-neutral-300 dark:border-neutral-600 p-0">
+          <th
+            style={sectionWidth ? { width: sectionWidth } : undefined}
+            className="w-32 border border-neutral-300 dark:border-neutral-600 p-0"
+          >
             <input
               value={headers.section ?? ""}
               onChange={(e) => setHeader("section", e.target.value)}
@@ -1100,7 +1109,10 @@ const LiveChecklist: React.FC<{
               className={headInput}
             />
           </th>
-          <th className="border border-neutral-300 dark:border-neutral-600 p-0">
+          <th
+            style={descriptionWidth ? { width: descriptionWidth } : undefined}
+            className="border border-neutral-300 dark:border-neutral-600 p-0"
+          >
             <input
               value={headers.description ?? ""}
               onChange={(e) => setHeader("description", e.target.value)}
@@ -1108,7 +1120,10 @@ const LiveChecklist: React.FC<{
               className={headInput}
             />
           </th>
-          <th className="w-36 border border-neutral-300 dark:border-neutral-600 p-0">
+          <th
+            style={resultWidth ? { width: resultWidth } : undefined}
+            className="w-36 border border-neutral-300 dark:border-neutral-600 p-0"
+          >
             <input
               value={headers.result ?? ""}
               onChange={(e) => setHeader("result", e.target.value)}
@@ -1117,6 +1132,18 @@ const LiveChecklist: React.FC<{
             />
           </th>
           <th className="w-9 border border-neutral-300 dark:border-neutral-600" />
+        </tr>
+        <tr>
+          {(["section", "description", "result"] as const).map((key) => (
+            <th key={key} className={`${cell} font-normal`}>
+              <ChecklistWidthInput
+                value={widths[key]}
+                onChange={(next) => setWidth(key, next)}
+                className={input}
+              />
+            </th>
+          ))}
+          <th className={cell} />
         </tr>
       </thead>
       <tbody>

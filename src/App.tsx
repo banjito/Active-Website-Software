@@ -102,6 +102,7 @@ import ComponentEditor from "./components/customForms/ComponentEditor";
 import CustomFormLookupTables from "./pages/CustomFormLookupTables";
 import CustomFormFiller from "./components/customForms/CustomFormFiller";
 import CustomFormTemplates from "./pages/CustomFormTemplates";
+import CustomFormsHome from "./pages/CustomFormsHome";
 import CustomFormPreview from "./pages/CustomFormPreview";
 import EULA from "./pages/EULA";
 import Privacy from "./pages/Privacy";
@@ -780,6 +781,16 @@ function App() {
                   />
 
                   {/* === Custom Forms === */}
+                  <Route
+                    path="/custom-forms"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <CustomFormsHome />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
                   <Route
                     path="/custom-forms/templates"
                     element={

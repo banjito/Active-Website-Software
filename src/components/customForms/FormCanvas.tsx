@@ -80,6 +80,7 @@ import {
   type SectionChrome,
   type SectionRowInfo,
 } from "@/lib/customForms/runtime";
+import { DEVIATION_COLUMN_IDS } from "@/lib/customForms/deviation";
 import { sectionFromV1 } from "@/lib/customForms/v2/fromV1";
 import { confirmDialog } from "@/components/ui/confirmDialog";
 import { SectionBody } from "./runtime/SectionBody";
@@ -135,9 +136,6 @@ const FormulaCell: React.FC<{
   );
 };
 
-/** Rows shown per table before the canvas offers to expand into formula mode. */
-const CANVAS_PREVIEW_ROWS = 3;
-
 interface SectionPreviewProps {
   section: SectionConfig;
   allSections: SectionConfig[];
@@ -148,7 +146,6 @@ interface SectionPreviewProps {
     colId: string,
     formula: string,
   ) => void;
-  onRequestEditFormulas?: (sectionId: string) => void;
 }
 
 const FormulaHint: React.FC = () => (
@@ -177,7 +174,6 @@ const SectionPreview: React.FC<SectionPreviewProps> = ({
   allSections,
   isFormulaEditing,
   onCellFormulaChange,
-  onRequestEditFormulas,
 }) => {
   const { getSettingValue, setSettingValue, conditionValues } =
     useLocalSectionSettings();
@@ -190,7 +186,7 @@ const SectionPreview: React.FC<SectionPreviewProps> = ({
 
   const renderFormulaCell = (slot: ControlSlot) => {
     const { cell } = slot;
-    if (!cell) return placeholder(slot);
+    if (!cell || DEVIATION_COLUMN_IDS.has(cell.colId)) return placeholder(slot);
     const value = section.cellFormulas?.[cellKey(cell.rowIndex, cell.colId)] ?? "";
     const columnHint =
       slot.field?.cellBehavior === "calculate"
@@ -220,10 +216,6 @@ const SectionPreview: React.FC<SectionPreviewProps> = ({
     getSettingValue,
     setSettingValue,
     conditionValues,
-    // Checklists (e.g. Visual and Mechanical Inspection) are short text rows,
-    // so show them in full; tables still preview a few rows.
-    maxBodyRows:
-      isFormulaEditing || kind === "checklist" ? undefined : CANVAS_PREVIEW_ROWS,
     rowGutter: isFormulaEditing
       ? {
           header: "#",
@@ -272,36 +264,6 @@ const SectionPreview: React.FC<SectionPreviewProps> = ({
         </div>
       </>
     ),
-    renderRowOverflow: (_section, info, columnCount) => {
-      if (kind === "checklist") {
-        return (
-          <tr>
-            <td
-              colSpan={columnCount}
-              className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-neutral-500 dark:text-neutral-400"
-            >
-              ... {info.rowCount - info.shownRowCount} more items
-            </td>
-          </tr>
-        );
-      }
-      return (
-        <tr>
-          <td
-            colSpan={columnCount}
-            className="border border-neutral-300 dark:border-neutral-600 p-0"
-          >
-            <button
-              type="button"
-              onClick={() => onRequestEditFormulas?.(section.id)}
-              className="w-full px-2 py-2.5 text-center text-xs font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 border-0 border-t border-neutral-200 dark:border-neutral-600"
-            >
-              Show all {info.rowCount} rows and edit formulas…
-            </button>
-          </td>
-        </tr>
-      );
-    },
     renderSectionFooter: (_section, info) => (
       <CanvasSectionFooter
         section={section}
@@ -366,7 +328,7 @@ const CanvasSectionFooter: React.FC<{
         </span>
         {section.allowAddRows && <span className="text-brand">+ Add Row</span>}
         {section.allowRemoveRows && (
-          <span className="text-red-500">- Remove Row</span>
+          <span className="text-red-500">× on each row</span>
         )}
       </div>
     );
@@ -390,7 +352,7 @@ const CanvasSectionFooter: React.FC<{
       </span>
       {section.allowAddRows && <span className="text-brand">+ Add Row</span>}
       {section.allowRemoveRows && (
-        <span className="text-red-500">- Remove Row</span>
+        <span className="text-red-500">× on each row</span>
       )}
       {!section.allowAddRows && !section.allowRemoveRows && (
         <span className="text-neutral-400 dark:text-neutral-500 italic">
@@ -417,7 +379,6 @@ interface SortableSectionProps {
     colId: string,
     formula: string,
   ) => void;
-  onRequestEditFormulas?: (sectionId: string) => void;
   /** Ticked for arranging. Absent hides the tick box. */
   arrangeSelected?: boolean;
   onToggleArrange?: () => void;
@@ -438,7 +399,6 @@ const SortableSection: React.FC<SortableSectionProps> = ({
   onRegenerate,
   isFormulaEditing = false,
   onCellFormulaChange,
-  onRequestEditFormulas,
   arrangeSelected = false,
   onToggleArrange,
   dragDisabled = false,
@@ -669,7 +629,6 @@ const SortableSection: React.FC<SortableSectionProps> = ({
           allSections={allSections}
           isFormulaEditing={isFormulaEditing}
           onCellFormulaChange={onCellFormulaChange}
-          onRequestEditFormulas={onRequestEditFormulas}
         />
       </div>
     </div>
@@ -949,7 +908,6 @@ interface FormCanvasProps {
     colId: string,
     formula: string,
   ) => void;
-  onRequestEditFormulas?: (sectionId: string) => void;
   /** Render an "add component here" control; `index` is where in the section order it inserts. */
   renderInsertPoint?: (index: number) => React.ReactNode;
   /**
@@ -971,7 +929,6 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
   onSectionRegenerate,
   formulaEditingSectionId = null,
   onCellFormulaChange,
-  onRequestEditFormulas,
   renderInsertPoint,
   reorderable = true,
 }) => {
@@ -1027,7 +984,6 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
       }
       isFormulaEditing={section.id === formulaEditingSectionId}
       onCellFormulaChange={onCellFormulaChange}
-      onRequestEditFormulas={onRequestEditFormulas}
       arrangeSelected={picked.includes(section.id)}
       onToggleArrange={reorderable && ordered.length > 1 ? () => toggleArrange(section.id) : undefined}
       dragDisabled={options.inGroup || !reorderable}

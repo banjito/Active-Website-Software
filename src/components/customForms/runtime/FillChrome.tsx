@@ -22,10 +22,9 @@ import {
   resolveRowCount,
   resolveSettingValues,
   withConditionalRowAdded,
-  withConditionalRowRemoved,
   withContactResistanceRowAdded,
-  withContactResistanceRowRemoved,
   withRowCountDelta,
+  withRowRemoved,
   type ControlSlot,
   type FormData,
   type SectionChrome,
@@ -55,12 +54,14 @@ export interface FillChromeOptions {
   instanceRows?: Record<string, RowInstanceV2[]>;
   /** Row counts per records generator, by section id. */
   generatorCounts?: Record<string, Record<string, number>>;
+  /** A saved report from before the current layout rules. */
+  legacyLayout?: boolean;
 }
 
 const ADD_BUTTON =
-  "flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand border border-brand rounded hover:bg-orange-50 dark:hover:bg-orange-900/20";
+  "flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand border border-brand rounded-none hover:bg-orange-50 dark:hover:bg-orange-900/20";
 const REMOVE_BUTTON =
-  "flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 border border-red-300 rounded hover:bg-red-50 dark:hover:bg-red-900/20";
+  "flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 border border-red-300 rounded-none hover:bg-red-50 dark:hover:bg-red-900/20";
 
 export function useFillChrome(options: FillChromeOptions): SectionChrome {
   const {
@@ -73,6 +74,7 @@ export function useFillChrome(options: FillChromeOptions): SectionChrome {
     bindingValues,
     instanceRows,
     generatorCounts,
+    legacyLayout,
   } = options;
 
   const sections = template?.structure.sections ?? [];
@@ -101,14 +103,23 @@ export function useFillChrome(options: FillChromeOptions): SectionChrome {
     [renderControlOverride, interactive],
   );
 
-  const removeContactResistanceRow = (sectionId: string, rowIndex: number) =>
-    applyMutation((t, d) =>
-      withContactResistanceRowRemoved(t, d, sectionId, rowIndex),
-    );
+  /** Can any row of this section go right now? */
+  const rowsRemovable = (section: SectionConfig) => {
+    const kind = classifySection(section);
+    if (kind === "conditional-table") {
+      if (!section.allowRemoveRows) return false;
+      const settings = resolveSettingValues(section, (id) => formData[section.id]?.[id]);
+      return (section.conditionalRows ?? []).filter((row) => isConditionalRowVisible(row, settings)).length > 1;
+    }
+    if (kind !== "table" && kind !== "contact-resistance") return false;
+    // Rows authored in the grid aren't numbered rows, so they keep Remove Row.
+    return !section.v2?.body && canRemoveRow(section, resolveRowCount(section));
+  };
 
   return {
     mode: readOnly ? "readonly" : "fill",
     density: "normal",
+    legacyLayout,
     renderControl,
     getSettingValue: (section, settingId) => formData[section.id]?.[settingId],
     // Conditions read the instance directly: a setting the user has not
@@ -123,22 +134,16 @@ export function useFillChrome(options: FillChromeOptions): SectionChrome {
       : (section, settingId, value) =>
           onFieldChange(section.id, settingId, value),
 
-    // Contact resistance removes a row in place, from the row itself, because
-    // its rows are named sections rather than an anonymous count.
-    renderCellAdornment: (slot) => {
-      if (readOnly) return null;
-      if (classifySection(slot.section) !== "contact-resistance") return null;
-      const fieldId = slot.cell?.column.field?.id ?? slot.cell?.colId;
-      if (fieldId !== "busSection") return null;
-      const rowCount = resolveRowCount(slot.section);
-      if (!canRemoveRow(slot.section, rowCount)) return null;
+    // Every row carries its own remove button, so the exact row can go.
+    renderRowAction: (section, rowIndex) => {
+      if (readOnly || !rowsRemovable(section)) return null;
       return (
         <button
           type="button"
           onClick={() =>
-            removeContactResistanceRow(slot.section.id, slot.cell!.rowIndex)
+            applyMutation((t, d) => withRowRemoved(t, d, section.id, rowIndex))
           }
-          className="p-1 text-xs text-white bg-red-600 hover:bg-red-700 rounded focus:outline-none print:hidden"
+          className="px-1.5 py-0.5 text-xs text-white bg-red-600 hover:bg-red-700 rounded-none focus:outline-none print:hidden"
           title="Remove row"
         >
           ×
@@ -146,37 +151,21 @@ export function useFillChrome(options: FillChromeOptions): SectionChrome {
       );
     },
 
-    renderSectionHeader: (section, info) => {
+    renderSectionHeader: (section) => {
       if (readOnly) return null;
       // As Found / As Left tables: one click copies the readings across.
-      const copyButton = section.asFoundAsLeft?.pairs?.length ? (
-        <button
-          type="button"
-          onClick={() =>
-            applyMutation((t, d) => ({ template: t, formData: copyAsFoundToAsLeft(section, d).formData }))
-          }
-          title="Fill every empty As Left cell with its As Found reading"
-          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand border border-brand rounded-none hover:bg-brand/10 print:hidden"
-        >
-          <Copy className="w-3.5 h-3.5" /> Copy As Found → As Left
-        </button>
-      ) : null;
-      const canAdd = classifySection(section) === "contact-resistance" && canAddRow(section, info.rowCount);
-      if (!copyButton && !canAdd) return null;
-      if (!canAdd) return <div className="flex justify-end items-center mb-2">{copyButton}</div>;
+      if (!section.asFoundAsLeft?.pairs?.length) return null;
       return (
-        <div className="flex justify-end items-center gap-2 mb-2">
-          {copyButton}
+        <div className="flex justify-end items-center mb-2">
           <button
             type="button"
             onClick={() =>
-              applyMutation((t, d) =>
-                withContactResistanceRowAdded(t, d, section.id),
-              )
+              applyMutation((t, d) => ({ template: t, formData: copyAsFoundToAsLeft(section, d).formData }))
             }
-            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded focus:outline-none focus:ring-2 focus:ring-green-500 print:hidden"
+            title="Fill every empty As Left cell with its As Found reading"
+            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand border border-brand rounded-none hover:bg-brand/10 print:hidden"
           >
-            <Plus className="w-3.5 h-3.5" /> Add Row
+            <Copy className="w-3.5 h-3.5" /> Copy As Found → As Left
           </button>
         </div>
       );
@@ -225,24 +214,6 @@ const FillSectionFooter: React.FC<{
             <Plus className="w-3 h-3" /> Add Row
           </button>
         )}
-        {section.allowRemoveRows && !readOnly && visibleRows.length > 1 && (
-          <button
-            type="button"
-            onClick={() =>
-              applyMutation((t, d) =>
-                withConditionalRowRemoved(
-                  t,
-                  d,
-                  section.id,
-                  visibleRows[visibleRows.length - 1].id,
-                ),
-              )
-            }
-            className={REMOVE_BUTTON}
-          >
-            <Minus className="w-3 h-3" /> Remove Row
-          </button>
-        )}
         <span className="text-xs text-neutral-500 dark:text-neutral-400">
           {visibleRows.length} row{visibleRows.length !== 1 ? "s" : ""}
         </span>
@@ -250,11 +221,13 @@ const FillSectionFooter: React.FC<{
     );
   }
 
-  // Contact resistance carries its controls in the header and the rows.
-  if (kind !== "table") return null;
+  if (kind !== "table" && kind !== "contact-resistance") return null;
 
+  // New contact resistance rows get its labels. Rows remove from the × on each
+  // row; only rows authored in the grid still need this button.
+  const contactResistance = kind === "contact-resistance";
   const showAdd = !readOnly && canAddRow(section, info.rowCount);
-  const showRemove = !readOnly && canRemoveRow(section, info.rowCount);
+  const showRemove = !readOnly && !!section.v2?.body && canRemoveRow(section, info.rowCount);
   if (!showAdd && !showRemove) return null;
 
   return (
@@ -263,7 +236,11 @@ const FillSectionFooter: React.FC<{
         <button
           type="button"
           onClick={() =>
-            applyMutation((t, d) => withRowCountDelta(t, d, section.id, 1))
+            applyMutation((t, d) =>
+              contactResistance
+                ? withContactResistanceRowAdded(t, d, section.id)
+                : withRowCountDelta(t, d, section.id, 1),
+            )
           }
           className={ADD_BUTTON}
         >

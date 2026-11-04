@@ -33,6 +33,12 @@ import {
   resolveRowCount,
 } from "@/lib/customForms/runtime/layout";
 import { InlineOptionsEditor, inlineInputCls } from "./SectionEditor";
+import {
+  CellDefaultInput,
+  HINT_TITLE,
+  canHaveCellDefault,
+  canHaveHint,
+} from "./CellDefaultInput";
 import { TableGridEditor } from "./TableGridEditor";
 import {
   pieceColumnIds,
@@ -253,23 +259,23 @@ const FieldTypeControls: React.FC<{
       />
       Read-only
     </label>
+    {canHaveHint(field) && (
+      <input
+        value={field.placeholder ?? ""}
+        onChange={(e) => onChange({ placeholder: e.target.value || undefined })}
+        placeholder="Hint"
+        title={HINT_TITLE}
+        className={`${inlineInputCls} w-28`}
+      />
+    )}
     {field.type !== FieldType.TEMPERATURE_HUMIDITY && field.type !== FieldType.CHECKBOX && (
-      <>
-        <input
-          value={field.placeholder ?? ""}
-          onChange={(e) => onChange({ placeholder: e.target.value || undefined })}
-          placeholder="Placeholder"
-          title="Hint shown in the empty field"
-          className={`${inlineInputCls} w-28`}
-        />
-        <input
-          value={field.defaultValue ?? ""}
-          onChange={(e) => onChange({ defaultValue: e.target.value || undefined })}
-          placeholder="Default value"
-          title="Value the field starts with on a new form"
-          className={`${inlineInputCls} w-28`}
-        />
-      </>
+      <input
+        value={field.defaultValue ?? ""}
+        onChange={(e) => onChange({ defaultValue: e.target.value || undefined })}
+        placeholder="Default value"
+        title="Value the field starts with on a new form"
+        className={`${inlineInputCls} w-28`}
+      />
     )}
     {(field.calculation || field.type === FieldType.CALCULATED) && (
       <input
@@ -448,6 +454,14 @@ const LiveTable: React.FC<{
     if (value === "") delete next[key];
     else next[key] = value;
     onUpdate({ staticCells: next });
+  };
+
+  const setCellDefault = (row: number, colId: string, value: string) => {
+    const key = `row${row}_${colId}`;
+    const next = { ...(section.cellDefaults ?? {}) };
+    if (value === "") delete next[key];
+    else next[key] = value;
+    onUpdate({ cellDefaults: next });
   };
 
   const addColumn = () => {
@@ -785,6 +799,12 @@ const LiveTable: React.FC<{
                 {shownCols.map((col) => {
                   const b = col.field.cellBehavior ?? "user";
                   const isSel = col.id === selectedId;
+                  // Contact resistance row names are typed in the label cell.
+                  const takesDefault =
+                    b === "user" &&
+                    !col.field.resultRule &&
+                    canHaveCellDefault(col.field) &&
+                    !(labelled && col.field.id === "busSection");
                   return (
                     <td
                       key={col.id}
@@ -792,7 +812,7 @@ const LiveTable: React.FC<{
                       {...refAttrs(section.id, { columnId: col.id, rowIndex: r })}
                       className={`border border-neutral-300 dark:border-neutral-600 h-7 cursor-pointer ${
                         isSel ? "bg-brand/5" : "hover:bg-neutral-50 dark:hover:bg-dark-100"
-                      } ${b === "static" ? "p-0" : "px-2 py-1"}`}
+                      } ${b === "static" || takesDefault ? "p-0" : "px-2 py-1"}`}
                     >
                       {b === "static" ? (
                         <input
@@ -814,6 +834,14 @@ const LiveTable: React.FC<{
                         </span>
                       ) : b === "populate" ? (
                         <span className="text-[11px] text-blue-500">(copied)</span>
+                      ) : takesDefault ? (
+                        <CellDefaultInput
+                          field={col.field}
+                          value={section.cellDefaults?.[`row${r}_${col.id}`] ?? ""}
+                          onChange={(next) => setCellDefault(r, col.id, next)}
+                          onFocus={() => setSelectedId(col.id)}
+                          className="w-full h-7 bg-transparent px-2 text-xs text-neutral-900 dark:text-white placeholder:text-neutral-500 focus:outline-none"
+                        />
                       ) : (
                         <MockControl field={col.field} />
                       )}
@@ -1194,17 +1222,13 @@ const LiveChecklist: React.FC<{
 };
 
 // ---------------------------------------------------------------------------
-// Contact resistance: Value Deviation tables
+// Contact resistance: Phase Value Deviation columns
 // ---------------------------------------------------------------------------
 
 const LiveDeviation: React.FC<{
   section: SectionConfig;
   onUpdate: (u: Partial<SectionConfig>) => void;
-  /** Draw only this table (where the table layout puts it). */
-  part?: "phase" | "lines" | "combined";
-  /** Only the switch and the choices; the tables are drawn by the layout. */
-  settingsOnly?: boolean;
-}> = ({ section, onUpdate, part, settingsOnly = false }) => {
+}> = ({ section, onUpdate }) => {
   const dev = resolveDeviation(section);
   const own = section.deviation ?? {};
   const set = (patch: Partial<NonNullable<SectionConfig["deviation"]>>) =>
@@ -1229,119 +1253,16 @@ const LiveDeviation: React.FC<{
   );
   const head = "border border-neutral-300 dark:border-neutral-600 bg-neutral-100 dark:bg-dark-200 p-0";
   const headInput =
-    "w-full bg-transparent px-2 py-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-200 focus:outline-none focus:bg-brand/5";
-  const cellInput =
-    "w-full bg-transparent px-2 py-1 text-xs text-neutral-800 dark:text-neutral-100 focus:outline-none focus:bg-brand/5";
-
-  const headings = (
-    <tr>
-      {(["label", "criteria", "results"] as const).map((key) => (
-        <th key={key} className={head}>
-          <input
-            value={dev.headers[key] ?? ""}
-            onChange={(e) => set({ headers: { ...(own.headers ?? {}), [key]: e.target.value } })}
-            className={headInput}
-          />
-        </th>
-      ))}
-    </tr>
+    "w-full bg-transparent px-2 py-1.5 text-xs font-semibold text-center text-neutral-700 dark:text-neutral-200 focus:outline-none focus:bg-brand/5";
+  const sample =
+    "border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-center text-[11px] text-neutral-400";
+  const heading = (key: "label" | "measured" | "criteria" | "results") => (
+    <input
+      value={dev.headers[key] ?? ""}
+      onChange={(e) => set({ headers: { ...(own.headers ?? {}), [key]: e.target.value } })}
+      className={headInput}
+    />
   );
-
-  const phaseTable = (
-            <table className="w-full table-fixed border-collapse text-xs">
-              <thead>{headings}</thead>
-              <tbody>
-                <tr>
-                  <td className="border border-neutral-300 dark:border-neutral-600 p-0">
-                    <input
-                      value={dev.phaseLabel}
-                      onChange={(e) => set({ phaseLabel: e.target.value })}
-                      title="Shown on every row (one per table row above)"
-                      className={cellInput}
-                    />
-                  </td>
-                  <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-[11px] text-neutral-400">
-                    ▾ {dev.phaseCriteriaDefault}
-                  </td>
-                  <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-[11px] text-neutral-400">
-                    ▾ {dev.phaseResultDefault}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-  );
-  const linesTable = (withHead: boolean) => (
-            <table className="w-full table-fixed border-collapse text-xs">
-              {withHead && <thead>{headings}</thead>}
-              <tbody>
-                {dev.extraRows.map((row, i) => (
-                  <tr key={row.id}>
-                    <td className="border border-neutral-300 dark:border-neutral-600 p-0">
-                      <div className="flex items-center">
-                        <input
-                          value={row.label}
-                          onChange={(e) =>
-                            set({
-                              extraRows: dev.extraRows.map((r, k) =>
-                                k === i ? { ...r, label: e.target.value } : r,
-                              ),
-                            })
-                          }
-                          className={cellInput}
-                        />
-                        <button
-                          type="button"
-                          className={`${iconBtn} hover:text-red-600`}
-                          onClick={() => set({ extraRows: dev.extraRows.filter((_, k) => k !== i) })}
-                          title="Remove line"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </td>
-                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-[11px] text-neutral-400">
-                      ▾ {dev.extraDefault}
-                    </td>
-                    <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 text-[11px] text-neutral-400">
-                      ▾ {dev.extraDefault}
-                    </td>
-                  </tr>
-                ))}
-                <tr>
-                  <td colSpan={3} className="border border-dashed border-neutral-300 dark:border-neutral-600 p-0">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        set({
-                          extraRows: [
-                            ...dev.extraRows,
-                            { id: `line${Date.now().toString(36)}`, label: "New line: N/A" },
-                          ],
-                        })
-                      }
-                      className="w-full py-1 flex items-center justify-center gap-1 text-xs text-brand hover:bg-brand/10"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      Add line
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-  );
-
-  // Placed by the table layout: just that table (or both, merged).
-  if (part) {
-    if (section.showDeviation === false) return null;
-    if (part === "phase") return phaseTable;
-    if (part === "lines") return linesTable(true);
-    return (
-      <div className="[&>table+table]:-mt-px">
-        {phaseTable}
-        {linesTable(false)}
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-3 border-t border-dashed border-neutral-300 dark:border-neutral-600 pt-3">
@@ -1352,24 +1273,39 @@ const LiveDeviation: React.FC<{
           onChange={(e) => onUpdate({ showDeviation: e.target.checked })}
           className="rounded-none"
         />
-        Show the Value Deviation tables
+        Show the Phase Value Deviation columns (added after the last column on each row)
       </label>
       {section.showDeviation !== false && (
         <>
-          {!settingsOnly && (
-            <div className="grid gap-4 md:grid-cols-2 items-start">
-              {phaseTable}
-              {linesTable(true)}
-            </div>
-          )}
+          <table className="w-full max-w-md table-fixed border-collapse text-xs">
+            <thead>
+              <tr>
+                <th colSpan={3} className={head}>
+                  {heading("label")}
+                </th>
+              </tr>
+              <tr>
+                <th className={head}>{heading("measured")}</th>
+                <th className={head}>{heading("criteria")}</th>
+                <th className={head}>{heading("results")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className={sample} title="Worked out from the A, B and C readings">
+                  auto
+                </td>
+                <td className={sample}>▾ {dev.phaseCriteriaDefault}</td>
+                <td className={sample}>▾ {dev.phaseResultDefault}</td>
+              </tr>
+            </tbody>
+          </table>
           <div className="space-y-1.5">
-            {optionsRow("Per-row criteria", dev.phaseCriteriaOptions, (v) => set({ phaseCriteriaOptions: v }))}
-            {optionsRow("Per-row results", dev.phaseResultOptions, (v) => set({ phaseResultOptions: v }))}
-            {optionsRow("Line criteria", dev.extraCriteriaOptions, (v) => set({ extraCriteriaOptions: v }))}
-            {optionsRow("Line results", dev.extraResultOptions, (v) => set({ extraResultOptions: v }))}
+            {optionsRow("Criteria choices", dev.phaseCriteriaOptions, (v) => set({ phaseCriteriaOptions: v }))}
+            {optionsRow("Result choices", dev.phaseResultOptions, (v) => set({ phaseResultOptions: v }))}
             <div className="flex flex-wrap items-center gap-2 text-[11px] text-neutral-600 dark:text-neutral-300">
               <span className="w-28 shrink-0 font-medium">Starting values</span>
-              per-row criteria
+              criteria
               <select
                 value={dev.phaseCriteriaDefault}
                 onChange={(e) => set({ phaseCriteriaDefault: e.target.value })}
@@ -1379,7 +1315,7 @@ const LiveDeviation: React.FC<{
                   <option key={o}>{o}</option>
                 ))}
               </select>
-              per-row result
+              result
               <select
                 value={dev.phaseResultDefault}
                 onChange={(e) => set({ phaseResultDefault: e.target.value })}
@@ -1389,12 +1325,6 @@ const LiveDeviation: React.FC<{
                   <option key={o}>{o}</option>
                 ))}
               </select>
-              lines
-              <input
-                value={dev.extraDefault}
-                onChange={(e) => set({ extraDefault: e.target.value })}
-                className={`${inlineInputCls} w-20`}
-              />
             </div>
           </div>
         </>
@@ -1492,26 +1422,12 @@ export const LiveComponentEditor: React.FC<{
               <div key={r} className="flex flex-wrap items-start gap-4">
                 {row.map((piece) => (
                   <div key={piece.id} style={pieceFlex(piece)}>
-                    {piece.kind === "columns" ? (
-                      <LiveTable
-                        section={section}
-                        onUpdate={onUpdate}
-                        visibleColumnIds={pieceColumnIds(section, piece)}
-                        primary={piece.id === firstColumnsPiece}
-                      />
-                    ) : (
-                      <LiveDeviation
-                        section={section}
-                        onUpdate={onUpdate}
-                        part={
-                          piece.kind === "deviation-phase"
-                            ? "phase"
-                            : piece.kind === "deviation-lines"
-                              ? "lines"
-                              : "combined"
-                        }
-                      />
-                    )}
+                    <LiveTable
+                      section={section}
+                      onUpdate={onUpdate}
+                      visibleColumnIds={pieceColumnIds(section, piece)}
+                      primary={piece.id === firstColumnsPiece}
+                    />
                   </div>
                 ))}
               </div>
@@ -1521,7 +1437,7 @@ export const LiveComponentEditor: React.FC<{
           <LiveTable section={section} onUpdate={onUpdate} />
         ))}
       {section.componentType === ComponentType.CONTACT_RESISTANCE && (
-        <LiveDeviation section={section} onUpdate={onUpdate} settingsOnly={!!layout} />
+        <LiveDeviation section={section} onUpdate={onUpdate} />
       )}
       {section.checklistItems && <LiveChecklist section={section} onUpdate={onUpdate} />}
     </div>

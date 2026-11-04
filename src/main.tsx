@@ -14,6 +14,16 @@ import { initSiteTheme } from './services/siteThemeService';
 applyBrandColors();
 initSiteTheme();
 
+// Localhost only: "log in as" someone (scripts/login-as.mjs). Left out of production builds.
+// The sign-in tokens are taken off the URL before the app reads it.
+if (import.meta.env.DEV) {
+  const marker = '#devLoginAs=';
+  const hash = window.location.hash;
+  const payload = hash.startsWith(marker) ? hash.slice(marker.length) : null;
+  if (payload) window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  void import('./lib/devLoginAs').then((m) => m.initDevLoginAs(payload));
+}
+
 // Render app immediately - don't block on async operations
 const rootElement = document.getElementById('root');
 if (!rootElement) {

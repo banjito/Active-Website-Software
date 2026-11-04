@@ -530,7 +530,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
 
   return (
     <div
-      className={`w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 no-horizontal-scroll ${isMobile ? "mobile-container mobile-force-small" : ""}`}
+      className={`w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 no-horizontal-scroll`}
     >
       {error && (
         <div className="mb-4 p-3 sm:p-4 bg-red-100 text-red-800 rounded-none text-sm">

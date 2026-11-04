@@ -225,12 +225,12 @@ export const FloatingIssueReporter: React.FC = () => {
   };
 
   return (
-    <div className="fixed left-4 bottom-4 z-50 print:hidden">
+    <div className="fixed left-4 bottom-4 z-50 print:hidden max-sm:left-2 max-sm:bottom-2">
       {!open && (
         <button
           onClick={() => setOpen(true)}
           aria-label="Issue / Feature Report"
-          className="group relative inline-flex h-14 w-14 items-center justify-center bg-brand hover:w-[240px] hover:bg-brand-dark focus-visible:w-[240px] text-white shadow-lg rounded-none font-semibold text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 transition-[width,background-color] duration-300 ease-out overflow-hidden whitespace-nowrap"
+          className="group relative inline-flex h-14 w-14 max-sm:h-11 max-sm:w-11 items-center justify-center bg-brand hover:w-[240px] hover:bg-brand-dark focus-visible:w-[240px] text-white shadow-lg rounded-none font-semibold text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 transition-[width,background-color] duration-300 ease-out overflow-hidden whitespace-nowrap"
         >
           <span className="absolute inset-0 flex items-center justify-center transition-opacity duration-150 group-hover:opacity-0 group-focus-visible:opacity-0">
             <OctagonAlert className="h-6 w-6" aria-hidden />
@@ -413,7 +413,7 @@ export const FloatingIssueReporter: React.FC = () => {
                     )}
                     <button
                       onClick={() => removeFile(idx)}
-                      className="absolute top-0 right-0 bg-black/70 text-white rounded-none w-5 h-5 text-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                      className="absolute top-0 right-0 bg-black/70 text-white rounded-none w-5 h-5 text-xs opacity-0 touch:opacity-100 group-hover:opacity-100 focus-visible:opacity-100"
                       aria-label={`Remove ${f.file.name}`}
                     >
                       ✕

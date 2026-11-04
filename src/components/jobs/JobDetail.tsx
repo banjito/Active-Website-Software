@@ -9570,7 +9570,7 @@ export default function JobDetail() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-8 max-sm:px-0 max-sm:py-2">
       {renderGeneratedDocDialog()}
 
       {/* Document Viewer Dialog */}
@@ -9865,13 +9865,13 @@ export default function JobDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between max-sm:mb-3 max-sm:flex-wrap max-sm:gap-2">
         {!isEmbed && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 max-sm:flex-wrap max-sm:gap-2">
             <button
               type="button"
               onClick={() => navigate(getJobsListPath())}
-              className="text-neutral-600 hover:text-neutral-900 dark:text-dark-400 dark:hover:text-dark-900 flex items-center"
+              className="text-neutral-600 hover:text-neutral-900 dark:text-dark-400 dark:hover:text-dark-900 flex items-center whitespace-nowrap"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Jobs
@@ -10508,7 +10508,7 @@ export default function JobDetail() {
           </div>
         ) : (
           <div>
-            <div className="px-6 py-4">
+            <div className="px-6 py-4 max-sm:px-3">
               <div className="flex items-center justify-between">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-3">
@@ -10598,7 +10598,7 @@ export default function JobDetail() {
                           ).key,
                         )
                       }
-                      className={`-mb-px inline-flex h-12 items-center gap-2 border-b-[3px] px-4 text-[15px] ${
+                      className={`-mb-px inline-flex h-12 items-center gap-2 border-b-[3px] px-4 text-[15px] max-sm:px-3 ${
                         on
                           ? "border-brand font-bold text-neutral-900 dark:text-white"
                           : "border-transparent font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
@@ -10616,7 +10616,7 @@ export default function JobDetail() {
                 })}
               </div>
               {activeTabSection.tabs.length > 1 && (
-                <div className="flex flex-wrap gap-1 border-b border-neutral-200 bg-neutral-50 px-5 py-1.5 dark:border-neutral-700 dark:bg-dark-200">
+                <div className="flex flex-wrap gap-1 border-b border-neutral-200 bg-neutral-50 px-5 py-1.5 max-sm:px-2 dark:border-neutral-700 dark:bg-dark-200">
                   {activeTabSection.tabs.map((tab) => {
                     const on = tab.key === activeTab;
                     return (
@@ -10639,7 +10639,7 @@ export default function JobDetail() {
                 </div>
               )}
 
-              <div className="p-6">
+              <div className="p-6 max-sm:px-3 max-sm:py-4">
                 {activeTab === "overview" && (
                   <div className="space-y-6">
                     {/* QuickBooks project & hours - hidden per request */}
@@ -11346,12 +11346,12 @@ export default function JobDetail() {
                 {activeTab === "assets" && (
                   <div className="space-y-6">
                     {/* Linked assets section */}
-                    <CardHeader>
+                    <CardHeader className="max-sm:px-0 max-sm:pt-0">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <CardTitle>Reports</CardTitle>
                         </div>
-                        <div className="flex min-w-0 flex-1 basis-96 items-center justify-end gap-1">
+                        <div className="flex min-w-0 flex-1 basis-96 items-center justify-end gap-1 max-sm:basis-full max-sm:flex-wrap max-sm:gap-2">
                           {/* Hidden until this instance has run the folders migration. */}
                           {substationFolders.available && (
                             <div className="shrink-0 order-last">
@@ -11375,7 +11375,7 @@ export default function JobDetail() {
                         </Button>
 
                         {isDropdownOpen && (
-                          <div className="absolute right-0 top-10 w-[32rem] rounded-none shadow-lg bg-white dark:bg-dark-150 ring-1 ring-black ring-opacity-5 z-10">
+                          <div className="absolute right-0 top-10 w-[32rem] max-w-[calc(100vw-2rem)] rounded-none shadow-lg bg-white dark:bg-dark-150 ring-1 ring-black ring-opacity-5 z-10">
                             <div
                               className="py-1"
                               role="menu"
@@ -12184,7 +12184,7 @@ export default function JobDetail() {
                           )}
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="max-sm:px-0">
                       {jobAssetsLoading ? (
                         <div className="flex items-center justify-center gap-3 py-10">
                           <LoadingSpinner size="md" label="Loading reports" />
@@ -12335,7 +12335,7 @@ export default function JobDetail() {
                                   {/* Controls stay out of the way until you go looking for
                                       them. Twenty substations means twenty rows of icons
                                       otherwise, and none of them are the point. */}
-                                  <span className="ml-auto flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover/sub:opacity-100">
+                                  <span className="ml-auto flex shrink-0 items-center gap-0.5 opacity-0 touch:opacity-100 transition-opacity focus-within:opacity-100 group-hover/sub:opacity-100">
                                     {substationFolders.folders.length > 0 &&
                                       isRealSubstation && (
                                         <SubstationDragHandle label={folderKey} />
@@ -12401,7 +12401,7 @@ export default function JobDetail() {
                                   </span>
                                 </summary>
                                 <div className="border-t border-neutral-200 dark:border-neutral-800">
-                                  <Table>
+                                  <Table className="max-sm:min-w-[40rem]">
                                     {/* Column labels repeat once per substation, so they
                                         have to whisper. At body-text weight they were the
                                         loudest thing on a page of twenty. */}

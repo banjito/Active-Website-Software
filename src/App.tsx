@@ -186,6 +186,9 @@ const PMDashboard = lazy(() => import("./app/pm-dashboard/PMDashboard"));
 const StandardsPage = lazy(() => import("./app/standards/StandardsPage"));
 const PMJobDetail = lazy(() => import("./app/pm-dashboard/PMJobDetail"));
 
+// Articles for ampqes.com/articles: anyone writes, publishers publish.
+const ArticlesPage = lazy(() => import("./pages/articles/Articles"));
+
 // Personal Wrapped mockup: standalone, not linked from any menu. Sample data only.
 
 // MUI X Date Pickers setup
@@ -2251,6 +2254,27 @@ function App() {
                       </RequireAuth>
                     }
                   />
+                  {["/articles", "/articles/:id"].map((path) => (
+                    <Route
+                      key={path}
+                      path={path}
+                      element={
+                        <RequireAuth>
+                          <Layout>
+                            <Suspense
+                              fallback={
+                                <div className="flex min-h-[300px] items-center justify-center">
+                                  <LoadingSpinner size="md" />
+                                </div>
+                              }
+                            >
+                              <ArticlesPage />
+                            </Suspense>
+                          </Layout>
+                        </RequireAuth>
+                      }
+                    />
+                  ))}
                   <Route
                     path="/neta/reports"
                     element={<Navigate to="/notifications" replace />}

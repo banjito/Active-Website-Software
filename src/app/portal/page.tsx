@@ -1421,7 +1421,7 @@ export default function PortalLanding({
                 />
               </button>
             )}
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <Button
                 variant="outline"
                 className="h-11 px-5 text-base rounded-none border-none text-neutral-600 hover:text-neutral-900 dark:text-white dark:hover:text-white dark:hover:bg-dark-700/20"

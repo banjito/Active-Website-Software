@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../../lib/AuthContext";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "./Button";
 import { HeaderBar } from "./HeaderBar";
+import { Menu, X } from "lucide-react";
 
 interface SalesLayoutProps {
   children: React.ReactNode;
@@ -13,6 +14,12 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const isEmbed = searchParams.get("embed") === "true";
+  // Below laptop width the side menu slides in from the left instead of
+  // always taking up space.
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
 
   if (!user) return <div className="min-h-screen">{children}</div>;
 
@@ -30,8 +37,29 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
         <HeaderBar />
       </div>
 
+      {isMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setIsMenuOpen(false)}
+        />
+      )}
+
       <div className="flex min-h-0 flex-1">
-        <div className="w-64 min-w-64 flex-shrink-0 flex flex-col border-r border-black/10 bg-white dark:bg-dark-150 dark:border-dark-200">
+        <div
+          className={`w-64 min-w-64 flex-shrink-0 flex flex-col border-r border-black/10 bg-white dark:bg-dark-150 dark:border-dark-200 max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50 max-lg:overflow-y-auto max-lg:transition-transform max-lg:duration-300 ${
+            isMenuOpen ? "" : "max-lg:-translate-x-full"
+          }`}
+        >
+          <div className="flex h-12 shrink-0 items-center justify-end border-b border-black/10 dark:border-dark-200 px-2 lg:hidden">
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen(false)}
+              className="p-2 rounded-none hover:bg-neutral-100 dark:hover:bg-dark-100"
+              aria-label="Close menu"
+            >
+              <X className="h-5 w-5 text-neutral-600 dark:text-white" />
+            </button>
+          </div>
           <div className="flex flex-col gap-1 p-4 flex-grow overflow-y-auto">
             <div className="flex flex-col gap-1">
               <Link to="/sales-dashboard">
@@ -157,7 +185,19 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
           </div>
         </div>
 
-        <main className="flex-1 min-w-0 overflow-y-auto p-6">{children}</main>
+        <div className="flex flex-col flex-1 min-w-0">
+          <div className="flex items-center px-3 py-2 border-b border-neutral-200 dark:border-dark-200 print:hidden lg:hidden">
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen(true)}
+              className="p-2 rounded-none hover:bg-neutral-100 dark:hover:bg-dark-100"
+              aria-label="Open menu"
+            >
+              <Menu className="h-5 w-5 text-neutral-600 dark:text-white" />
+            </button>
+          </div>
+          <main className="flex-1 min-w-0 overflow-y-auto p-6 max-lg:p-4 max-sm:p-3">{children}</main>
+        </div>
       </div>
     </div>
   );

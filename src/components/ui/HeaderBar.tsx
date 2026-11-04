@@ -24,6 +24,7 @@ import {
   Search,
   Link2,
   HeartHandshake,
+  Newspaper,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { useTheme } from "@/components/theme/theme-provider";
@@ -126,7 +127,7 @@ type CalibrationEquipmentItem = {
 };
 
 const headerIconButtonClass =
-  "rounded-none w-10 h-10 p-0 flex items-center justify-center text-neutral-600 dark:text-white hover:text-brand dark:hover:text-brand bg-transparent hover:bg-transparent focus:outline-none focus:text-brand focus:bg-brand/10 focus:ring-2 focus:ring-brand/30";
+  "rounded-none w-10 h-10 max-sm:w-9 p-0 flex items-center justify-center text-neutral-600 dark:text-white hover:text-brand dark:hover:text-brand bg-transparent hover:bg-transparent focus:outline-none focus:text-brand focus:bg-brand/10 focus:ring-2 focus:ring-brand/30";
 
 const headerIconButtonActiveClass =
   "text-brand bg-brand/10 ring-2 ring-brand/30";
@@ -1034,14 +1035,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         </div>
       )}
       <div
-        className={`bg-white dark:bg-dark-150 p-4 border-none ${className ?? ""}`}
+        className={`bg-white dark:bg-dark-150 p-4 max-sm:p-2 border-none ${className ?? ""}`}
       >
         <div className="flex items-center w-full min-w-0">
           <Link to="/portal" className="shrink-0" aria-label="Back to home">
             <img
               src={iconUrl}
               alt="AMP Logo"
-              className="h-12 cursor-pointer hover:opacity-80 transition-opacity"
+              className="h-12 max-sm:h-7 cursor-pointer hover:opacity-80 transition-opacity"
             />
           </Link>
 
@@ -1124,12 +1125,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           </div>
 
           <div
-            className="flex shrink-0 ml-4 items-center justify-center gap-3 sm:gap-4"
+            className="flex shrink-0 ml-4 items-center justify-center gap-3 sm:gap-4 max-sm:ml-auto max-sm:gap-0"
             role="toolbar"
             aria-label="Portal shortcuts and account"
           >
             {canSeeAdminPortal && (
-              <div className="relative flex h-10 w-10 items-center justify-center">
+              <div className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center">
                 <button
                   type="button"
                   aria-label="Admin Portal"
@@ -1149,7 +1150,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               </div>
             )}
             <div
-              className="relative flex h-10 w-10 items-center justify-center"
+              className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center"
               ref={shortcutMenuRef}
             >
               <button
@@ -1177,7 +1178,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               </button>
 
               {isShortcutMenuOpen && (
-                <div className="absolute top-full right-0 mt-2 z-50">
+                <div className="absolute top-full right-0 mt-2 z-50 max-sm:fixed max-sm:right-2 max-sm:top-14">
                   <ShortcutsDropdown
                     onNavigate={(url) => {
                       setIsShortcutMenuOpen(false);
@@ -1189,7 +1190,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             </div>
             {canApproveReports && (
               <div
-                className="relative flex h-10 w-10 items-center justify-center"
+                className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center"
                 ref={reviewMenuRef}
               >
                 <button
@@ -1232,7 +1233,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 </button>
 
                 {isReviewMenuOpen && (
-                  <div className="absolute top-full right-0 mt-2 z-50">
+                  <div className="absolute top-full right-0 mt-2 z-50 max-sm:fixed max-sm:right-2 max-sm:top-14">
                     <ReviewShortcutsDropdown
                       openFlagCount={openReportFlagCount}
                       onNavigate={(url) => {
@@ -1245,14 +1246,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               </div>
             )}
             {canLogInteractions(user?.user_metadata?.role, user?.email) && (
-              <div className="relative flex h-10 w-10 items-center justify-center">
+              <div className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center">
                 <QuickLogInteraction
                   triggerProps={tooltipHandlers("Log Interaction")}
                 />
               </div>
             )}
             <div
-              className="relative flex h-10 w-10 items-center justify-center"
+              className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center"
               ref={contactsRef}
             >
               <button
@@ -1287,7 +1288,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 <Phone className="h-5 w-5" />
               </button>
               {isContactsOpen && (
-                <div className="absolute top-full right-0 mt-2 w-[520px] max-w-[calc(100vw-2rem)] origin-top-right rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 max-h-[28rem] flex flex-col">
+                <div className="absolute top-full right-0 mt-2 w-[520px] max-w-[calc(100vw-2rem)] max-sm:fixed max-sm:right-2 max-sm:top-14 origin-top-right rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 max-h-[28rem] flex flex-col">
                   <div className="p-3 border-b border-neutral-200 dark:border-dark-200 flex items-center gap-3 shrink-0">
                     <div className="font-medium text-neutral-900 dark:text-white whitespace-nowrap">
                       AMP contacts
@@ -1408,9 +1409,21 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             >
               <HeartHandshake className="h-5 w-5" />
             </Link>
+            <Link
+              to="/articles"
+              aria-label="Articles"
+              {...tooltipHandlers("Articles")}
+              className={cn(
+                headerIconButtonClass,
+                location.pathname.startsWith("/articles") &&
+                  headerIconButtonActiveClass,
+              )}
+            >
+              <Newspaper className="h-5 w-5" />
+            </Link>
             {showNotificationBell && (
               <div
-                className="relative flex h-10 w-10 items-center justify-center"
+                className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center"
                 ref={notificationsRef}
               >
                 <button
@@ -1442,7 +1455,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 </button>
 
                 {isNotificationsOpen && (
-                  <div className="absolute top-full right-0 mt-2 w-[min(24rem,calc(100vw-1.5rem))] origin-top-right rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                  <div className="absolute top-full right-0 mt-2 w-[min(24rem,calc(100vw-1.5rem))] max-sm:fixed max-sm:right-2 max-sm:top-14 origin-top-right rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                     <div className="p-3 border-b border-neutral-200 dark:border-dark-200 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="font-medium text-neutral-900 dark:text-white">
@@ -1753,11 +1766,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               </div>
             )}
             <div
-              className="relative flex h-10 w-10 items-center justify-center"
+              className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center"
               ref={profileMenuRef}
             >
               <button
-                className="rounded-none w-10 h-10 bg-neutral-100 dark:bg-dark-150 hover:bg-neutral-200 dark:hover:bg-neutral-600 p-0 overflow-hidden flex items-center justify-center"
+                className="rounded-none w-10 h-10 max-sm:w-9 max-sm:h-9 bg-neutral-100 dark:bg-dark-150 hover:bg-neutral-200 dark:hover:bg-neutral-600 p-0 overflow-hidden flex items-center justify-center"
                 {...tooltipHandlers("Profile")}
                 onClick={() => {
                   const next = !isProfileMenuOpen;
@@ -1772,17 +1785,17 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   <img
                     src={user.user_metadata.profileImage}
                     alt="Profile"
-                    className="h-10 w-10 rounded-none object-cover"
+                    className="h-10 w-10 max-sm:h-9 max-sm:w-9 rounded-none object-cover"
                   />
                 ) : (
                   <UserIcon className="h-5 w-5 text-neutral-600 dark:text-white" />
                 )}
               </button>
               {isProfileMenuOpen && (
-                <div className="absolute top-full right-0 mt-2 z-50">
+                <div className="absolute top-full right-0 mt-2 z-50 max-sm:fixed max-sm:right-2 max-sm:top-14">
                   <div className="relative w-64">
                     {isSettingsSubmenuOpen && (
-                      <div className="absolute right-full top-0 mr-2">
+                      <div className="absolute right-full top-0 mr-2 max-sm:right-0 max-sm:mr-0 max-sm:z-10">
                         <SettingsSubmenu
                           onClose={() => setIsSettingsSubmenuOpen(false)}
                           onAbout={handleAbout}
@@ -1796,7 +1809,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                       </div>
                     )}
                     {isEmployeeLinksSubmenuOpen && (
-                      <div className="absolute right-full top-0 mr-2">
+                      <div className="absolute right-full top-0 mr-2 max-sm:right-0 max-sm:mr-0 max-sm:z-10">
                         <EmployeeLinksSubmenu
                           onClose={() => {
                             setIsEmployeeLinksSubmenuOpen(false);

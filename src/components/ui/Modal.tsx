@@ -39,7 +39,9 @@ export function Modal({
   return createPortal(
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm",
+        // On touch screens, "safe" centering keeps the top of a tall modal
+        // reachable by scrolling instead of pushing it off screen.
+        "fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm touch:[align-items:safe_center]",
         size === "full" ? "overflow-hidden" : "overflow-y-auto",
       )}
       onClick={handleBackdropClick}
@@ -69,7 +71,7 @@ export function Modal({
           )}
           <button
             type="button"
-            className="text-neutral-400 hover:text-neutral-500 focus:outline-none"
+            className="text-neutral-400 hover:text-neutral-500 focus:outline-none touch:-m-2 touch:p-2"
             onClick={onClose}
           >
             <X className="h-5 w-5" />

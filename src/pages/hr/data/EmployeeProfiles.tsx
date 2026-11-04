@@ -882,7 +882,7 @@ export const EmployeeProfiles: React.FC = () => {
                             <Button
                               variant="outline"
                               size="icon"
-                              className="h-7 w-7 border-none p-0 opacity-0 group-hover:opacity-100 transition-opacity [&>span]:flex [&>span]:items-center [&>span]:justify-center !text-neutral-500 hover:!bg-neutral-500/10 hover:!text-neutral-700 dark:hover:!text-neutral-200"
+                              className="h-7 w-7 border-none p-0 opacity-0 touch:opacity-100 group-hover:opacity-100 transition-opacity [&>span]:flex [&>span]:items-center [&>span]:justify-center !text-neutral-500 hover:!bg-neutral-500/10 hover:!text-neutral-700 dark:hover:!text-neutral-200"
                               onClick={(e) => openIdEditor(profile, e)}
                               title={
                                 profile.employee_number
@@ -897,7 +897,7 @@ export const EmployeeProfiles: React.FC = () => {
                             <Button
                               variant="outline"
                               size="icon"
-                              className={`h-7 w-7 border-none p-0 opacity-0 group-hover:opacity-100 transition-opacity [&>span]:flex [&>span]:items-center [&>span]:justify-center ${
+                              className={`h-7 w-7 border-none p-0 opacity-0 touch:opacity-100 group-hover:opacity-100 transition-opacity [&>span]:flex [&>span]:items-center [&>span]:justify-center ${
                                 (
                                   profile.employment_status || "active"
                                 ).toLowerCase() === "active"

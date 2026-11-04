@@ -1358,7 +1358,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
 
       {useHeaderBarLayout && (
-        <div className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-neutral-200 dark:border-dark-200">
+        <div
+          data-app-header=""
+          className="sticky top-0 z-30 w-full shrink-0 print:hidden border-b border-neutral-200 dark:border-dark-200"
+        >
           <HeaderBar />
         </div>
       )}

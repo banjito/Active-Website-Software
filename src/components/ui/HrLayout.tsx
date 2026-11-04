@@ -38,6 +38,7 @@ import {
   UserCheck,
   BookOpen,
   PiggyBank,
+  Menu,
   Search,
   UserSearch,
   X,
@@ -199,6 +200,12 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
   const isHrFullAccess = userRole === "Admin" || userRole === "Super Admin";
   const location = useLocation();
   const navigate = useNavigate();
+  // Below laptop width the side menu slides in from the left instead of
+  // always taking up space.
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
 
   // Force a fresh role check from the server when entering the HR portal so role changes take effect immediately
   const hasRefreshed = useRef(false);
@@ -773,8 +780,29 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
         <HeaderBar />
       </div>
 
+      {isMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setIsMenuOpen(false)}
+        />
+      )}
+
       <div className="flex min-h-0 flex-1">
-        <div className="flex w-72 min-w-[18rem] flex-shrink-0 flex-col border-r border-black/10 bg-white dark:border-dark-200 dark:bg-dark-150">
+        <div
+          className={`flex w-72 min-w-[18rem] flex-shrink-0 flex-col border-r border-black/10 bg-white dark:border-dark-200 dark:bg-dark-150 max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50 max-lg:overflow-y-auto max-lg:transition-transform max-lg:duration-300 ${
+            isMenuOpen ? "" : "max-lg:-translate-x-full"
+          }`}
+        >
+          <div className="flex h-12 shrink-0 items-center justify-end border-b border-black/10 dark:border-dark-200 px-2 lg:hidden">
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen(false)}
+              className="p-2 rounded-none hover:bg-neutral-100 dark:hover:bg-dark-100"
+              aria-label="Close menu"
+            >
+              <X className="h-5 w-5 text-neutral-600 dark:text-white" />
+            </button>
+          </div>
           {/* Sticky search — stays put while the section list scrolls under it */}
           <div className="sticky top-0 z-10 border-b border-neutral-200 bg-white px-4 pb-3 pt-4 dark:border-dark-200 dark:bg-dark-150">
             <div className="relative">
@@ -1021,7 +1049,19 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
           </div>
         </div>
 
-        <main className="flex-1 min-w-0 overflow-y-auto p-6">{children}</main>
+        <div className="flex flex-col flex-1 min-w-0">
+          <div className="flex items-center px-3 py-2 border-b border-neutral-200 dark:border-dark-200 print:hidden lg:hidden">
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen(true)}
+              className="p-2 rounded-none hover:bg-neutral-100 dark:hover:bg-dark-100"
+              aria-label="Open menu"
+            >
+              <Menu className="h-5 w-5 text-neutral-600 dark:text-white" />
+            </button>
+          </div>
+          <main className="flex-1 min-w-0 overflow-y-auto p-6 max-lg:p-4 max-sm:p-3">{children}</main>
+        </div>
       </div>
     </div>
   );

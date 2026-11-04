@@ -78,7 +78,7 @@ import {
 } from "../src/lib/customForms/layoutGroups";
 import { canonicalJson } from "../src/lib/customForms/checksum";
 import { CUSTOM_FORM_RESULTS } from "../src/lib/types/customForms";
-import { fitColumnWidths, rowStateKey } from "../src/lib/customForms/runtime/layout";
+import { fitChecklistWidths, fitColumnWidths, rowStateKey } from "../src/lib/customForms/runtime/layout";
 import {
   contactResistanceRowData,
   seedCellDefaults,
@@ -2188,6 +2188,10 @@ section("Column width fitting");
   const px = fitColumnWidths(["480px", "50%"]);
   check("pixel widths become proportions", Math.abs(parseFloat(px[0]!) - parseFloat(px[1]!)) < 0.01, px.join());
   check("auto counts as unset", fitColumnWidths(["auto", "50%"])[0] !== undefined);
+  check("a checklist with no widths is left to the browser", fitChecklistWidths(undefined).every((w) => w === undefined));
+  const narrow = fitChecklistWidths({ section: "10%", description: "80%", result: "10%" });
+  check("narrow checklist columns are honoured", narrow.join() === "10%,80%,10%", narrow.join());
+  check("checklist widths are percentages only", fitChecklistWidths({ section: "100px" }).every((w) => w === undefined));
 }
 
 section("Layout groups: side by side, grid, page breaks");

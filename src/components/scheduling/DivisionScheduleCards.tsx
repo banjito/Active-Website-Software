@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { schedulingService } from "@/lib/services/schedulingService";
 import { useDivisions } from "@/hooks/useDivisions";
 import { fieldTechCities } from "@/services/divisionsService";
-import { mondayOf } from "@/lib/scheduleTime";
+import { weekStartOf } from "@/lib/scheduleTime";
 
 type CityStats = { people: number; jobs: number };
 
@@ -25,7 +25,7 @@ export const DivisionScheduleCards: React.FC<Props> = ({ refreshKey }) => {
   const cityKey = cityIds.join(",");
   const [stats, setStats] = useState<Record<string, CityStats> | null>(null);
 
-  const weekStart = mondayOf(dayjs());
+  const weekStart = weekStartOf(dayjs());
   const weekEnd = dayjs(weekStart).add(6, "day").format("YYYY-MM-DD");
 
   useEffect(() => {

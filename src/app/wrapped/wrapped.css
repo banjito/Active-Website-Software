@@ -3,8 +3,8 @@
 /* Personal Wrapped, a popup over the portal: serif type and ASCII art. The frame is
    4:3 landscape at every size, and everything inside it is sized in cqw (1cqw is 1%
    of the frame's width), so a slide scales as one piece and always fits. Colors stay
-   the same in light and dark mode; the accent follows the brand. Instrument Serif
-   comes from index.html and has one weight. */
+   the same in light and dark mode; the accent follows the brand. Souvenir
+   comes from public/fonts/serif (@font-face in src/index.css). */
 .wr-popup {
   --wr-ink: #171717;
   --wr-paper: #f5f5f5;
@@ -22,7 +22,7 @@
   gap: 24px;
   overflow: hidden;
   background: rgb(0 0 0 / 0.75);
-  font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
+  font-family: "Souvenir", Georgia, "Times New Roman", serif;
   font-weight: 400;
   font-synthesis: none;
   user-select: none;
@@ -203,19 +203,19 @@
 .wr-tone-paper .wr-logo-sm,
 .wr-tone-paper .wr-logo-md { filter: brightness(0); }
 
-.wr-text { font-size: 3.4cqw; line-height: 1.2; }
-.wr-sm { font-size: 7cqw; line-height: 1; }
-.wr-md { font-size: 7cqw; line-height: 1.02; letter-spacing: -0.02em; }
-.wr-title { font-size: 8cqw; line-height: 1; letter-spacing: -0.02em; }
-.wr-lg { font-size: 7cqw; line-height: 1; letter-spacing: -0.02em; }
-.wr-thanks { font-size: 11cqw; line-height: 1; letter-spacing: -0.02em; }
-.wr-wrapped { font-size: 14cqw; line-height: 1; letter-spacing: -0.02em; font-style: italic; color: var(--brand); }
-.wr-xl { font-size: 22cqw; line-height: 0.85; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.wr-text { font-size: 3.1cqw; line-height: 1.2; }
+.wr-sm { font-size: 6.2cqw; line-height: 1; }
+.wr-md { font-size: 6.2cqw; line-height: 1.02; letter-spacing: -0.02em; }
+.wr-title { font-size: 7cqw; line-height: 1; letter-spacing: -0.02em; }
+.wr-lg { font-size: 6.2cqw; line-height: 1; letter-spacing: -0.02em; }
+.wr-thanks { font-size: 9.6cqw; line-height: 1; letter-spacing: -0.02em; }
+.wr-wrapped { font-size: 12cqw; line-height: 1; letter-spacing: -0.02em; font-style: italic; color: var(--brand); }
+.wr-xl { font-size: 19cqw; line-height: 0.85; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 
 /* Slide 3 */
 .wr-yoy { display: grid; grid-template-columns: 1fr 1fr; gap: 2cqw; align-items: end; }
 .wr-yoy > div { display: flex; flex-direction: column; gap: 0.8cqw; }
-.wr-yoy span { font-size: 6cqw; line-height: 1; font-variant-numeric: tabular-nums; }
+.wr-yoy span { font-size: 5.2cqw; line-height: 1; font-variant-numeric: tabular-nums; }
 .wr-yoy em {
   font-family: var(--wr-mono);
   font-size: max(1.7cqw, 9px);
@@ -231,15 +231,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 9cqw;
+  font-size: 8cqw;
   font-weight: 400;
   color: var(--brand);
 }
 
-.wr-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2cqw 2cqw; font-size: 2.6cqw; line-height: 1.1; }
+.wr-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2cqw 2cqw; font-size: 2.3cqw; line-height: 1.1; }
 .wr-legend > div { display: grid; grid-template-columns: 2.2cqw 1fr; column-gap: 1cqw; align-items: baseline; }
 .wr-legend i { font-family: var(--wr-mono); font-size: 2.6cqw; font-style: normal; }
-.wr-legend b { display: block; font-size: 4.4cqw; font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; }
+.wr-legend b { display: block; font-size: 3.9cqw; font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; }
 
 /* Slide 5 */
 .wr-boxes {
@@ -267,8 +267,8 @@
 .wr-months .wr-ascii { color: var(--wr-dim); }
 .wr-months .hi .wr-ascii { color: var(--brand); }
 .wr-months .hi b {
-  font-family: "Instrument Serif", Georgia, serif;
-  font-size: 4.4cqw;
+  font-family: "Souvenir", Georgia, serif;
+  font-size: 3.9cqw;
   font-weight: 400;
   line-height: 1;
   color: var(--brand);
@@ -278,8 +278,8 @@
 .wr-planet { position: absolute; top: 0; left: 0; }
 .wr-stats { display: grid; grid-template-columns: auto auto; justify-content: start; gap: 4cqw; }
 .wr-stats > div { display: flex; flex-direction: column; }
-.wr-stats b { font-size: 15cqw; font-weight: 400; line-height: 0.9; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-.wr-stats em { font-size: 4.4cqw; line-height: 1; }
+.wr-stats b { font-size: 13cqw; font-weight: 400; line-height: 0.9; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.wr-stats em { font-size: 3.9cqw; line-height: 1; }
 
 /* Estimates. The vortex fills the slide and fades behind the words. */
 .wr-vortex {
@@ -325,8 +325,8 @@
 .wr-log { display: flex; flex-direction: column; gap: 1cqw; }
 .wr-log > div { display: grid; grid-template-columns: 5cqw 9cqw 1fr; align-items: baseline; }
 .wr-log i { font-family: var(--wr-mono); font-size: 2cqw; font-style: normal; color: var(--brand); }
-.wr-log b { font-size: 8cqw; font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; }
-.wr-log span { font-size: 3.6cqw; font-style: italic; line-height: 1.1; }
+.wr-log b { font-size: 7cqw; font-weight: 400; line-height: 1; font-variant-numeric: tabular-nums; }
+.wr-log span { font-size: 3.2cqw; font-style: italic; line-height: 1.1; }
 
 /* The invite that opens the slides. Same frame, so nothing jumps when they open. */
 .wr-popup-card { animation: wr-popup-in 400ms ease-out both; }

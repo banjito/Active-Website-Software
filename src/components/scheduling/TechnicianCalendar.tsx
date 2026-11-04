@@ -1308,6 +1308,8 @@ export function TechnicianCalendar({
                   selectMirror={true}
                   dayMaxEvents={true}
                   weekends={true}
+                  // Weeks start on Sunday (matches pay periods).
+                  firstDay={0}
                   datesSet={handleDatesSet}
                   slotMinTime="06:00:00"
                   slotMaxTime="22:00:00"

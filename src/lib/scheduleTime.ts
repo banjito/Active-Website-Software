@@ -24,6 +24,9 @@ export const formatTimeRange = (start?: string, end?: string): string => {
   return `${start?.slice(0, 5) ?? ""} - ${end?.slice(0, 5) ?? ""}`;
 };
 
-/** Monday of the week containing the given date (YYYY-MM-DD). */
-export const mondayOf = (d: Dayjs): string =>
-  d.subtract((d.day() + 6) % 7, "day").format("YYYY-MM-DD");
+/**
+ * Sunday of the week containing the given date (YYYY-MM-DD).
+ * Schedule weeks run Sunday to Saturday to match pay periods.
+ */
+export const weekStartOf = (d: Dayjs): string =>
+  d.subtract(d.day(), "day").format("YYYY-MM-DD");

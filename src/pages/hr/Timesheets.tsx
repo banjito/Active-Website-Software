@@ -15,24 +15,10 @@ import {
   sendTimeWeekToQuickBooks,
   TimeReviewRow,
   TimeWeekDetail,
+  PAYROLL_ROLES,
+  TIME_STATUS_LABEL as STATUS_LABEL,
+  TIME_STATUS_STYLE as STATUS_STYLE,
 } from "@/services/timeReviewService";
-
-// Same list the database uses for "sees everyone's time"
-const PAYROLL_ROLES = ["Admin", "Super Admin", "HR", "HR Rep", "HR Representative"];
-
-const STATUS_LABEL: Record<string, string> = {
-  open: "Not submitted",
-  submitted: "Submitted",
-  approved: "Approved",
-  denied: "Sent back",
-};
-
-const STATUS_STYLE: Record<string, string> = {
-  open: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300",
-  submitted: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300",
-  approved: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
-  denied: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300",
-};
 
 // Day strings are YYYY-MM-DD. Built from parts so the browser's time zone can't shift the day.
 const toYmd = (d: Date) =>

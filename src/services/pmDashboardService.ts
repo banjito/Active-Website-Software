@@ -193,6 +193,41 @@ export async function fetchJobAttention(jobs: PmJob[]): Promise<Record<string, J
   }
 }
 
+/** One person's hours on one job on one day, for the Crew tab. */
+export interface CrewRow {
+  job_id: string;
+  profile_id: string;
+  full_name: string | null;
+  /** YYYY-MM-DD */
+  work_date: string;
+  /** Finished punches only */
+  hours: number;
+  /** Set when they are on the clock on this job right now */
+  clocked_in_at: string | null;
+}
+
+/**
+ * Who worked these jobs in the week starting on weekStart (a Sunday), plus anyone on
+ * the clock on them now. The database only answers for jobs the caller may see.
+ */
+export async function fetchCrew(
+  jobIds: string[],
+  weekStart: string,
+): Promise<{ rows: CrewRow[]; missing: boolean }> {
+  const rows: CrewRow[] = [];
+  for (const ids of chunk(jobIds, ID_CHUNK)) {
+    const { data, error } = await supabase
+      .schema('common')
+      .rpc('time_job_crew', { p_job_ids: ids, p_week_start: weekStart });
+    if (error) {
+      if (isMissing(error)) return { rows: [], missing: true };
+      throw new Error(describeSupabaseError(error));
+    }
+    for (const r of (data ?? []) as any[]) rows.push({ ...r, hours: toNum(r.hours) });
+  }
+  return { rows, missing: false };
+}
+
 export async function fetchPmJob(jobId: string): Promise<PmJob | null> {
   const { data, error } = await supabase
     .schema('neta_ops')

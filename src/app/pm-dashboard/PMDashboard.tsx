@@ -32,6 +32,7 @@ import {
 } from '@/utils/pmDashboardCalculations';
 import { firstNameOf, fmtHours, fmtMoney, MiniBar, MonthPicker, Notice, StatTile, usePmAccess } from './shared';
 import ChecklistBoard from './ChecklistBoard';
+import CrewBoard from './CrewBoard';
 
 // QuickBooks is asked about a few jobs at a time so a long list does not stall.
 const BILLED_WORKERS = 3;
@@ -92,7 +93,8 @@ export default function PMDashboard() {
     (options.some((o) => o.id === userDivision) ? userDivision : options[0]?.id) ??
     '';
   const month = searchParams.get('month') ?? monthKey(new Date());
-  const view = searchParams.get('view') === 'checklist' ? 'checklist' : 'jobs';
+  const viewParam = searchParams.get('view');
+  const view = viewParam === 'checklist' || viewParam === 'crew' ? viewParam : 'jobs';
 
   const setParam = (key: string, value: string) =>
     setSearchParams(
@@ -259,8 +261,9 @@ export default function PMDashboard() {
           <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
             PM Dashboard
           </p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-            {firstName ? `Hey, ${firstName}` : 'Hey there'}
+          {/* Instrument Serif has one weight, so no bold (it would be faked) */}
+          <h1 className="mt-1 font-serif text-4xl font-normal text-neutral-900 dark:text-white">
+            {firstName ? `Hey, ${firstName}.` : 'Hey there.'}
           </h1>
           <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">{summary}</p>
         </div>
@@ -308,6 +311,7 @@ export default function PMDashboard() {
           [
             ['jobs', 'Jobs'],
             ['checklist', 'Checklist'],
+            ['crew', 'Crew'],
           ] as const
         ).map(([key, label]) => (
           <button
@@ -345,6 +349,8 @@ export default function PMDashboard() {
         </div>
       ) : view === 'checklist' ? (
         <ChecklistBoard jobs={jobs} />
+      ) : view === 'crew' ? (
+        <CrewBoard jobs={jobs} />
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

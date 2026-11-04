@@ -26,7 +26,7 @@ import { useScheduleJobColors } from "@/components/scheduling/useScheduleJobColo
 import { JobColorSwatches } from "@/components/scheduling/JobColorSwatches";
 import {
   formatTimeRange,
-  mondayOf,
+  weekStartOf,
   unknownHoursEnd,
 } from "@/lib/scheduleTime";
 import { toast } from "@/components/ui/toast";
@@ -64,8 +64,8 @@ export const TechnicianListedView: React.FC<Props> = ({
   // People removed from this division's schedule (shared for everyone).
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [isHiddenMenuOpen, setIsHiddenMenuOpen] = useState<boolean>(false);
-  // Weeks start on Monday.
-  const [startDate, setStartDate] = useState<string>(() => mondayOf(dayjs()));
+  // Weeks start on Sunday (matches pay periods).
+  const [startDate, setStartDate] = useState<string>(() => weekStartOf(dayjs()));
   const [today, setToday] = useState<string>(dayjs().format("YYYY-MM-DD"));
   const [qaSaving, setQaSaving] = useState<boolean>(false);
   const [technicians, setTechnicians] = useState<AvailableTechnician[]>([]);
@@ -127,9 +127,9 @@ export const TechnicianListedView: React.FC<Props> = ({
       .add(1, "millisecond")
       .diff(dayjs());
     const t = setTimeout(() => {
-      const prevWeek = mondayOf(dayjs(today));
+      const prevWeek = weekStartOf(dayjs(today));
       setToday(dayjs().format("YYYY-MM-DD"));
-      setStartDate((cur) => (cur === prevWeek ? mondayOf(dayjs()) : cur));
+      setStartDate((cur) => (cur === prevWeek ? weekStartOf(dayjs()) : cur));
     }, msUntilMidnight);
     return () => clearTimeout(t);
   }, [today]);
@@ -546,7 +546,7 @@ export const TechnicianListedView: React.FC<Props> = ({
     setStartDate(dayjs(startDate).subtract(days, "day").format("YYYY-MM-DD"));
   const goNext = () =>
     setStartDate(dayjs(startDate).add(days, "day").format("YYYY-MM-DD"));
-  const goToday = () => setStartDate(mondayOf(dayjs()));
+  const goToday = () => setStartDate(weekStartOf(dayjs()));
   const rangeLabel = `${dayjs(dayListFirst(dateList)).format("MMM D")} - ${dayjs(dayListLast(dateList)).format("MMM D, YYYY")}`;
   const isCurrentWeek = dateList.includes(today);
 

@@ -2,6 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Serif accent face (Tailwind `font-serif`). Files live in public/fonts/serif. */
+@font-face {
+  font-family: "Souvenir";
+  src: url("/fonts/serif/Souvenir.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Souvenir";
+  src: url("/fonts/serif/SouvenirI.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Souvenir";
+  src: url("/fonts/serif/SouvenirB.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Souvenir";
+  src: url("/fonts/serif/SouvenirBI.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
 @layer base {
     html,
     body {

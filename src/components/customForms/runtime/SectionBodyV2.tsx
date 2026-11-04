@@ -31,7 +31,12 @@ import {
   resolveTableRows,
   type RuntimeRowV2,
 } from "@/lib/customForms/v2/rows";
-import { equalColumnWidth, fitColumnWidths, rowStateKey } from "@/lib/customForms/runtime/layout";
+import {
+  equalColumnWidth,
+  fitChecklistWidths,
+  fitColumnWidths,
+  rowStateKey,
+} from "@/lib/customForms/runtime/layout";
 import { DEVIATION_COLUMN_IDS } from "@/lib/customForms/deviation";
 import type {
   ControlSlot,
@@ -1050,16 +1055,24 @@ export const SectionBodyV2: React.FC<SectionBodyV2Props> = ({
         rowCount: items.length,
         shownRowCount: shown.length,
       };
+      // A checklist's own widths win. Without any, columns are equal, except on
+      // an older report, where the browser and print rules size them as issued.
+      const ownWidths = fitChecklistWidths(v1Section.checklistColumnWidths);
+      const checklistWidths =
+        ownWidths.some(Boolean) || chrome.legacyLayout
+          ? ownWidths
+          : ownWidths.map(() => equalColumnWidth(CHECKLIST_COLUMN_COUNT));
+      const hasChecklistWidths = checklistWidths.some(Boolean);
       return (
         <div className="overflow-x-auto" style={wrapperStyle}>
           {settingsBar}
           <table
-            className={`min-w-full border-collapse border ${BORDER} ${density.table}`}
+            className={`${hasChecklistWidths ? "w-full table-fixed" : "min-w-full"} border-collapse border ${BORDER} ${density.table}`}
           >
-            {!chrome.legacyLayout && (
+            {hasChecklistWidths && (
               <colgroup>
-                {Array.from({ length: CHECKLIST_COLUMN_COUNT }).map((_, i) => (
-                  <col key={i} style={{ width: equalColumnWidth(CHECKLIST_COLUMN_COUNT) }} />
+                {checklistWidths.map((width, i) => (
+                  <col key={i} style={{ width }} />
                 ))}
               </colgroup>
             )}

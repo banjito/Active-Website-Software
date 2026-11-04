@@ -507,19 +507,9 @@
         border-color: #374151;
     }
 
-    /* Mobile-specific font and sizing fixes */
-    @media (max-width: 768px) {
-        /* Force smaller base font size on mobile */
-        html {
-            font-size: 13px !important; /* Reduces all rem-based sizes */
-        }
-    }
-
+    /* Phone-size helpers (opt-in classes only; the page text size is no
+       longer shrunk, so text and tap targets stay readable). */
     @media (max-width: 640px) {
-        html {
-            font-size: 12px !important; /* Even smaller for very small screens */
-        }
-
         /* Mobile-specific text sizing overrides */
         .mobile-text-xs {
             font-size: 10px !important;
@@ -641,15 +631,6 @@
             height: 20px !important;
         }
 
-        /* Ensure mobile forms don't zoom */
-        input,
-        select,
-        textarea {
-            font-size: 16px !important;
-            transform: scale(0.875);
-            transform-origin: left top;
-        }
-
         /* Mobile-specific component fixes */
         .mobile-dashboard-title {
             font-size: 20px !important;
@@ -710,13 +691,6 @@
         .mobile-text-auto {
             font-size: 0.75rem !important;
             line-height: 1.2 !important;
-        }
-    }
-
-    /* Tablet-specific adjustments (641px - 1023px) */
-    @media (min-width: 641px) and (max-width: 1023px) {
-        html {
-            font-size: 15px; /* Slightly larger than mobile */
         }
     }
 }
@@ -834,5 +808,45 @@
 @media print {
   [data-column-fill-selected] {
     outline: none !important;
+  }
+}
+
+/* Phones and tablets only.
+   (hover: none) and (pointer: coarse) = a finger is the main pointer.
+   Desktops with a mouse, including touchscreen laptops, never match, so
+   nothing in here changes the desktop view. Pair with the `touch:` Tailwind
+   variant (tailwind.config.cjs) for per-component tweaks. */
+@media (hover: none) and (pointer: coarse) {
+  html {
+    -webkit-tap-highlight-color: rgb(var(--brand-rgb) / 0.15);
+    /* Stop iOS from enlarging text when the tablet rotates. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Taps fire right away instead of waiting to see if it's a double-tap zoom. */
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  label,
+  summary,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+
+  /* Easier-to-hit checkboxes and radio buttons. */
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 1.25rem;
+    min-height: 1.25rem;
+  }
+
+  /* Keep content clear of the iPhone notch / iPad rounded corners when
+     the device is sideways (viewport-fit=cover in index.html). */
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 }

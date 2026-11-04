@@ -228,7 +228,7 @@ export const ReportPhotosButton: React.FC<ReportPhotosButtonProps> = ({
                             handleDelete(photo.name);
                         }}
                         disabled={deletingName === photo.name}
-                        className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center bg-red-600 text-white opacity-0 group-hover:opacity-100 hover:bg-red-700 disabled:opacity-50"
+                        className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center bg-red-600 text-white opacity-0 touch:opacity-100 group-hover:opacity-100 hover:bg-red-700 disabled:opacity-50"
                         title="Delete photo"
                       >
                         {deletingName === photo.name ? (

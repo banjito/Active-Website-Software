@@ -413,7 +413,7 @@ export const FloatingIssueReporter: React.FC = () => {
                     )}
                     <button
                       onClick={() => removeFile(idx)}
-                      className="absolute top-0 right-0 bg-black/70 text-white rounded-none w-5 h-5 text-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                      className="absolute top-0 right-0 bg-black/70 text-white rounded-none w-5 h-5 text-xs opacity-0 touch:opacity-100 group-hover:opacity-100 focus-visible:opacity-100"
                       aria-label={`Remove ${f.file.name}`}
                     >
                       ✕

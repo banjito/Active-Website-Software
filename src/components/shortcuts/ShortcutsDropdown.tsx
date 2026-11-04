@@ -113,7 +113,7 @@ const SortableRow: React.FC<{
         )}
       </button>
 
-      <div className="flex shrink-0 items-center opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+      <div className="flex shrink-0 items-center opacity-0 touch:opacity-100 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
         <button
           type="button"
           aria-label={`Edit ${shortcut.title}`}

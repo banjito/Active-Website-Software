@@ -219,5 +219,13 @@ module.exports = {
       },
     },
   },
-  plugins: [animate],
+  plugins: [
+    animate,
+    // `touch:` = phones/tablets only (finger is the main pointer, no hover).
+    // Desktops with a mouse, including touchscreen laptops, never match, so
+    // these classes never change the desktop view.
+    function ({ addVariant }) {
+      addVariant("touch", "@media (hover: none) and (pointer: coarse)");
+    },
+  ],
 }; 

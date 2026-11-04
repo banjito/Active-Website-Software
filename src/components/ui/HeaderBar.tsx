@@ -1034,14 +1034,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         </div>
       )}
       <div
-        className={`bg-white dark:bg-dark-150 p-4 border-none ${className ?? ""}`}
+        className={`bg-white dark:bg-dark-150 p-2 sm:p-4 border-none ${className ?? ""}`}
       >
         <div className="flex items-center w-full min-w-0">
           <Link to="/portal" className="shrink-0" aria-label="Back to home">
             <img
               src={iconUrl}
               alt="AMP Logo"
-              className="h-12 cursor-pointer hover:opacity-80 transition-opacity"
+              className="h-9 sm:h-12 cursor-pointer hover:opacity-80 transition-opacity"
             />
           </Link>
 
@@ -1124,7 +1124,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           </div>
 
           <div
-            className="flex shrink-0 ml-4 items-center justify-center gap-3 sm:gap-4"
+            className="flex shrink-0 ml-auto sm:ml-4 items-center justify-center gap-0 sm:gap-4"
             role="toolbar"
             aria-label="Portal shortcuts and account"
           >
@@ -1177,7 +1177,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               </button>
 
               {isShortcutMenuOpen && (
-                <div className="absolute top-full right-0 mt-2 z-50">
+                <div className="absolute top-full right-0 mt-2 z-50 max-sm:fixed max-sm:right-2 max-sm:top-14">
                   <ShortcutsDropdown
                     onNavigate={(url) => {
                       setIsShortcutMenuOpen(false);
@@ -1232,7 +1232,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 </button>
 
                 {isReviewMenuOpen && (
-                  <div className="absolute top-full right-0 mt-2 z-50">
+                  <div className="absolute top-full right-0 mt-2 z-50 max-sm:fixed max-sm:right-2 max-sm:top-14">
                     <ReviewShortcutsDropdown
                       openFlagCount={openReportFlagCount}
                       onNavigate={(url) => {
@@ -1287,7 +1287,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 <Phone className="h-5 w-5" />
               </button>
               {isContactsOpen && (
-                <div className="absolute top-full right-0 mt-2 w-[520px] max-w-[calc(100vw-2rem)] origin-top-right rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 max-h-[28rem] flex flex-col">
+                <div className="absolute top-full right-0 mt-2 w-[520px] max-w-[calc(100vw-2rem)] max-sm:fixed max-sm:right-2 max-sm:top-14 origin-top-right rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 max-h-[28rem] flex flex-col">
                   <div className="p-3 border-b border-neutral-200 dark:border-dark-200 flex items-center gap-3 shrink-0">
                     <div className="font-medium text-neutral-900 dark:text-white whitespace-nowrap">
                       AMP contacts
@@ -1442,7 +1442,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 </button>
 
                 {isNotificationsOpen && (
-                  <div className="absolute top-full right-0 mt-2 w-[min(24rem,calc(100vw-1.5rem))] origin-top-right rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                  <div className="absolute top-full right-0 mt-2 w-[min(24rem,calc(100vw-1.5rem))] max-sm:fixed max-sm:right-2 max-sm:top-14 origin-top-right rounded-none bg-white dark:bg-dark-150 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                     <div className="p-3 border-b border-neutral-200 dark:border-dark-200 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="font-medium text-neutral-900 dark:text-white">
@@ -1779,10 +1779,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 )}
               </button>
               {isProfileMenuOpen && (
-                <div className="absolute top-full right-0 mt-2 z-50">
+                <div className="absolute top-full right-0 mt-2 z-50 max-sm:fixed max-sm:right-2 max-sm:top-14">
                   <div className="relative w-64">
                     {isSettingsSubmenuOpen && (
-                      <div className="absolute right-full top-0 mr-2">
+                      <div className="absolute right-full top-0 mr-2 max-sm:right-0 max-sm:mr-0 max-sm:z-10">
                         <SettingsSubmenu
                           onClose={() => setIsSettingsSubmenuOpen(false)}
                           onAbout={handleAbout}
@@ -1796,7 +1796,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                       </div>
                     )}
                     {isEmployeeLinksSubmenuOpen && (
-                      <div className="absolute right-full top-0 mr-2">
+                      <div className="absolute right-full top-0 mr-2 max-sm:right-0 max-sm:mr-0 max-sm:z-10">
                         <EmployeeLinksSubmenu
                           onClose={() => {
                             setIsEmployeeLinksSubmenuOpen(false);

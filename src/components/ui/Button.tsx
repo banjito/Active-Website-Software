@@ -55,11 +55,12 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
       "bg-red-600 hover:bg-red-700 text-white focus:ring-red-500  dark:bg-red-800 dark:hover:bg-red-700",
   };
 
+  // `touch:` sizes apply on phones/tablets only, so fingers can hit them.
   const sizeStyles = {
-    sm: "text-sm px-3 py-1.5 rounded-none",
-    md: "text-base px-4 py-2 rounded-none",
+    sm: "text-sm px-3 py-1.5 rounded-none touch:min-h-[40px]",
+    md: "text-base px-4 py-2 rounded-none touch:min-h-[44px]",
     lg: "text-lg px-6 py-3 rounded-none",
-    icon: "p-2 rounded-none",
+    icon: "p-2 rounded-none touch:min-h-[40px] touch:min-w-[40px]",
   };
 
   const widthClass = fullWidth ? "w-full" : "";

@@ -29,7 +29,8 @@ export const FloatingMyMenu: React.FC = () => {
 
   return (
     <>
-      {/* Hover hotspot to open drawer */}
+      {/* Hover hotspot to open drawer. Hidden on touch screens: there is no
+          hover there, and the invisible strip would block taps on the left edge. */}
       <div
         onMouseEnter={() => {
           setHoveringHotspot(true);
@@ -58,7 +59,7 @@ export const FloatingMyMenu: React.FC = () => {
             setOpen(false);
           }
         }}
-        className="fixed left-0 top-1/2 -translate-y-1/2 z-[60] h-[75vh] w-8 bg-transparent print:hidden"
+        className="fixed left-0 top-1/2 -translate-y-1/2 z-[60] h-[75vh] w-8 bg-transparent print:hidden touch:hidden"
       />
       {/* Floating button: menu toggle */}
       <div className="fixed left-2 top-1/2 -translate-y-1/2 z-[59] flex flex-col gap-2 print:hidden">

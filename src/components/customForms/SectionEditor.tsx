@@ -25,6 +25,7 @@ import { ResultRuleEditor, DEFAULT_RESULT_RULE } from "./ResultRuleEditor";
 import { EquipmentPickerSettings } from "./EquipmentPickerSettings";
 import { AssetSourceSelect } from "./AssetSourceSelect";
 import { ChartSettings } from "./ChartSettings";
+import { ChecklistWidthInput } from "./ChecklistWidthInput";
 import { hasCombinedTemperatureField, splitTemperatureHumidity } from "@/lib/customForms/temperatureFields";
 import {
   combineAsFoundAsLeft,
@@ -1561,6 +1562,48 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
             <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">
               Checklist Items
             </h3>
+
+            <div className="space-y-1.5 mb-4">
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                Column headings and widths
+              </span>
+              {(
+                [
+                  ["section", "NETA Section"],
+                  ["description", "Description"],
+                  ["result", "Result"],
+                ] as const
+              ).map(([key, defaultLabel]) => (
+                <div key={key} className="flex items-center gap-2">
+                  <input
+                    value={section.checklistHeaders?.[key] ?? ""}
+                    onChange={(e) =>
+                      onUpdate({
+                        checklistHeaders: {
+                          ...section.checklistHeaders,
+                          [key]: e.target.value || undefined,
+                        },
+                      })
+                    }
+                    placeholder={defaultLabel}
+                    title="Column heading"
+                    className={`${inlineInputCls} flex-1 min-w-0`}
+                  />
+                  <ChecklistWidthInput
+                    value={section.checklistColumnWidths?.[key]}
+                    onChange={(next) =>
+                      onUpdate({
+                        checklistColumnWidths: {
+                          ...section.checklistColumnWidths,
+                          [key]: next || undefined,
+                        },
+                      })
+                    }
+                    className={`${inlineInputCls} w-20`}
+                  />
+                </div>
+              ))}
+            </div>
 
             <div className="space-y-3">
               <div className="flex items-center justify-between mb-2">

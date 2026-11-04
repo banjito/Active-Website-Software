@@ -122,10 +122,13 @@ function widthAsPercent(width: string | undefined): number | null {
  * the page (the builder once gave every new column 25%), and a fixed-layout
  * table then either runs off the page or crushes the columns with no width to
  * one letter per line. The authored widths are kept as proportions, columns
- * without one get a fair share, nothing drops below half a fair share, and the
- * result is scaled to exactly 100%.
+ * without one get a fair share, nothing drops below `minFairShare` of a fair
+ * share (half by default), and the result is scaled to exactly 100%.
  */
-export function fitColumnWidths(widths: readonly (string | undefined)[]): (string | undefined)[] {
+export function fitColumnWidths(
+  widths: readonly (string | undefined)[],
+  minFairShare = 0.5,
+): (string | undefined)[] {
   const count = widths.length;
   if (!count) return [];
   const parsed = widths.map(widthAsPercent);
@@ -137,7 +140,24 @@ export function fitColumnWidths(widths: readonly (string | undefined)[]): (strin
   const knownTotal = known.reduce((sum, value) => sum + value, 0);
   const unsetShare = unset ? Math.max((100 - knownTotal) / unset, fair * 0.75) : 0;
 
-  const floored = parsed.map((value) => Math.max(value ?? unsetShare, fair * 0.5));
+  const floored = parsed.map((value) => Math.max(value ?? unsetShare, fair * minFairShare));
   const total = floored.reduce((sum, value) => sum + value, 0);
   return floored.map((value) => `${Math.round((value / total) * 100000) / 1000}%`);
+}
+
+/**
+ * Section, description and result widths for a checklist. With only three
+ * columns the usual floor would stop a narrow section or result column (10%)
+ * from being honoured, so it is much lower here. Checklist widths are
+ * percentages only; anything else counts as unset, matching the blank box the
+ * editor shows for it.
+ */
+export function fitChecklistWidths(
+  widths: { section?: string; description?: string; result?: string } | undefined,
+): (string | undefined)[] {
+  const percent = (width?: string) => (width?.endsWith("%") ? width : undefined);
+  return fitColumnWidths(
+    [percent(widths?.section), percent(widths?.description), percent(widths?.result)],
+    0.15,
+  );
 }

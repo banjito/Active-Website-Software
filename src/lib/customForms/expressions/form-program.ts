@@ -83,7 +83,7 @@ export function listFormExpressionSlots(structure: CustomFormStructure): Result<
           label: `${section.title} / row ${rowIndex + 1} / ${column.label || column.id}`,
           sectionId: section.id, stateKey: rowStateKey(section.id, rowIndex), field, columnId: column.id, rowIndex,
           canCalculate: field.cellBehavior !== "static",
-          defaultValue: field.cellBehavior === "static" ? section.staticCells?.[cellKey(rowIndex, column.id)] ?? field.staticValue ?? "" : field.defaultValue,
+          defaultValue: field.cellBehavior === "static" ? section.staticCells?.[cellKey(rowIndex, column.id)] ?? field.staticValue ?? "" : section.cellDefaults?.[cellKey(rowIndex, column.id)] ?? field.defaultValue,
         });
       }
     }

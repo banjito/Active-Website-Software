@@ -12,7 +12,7 @@ import type { SectionConfig } from '@/lib/types/customForms';
  * Keys that should be replaced entirely by override (no deep merge).
  * e.g. cellFormulas: saved per-cell formulas replace any base, don't merge key-by-key.
  */
-const REPLACE_KEYS = new Set<string>(['cellFormulas', 'columns', 'aboveTableFields', 'settingFields', 'conditionalRows', 'defaultRowLabels']);
+const REPLACE_KEYS = new Set<string>(['cellFormulas', 'cellDefaults', 'columns', 'aboveTableFields', 'settingFields', 'conditionalRows', 'defaultRowLabels']);
 
 /** Deep merge: override values over base (arrays and objects merged recursively; arrays from override replace base). */
 function deepMergeSectionConfig(base: Partial<SectionConfig>, override: Record<string, unknown>): Partial<SectionConfig> {
@@ -123,6 +123,9 @@ export async function saveComponentDefaultOverride(
   // Explicitly persist all table/section keys so nothing is ever dropped
   if (sectionConfig.cellFormulas != null && typeof sectionConfig.cellFormulas === 'object') {
     defaultConfig.cellFormulas = sectionConfig.cellFormulas;
+  }
+  if (sectionConfig.cellDefaults != null && typeof sectionConfig.cellDefaults === 'object') {
+    defaultConfig.cellDefaults = sectionConfig.cellDefaults;
   }
   if (sectionConfig.staticCells != null && typeof sectionConfig.staticCells === 'object') {
     defaultConfig.staticCells = sectionConfig.staticCells;

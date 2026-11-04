@@ -107,7 +107,7 @@ export type ControlV2 =
   | { type: "date" }
   | { type: "time" }
   | { type: "datetime" }
-  | { type: "select"; options: OptionV2[]; allowBlank?: boolean }
+  | { type: "select"; options: OptionV2[]; allowBlank?: boolean; placeholder?: string }
   | { type: "checkbox"; label?: string }
   | { type: "checkbox-group"; options: OptionV2[]; layout?: "row" | "column" }
   | {

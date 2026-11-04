@@ -137,47 +137,63 @@ export async function searchJobs(text: string): Promise<Job[]> {
   return (data ?? []) as Job[];
 }
 
+export interface DayExtras {
+  per_diem: boolean;
+  miles: number;
+  odometer_start: number | null;
+  odometer_end: number | null;
+}
+
 /**
- * My per diem and miles for one day
+ * My per diem, miles and odometer readings for one day
  */
-export async function getDayExtras(workDate: string): Promise<{ per_diem: boolean; miles: number }> {
+export async function getDayExtras(workDate: string): Promise<DayExtras> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error('Not signed in');
 
   const { data, error } = await db
     .from('time_day_extras')
-    .select('per_diem, miles')
+    .select('per_diem, miles, odometer_start, odometer_end')
     .eq('profile_id', session.user.id)
     .eq('work_date', workDate)
     .maybeSingle();
 
   if (error) throw error;
-  return { per_diem: !!data?.per_diem, miles: Number(data?.miles ?? 0) };
+  const reading = (v: unknown) => (v == null ? null : Number(v));
+  return {
+    per_diem: !!data?.per_diem,
+    miles: Number(data?.miles ?? 0),
+    odometer_start: reading(data?.odometer_start),
+    odometer_end: reading(data?.odometer_end),
+  };
 }
 
 /**
- * Save per diem and miles for a day, tagged to the job worked. The database refuses
- * once the week is approved.
+ * Save per diem and odometer readings for a day, tagged to the job worked.
+ * With both readings the database sets miles to end minus start. The database
+ * refuses once the week is approved.
  */
 export async function saveDayExtras(
   workDate: string,
   perDiem: boolean,
-  miles: number,
+  odometerStart: number | null,
+  odometerEnd: number | null,
   jobcodeId: number | null
 ): Promise<void> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error('Not signed in');
 
-  const { error } = await db.from('time_day_extras').upsert(
-    {
-      profile_id: session.user.id,
-      work_date: workDate,
-      per_diem: perDiem,
-      miles,
-      qb_time_jobcode_id: jobcodeId,
-    },
-    { onConflict: 'profile_id,work_date' }
-  );
+  // miles is never sent: the database works it out from the readings, and leaves an
+  // older lump-sum entry alone until both readings are filled in.
+  const row = {
+    profile_id: session.user.id,
+    work_date: workDate,
+    per_diem: perDiem,
+    odometer_start: odometerStart,
+    odometer_end: odometerEnd,
+    qb_time_jobcode_id: jobcodeId,
+  };
+  const { error } = await db.from('time_day_extras').upsert(row, { onConflict: 'profile_id,work_date' });
 
   if (error) throw error;
 }

@@ -86,7 +86,7 @@ export async function getTimeWeekDetail(profileId: string, weekStart: string): P
     supabase
       .schema('common')
       .from('time_day_extras')
-      .select('work_date, per_diem, miles')
+      .select('work_date, per_diem, miles, odometer_start, odometer_end')
       .eq('profile_id', profileId)
       .gte('work_date', weekStart)
       .lte('work_date', weekEnd),
@@ -200,6 +200,45 @@ export async function getTimeWeekSendStatus(
     byPerson[row.profile_id] = { qb_sent_at: row.qb_sent_at, qb_error: row.qb_error };
   }
   return byPerson;
+}
+
+export interface MissedTimeSettings {
+  missed_time_emails: boolean;
+  /** YYYY-MM-DD */
+  holidays: string[];
+}
+
+/**
+ * The missed-time email switch and the company holiday list. Null when
+ * timestamp_03_missed_time.sql has not been run yet.
+ */
+export async function getMissedTimeSettings(): Promise<MissedTimeSettings | null> {
+  const { data, error } = await supabase
+    .schema('common')
+    .from('time_settings')
+    .select('missed_time_emails, holidays')
+    .maybeSingle();
+
+  if (error) {
+    // 42703 = column missing: the migration has not been run
+    if (error.code === '42703' || error.code === 'PGRST204') return null;
+    throw error;
+  }
+  return {
+    missed_time_emails: !!data?.missed_time_emails,
+    holidays: [...(data?.holidays ?? [])].sort(),
+  };
+}
+
+/** Payroll only; the database refuses anyone else. */
+export async function updateMissedTimeSettings(changes: Partial<MissedTimeSettings>): Promise<void> {
+  const { error } = await supabase
+    .schema('common')
+    .from('time_settings')
+    .update(changes)
+    .eq('id', true);
+
+  if (error) throw error;
 }
 
 export interface TimePerson {

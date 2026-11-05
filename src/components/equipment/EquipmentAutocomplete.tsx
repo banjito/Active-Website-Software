@@ -200,10 +200,7 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
   return (
     <div ref={containerRef} className={`relative ${className}`}>
       <div className="relative">
-        {/* Right side, so it never covers the hint; the clear button takes over once there's text. */}
-        {!(searchQuery && !readOnly) && (
-          <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-neutral-400 print:hidden" />
-        )}
+        <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-neutral-400 print:hidden" />
         <input
           ref={inputRef}
           type="text"
@@ -222,7 +219,7 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
           // A text input defaults to about twenty characters wide, which in a
           // table forces its column wide and squeezes the ones after it.
           size={1}
-          className={`w-full min-w-0 pl-2 pr-7 print:pr-2 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand ${readOnly ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
+          className={`w-full min-w-0 pl-8 print:pl-2 pr-7 print:pr-2 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand ${readOnly ? "bg-neutral-100 dark:bg-dark-150 cursor-not-allowed" : ""}`}
         />
         {searchQuery && !readOnly && (
           <button

@@ -4,7 +4,6 @@
 
 import type { CustomFormTemplate } from "@/lib/types/customForms";
 import { fahrenheitToCelsius, getRoundedTCF } from "@/lib/utils/temperatureCorrection";
-import { INLINE_DEVIATION_KEY, deviationResult, phaseDeviation } from "@/lib/customForms/deviation";
 import type { FormData } from "./rowMutations";
 
 /**
@@ -28,16 +27,6 @@ export function applyFieldChange(
       const celsius = fahrenheitToCelsius(parseFloat(value));
       section.temperatureCelsius = celsius.toFixed(2);
       section.tcf = getRoundedTCF(celsius).toFixed(3);
-    }
-  }
-
-  // A contact resistance row re-judges its deviation when the readings or the
-  // criteria change. A result picked by hand stands until then. Older reports
-  // never did this, so their rows are left as issued.
-  if (section[INLINE_DEVIATION_KEY]) {
-    const deviation = phaseDeviation(section);
-    if (fieldId === "phaseCriteria" || deviation !== phaseDeviation(formData[stateKey])) {
-      section.phaseResult = deviationResult(deviation, section.phaseCriteria);
     }
   }
 

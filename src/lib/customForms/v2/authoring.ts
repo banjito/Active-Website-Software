@@ -650,7 +650,6 @@ export function removeColumn(
     columns: remaining,
     cellFormulas: dropKeys(section.cellFormulas),
     staticCells: dropKeys(section.staticCells),
-    cellDefaults: dropKeys(section.cellDefaults),
   };
 
   if (nextOverlay) {

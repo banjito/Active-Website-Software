@@ -96,11 +96,6 @@ export function sortedSections(sections: SectionConfig[]): SectionConfig[] {
   return [...sections].sort((a, b) => a.order - b.order);
 }
 
-/** A column's width when none is set: an equal share of the table. */
-export function equalColumnWidth(columnCount: number): string {
-  return `${100 / columnCount}%`;
-}
-
 /** Width a fixed-pixel column is measured against: the form's content width. */
 const NOMINAL_TABLE_PX = 960;
 

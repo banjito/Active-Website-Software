@@ -232,18 +232,19 @@ export interface SectionTableOverlay {
 }
 
 /**
- * Contact resistance Phase Value Deviation columns. Every piece is optional;
- * the renderer falls back to DEFAULT_DEVIATION (lib/customForms/deviation.ts).
+ * Contact resistance "Value Deviation" tables. Every piece is optional; the
+ * renderer falls back to DEFAULT_DEVIATION (runtime/SectionBody.tsx), which is
+ * what the tables always showed.
  */
 export interface DeviationConfig {
-  /** `label` is the heading over the three columns. */
-  headers?: { label?: string; measured?: string; criteria?: string; results?: string };
+  headers?: { label?: string; criteria?: string; results?: string };
+  /** Text in the first cell of each per-row (phase) line. */
+  phaseLabel?: string;
   phaseCriteriaOptions?: string[];
   phaseCriteriaDefault?: string;
   phaseResultOptions?: string[];
   phaseResultDefault?: string;
-  /** Older reports only: the separate Value Deviation tables (LEGACY_DEVIATION). */
-  phaseLabel?: string;
+  /** Fixed lines in the second table (Neutral, Ground, ...). */
   extraRows?: { id: string; label: string }[];
   extraCriteriaOptions?: string[];
   extraResultOptions?: string[];
@@ -297,10 +298,6 @@ export interface SectionConfig {
   /** Per-cell static text for columns whose cellBehavior is 'static'. Key = "row{N}_{colId}".
    *  Rendered read-only in the filler/print (e.g. NETA section numbers, fixed descriptions). */
   staticCells?: Record<string, string>;
-
-  /** Per-cell starting values for user-entry columns. Key = "row{N}_{colId}".
-   *  Filled in on a new form; unlike staticCells, the technician can change them. */
-  cellDefaults?: Record<string, string>;
 
   /** Per-table print layout: margins and row height. Applied in preview and print/PDF. */
   printLayout?: TablePrintLayout;

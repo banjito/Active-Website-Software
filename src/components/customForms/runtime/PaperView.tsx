@@ -129,14 +129,13 @@ const PAPER_CSS = `
   #report-container:has(${P}) { max-width: none !important; }
   ${P} { overflow-x: auto; }
 
-  /* The sheet: letter width, 0.5in side margins = the 7.5in print content width.
-     The side padding gives back the 1px border, or tables come out 2px narrow. */
+  /* The sheet: letter width, 0.5in side margins = the 7.5in print content width. */
   ${SHEET} {
     width: 8.5in !important;
     max-width: none !important;
     min-height: 11in;
     margin: 0 auto !important;
-    padding: 0.25in calc(0.5in - 1px) 0.5in !important;
+    padding: 0.25in 0.5in 0.5in !important;
     box-sizing: border-box !important;
     background: #fff !important;
     color: #000 !important;
@@ -189,35 +188,6 @@ const PAPER_CSS = `
   }
   .is-windows ${SHEET} th *,
   .is-windows ${SHEET} td * { line-height: 1.2 !important; }
-  /* That sizing reads the printed text, so keep it in the layout, unseen. */
-  .is-windows ${SHEET} td .cf-print-text {
-    display: block !important;
-    visibility: hidden !important;
-    height: 0 !important;
-    overflow: hidden !important;
-  }
-
-  /* Result columns are centered. */
-  ${SHEET}:not(.cf-legacy-layout) th.cf-result-col,
-  ${SHEET}:not(.cf-legacy-layout) td.cf-result-col { text-align: center !important; }
-  ${SHEET}:not(.cf-legacy-layout) td.cf-result-col input${NOT_TB},
-  ${SHEET}:not(.cf-legacy-layout) td.cf-result-col select${NOT_TB} {
-    text-align: center !important;
-    text-align-last: center !important;
-  }
-
-  /* Row buttons sit in the page margin, so the columns stay as printed. */
-  ${SHEET} .overflow-x-auto:has(.cf-row-action) { overflow: visible !important; }
-  ${SHEET} col.cf-row-action,
-  ${SHEET} th.cf-row-action { display: none !important; }
-  ${SHEET} tr:has(> td.cf-row-action) { position: relative; }
-  ${SHEET} td.cf-row-action {
-    position: absolute !important;
-    left: 100%;
-    top: 0;
-    border: none !important;
-    padding: 2px 0 0 4px !important;
-  }
 
   /* Static cell text uses the cell's size and padding, like the headers. */
   ${SHEET} td .cf-static-text {
@@ -263,21 +233,6 @@ const PAPER_CSS = `
     max-width: 100% !important;
     min-height: 0 !important;
     height: auto !important;
-  }
-  /* An input beside a unit (°F, %) shares the row with it, so the unit stays
-     inside the cell. */
-  ${SHEET} .flex > input${NOT_TB}:not([type="checkbox"]):not([type="radio"]) {
-    flex: 1 1 0 !important;
-    width: auto !important;
-    min-width: 0 !important;
-  }
-  ${SHEET} .flex > input.temp-humidity-input${NOT_TB}:not([type="checkbox"]):not([type="radio"]) {
-    flex: 0 1 2.5rem !important;
-    min-width: 1.5rem !important;
-  }
-  /* Room for the search icon and clear button on the right. */
-  ${SHEET} td .relative > input${NOT_TB}:not([type="checkbox"]):not([type="radio"]) {
-    padding-right: 1.25rem !important;
   }
   ${SHEET} input${NOT_TB}:hover,
   ${SHEET} select${NOT_TB}:hover,

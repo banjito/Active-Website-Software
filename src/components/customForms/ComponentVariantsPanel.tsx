@@ -29,6 +29,7 @@ const KIND_LABELS: Record<VariantPartKind, string> = {
   row: "Rows",
   field: "Fields",
   item: "Checklist items",
+  line: "Value Deviation lines",
 };
 
 const tabCls = (active: boolean) =>

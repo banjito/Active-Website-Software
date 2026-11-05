@@ -36,19 +36,19 @@ function PreviewRowControls({
   const kind = classifySection(section);
   if (!isTableKind(kind)) return null;
   const showAdd = canAddRow(section, info.rowCount);
-  const showRemove = !!section.v2?.body && canRemoveRow(section, info.rowCount);
+  const showRemove = canRemoveRow(section, info.rowCount);
   if (!showAdd && !showRemove) return null;
 
   const shown = info.shownRowCount;
   return (
     <div className="flex items-center gap-2 mt-2 print:hidden">
       {showAdd && (
-        <span className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand border border-brand rounded-none opacity-60 cursor-default">
+        <span className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-brand border border-brand rounded opacity-60 cursor-default">
           <Plus className="w-3 h-3" /> Add Row
         </span>
       )}
       {showRemove && (
-        <span className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 border border-red-300 rounded-none opacity-60 cursor-default">
+        <span className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 border border-red-300 rounded opacity-60 cursor-default">
           <Minus className="w-3 h-3" /> Remove Row
         </span>
       )}
@@ -74,12 +74,6 @@ function usePreviewChrome(): SectionChrome {
     getSettingValue,
     setSettingValue,
     conditionValues,
-    renderRowAction: (section) =>
-      section.allowRemoveRows && !section.v2?.body ? (
-        <span className="px-1.5 py-0.5 text-xs text-white bg-red-600 opacity-60 cursor-default print:hidden">
-          ×
-        </span>
-      ) : null,
     renderSectionFooter: (section, info) => (
       <PreviewRowControls section={section} info={info} />
     ),

@@ -69,6 +69,13 @@ import {
   JOB_DEFAULT_TAB_PREF,
   resolveJobDefaultTab,
 } from "@/lib/jobDefaultTab";
+import {
+  REPORT_RETURN_POSITION_DEFAULT,
+  REPORT_RETURN_POSITION_PREF,
+  rememberOpenedReport,
+  takeOpenedReport,
+  type ReportReturnMarker,
+} from "@/lib/reportReturnPosition";
 import { formatStatusLabel } from "@/utils/formatters";
 import {
   AssetReportStatus,
@@ -1061,6 +1068,30 @@ export default function JobDetail() {
     const el = substationDetailsRef.current.get(label);
     if (el) el.open = open;
   }, []);
+  // "Return to where I left off" (Settings menu). When on, the substations a tech opened
+  // stay open for the rest of the browser session instead of all starting shut again
+  // every time they come back from a report.
+  const [rememberReportPosition, , reportPositionPrefLoading] =
+    usePreference<boolean>(
+      REPORT_RETURN_POSITION_PREF,
+      REPORT_RETURN_POSITION_DEFAULT,
+    );
+  const [openSubstations, setOpenSubstations] = usePersistentState<string[]>(
+    id ? `job-report-substations:${id}:open` : null,
+    [],
+  );
+  // Fires for clicks, Expand/Collapse all, and React setting `open` itself, so the list
+  // always matches what's on screen.
+  const handleSubstationToggle = useCallback(
+    (label: string, open: boolean) =>
+      setOpenSubstations((current) => {
+        if (open === current.includes(label)) return current;
+        return open
+          ? [...current, label]
+          : current.filter((l) => l !== label);
+      }),
+    [setOpenSubstations],
+  );
   /** Which substation (and optionally which parent folder) a new subfolder is going into. */
   const [newSubfolder, setNewSubfolder] = useState<{
     substation: string;
@@ -2155,6 +2186,53 @@ export default function JobDetail() {
         : current,
     );
   }, [defaultTabLoading, savedDefaultTab, isAdmin, location.search]);
+
+  // Coming back from a report: land on the Reports list, not the default tab, and
+  // scroll to the row that was opened.
+  const [reportReturnTarget, setReportReturnTarget] =
+    useState<ReportReturnMarker | null>(null);
+  useEffect(() => {
+    if (!id || reportPositionPrefLoading) return;
+    const marker = takeOpenedReport(id);
+    if (!marker || rememberReportPosition === false) return;
+    const tabParam = new URLSearchParams(location.search).get("tab");
+    if (tabParam && tabParam !== "assets") return;
+    defaultTabAppliedRef.current = true;
+    setActiveTab("assets");
+    setReportReturnTarget(marker);
+    // Once per job visit. The preference is read as it stood when the page opened.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, reportPositionPrefLoading]);
+  useEffect(() => {
+    if (!reportReturnTarget || activeTab !== "assets" || jobAssetsLoading) return;
+    if (reportReturnTarget.page > 1 && folderPage !== reportReturnTarget.page) {
+      setFolderPage(reportReturnTarget.page);
+      return;
+    }
+    // Folders and substation groups can paint a beat after the reports, so look for
+    // the row for a few seconds before giving up.
+    let tries = 0;
+    let timer: number | undefined;
+    const seek = () => {
+      const row = document.querySelector<HTMLElement>(
+        `[data-report-row="${CSS.escape(reportReturnTarget.assetId)}"]`,
+      );
+      if (!row) {
+        if (++tries < 20) timer = window.setTimeout(seek, 150);
+        else setReportReturnTarget(null);
+        return;
+      }
+      // Its substation may not have been open yet when this feature arrived.
+      const details = row.closest("details");
+      if (details && !details.open) details.open = true;
+      row.scrollIntoView({ block: "center" });
+      row.classList.add("bg-brand/10");
+      window.setTimeout(() => row.classList.remove("bg-brand/10"), 1800);
+      setReportReturnTarget(null);
+    };
+    timer = window.setTimeout(seek, 0);
+    return () => window.clearTimeout(timer);
+  }, [reportReturnTarget, activeTab, jobAssetsLoading, folderPage]);
   const [currentTab, setCurrentTab] = useState("details");
   const [selectedAssetType, setSelectedAssetType] =
     useState<string>("document");
@@ -2464,6 +2542,7 @@ export default function JobDetail() {
             asset.file_url.startsWith("custom-form:") ||
             asset.file_url.startsWith("report:")
           ) {
+            rememberOpenedReport(id, asset.id, folderPage);
             navigate(assetHref);
           } else {
             window.open(assetHref, "_blank", "noopener,noreferrer");
@@ -12304,6 +12383,17 @@ export default function JobDetail() {
                                 ref={(el) => {
                                   registerSubstationDetails(folderKey, el);
                                 }}
+                                open={
+                                  rememberReportPosition === false
+                                    ? undefined
+                                    : openSubstations.includes(folderKey)
+                                }
+                                onToggle={(e) =>
+                                  handleSubstationToggle(
+                                    folderKey,
+                                    e.currentTarget.open,
+                                  )
+                                }
                                 className="group/sub rounded-none border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-dark-150"
                               >
                                 {/* The disclosure chevron leads, so every heading on the
@@ -12513,6 +12603,25 @@ export default function JobDetail() {
                                         return (
                                           <TableRow
                                             key={asset.id}
+                                            data-report-row={asset.id}
+                                            // Any plain click on a link in this row opens
+                                            // the report here, so remember the spot to
+                                            // come back to.
+                                            onClickCapture={(e) => {
+                                              if (
+                                                e.button !== 0 ||
+                                                e.metaKey ||
+                                                e.ctrlKey ||
+                                                e.shiftKey ||
+                                                !(e.target as HTMLElement).closest("a")
+                                              )
+                                                return;
+                                              rememberOpenedReport(
+                                                id,
+                                                asset.id,
+                                                safePage,
+                                              );
+                                            }}
                                             onContextMenu={(e) =>
                                               openFolderContextMenu(e, {
                                                 kind: "report",

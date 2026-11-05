@@ -338,6 +338,7 @@ export const docsSections: DocsSection[] = [
         title: "Team",
         items: [
           { title: "Meetings", slug: "operations/meetings" },
+          { title: "Writing articles", slug: "operations/writing-articles" },
         ],
       },
     ],

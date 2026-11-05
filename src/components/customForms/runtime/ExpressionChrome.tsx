@@ -3,6 +3,7 @@ import type { CustomFormStructure } from "@/lib/types/customForms";
 import type { SectionChrome } from "@/lib/customForms/runtime";
 import { compileFormExpressions, formSlotId } from "@/lib/customForms/expressions/form-program";
 import type { ExpressionIssue } from "@/lib/customForms/expressions/types";
+import { blankTcfText } from "@/lib/customForms/reportLayout";
 
 const ERROR_CLASS = "block whitespace-normal break-words border border-red-300 bg-red-50 p-2 text-xs text-red-900 dark:border-red-700 dark:bg-red-950 dark:text-red-200 rounded-none print:border-black print:bg-white print:text-black";
 
@@ -50,7 +51,8 @@ export function useExpressionChrome(structure: CustomFormStructure, chrome: Sect
         if (program.calculationIds.has(id)) {
           if (result && !result.ok) return <span role="alert" className={ERROR_CLASS}>Calculation error: {result.issues[0].message}</span>;
           const value = result?.ok ? result.value : null;
-          return <span data-expression-target={id} className="cf-calc-value block min-h-6 whitespace-pre-wrap break-words px-2 py-1.5 text-sm text-neutral-900 dark:text-white print:text-black print:whitespace-normal">{displayCalcValue(value)}</span>;
+          return <span data-expression-target={id} className="cf-calc-value block min-h-6 whitespace-pre-wrap break-words px-2 py-1.5 text-sm text-neutral-900 dark:text-white print:text-black print:whitespace-normal">{(value === null && source.field.id === "tcf" && blankTcfText(values)) || displayCalcValue(value)}
+</span>;
         }
         // V1 data uses field.id, which need not equal the V2 column.id shim.
         const input = chrome.renderControl({ ...slot, field: { ...source.field, readOnly: slot.readOnly || source.field.readOnly }, ...(slot.cell ? { cell: { ...slot.cell, column: { ...slot.cell.column, field: source.field } } } : {}) });

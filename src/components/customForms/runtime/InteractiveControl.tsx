@@ -12,6 +12,7 @@ import type { FieldConfig, SectionConfig } from "@/lib/types/customForms";
 import { cellKey, type ControlSlot } from "@/lib/customForms/runtime";
 import { getCellValue } from "@/lib/customForms/formCellResolution";
 import { phaseDeviation } from "@/lib/customForms/deviation";
+import { blankTcfText, usesLegacyLayout } from "@/lib/customForms/reportLayout";
 import { resultTone, type ResultTone } from "@/lib/customForms/resultRules";
 import { SignatureField } from "./SignatureField";
 import { PhotoField } from "./PhotoField";
@@ -122,6 +123,8 @@ const TemperatureHumidity: React.FC<{
   field?: FieldConfig;
 }> = ({ stateKey, formData, onFieldChange, readOnly, field }) => {
   const data = formData[stateKey] ?? {};
+  // New reports start blank, so a grey 68 / 50 would read as a real value.
+  const legacy = usesLegacyLayout(formData);
   const labels = {
     fahrenheit: field?.subLabels?.fahrenheit || "°F",
     celsius: field?.subLabels?.celsius || "°C",
@@ -141,7 +144,7 @@ const TemperatureHumidity: React.FC<{
         value={data.temperature ?? ""}
         readOnly={readOnly}
         onChange={(e) => onFieldChange(stateKey, "temperature", e.target.value)}
-        placeholder={String(field?.defaultTemperature ?? 68)}
+        placeholder={legacy ? String(field?.defaultTemperature ?? 68) : undefined}
         title="Temperature (°F)"
         className={`temp-humidity-f ${inputClasses}`}
       />
@@ -159,7 +162,7 @@ const TemperatureHumidity: React.FC<{
         className="temp-humidity-tcf min-w-[2rem] text-neutral-600 dark:text-neutral-400 shrink-0 tabular-nums"
         title="Calculated"
       >
-        {data.tcf ?? ""}
+        {data.tcf || blankTcfText(formData)}
       </span>
       <span className="shrink-0 text-neutral-600 dark:text-neutral-400">
         {labels.humidity}
@@ -170,7 +173,7 @@ const TemperatureHumidity: React.FC<{
         value={data.humidity ?? ""}
         readOnly={readOnly}
         onChange={(e) => onFieldChange(stateKey, "humidity", e.target.value)}
-        placeholder={String(field?.defaultHumidity ?? 50)}
+        placeholder={legacy ? String(field?.defaultHumidity ?? 50) : undefined}
         title="Humidity (%)"
         className={`temp-humidity-hum ${inputClasses}`}
       />
@@ -239,7 +242,7 @@ export function createInteractiveControlRenderer(
             value={f}
             readOnly={ro}
             onChange={(e) => onFieldChange(slot.stateKey, "temperature", e.target.value)}
-            placeholder="68"
+            placeholder={usesLegacyLayout(options.formData) ? "68" : undefined}
             title="Temperature (°F)"
             className={`${ro ? READ_ONLY_CONTROL_CLASSES : CONTROL_CLASSES} w-16 text-center`}
           />
@@ -270,7 +273,11 @@ export function createInteractiveControlRenderer(
 
     const resolved = resolveSlotValue(slot, options);
     const readOnly = resolved.readOnly || !!options.readOnly || !!slot.readOnly;
-    const value = resolved.value;
+    // Display only: a saved "N/A" would break the formulas that read the TCF.
+    const value =
+      field.id === "tcf" && readOnly && resolved.value === ""
+        ? blankTcfText(formData)
+        : resolved.value;
     const classes = readOnly ? READ_ONLY_CONTROL_CLASSES : CONTROL_CLASSES;
 
     // Calculated results (pass/fail rules, or any formula giving PASS / FAIL)

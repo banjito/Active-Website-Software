@@ -35,7 +35,7 @@ export const COMPONENT_LIBRARY: ComponentDefinition[] = [
       fields: [
         // Row 1
         { id: 'customer', label: 'Customer', type: FieldType.TEXT, required: true },
-        { id: 'temperature', label: 'Temp', type: FieldType.TEMPERATURE, defaultValue: 68 },
+        { id: 'temperature', label: 'Temp', type: FieldType.TEMPERATURE },
         { id: 'jobNumber', label: 'Job #', type: FieldType.TEXT, required: true },
         { id: 'technicians', label: 'Technicians', type: FieldType.TEXT, required: true },
         { id: 'date', label: 'Date', type: FieldType.DATE, required: true },
@@ -43,7 +43,7 @@ export const COMPONENT_LIBRARY: ComponentDefinition[] = [
         // Row 2
         { id: 'siteAddress', label: 'Address', type: FieldType.TEXT, required: true },
         { id: 'tcf', label: 'TCF', type: FieldType.NUMBER, readOnly: true },
-        { id: 'humidity', label: 'Humidity', type: FieldType.NUMBER, defaultValue: 50, valueSuffix: '%' },
+        { id: 'humidity', label: 'Humidity', type: FieldType.NUMBER, valueSuffix: '%' },
         { id: 'substation', label: 'Substation', type: FieldType.TEXT },
         { id: 'eqptLocation', label: 'Eqpt. Location', type: FieldType.TEXT },
         { id: 'user', label: 'User', type: FieldType.TEXT },
@@ -70,8 +70,7 @@ export const COMPONENT_LIBRARY: ComponentDefinition[] = [
         {
           id: 'fahrenheit',
           label: 'Temperature (°F)',
-          type: FieldType.NUMBER,
-          defaultValue: 68
+          type: FieldType.NUMBER
         },
         {
           id: 'celsius',

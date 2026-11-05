@@ -8,6 +8,7 @@
 
 import React, { useState, useEffect } from "react";
 import { reportTestDate } from "@/lib/customForms/equipment";
+import { seedReportLayout } from "@/lib/customForms/reportLayout";
 import { useLookupTables } from "@/lib/customForms/lookupLibrary";
 import { useAutoStatus } from "@/components/customForms/runtime/useAutoStatus";
 import {
@@ -25,7 +26,8 @@ import { CustomFormTemplate } from "@/lib/types/customForms";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import {
   seedContactResistanceRows,
-  seedTemperatureDefaults,
+  seedBlankEnvironment,
+  seedJobInfoDefaults,
   type FormData,
 } from "@/lib/customForms/runtime";
 import { DocumentBody } from "@/components/customForms/runtime/SectionFrame";
@@ -111,7 +113,9 @@ export const CustomFormPreview: React.FC = () => {
   useEffect(() => {
     if (!template) return;
     setFormData((prev) =>
-      seedTemperatureDefaults(template, seedContactResistanceRows(template, prev)),
+      seedReportLayout(
+        seedBlankEnvironment(template, seedJobInfoDefaults(template, seedContactResistanceRows(template, prev))),
+      ),
     );
   }, [template]);
 

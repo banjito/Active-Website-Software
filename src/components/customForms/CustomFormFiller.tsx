@@ -12,7 +12,9 @@ import { reportTestDate } from "@/lib/customForms/equipment";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
+import { useDemoMode } from "@/lib/DemoModeContext";
 import { useJobDetails } from "@/lib/hooks/useJobDetails";
+import { jobFillContext, jobInfoStartValues } from "@/lib/customForms/jobFill";
 import { toast } from "@/components/ui/toast";
 import { Database, History, ArrowLeft, Save, Printer, Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -56,10 +58,10 @@ import {
   type RowInstanceV2,
 } from "@/lib/customForms/instanceState";
 import { validateInstanceStructure } from "@/lib/customForms/compile";
-import { fahrenheitToCelsius, getRoundedTCF } from "@/lib/utils/temperatureCorrection";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import {
   defaultSettingValue,
+  seedBlankEnvironment,
   seedCellDefaults,
   seedContactResistanceRows,
   type ControlSlot,
@@ -107,6 +109,7 @@ export const CustomFormFiller: React.FC = () => {
   // Custom forms skip the app Layout, so they mount reviewer field flags here.
   const fieldFlags = useReportFieldFlags(true);
   const { user } = useAuth();
+  const { isDemoMode, maskCustomerName, maskCustomerAddress } = useDemoMode();
   const { jobDetails } = useJobDetails(jobId);
 
   const [template, setTemplate] = useState<CustomFormTemplate | null>(null);
@@ -197,44 +200,14 @@ export const CustomFormFiller: React.FC = () => {
     if (jobInfoSeededRef.current) return;
     jobInfoSeededRef.current = true;
 
-    const today = new Date().toISOString().slice(0, 10);
-    const initial: Record<string, any> = {};
-    const setTemperature = (fahrenheit: number, humidity?: number) => {
-      const celsius = fahrenheitToCelsius(fahrenheit);
-      initial.temperature = String(fahrenheit);
-      initial.temperatureCelsius = celsius.toFixed(2);
-      initial.tcf = getRoundedTCF(celsius).toFixed(3);
-      if (humidity != null) initial.humidity = String(humidity);
-    };
-
-    jobInfoSection.fields.forEach((f) => {
-      if (f.id === "customer") {
-        initial[f.id] =
-          jobDetails.customer?.company_name ||
-          jobDetails.formattedCustomerName ||
-          jobDetails.customer?.name ||
-          "";
-      } else if (f.id === "siteAddress") {
-        initial[f.id] =
-          jobDetails.site_address || jobDetails.customer?.address || "";
-      } else if (f.id === "jobNumber") {
-        initial[f.id] =
-          jobDetails.job_number || `JOB-${jobId?.slice(0, 8)}` || "";
-      } else if (f.id === "date") {
-        initial[f.id] = jobDetails.start_date?.slice(0, 10) || today;
-      } else if (f.id === "user") {
-        initial[f.id] = user?.email || user?.user_metadata?.full_name || "";
-      } else if (f.id === "temperature") {
-        setTemperature(68);
-      } else if (f.id === "humidity") {
-        initial[f.id] = "50";
-      } else if (
-        f.id === "temperatureHumidity" &&
-        f.defaultTemperature != null
-      ) {
-        setTemperature(f.defaultTemperature ?? 68, f.defaultHumidity ?? 50);
-      }
-    });
+    const initial = jobInfoStartValues(
+      jobInfoSection.fields,
+      jobFillContext(jobDetails, {
+        name: maskCustomerName,
+        address: maskCustomerAddress,
+        hideDescription: isDemoMode,
+      }),
+    );
 
     if (Object.keys(initial).length > 0) {
       // Anything already filled in the block (typed, or from the asset) stays.
@@ -246,7 +219,7 @@ export const CustomFormFiller: React.FC = () => {
         return { ...prev, [jobInfoSection.id]: block };
       });
     }
-  }, [template, jobDetails, jobId, user, existingInstanceId]);
+  }, [template, jobDetails, isDemoMode, maskCustomerName, maskCustomerAddress, existingInstanceId]);
 
   // Opened from an asset in the Assets tab: fill the identifier, location and nameplate
   // fields from it. The report links to the asset on first save (ensureReportAssetLink).
@@ -356,7 +329,9 @@ export const CustomFormFiller: React.FC = () => {
   useEffect(() => {
     if (!template || existingInstanceId != null) return;
     setFormData((prev) =>
-      seedReportLayout(seedCellDefaults(template, seedContactResistanceRows(template, prev))),
+      seedReportLayout(
+        seedBlankEnvironment(template, seedCellDefaults(template, seedContactResistanceRows(template, prev))),
+      ),
     );
   }, [template, existingInstanceId]);
 

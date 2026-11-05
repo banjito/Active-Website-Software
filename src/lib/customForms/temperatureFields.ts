@@ -21,10 +21,10 @@ export function splitTemperatureHumidity(fields: readonly FieldConfig[]): FieldC
       continue;
     }
     if (!fields.some((x) => x.id === 'temperature')) {
-      out.push({ id: 'temperature', label: 'Temp', type: FieldType.TEMPERATURE, defaultValue: f.defaultTemperature ?? 68 });
+      out.push({ id: 'temperature', label: 'Temp', type: FieldType.TEMPERATURE });
     }
     if (!fields.some((x) => x.id === 'humidity')) {
-      out.push({ id: 'humidity', label: 'Humidity', type: FieldType.NUMBER, defaultValue: f.defaultHumidity ?? 50, valueSuffix: '%' });
+      out.push({ id: 'humidity', label: 'Humidity', type: FieldType.NUMBER, valueSuffix: '%' });
     }
   }
   return out;

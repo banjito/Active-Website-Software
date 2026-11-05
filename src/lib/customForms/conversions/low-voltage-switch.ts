@@ -149,10 +149,10 @@ export function createLowVoltageSwitchDraft(): CustomFormTemplate {
   const environment: SectionConfig = {
     ...section("environment", "Environmental Data", ComponentType.NAMEPLATE_DATA), layout: "four-column",
     fields: [
-      { id: "fahrenheit", label: "Temp", type: FieldType.NUMBER, unit: "°F", defaultValue: 68 },
+      { id: "fahrenheit", label: "Temp", type: FieldType.NUMBER, unit: "°F" },
       { ...calculated("celsius", "Temp"), unit: "°C" },
       calculated("tcf", "TCF"),
-      { id: "humidity", label: "Humidity", type: FieldType.NUMBER, unit: "%", defaultValue: 0 },
+      { id: "humidity", label: "Humidity", type: FieldType.NUMBER, unit: "%" },
     ],
   };
   const enclosure: SectionConfig = {

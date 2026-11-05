@@ -9,6 +9,7 @@ import { convertReading, resolveSourceUnit, splitUnitRef } from '@/lib/customFor
 import { evaluateNode, inferNode } from '@/lib/customForms/expressions/semantics';
 import type { ExpressionValue } from '@/lib/customForms/expressions/types';
 import type { FieldConfig, SectionConfig } from '@/lib/types/customForms';
+import { usesLegacyLayout } from '@/lib/customForms/reportLayout';
 
 /** Abbreviate section title to a short code, e.g. "Insulation Resistance" -> "IR", "Job Details" -> "Job" */
 function abbreviateTitle(title: string): string {
@@ -264,7 +265,11 @@ interface SubstitutedRef {
   /** A table cell (a reading), as opposed to a single field such as the TCF. */
   isCell: boolean;
   blank: boolean;
+  /** Job Details temperature, humidity or TCF, which a report can leave blank. */
+  environment?: boolean;
 }
+
+const ENVIRONMENT_FIELD = /^(temperature|temperatureCelsius|tcf|humidity)$/i;
 
 function substituteRefsTracked(
   formula: string,
@@ -296,6 +301,10 @@ function substituteRefsTracked(
         isCell: resolved.rowIndex != null,
         // A text key for a lookup is an entry, not a blank.
         blank: !isFinite(num) && !(usesLookup && text !== ''),
+        environment:
+          !blankAware &&
+          ENVIRONMENT_FIELD.test(resolved.fieldId) &&
+          sections.find((s) => s.id === resolved.sectionId)?.componentType === 'job-info',
       });
       if (isFinite(num)) return String(num);
       // Formulas with a lookup may key on text (a voltage class like "600V").
@@ -397,6 +406,10 @@ export function evaluateFormula(
     formula, formData, currentSectionId, currentRowIndex, sections
   );
   if (nothingEntered(refs)) return '';
+  // Temperature starts blank on new reports. Counting a blank TCF as 0 would turn
+  // every corrected reading into 0, so the formula waits for it. Saved reports
+  // from before that change stay as issued.
+  if (!usesLegacyLayout(formData) && refs.some((ref) => ref.environment && ref.blank)) return '';
   const result = safeEvalExpression(substituted);
   if (result == null || Array.isArray(result)) return '';
   // A "<" or ">" carried by the source reading only means something on a

@@ -837,7 +837,7 @@ export const CustomFormFiller: React.FC = () => {
   }
 
   return (
-    <ReportWrapper>
+    <ReportWrapper wide>
       <CustomFormPrintHeader template={template} status={status} />
       {paper.on && <PaperViewStyles />}
 
@@ -845,7 +845,7 @@ export const CustomFormFiller: React.FC = () => {
         className={`min-h-screen bg-neutral-50 dark:bg-dark-200 p-4 md:p-6 print:min-h-0 print:bg-white print:p-0 ${paper.on ? PAPER_CLASS : ""}`}
         data-ff-root=""
       >
-        <div className={paper.on ? "print:max-w-none" : "max-w-5xl mx-auto print:max-w-none"}>
+        <div className={paper.on ? "print:max-w-none" : "mx-auto print:max-w-none"}>
           {fieldFlags.showFlags && (
             <div className="print:hidden mb-4 px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-none">
               <p className="text-sm font-semibold text-red-800 dark:text-red-200">
@@ -858,10 +858,44 @@ export const CustomFormFiller: React.FC = () => {
             className={`custom-form-container ${legacyLayout ? "cf-legacy-layout" : ""} bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-4 md:p-6 print:shadow-none print:border-0 print:rounded-none print:p-0`}
             style={paper.sheetStyle}
           >
-            <div className={`${PAPER_TOOLBAR_CLASS} print:hidden flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b border-neutral-200 dark:border-neutral-700`}>
-              <div className="flex items-center gap-4">
+            <div className={`${PAPER_TOOLBAR_CLASS} print:hidden pb-4 mb-4 border-b border-neutral-200 dark:border-neutral-700`}>
+              <div className="mb-3">
+                <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                  {template.name}
+                </h1>
+                <div className="flex items-center gap-2 mt-1">
+                  {template.netaSection && (
+                    <span className="inline-block px-2 py-1 text-xs font-medium bg-brand text-white rounded-none">
+                      {template.netaSection}
+                    </span>
+                  )}
+                  {pinnedVersion ? (
+                    <span
+                      className="text-xs text-neutral-500 dark:text-neutral-400"
+                      title={
+                        renderSource === "pinned"
+                          ? "This form is pinned to this template version. Later edits to the template will not change it."
+                          : "New form, using the template's current published version."
+                      }
+                    >
+                      Template v{pinnedVersion.version}
+                      {pinnedVersion.origin === "imported" && " (imported)"}
+                    </span>
+                  ) : (
+                    <span
+                      className="text-xs text-amber-700 dark:text-amber-300"
+                      title="No published version, so this form follows the editable draft. Publish the template to pin new forms to a fixed version."
+                    >
+                      Unversioned draft
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-4">
                 <Button
                   variant="ghost"
+                  className="whitespace-nowrap"
                   onClick={() => navigate(`/jobs/${jobId}?tab=assets`)}
                   leftIcon={<ArrowLeft className="w-4 h-4" />}
                 >
@@ -869,40 +903,8 @@ export const CustomFormFiller: React.FC = () => {
                 </Button>
                 {/* Report status (renders nothing on unsaved instances) */}
                 <ReportStatusButton />
-                <div>
-                  <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-                    {template.name}
-                  </h1>
-                  <div className="flex items-center gap-2 mt-1">
-                    {template.netaSection && (
-                      <span className="inline-block px-2 py-1 text-xs font-medium bg-brand text-white rounded">
-                        {template.netaSection}
-                      </span>
-                    )}
-                    {pinnedVersion ? (
-                      <span
-                        className="text-xs text-neutral-500 dark:text-neutral-400"
-                        title={
-                          renderSource === "pinned"
-                            ? "This form is pinned to this template version. Later edits to the template will not change it."
-                            : "New form, using the template's current published version."
-                        }
-                      >
-                        Template v{pinnedVersion.version}
-                        {pinnedVersion.origin === "imported" && " (imported)"}
-                      </span>
-                    ) : (
-                      <span
-                        className="text-xs text-amber-700 dark:text-amber-300"
-                        title="No published version, so this form follows the editable draft. Publish the template to pin new forms to a fixed version."
-                      >
-                        Unversioned draft
-                      </span>
-                    )}
-                  </div>
-                </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {template.structure.settings?.includePassFail !== false && (
                   <StatusToggleButton
                     status={status}
@@ -988,6 +990,7 @@ export const CustomFormFiller: React.FC = () => {
                     <Save className="h-6 w-6" />
                   )}
                 </button>
+              </div>
               </div>
             </div>
 

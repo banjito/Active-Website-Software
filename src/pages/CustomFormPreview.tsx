@@ -161,42 +161,42 @@ export const CustomFormPreview: React.FC = () => {
   }
 
   return (
-    <ReportWrapper>
+    <ReportWrapper wide>
       <CustomFormPrintHeader template={template} status={status} />
       {paper.on && <PaperViewStyles />}
 
       <div className={`report-body min-h-screen bg-neutral-50 dark:bg-dark-200 p-4 md:p-6 print:min-h-0 print:bg-white print:p-0 ${paper.on ? PAPER_CLASS : ""}`}>
-        <div className={paper.on ? "print:max-w-none" : "max-w-5xl mx-auto print:max-w-none"}>
+        <div className={paper.on ? "print:max-w-none" : "mx-auto print:max-w-none"}>
           <div
             className="custom-form-container bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-4 md:p-6 print:shadow-none print:border-0 print:rounded-none print:p-0"
             style={paper.sheetStyle}
           >
-            <div className={`${PAPER_TOOLBAR_CLASS} print:hidden flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b border-neutral-200 dark:border-neutral-700`}>
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="ghost"
-                  onClick={goBack}
-                  leftIcon={<ArrowLeft className="w-4 h-4" />}
-                >
-                  {cameFromBuilder ? "Back to editor" : "Back"}
-                </Button>
-                <div>
-                  <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-                    {template.name}
-                  </h1>
-                  {template.netaSection && (
-                    <span className="inline-block mt-1 px-2 py-1 text-xs font-medium bg-brand text-white rounded">
-                      {template.netaSection}
-                    </span>
-                  )}
-                  <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>Preview Mode - Changes are not saved</span>
-                  </div>
+            <div className={`${PAPER_TOOLBAR_CLASS} print:hidden pb-4 mb-4 border-b border-neutral-200 dark:border-neutral-700`}>
+              <div className="mb-3">
+                <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                  {template.name}
+                </h1>
+                {template.netaSection && (
+                  <span className="inline-block mt-1 px-2 py-1 text-xs font-medium bg-brand text-white rounded-none">
+                    {template.netaSection}
+                  </span>
+                )}
+                <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Preview Mode - Changes are not saved</span>
                 </div>
               </div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+              <Button
+                variant="ghost"
+                className="whitespace-nowrap"
+                onClick={goBack}
+                leftIcon={<ArrowLeft className="w-4 h-4" />}
+              >
+                {cameFromBuilder ? "Back to editor" : "Back"}
+              </Button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <PaperViewToggle paper={paper} />
                 <button
                   type="button"
@@ -221,6 +221,7 @@ export const CustomFormPreview: React.FC = () => {
                     }
                   />
                 )}
+              </div>
               </div>
             </div>
 

@@ -151,6 +151,7 @@ const PAPER_CSS = `
     table-layout: fixed !important;
     border-collapse: collapse !important;
     width: 100% !important;
+    min-width: 0 !important;
     font-size: 10px !important;
     border: 1px solid #000 !important;
   }

@@ -70,6 +70,20 @@ const DENSITIES: Record<"compact" | "normal", Density> = {
   },
 };
 
+/** The column holding row buttons. Paper view moves it into the page margin. */
+const ROW_ACTION_CLASS = "cf-row-action print:hidden";
+
+/** A checklist always has its section, description and result columns. */
+const CHECKLIST_COLUMN_COUNT = 3;
+
+/** Result columns are centered on paper (see cf-result-col in the print CSS). */
+function isResultColumn(v1Section: SectionConfig, column: ColumnV2 | undefined): boolean {
+  if (!column) return false;
+  if (DEVIATION_COLUMN_IDS.has(column.id)) return true;
+  const field = v1Section.columns?.find((c) => c.id === column.id)?.field;
+  return !!field?.resultRule || /^results?$/i.test((column.label ?? "").trim());
+}
+
 const ALIGN_CLASS: Record<string, string> = {
   left: "text-left",
   center: "text-center",
@@ -100,10 +114,12 @@ function fieldShimFor(
   const base: FieldConfig = { id, label, type: FieldType.TEXT, ...extra };
   if (!control) return base;
   switch (control.type) {
+    case "text":
+      return { ...base, placeholder: control.placeholder };
     case "multiline":
-      return { ...base, type: FieldType.TEXTAREA };
+      return { ...base, type: FieldType.TEXTAREA, placeholder: control.placeholder };
     case "number":
-      return { ...base, type: FieldType.NUMBER };
+      return { ...base, type: FieldType.NUMBER, placeholder: control.placeholder };
     case "date":
       return { ...base, type: FieldType.DATE };
     case "time":
@@ -114,6 +130,7 @@ function fieldShimFor(
       return {
         ...base,
         type: FieldType.SELECT,
+        placeholder: control.type === "select" ? control.placeholder : undefined,
         options: control.options.map((o) => ({
           label: o.label,
           value: o.value,
@@ -249,7 +266,9 @@ const TableRenderer: React.FC<TableProps> = ({
   const shownColumns = table.columns.filter((column) =>
     evaluateCondition(column.visibleWhen, scope),
   );
-  const fittedWidths = fitColumnWidths(shownColumns.map((column) => column.width));
+  const fittedWidths = fitColumnWidths(shownColumns.map((column) => column.width)).map(
+    (width) => width ?? (chrome.legacyLayout ? undefined : equalColumnWidth(shownColumns.length)),
+  );
   const visibleColumns = shownColumns.map((column, index) =>
     column.width === fittedWidths[index] ? column : { ...column, width: fittedWidths[index] },
   );
@@ -302,7 +321,10 @@ const TableRenderer: React.FC<TableProps> = ({
   };
 
   const gutter = chrome.rowGutter;
-  const totalColumns = visibleColumns.length + (gutter ? 1 : 0);
+  const hasRowActions = shown.some(
+    (row) => row.dataIndex >= 0 && !!chrome.renderRowAction?.(v1Section, row.dataIndex),
+  );
+  const totalColumns = visibleColumns.length + (gutter ? 1 : 0) + (hasRowActions ? 1 : 0);
 
   const tableUnits = table.units;
   const unitValue = (spec: UnitSpecV2, key: string): string =>
@@ -374,6 +396,7 @@ const TableRenderer: React.FC<TableProps> = ({
                 style={column.width ? { width: column.width } : undefined}
               />
             ))}
+            {hasRowActions && <col className={ROW_ACTION_CLASS} style={{ width: "2rem" }} />}
           </colgroup>
 
           {/* Multi-row header. `resolveGrid` has already worked out which cells
@@ -400,7 +423,12 @@ const TableRenderer: React.FC<TableProps> = ({
                     {...(colSpan === 1 && visibleColumns[columnIndex]
                       ? refAttrs(v1Section.id, { columnId: visibleColumns[columnIndex].id })
                       : {})}
-                    className={`border ${BORDER} bg-neutral-50 dark:bg-dark-200 align-top [overflow-wrap:anywhere] ${density.th} ${ALIGN_CLASS[cell.align ?? "left"]}`}
+                    className={`border ${BORDER} bg-neutral-50 dark:bg-dark-200 align-top [overflow-wrap:anywhere] ${density.th} ${ALIGN_CLASS[cell.align ?? "left"]} ${
+                      cell.align === "center" ||
+                      (colSpan === 1 && isResultColumn(v1Section, visibleColumns[columnIndex]))
+                        ? "cf-result-col"
+                        : ""
+                    }`}
                     style={
                       colSpan === 1 && visibleColumns[columnIndex]?.width
                         ? { width: visibleColumns[columnIndex].width }
@@ -408,16 +436,18 @@ const TableRenderer: React.FC<TableProps> = ({
                     }
                   >
                     <div>{cell.label}</div>
-                    {chrome.renderColumnHeaderExtra?.(
-                      v1Section,
-                      {
-                        id: visibleColumns[columnIndex]?.id ?? cell.columnId,
-                        label: cell.label,
-                        width: visibleColumns[columnIndex]?.width,
-                        field: fieldShimFor(cell.columnId, cell.label, undefined),
-                      },
-                      columnIndex,
-                    )}
+                    {/* The deviation columns aren't in the template, so formulas can't point at them. */}
+                    {!DEVIATION_COLUMN_IDS.has(cell.columnId) &&
+                      chrome.renderColumnHeaderExtra?.(
+                        v1Section,
+                        {
+                          id: visibleColumns[columnIndex]?.id ?? cell.columnId,
+                          label: cell.label,
+                          width: visibleColumns[columnIndex]?.width,
+                          field: fieldShimFor(cell.columnId, cell.label, undefined),
+                        },
+                        columnIndex,
+                      )}
                     {visibleColumns[columnIndex]?.units?.scope === "column" && (
                       <div className="mt-1 print:hidden">
                         <UnitSelector
@@ -441,6 +471,12 @@ const TableRenderer: React.FC<TableProps> = ({
                     )}
                   </th>
                 ))}
+                {hasRowActions && rowIndex === 0 && (
+                  <th
+                    rowSpan={headerGrid.rows.length}
+                    className={`${ROW_ACTION_CLASS} border ${BORDER} bg-neutral-50 dark:bg-dark-200`}
+                  />
+                )}
               </tr>
             ))}
           </thead>
@@ -460,6 +496,7 @@ const TableRenderer: React.FC<TableProps> = ({
                 visibleColumns={visibleColumns}
                 columnIndexById={columnIndexById}
                 totalColumns={totalColumns}
+                hasRowActions={hasRowActions}
               />
             ))}
             {info.shownRowCount < info.rowCount &&
@@ -500,6 +537,7 @@ const TableRenderer: React.FC<TableProps> = ({
                           visibleColumns={visibleColumns}
                         />
                       ))}
+                      {hasRowActions && <td className={`${ROW_ACTION_CLASS} border ${BORDER}`} />}
                     </tr>
                   );
                 })}
@@ -529,6 +567,7 @@ const BodyRow: React.FC<{
   visibleColumns: ColumnV2[];
   columnIndexById: Map<string, number>;
   totalColumns: number;
+  hasRowActions: boolean;
 }> = ({
   v1Section,
   section,
@@ -541,6 +580,7 @@ const BodyRow: React.FC<{
   visibleColumns,
   columnIndexById,
   totalColumns,
+  hasRowActions,
 }) => {
   const gutter = chrome.rowGutter;
   const splitClass =
@@ -639,6 +679,11 @@ const BodyRow: React.FC<{
           visibleColumns={visibleColumns}
         />
       ))}
+      {hasRowActions && (
+        <td className={`${ROW_ACTION_CLASS} border ${BORDER} px-1 py-1 text-center`}>
+          {row.dataIndex >= 0 ? chrome.renderRowAction?.(v1Section, row.dataIndex) : null}
+        </td>
+      )}
     </tr>
   );
 };
@@ -663,15 +708,6 @@ const BodyCell: React.FC<{
     cell.kind === "static";
 
   const slot = cellSlot(v1Section, cell, column, columnIndex, row, readOnly);
-  const adornment = chrome.renderCellAdornment?.(slot);
-
-  const content =
-    cell.kind === "empty" ? null : (
-      <>
-        {chrome.renderControl(slot)}
-        {adornment}
-      </>
-    );
 
   return (
     <td
@@ -686,6 +722,7 @@ const BodyCell: React.FC<{
         ALIGN_CLASS[cell.align ?? column?.align ?? "left"],
         EMPHASIS_CLASS[cell.emphasis ?? "none"],
         state.printable ? "" : "print:hidden",
+        colSpan === 1 && isResultColumn(v1Section, column) ? "cf-result-col" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -693,11 +730,7 @@ const BodyCell: React.FC<{
         colSpan === 1 && column?.width ? { width: column.width } : undefined
       }
     >
-      {adornment ? (
-        <div className="flex items-center gap-1">{content}</div>
-      ) : (
-        content
-      )}
+      {cell.kind === "empty" ? null : chrome.renderControl(slot)}
     </td>
   );
 };
@@ -1052,7 +1085,7 @@ export const SectionBodyV2: React.FC<SectionBodyV2Props> = ({
                 ].map((label, i) => (
                   <th
                     key={i}
-                    className={`border ${BORDER} bg-neutral-50 dark:bg-dark-200 ${density.th}`}
+                    className={`border ${BORDER} bg-neutral-50 dark:bg-dark-200 ${density.th} ${i === 2 ? "cf-result-col" : ""}`}
                   >
                     {label}
                   </th>
@@ -1068,7 +1101,7 @@ export const SectionBodyV2: React.FC<SectionBodyV2Props> = ({
                   <td className={`border ${BORDER} px-3 py-2 text-sm`}>
                     {item.description}
                   </td>
-                  <td className={`border ${BORDER} ${density.td}`}>
+                  <td className={`cf-result-col border ${BORDER} ${density.td}`}>
                     {chrome.renderControl({
                       section: v1Section,
                       field: {

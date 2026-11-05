@@ -65,6 +65,20 @@ export function createPlaceholderControlRenderer(
       field.cellBehavior === "populate" ||
       field.cellBehavior === "calculate";
 
+    const preset =
+      cell && !auto ? section.cellDefaults?.[cellKey(cell.rowIndex, cell.colId)] : undefined;
+    if (preset) {
+      return (
+        <div
+          className={`${boxHeight(slot, compact)} bg-neutral-100 dark:bg-dark-100 px-1 flex items-center`}
+        >
+          <span className="text-[11px] text-neutral-700 dark:text-neutral-300 truncate">
+            {preset}
+          </span>
+        </div>
+      );
+    }
+
     return (
       <div
         className={`${boxHeight(slot, compact)} ${

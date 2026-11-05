@@ -17,6 +17,7 @@ import { toast } from "@/components/ui/toast";
 import { Database, History, ArrowLeft, Save, Printer, Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ReportWrapper } from "@/components/reports/ReportWrapper";
+import { seedReportLayout, usesLegacyLayout } from "@/lib/customForms/reportLayout";
 import { ReportPhotosButton } from "@/components/reports/common/ReportPhotos";
 import { ReportStatusButton } from "@/components/reports/common/ReportStatusButton";
 import {
@@ -59,6 +60,7 @@ import { fahrenheitToCelsius, getRoundedTCF } from "@/lib/utils/temperatureCorre
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import {
   defaultSettingValue,
+  seedCellDefaults,
   seedContactResistanceRows,
   type ControlSlot,
   type FormData,
@@ -349,10 +351,13 @@ export const CustomFormFiller: React.FC = () => {
     toast({ title: `Filled from ${equipmentAsset.identifier || "the asset"}`, variant: "success" });
   };
 
-  // Contact-resistance sections open with their named rows already in place.
+  // New forms open with contact-resistance rows and per-row defaults in place,
+  // and are marked as using the current layout rules.
   useEffect(() => {
     if (!template || existingInstanceId != null) return;
-    setFormData((prev) => seedContactResistanceRows(template, prev));
+    setFormData((prev) =>
+      seedReportLayout(seedCellDefaults(template, seedContactResistanceRows(template, prev))),
+    );
   }, [template, existingInstanceId]);
 
   /**
@@ -515,6 +520,8 @@ export const CustomFormFiller: React.FC = () => {
   const paper = usePaperView();
   // Formulas may read the shared lookup tables; re-render once they load.
   useLookupTables();
+  // A saved report without the mark keeps printing as it was issued.
+  const legacyLayout = existingInstanceId != null && usesLegacyLayout(formData);
   const chrome = useFillChrome({
     template,
     formData,
@@ -523,6 +530,7 @@ export const CustomFormFiller: React.FC = () => {
     renderControlOverride,
     bindingValues,
     instanceRows,
+    legacyLayout,
   });
 
   /**
@@ -847,7 +855,7 @@ export const CustomFormFiller: React.FC = () => {
             </div>
           )}
           <div
-            className="custom-form-container bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-4 md:p-6 print:shadow-none print:border-0 print:rounded-none print:p-0"
+            className={`custom-form-container ${legacyLayout ? "cf-legacy-layout" : ""} bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-4 md:p-6 print:shadow-none print:border-0 print:rounded-none print:p-0`}
             style={paper.sheetStyle}
           >
             <div className={`${PAPER_TOOLBAR_CLASS} print:hidden flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b border-neutral-200 dark:border-neutral-700`}>

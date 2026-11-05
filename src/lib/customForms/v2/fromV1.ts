@@ -94,7 +94,12 @@ function controlFromV1(field: FieldConfig): ControlV2 {
     case "date":
       return { type: "date" };
     case "select":
-      return { type: "select", options: optionsFromV1(field), allowBlank: true };
+      return {
+        type: "select",
+        options: optionsFromV1(field),
+        allowBlank: true,
+        placeholder: field.placeholder,
+      };
     case "radio":
       return {
         type: "radio-group",

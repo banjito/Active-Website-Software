@@ -219,11 +219,13 @@ const PAPER_CSS = `
     padding: 2px 0 0 4px !important;
   }
 
-  /* Static cell text uses the cell's size and padding, like the headers. */
-  ${SHEET} td .cf-static-text {
+  /* Static and calculated cell text use the cell's size and padding, like the headers. */
+  ${SHEET} td .cf-static-text,
+  ${SHEET} td .cf-calc-value {
     font-size: inherit !important;
     line-height: inherit !important;
     padding: 0 !important;
+    min-height: 0 !important;
   }
   ${SHEET} td div[class*="uppercase"] {
     font-size: 8px !important;

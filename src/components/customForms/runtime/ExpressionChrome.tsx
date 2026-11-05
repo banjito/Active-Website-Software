@@ -7,6 +7,19 @@ import { blankTcfText } from "@/lib/customForms/reportLayout";
 
 const ERROR_CLASS = "block whitespace-normal break-words border border-red-300 bg-red-50 p-2 text-xs text-red-900 dark:border-red-700 dark:bg-red-950 dark:text-red-200 rounded-none print:border-black print:bg-white print:text-black";
 
+/**
+ * Show a calculated number the way Excel's General format would. Floating-point
+ * math leaves noise (12.4 * 1.002 = 12.424800000000001), and in a narrow table
+ * column that long string wraps one digit per line. Display only: the stored
+ * value is untouched.
+ */
+function displayCalcValue(value: unknown): string {
+  if (value === null || value === undefined) return "—";
+  if (Array.isArray(value)) return value.map(displayCalcValue).join(", ");
+  if (typeof value === "number" && Number.isFinite(value)) return String(Number(value.toPrecision(10)));
+  return String(value);
+}
+
 /** No per-mode formula implementation: preview, fill, read-only and print wrap the same chrome. */
 export function useExpressionChrome(structure: CustomFormStructure, chrome: SectionChrome): { chrome: SectionChrome; issues: ExpressionIssue[] } {
   const compiled = React.useMemo(() => compileFormExpressions(structure), [structure]);
@@ -38,7 +51,8 @@ export function useExpressionChrome(structure: CustomFormStructure, chrome: Sect
         if (program.calculationIds.has(id)) {
           if (result && !result.ok) return <span role="alert" className={ERROR_CLASS}>Calculation error: {result.issues[0].message}</span>;
           const value = result?.ok ? result.value : null;
-          return <span data-expression-target={id} className="block min-h-6 whitespace-pre-wrap break-words px-2 py-1.5 text-sm text-neutral-900 dark:text-white print:text-black print:whitespace-normal">{value === null ? (source.field.id === "tcf" && blankTcfText(values)) || "—" : Array.isArray(value) ? value.join(", ") : String(value)}</span>;
+          return <span data-expression-target={id} className="cf-calc-value block min-h-6 whitespace-pre-wrap break-words px-2 py-1.5 text-sm text-neutral-900 dark:text-white print:text-black print:whitespace-normal">{(value === null && source.field.id === "tcf" && blankTcfText(values)) || displayCalcValue(value)}
+</span>;
         }
         // V1 data uses field.id, which need not equal the V2 column.id shim.
         const input = chrome.renderControl({ ...slot, field: { ...source.field, readOnly: slot.readOnly || source.field.readOnly }, ...(slot.cell ? { cell: { ...slot.cell, column: { ...slot.cell.column, field: source.field } } } : {}) });

@@ -408,6 +408,8 @@ function validateSettings(
     "includeJobInfo",
     "includePrintHeader",
     "pageBreakAfterSection",
+    // The builder's Equipment type dropdown and the re-flow dialog read it.
+    "equipmentType",
   ]);
   for (const key of Object.keys(settings)) {
     if (!allowed.has(key)) {

@@ -3,6 +3,7 @@ import { User as UserIcon, FileText, Edit3 } from "lucide-react";
 import { EditProfilePopup } from "../profile/EditProfilePopup";
 import { EmailDigestPreferences } from "../settings/EmailDigestPreferences";
 import { JobDefaultTabPreference } from "../settings/JobDefaultTabPreference";
+import { ReportReturnPositionPreference } from "../settings/ReportReturnPositionPreference";
 import { isSuperUser } from "@/lib/roles";
 
 export interface SettingsSubmenuUser {
@@ -90,6 +91,8 @@ export const SettingsSubmenu: React.FC<SettingsSubmenuProps> = ({
             }
           />
         )}
+
+        {currentUser?.id && <ReportReturnPositionPreference />}
 
         {currentUser?.id && (
           <EmailDigestPreferences

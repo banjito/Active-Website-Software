@@ -95,6 +95,11 @@ function ConfirmDialogView({
 export function confirmDialog(options: ConfirmDialogOptions): Promise<boolean> {
   return new Promise((resolve) => {
     const host = document.createElement("div");
+    // An open Radix dialog sets pointer-events: none on <body>, which would
+    // make this popup unclickable. It also treats a press anywhere outside
+    // itself as "click away to close", so keep presses here from reaching it.
+    host.style.pointerEvents = "auto";
+    host.addEventListener("pointerdown", (e) => e.stopPropagation());
     document.body.appendChild(host);
     const root = createRoot(host);
     let settled = false;

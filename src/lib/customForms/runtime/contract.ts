@@ -98,10 +98,8 @@ export interface SectionChrome {
     value: string,
   ): void;
 
-  /** A saved report from before the current layout rules (see reportLayout.ts). */
-  legacyLayout?: boolean;
-  /** A button for one table row, kept after the last column (row delete, etc.). Never prints. */
-  renderRowAction?(section: SectionConfig, rowIndex: number): ReactNode;
+  /** Extra content inside a table cell, after the control (row delete, etc.). */
+  renderCellAdornment?(slot: ControlSlot): ReactNode;
   /** Extra content in a column header, under the label (reference codes). */
   renderColumnHeaderExtra?(
     section: SectionConfig,

@@ -1556,6 +1556,14 @@ export const FormBuilder: React.FC = () => {
               formulaEditingSectionId={formulaEditingSectionId}
               onCellFormulaChange={handleCellFormulaChange}
               reorderable={false}
+              onRequestEditFormulas={(sectionId) => {
+                if (template.structure.expressions !== undefined) {
+                  toast("Use the Typed calculations panel above to edit stable formulas.");
+                  return;
+                }
+                setSelectedSectionId(sectionId);
+                setFormulaEditingSectionId(sectionId);
+              }}
             />
 
             {template.structure.sections.length === 0 && (

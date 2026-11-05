@@ -17,9 +17,11 @@ import { removeColumn } from '@/lib/customForms/v2/authoring';
 
 export type TablePieceKind =
   | 'columns'
-  /** Separate Value Deviation tables in saved layouts; dropped when resolved. */
+  /** Per-row Value Deviation table (one line per main-table row). */
   | 'deviation-phase'
+  /** Fixed Value Deviation lines (Neutral, Ground, ...). */
   | 'deviation-lines'
+  /** Both Value Deviation tables as one. */
   | 'deviation-combined';
 
 export interface TablePiece {
@@ -37,12 +39,18 @@ export interface TableLayout {
   rows: TablePiece[][];
 }
 
+const isDeviation = (kind: TablePieceKind) => kind !== 'columns';
+
 export const PIECE_LABELS: Record<TablePieceKind, string> = {
   columns: 'Table',
   'deviation-phase': 'Value Deviation (per row)',
   'deviation-lines': 'Value Deviation (lines)',
   'deviation-combined': 'Value Deviation',
 };
+
+function hasDeviation(section: SectionConfig): boolean {
+  return section.componentType === 'contact-resistance' && section.showDeviation !== false;
+}
 
 /**
  * Flex sizing for a piece: widths in proportion to `grow` (2× is twice as wide
@@ -68,16 +76,22 @@ export function defaultTableLayout(section: SectionConfig): TableLayout {
   if (section.columns?.length) {
     rows.push([{ id: 'main', kind: 'columns', columnIds: section.columns.map((c) => c.id) }]);
   }
+  if (hasDeviation(section)) {
+    rows.push([
+      { id: 'deviation-phase', kind: 'deviation-phase' },
+      { id: 'deviation-lines', kind: 'deviation-lines' },
+    ]);
+  }
   return { rows };
 }
 
 /**
  * A section's layout made consistent with its current columns: unknown
- * columns dropped, new columns added to the first table piece, empty rows
- * dropped. Works on any stored layout, however stale. Deviation pieces are
- * dropped too, unless an older report still shows them (`keepOldDeviation`).
+ * columns dropped, new columns added to the first table piece, deviation
+ * pieces added/removed with the "Show Value Deviation" switch, empty rows
+ * dropped. Works on any stored layout, however stale.
  */
-export function resolveTableLayout(section: SectionConfig, keepOldDeviation = false): TableLayout {
+export function resolveTableLayout(section: SectionConfig): TableLayout {
   const stored = section.tableLayout;
   if (!stored?.rows?.length) return defaultTableLayout(section);
 
@@ -85,11 +99,12 @@ export function resolveTableLayout(section: SectionConfig, keepOldDeviation = fa
   const known = new Set(columnIds);
   const order = new Map(columnIds.map((id, i) => [id, i]));
   const byOrder = (a: string, b: string) => (order.get(a) ?? 0) - (order.get(b) ?? 0);
+  const deviation = hasDeviation(section);
 
   const assigned = new Set<string>();
   let rows = stored.rows.map((row) =>
     row
-      .filter((p) => p.kind === 'columns' || keepOldDeviation)
+      .filter((p) => (isDeviation(p.kind) ? deviation : true))
       .map((p) => {
         if (p.kind !== 'columns') return p;
         const own = (p.columnIds ?? []).filter((id) => known.has(id) && !assigned.has(id));
@@ -115,7 +130,7 @@ export function resolveTableLayout(section: SectionConfig, keepOldDeviation = fa
   }
 
   // Deviation turned on after the layout was saved.
-  if (keepOldDeviation && !rows.flat().some((p) => p.kind !== 'columns')) {
+  if (deviation && !rows.flat().some((p) => isDeviation(p.kind))) {
     rows.push([
       { id: 'deviation-phase', kind: 'deviation-phase' },
       { id: 'deviation-lines', kind: 'deviation-lines' },
@@ -205,7 +220,10 @@ export function splitPiece(layout: TableLayout, pieceId: string, afterColumnId: 
 
 /** Can these two pieces be combined into one table? */
 export function canCombine(a: TablePiece, b: TablePiece): boolean {
-  return a.id !== b.id && a.kind === 'columns' && b.kind === 'columns';
+  if (a.id === b.id) return false;
+  if (a.kind === 'columns' && b.kind === 'columns') return true;
+  const pair = new Set([a.kind, b.kind]);
+  return pair.has('deviation-phase') && pair.has('deviation-lines');
 }
 
 /** Combine piece `b` into piece `a` (which keeps its place). */
@@ -219,16 +237,37 @@ export function combinePieces(
   const b = layout.rows.flat().find((p) => p.id === bId);
   if (!a || !b || !canCombine(a, b)) return layout;
   const order = new Map(columnOrder.map((id, i) => [id, i]));
-  const merged: TablePiece = {
-    ...a,
-    columnIds: [...(a.columnIds ?? []), ...(b.columnIds ?? [])].sort(
-      (x, y) => (order.get(x) ?? 0) - (order.get(y) ?? 0)
-    ),
-    repeatColumnIds: (a.repeatColumnIds ?? []).filter((id) => !(b.columnIds ?? []).includes(id)),
-  };
+  const merged: TablePiece =
+    a.kind === 'columns'
+      ? {
+          ...a,
+          columnIds: [...(a.columnIds ?? []), ...(b.columnIds ?? [])].sort(
+            (x, y) => (order.get(x) ?? 0) - (order.get(y) ?? 0)
+          ),
+          repeatColumnIds: (a.repeatColumnIds ?? []).filter(
+            (id) => !(b.columnIds ?? []).includes(id)
+          ),
+        }
+      : { id: a.id, kind: 'deviation-combined', grow: a.grow };
   return clean(
     layout.rows.map((row) =>
       row.filter((p) => p.id !== bId).map((p) => (p.id === aId ? merged : p))
+    )
+  );
+}
+
+/** Split a combined Value Deviation table back into its two tables, side by side. */
+export function separateDeviation(layout: TableLayout, pieceId: string): TableLayout {
+  return clean(
+    layout.rows.map((row) =>
+      row.flatMap((p) =>
+        p.id === pieceId && p.kind === 'deviation-combined'
+          ? [
+              { id: 'deviation-phase', kind: 'deviation-phase' as const, grow: p.grow },
+              { id: 'deviation-lines', kind: 'deviation-lines' as const, grow: p.grow },
+            ]
+          : [p]
+      )
     )
   );
 }

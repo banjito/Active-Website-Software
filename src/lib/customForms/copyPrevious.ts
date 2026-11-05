@@ -8,7 +8,6 @@
  */
 
 import type { CustomFormStructure, SectionConfig } from '@/lib/types/customForms';
-import { INLINE_DEVIATION_KEY } from '@/lib/customForms/deviation';
 
 type FormData = Record<string, Record<string, any>>;
 
@@ -24,8 +23,6 @@ function sectionForKey(key: string, sections: readonly SectionConfig[]): Section
 
 function visitOnlyField(section: SectionConfig, fieldId: string): boolean {
   if (/__(signature|signedAt|signedBy)$/.test(fieldId)) return true;
-  // Says how this report was created, so it must not pass to another one.
-  if (fieldId === INLINE_DEVIATION_KEY) return true;
   const field =
     section.fields?.find((f) => f.id === fieldId) ??
     (section.field?.id === fieldId ? section.field : undefined) ??

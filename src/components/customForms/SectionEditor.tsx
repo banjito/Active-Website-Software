@@ -25,16 +25,6 @@ import { ResultRuleEditor, DEFAULT_RESULT_RULE } from "./ResultRuleEditor";
 import { EquipmentPickerSettings } from "./EquipmentPickerSettings";
 import { AssetSourceSelect } from "./AssetSourceSelect";
 import { ChartSettings } from "./ChartSettings";
-import {
-  CellDefaultInput,
-  HINT_TITLE,
-  canHaveCellDefault,
-  canHaveHint,
-} from "./CellDefaultInput";
-import {
-  contactResistanceRowLabels,
-  resolveRowCount,
-} from "@/lib/customForms/runtime/layout";
 import { ChecklistWidthInput } from "./ChecklistWidthInput";
 import { hasCombinedTemperatureField, splitTemperatureHumidity } from "@/lib/customForms/temperatureFields";
 import {
@@ -667,7 +657,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                   htmlFor="showDeviation"
                   className="text-sm text-neutral-700 dark:text-neutral-300"
                 >
-                  Show Phase Value Deviation columns
+                  Show Value Deviation (Phase / Neutral / Ground)
                 </label>
               </div>
             )}
@@ -1787,9 +1777,7 @@ const ColumnEditor: React.FC<{
         index: i,
         label: r.label || `Row ${i + 1}`,
       }))
-    : Array.from({
-        length: parentSection ? resolveRowCount(parentSection) : 0,
-      }).map((_, i) => ({
+    : Array.from({ length: parentSection?.rows ?? 0 }).map((_, i) => ({
         index: i,
         label: `Row ${i + 1}`,
       }));
@@ -1799,32 +1787,6 @@ const ColumnEditor: React.FC<{
     if (val === "") delete next[key];
     else next[key] = val;
     onSectionUpdate?.({ staticCells: next });
-  };
-
-  // Contact resistance keeps its first column's starting text as row labels.
-  const isRowLabelColumn =
-    parentSection?.componentType === ComponentType.CONTACT_RESISTANCE &&
-    !parentSection.conditionalRows?.length &&
-    field.id === "busSection";
-  const rowLabels =
-    isRowLabelColumn && parentSection ? contactResistanceRowLabels(parentSection) : [];
-  const cellDefaultAt = (rowIndex: number) =>
-    isRowLabelColumn
-      ? (rowLabels[rowIndex] ?? "")
-      : (parentSection?.cellDefaults?.[`row${rowIndex}_${column.id}`] ?? "");
-  const setCellDefault = (rowIndex: number, val: string) => {
-    if (isRowLabelColumn) {
-      const labels = [...rowLabels];
-      while (labels.length <= rowIndex) labels.push("");
-      labels[rowIndex] = val;
-      onSectionUpdate?.({ defaultRowLabels: labels });
-      return;
-    }
-    const key = `row${rowIndex}_${column.id}`;
-    const next = { ...(parentSection?.cellDefaults ?? {}) };
-    if (val === "") delete next[key];
-    else next[key] = val;
-    onSectionUpdate?.({ cellDefaults: next });
   };
 
   const handleBehaviorChange = (
@@ -1899,17 +1861,9 @@ const ColumnEditor: React.FC<{
   const showEquipment = behavior === "user" && !isResult && !!parentSection;
   const showFormulaRefs = behavior === "calculate" && !isResult && refOptions.length > 0;
   const showStaticRows = behavior === "static" && staticRows.length > 0;
-  const showRowDefaults =
-    behavior === "user" && !isResult && canHaveCellDefault(field) && staticRows.length > 0;
   const showVisibleWhen = !!settingFields && settingFields.length > 0;
   const hasSecondRow =
-    showOptions ||
-    showFormulaRefs ||
-    showStaticRows ||
-    showRowDefaults ||
-    showVisibleWhen ||
-    isResult ||
-    showEquipment;
+    showOptions || showFormulaRefs || showStaticRows || showVisibleWhen || isResult || showEquipment;
 
   return (
     <div className="bg-neutral-50 dark:bg-dark-100 rounded-none px-2 py-1.5 space-y-1.5">
@@ -1984,17 +1938,6 @@ const ColumnEditor: React.FC<{
             <option value={FieldType.TEXTAREA}>Text Area</option>
             <option value={FieldType.CHECKBOX}>Checkbox</option>
           </select>
-        )}
-        {behavior === "user" && !isResult && canHaveHint(field) && (
-          <input
-            value={field.placeholder ?? ""}
-            onChange={(e) =>
-              onUpdate({ field: { ...field, placeholder: e.target.value || undefined } })
-            }
-            placeholder="Hint"
-            title={HINT_TITLE}
-            className={`${inlineInputCls} w-28`}
-          />
         )}
         {behavior === "populate" && (
           <select
@@ -2204,27 +2147,6 @@ const ColumnEditor: React.FC<{
             </div>
           )}
 
-          {showRowDefaults && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                Default per row:
-              </span>
-              {staticRows.map((r) => (
-                <label key={r.index} className="flex items-center gap-1">
-                  <span className="text-[10px] text-neutral-500 dark:text-neutral-400 max-w-[6rem] truncate">
-                    {r.label}
-                  </span>
-                  <CellDefaultInput
-                    field={field}
-                    value={cellDefaultAt(r.index)}
-                    onChange={(next) => setCellDefault(r.index, next)}
-                    className={`${inlineInputCls} w-28`}
-                  />
-                </label>
-              ))}
-            </div>
-          )}
-
           {showVisibleWhen &&
             settingFields!.map((sf) => {
               const current = column.visibleWhen?.[sf.id];
@@ -2419,16 +2341,6 @@ const FieldEditor: React.FC<{
           <option value={FieldType.SIGNATURE}>Signature</option>
           <option value={FieldType.PHOTO}>Photos</option>
         </select>
-
-        {canHaveHint(field) && (
-          <input
-            value={field.placeholder ?? ""}
-            onChange={(e) => onUpdate({ placeholder: e.target.value || undefined })}
-            placeholder="Hint"
-            title={HINT_TITLE}
-            className={`${inlineInputCls} w-28`}
-          />
-        )}
 
         {field.unit !== undefined && (
           <input

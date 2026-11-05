@@ -22,11 +22,6 @@ import {
   rowStateKey,
 } from "./layout";
 import { defaultSettingValue } from "./visibility";
-import {
-  INLINE_DEVIATION_KEY,
-  resolveDeviation,
-  usesLegacyDeviation,
-} from "@/lib/customForms/deviation";
 
 export type FormData = Record<string, any>;
 
@@ -132,12 +127,8 @@ export function withConditionalRowAdded(
 ): MutationResult {
   const nextTemplate = mapSections(template, (s) => {
     if (s.id !== sectionId || !s.conditionalRows) return s;
-    // Rows can be removed from anywhere, so the count alone may be taken.
-    const taken = new Set(s.conditionalRows.map((r) => r.id));
-    let number = s.conditionalRows.length;
-    while (taken.has(`row${number}`)) number += 1;
     const row: ConditionalRowConfig = {
-      id: `row${number}`,
+      id: `row${s.conditionalRows.length}`,
       label: `Row ${s.conditionalRows.length + 1}`,
       visibleWhen: {},
     };
@@ -152,103 +143,42 @@ export function withConditionalRowAdded(
   return { template: nextTemplate, formData };
 }
 
-/** A per-cell map with one row taken out and the rows below moved up. */
-function withoutRowKey(
-  map: Record<string, string> | undefined,
-  rowIndex: number,
-): Record<string, string> | undefined {
-  if (!map) return map;
-  const next: Record<string, string> = {};
-  for (const [key, value] of Object.entries(map)) {
-    const match = key.match(/^row(\d+)_(.*)$/);
-    const row = match ? Number(match[1]) : -1;
-    if (row === rowIndex) continue;
-    next[row > rowIndex ? cellKey(row - 1, match![2]) : key] = value;
-  }
-  return next;
-}
-
-/**
- * Remove one chosen row from a section and everything linked to it. The rows
- * below move up with all that belongs to them: their values, and their per-cell
- * text, formulas and defaults, so nothing ends up on the wrong row.
- */
-export function withRowRemoved(
+export function withConditionalRowRemoved(
   template: CustomFormTemplate,
   formData: FormData,
   sectionId: string,
-  rowIndex: number,
+  rowId: string,
 ): MutationResult {
-  const linked = linkedSections(template, sectionId);
-  if (linked.length === 0) return { template, formData };
-  const rowCountOf = (s: SectionConfig) =>
-    s.conditionalRows?.length || resolveRowCount(s);
-  const canShrink = (s: SectionConfig) =>
-    !!s.conditionalRows?.length || rowCountOf(s) > minRows(s);
-  const shrinking = new Set(linked.filter(canShrink).map((s) => s.id));
-  if (!shrinking.has(sectionId)) return { template, formData };
-
-  const nextTemplate = mapSections(template, (s) => {
-    if (!shrinking.has(s.id)) return s;
-    return {
-      ...s,
-      ...(s.conditionalRows?.length
-        ? { conditionalRows: s.conditionalRows.filter((_, i) => i !== rowIndex) }
-        : { rows: rowCountOf(s) - 1 }),
-      ...(s.calculationRowIds && {
-        calculationRowIds: s.calculationRowIds.filter((_, i) => i !== rowIndex),
-      }),
-      cellFormulas: withoutRowKey(s.cellFormulas, rowIndex),
-      staticCells: withoutRowKey(s.staticCells, rowIndex),
-      cellDefaults: withoutRowKey(s.cellDefaults, rowIndex),
-    };
-  });
-
-  const nextData = { ...formData };
-  for (const s of linked) {
-    if (!shrinking.has(s.id)) continue;
-    const rowCount = rowCountOf(s);
-    for (let i = rowIndex; i < rowCount - 1; i++) {
-      const below = formData[rowStateKey(s.id, i + 1)];
-      if (below === undefined) delete nextData[rowStateKey(s.id, i)];
-      else nextData[rowStateKey(s.id, i)] = below;
-    }
-    delete nextData[rowStateKey(s.id, rowCount - 1)];
-  }
-  return { template: nextTemplate, formData: nextData };
+  const nextTemplate = mapSections(template, (s) =>
+    s.id === sectionId && s.conditionalRows
+      ? {
+          ...s,
+          conditionalRows: s.conditionalRows.filter((r) => r.id !== rowId),
+        }
+      : s,
+  );
+  return { template: nextTemplate, formData };
 }
 
-/**
- * Starting values for one contact-resistance row. Only a new report's rows get
- * the in-line deviation mark; `legacy` is a row added to an older report.
- */
+/** Starting values for one contact-resistance row. */
 export function contactResistanceRowData(
   section: SectionConfig,
   rowIndex: number,
-  legacy = false,
 ): Record<string, any> {
   const labels = contactResistanceRowLabels(section);
   const row: Record<string, any> = {};
   (section.columns ?? []).forEach((col) => {
     const fieldId = col.field?.id ?? col.id;
-    const preset = section.cellDefaults?.[cellKey(rowIndex, col.id)];
     if (fieldId === "busSection") {
       row[fieldId] = labels[rowIndex] ?? `Section ${rowIndex + 1}`;
     } else if (fieldId === "unit") {
-      row[fieldId] = preset ?? col.field?.defaultValue ?? "μΩ";
+      row[fieldId] = col.field?.defaultValue ?? "μΩ";
     } else {
-      row[fieldId] = preset ?? "";
+      row[fieldId] = "";
     }
   });
-  if (legacy) {
-    row.phaseCriteria = "<50%";
-    row.phaseResult = "N/A";
-    return row;
-  }
-  const deviation = resolveDeviation(section);
-  row.phaseCriteria = deviation.phaseCriteriaDefault;
-  row.phaseResult = deviation.phaseResultDefault;
-  row[INLINE_DEVIATION_KEY] = true;
+  row.phaseCriteria = "<50%";
+  row.phaseResult = "N/A";
   return row;
 }
 
@@ -269,34 +199,13 @@ export function seedContactResistanceRows(
     for (let i = 0; i < rowCount; i++) {
       next[rowStateKey(section.id, i)] = contactResistanceRowData(section, i);
     }
-  }
-  return next;
-}
-
-/**
- * Fill a new instance's table cells with their per-row defaults. Stored as real
- * values so formulas, pass/fail and print all see them. Anything already in
- * formData is kept, including a cell the technician cleared.
- */
-export function seedCellDefaults(
-  template: CustomFormTemplate,
-  formData: FormData,
-): FormData {
-  let next = formData;
-  for (const section of template.structure.sections) {
-    if (!section.cellDefaults) continue;
-    const rowCount = section.conditionalRows?.length || resolveRowCount(section);
-    for (let i = 0; i < rowCount; i++) {
-      for (const col of section.columns ?? []) {
-        if ((col.field?.cellBehavior ?? "user") !== "user") continue;
-        const value = section.cellDefaults[cellKey(i, col.id)];
-        const fieldId = col.field?.id ?? col.id;
-        const stateKey = rowStateKey(section.id, i);
-        if (!value || next[stateKey]?.[fieldId] !== undefined) continue;
-        if (next === formData) next = { ...formData };
-        next[stateKey] = { ...next[stateKey], [fieldId]: value };
-      }
-    }
+    next[section.id] = {
+      ...(next[section.id] || {}),
+      neutralCriteria: "N/A",
+      neutralResult: "N/A",
+      groundCriteria: "N/A",
+      groundResult: "N/A",
+    };
   }
   return next;
 }
@@ -317,8 +226,29 @@ export function withContactResistanceRowAdded(
       [rowStateKey(sectionId, newIndex)]: contactResistanceRowData(
         section,
         newIndex,
-        usesLegacyDeviation(section, formData),
       ),
     },
   };
+}
+
+export function withContactResistanceRowRemoved(
+  template: CustomFormTemplate,
+  formData: FormData,
+  sectionId: string,
+  rowIndex: number,
+): MutationResult {
+  const section = template.structure.sections.find((s) => s.id === sectionId);
+  if (!section) return { template, formData };
+  const rowCount = resolveRowCount(section);
+  if (rowCount <= minRows(section)) return { template, formData };
+
+  const shrunk = withRowCountDelta(template, formData, sectionId, -1);
+  const nextData = { ...shrunk.formData };
+  // Pull every row below the removed one up so values stay with their label.
+  for (let i = rowIndex; i < rowCount - 1; i++) {
+    nextData[rowStateKey(sectionId, i)] =
+      formData[rowStateKey(sectionId, i + 1)] ?? {};
+  }
+  delete nextData[rowStateKey(sectionId, rowCount - 1)];
+  return { template: shrunk.template, formData: nextData };
 }

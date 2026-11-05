@@ -21,6 +21,7 @@ import {
   isDefaultLayout,
   movePiece,
   resolveTableLayout,
+  separateDeviation,
   splitPiece,
   updatePiece,
   type TableLayout,
@@ -207,6 +208,15 @@ export const TableLayoutEditor: React.FC<{
                 </option>
               ))}
             </select>
+          )}
+          {piece.kind === "deviation-combined" && (
+            <button
+              type="button"
+              onClick={() => commit(separateDeviation(layout, piece.id))}
+              className="h-6 px-2 text-[11px] border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-100 dark:hover:bg-dark-100"
+            >
+              Separate
+            </button>
           )}
         </div>
       </div>

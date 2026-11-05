@@ -11,6 +11,7 @@ import React from "react";
 import type { FieldConfig, SectionConfig } from "@/lib/types/customForms";
 import { cellKey, type ControlSlot } from "@/lib/customForms/runtime";
 import { getCellValue } from "@/lib/customForms/formCellResolution";
+import { phaseDeviation } from "@/lib/customForms/deviation";
 import { resultTone, type ResultTone } from "@/lib/customForms/resultRules";
 import { SignatureField } from "./SignatureField";
 import { PhotoField } from "./PhotoField";
@@ -63,6 +64,9 @@ export function resolveSlotValue(
   { formData, sections }: Pick<InteractiveControlOptions, "formData" | "sections">,
 ): { value: any; readOnly: boolean } {
   const { field, cell, section, stateKey } = slot;
+  if (field.id === "phaseMeasured") {
+    return { value: phaseDeviation(formData[stateKey]), readOnly: true };
+  }
   const hasCellFormula = cell
     ? !!section.cellFormulas?.[cellKey(cell.rowIndex, cell.colId)]?.trim()
     : false;
@@ -85,7 +89,9 @@ export function resolveSlotValue(
       )
     : formData[stateKey]?.[field.id] !== undefined
       ? formData[stateKey][field.id]
-      : (field.defaultValue ?? "");
+      : ((cell ? section.cellDefaults?.[cellKey(cell.rowIndex, cell.colId)] : undefined) ??
+        field.defaultValue ??
+        "");
 
   return {
     value: raw !== undefined && raw !== null ? raw : "",
@@ -281,7 +287,7 @@ export function createInteractiveControlRenderer(
           <textarea
             value={value}
             onChange={(e) => change(e.target.value)}
-            placeholder={field.placeholder}
+            placeholder={readOnly ? undefined : field.placeholder}
             rows={3}
             readOnly={readOnly}
             className={classes}
@@ -300,10 +306,10 @@ export function createInteractiveControlRenderer(
             disabled={readOnly}
             className={classes}
           >
-            {/* Value Deviation selects always carry a value, so they are the
-                one select without an empty prompt. */}
+            {/* An older report's Value Deviation selects always carry a value,
+                so they are the one select without an empty prompt. */}
             {slot.placement !== "deviation-cell" && (
-              <option value="">Select...</option>
+              <option value="">{field.placeholder || "Select..."}</option>
             )}
             {field.options?.map((opt: any, index: number) => {
               const optionValue = opt?.value ?? opt?.label ?? "";
@@ -358,7 +364,7 @@ export function createInteractiveControlRenderer(
             size={1}
             value={value}
             onChange={(e) => change(e.target.value)}
-            placeholder={field.placeholder}
+            placeholder={readOnly ? undefined : field.placeholder}
             readOnly={readOnly}
             className={classes}
           />
@@ -394,7 +400,7 @@ export function createInteractiveControlRenderer(
             size={1}
             value={value}
             onChange={(e) => change(e.target.value)}
-            placeholder={field.placeholder}
+            placeholder={readOnly ? undefined : field.placeholder}
             readOnly={readOnly}
             className={classes}
           />,

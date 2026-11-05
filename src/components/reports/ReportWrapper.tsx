@@ -780,6 +780,10 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
             padding: 0 !important;
           }
 
+          /* Result columns are centered. */
+          #report-container .custom-form-container:not(.cf-legacy-layout) th.cf-result-col,
+          #report-container .custom-form-container:not(.cf-legacy-layout) td.cf-result-col { text-align: center !important; }
+
           /* Field labels (CUSTOMER, SERIAL NUMBER, etc.) */
           #report-container .custom-form-container td div[class*="uppercase"] {
             font-size: 8px !important;
@@ -1396,6 +1400,10 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
         .force-print #report-container .visual-mechanical-table thead th:nth-child(3),
         .force-print #report-container .visual-mechanical-table tbody td:nth-child(3) { width: 15% !important; text-align: center !important; }
 
+        /* Custom form result columns are centered. */
+        .force-print #report-container .custom-form-container:not(.cf-legacy-layout) th.cf-result-col,
+        .force-print #report-container .custom-form-container:not(.cf-legacy-layout) td.cf-result-col { text-align: center !important; }
+
         /* PASS/FAIL status styles for force-print mode */
         .force-print .pass-fail-status-box {
           display: inline-block !important;
@@ -1927,6 +1935,9 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
         container.querySelectorAll("table"),
       ) as HTMLTableElement[];
       tables.forEach((tbl) => {
+        // Custom forms print the column widths their template sets, except
+        // reports issued before that (see lib/customForms/reportLayout.ts).
+        if (tbl.closest(".custom-form-container:not(.cf-legacy-layout)")) return;
         const headerCells = Array.from(
           tbl.querySelectorAll("thead th"),
         ) as HTMLTableCellElement[];

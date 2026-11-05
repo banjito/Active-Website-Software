@@ -6,24 +6,18 @@
  * through `SectionBodyV2`, so there is one renderer and V1 templates reach it
  * through the adapter rather than through a second code path.
  *
- * The contact-resistance value-deviation block is the one thing V2 does not
- * model as part of the table: it is a pair of side tables rendered here. Its
- * wording and choices come from `section.deviation` (defaults below), so they
- * are editable like the rest of the component.
+ * Contact resistance gets its Phase Value Deviation columns added here, so it
+ * draws like any other table (see lib/customForms/deviation.ts). Reports from
+ * before those columns keep their separate tables (LegacyValueDeviation).
  */
 
 import React from "react";
-import {
-  FieldType,
-  type FieldConfig,
-  type SectionConfig,
-} from "@/lib/types/customForms";
+import type { SectionConfig } from "@/lib/types/customForms";
 import {
   classifySection,
   resolveRowCount,
   rowStateKey,
   tablePrintStyles,
-  type ControlSlot,
   type SectionChrome,
 } from "@/lib/customForms/runtime";
 import { sectionFromV1 } from "@/lib/customForms/v2/fromV1";
@@ -33,6 +27,7 @@ import {
 } from "@/lib/customForms/v2/conditions";
 import { SectionBodyV2 } from "./SectionBodyV2";
 import { ChartSection } from "./ChartSection";
+import { LegacyValueDeviation } from "./LegacyValueDeviation";
 import {
   pieceFlex,
   pieceSection,
@@ -41,156 +36,12 @@ import {
 } from "@/lib/customForms/tableLayout";
 
 export { DEFAULT_DEVIATION, resolveDeviation } from "@/lib/customForms/deviation";
-import { resolveDeviation } from "@/lib/customForms/deviation";
+import { usesLegacyDeviation, withInlineDeviation } from "@/lib/customForms/deviation";
 
 export interface SectionBodyProps {
   section: SectionConfig;
   chrome: SectionChrome;
 }
-
-/** Synthetic field for a control the runtime owns rather than the template. */
-function selectField(
-  id: string,
-  label: string,
-  options: string[],
-  defaultValue?: string,
-): FieldConfig {
-  return {
-    id,
-    label,
-    type: FieldType.SELECT,
-    defaultValue,
-    options: options.map((value) => ({ label: value, value })),
-  };
-}
-
-/**
- * Contact resistance: the Value Deviation tables. `part` picks what to draw:
- * both side by side (the original layout), just one of them, or both merged
- * into one table (a table layout piece).
- */
-const ValueDeviation: React.FC<{
-  section: SectionConfig;
-  chrome: SectionChrome;
-  rowCount: number;
-  part?: "both" | "phase" | "lines" | "combined";
-}> = ({ section, chrome, rowCount, part = "both" }) => {
-  const headerCell =
-    "px-3 py-2 bg-neutral-50 dark:bg-dark-200 text-xs font-medium text-neutral-700 dark:text-white";
-  const dev = resolveDeviation(section);
-  const headings = (
-    <tr>
-      <th className={`${headerCell} text-left`}>{dev.headers.label}</th>
-      <th className={`${headerCell} text-center`}>{dev.headers.criteria}</th>
-      <th className={`${headerCell} text-center`}>{dev.headers.results}</th>
-    </tr>
-  );
-
-  const slot = (field: FieldConfig, stateKey: string): ControlSlot => ({
-    section,
-    field,
-    stateKey,
-    placement: "deviation-cell",
-  });
-
-  const phaseRows = Array.from({ length: rowCount }).map((_, rowIndex) => {
-              const stateKey = rowStateKey(section.id, rowIndex);
-              return (
-                <tr
-                  key={rowIndex}
-                  className="border-t border-neutral-200 dark:border-neutral-700"
-                >
-                  <td className="px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300">
-                    {dev.phaseLabel}
-                  </td>
-                  <td className="px-3 py-2">
-                    {chrome.renderControl(
-                      slot(
-                        selectField(
-                          "phaseCriteria",
-                          dev.headers.criteria,
-                          dev.phaseCriteriaOptions,
-                          dev.phaseCriteriaDefault,
-                        ),
-                        stateKey,
-                      ),
-                    )}
-                  </td>
-                  <td className="px-3 py-2">
-                    {chrome.renderControl(
-                      slot(
-                        selectField(
-                          "phaseResult",
-                          dev.headers.results,
-                          dev.phaseResultOptions,
-                          dev.phaseResultDefault,
-                        ),
-                        stateKey,
-                      ),
-                    )}
-                  </td>
-                </tr>
-              );
-            });
-
-  // Saved values are keyed `{id}Criteria` / `{id}Result` (neutralCriteria, ...).
-  const lineRows = dev.extraRows
-    .map(({ id, label }) => [label, `${id}Criteria`, `${id}Result`, id] as const)
-    .map(([label, criteriaId, resultId, rowId]) => (
-              <tr
-                key={rowId}
-                className="border-t border-neutral-200 dark:border-neutral-700"
-              >
-                <td className="px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300">
-                  {label}
-                </td>
-                <td className="px-3 py-2">
-                  {chrome.renderControl(
-                    slot(
-                      selectField(
-                        criteriaId,
-                        dev.headers.criteria,
-                        dev.extraCriteriaOptions,
-                        dev.extraDefault,
-                      ),
-                      section.id,
-                    ),
-                  )}
-                </td>
-                <td className="px-3 py-2">
-                  {chrome.renderControl(
-                    slot(
-                      selectField(
-                        resultId,
-                        dev.headers.results,
-                        dev.extraResultOptions,
-                        dev.extraDefault,
-                      ),
-                      section.id,
-                    ),
-                  )}
-                </td>
-              </tr>
-            ));
-
-  const table = (rows: React.ReactNode) => (
-    <table className="w-full table-fixed border-collapse border border-neutral-200 dark:border-neutral-700">
-      <thead>{headings}</thead>
-      <tbody>{rows}</tbody>
-    </table>
-  );
-
-  if (part === "phase") return table(phaseRows);
-  if (part === "lines") return lineRows.length ? table(lineRows) : null;
-  if (part === "combined") return table([...phaseRows, ...lineRows]);
-
-  return (
-    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-      <div className="w-full">{table(phaseRows)}</div>
-      {lineRows.length > 0 && <div className="w-full">{table(lineRows)}</div>}
-    </div>
-  );
-};
 
 /** One table piece of a split table: the same section, only some columns. */
 const ColumnsPiece: React.FC<{
@@ -212,8 +63,10 @@ const ColumnsPiece: React.FC<{
       renderColumnHeaderExtra: chrome.renderColumnHeaderExtra
         ? (s, col, i) => chrome.renderColumnHeaderExtra!(section, col, fullIndex.get(col.id) ?? i)
         : undefined,
-      // Add-row buttons and footers once per component, on the first table.
-      ...(primary ? {} : { renderSectionHeader: undefined, renderSectionFooter: undefined }),
+      // Row buttons and footers once per component, on the first table.
+      ...(primary
+        ? {}
+        : { renderSectionHeader: undefined, renderSectionFooter: undefined, renderRowAction: undefined }),
     };
   }, [chrome, section, primary]);
   return (
@@ -230,9 +83,14 @@ const ColumnsPiece: React.FC<{
 };
 
 export const SectionBody: React.FC<SectionBodyProps> = ({
-  section,
+  section: authored,
   chrome,
 }) => {
+  const legacy = usesLegacyDeviation(authored, chrome.conditionValues?.() ?? {});
+  const section = React.useMemo(
+    () => (legacy ? authored : withInlineDeviation(authored)),
+    [authored, legacy],
+  );
   const v2Section = React.useMemo(() => sectionFromV1(section), [section]);
   const { wrapperStyle, rowStyle } = tablePrintStyles(section.printLayout);
 
@@ -252,9 +110,8 @@ export const SectionBody: React.FC<SectionBodyProps> = ({
   );
 
   const kind = classifySection(section);
-  const showDeviation =
-    kind === "contact-resistance" && section.showDeviation !== false;
-  const deviationRowCount = Math.min(
+  const showLegacyDeviation = legacy && section.showDeviation !== false;
+  const legacyRowCount = Math.min(
     resolveRowCount(section),
     chrome.maxBodyRows ?? Number.POSITIVE_INFINITY,
   );
@@ -265,7 +122,7 @@ export const SectionBody: React.FC<SectionBodyProps> = ({
 
   // A custom table layout: pieces in rows (side by side, wrapping when narrow).
   if (section.tableLayout?.rows?.length && section.columns?.length) {
-    const layout = resolveTableLayout(section);
+    const layout = resolveTableLayout(section, showLegacyDeviation);
     const firstColumnsPiece = layout.rows.flat().find((p) => p.kind === "columns")?.id;
     return (
       <div className="space-y-4 print:space-y-2">
@@ -284,10 +141,10 @@ export const SectionBody: React.FC<SectionBodyProps> = ({
                     rowStyle={rowStyle}
                   />
                 ) : (
-                  <ValueDeviation
+                  <LegacyValueDeviation
                     section={section}
                     chrome={chrome}
-                    rowCount={deviationRowCount}
+                    rowCount={legacyRowCount}
                     part={
                       piece.kind === "deviation-phase"
                         ? "phase"
@@ -315,12 +172,8 @@ export const SectionBody: React.FC<SectionBodyProps> = ({
         wrapperStyle={wrapperStyle}
         rowStyle={rowStyle}
       />
-      {showDeviation && (
-        <ValueDeviation
-          section={section}
-          chrome={chrome}
-          rowCount={deviationRowCount}
-        />
+      {showLegacyDeviation && (
+        <LegacyValueDeviation section={section} chrome={chrome} rowCount={legacyRowCount} />
       )}
     </>
   );

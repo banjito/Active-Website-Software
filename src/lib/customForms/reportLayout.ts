@@ -14,6 +14,14 @@ export function seedReportLayout<T extends Record<string, any>>(formData: T): T 
   return { ...formData, [REPORT_LAYOUT_KEY]: { version: 2 } };
 }
 
+/**
+ * What a blank TCF shows. With no temperature there is no correction factor, and
+ * new reports say so. Saved reports without the mark keep showing blank.
+ */
+export function blankTcfText(formData: Record<string, any>): string {
+  return usesLegacyLayout(formData) ? '' : 'N/A';
+}
+
 /** Was this saved report created before the mark existed? */
 export function usesLegacyLayout(formData: Record<string, any>): boolean {
   return !formData[REPORT_LAYOUT_KEY];

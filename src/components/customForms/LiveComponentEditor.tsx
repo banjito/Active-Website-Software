@@ -60,6 +60,8 @@ import {
 } from "@/lib/customForms/asFoundAsLeft";
 import { resultRuleField } from "@/lib/customForms/resultRules";
 import { hasCombinedTemperatureField, splitTemperatureHumidity } from "@/lib/customForms/temperatureFields";
+import { jobFillLabel } from "@/lib/customForms/jobFill";
+import { JobFillControl } from "./JobFillControl";
 import { useLookupTables } from "@/lib/customForms/lookupLibrary";
 import { resolveDeviation } from "./runtime/SectionBody";
 
@@ -206,7 +208,9 @@ const iconBtn =
 const FieldTypeControls: React.FC<{
   field: FieldConfig;
   onChange: (patch: Partial<FieldConfig>) => void;
-}> = ({ field, onChange }) => (
+  /** A Job Details field: "Starts with" replaces the plain default value. */
+  jobInfo?: boolean;
+}> = ({ field, onChange, jobInfo }) => (
   <>
     <select
       value={field.type}
@@ -270,7 +274,8 @@ const FieldTypeControls: React.FC<{
         className={`${inlineInputCls} w-28`}
       />
     )}
-    {field.type !== FieldType.TEMPERATURE_HUMIDITY && field.type !== FieldType.CHECKBOX && (
+    {jobInfo && <JobFillControl field={field} onChange={onChange} />}
+    {!jobInfo && field.type !== FieldType.TEMPERATURE_HUMIDITY && field.type !== FieldType.CHECKBOX && (
       <input
         value={field.defaultValue ?? ""}
         onChange={(e) => onChange({ defaultValue: e.target.value || undefined })}
@@ -332,27 +337,6 @@ const FieldTypeControls: React.FC<{
             className={`${inlineInputCls} w-20`}
           />
         ))}
-        Defaults:
-        <input
-          type="number"
-          value={field.defaultTemperature ?? ""}
-          onChange={(e) =>
-            onChange({ defaultTemperature: e.target.value === "" ? undefined : Number(e.target.value) })
-          }
-          placeholder="68 °F"
-          title="Default temperature (°F)"
-          className={`${inlineInputCls} w-16`}
-        />
-        <input
-          type="number"
-          value={field.defaultHumidity ?? ""}
-          onChange={(e) =>
-            onChange({ defaultHumidity: e.target.value === "" ? undefined : Number(e.target.value) })
-          }
-          placeholder="50 %"
-          title="Default humidity (%)"
-          className={`${inlineInputCls} w-16`}
-        />
       </div>
     )}
     {(field.type === FieldType.SELECT || field.type === FieldType.RADIO) && (
@@ -926,6 +910,7 @@ const LiveFields: React.FC<{
           <FieldTypeControls
             field={selected}
             onChange={(patch) => updateField(selIndex, patch)}
+            jobInfo={section.componentType === ComponentType.JOB_INFO}
           />
           <div className="ml-auto flex items-center gap-0.5">
             <button
@@ -1015,6 +1000,9 @@ const LiveFields: React.FC<{
             <div className="h-5 flex items-center border-b border-neutral-200 dark:border-neutral-700">
               <MockControl field={field} />
             </div>
+            {section.componentType === ComponentType.JOB_INFO && jobFillLabel(field) && (
+              <div className="text-[10px] text-brand truncate">{jobFillLabel(field)}</div>
+            )}
             {n > 1 && (
               <div
                 onPointerDown={(e) => startSpanDrag(i, e)}

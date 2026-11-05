@@ -180,8 +180,8 @@ export async function runLowVoltageSwitchRegression(): Promise<void> {
   assert.deepEqual(ir.aboveTableFields!.map((field) => field.defaultValue), ["1000V", "MΩ"]);
   assert.equal(getSection("contact").aboveTableFields![0].defaultValue, "μΩ");
   assert.deepEqual(environment.fields!.map((field) => field.unit ?? ""), ["°F", "°C", "", "%"]);
-  assert.equal(environment.fields![0].defaultValue, 68);
-  assert.equal(environment.fields![3].defaultValue, 0);
+  assert.equal(environment.fields![0].defaultValue, undefined, "Temperature starts blank");
+  assert.equal(environment.fields![3].defaultValue, undefined, "Humidity starts blank");
   assert.deepEqual(choiceValues(getSection("result").fields![0]), ["PASS", "FAIL", "LIMITED SERVICE"]);
   assert.equal(getSection("result").fields![0].defaultValue, "PASS");
   assert.equal(getSection("job").fields!.find((field) => field.id === "date")!.defaultValue, undefined);
@@ -272,9 +272,9 @@ export async function runLowVoltageSwitchRegression(): Promise<void> {
     assert.equal(value(corrected, "poleToPoleP1P2", 0), Number((1.2345 * sourceTCF(fahrenheit)).toFixed(2)));
   }
   const defaults = evaluate({});
-  assert.equal(defaults(environment, "celsius"), 20);
-  assert.equal(defaults(environment, "tcf"), 1);
-  assert.equal(defaults(environment, "humidity"), 0);
+  assert.equal(defaults(environment, "celsius"), null);
+  assert.equal(defaults(environment, "tcf"), null);
+  assert.equal(defaults(environment, "humidity"), null);
   assert.equal(defaults(corrected, "units"), "MΩ");
   const fixture = createLowVoltageSwitchRegressionData();
   const values = evaluate(fixture);

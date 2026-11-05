@@ -4,6 +4,7 @@
 
 import type { CustomFormTemplate } from "@/lib/types/customForms";
 import { fahrenheitToCelsius, getRoundedTCF } from "@/lib/utils/temperatureCorrection";
+import { jobInfoStartValues } from "@/lib/customForms/jobFill";
 import { INLINE_DEVIATION_KEY, deviationResult, phaseDeviation } from "@/lib/customForms/deviation";
 import type { FormData } from "./rowMutations";
 
@@ -45,11 +46,34 @@ export function applyFieldChange(
 }
 
 /**
- * Seed the job-info temperature block from the template defaults, leaving a
- * value the user already entered alone. Returns the original object when there
- * is nothing to seed, so callers can skip a state update.
+ * Temperature and humidity outside Job Details, such as an Environmental Data
+ * section. Saved templates carry a default there too. A saved blank stays blank,
+ * where a missing value would use the default, so new reports get a blank.
  */
-export function seedTemperatureDefaults(
+export function seedBlankEnvironment(
+  template: CustomFormTemplate,
+  formData: FormData,
+): FormData {
+  let next = formData;
+  for (const section of template.structure.sections) {
+    if (section.componentType === "job-info") continue;
+    for (const field of section.fields ?? []) {
+      if (field.id !== "fahrenheit" && field.id !== "humidity") continue;
+      if (field.defaultValue === undefined || field.defaultValue === null) continue;
+      if (next[section.id]?.[field.id] !== undefined) continue;
+      if (next === formData) next = { ...formData };
+      next[section.id] = { ...next[section.id], [field.id]: "" };
+    }
+  }
+  return next;
+}
+
+/**
+ * Seed the Job Details block for a preview, which has no job: typed start values
+ * only, leaving anything already entered alone. Returns the original object when
+ * there is nothing to seed, so callers can skip a state update.
+ */
+export function seedJobInfoDefaults(
   template: CustomFormTemplate,
   formData: FormData,
 ): FormData {
@@ -58,41 +82,15 @@ export function seedTemperatureDefaults(
   );
   if (!jobInfo?.fields?.length) return formData;
 
-  const tempField = jobInfo.fields.find((f) => f.id === "temperature");
-  const tempHumidityField = jobInfo.fields.find(
-    (f) => f.id === "temperatureHumidity",
-  );
-
-  let fahrenheit: number | null = null;
-  let humidity = 50;
-  if (
-    tempField &&
-    tempField.defaultValue !== undefined &&
-    tempField.defaultValue !== ""
-  ) {
-    fahrenheit = parseFloat(String(tempField.defaultValue));
-  } else if (tempHumidityField?.defaultTemperature != null) {
-    fahrenheit = Number(tempHumidityField.defaultTemperature) || 68;
-    humidity = Number(tempHumidityField.defaultHumidity) || 50;
-  }
-  if (fahrenheit == null || isNaN(fahrenheit)) return formData;
-
   const existing = formData[jobInfo.id] || {};
-  if (existing.temperature !== undefined && existing.temperature !== "")
-    return formData;
-
-  const celsius = fahrenheitToCelsius(fahrenheit);
-  return {
-    ...formData,
-    [jobInfo.id]: {
-      ...existing,
-      temperature: String(fahrenheit),
-      temperatureCelsius: celsius.toFixed(2),
-      tcf: getRoundedTCF(celsius).toFixed(3),
-      humidity:
-        existing.humidity !== undefined && existing.humidity !== ""
-          ? existing.humidity
-          : String(humidity),
-    },
-  };
+  const block = { ...existing };
+  let changed = false;
+  for (const [key, value] of Object.entries(jobInfoStartValues(jobInfo.fields, {}))) {
+    const blank = existing[key] === undefined || existing[key] === null || existing[key] === "";
+    if (blank && existing[key] !== value) {
+      block[key] = value;
+      changed = true;
+    }
+  }
+  return changed ? { ...formData, [jobInfo.id]: block } : formData;
 }

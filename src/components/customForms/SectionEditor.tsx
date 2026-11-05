@@ -37,6 +37,7 @@ import {
 } from "@/lib/customForms/runtime/layout";
 import { ChecklistWidthInput } from "./ChecklistWidthInput";
 import { hasCombinedTemperatureField, splitTemperatureHumidity } from "@/lib/customForms/temperatureFields";
+import { JobFillControl } from "./JobFillControl";
 import {
   combineAsFoundAsLeft,
   pairForColumn,
@@ -1513,6 +1514,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                           id={field.id}
                           field={field}
                           gridColumns={fieldGridColumns}
+                          jobInfo={section.componentType === ComponentType.JOB_INFO}
                           onUpdate={(updates) => {
                             const newFields = [...(section.fields || [])];
                             newFields[index] = { ...field, ...updates };
@@ -1718,6 +1720,7 @@ const SortableFieldEditor: React.FC<{
   id: string;
   field: FieldConfig;
   gridColumns: number;
+  jobInfo?: boolean;
   onUpdate: (updates: Partial<FieldConfig>) => void;
   onDelete: () => void;
   onAppendOption?: () => void;
@@ -2345,6 +2348,8 @@ const FieldEditor: React.FC<{
   dragHandleProps?: Record<string, unknown>;
   /** Grid width of the parent grouped-field component; enables the span controls */
   gridColumns?: number;
+  /** A Job Details field, which can start from the job overview. */
+  jobInfo?: boolean;
 }> = ({
   field,
   onUpdate,
@@ -2353,6 +2358,7 @@ const FieldEditor: React.FC<{
   hideDelete,
   dragHandleProps,
   gridColumns,
+  jobInfo,
 }) => {
   const [addOptionCooldown, setAddOptionCooldown] = useState(false);
 
@@ -2485,6 +2491,8 @@ const FieldEditor: React.FC<{
         )}
 
         <AssetSourceSelect value={field.assetSource} onChange={(assetSource) => onUpdate({ assetSource })} />
+
+        {jobInfo && <JobFillControl field={field} onChange={onUpdate} />}
 
         <label className="flex items-center gap-1 text-xs text-neutral-700 dark:text-neutral-300 cursor-pointer">
           <input

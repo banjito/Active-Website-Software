@@ -69,6 +69,7 @@ import {
 } from "@/lib/customForms/layoutGroups";
 import { getComponentDefinition } from "@/lib/customForms/componentLibrary";
 import { getSectionReferenceCode } from "@/lib/customForms/formCellResolution";
+import { jobFillLabel } from "@/lib/customForms/jobFill";
 import {
   cellKey,
   classifySection,
@@ -183,6 +184,12 @@ const SectionPreview: React.FC<SectionPreviewProps> = ({
   );
   const kind = classifySection(section);
   const code = getSectionReferenceCode(section);
+  /** Where a Job Details field starts, so links show without opening each field. */
+  const startLabel = (fieldId: string) => {
+    if (section.componentType !== "job-info") return "";
+    const field = section.fields?.find((f) => f.id === fieldId);
+    return field ? jobFillLabel(field) : "";
+  };
 
   const renderFormulaCell = (slot: ControlSlot) => {
     const { cell } = slot;
@@ -262,6 +269,9 @@ const SectionPreview: React.FC<SectionPreviewProps> = ({
         >
           {`{${code}.${field.id}}`}
         </div>
+        {startLabel(field.id) && (
+          <div className="text-[10px] text-brand mt-0.5">{startLabel(field.id)}</div>
+        )}
       </>
     ),
     renderSectionFooter: (_section, info) => (

@@ -88,8 +88,10 @@ import {
   withRowRemoved,
 } from "../src/lib/customForms/runtime/rowMutations";
 import { copyPreviousReadings } from "../src/lib/customForms/copyPrevious";
-import { seedReportLayout, usesLegacyLayout } from "../src/lib/customForms/reportLayout";
-import { applyFieldChange } from "../src/lib/customForms/runtime/fieldChange";
+import { blankTcfText, seedReportLayout, usesLegacyLayout } from "../src/lib/customForms/reportLayout";
+import { applyFieldChange, seedBlankEnvironment, seedJobInfoDefaults } from "../src/lib/customForms/runtime/fieldChange";
+import { canHaveJobFill, jobFillContext, jobFillLabel, jobFillSourcesFor, jobInfoStartValues } from "../src/lib/customForms/jobFill";
+import { evaluateFormula } from "../src/lib/customForms/formCellResolution";
 import {
   deviationResult,
   phaseDeviation,
@@ -2415,6 +2417,139 @@ section("Layout groups: side by side, grid, page breaks");
       JSON.stringify(compiled.structure?.layout) === JSON.stringify(threeGrouped.layout) &&
       JSON.stringify(normalizeStructure(base).layout) === undefined,
     compiled.report.errors.map((e) => `${e.code}: ${e.message}`).join("; "),
+  );
+}
+
+section("Job Details start values");
+{
+  const job = {
+    job_number: "24-0113",
+    title: "Switchgear Testing",
+    end_user: "  Acme Data Center ",
+    site_address: "1 Main St",
+    start_date: "2026-01-15T00:00:00",
+    due_date: "2026-02-20",
+    estimated_man_hours: 40,
+    customer: { name: "Acme", company_name: "Acme Co", address: "9 Office Rd" },
+  };
+  const context = jobFillContext(job);
+  const today = context["report.today"];
+  const oldFields: any[] = [
+    { id: "customer", label: "Customer", type: "text" },
+    { id: "jobNumber", label: "Job #", type: "text" },
+    { id: "siteAddress", label: "Address", type: "text" },
+    { id: "date", label: "Date", type: "date" },
+    { id: "user", label: "User", type: "text" },
+    { id: "temperature", label: "Temp", type: "temperature", defaultValue: 68 },
+    { id: "humidity", label: "Humidity", type: "number", defaultValue: 50 },
+    { id: "tcf", label: "TCF", type: "number", readOnly: true },
+    { id: "substation", label: "Substation", type: "text", defaultValue: "North" },
+    { id: "identifier", label: "Identifier", type: "text" },
+  ];
+  const old = jobInfoStartValues(oldFields, context);
+  check("an older template keeps its built-in links", old.customer === "Acme Co" && old.jobNumber === "24-0113" && old.siteAddress === "1 Main St");
+  check("User comes from the job, trimmed", old.user === "Acme Data Center");
+  check("Date is today, not the job start", old.date === today);
+  check("a stored 68 / 50 no longer fills temperature or humidity", old.temperature === "" && old.humidity === "" && old.tcf === "" && old.temperatureCelsius === "");
+  check("an older typed default still applies", old.substation === "North");
+  check("a field with nothing to start with is left out, so the asset can fill it", !("identifier" in old));
+  check(
+    "no User on the job leaves the field blank",
+    jobInfoStartValues([{ id: "user", label: "User", type: "text" }] as any, jobFillContext({ end_user: "  " })).user === undefined,
+  );
+
+  const set = jobInfoStartValues([
+    { id: "title", label: "Project", type: "text", jobFill: { source: "job.title" } },
+    { id: "due", label: "Due", type: "date", jobFill: { source: "job.dueDate" } },
+    { id: "started", label: "Started", type: "date", jobFill: { source: "job.startDate" } },
+    { id: "dueText", label: "Due", type: "text", jobFill: { source: "job.dueDate" } },
+    { id: "hours", label: "Hours", type: "number", jobFill: { source: "job.estimatedManHours" } },
+    { id: "note", label: "Note", type: "text", jobFill: { value: "Annual PM" } },
+    { id: "customer", label: "Customer", type: "text", jobFill: {} },
+    { id: "substation", label: "Substation", type: "text", defaultValue: "North", jobFill: {} },
+    { id: "temperature", label: "Temp", type: "temperature", defaultValue: 68, jobFill: { value: "77" } },
+    { id: "humidity", label: "Humidity", type: "number", defaultValue: 50, jobFill: { value: "40" } },
+  ] as any, context);
+  check("a linked field copies the job value", set.title === "Switchgear Testing" && set.hours === "40");
+  check("a date field gets a plain date", set.due === "2026-02-20" && set.started === "2026-01-15");
+  check("a date in a text field prints the way dates print", set.dueText === "02/20/2026");
+  check("a typed value is used", set.note === "Annual PM");
+  check("Blank overrides a built-in link and an old default", !("customer" in set) && set.substation === "");
+  check("a chosen temperature fills °C and TCF", set.temperature === "77" && set.temperatureCelsius === "25.00" && set.tcf !== "");
+  check("a chosen humidity is used", set.humidity === "40");
+  check(
+    "a link the field's type can no longer hold starts blank",
+    jobInfoStartValues([{ id: "d", label: "D", type: "date", jobFill: { source: "customer.name" } }] as any, context).d === undefined,
+  );
+  check(
+    "demo mode masks customer details and hides the description",
+    (() => {
+      const masked = jobFillContext({ ...job, description: "Secret" }, { name: () => "Demo Co", address: () => "Demo St", hideDescription: true });
+      return masked["customer.name"] === "Demo Co" && masked["job.endUser"] === "Demo Co" && masked["site.address"] === "Demo St" && masked["job.description"] === "";
+    })(),
+  );
+  check(
+    "the combined temperature box starts blank",
+    (() => {
+      const combined = jobInfoStartValues([{ id: "temperatureHumidity", label: "Temp", type: "temperature-humidity", defaultTemperature: 76, defaultHumidity: 70 }] as any, context);
+      return combined.temperature === "" && combined.humidity === "" && combined.tcf === "";
+    })(),
+  );
+  check("TCF and signatures have no start setting", !canHaveJobFill({ id: "tcf", label: "TCF", type: "number" } as any) && !canHaveJobFill({ id: "s", label: "S", type: "signature" } as any));
+  check("temperature can only be typed", jobFillSourcesFor({ id: "temperature", label: "Temp", type: "temperature" } as any).length === 0);
+  check("a date field only offers dates", jobFillSourcesFor({ id: "d", label: "D", type: "date" } as any).every((s) => s.kind === "date"));
+  check(
+    "the builder labels where a field starts",
+    jobFillLabel({ id: "user", label: "User", type: "text" } as any) === "Job: User" &&
+      jobFillLabel({ id: "date", label: "Date", type: "date" } as any) === "Today's date" &&
+      jobFillLabel({ id: "n", label: "N", type: "text", jobFill: { value: "x" } } as any) === "Starts: x" &&
+      jobFillLabel({ id: "temperature", label: "Temp", type: "temperature", defaultValue: 68 } as any) === "",
+  );
+
+  const template: any = { structure: { sections: [{ id: "jd", componentType: "job-info", fields: oldFields }] } };
+  const seeded = seedJobInfoDefaults(template, {});
+  check("the preview starts blank too", seeded.jd.temperature === "" && seeded.jd.humidity === "");
+  check("seeding twice changes nothing", seedJobInfoDefaults(template, seeded) === seeded);
+  const typedIn = { jd: { temperature: "80", humidity: "33" } };
+  check("the preview keeps what was entered", seedJobInfoDefaults(template, typedIn).jd.temperature === "80");
+
+  const stored: any = { structure: { sections: [
+    { id: "jd", componentType: "job-info", fields: [{ id: "humidity", label: "Humidity", type: "number", defaultValue: 50 }] },
+    { id: "env", fields: [
+      { id: "fahrenheit", label: "Temp", type: "number", defaultValue: 68 },
+      { id: "humidity", label: "Humidity", type: "number", defaultValue: 0 },
+      { id: "other", label: "Other", type: "text", defaultValue: "kept" },
+    ] },
+  ] } };
+  const blanked = seedBlankEnvironment(stored, {});
+  check("a stored 68 outside Job Details starts blank too", blanked.env.fahrenheit === "" && blanked.env.humidity === "");
+  check("other defaults there are left alone", !("other" in blanked.env));
+  check("Job Details is left to its own seeding", !("jd" in blanked));
+  check("a value already there stays", seedBlankEnvironment(stored, { env: { fahrenheit: "80", humidity: "20" } }).env.fahrenheit === "80");
+  check("a blank TCF reads N/A on a new report", blankTcfText(seedReportLayout({})) === "N/A");
+  check("a blank TCF stays blank on an older report", blankTcfText({}) === "");
+
+  const sections: any[] = [
+    { id: "jd", componentType: "job-info", title: "Job", order: 0, showInPrint: true, referenceCode: "JD", fields: [] },
+    { id: "ir", title: "IR", order: 1, showInPrint: true, referenceCode: "IR", columns: [{ id: "reading", label: "Reading", field: { id: "reading", label: "Reading", type: "number" } }], rows: 1 },
+  ];
+  const formula = "{IR.C1} * {JD.TCF}";
+  const reading = { ir_row0: { reading: "100" } };
+  check(
+    "a new report waits for the temperature instead of correcting to 0",
+    evaluateFormula(formula, seedReportLayout({ ...reading, jd: { tcf: "" } }), "ir", 0, sections) === "",
+  );
+  check(
+    "a new report corrects once the temperature is in",
+    evaluateFormula(formula, seedReportLayout({ ...reading, jd: { tcf: "2" } }), "ir", 0, sections) === "200",
+  );
+  check(
+    "a report from before keeps its old result",
+    evaluateFormula(formula, { ...reading, jd: { tcf: "" } }, "ir", 0, sections) === "0",
+  );
+  check(
+    "a formula that tests for blanks still decides for itself",
+    evaluateFormula("if(isnull({JD.TCF}), {IR.C1}, {IR.C1} * {JD.TCF})", seedReportLayout({ ...reading, jd: { tcf: "" } }), "ir", 0, sections) === "100",
   );
 }
 

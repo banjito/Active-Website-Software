@@ -17,6 +17,13 @@
  */
 
 import assert from "node:assert/strict";
+import {
+  applyTableChoices,
+  rowsDiffer,
+  snapshotRowChoices,
+  tableChoices,
+  type TableChoice,
+} from "@/lib/customForms/checklistChoices";
 import { expressionCheckCount } from "@/lib/customForms/expressions/expressions.regression";
 import { excelCheckCount, excelFailureCount } from "@/lib/customForms/excel/excel.regression";
 import {
@@ -2194,6 +2201,48 @@ section("Column width fitting");
   const narrow = fitChecklistWidths({ section: "10%", description: "80%", result: "10%" });
   check("narrow checklist columns are honoured", narrow.join() === "10%,80%,10%", narrow.join());
   check("checklist widths are percentages only", fitChecklistWidths({ section: "100px" }).every((w) => w === undefined));
+}
+
+section("Checklist result choices: whole-table edits");
+{
+  const rows = [
+    { id: "a", resultOptions: ["Pass", "Fail", "N/A"] },
+    { id: "b", resultOptions: ["Fail", "Pass"] },
+  ];
+  const before = snapshotRowChoices(rows);
+  const start = tableChoices(rows);
+  const result = (choices: TableChoice[], items = rows) =>
+    applyTableChoices(items, before, choices).map((r) => r.resultOptions!.join());
+
+  check("no edit changes nothing", result(start).join("|") === "Pass,Fail,N/A|Fail,Pass", result(start).join("|"));
+
+  const renamed = start.map((c) => (c.from === "Pass" ? { ...c, label: "Good" } : c));
+  check("a rename reaches every row and keeps each row's order", result(renamed).join("|") === "Good,Fail,N/A|Fail,Good", result(renamed).join("|"));
+
+  const removed = start.filter((c) => c.from !== "Fail");
+  check("a removal reaches every row", result(removed).join("|") === "Pass,N/A|Pass", result(removed).join("|"));
+
+  const added = [...start, { from: null, label: "Limited" }];
+  check("a new choice reaches every row", result(added).join("|") === "Pass,Fail,N/A,Limited|Fail,Pass,Limited", result(added).join("|"));
+
+  const moved = [start[2], start[0], start[1]];
+  check("a whole-table move reorders every row without adding choices", result(moved).join("|") === "N/A,Pass,Fail|Pass,Fail", result(moved).join("|"));
+
+  const newFirst = [{ from: null, label: "Limited" }, ...start];
+  check("a new choice moved up counts as a whole-table move", result(newFirst).join("|") === "Limited,Pass,Fail,N/A|Limited,Pass,Fail", result(newFirst).join("|"));
+
+  const clash = start.map((c) => (c.from === "Pass" ? { ...c, label: "Fail" } : c));
+  const undone = result(start);
+  check("typing over another choice's name loses nothing once finished", result(clash)[0] === "Fail,N/A" && undone[0] === "Pass,Fail,N/A", result(clash).join("|"));
+
+  const blank = start.map((c) => (c.from === "Pass" ? { ...c, label: "" } : c));
+  check("a blank choice is left out", result(blank)[0] === "Fail,N/A", result(blank)[0]);
+
+  const withNew = [...rows, { id: "c", resultOptions: ["Good"] }];
+  check("a row added mid-edit takes the whole list", result(renamed, withNew)[2] === "Good,Fail,N/A", result(renamed, withNew)[2]);
+
+  check("rows that differ are spotted", rowsDiffer(rows));
+  check("matching rows are not flagged", !rowsDiffer([rows[0], { id: "z", resultOptions: ["Pass", "Fail", "N/A"] }]));
 }
 
 section("Layout groups: side by side, grid, page breaks");

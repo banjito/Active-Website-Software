@@ -34,7 +34,12 @@ import {
   resolveRowCount,
 } from "@/lib/customForms/runtime/layout";
 import { ChecklistWidthInput } from "./ChecklistWidthInput";
-import { InlineOptionsEditor, inlineInputCls } from "./SectionEditor";
+import {
+  ChecklistRowChoices,
+  ChecklistTableChoices,
+  InlineOptionsEditor,
+  inlineInputCls,
+} from "./SectionEditor";
 import {
   CellDefaultInput,
   HINT_TITLE,
@@ -1057,16 +1062,8 @@ const LiveChecklist: React.FC<{
     "w-full bg-transparent px-2 py-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-200 focus:outline-none focus:bg-brand/5";
   // Which item's result choices are open for editing ("all" = every item).
   const [editingResults, setEditingResults] = useState<string | null>(null);
-  const toOptions = (list: string[] = []) => list.map((v) => ({ label: v, value: v }));
-  const fromOptions = (list: { label: string }[]) => list.map((o) => o.label);
   const resultsTarget =
     editingResults === "all" ? items[0] : items.find((it) => it.id === editingResults);
-  const setResults = (next: string[]) =>
-    setItems(
-      items.map((it) =>
-        editingResults === "all" || it.id === editingResults ? { ...it, resultOptions: next } : it,
-      ),
-    );
 
   return (
     <div>
@@ -1078,16 +1075,18 @@ const LiveChecklist: React.FC<{
             : `Result choices · ${resultsTarget.netaSection || resultsTarget.description || "item"}`
         }
       >
-        <InlineOptionsEditor
-          options={toOptions(resultsTarget.resultOptions)}
-          onChange={(next) => setResults(fromOptions(next))}
-          onAdd={() =>
-            setResults([
-              ...(resultsTarget.resultOptions ?? []),
-              `Option ${(resultsTarget.resultOptions?.length ?? 0) + 1}`,
-            ])
-          }
-        />
+        {editingResults === "all" ? (
+          <ChecklistTableChoices items={items} onChange={setItems} />
+        ) : (
+          <ChecklistRowChoices
+            item={resultsTarget}
+            onChange={(resultOptions) =>
+              setItems(
+                items.map((it) => (it.id === editingResults ? { ...it, resultOptions } : it)),
+              )
+            }
+          />
+        )}
         <button
           type="button"
           className="ml-auto text-xs text-neutral-500 hover:text-brand"

@@ -6,13 +6,92 @@ import { getTestRecipient } from '../_shared/testSend.ts'
 console.log("new-applicant-notification: function loaded")
 
 /**
- * Emails HR when someone applies through the public career page.
+ * Emails HR when someone applies through the public career page, and sends the
+ * applicant a "thank you for applying" email.
  *
  * The career page calls this with the anon key, so anyone could call it. To keep
  * it from being used to spam HR, it only mails about a career-page application
  * created in the last few minutes, never an arbitrary or old candidate.
  */
 const FRESH_WINDOW_MS = 15 * 60 * 1000
+
+/**
+ * "Thank you for applying" email to the applicant. Sent at most once per
+ * applicant: it stamps candidates.confirmation_sent_at before sending, and only
+ * sends if that stamp was empty, so repeat calls can't mail the same address
+ * again. Test sends skip the stamp and go only to the test address.
+ */
+async function sendApplicantConfirmation({ url, key, candidate, testTo, escape }: {
+  url: string
+  key: string
+  candidate: any
+  testTo: string | null | undefined
+  escape: (v: unknown) => string
+}): Promise<boolean> {
+  const applicantEmail = String(candidate.email ?? '').trim()
+  if (!testTo && !applicantEmail.includes('@')) return false
+
+  if (!testTo) {
+    const claimRes = await fetch(
+      `${url}/rest/v1/candidates?id=eq.${encodeURIComponent(candidate.id)}&confirmation_sent_at=is.null&select=id`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${key}`, 'apikey': key, 'Content-Type': 'application/json',
+          'Content-Profile': 'common', 'Accept-Profile': 'common', 'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({ confirmation_sent_at: new Date().toISOString() })
+      }
+    )
+    const claimData = await claimRes.json().catch(() => null)
+    if (!claimRes.ok) {
+      console.error("Applicant confirmation skipped, could not stamp candidate (has applicant_confirmation_email.sql run?):", claimRes.status, JSON.stringify(claimData))
+      return false
+    }
+    if (!Array.isArray(claimData) || claimData.length === 0) {
+      console.log("Applicant confirmation already sent, skipping")
+      return false
+    }
+  }
+
+  const firstName = String(candidate.first_name ?? '').trim()
+  const greeting = firstName ? `Hi ${firstName},` : 'Hi there,'
+  const paragraphs = [
+    `Thank you for your interest in joining ${COMPANY_FULL_NAME}!`,
+    `We've received your application and appreciate you taking the time to apply.`,
+    `Our team will review your qualifications and experience. If your background aligns with our current hiring needs, a member of our team will reach out to discuss next steps.`,
+    `Thank you again for considering ${COMPANY_FULL_NAME}. We wish you the best in your career search!`
+  ]
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+      <div style="background:${BRAND_COLOR};color:#fff;padding:20px;text-align:center">
+        <h1 style="margin:0;font-size:22px">${escape(COMPANY_FULL_NAME)}</h1>
+      </div>
+      <div style="padding:24px;background:#fff;font-size:15px;line-height:1.6;color:#222">
+        <p style="margin:0 0 16px">${escape(greeting)}</p>
+        ${paragraphs.map(p => `<p style="margin:0 0 16px">${escape(p)}</p>`).join('')}
+      </div>
+      <div style="padding:16px;text-align:center;color:#666;font-size:13px;border-top:1px solid #eee">
+        <p style="margin:0">${escape(COMPANY_FULL_NAME)}</p>
+      </div>
+    </div>
+  `
+  const text = [greeting, '', ...paragraphs.flatMap(p => [p, '']), COMPANY_FULL_NAME].join('\n')
+
+  const to = testTo || applicantEmail
+  console.log("Sending applicant confirmation to:", to)
+  const res = await sendEmail({
+    from: buildFromHeader(DEFAULT_FROM_EMAIL),
+    to,
+    replyTo: COMPANY_HR_EMAIL,
+    subject: `${testTo ? '[TEST] ' : ''}Thank You for Applying to ${COMPANY_FULL_NAME}`,
+    html,
+    text
+  })
+  if (!res.ok) console.error("Applicant confirmation failed:", res.status, res.body)
+  return res.ok
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -125,8 +204,10 @@ serve(async (req) => {
     })
     console.log("Resend response:", sendRes.status, sendRes.body)
 
+    const applicantEmailSent = await sendApplicantConfirmation({ url, key, candidate, testTo, escape })
+
     return new Response(
-      JSON.stringify({ emailSent: sendRes.ok, sentTo: testTo || COMPANY_HR_EMAIL, providerStatus: sendRes.status, providerBody: sendRes.ok ? undefined : sendRes.body }),
+      JSON.stringify({ emailSent: sendRes.ok, applicantEmailSent, sentTo: testTo || COMPANY_HR_EMAIL, providerStatus: sendRes.status, providerBody: sendRes.ok ? undefined : sendRes.body }),
       { headers, status: sendRes.ok ? 200 : 502 }
     )
   } catch (e) {

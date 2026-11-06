@@ -10,6 +10,7 @@ import {
   Pencil,
   Plus,
   RefreshCw,
+  Send,
   Trash2,
   X,
 } from "lucide-react";
@@ -40,6 +41,7 @@ import { toast } from "@/components/ui/toast";
 import { confirmDialog } from "@/components/ui/confirmDialog";
 import {
   approveChangeOrder,
+  APPROVAL_METHOD_LABEL,
   CHANGE_ORDER_STATUS_LABEL,
   createChangeOrder,
   createChangeOrderQuote,
@@ -50,10 +52,18 @@ import {
   pushChangeOrderToQuickBooks,
   summarizeChangeOrders,
   updateChangeOrder,
+  type ApprovalMethod,
   type ChangeOrder,
   type ChangeOrderStatus,
   type ChangeOrderSummary,
 } from "../../services/changeOrderService";
+import {
+  fetchLatestSignatureRequests,
+  notifyChangeOrderApproved,
+  sendChangeOrderForSignature,
+  signatureState,
+  type SignatureRequest,
+} from "../../services/changeOrderSignatureService";
 
 interface ChangeOrdersSectionProps {
   jobId: string;
@@ -92,6 +102,9 @@ interface FormState {
   approvedDate: string;
   approvedByName: string;
   outsideContract: boolean;
+  /** Work began before approval; the note holds the email that OK'd it */
+  workStartedOn: string;
+  workStartedNote: string;
   /** New Change Orders only: price it on an estimate sheet (own quote and letter number) */
   useEstimate: boolean;
 }
@@ -106,8 +119,26 @@ const EMPTY_FORM: FormState = {
   approvedDate: "",
   approvedByName: "",
   outsideContract: false,
+  workStartedOn: "",
+  workStartedNote: "",
   useEstimate: true,
 };
+
+// One line under the status: where online signing stands
+const signatureLine = (r: SignatureRequest) => {
+  const state = signatureState(r);
+  if (state === "signed") return `Signed online by ${r.signer_name}`;
+  if (state === "declined") return `Declined by ${r.signer_name}`;
+  if (state === "expired") return "Signing link expired";
+  if (state === "void") return "";
+  return `Sent to ${r.signer_name} to sign`;
+};
+
+const APPROVE_METHODS: { value: ApprovalMethod; label: string }[] = [
+  { value: "email", label: "Email reply" },
+  { value: "customer_form", label: "Their own form" },
+  { value: "signed_letter", label: "Signed letter" },
+];
 
 const quotePath = (opportunityId: string) =>
   `/sales-dashboard/opportunities/${opportunityId}`;
@@ -135,7 +166,20 @@ export default function ChangeOrdersSection({
   const [approveForm, setApproveForm] = useState({
     approvedDate: "",
     approvedByName: "",
+    method: "email" as ApprovalMethod,
+    note: "",
   });
+  const [approveFile, setApproveFile] = useState<File | null>(null);
+  // Online signing: latest request per Change Order, and the send dialog
+  const [signatures, setSignatures] = useState<
+    Record<string, SignatureRequest>
+  >({});
+  const [sending, setSending] = useState<ChangeOrder | null>(null);
+  const [sendForm, setSendForm] = useState({ name: "", email: "" });
+  const [sendBusy, setSendBusy] = useState(false);
+  const [contacts, setContacts] = useState<{ name: string; email: string }[]>(
+    [],
+  );
   // Approved Change Orders are already in contract totals and QuickBooks; only tracking fields stay editable
   const locked = editing?.status === "approved";
 
@@ -155,6 +199,7 @@ export default function ChangeOrdersSection({
         .map((co) => co.opportunity_id)
         .filter((id): id is string => !!id);
       setLetterNumbers(await fetchChangeOrderLetterNumbers(quoteIds));
+      setSignatures(await fetchLatestSignatureRequests(cos.map((co) => co.id)));
     } catch (error) {
       console.error("Error fetching change orders:", error);
     }
@@ -187,6 +232,8 @@ export default function ChangeOrdersSection({
       approvedByName: co.approved_by_name ?? "",
       outsideContract: !!co.outside_contract,
       useEstimate: !!co.opportunity_id,
+      workStartedOn: co.work_started_on ?? "",
+      workStartedNote: co.work_started_note ?? "",
     });
     setFile(null);
     setShowForm(true);
@@ -202,7 +249,13 @@ export default function ChangeOrdersSection({
       });
       return;
     }
-    setApproveForm({ approvedDate: today(), approvedByName: "" });
+    setApproveForm({
+      approvedDate: today(),
+      approvedByName: "",
+      method: "email",
+      note: "",
+    });
+    setApproveFile(null);
     setApproving(co);
   };
 
@@ -243,6 +296,15 @@ export default function ChangeOrdersSection({
       });
       return;
     }
+    if (!locked && form.workStartedOn && !form.workStartedNote.trim()) {
+      toast({
+        title: "Error",
+        description:
+          "Paste the email or note that OK'd starting before approval",
+        variant: "destructive",
+      });
+      return;
+    }
     if (!priceFromLetter && !locked && (isNaN(amount) || amount === 0)) {
       toast({
         title: "Error",
@@ -270,6 +332,10 @@ export default function ChangeOrdersSection({
         description: form.description.trim() || null,
         schedule_impact_days: scheduleDays,
         outside_contract: form.outsideContract,
+        work_started_on: form.workStartedOn || null,
+        work_started_note: form.workStartedOn
+          ? form.workStartedNote.trim() || null
+          : null,
         ...(priceFromLetter ? {} : { amount }),
       };
       if (!editing && form.useEstimate) {
@@ -281,7 +347,13 @@ export default function ChangeOrdersSection({
           schedule_impact_days: scheduleDays,
           outside_contract: form.outsideContract,
         });
-        if (fileFields) await updateChangeOrder(created.id, fileFields);
+        if (fileFields || input.work_started_on) {
+          await updateChangeOrder(created.id, {
+            ...(fileFields ?? {}),
+            work_started_on: input.work_started_on,
+            work_started_note: input.work_started_note,
+          });
+        }
         setShowForm(false);
         toast({
           title: `Change Order ${formatChangeOrderNumber(created.co_number)} added`,
@@ -345,9 +417,34 @@ export default function ChangeOrdersSection({
   const handleApprove = async () => {
     const co = approving;
     if (!user?.id || !co) return;
+    if (!approveForm.note.trim() && !approveFile) {
+      toast({
+        title: "Add the proof",
+        description:
+          "Paste the customer's email, or attach their form or signed letter.",
+        variant: "destructive",
+      });
+      return;
+    }
     setApproving(null);
     setBusyId(co.id);
     try {
+      let proof: { approval_file_url: string; approval_file_path: string } | null =
+        null;
+      if (approveFile) {
+        const ext = approveFile.name.split(".").pop();
+        const path = `change-orders/${jobId}/approval-${Date.now()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("job-documents")
+          .upload(path, approveFile);
+        if (uploadError) throw uploadError;
+        proof = {
+          approval_file_url: supabase.storage
+            .from("job-documents")
+            .getPublicUrl(path).data.publicUrl,
+          approval_file_path: path,
+        };
+      }
       const { qboError } = await approveChangeOrder(
         co,
         user.id,
@@ -355,7 +452,14 @@ export default function ChangeOrdersSection({
         {
           approved_date: approveForm.approvedDate || null,
           approved_by_name: approveForm.approvedByName.trim() || null,
+          approval_method: approveForm.method,
+          approval_note: approveForm.note.trim() || null,
+          ...(proof ?? {}),
         },
+      );
+      // Accounting hears about it. A failed email doesn't undo the approval.
+      notifyChangeOrderApproved(co.id).catch((e) =>
+        console.warn("Change Order approval email failed:", e),
       );
       await reload();
       if (qboError) {
@@ -406,6 +510,76 @@ export default function ChangeOrdersSection({
       });
     } finally {
       setBusyId(null);
+    }
+  };
+
+  const openSend = async (co: ChangeOrder) => {
+    const last = signatures[co.id];
+    setSendForm({
+      name: last?.signer_name ?? "",
+      email: last?.signer_email ?? "",
+    });
+    setContacts([]);
+    setSending(co);
+    try {
+      const { data: job } = await supabase
+        .schema("neta_ops")
+        .from("jobs")
+        .select("customer_id")
+        .eq("id", jobId)
+        .maybeSingle();
+      if (!job?.customer_id) return;
+      const { data } = await supabase
+        .schema("common")
+        .from("contacts")
+        .select("first_name, last_name, email")
+        .eq("customer_id", job.customer_id)
+        .order("first_name");
+      setContacts(
+        ((data ?? []) as any[])
+          .filter((c) => c.email)
+          .map((c) => ({
+            name: `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim(),
+            email: c.email,
+          })),
+      );
+    } catch (e) {
+      console.warn("Contacts lookup failed:", e);
+    }
+  };
+
+  const handleSend = async () => {
+    if (!sending) return;
+    if (!sendForm.name.trim() || !sendForm.email.trim()) {
+      toast({
+        title: "Error",
+        description: "Enter the signer's name and email",
+        variant: "destructive",
+      });
+      return;
+    }
+    setSendBusy(true);
+    try {
+      const res = await sendChangeOrderForSignature(
+        sending.id,
+        sendForm.name.trim(),
+        sendForm.email.trim(),
+      );
+      setSending(null);
+      toast({
+        title: "Sent for signature",
+        description: `Emailed ${res.sentTo}. The link works for 30 days.`,
+        variant: "success",
+      });
+      await reload();
+    } catch (e: any) {
+      toast({
+        title: "Couldn't send",
+        description: e?.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSendBusy(false);
     }
   };
 
@@ -553,6 +727,34 @@ export default function ChangeOrdersSection({
                             QB Estimate
                           </Badge>
                         )}
+                        {co.work_started_on && co.status !== "approved" && (
+                          <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100">
+                            Work started {fmtDate(co.work_started_on)}
+                          </Badge>
+                        )}
+                        {signatures[co.id] && signatureLine(signatures[co.id]) && (
+                          <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                            {signatureLine(signatures[co.id])}
+                          </span>
+                        )}
+                        {co.status === "approved" && co.approval_method && (
+                          <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                            {APPROVAL_METHOD_LABEL[co.approval_method]}
+                            {co.approval_file_url && (
+                              <>
+                                {" · "}
+                                <a
+                                  href={co.approval_file_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="underline"
+                                >
+                                  proof
+                                </a>
+                              </>
+                            )}
+                          </span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
@@ -598,6 +800,19 @@ export default function ChangeOrdersSection({
                             </Button>
                           </>
                         )}
+                        {co.opportunity_id &&
+                          (co.status === "draft" ||
+                            co.status === "submitted") && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={busy}
+                              onClick={() => openSend(co)}
+                              leftIcon={<Send className="h-4 w-4" />}
+                            >
+                              Send for signature
+                            </Button>
+                          )}
                         {co.status === "draft" && (
                           <Button
                             variant="outline"
@@ -912,6 +1127,47 @@ export default function ChangeOrdersSection({
                 }
               />
             </div>
+            {!locked && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium" htmlFor="co-work-started">
+                    Work started before approval
+                  </label>
+                  <Input
+                    id="co-work-started"
+                    type="date"
+                    value={form.workStartedOn}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        workStartedOn: e.target.value,
+                      }))
+                    }
+                  />
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    Leave blank if work hasn't started.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium" htmlFor="co-work-note">
+                    Email or note that OK'd it
+                  </label>
+                  <Textarea
+                    id="co-work-note"
+                    rows={3}
+                    disabled={!form.workStartedOn}
+                    value={form.workStartedNote}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        workStartedNote: e.target.value,
+                      }))
+                    }
+                    placeholder="Paste the customer's email"
+                  />
+                </div>
+              </div>
+            )}
             <label className="flex items-start gap-2 text-sm" htmlFor="co-outside">
               <input
                 id="co-outside"
@@ -986,6 +1242,65 @@ export default function ChangeOrdersSection({
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
+              <div className="text-sm font-medium" id="co-approve-how">
+                How did the customer approve?
+              </div>
+              <div
+                className="flex flex-wrap gap-2"
+                role="radiogroup"
+                aria-labelledby="co-approve-how"
+              >
+                {APPROVE_METHODS.map((m) => (
+                  <button
+                    key={m.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={approveForm.method === m.value}
+                    onClick={() =>
+                      setApproveForm((prev) => ({ ...prev, method: m.value }))
+                    }
+                    className={`rounded-none border px-3 py-1.5 text-sm ${
+                      approveForm.method === m.value
+                        ? "border-brand bg-brand/10 font-medium text-neutral-900 dark:text-white"
+                        : "border-neutral-300 text-neutral-700 hover:border-neutral-400 dark:border-neutral-600 dark:text-neutral-300"
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="co-approve-note">
+                {approveForm.method === "email"
+                  ? "Paste their email"
+                  : "Note (optional if you attach a file)"}
+              </label>
+              <Textarea
+                id="co-approve-note"
+                rows={4}
+                value={approveForm.note}
+                onChange={(e) =>
+                  setApproveForm((prev) => ({ ...prev, note: e.target.value }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="co-approve-file">
+                {approveForm.method === "email"
+                  ? "Or attach the email (PDF)"
+                  : "Attach their form or signed letter"}
+              </label>
+              <Input
+                id="co-approve-file"
+                type="file"
+                onChange={(e) => setApproveFile(e.target.files?.[0] ?? null)}
+              />
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                Proof is required. Accounting gets an email when you approve.
+              </p>
+            </div>
+            <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="co-approve-by">
                 Approved By
               </label>
@@ -1027,6 +1342,90 @@ export default function ChangeOrdersSection({
               leftIcon={<Check className="h-4 w-4" />}
             >
               Approve
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={!!sending}
+        onOpenChange={(open) => {
+          if (!open) setSending(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md w-full">
+          <DialogHeader>
+            <DialogTitle>
+              Send Change Order{" "}
+              {sending ? formatChangeOrderNumber(sending.co_number) : ""} for
+              signature
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-neutral-600 dark:text-neutral-300">
+              They get an email link to read the letter and sign. No login.
+              It sends the letter as saved now, so save the letter first if
+              you changed the estimate.
+            </p>
+            {contacts.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="co-send-contact">
+                  Pick a contact
+                </label>
+                <select
+                  id="co-send-contact"
+                  className="form-input w-full rounded-none"
+                  value=""
+                  onChange={(e) => {
+                    const c = contacts[Number(e.target.value)];
+                    if (c) setSendForm({ name: c.name, email: c.email });
+                  }}
+                >
+                  <option value="">Choose, or type below</option>
+                  {contacts.map((c, i) => (
+                    <option key={c.email + i} value={i}>
+                      {c.name} ({c.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="co-send-name">
+                Signer's name
+              </label>
+              <Input
+                id="co-send-name"
+                value={sendForm.name}
+                onChange={(e) =>
+                  setSendForm((prev) => ({ ...prev, name: e.target.value }))
+                }
+                placeholder="Often the customer's project manager"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="co-send-email">
+                Signer's email
+              </label>
+              <Input
+                id="co-send-email"
+                type="email"
+                value={sendForm.email}
+                onChange={(e) =>
+                  setSendForm((prev) => ({ ...prev, email: e.target.value }))
+                }
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSending(null)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSend}
+              disabled={sendBusy}
+              leftIcon={<Send className="h-4 w-4" />}
+            >
+              {sendBusy ? "Sending..." : "Send"}
             </Button>
           </DialogFooter>
         </DialogContent>

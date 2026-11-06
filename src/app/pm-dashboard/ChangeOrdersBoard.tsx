@@ -68,6 +68,8 @@ export default function ChangeOrdersBoard({ jobs }: { jobs: PmJob[] }) {
 
   const waiting = rows.filter(isWaiting);
   const approved = rows.filter((c) => c.status === 'approved');
+  // Work under way without approval: the risk is doing it and never billing it
+  const startedUnapproved = waiting.filter((c) => !!c.work_started_on);
   const sum = (list: ChangeOrder[]) => list.reduce((t, c) => t + (Number(c.amount) || 0), 0);
 
   const visible = useMemo(() => {
@@ -104,7 +106,7 @@ export default function ChangeOrdersBoard({ jobs }: { jobs: PmJob[] }) {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile label="Waiting for approval" value={String(waiting.length)} />
         <StatTile label="Waiting, not in totals" value={fmtMoney(sum(waiting))} />
-        <StatTile label="Approved" value={String(approved.length)} />
+        <StatTile label="Work started, not approved" value={String(startedUnapproved.length)} />
         <StatTile label="Approved, in contract value" value={fmtMoney(sum(approved))} />
       </div>
 
@@ -177,6 +179,11 @@ export default function ChangeOrdersBoard({ jobs }: { jobs: PmJob[] }) {
                       <div className="text-neutral-900 dark:text-white">{co.title}</div>
                       {co.outside_contract && (
                         <div className="text-xs text-neutral-500 dark:text-neutral-400">Outside contract terms</div>
+                      )}
+                      {co.work_started_on && isWaiting(co) && (
+                        <span className="mt-1 inline-block rounded-none bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900 dark:text-amber-100">
+                          Work started {fmtDate(co.work_started_on)}, not approved
+                        </span>
                       )}
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-right tabular-nums">

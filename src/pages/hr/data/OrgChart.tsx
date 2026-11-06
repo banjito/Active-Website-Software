@@ -51,6 +51,16 @@ interface OrgPerson {
   reports_to_ids?: string[];
   role?: string;
   level_id?: string | null;
+  /** Left-to-right position among siblings (org_chart_assignments.grid_column). */
+  sort_order?: number;
+}
+
+/** Sibling order: saved position first, then name for ties (everyone starts at 0). */
+function compareSiblings(a: OrgPerson, b: OrgPerson) {
+  return (
+    (a.sort_order ?? 0) - (b.sort_order ?? 0) ||
+    (a.full_name || "").localeCompare(b.full_name || "")
+  );
 }
 
 interface OrgNode extends OrgPerson {
@@ -260,7 +270,7 @@ function buildOrgTree(people: OrgPerson[]): OrgNode[] {
   assignLevels(roots, 0);
 
   const sortChildren = (nodes: OrgNode[], visited: Set<string> = new Set()) => {
-    nodes.sort((a, b) => (a.full_name || "").localeCompare(b.full_name || ""));
+    nodes.sort(compareSiblings);
     nodes.forEach((n) => {
       if (visited.has(n.id)) return;
       visited.add(n.id);
@@ -298,9 +308,6 @@ function clusterChildrenByManagerGroup(
       const set = new Set(gmem);
       const peers = children.filter((c) => set.has(c.id));
       if (peers.length > 1) {
-        peers.sort((a, b) =>
-          (a.full_name || "").localeCompare(b.full_name || ""),
-        );
         peers.forEach((p) => used.add(p.id));
         out.push(peers);
         continue;
@@ -324,9 +331,7 @@ function mergeDirectReportsForManagerCluster(cluster: OrgNode[]): OrgNode[] {
       }
     }
   }
-  return out.sort((a, b) =>
-    (a.full_name || "").localeCompare(b.full_name || ""),
-  );
+  return out.sort(compareSiblings);
 }
 
 /**
@@ -386,6 +391,73 @@ async function replaceProfileOrgChartAssignments(
 }
 
 // ============================================================================
+// Connector lines
+// ============================================================================
+const LINE_COLOR = "bg-neutral-500 dark:bg-neutral-400";
+
+/**
+ * One piece of the horizontal line that joins siblings. Sibling columns sit
+ * edge to edge (no gaps, no padding on the column), so each column's halves
+ * meet the next column's halves and form one unbroken line.
+ */
+const BusPiece: React.FC<{ left: boolean; right: boolean }> = ({
+  left,
+  right,
+}) => (
+  <div className="relative h-[2px] w-full shrink-0">
+    {left && <div className={`absolute inset-y-0 left-0 right-1/2 ${LINE_COLOR}`} />}
+    {right && <div className={`absolute inset-y-0 left-1/2 right-0 ${LINE_COLOR}`} />}
+    <div className={`absolute inset-y-0 left-1/2 w-[2px] -translate-x-1/2 ${LINE_COLOR}`} />
+  </div>
+);
+
+const VLine: React.FC<{ className?: string }> = ({ className = "h-4" }) => (
+  <div className={`w-[2px] shrink-0 rounded-none ${LINE_COLOR} ${className}`} />
+);
+
+/**
+ * Thin drop target on the edge of a card's column, shown only while dragging.
+ * Dropping here puts the person between two cards (and under that row's manager).
+ * Sized to the card area only, so it never overlaps the rows further down.
+ */
+const DropSlot: React.FC<{
+  side: "left" | "right";
+  onDropHere: (draggedId: string) => void;
+}> = ({ side, onDropHere }) => {
+  const [over, setOver] = useState(false);
+  return (
+    <div
+      className={`absolute top-0 z-30 flex h-28 w-4 justify-center ${
+        side === "left" ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"
+      }`}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.dataTransfer.dropEffect = "move";
+        if (!over) setOver(true);
+      }}
+      onDragLeave={(e) => {
+        e.stopPropagation();
+        setOver(false);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setOver(false);
+        const id = e.dataTransfer.getData("text/plain");
+        if (id) onDropHere(id);
+      }}
+    >
+      <div
+        className={`pointer-events-none h-full rounded-none ${
+          over ? "w-1 bg-brand" : "w-0 border-l-2 border-dashed border-brand/40"
+        }`}
+      />
+    </div>
+  );
+};
+
+// ============================================================================
 // Draggable Flowchart Node Component
 // ============================================================================
 const FlowchartNode: React.FC<{
@@ -396,6 +468,13 @@ const FlowchartNode: React.FC<{
   onDelete: (id: string) => void;
   onAddUnder: (managerId: string) => void;
   onDrop: (draggedId: string, targetId: string | null) => void;
+  /** Drop between cards: put draggedId at position `index` in a row whose manager is parentId. */
+  onReorder?: (
+    draggedId: string,
+    parentId: string,
+    siblingIds: string[],
+    index: number,
+  ) => void;
   collapsedNodes: Set<string>;
   toggleCollapse: (id: string) => void;
   draggedId: string | null;
@@ -420,6 +499,7 @@ const FlowchartNode: React.FC<{
   onDelete,
   onAddUnder,
   onDrop,
+  onReorder,
   collapsedNodes,
   toggleCollapse,
   draggedId,
@@ -688,6 +768,25 @@ const FlowchartNode: React.FC<{
           </button>
         )}
 
+        {/* Add subordinate (inside the card so it never pushes the connector line down) */}
+        {canEdit && (
+          <button
+            type="button"
+            draggable="false"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onAddUnder(node.id);
+            }}
+            className="absolute -bottom-3 left-2 z-10 flex items-center gap-0.5 rounded-none border border-neutral-200 bg-white px-1.5 py-0.5 text-[10px] text-neutral-500 shadow opacity-0 transition-opacity hover:text-brand group-hover:opacity-100 touch:opacity-100 pointer-events-auto dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"
+            title="Add someone under this person"
+          >
+            <Plus className="h-3 w-3" />
+            Add
+          </button>
+        )}
+
         {/* Collapse (hidden when this node's subtree is merged under the group row) */}
         {hasChildren && !suppressSubtree && (
           <button
@@ -709,28 +808,12 @@ const FlowchartNode: React.FC<{
         )}
       </div>
 
-      {/* Add subordinate */}
-      {canEdit && (
-        <button
-          draggable="false"
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddUnder(node.id);
-          }}
-          className="mt-4 text-xs text-neutral-400 hover:text-brand flex items-center gap-1 opacity-0 touch:opacity-100 group-hover:opacity-100 transition-opacity"
-        >
-          <Plus className="h-3 w-3" />
-          Add
-        </button>
-      )}
+      {/* Line down from this card to the line that joins its reports */}
+      {showOwnSubtree && <VLine className="h-5" />}
 
-      {/* Connector line down from parent to horizontal bus (own subtree only) */}
-      {showOwnSubtree && (
-        <div className="h-4 w-[2px] shrink-0 rounded-none bg-neutral-500 dark:bg-neutral-400" />
-      )}
-
-      {/* Children row — group peers in the same manager group side by side with shared lines */}
+      {/* Children row. Every column sits edge to edge so the joining line is continuous.
+          Co-managers in the same manager group each sit on this line, then a second
+          line under them joins into their shared team. */}
       {showOwnSubtree &&
         (() => {
           const childClusters = clusterChildrenByManagerGroup(
@@ -738,71 +821,81 @@ const FlowchartNode: React.FC<{
             profileToGroup,
             groupMembers,
           );
-          const nClusters = childClusters.length;
+          const totalSlots = childClusters.reduce((n, c) => n + c.length, 0);
+          let slot = 0;
+          const rowIds = childClusters.flat().map((c) => c.id);
+          // Drop slots between cards: only while dragging, and never inside the dragged person's own team
+          const showSlots =
+            canEdit && !!onReorder && !!draggedId && isValidDropTarget;
+
+          const renderNode = (
+            child: OrgNode,
+            extra?: { inManagerCluster?: boolean; suppressSubtree?: boolean },
+          ) => (
+            <FlowchartNode
+              node={child}
+              orgTree={orgTree}
+              onSelect={onSelect}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onAddUnder={onAddUnder}
+              onDrop={onDrop}
+              onReorder={onReorder}
+              collapsedNodes={collapsedNodes}
+              toggleCollapse={toggleCollapse}
+              draggedId={draggedId}
+              setDraggedId={setDraggedId}
+              dataVersion={dataVersion}
+              orgLevels={orgLevels}
+              peopleLookup={peopleLookup}
+              profileToGroup={profileToGroup}
+              groupMembers={groupMembers}
+              groupColors={groupColors}
+              onUngroup={onUngroup}
+              inManagerCluster={extra?.inManagerCluster}
+              suppressSubtree={extra?.suppressSubtree}
+              canEdit={canEdit}
+            />
+          );
+
           return (
-            <div
-              className={
-                nClusters === 1
-                  ? "flex items-start justify-center"
-                  : "flex items-start"
-              }
-            >
-              {childClusters.map((cluster, idx) => {
-                const isFirst = idx === 0;
-                const isLast = idx === nClusters - 1;
-                const onlyCluster = nClusters === 1;
+            <div className="flex items-start">
+              {childClusters.map((cluster, clusterIdx) => {
+                const startSlot = slot;
+                slot += cluster.length;
+                const isLastCluster = clusterIdx === childClusters.length - 1;
+                const rowSlots = showSlots && (
+                  <>
+                    <DropSlot
+                      side="left"
+                      onDropHere={(id) =>
+                        onReorder!(id, node.id, rowIds, startSlot)
+                      }
+                    />
+                    {isLastCluster && (
+                      <DropSlot
+                        side="right"
+                        onDropHere={(id) =>
+                          onReorder!(id, node.id, rowIds, totalSlots)
+                        }
+                      />
+                    )}
+                  </>
+                );
+                const busFor = (i: number) => ({
+                  left: startSlot + i > 0,
+                  right: startSlot + i < totalSlots - 1,
+                });
                 const key =
                   cluster.map((c) => c.id).join("-") + `-${dataVersion}`;
 
                 if (cluster.length === 1) {
-                  const child = cluster[0];
                   return (
-                    <div
-                      key={key}
-                      className="flex flex-col items-center px-1.5"
-                    >
-                      <div className="relative h-[2px] w-full -mx-1.5">
-                        {!onlyCluster && (
-                          <>
-                            <div
-                              className={`absolute top-0 left-0 right-1/2 h-[2px] ${
-                                isFirst
-                                  ? ""
-                                  : "bg-neutral-500 dark:bg-neutral-400"
-                              }`}
-                            />
-                            <div
-                              className={`absolute top-0 left-1/2 right-0 h-[2px] ${
-                                isLast
-                                  ? ""
-                                  : "bg-neutral-500 dark:bg-neutral-400"
-                              }`}
-                            />
-                          </>
-                        )}
-                      </div>
-                      <div className="h-4 w-[2px] shrink-0 rounded-none bg-neutral-500 dark:bg-neutral-400" />
-                      <FlowchartNode
-                        node={child}
-                        orgTree={orgTree}
-                        onSelect={onSelect}
-                        onEdit={onEdit}
-                        onDelete={onDelete}
-                        onAddUnder={onAddUnder}
-                        onDrop={onDrop}
-                        collapsedNodes={collapsedNodes}
-                        toggleCollapse={toggleCollapse}
-                        draggedId={draggedId}
-                        setDraggedId={setDraggedId}
-                        dataVersion={dataVersion}
-                        orgLevels={orgLevels}
-                        peopleLookup={peopleLookup}
-                        profileToGroup={profileToGroup}
-                        groupMembers={groupMembers}
-                        groupColors={groupColors}
-                        onUngroup={onUngroup}
-                        canEdit={canEdit}
-                      />
+                    <div key={key} className="relative flex flex-col items-center">
+                      {rowSlots}
+                      <BusPiece {...busFor(0)} />
+                      <VLine />
+                      <div className="px-1.5">{renderNode(cluster[0])}</div>
                     </div>
                   );
                 }
@@ -814,166 +907,109 @@ const FlowchartNode: React.FC<{
                   ? `__mgrgrp__${groupId}`
                   : `__mgrgrp__${cluster.map((c) => c.id).join("_")}`;
                 const mergeCollapsed = collapsedNodes.has(mergeCollapseKey);
+                const hasTeam = mergedDirects.length > 0;
+                const teamIds = mergedDirects.map((d) => d.id);
+                const showTeamSlots =
+                  showSlots && !cluster.some((c) => c.id === draggedId);
 
                 return (
-                  <div
-                    key={key}
-                    className={
-                      onlyCluster
-                        ? "flex w-max max-w-full flex-col items-center gap-0 px-1.5"
-                        : "flex w-full min-w-0 max-w-full flex-col items-stretch px-1.5"
-                    }
-                  >
-                    {/*
-                    Put "Greg → T → Chad/Ryan" in a w-fit block only as wide as two cards.
-                    If merged team lives in the *same* flex column, w-max includes the 5-wide row and the top bar stretches to that width.
-                  */}
-                    <div
-                      className={
-                        onlyCluster
-                          ? "flex w-max max-w-full flex-col items-stretch"
-                          : "flex w-full min-w-0 max-w-full flex-col items-stretch"
-                      }
-                    >
-                      <div
-                        className={`relative h-[2px] w-full ${
-                          onlyCluster ? "" : "-mx-1.5"
-                        }`}
-                      >
-                        {onlyCluster ? (
-                          <div className="absolute inset-0 h-[2px] bg-neutral-500 dark:bg-neutral-400" />
-                        ) : (
-                          <>
-                            <div
-                              className={`absolute top-0 left-0 right-1/2 h-[2px] ${
-                                isFirst
-                                  ? ""
-                                  : "bg-neutral-500 dark:bg-neutral-400"
-                              }`}
-                            />
-                            <div
-                              className={`absolute top-0 left-1/2 right-0 h-[2px] ${
-                                isLast
-                                  ? ""
-                                  : "bg-neutral-500 dark:bg-neutral-400"
-                              }`}
-                            />
-                          </>
-                        )}
-                      </div>
-                      <div className="flex w-full min-w-0 flex-row items-start justify-center gap-0">
-                        {cluster.map((child) => (
-                          <div
-                            key={child.id}
-                            className="flex w-[200px] min-w-[160px] max-w-[200px] shrink-0 flex-col items-center"
-                          >
-                            <div className="h-4 w-[2px] shrink-0 rounded-none bg-neutral-500 dark:bg-neutral-400" />
-                            <FlowchartNode
-                              node={child}
-                              orgTree={orgTree}
-                              onSelect={onSelect}
-                              onEdit={onEdit}
-                              onDelete={onDelete}
-                              onAddUnder={onAddUnder}
-                              onDrop={onDrop}
-                              collapsedNodes={collapsedNodes}
-                              toggleCollapse={toggleCollapse}
-                              draggedId={draggedId}
-                              setDraggedId={setDraggedId}
-                              dataVersion={dataVersion}
-                              orgLevels={orgLevels}
-                                    peopleLookup={peopleLookup}
-                              profileToGroup={profileToGroup}
-                              groupMembers={groupMembers}
-                              groupColors={groupColors}
-                              onUngroup={onUngroup}
-                              inManagerCluster
-                              suppressSubtree
-                              canEdit={canEdit}
-                            />
-                            {mergedDirects.length > 0 && !mergeCollapsed && (
-                              <div className="h-4 w-[2px] shrink-0 rounded-none bg-neutral-500 dark:bg-neutral-400" />
-                            )}
+                  <div key={key} className="relative flex flex-col items-center">
+                    {rowSlots}
+                    {/* Co-managers. items-stretch keeps every column the same height so
+                        the line under them lines up even when cards differ in height. */}
+                    <div className="flex items-stretch">
+                      {cluster.map((child, i) => (
+                        <div
+                          key={child.id}
+                          className="flex flex-col items-center"
+                        >
+                          <BusPiece {...busFor(i)} />
+                          <VLine />
+                          <div className="px-1.5">
+                            {renderNode(child, {
+                              inManagerCluster: true,
+                              suppressSubtree: true,
+                            })}
                           </div>
-                        ))}
-                      </div>
+                          {hasTeam && (
+                            <>
+                              <VLine className="min-h-[1.25rem] flex-1" />
+                              <BusPiece
+                                left={i > 0}
+                                right={i < cluster.length - 1}
+                              />
+                            </>
+                          )}
+                        </div>
+                      ))}
                     </div>
 
-                    {mergedDirects.length > 0 && (
-                      <div
-                        className={
-                          onlyCluster
-                            ? "relative -mt-px w-max min-w-0 max-w-full self-center"
-                            : "relative -mt-px w-full min-w-0"
-                        }
-                      >
-                        <button
-                          type="button"
-                          draggable={false}
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            toggleCollapse(mergeCollapseKey);
-                          }}
-                          className="absolute -top-1 right-0 z-20 rounded-none border border-neutral-200 bg-white p-0.5 shadow hover:bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-800"
-                          title={
-                            mergeCollapsed ? "Expand team" : "Collapse team"
-                          }
-                        >
-                          {mergeCollapsed ? (
-                            <ChevronRight className="h-3.5 w-3.5 text-neutral-500" />
-                          ) : (
-                            <ChevronDown className="h-3.5 w-3.5 text-neutral-500" />
-                          )}
-                        </button>
+                    {hasTeam && (
+                      <>
+                        <div className="relative flex flex-col items-center">
+                          <VLine className="h-6" />
+                          <button
+                            type="button"
+                            draggable={false}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              toggleCollapse(mergeCollapseKey);
+                            }}
+                            className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 rounded-none border border-neutral-200 bg-white p-0.5 shadow hover:bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-800"
+                            title={
+                              mergeCollapsed ? "Expand team" : "Collapse team"
+                            }
+                          >
+                            {mergeCollapsed ? (
+                              <ChevronRight className="h-3.5 w-3.5 text-neutral-500" />
+                            ) : (
+                              <ChevronDown className="h-3.5 w-3.5 text-neutral-500" />
+                            )}
+                          </button>
+                        </div>
                         {!mergeCollapsed && (
-                          <>
-                            <div
-                              className="grid w-full min-w-0 max-w-full gap-0"
-                              style={{
-                                gridTemplateColumns: `repeat(${mergedDirects.length}, minmax(160px, 200px))`,
-                              }}
-                            >
+                          <div className="flex items-start">
+                            {mergedDirects.map((sub, i) => (
                               <div
-                                className="h-[2px] bg-neutral-500 dark:bg-neutral-400"
-                                style={{ gridColumn: "1 / -1" }}
-                              />
-                              {mergedDirects.map((sub) => {
-                                return (
-                                  <div
-                                    key={`${sub.id}-${dataVersion}-mg`}
-                                    className="flex min-w-0 flex-col items-center px-1.5"
-                                  >
-                                    <div className="h-4 w-[2px] shrink-0 rounded-none bg-neutral-500 dark:bg-neutral-400" />
-                                    <FlowchartNode
-                                      node={sub}
-                                      orgTree={orgTree}
-                                      onSelect={onSelect}
-                                      onEdit={onEdit}
-                                      onDelete={onDelete}
-                                      onAddUnder={onAddUnder}
-                                      onDrop={onDrop}
-                                      collapsedNodes={collapsedNodes}
-                                      toggleCollapse={toggleCollapse}
-                                      draggedId={draggedId}
-                                      setDraggedId={setDraggedId}
-                                      dataVersion={dataVersion}
-                                      orgLevels={orgLevels}
-                                                    peopleLookup={peopleLookup}
-                                      profileToGroup={profileToGroup}
-                                      groupMembers={groupMembers}
-                                      groupColors={groupColors}
-                                      onUngroup={onUngroup}
-                                      canEdit={canEdit}
+                                key={`${sub.id}-${dataVersion}-mg`}
+                                className="relative flex flex-col items-center"
+                              >
+                                {showTeamSlots && (
+                                  <>
+                                    <DropSlot
+                                      side="left"
+                                      onDropHere={(id) =>
+                                        onReorder!(id, cluster[0].id, teamIds, i)
+                                      }
                                     />
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </>
+                                    {i === mergedDirects.length - 1 && (
+                                      <DropSlot
+                                        side="right"
+                                        onDropHere={(id) =>
+                                          onReorder!(
+                                            id,
+                                            cluster[0].id,
+                                            teamIds,
+                                            mergedDirects.length,
+                                          )
+                                        }
+                                      />
+                                    )}
+                                  </>
+                                )}
+                                <BusPiece
+                                  left={i > 0}
+                                  right={i < mergedDirects.length - 1}
+                                />
+                                <VLine />
+                                <div className="px-1.5">{renderNode(sub)}</div>
+                              </div>
+                            ))}
+                          </div>
                         )}
-                      </div>
+                      </>
                     )}
                   </div>
                 );
@@ -1237,20 +1273,20 @@ export const OrgChart: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Pan (click-and-drag background) state
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  // Pan (click-and-drag background). The canvas is a real scroll area, so dragging
+  // just moves its scroll position; trackpad / shift+wheel side scrolling also works.
   const isPanningRef = useRef(false);
-  const panStartRef = useRef({ x: 0, y: 0, offsetX: 0, offsetY: 0 });
+  const panStartRef = useRef({ x: 0, y: 0, left: 0, top: 0 });
 
   // Global document listeners for reliable panning (mouseup/mousemove never get lost)
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
       if (!isPanningRef.current) return;
+      const el = containerRef.current;
+      if (!el) return;
       e.preventDefault();
-      setPanOffset({
-        x: panStartRef.current.offsetX + (e.clientX - panStartRef.current.x),
-        y: panStartRef.current.offsetY + (e.clientY - panStartRef.current.y),
-      });
+      el.scrollLeft = panStartRef.current.left - (e.clientX - panStartRef.current.x);
+      el.scrollTop = panStartRef.current.top - (e.clientY - panStartRef.current.y);
     };
 
     const onMouseUp = () => {
@@ -1298,26 +1334,50 @@ export const OrgChart: React.FC = () => {
       )
         return;
 
+      const el = containerRef.current;
+      if (!el) return;
+      // Let clicks on the scrollbars work normally
+      const rect = el.getBoundingClientRect();
+      if (
+        e.clientX - rect.left > el.clientLeft + el.clientWidth ||
+        e.clientY - rect.top > el.clientTop + el.clientHeight
+      )
+        return;
+
       e.preventDefault();
       isPanningRef.current = true;
       panStartRef.current = {
         x: e.clientX,
         y: e.clientY,
-        offsetX: panOffset.x,
-        offsetY: panOffset.y,
+        left: el.scrollLeft,
+        top: el.scrollTop,
       };
-      if (containerRef.current) {
-        containerRef.current.style.cursor = "grabbing";
-        containerRef.current.style.userSelect = "none";
-      }
+      el.style.cursor = "grabbing";
+      el.style.userSelect = "none";
     },
-    [panOffset],
+    [],
   );
+
+  // Scroll so the middle of the chart (where the top person sits) is in view
+  const centerScroll = useCallback(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.scrollLeft = Math.max(0, (el.scrollWidth - el.clientWidth) / 2);
+    el.scrollTop = 0;
+  }, []);
 
   const resetView = useCallback(() => {
     setZoom(1);
-    setPanOffset({ x: 0, y: 0 });
-  }, []);
+    requestAnimationFrame(centerScroll);
+  }, [centerScroll]);
+
+  // Center once on first load only, so saving an edit doesn't jump the view
+  const hasCenteredRef = useRef(false);
+  useEffect(() => {
+    if (loading || people.length === 0 || hasCenteredRef.current) return;
+    hasCenteredRef.current = true;
+    requestAnimationFrame(centerScroll);
+  }, [loading, people.length, centerScroll]);
 
   const toggleCollapse = useCallback((id: string) => {
     setCollapsedNodes((prev) => {
@@ -1413,14 +1473,18 @@ export const OrgChart: React.FC = () => {
       const { data: assignmentsData } = await supabase
         .schema("common")
         .from("org_chart_assignments")
-        .select("profile_id, reports_to_profile_id, level_id, role");
+        .select("profile_id, reports_to_profile_id, level_id, role, grid_column");
 
       const assignmentsMap: Record<string, string | null> = {};
       const assignmentManagerIdsMap: Record<string, string[]> = {};
       const rolesMap: Record<string, string> = {};
       const levelsMap: Record<string, string | null> = {};
+      const sortOrderMap: Record<string, number> = {};
       const onChartIds = new Set<string>();
       (assignmentsData || []).forEach((a: any) => {
+        if (!(a.profile_id in sortOrderMap)) {
+          sortOrderMap[a.profile_id] = a.grid_column ?? 0;
+        }
         if (!assignmentManagerIdsMap[a.profile_id]) {
           assignmentManagerIdsMap[a.profile_id] = [];
         }
@@ -1576,6 +1640,7 @@ export const OrgChart: React.FC = () => {
           reports_to_ids: assignmentManagerIdsMap[profileId] || [],
           role: rolesMap[profileId] || "",
           level_id: levelsMap[profileId] ?? null,
+          sort_order: sortOrderMap[profileId] ?? 0,
         });
       }
 
@@ -1671,7 +1736,15 @@ export const OrgChart: React.FC = () => {
         {
           level_id: draggedPerson.level_id ?? null,
           role: draggedPerson.role || null,
-          grid_column: 0,
+          // Land at the end of the new manager's row
+          grid_column: newManagerId
+            ? Math.max(
+                0,
+                ...(findNodeById(orgTree, newManagerId)?.children || []).map(
+                  (c) => (c.sort_order ?? 0) + 1,
+                ),
+              )
+            : 0,
         },
       );
 
@@ -1688,6 +1761,80 @@ export const OrgChart: React.FC = () => {
       toast({
         title: "Error",
         description: e?.message || "Failed to update",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+      setDraggedId(null);
+    }
+  };
+
+  // Drop between cards: save the new left-to-right order for that row.
+  // If the person came from another row, they also move under that row's manager.
+  const handleReorder = async (
+    draggedPersonId: string,
+    parentId: string,
+    siblingIds: string[],
+    index: number,
+  ) => {
+    const draggedPerson = people.find((p) => p.id === draggedPersonId);
+    if (!draggedPerson) {
+      setDraggedId(null);
+      return;
+    }
+    const oldIdx = siblingIds.indexOf(draggedPersonId);
+    const sameRow = oldIdx !== -1;
+    const without = siblingIds.filter((id) => id !== draggedPersonId);
+    const insertAt = sameRow && oldIdx < index ? index - 1 : index;
+    const newOrder = [
+      ...without.slice(0, insertAt),
+      draggedPersonId,
+      ...without.slice(insertAt),
+    ];
+    if (sameRow && newOrder.every((id, i) => id === siblingIds[i])) {
+      setDraggedId(null);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      if (!sameRow) {
+        // Group-aware, same as "Move Under": a team under co-managers reports to all of them
+        const groupId = profileToGroup[parentId];
+        const managerIds =
+          groupId && groupMembers[groupId]?.length
+            ? groupMembers[groupId]
+            : [parentId];
+        await replaceProfileOrgChartAssignments(draggedPersonId, managerIds, {
+          level_id: draggedPerson.level_id ?? null,
+          role: draggedPerson.role || null,
+          grid_column: insertAt,
+        });
+      }
+      const results = await Promise.all(
+        newOrder.map((id, i) =>
+          supabase
+            .schema("common")
+            .from("org_chart_assignments")
+            .update({ grid_column: i })
+            .eq("profile_id", id),
+        ),
+      );
+      const failed = results.find((r) => r.error);
+      if (failed?.error) throw failed.error;
+
+      toast({
+        title: "Moved",
+        description: sameRow
+          ? `${draggedPerson.full_name} moved`
+          : `${draggedPerson.full_name} now reports to ${people.find((p) => p.id === parentId)?.full_name || "manager"}`,
+        variant: "success",
+      });
+      await fetchData();
+    } catch (e: any) {
+      toast({
+        title: "Error",
+        description: e?.message || "Failed to move",
         variant: "destructive",
       });
     } finally {
@@ -2091,7 +2238,7 @@ export const OrgChart: React.FC = () => {
       await replaceProfileOrgChartAssignments(userId, managerIdsToSave, {
         level_id: newLevelId,
         role: editingPerson.role || null,
-        grid_column: 0,
+        grid_column: editingPerson.sort_order ?? 0,
       });
 
       // Job title lives on the profile, so the chart and the profile page agree.
@@ -2312,10 +2459,11 @@ export const OrgChart: React.FC = () => {
             backgroundImage:
               "radial-gradient(circle, #e5e7eb 1px, transparent 1px)",
             backgroundSize: "24px 24px",
+            backgroundAttachment: "local",
             minHeight: "calc(100vh - 300px)",
             maxHeight: "calc(100vh - 200px)",
             cursor: "grab",
-            overflow: "hidden",
+            overflow: "auto",
           }}
           onMouseDown={handlePanMouseDown}
         >
@@ -2343,15 +2491,16 @@ export const OrgChart: React.FC = () => {
               )}
             </div>
           ) : (
-            <div
-              ref={contentRef}
-              className="flex justify-center pt-4 pb-8"
-              style={{
-                transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`,
-                transformOrigin: "top center",
-              }}
-            >
-              <div className="flex gap-8" key={`tree-${dataVersion}`}>
+            // w-max + min-w-full: centered when the chart is narrow, but never
+            // pushed off the left edge (unreachable by scrolling) when it's wide.
+            // CSS zoom (not transform scale) so the scroll area matches the zoomed size.
+            <div className="flex w-max min-w-full justify-center pt-4 pb-8">
+              <div
+                ref={contentRef}
+                className="flex gap-8"
+                style={{ zoom }}
+                key={`tree-${dataVersion}`}
+              >
                 {orgTree.map((root) => (
                   <FlowchartNode
                     key={`${root.id}-${dataVersion}`}
@@ -2362,6 +2511,7 @@ export const OrgChart: React.FC = () => {
                     onDelete={handleDeletePerson}
                     onAddUnder={openAddModal}
                     onDrop={handleDrop}
+                    onReorder={handleReorder}
                     collapsedNodes={collapsedNodes}
                     toggleCollapse={toggleCollapse}
                     draggedId={draggedId}

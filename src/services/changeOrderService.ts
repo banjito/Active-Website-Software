@@ -2,6 +2,14 @@ import { supabase } from '../lib/supabase';
 import { createChangeOrderEstimate } from './quickbooksService';
 
 export type ChangeOrderStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
+export type ApprovalMethod = 'email' | 'signed_online' | 'customer_form' | 'signed_letter';
+
+export const APPROVAL_METHOD_LABEL: Record<ApprovalMethod, string> = {
+  email: 'Email reply',
+  signed_online: 'Signed online',
+  customer_form: 'Their own form',
+  signed_letter: 'Signed letter',
+};
 
 export interface ChangeOrder {
   id: string;
@@ -29,6 +37,14 @@ export interface ChangeOrder {
   opportunity_id?: string | null;
   /** Billed on its own terms, outside the original contract. */
   outside_contract?: boolean;
+  /** How the customer approved, with proof (pasted email or a file) */
+  approval_method?: ApprovalMethod | null;
+  approval_note?: string | null;
+  approval_file_url?: string | null;
+  approval_file_path?: string | null;
+  /** Work began before approval on this date, backed by work_started_note */
+  work_started_on?: string | null;
+  work_started_note?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -46,6 +62,8 @@ export interface ChangeOrderInput {
   file_type?: string | null;
   file_size?: number | null;
   outside_contract?: boolean;
+  work_started_on?: string | null;
+  work_started_note?: string | null;
 }
 
 /** Shown in place of the raw status value. "submitted" means sent to the customer. */
@@ -118,6 +136,8 @@ export async function createChangeOrder(
         file_type: input.file_type ?? null,
         file_size: input.file_size ?? null,
         outside_contract: input.outside_contract ?? false,
+        work_started_on: input.work_started_on ?? null,
+        work_started_note: input.work_started_note ?? null,
       })
       .select()
       .single();
@@ -136,6 +156,10 @@ export async function updateChangeOrder(
     approved_at?: string | null;
     approved_date?: string | null;
     approved_by_name?: string | null;
+    approval_method?: ApprovalMethod | null;
+    approval_note?: string | null;
+    approval_file_url?: string | null;
+    approval_file_path?: string | null;
     qbo_estimate_id?: string | null;
     qbo_synced_at?: string | null;
   }
@@ -232,7 +256,14 @@ export async function approveChangeOrder(
   co: ChangeOrder,
   approverId: string,
   qbo?: { projectId?: string | null; jobNumber?: string | null },
-  details?: { approved_date?: string | null; approved_by_name?: string | null }
+  details?: {
+    approved_date?: string | null;
+    approved_by_name?: string | null;
+    approval_method?: ApprovalMethod | null;
+    approval_note?: string | null;
+    approval_file_url?: string | null;
+    approval_file_path?: string | null;
+  }
 ): Promise<{ changeOrder: ChangeOrder; qboError: string | null }> {
   let updated = await updateChangeOrder(co.id, {
     status: 'approved',

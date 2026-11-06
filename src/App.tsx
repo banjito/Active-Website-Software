@@ -120,6 +120,9 @@ import { RequisitionApprovals } from "./pages/hr/recruiting/RequisitionApprovals
 import { CareerPage } from "./pages/hr/recruiting/CareerPage";
 import { PublicCareerPage } from "./pages/hr/recruiting/PublicCareerPage";
 import { PublicOfferSigning } from "./pages/hr/offers/PublicOfferSigning";
+const PublicChangeOrderSigning = React.lazy(
+  () => import("./pages/changeOrders/PublicChangeOrderSigning"),
+);
 import { CandidateTracking } from "./pages/hr/recruiting/CandidateTracking";
 import { TalentPool } from "./pages/hr/recruiting/TalentPool";
 import { InterviewScheduling } from "./pages/hr/recruiting/InterviewScheduling";
@@ -637,6 +640,14 @@ function App() {
                   <Route
                     path="/sign-offer/:token"
                     element={<PublicOfferSigning />}
+                  />
+                  <Route
+                    path="/sign-change-order/:token"
+                    element={
+                      <React.Suspense fallback={null}>
+                        <PublicChangeOrderSigning />
+                      </React.Suspense>
+                    }
                   />
                   <Route
                     path="/exit-survey/:token"

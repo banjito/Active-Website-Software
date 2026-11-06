@@ -6987,6 +6987,7 @@ CREATE TABLE common.candidates (
     eeo_veteran boolean DEFAULT false,
     eeo_disability boolean DEFAULT false,
     created_at timestamp with time zone DEFAULT now(),
+    confirmation_sent_at timestamp with time zone,
     updated_at timestamp with time zone DEFAULT now(),
     offer_status text,
     fr_shirt_size text,

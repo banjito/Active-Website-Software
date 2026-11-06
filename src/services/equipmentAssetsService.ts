@@ -26,6 +26,7 @@ const BASE_ASSET_COLUMNS =
  * first so the most likely missing column is dropped on the first retry.
  */
 const OPTIONAL_ASSET_COLUMNS = [
+  { name: "replaced_by_asset_id", migration: "add_asset_status_and_diagram_archive.sql" },
   { name: "report_template_slug", migration: "add_equipment_asset_report_template.sql" },
   { name: "report_data", migration: "add_equipment_asset_report_template.sql" },
   { name: "nameplate_data", migration: "add_equipment_asset_nameplate_data.sql" },
@@ -33,6 +34,7 @@ const OPTIONAL_ASSET_COLUMNS = [
 ];
 
 const columnSupported: Record<string, boolean> = {
+  replaced_by_asset_id: true,
   report_template_slug: true,
   report_data: true,
   nameplate_data: true,
@@ -276,6 +278,7 @@ function normalizeInput(input: EquipmentAssetInput) {
     model: text(input.model),
     serial_number: text(input.serial_number),
     notes: text(input.notes),
+    ...(input.status ? { status: input.status } : {}),
   });
 }
 
@@ -714,6 +717,7 @@ export interface BulkAssetUpdate {
   patch: Partial<
     Pick<
       EquipmentAsset,
+      | "status"
       | "building_area"
       | "substation"
       | "equipment_location"

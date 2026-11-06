@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Building2, FileSpreadsheet, Plus } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Building2, FileSpreadsheet, Network, Plus, Settings2 } from "lucide-react";
 import Card, {
   CardContent,
   CardDescription,
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { toast } from "react-hot-toast";
 import { useAuth } from "@/lib/AuthContext";
+import { useAssetDiagramPlacements } from "@/hooks/useAssetDiagramPlacements";
 import { useSubstationFolders } from "@/hooks/useSubstationFolders";
 import { AddFolderButton } from "@/components/folders/FolderControls";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -24,6 +25,8 @@ import {
   supportsSubAssets,
 } from "@/services/equipmentAssetsService";
 import EquipmentAssetsTable from "@/components/assets/EquipmentAssetsTable";
+import SiteDiagramSettingsDialog from "@/components/diagrams/SiteDiagramSettingsDialog";
+import { canEditSiteDiagramSettings } from "@/services/siteDiagramsService";
 import EquipmentAssetDialog, {
   type AssetFieldSuggestions,
 } from "@/components/assets/EquipmentAssetDialog";
@@ -45,6 +48,7 @@ import type {
 export default function SiteDetailPage() {
   const { siteId, division } = useParams<{ siteId: string; division?: string }>();
   const basePath = division ? `/${division}` : "";
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { getUserRole, isAdmin } = usePermissions();
   const role = getUserRole();
@@ -54,8 +58,24 @@ export default function SiteDetailPage() {
       role as string,
     );
 
+  const closeDiagramSettings = useCallback(() => setDiagramSettingsOpen(false), []);
+
   // Folders made here belong to the facility and are inherited by every job at it.
   const substationFolders = useSubstationFolders({ siteId });
+  const diagramPlacements = useAssetDiagramPlacements(siteId);
+  const [canEditDiagramSettings, setCanEditDiagramSettings] = useState(false);
+  const [diagramSettingsOpen, setDiagramSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    if (!siteId) return;
+    let cancelled = false;
+    void canEditSiteDiagramSettings(siteId).then((allowed) => {
+      if (!cancelled) setCanEditDiagramSettings(allowed);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [siteId]);
 
   const [site, setSite] = useState<Site | null>(null);
   const [assets, setAssets] = useState<EquipmentAssetWithCounts[]>([]);
@@ -172,6 +192,16 @@ export default function SiteDetailPage() {
         All sites
       </Link>
 
+      {siteId && (
+        <SiteDiagramSettingsDialog
+          open={diagramSettingsOpen}
+          onClose={closeDiagramSettings}
+          siteId={siteId}
+          siteName={site.name}
+          userId={user?.id ?? null}
+        />
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -182,6 +212,28 @@ export default function SiteDetailPage() {
                 {place}
               </span>
             )}
+            <div className="ml-auto flex items-center gap-2">
+              {canEditDiagramSettings && (
+                <Button
+                  variant="outline"
+                  onClick={() => setDiagramSettingsOpen(true)}
+                  leftIcon={<Settings2 className="h-4 w-4" />}
+                >
+                  Diagram Settings
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                onClick={() =>
+                  navigate(`/sites/${siteId}/diagrams`, {
+                    state: { returnTo: `${basePath}/sites/${siteId}` },
+                  })
+                }
+                leftIcon={<Network className="h-4 w-4" />}
+              >
+                Single Line
+              </Button>
+            </div>
           </CardTitle>
           <CardDescription>
             {site.address ? `${site.address}` : ""}
@@ -205,6 +257,12 @@ export default function SiteDetailPage() {
             }
             onBatchMoveSite={canEdit ? setMovingAssets : undefined}
             onBatchEdit={canEdit ? setBulkEditing : undefined}
+            diagramPlacements={diagramPlacements}
+            onShowOnDiagram={(placement) =>
+              navigate(`/sites/${siteId}/diagrams/${placement.diagramId}?focus=${placement.symbolId}`, {
+                state: { returnTo: `${basePath}/sites/${siteId}` },
+              })
+            }
             emptyMessage="No equipment registered at this site yet. Import a spreadsheet to load it in one go."
             actions={
               canEdit && (

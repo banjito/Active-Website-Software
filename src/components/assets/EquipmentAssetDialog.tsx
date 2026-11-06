@@ -1,3 +1,4 @@
+import { ASSET_STATUS_OPTIONS, type AssetStatus } from "@/lib/assetStatus";
 import React, { useEffect, useMemo, useState } from "react";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -79,6 +80,7 @@ const emptyForm = {
   model: "",
   serial_number: "",
   notes: "",
+  status: "active" as AssetStatus,
 };
 
 /**
@@ -232,6 +234,7 @@ export function EquipmentAssetDialog({
         model: asset.model ?? "",
         serial_number: asset.serial_number ?? "",
         notes: asset.notes ?? "",
+        status: asset.status ?? "active",
       });
       setNameplate((asset.nameplate_data as NameplateData) ?? {});
       setTemplateSlug(asset.report_template_slug ?? "");
@@ -287,7 +290,11 @@ export function EquipmentAssetDialog({
       onClose();
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to save asset");
+      toast.error(
+        /status_check/.test(e?.message ?? "")
+          ? "This status needs a database update that hasn't been run yet."
+          : e?.message || "Failed to save asset",
+      );
     } finally {
       setSaving(false);
     }
@@ -397,6 +404,16 @@ export function EquipmentAssetDialog({
               )}
             </div>
           )}
+
+          <div className="sm:w-1/2 sm:pr-2">
+            <Label htmlFor="ea-status">Status</Label>
+            <Select
+              id="ea-status"
+              value={form.status}
+              onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as AssetStatus }))}
+              options={ASSET_STATUS_OPTIONS}
+            />
+          </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             {!profile?.jobInfo.some((f) => f.column === "equipment_location") && (

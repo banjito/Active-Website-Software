@@ -256,6 +256,8 @@ export interface SectionConfig {
   title: string;
   order: number;
   showInPrint: boolean;
+  /** Whether this table's values show in Trends. Unset: decided by the kind of section. */
+  trendResults?: boolean;
   /** Short code for formulas, e.g. IR (Insulation Resistance), Job (Job Details). Shown as {IR.C1.R2}. */
   referenceCode?: string;
 

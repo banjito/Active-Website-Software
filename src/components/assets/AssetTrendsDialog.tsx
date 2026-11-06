@@ -1,11 +1,10 @@
 /**
- * Trends for one piece of equipment: chart the same readings across every
- * custom-form report filed on it (e.g. yearly IR on a switchgear).
+ * Trends for one piece of equipment: chart the same results across every report
+ * filed on it, custom forms and built-in reports alike.
  *
- * Pick the form, the table, which columns and which rows; each column/row
- * pair is a line across the reports' test dates. Values can be shown in one
- * unit. A table below lists the values with a link to each report, and the
- * trend downloads as CSV.
+ * Tick the readings to compare. Like fields line up on their own; the mapping
+ * tool covers fields that are named differently on different report types.
+ * Only results are offered, never job details, nameplate data or inspections.
  */
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -20,24 +19,31 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Download, ExternalLink, TrendingDown, TrendingUp } from "lucide-react";
+import { Download, ExternalLink, Link2, TrendingDown, TrendingUp } from "lucide-react";
+import toast from "react-hot-toast";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { supabase } from "@/lib/supabase";
-import type { CustomFormStructure } from "@/lib/types/customForms";
-import { adaptStoredData, parseStoredData, projectStateToRuntime } from "@/lib/customForms/instanceState";
-import {
-  buildTrend,
-  filledRowCount,
-  rowLabel,
-  trendChange,
-  trendCsv,
-  trendDate,
-  type TrendReport,
-} from "@/lib/customForms/assetTrends";
+import { trendChange, trendCsv } from "@/lib/customForms/assetTrends";
 import { CHART_COLORS } from "@/lib/customForms/chart";
 import { UNIT_CHOICES } from "@/lib/customForms/unitResolution";
+import type { TrendEntry } from "@/lib/trends/readings";
+import {
+  buildLineTrend,
+  buildTrendLines,
+  firstLines,
+  groupLines,
+  type MappingMember,
+  type TrendMapping,
+} from "@/lib/trends/trendLines";
+import {
+  deleteTrendMapping,
+  fetchTrendMappings,
+  loadAssetTrendEntries,
+  saveTrendMapping,
+} from "@/services/assetTrendsService";
+import { canEditDiagramDefaults } from "@/services/siteDiagramsService";
+import { TrendMatchPanel } from "./TrendMatchPanel";
 
 const box =
   "h-8 px-2 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none focus:outline-none focus:ring-1 focus:ring-brand text-neutral-900 dark:text-white";
@@ -46,68 +52,6 @@ const fmtDate = (iso: string) => {
   const [y, m, d] = iso.split("-");
   return y && m && d ? `${m}/${d}/${y}` : iso;
 };
-
-interface TemplateInfo {
-  id: string;
-  name: string;
-  structure: CustomFormStructure;
-}
-
-/** Every custom-form report linked to the asset, read and ready to trend. */
-async function loadAssetReports(assetId: string): Promise<{ reports: TrendReport[]; templates: TemplateInfo[] }> {
-  const { data: links, error } = await supabase
-    .schema("neta_ops")
-    .from("assets")
-    .select("file_url")
-    .eq("equipment_asset_id", assetId)
-    .like("file_url", "custom-form:%");
-  if (error) throw error;
-  const ids = new Map<string, string>(); // instance id → template id
-  for (const link of links ?? []) {
-    const m = String((link as any).file_url).match(/custom-form\/([^/]+)\/([^/?#]+)/);
-    if (m && m[2] !== "new") ids.set(m[2], m[1]);
-  }
-  if (!ids.size) return { reports: [], templates: [] };
-
-  const [{ data: rows, error: rowsError }, { data: templateRows, error: tError }] = await Promise.all([
-    supabase
-      .schema("neta_ops")
-      .from("custom_form_instances")
-      .select("id, template_id, job_id, data, status, created_at")
-      .in("id", [...ids.keys()]),
-    supabase
-      .schema("neta_ops")
-      .from("custom_form_templates")
-      .select("id, name, structure")
-      .in("id", [...new Set(ids.values())]),
-  ]);
-  if (rowsError) throw rowsError;
-  if (tError) throw tError;
-
-  const templates: TemplateInfo[] = (templateRows ?? []).map((t: any) => ({
-    id: t.id,
-    name: t.name,
-    structure: t.structure as CustomFormStructure,
-  }));
-  const reports: TrendReport[] = [];
-  for (const row of rows ?? []) {
-    const template = templates.find((t) => t.id === (row as any).template_id);
-    if (!template?.structure?.sections) continue;
-    const data = projectStateToRuntime(adaptStoredData(parseStoredData((row as any).data), template.structure));
-    const when = trendDate(template.structure, data, (row as any).created_at);
-    reports.push({
-      instanceId: (row as any).id,
-      templateId: template.id,
-      jobId: (row as any).job_id,
-      status: (row as any).status,
-      structure: template.structure,
-      data,
-      date: when.date,
-      dateFromForm: when.fromForm,
-    });
-  }
-  return { reports, templates };
-}
 
 export const AssetTrendsDialog: React.FC<{
   assetId: string;
@@ -118,24 +62,33 @@ export const AssetTrendsDialog: React.FC<{
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [reports, setReports] = useState<TrendReport[]>([]);
-  const [templates, setTemplates] = useState<TemplateInfo[]>([]);
-  const [templateId, setTemplateId] = useState("");
-  const [sectionId, setSectionId] = useState("");
-  const [columnIds, setColumnIds] = useState<string[]>([]);
-  const [rows, setRows] = useState<number[]>([]);
+  const [entries, setEntries] = useState<TrendEntry[]>([]);
+  const [unread, setUnread] = useState(0);
+  const [empty, setEmpty] = useState(0);
+  const [saved, setSaved] = useState<TrendMapping[]>([]);
+  const [temporary, setTemporary] = useState<TrendMapping[]>([]);
+  const [savingAvailable, setSavingAvailable] = useState(false);
+  const [canSave, setCanSave] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [query, setQuery] = useState("");
   const [unit, setUnit] = useState("");
+  const [matching, setMatching] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
-    loadAssetReports(assetId)
-      .then((result) => {
+    Promise.all([loadAssetTrendEntries(assetId), fetchTrendMappings(), canEditDiagramDefaults()])
+      .then(([reports, saved, allowed]) => {
         if (cancelled) return;
-        setReports(result.reports);
-        setTemplates(result.templates.filter((t) => result.reports.some((r) => r.templateId === t.id)));
+        setEntries(reports.entries);
+        setUnread(reports.unread);
+        setEmpty(reports.empty);
+        setSaved(saved.mappings);
+        setSavingAvailable(saved.available);
+        setCanSave(allowed);
+        setSelected(firstLines(buildTrendLines(reports.entries, saved.mappings)));
       })
       .catch((err) => !cancelled && setError(err?.message || "Could not load this equipment's reports."))
       .finally(() => !cancelled && setLoading(false));
@@ -144,44 +97,71 @@ export const AssetTrendsDialog: React.FC<{
     };
   }, [open, assetId]);
 
-  const template = templates.find((t) => t.id === templateId) ?? templates[0];
-  const formReports = reports.filter((r) => r.templateId === template?.id);
-  const tables = (template?.structure.sections ?? []).filter((s) => s.columns?.length);
-  const section = tables.find((s) => s.id === sectionId) ?? tables[0];
-  // A table may have had rows added on site; offer every row any report filled.
-  const rowCount = section ? Math.max(0, ...formReports.map((r) => filledRowCount(section, r.data))) : 0;
-  const reference = formReports[formReports.length - 1];
+  // A comparison in this window outranks a saved match on the same fields.
+  const mappings = useMemo(() => [...temporary, ...saved], [temporary, saved]);
+  const lines = useMemo(() => buildTrendLines(entries, mappings), [entries, mappings]);
+  const chosen = useMemo(() => lines.filter((line) => selected.includes(line.key)), [lines, selected]);
+  const trend = useMemo(() => buildLineTrend(entries, chosen, unit || undefined), [entries, chosen, unit]);
 
-  // Sensible first picks: the first number column, every row.
-  useEffect(() => {
-    if (!section) return;
-    const numeric = (section.columns ?? []).filter((c) => c.field.type === "number" || c.field.cellBehavior === "calculate");
-    setColumnIds(numeric.slice(0, 1).map((c) => c.id));
-    setRows(Array.from({ length: Math.min(rowCount, 6) }, (_, i) => i));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [section?.id, template?.id]);
+  const groups = useMemo(() => {
+    const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+    const shown = lines.filter((line) => {
+      const text = `${line.group} ${line.label}`.toLowerCase();
+      return words.every((word) => text.includes(word));
+    });
+    return groupLines(shown);
+  }, [lines, query]);
 
-  const trend = useMemo(
-    () =>
-      section
-        ? buildTrend({ reports: formReports, sectionId: section.id, columnIds, rows, unit: unit || undefined })
-        : { series: [], points: [] },
-    [formReports, section, columnIds, rows, unit],
-  );
+  const toggle = (key: string) =>
+    setSelected((list) => (list.includes(key) ? list.filter((x) => x !== key) : [...list, key]));
 
-  const toggle = <T,>(list: T[], item: T) => (list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
+  const compare = (mapping: TrendMapping) => {
+    setTemporary((list) => [mapping, ...list.filter((m) => m.id !== mapping.id)]);
+    setSelected((list) => [...new Set([...list, `map:${mapping.id}`])]);
+  };
+
+  const save = async (mapping: { id?: string; name: string; members: MappingMember[] }, tempId?: string) => {
+    try {
+      const result = await saveTrendMapping(mapping);
+      setSaved((list) => [...list.filter((m) => m.id !== result.id), result]);
+      setTemporary((list) => list.filter((m) => m.id !== tempId));
+      setSelected((list) => [...new Set([...list.filter((key) => key !== `map:${tempId}`), `map:${result.id}`])]);
+      toast.success("Match saved.");
+    } catch (err) {
+      console.error("Failed to save the match:", err);
+      toast.error("The match couldn't be saved.");
+      throw err;
+    }
+  };
+
+  const remove = async (mapping: TrendMapping) => {
+    if (!mapping.saved) {
+      setTemporary((list) => list.filter((m) => m.id !== mapping.id));
+      return;
+    }
+    try {
+      await deleteTrendMapping(mapping.id);
+      setSaved((list) => list.filter((m) => m.id !== mapping.id));
+    } catch (err) {
+      console.error("Failed to delete the match:", err);
+      toast.error("The match couldn't be deleted.");
+    }
+  };
 
   const downloadCsv = () => {
     const blob = new Blob([trendCsv(trend.series, trend.points)], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${assetName || "equipment"} - ${section?.title ?? "trend"}.csv`.replace(/[\\/:*?"<>|]/g, "_");
+    a.download = `${assetName || "equipment"} - trend.csv`.replace(/[\\/:*?"<>|]/g, "_");
     a.click();
     URL.revokeObjectURL(url);
   };
 
-  const openReport = (r: TrendReport) => navigate(`/jobs/${r.jobId}/custom-form/${r.templateId}/${r.instanceId}`);
+  const skipped = [
+    unread > 0 && `${unread} ${unread === 1 ? "report" : "reports"} couldn't be read`,
+    empty > 0 && `${empty} ${empty === 1 ? "report has" : "reports have"} no results to chart`,
+  ].filter(Boolean);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -194,7 +174,7 @@ export const AssetTrendsDialog: React.FC<{
             Trends · {assetName}
           </DialogTitle>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-            The same readings across every custom-form report on this equipment, by test date.
+            Results from every report on this equipment, by test date.
           </p>
         </div>
 
@@ -205,37 +185,17 @@ export const AssetTrendsDialog: React.FC<{
             </div>
           ) : error ? (
             <p className="text-sm text-red-600">{error}</p>
-          ) : !reports.length ? (
+          ) : !entries.length ? (
             <p className="py-8 text-center text-sm text-neutral-500">
-              No custom-form reports are linked to this equipment yet. (Built reports aren't included.)
+              No results to chart yet.{skipped.length > 0 && ` ${skipped.join("; ")}.`}
             </p>
           ) : (
             <>
               <div className="flex flex-wrap items-end gap-3">
                 <label className="text-xs text-neutral-600 dark:text-neutral-300 space-y-1">
-                  <span className="block font-medium">Form</span>
-                  <select value={template?.id ?? ""} onChange={(e) => { setTemplateId(e.target.value); setSectionId(""); }} className={`${box} w-64`}>
-                    {templates.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name} ({reports.filter((r) => r.templateId === t.id).length})
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="text-xs text-neutral-600 dark:text-neutral-300 space-y-1">
-                  <span className="block font-medium">Table</span>
-                  <select value={section?.id ?? ""} onChange={(e) => setSectionId(e.target.value)} className={`${box} w-64`}>
-                    {tables.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.title}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="text-xs text-neutral-600 dark:text-neutral-300 space-y-1">
                   <span className="block font-medium">Show in</span>
-                  <select value={unit} onChange={(e) => setUnit(e.target.value)} className={`${box} w-28`} title="Convert every value into this unit">
-                    <option value="">as entered</option>
+                  <select value={unit} onChange={(e) => setUnit(e.target.value)} className={`${box} w-36`} title="Convert every value into this unit">
+                    <option value="">each line's unit</option>
                     {UNIT_CHOICES.map((g) => (
                       <optgroup key={g.kind} label={g.kind}>
                         {g.units.map((u) => (
@@ -245,6 +205,14 @@ export const AssetTrendsDialog: React.FC<{
                     ))}
                   </select>
                 </label>
+                <Button
+                  variant={matching ? "secondary" : "outline"}
+                  size="sm"
+                  onClick={() => setMatching(!matching)}
+                  leftIcon={<Link2 className="w-3.5 h-3.5" />}
+                >
+                  Match fields
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -257,38 +225,58 @@ export const AssetTrendsDialog: React.FC<{
                 </Button>
               </div>
 
-              {section && (
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div>
-                    <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Columns</div>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1">
-                      {(section.columns ?? []).map((c) => (
-                        <label key={c.id} className="flex items-center gap-1 text-xs text-neutral-700 dark:text-neutral-200">
-                          <input type="checkbox" checked={columnIds.includes(c.id)} onChange={() => setColumnIds(toggle(columnIds, c.id))} className="rounded-none" />
-                          {c.label || c.id}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Rows</div>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1">
-                      {Array.from({ length: rowCount }, (_, r) => (
-                        <label key={r} className="flex items-center gap-1 text-xs text-neutral-700 dark:text-neutral-200">
-                          <input type="checkbox" checked={rows.includes(r)} onChange={() => setRows(toggle(rows, r).sort((a, b) => a - b))} className="rounded-none" />
-                          {reference ? rowLabel(section, reference.data, r) : `Row ${r + 1}`}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+              {matching && (
+                <TrendMatchPanel
+                  entries={entries}
+                  mappings={mappings}
+                  canSave={canSave}
+                  savingAvailable={savingAvailable}
+                  onCompare={compare}
+                  onSave={save}
+                  onRemove={remove}
+                />
               )}
 
+              <div className="grid gap-4 md:grid-cols-[18rem_minmax(0,1fr)]">
+                <div className="space-y-2 min-w-0">
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Find a reading"
+                    aria-label="Find a reading"
+                    className={`${box} w-full`}
+                  />
+                  <div className="max-h-60 md:max-h-[32rem] overflow-y-auto border border-neutral-200 dark:border-neutral-700 p-2 space-y-3">
+                    {groups.map(({ group, lines: groupLinesShown }) => (
+                      <div key={group}>
+                        <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">{group}</div>
+                        {groupLinesShown.map((line) => (
+                          <label key={line.key} className="flex items-start gap-1.5 py-0.5 text-xs text-neutral-700 dark:text-neutral-200">
+                            <input
+                              type="checkbox"
+                              checked={selected.includes(line.key)}
+                              onChange={() => toggle(line.key)}
+                              className="rounded-none mt-0.5"
+                            />
+                            <span className="min-w-0 flex-1 break-words">
+                              {line.label}
+                              {line.mappingId && <Link2 className="inline w-3 h-3 ml-1 text-brand" aria-label="Matched" />}
+                            </span>
+                            <span className="text-neutral-400 tabular-nums" title="Reports with this reading">
+                              {line.reportCount}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    ))}
+                    {!groups.length && <p className="text-xs text-neutral-500">No readings match.</p>}
+                  </div>
+                </div>
+
+                <div className="space-y-3 min-w-0">
               {trend.points.length === 0 ? (
                 <p className="py-8 text-center text-sm text-neutral-500">
-                  {columnIds.length && rows.length
-                    ? "No readings in those cells yet."
-                    : "Tick at least one column and one row."}
+                  {chosen.length ? "None of those readings can be shown in that unit." : "Tick at least one reading."}
                 </p>
               ) : (
                 <>
@@ -324,10 +312,11 @@ export const AssetTrendsDialog: React.FC<{
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="min-w-full border-collapse text-xs">
+                    <table className="min-w-full border-collapse text-xs text-neutral-800 dark:text-neutral-200">
                       <thead>
                         <tr className="bg-neutral-100 dark:bg-dark-200 text-left">
                           <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">Test date</th>
+                          <th className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">Report</th>
                           {trend.series.map((s) => {
                             const change = trendChange(trend.points, s.key);
                             return (
@@ -348,7 +337,7 @@ export const AssetTrendsDialog: React.FC<{
                       </thead>
                       <tbody>
                         {trend.points.map((p) => {
-                          const report = formReports.find((r) => r.instanceId === p.instanceId)!;
+                          const report = entries.find((r) => r.id === p.instanceId)!;
                           return (
                             <tr key={p.instanceId}>
                               <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 whitespace-nowrap">
@@ -359,13 +348,14 @@ export const AssetTrendsDialog: React.FC<{
                                   </span>
                                 )}
                               </td>
+                              <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">{report.reportTypeName}</td>
                               {trend.series.map((s) => (
                                 <td key={s.key} className="border border-neutral-300 dark:border-neutral-600 px-2 py-1 tabular-nums">
                                   {p[s.key] == null ? "—" : String(p[s.key])}
                                 </td>
                               ))}
                               <td className="border border-neutral-300 dark:border-neutral-600 px-2 py-1">
-                                <button type="button" onClick={() => openReport(report)} className="inline-flex items-center gap-1 text-brand hover:underline">
+                                <button type="button" onClick={() => navigate(report.path)} className="inline-flex items-center gap-1 text-brand hover:underline">
                                   <ExternalLink className="w-3 h-3" /> Open
                                 </button>
                               </td>
@@ -375,14 +365,16 @@ export const AssetTrendsDialog: React.FC<{
                       </tbody>
                     </table>
                   </div>
-                  {unit && (
-                    <p className="text-[11px] text-neutral-500">
-                      Values are converted into {unit} from the unit each report recorded. A value with a
-                      unit of another kind is left out ("—").
+                  {trend.leftOut > 0 && (
+                    <p className="text-[11px] text-amber-700 dark:text-amber-400">
+                      {trend.leftOut} {trend.leftOut === 1 ? "value is" : "values are"} left out ("—"): the unit can't convert to this scale.
                     </p>
                   )}
                 </>
               )}
+              {skipped.length > 0 && <p className="text-[11px] text-neutral-500">Left out: {skipped.join("; ")}.</p>}
+                </div>
+              </div>
             </>
           )}
         </div>

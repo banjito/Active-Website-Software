@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Building2, FileSpreadsheet, ListPlus, Plus, Wand2 } from "lucide-react";
+import { Building2, FileSpreadsheet, ListPlus, Network, Plus, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { toast } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
+import { useAssetDiagramPlacements } from "@/hooks/useAssetDiagramPlacements";
 import { useSubstationFolders } from "@/hooks/useSubstationFolders";
 import { AddFolderButton } from "@/components/folders/FolderControls";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -85,6 +86,7 @@ export default function JobAssetsTab({
     );
 
   const [siteId, setSiteId] = useState<string | null>(null);
+  const diagramPlacements = useAssetDiagramPlacements(siteId);
   const [migrationMissing, setMigrationMissing] = useState(false);
   const [sites, setSites] = useState<SiteWithCounts[]>([]);
   const [assets, setAssets] = useState<EquipmentAssetWithCounts[]>([]);
@@ -422,16 +424,25 @@ export default function JobAssetsTab({
         {customerName && (
           <span className="text-sm text-neutral-400">· Customer: {customerName}</span>
         )}
-        {canEdit && (
-          <div className="ml-auto w-56">
-            <Select
-              value={siteId}
-              disabled={savingSite}
-              onChange={(e) => void assignSite(e.target.value)}
-              options={sites.map((s) => ({ value: s.id, label: s.name }))}
-            />
-          </div>
-        )}
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => navigate(`/sites/${siteId}/diagrams?job=${jobId}`)}
+            leftIcon={<Network className="h-4 w-4" />}
+          >
+            Single Line
+          </Button>
+          {canEdit && (
+            <div className="w-56">
+              <Select
+                value={siteId}
+                disabled={savingSite}
+                onChange={(e) => void assignSite(e.target.value)}
+                options={sites.map((s) => ({ value: s.id, label: s.name }))}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <EquipmentAssetsTable
@@ -453,6 +464,12 @@ export default function JobAssetsTab({
         }
         onBatchMoveSite={canEdit ? setMovingAssets : undefined}
         onBatchEdit={canEdit ? setBulkEditing : undefined}
+        diagramPlacements={diagramPlacements}
+        onShowOnDiagram={(placement) =>
+          navigate(
+            `/sites/${siteId}/diagrams/${placement.diagramId}?job=${jobId}&focus=${placement.symbolId}`,
+          )
+        }
         reportsByAsset={reportsByAsset}
         onOpenReport={(report) => report.url && navigate(report.url)}
         onDetachReport={canEdit ? handleDetachReport : undefined}

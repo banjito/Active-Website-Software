@@ -11,7 +11,7 @@ import type { CustomFormTemplate } from "@/lib/types/customForms";
 
 export type CustomFormStatus = "PASS" | "FAIL" | "LIMITED SERVICE";
 
-const AMP_LOGO_URL =
+export const AMP_LOGO_URL =
   "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png";
 
 const STATUS_COLORS: Record<

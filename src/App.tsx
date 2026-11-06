@@ -19,6 +19,7 @@ import {
 } from "react-router-dom";
 import SitesListPage from "./components/sites/SitesListPage";
 import SiteDetailPage from "./components/sites/SiteDetailPage";
+import AppToaster from "./components/ui/AppToaster";
 import CustomerList from "./components/customers/CustomerList";
 import ContactList from "./components/customers/ContactList";
 import JobList from "./components/jobs/JobList";
@@ -181,6 +182,10 @@ const DocsPage = lazy(() => loadDocs().then((m) => ({ default: m.DocsPage })));
 
 // PM dashboard: standalone for now, not linked from any menu.
 const PMDashboard = lazy(() => import("./app/pm-dashboard/PMDashboard"));
+
+// Single-line diagrams. Lazy so the diagram library only loads when one is opened.
+const SiteDiagramPage = lazy(() => import("./components/diagrams/SiteDiagramPage"));
+const DiagramDefaultsPage = lazy(() => import("./components/diagrams/DiagramDefaultsPage"));
 
 // Standards reader (NETA ATS/MTS): linked from the portal and from report references.
 // Text lives in common.standard_sections, never in the bundle.
@@ -621,6 +626,7 @@ function App() {
           <DemoModeProvider>
             <DivisionProvider>
               <ConnectionStatusOverlay />
+              <AppToaster />
               <Router>
                 <ScrollToTop />
                 <Routes>
@@ -2137,6 +2143,42 @@ function App() {
                         <Layout>
                           <SiteDetailPage />
                         </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/diagram-defaults"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <Suspense
+                            fallback={
+                              <div className="flex min-h-screen items-center justify-center">
+                                <LoadingSpinner size="md" />
+                              </div>
+                            }
+                          >
+                            <DiagramDefaultsPage />
+                          </Suspense>
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  {/* Skips the app <Layout> on purpose: the one-line gets the whole
+                      window, with its own taskbar and Exit button. */}
+                  <Route
+                    path="/sites/:siteId/diagrams/:diagramId?"
+                    element={
+                      <RequireAuth>
+                        <Suspense
+                          fallback={
+                            <div className="flex min-h-screen items-center justify-center">
+                              <LoadingSpinner size="md" />
+                            </div>
+                          }
+                        >
+                          <SiteDiagramPage />
+                        </Suspense>
                       </RequireAuth>
                     }
                   />

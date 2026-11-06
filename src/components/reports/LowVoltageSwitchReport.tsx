@@ -20,6 +20,11 @@ import { formatLocalDateShort } from "@/utils/dateUtils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 
 const getVisualInspectionDescription = (section: string): string => {
@@ -679,7 +684,24 @@ export default function LowVoltageSwitchReport() {
 
   useEffect(() => {
     setCurrentReportId(reportId);
+    if (reportId) reportIdRef.current = reportId;
   }, [reportId]);
+
+  // Which row this report writes to, decided before any request leaves the
+  // browser so two saves racing each other land on the same row. State alone
+  // is not enough here: auto-save can fire again before React has committed
+  // the id from the first save.
+  const reportIdRef = React.useRef<string | undefined>(
+    reportId || reportIdFromUrl(),
+  );
+  // The asset name the job list was last told; re-sent when the identifier
+  // changes, since auto-save creates the asset before anything is typed.
+  const linkedAssetNameRef = React.useRef<string | undefined>(undefined);
+  const savingRef = React.useRef(false);
+  const saveAgainRef = React.useRef(false);
+  const loadFailedRef = React.useRef(false);
+  const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -836,6 +858,15 @@ export default function LowVoltageSwitchReport() {
   // Started from an asset in the Assets tab: fill its identity and nameplate.
   useAssetFormPrefill(reportId, setFormData);
 
+  // Auto-save reads the form through refs so an in-flight save never writes a
+  // stale copy back over what is being typed now.
+  const formDataRef = React.useRef(formData);
+  const statusRef = React.useRef(status);
+  useEffect(() => {
+    formDataRef.current = formData;
+    statusRef.current = status;
+  }, [formData, status]);
+
   // Autofill the "User" header field from the job's User (new reports only).
   useReportUserAutofill(setFormData, reportId, "user");
 
@@ -960,6 +991,7 @@ export default function LowVoltageSwitchReport() {
         }
       } catch (error) {
         console.error("Error loading report:", error);
+        loadFailedRef.current = true;
         toast.error(`Failed to load report: ${(error as Error).message}`);
       } finally {
         setLoading(false);
@@ -1029,20 +1061,218 @@ export default function LowVoltageSwitchReport() {
     });
   };
 
-  const handleSave = async () => {
-    console.log("Save attempt with params:", {
-      jobId,
-      reportId,
-      user: user?.id,
-      isEditing,
-    });
+  /**
+   * Writes the report and returns its id. Save, Ready for Review and
+   * auto-save all go through here and all write to one row.
+   */
+  const persistReport = React.useCallback(async (): Promise<string> => {
+    if (!jobId || !user?.id) {
+      throw new Error("Missing required job ID or user ID");
+    }
+    if (loadFailedRef.current) {
+      throw new Error(
+        "This report could not be loaded, so it was not saved. Reload the page and try again.",
+      );
+    }
+    const formData = formDataRef.current;
+    const tcf = calculateTCF(formData.temperature.fahrenheit);
 
-    if (!jobId || !user?.id || !isEditing) {
-      console.log("Save conditions not met:", {
+    const reportData = {
+      job_id: jobId,
+      user_id: user.id,
+      status: statusRef.current,
+      report_info: {
+        customer: maskCustomerName(formData.customer),
+        address: maskCustomerAddress(formData.address),
+        user: formData.user,
+        date: formData.date,
+        jobNumber: formData.jobNumber,
+        technicians: formData.technicians,
+        substation: formData.substation,
+        eqptLocation: formData.eqptLocation,
+        identifier: formData.identifier,
+        // Store full temperature object for clarity and future-proofing
+        temperature: {
+          fahrenheit: formData.temperature.fahrenheit,
+          celsius: fahrenheitToCelsius(formData.temperature.fahrenheit),
+          tcf,
+        },
+        humidity: formData.humidity,
+        manufacturer: formData.manufacturer,
+        catalogNo: formData.catalogNo,
+        serialNumber: formData.serialNumber,
+        series: formData.series,
+        type: formData.type,
+        systemVoltage: formData.systemVoltage,
+        ratedVoltage: formData.ratedVoltage,
+        ratedCurrent: formData.ratedCurrent,
+        aicRating: formData.aicRating,
+        phaseConfiguration: formData.phaseConfiguration,
+      },
+      switch_data: formData.switchData,
+      fuse_data: formData.fuseData,
+      visual_inspection: formData.visualMechanicalInspection,
+      insulation_resistance: formData.insulationResistance,
+      temp_corrected_insulation: {
+        tcf,
+        values: {
+          poleToPole: {
+            "P1-P2": applyTemperatureCorrection(
+              formData.insulationResistance.poleToPole["P1-P2"],
+              tcf,
+            ),
+            "P2-P3": applyTemperatureCorrection(
+              formData.insulationResistance.poleToPole["P2-P3"],
+              tcf,
+            ),
+            "P3-P1": applyTemperatureCorrection(
+              formData.insulationResistance.poleToPole["P3-P1"],
+              tcf,
+            ),
+          },
+          poleToFrame: {
+            P1: applyTemperatureCorrection(
+              formData.insulationResistance.poleToFrame["P1"],
+              tcf,
+            ),
+            P2: applyTemperatureCorrection(
+              formData.insulationResistance.poleToFrame["P2"],
+              tcf,
+            ),
+            P3: applyTemperatureCorrection(
+              formData.insulationResistance.poleToFrame["P3"],
+              tcf,
+            ),
+          },
+          lineToLoad: {
+            P1: applyTemperatureCorrection(
+              formData.insulationResistance.lineToLoad["P1"],
+              tcf,
+            ),
+            P2: applyTemperatureCorrection(
+              formData.insulationResistance.lineToLoad["P2"],
+              tcf,
+            ),
+            P3: applyTemperatureCorrection(
+              formData.insulationResistance.lineToLoad["P3"],
+              tcf,
+            ),
+          },
+        },
+      },
+      contact_resistance: formData.contactResistance,
+      test_equipment: formData.testEquipment,
+      comments: formData.comments.enclosure,
+    };
+
+    // One id for the whole save, claimed synchronously so nothing else can
+    // now decide to create a row.
+    const isNewReport = !reportIdRef.current;
+    if (isNewReport) reportIdRef.current = newReportId();
+    const saveId = reportIdRef.current as string;
+
+    let result;
+    if (!isNewReport) {
+      // Update existing report. job_id and user_id are left out so the
+      // original author stays on the report.
+      const { job_id: _jobId, user_id: _userId, ...updateData } = reportData;
+      result = await supabase
+        .schema("neta_ops")
+        .from("low_voltage_switch_reports")
+        .update(updateData)
+        .eq("id", saveId)
+        .select()
+        .single();
+    } else {
+      // New report: the id is claimed before the request goes out, so a save
+      // that runs twice overwrites the same row.
+      result = await supabase
+        .schema("neta_ops")
+        .from("low_voltage_switch_reports")
+        .upsert({ id: saveId, ...reportData }, { onConflict: "id" })
+        .select()
+        .single();
+    }
+
+    if (result.error) throw result.error;
+
+    const assetName = getAssetName(
+      reportSlug,
+      formData.identifier || formData.eqptLocation || "",
+    );
+    if (linkedAssetNameRef.current !== assetName) {
+      await ensureReportAssetLink(
         jobId,
-        userId: user?.id,
-        isEditing,
-      });
+        {
+          name: assetName,
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${saveId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+      linkedAssetNameRef.current = assetName;
+    }
+
+    if (isNewReport) {
+      setCurrentReportId(saveId);
+      window.history.replaceState(
+        {},
+        "",
+        `/jobs/${jobId}/${reportSlug}/${saveId}`,
+      );
+    }
+    return saveId;
+  }, [jobId, user?.id, reportSlug, maskCustomerName, maskCustomerAddress]);
+
+  const autoSave = React.useCallback(async () => {
+    if (!jobId || !user?.id) return;
+
+    // One save at a time. Anything typed while this one is in flight is picked
+    // up by the follow-up pass below, which reads the form fresh.
+    if (savingRef.current) {
+      saveAgainRef.current = true;
+      return;
+    }
+    savingRef.current = true;
+
+    try {
+      setIsAutoSaving(true);
+      do {
+        saveAgainRef.current = false;
+        await persistReport();
+      } while (saveAgainRef.current);
+      reportSaveSucceeded();
+    } catch (error) {
+      console.error("Auto-save error:", error);
+      reportSaveFailed(error);
+    } finally {
+      savingRef.current = false;
+      saveAgainRef.current = false;
+      setIsAutoSaving(false);
+    }
+  }, [jobId, user?.id, persistReport]);
+
+  // Auto-save effect with debounce
+  useEffect(() => {
+    if (!isEditing || loading) return;
+
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    autoSaveTimerRef.current = setTimeout(() => {
+      autoSave();
+    }, 500); // 500ms debounce
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, [formData, status, isEditing, loading, autoSave]);
+
+  const handleSave = async () => {
+    if (!jobId || !user?.id || !isEditing) {
       toast.error(
         "Missing required information: " +
           (!jobId ? "Job ID is missing. " : "") +
@@ -1053,159 +1283,22 @@ export default function LowVoltageSwitchReport() {
     }
 
     try {
-      console.log("Starting save process...");
       setSaving(true);
-      let result;
+      const wasExistingReport = Boolean(reportIdRef.current);
+      const newId = await persistReport();
+      reportSaveSucceeded();
 
-      const reportData = {
-        job_id: jobId,
-        user_id: user.id,
-        status: status,
-        report_info: {
-          customer: maskCustomerName(formData.customer),
-          address: maskCustomerAddress(formData.address),
-          user: formData.user,
-          date: formData.date,
-          jobNumber: formData.jobNumber,
-          technicians: formData.technicians,
-          substation: formData.substation,
-          eqptLocation: formData.eqptLocation,
-          identifier: formData.identifier,
-          // Store full temperature object for clarity and future-proofing
-          temperature: {
-            fahrenheit: formData.temperature.fahrenheit,
-            celsius: fahrenheitToCelsius(formData.temperature.fahrenheit),
-            tcf,
-          },
-          humidity: formData.humidity,
-          manufacturer: formData.manufacturer,
-          catalogNo: formData.catalogNo,
-          serialNumber: formData.serialNumber,
-          series: formData.series,
-          type: formData.type,
-          systemVoltage: formData.systemVoltage,
-          ratedVoltage: formData.ratedVoltage,
-          ratedCurrent: formData.ratedCurrent,
-          aicRating: formData.aicRating,
-          phaseConfiguration: formData.phaseConfiguration,
-        },
-        switch_data: formData.switchData,
-        fuse_data: formData.fuseData,
-        visual_inspection: formData.visualMechanicalInspection,
-        insulation_resistance: formData.insulationResistance,
-        temp_corrected_insulation: {
-          tcf,
-          values: {
-            poleToPole: {
-              "P1-P2": applyTemperatureCorrection(
-                formData.insulationResistance.poleToPole["P1-P2"],
-                tcf,
-              ),
-              "P2-P3": applyTemperatureCorrection(
-                formData.insulationResistance.poleToPole["P2-P3"],
-                tcf,
-              ),
-              "P3-P1": applyTemperatureCorrection(
-                formData.insulationResistance.poleToPole["P3-P1"],
-                tcf,
-              ),
-            },
-            poleToFrame: {
-              P1: applyTemperatureCorrection(
-                formData.insulationResistance.poleToFrame["P1"],
-                tcf,
-              ),
-              P2: applyTemperatureCorrection(
-                formData.insulationResistance.poleToFrame["P2"],
-                tcf,
-              ),
-              P3: applyTemperatureCorrection(
-                formData.insulationResistance.poleToFrame["P3"],
-                tcf,
-              ),
-            },
-            lineToLoad: {
-              P1: applyTemperatureCorrection(
-                formData.insulationResistance.lineToLoad["P1"],
-                tcf,
-              ),
-              P2: applyTemperatureCorrection(
-                formData.insulationResistance.lineToLoad["P2"],
-                tcf,
-              ),
-              P3: applyTemperatureCorrection(
-                formData.insulationResistance.lineToLoad["P3"],
-                tcf,
-              ),
-            },
-          },
-        },
-        contact_resistance: formData.contactResistance,
-        test_equipment: formData.testEquipment,
-        comments: formData.comments.enclosure,
-      };
-
-      try {
-        let result;
-        if (reportId) {
-          // Update existing report
-          result = await supabase
-            .schema("neta_ops")
-            .from("low_voltage_switch_reports")
-            .update(reportData)
-            .eq("id", reportId)
-            .select()
-            .single();
-        } else {
-          // Create new report
-          result = await supabase
-            .schema("neta_ops")
-            .from("low_voltage_switch_reports")
-            .insert(reportData)
-            .select()
-            .single();
-
-          // Create asset entry for the report
-          if (result.data) {
-            const assetData = {
-              name: getAssetName(
-                reportSlug,
-                formData.identifier || formData.eqptLocation || "",
-              ),
-              file_url: `report:/jobs/${jobId}/low-voltage-switch-report/${result.data.id}`,
-              user_id: user.id,
-            };
-
-            await ensureReportAssetLink(jobId, assetData, user.id);
-          }
-        }
-
-        if (result.error) throw result.error;
-
-        if (!reportId) {
-          // New report: quietly update URL with new ID
-          setIsEditing(false);
-          const newId = (result as any)?.data?.id || (result as any)?.id;
-          if (newId) {
-            setCurrentReportId(newId);
-            navigate(`/jobs/${jobId}/${reportSlug}/${newId}`, {
-              replace: true,
-            });
-          }
-        } else {
-          // Existing report: save silently, stay in edit mode
-          setJustSaved(true);
-        }
-      } catch (error: any) {
-        console.error("Error saving report:", error);
-        toast.error(
-          `Failed to save report: ${error?.message || "Unknown error"}`,
-        );
-      } finally {
-        setSaving(false);
+      if (!wasExistingReport) {
+        // New report: quietly update URL with new ID
+        setIsEditing(false);
+        navigate(`/jobs/${jobId}/${reportSlug}/${newId}`, { replace: true });
+      } else {
+        // Existing report: save silently, stay in edit mode
+        setJustSaved(true);
       }
     } catch (error: any) {
       console.error("Error saving report:", error);
+      reportSaveFailed(error);
       toast.error(
         `Failed to save report: ${error?.message || "Unknown error"}`,
       );
@@ -1216,7 +1309,7 @@ export default function LowVoltageSwitchReport() {
 
   const handleSaveAndClose = async () => {
     await handleSave();
-    if (reportId) {
+    if (reportIdRef.current) {
       setIsEditing(false);
     }
   };
@@ -1315,7 +1408,7 @@ export default function LowVoltageSwitchReport() {
         <div className="max-w-7xl w-full space-y-6">
           <ReportHeader
             title={reportName}
-            isAutoSaving={false}
+            isAutoSaving={isAutoSaving}
             isEditing={isEditing}
             justSaved={justSaved}
             isSaving={saving}
@@ -2912,7 +3005,8 @@ export default function LowVoltageSwitchReport() {
 
                 // Get the report ID (may have been created by save)
                 const savedReportId =
-                  reportId || window.location.pathname.split("/").pop();
+                  reportIdRef.current ||
+                  window.location.pathname.split("/").pop();
                 if (!savedReportId) throw new Error("Failed to save report");
 
                 // Update asset status to ready_for_review

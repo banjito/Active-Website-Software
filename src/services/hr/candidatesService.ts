@@ -88,6 +88,46 @@ export interface CreateCandidateInput {
 }
 
 export const candidatesService = {
+  // Public career page (logged out). One server call creates the applicant and
+  // saves question answers + EEO data. Returns only the new applicant's id.
+  // See database/migrations/recruiting_public_functions.sql.
+  async submitPublicApplication(input: {
+    requisition_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone?: string;
+    location?: string;
+    cover_letter?: string;
+    expected_compensation?: string;
+    resume_url?: string;
+    answers?: unknown[];
+    eeo?: {
+      gender?: string;
+      race?: string;
+      veteran?: boolean;
+      disability?: boolean;
+    };
+  }): Promise<string> {
+    const { data, error } = await supabase
+      .schema('common')
+      .rpc('submit_job_application', {
+        p_requisition_id: input.requisition_id,
+        p_first_name: input.first_name,
+        p_last_name: input.last_name,
+        p_email: input.email,
+        p_phone: input.phone ?? null,
+        p_location: input.location ?? null,
+        p_cover_letter: input.cover_letter ?? null,
+        p_expected_compensation: input.expected_compensation ?? null,
+        p_resume_url: input.resume_url ?? null,
+        p_answers: input.answers?.length ? input.answers : null,
+        p_eeo: input.eeo ?? null,
+      });
+    if (error) throw error;
+    return data as string;
+  },
+
   async getAll(): Promise<Candidate[]> {
     const { data, error } = await supabase
       .schema('common')

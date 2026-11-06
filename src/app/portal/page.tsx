@@ -1898,17 +1898,16 @@ export default function PortalLanding({
               Review the document below, then sign at the bottom to acknowledge.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-4 flex-1 min-h-0 overflow-hidden">
+          <div className="flex flex-col gap-4 flex-1 min-h-0 overflow-hidden [@media(max-height:800px)]:gap-2">
+            {/* The document takes whatever height is left and shrinks on short
+                screens, so the signature box and buttons below never get cut
+                off. The PDF viewer scrolls inside it. */}
             {ackModalDocUrl && (
-              <div
-                className="border rounded-none overflow-hidden flex-1 min-h-0 bg-neutral-100 dark:bg-neutral-900"
-                style={{ minHeight: "50vh" }}
-              >
+              <div className="relative border rounded-none overflow-hidden flex-1 min-h-0 bg-neutral-100 dark:bg-neutral-900">
                 <iframe
                   title="Document"
                   src={ackModalDocUrl}
-                  className="w-full h-full min-h-[50vh]"
-                  style={{ minHeight: "50vh" }}
+                  className="absolute inset-0 h-full w-full border-0"
                 />
               </div>
             )}
@@ -1934,8 +1933,7 @@ export default function PortalLanding({
                       ref={ackCanvasRef}
                       width={500}
                       height={120}
-                      className="border border-neutral-300 dark:border-neutral-600 rounded w-full cursor-crosshair touch-none"
-                      style={{ maxWidth: "100%", height: "120px" }}
+                      className="block h-[120px] w-full max-w-full cursor-crosshair touch-none rounded-none border border-neutral-300 bg-white dark:border-neutral-600 [@media(max-height:800px)]:h-20"
                       onMouseDown={ackStartDrawing}
                       onMouseMove={ackDraw}
                       onMouseUp={ackStopDrawing}
@@ -1958,7 +1956,7 @@ export default function PortalLanding({
               </div>
             )}
           </div>
-          <DialogFooter>
+          <DialogFooter className="shrink-0">
             <Button variant="outline" onClick={closeAckModal}>
               Cancel
             </Button>
@@ -1966,10 +1964,12 @@ export default function PortalLanding({
               <Button
                 onClick={ackSubmit}
                 disabled={!ackSignatureData || ackSigning}
+                leftIcon={
+                  ackSigning ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : undefined
+                }
               >
-                {ackSigning ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : null}
                 Submit acknowledgment
               </Button>
             )}

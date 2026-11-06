@@ -8,9 +8,7 @@ import {
 import {
   candidatesService,
   notifyNewApplicant,
-  CreateCandidateInput,
 } from "../../../services/hr/candidatesService";
-import { eeoComplianceService } from "../../../services/hr/eeoComplianceService";
 import {
   applicationQuestionsService,
   ApplicationQuestion,
@@ -95,7 +93,7 @@ export const PublicCareerPage: React.FC = () => {
   const fetchApprovedRequisitions = async () => {
     try {
       setLoading(true);
-      const all = await jobRequisitionsService.getAll();
+      const all = await jobRequisitionsService.getPublicPostings();
       // Only show approved and posted requisitions on public page
       const approved = all.filter(
         (req) => req.status === "approved" || req.status === "posted",
@@ -336,32 +334,10 @@ export const PublicCareerPage: React.FC = () => {
         setUploadProgress(80);
       }
 
-      // Create candidate record (no EEO data — stored separately for compliance)
-      const candidateData: CreateCandidateInput = {
-        first_name: applicationForm.first_name.trim(),
-        last_name: applicationForm.last_name.trim(),
-        email: applicationForm.email.trim(),
-        phone: applicationForm.phone.trim() || undefined,
-        location: applicationForm.location.trim() || undefined,
-        position_applied: selectedRequisition.title,
-        requisition_id: selectedRequisition.id,
-        status: "new",
-        source: "Career Page",
-        resume_url: resumeUrl || undefined,
-        cover_letter: applicationForm.cover_letter.trim() || undefined,
-        expected_compensation: applicationForm.expected_compensation.trim(),
-      };
-
-      setUploadProgress(90);
-      const createdCandidate = await candidatesService.create(candidateData);
-      notifyNewApplicant(createdCandidate.id);
-
-      // Save answers to the posting's custom questions. Non-blocking: the
-      // application is already recorded, and losing an answer must not tell the
-      // applicant their application failed.
+      // Answers to the posting's custom questions.
+      let answerPayload: SubmitAnswerInput[] = [];
       if (questions.length > 0) {
-        try {
-          const payload: SubmitAnswerInput[] = questions.map((q, index) => {
+        answerPayload = questions.map((q, index) => {
             const value = answers[q.id];
             return {
               question_id: q.id,
@@ -386,30 +362,32 @@ export const PublicCareerPage: React.FC = () => {
                   : null,
             };
           });
-          await applicationQuestionsService.submitAnswers(
-            createdCandidate.id,
-            payload,
-          );
-        } catch (answerErr) {
-          console.error("Application answers failed (non-blocking):", answerErr);
-        }
       }
 
-      // Save EEO data anonymously to the compliance table (no candidate identifiers)
-      try {
-        await eeoComplianceService.submit({
-          requisition_id: selectedRequisition.id,
-          position_title: selectedRequisition.title,
-          department: selectedRequisition.department || undefined,
+      // One server call creates the applicant, saves the answers, and saves
+      // EEO data with no link to the applicant. Answers/EEO failing never
+      // fails the application. Applicants aren't logged in, so they can't
+      // write these tables directly.
+      setUploadProgress(90);
+      const candidateId = await candidatesService.submitPublicApplication({
+        requisition_id: selectedRequisition.id,
+        first_name: applicationForm.first_name.trim(),
+        last_name: applicationForm.last_name.trim(),
+        email: applicationForm.email.trim(),
+        phone: applicationForm.phone.trim() || undefined,
+        location: applicationForm.location.trim() || undefined,
+        resume_url: resumeUrl || undefined,
+        cover_letter: applicationForm.cover_letter.trim() || undefined,
+        expected_compensation: applicationForm.expected_compensation.trim(),
+        answers: answerPayload,
+        eeo: {
           gender: applicationForm.eeo_gender || undefined,
           race: applicationForm.eeo_race || undefined,
           veteran: applicationForm.eeo_veteran || false,
           disability: applicationForm.eeo_disability || false,
-          candidate_status: "new",
-        });
-      } catch (eeoErr) {
-        console.error("EEO submission failed (non-blocking):", eeoErr);
-      }
+        },
+      });
+      notifyNewApplicant(candidateId);
       setUploadProgress(100);
 
       toast({

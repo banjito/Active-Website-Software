@@ -127,6 +127,16 @@ export interface CreateJobRequisitionInput {
 }
 
 export const jobRequisitionsService = {
+  // Public career page (logged out). Live postings only, public fields only.
+  // See database/migrations/recruiting_public_functions.sql.
+  async getPublicPostings(): Promise<JobRequisition[]> {
+    const { data, error } = await supabase
+      .schema('common')
+      .rpc('list_public_job_postings');
+    if (error) throw error;
+    return ((data as any) || []) as JobRequisition[];
+  },
+
   async getAll(): Promise<JobRequisition[]> {
     try {
       const { data, error } = await supabase

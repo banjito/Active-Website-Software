@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Building2, Pencil, Plus, Trash2 } from "lucide-react";
+import { Building2, Palette, Pencil, Plus, Trash2 } from "lucide-react";
 import Card, {
   CardContent,
   CardDescription,
@@ -8,6 +8,7 @@ import Card, {
   CardTitle,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { canEditDiagramDefaults } from "@/services/siteDiagramsService";
 import Input from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
@@ -78,6 +79,11 @@ export default function SitesListPage() {
       setLoading(false);
     }
   };
+
+  const [canEditDefaults, setCanEditDefaults] = useState(false);
+  useEffect(() => {
+    void canEditDiagramDefaults().then(setCanEditDefaults);
+  }, []);
 
   useEffect(() => {
     void load();
@@ -176,6 +182,15 @@ export default function SitesListPage() {
               placeholder="Search sites…"
               className="w-full sm:w-64"
             />
+            {canEditDefaults && (
+              <Link
+                to="/diagram-defaults"
+                className="inline-flex items-center gap-1 text-sm text-brand hover:underline"
+              >
+                <Palette className="h-4 w-4" />
+                Diagram Defaults
+              </Link>
+            )}
             {canEdit && (
               <Button
                 className="ml-auto"

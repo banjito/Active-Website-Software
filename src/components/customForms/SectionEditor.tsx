@@ -6,6 +6,7 @@
  * and for table columns: "Populate from field" or "Calculate from formula".
  */
 
+import { isResultsSection } from "@/lib/customForms/assetTrends";
 import React, { useState, useRef } from "react";
 import {
   X,
@@ -662,6 +663,23 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                 Show in printed report
               </label>
             </div>
+            {!!section.columns?.length && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="trendResults"
+                  checked={isResultsSection(section)}
+                  onChange={(e) => onUpdate({ trendResults: e.target.checked })}
+                  className="rounded-none"
+                />
+                <label
+                  htmlFor="trendResults"
+                  className="text-sm text-neutral-700 dark:text-neutral-300"
+                >
+                  Results table (shows in Trends)
+                </label>
+              </div>
+            )}
             {section.componentType === ComponentType.CONTACT_RESISTANCE && (
               <div className="flex items-center gap-2">
                 <input

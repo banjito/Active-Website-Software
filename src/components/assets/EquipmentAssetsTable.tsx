@@ -63,6 +63,9 @@ import {
 import { ContextMenu } from "@/components/ui/ContextMenu";
 import { InnerFolderRow } from "@/components/folders/InnerFolderRow";
 import { Tooltip } from "@/components/ui/Tooltip";
+import ShowOnDiagramButton from "@/components/assets/ShowOnDiagramButton";
+import { assetStatusLabel, hiddenByDefault } from "@/lib/assetStatus";
+import type { DiagramLinkTarget } from "@/lib/diagrams/links";
 import { AssetTrendsDialog } from "./AssetTrendsDialog";
 import type { EquipmentAssetWithCounts } from "@/lib/types/assetTracking";
 import type { FolderNode, SubstationFolder } from "@/lib/types/substationFolders";
@@ -124,6 +127,9 @@ interface EquipmentAssetsTableProps {
   onRemoveFromJob?: (asset: EquipmentAssetWithCounts) => void;
   /** Detach a sub-asset from its parent. Omitted where sub-assets aren't available. */
   onDetachFromParent?: (asset: EquipmentAssetWithCounts) => void;
+  /** The diagrams each asset is on. An asset on none gets no "Show on diagram" button. */
+  diagramPlacements?: Map<string, DiagramLinkTarget[]>;
+  onShowOnDiagram?: (placement: DiagramLinkTarget) => void;
   /** The reports pointing at each asset id, revealed by clicking its report count. */
   reportsByAsset?: Map<string, LinkedReport[]>;
   /** Open one of those reports. Without it, they're listed but not clickable. */
@@ -301,6 +307,8 @@ export function EquipmentAssetsTable({
   onDelete,
   onAddReport,
   onScheduleTest,
+  diagramPlacements,
+  onShowOnDiagram,
   onBatchSchedule,
   onBatchMoveSite,
   onBatchEdit,
@@ -328,6 +336,10 @@ export function EquipmentAssetsTable({
   const [search, setSearch] = usePersistentState(
     storageKey && `${storageKey}:search`,
     "",
+  );
+  const [showRetired, setShowRetired] = usePersistentState(
+    storageKey && `${storageKey}:show-retired`,
+    false,
   );
   const [substationFilter, setSubstationFilter] = usePersistentState(
     storageKey && `${storageKey}:substation`,
@@ -440,6 +452,7 @@ export function EquipmentAssetsTable({
     const term = search.trim().toLowerCase();
 
     const matches = (a: EquipmentAssetWithCounts) => {
+      if (!showRetired && hiddenByDefault(a.status)) return false;
       if (substationFilter !== "all" && (a.substation ?? "") !== substationFilter)
         return false;
       if (buildingFilter !== "all") {
@@ -786,6 +799,7 @@ export function EquipmentAssetsTable({
   }, [
     assets,
     search,
+    showRetired,
     substationFilter,
     buildingFilter,
     comparator,
@@ -955,10 +969,13 @@ export function EquipmentAssetsTable({
     );
   };
 
+  const retiredCount = assets.filter((asset) => hiddenByDefault(asset.status)).length;
+
   const showActions =
     canEdit ||
     Boolean(onAddReport) ||
     Boolean(onScheduleTest) ||
+    Boolean(onShowOnDiagram && diagramPlacements?.size) ||
     Boolean(onRemoveFromJob);
   const columnCount = 6 + (showActions ? 1 : 0) + (selectable ? 1 : 0);
 
@@ -1438,6 +1455,16 @@ export function EquipmentAssetsTable({
           />
           Group by building
         </label>
+        {retiredCount > 0 && (
+          <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300">
+            <input
+              type="checkbox"
+              checked={showRetired}
+              onChange={(e) => setShowRetired(e.target.checked)}
+            />
+            Show retired ({retiredCount})
+          </label>
+        )}
         <div className="ml-auto flex flex-wrap gap-2">{actions}</div>
       </div>
 
@@ -1710,6 +1737,11 @@ export function EquipmentAssetsTable({
                           hasSubAssets && <span className="w-4 shrink-0" />
                         )}
                         <span>{asset.identifier}</span>
+                        {asset.status && asset.status !== "active" && (
+                          <span className="ml-1 border border-neutral-300 px-1 text-[10px] font-normal text-neutral-500 dark:border-neutral-600 dark:text-neutral-400">
+                            {assetStatusLabel(asset.status)}
+                          </span>
+                        )}
                         {!isChild && children.length > 0 && (
                           <span className="ml-1 text-xs font-normal text-neutral-400">
                             ({children.length})
@@ -1771,6 +1803,13 @@ export function EquipmentAssetsTable({
                               onMove={(folderId) =>
                                 void foldersApi.moveItems([asset.id], folderId, "equipment")
                               }
+                            />
+                          )}
+                          {onShowOnDiagram && diagramPlacements?.has(asset.id) && (
+                            <ShowOnDiagramButton
+                              identifier={asset.identifier}
+                              placements={diagramPlacements.get(asset.id) ?? []}
+                              onShow={onShowOnDiagram}
                             />
                           )}
                           {onAddReport && (

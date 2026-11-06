@@ -9,11 +9,12 @@
  * one unit so a GΩ reading and a MΩ reading land on the same scale.
  */
 
-import type { CustomFormStructure, SectionConfig } from '@/lib/types/customForms';
+import { ComponentType, type CustomFormStructure, type SectionConfig } from '@/lib/types/customForms';
 import { getCellValue } from '@/lib/customForms/formCellResolution';
 import { contactResistanceRowLabels, resolveRowCount, rowStateKey } from '@/lib/customForms/runtime/layout';
 import { convertReading, resolveSourceUnit } from '@/lib/customForms/unitResolution';
 import { reportTestDate } from '@/lib/customForms/equipment';
+import { readingNumber, type Reading } from '@/lib/trends/readings';
 
 type FormData = Record<string, Record<string, any>>;
 
@@ -61,6 +62,65 @@ export function rowLabel(section: SectionConfig, data: FormData, r: number): str
     if (typed != null && String(typed).trim() && !Number.isFinite(Number(typed))) return String(typed).trim();
   }
   return `Row ${r + 1}`;
+}
+
+const NOT_RESULTS_TYPES = new Set<string>([
+  ComponentType.JOB_INFO,
+  ComponentType.NAMEPLATE_DATA,
+  ComponentType.EXTENDED_NAMEPLATE,
+  ComponentType.LV_BREAKER_NAMEPLATE,
+  ComponentType.VISUAL_INSPECTION,
+  ComponentType.TEST_EQUIPMENT,
+  ComponentType.COMMENTS,
+  ComponentType.CUSTOM_TEXT,
+  ComponentType.CHART,
+  ComponentType.SIGNATURES,
+  ComponentType.PHOTOS,
+  ComponentType.TEMPERATURE_CORRECTION,
+  ComponentType.FUSE_DATA,
+  ComponentType.TRIP_UNIT_SETTINGS,
+  ComponentType.DEVICE_SETTINGS_AS_FOUND_AS_LEFT,
+]);
+
+/** A plain custom table says what it is only in its title. */
+const NOT_RESULTS_TITLE = /nameplate|visual|mechanical|inspection|job (info|detail)|customer|test equipment|instrument|comment|notes|signature/i;
+
+/** Columns that describe the test rather than report it. */
+const NOT_A_READING_COLUMN = /^(test )?voltage$|^test (kv|duration)$|^units?$|^notes?$|^comments?$/i;
+
+/** Trends only compare results. The form builder can overrule this per table. */
+export function isResultsSection(section: SectionConfig): boolean {
+  if (!section.columns?.length) return false;
+  if (typeof section.trendResults === 'boolean') return section.trendResults;
+  if (NOT_RESULTS_TYPES.has(section.componentType)) return false;
+  return !NOT_RESULTS_TITLE.test(section.title ?? '');
+}
+
+/** Every result on a filled custom form. */
+export function customFormReadings(structure: CustomFormStructure, data: FormData): Reading[] {
+  const readings: Reading[] = [];
+  for (const section of structure.sections.filter(isResultsSection)) {
+    const rows = filledRowCount(section, data);
+    for (const column of section.columns ?? []) {
+      const name = column.label || column.id;
+      if (column.field.cellBehavior === 'static' || NOT_A_READING_COLUMN.test(name)) continue;
+      for (let r = 0; r < rows; r += 1) {
+        if (section.staticCells?.[`row${r}_${column.id}`]) continue;
+        const key = rowStateKey(section.id, r);
+        const raw = getCellValue(data, column.field, key, section.id, r, structure.sections, section.cellFormulas, column.id);
+        const value = readingNumber(raw);
+        if (value === null) continue;
+        readings.push({
+          fieldKey: `${section.id}:${column.id}:${r}`,
+          group: section.title,
+          label: rows > 1 ? `${name} · ${rowLabel(section, data, r)}` : name,
+          value,
+          unit: resolveSourceUnit({ section, fieldId: column.field.id, value: raw, rowData: data[key], sectionData: data[section.id] }),
+        });
+      }
+    }
+  }
+  return readings;
 }
 
 export interface TrendSeries {
@@ -150,14 +210,17 @@ export function buildTrend(args: {
 }
 
 /** Change from the first to the last value, in percent (null when it can't be said). */
-export function trendChange(points: TrendPoint[], key: string): number | null {
+export function trendChange(points: { [key: string]: unknown }[], key: string): number | null {
   const values = points.map((p) => p[key]).filter((v): v is number => typeof v === 'number');
   if (values.length < 2 || values[0] === 0) return null;
   return ((values[values.length - 1] - values[0]) / Math.abs(values[0])) * 100;
 }
 
 /** The trend as CSV text (date, then one column per series). */
-export function trendCsv(series: TrendSeries[], points: TrendPoint[]): string {
+export function trendCsv(
+  series: { key: string; label: string }[],
+  points: ({ date: string } & { [key: string]: unknown })[],
+): string {
   const esc = (v: unknown) => {
     const s = v == null ? '' : String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;

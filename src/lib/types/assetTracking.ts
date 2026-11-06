@@ -1,3 +1,5 @@
+import type { AssetStatus } from "@/lib/assetStatus";
+
 // Asset tracking: Site -> Asset.
 //
 // Customer is deliberately absent from this hierarchy. AMP works for multiple customers at
@@ -58,7 +60,10 @@ export interface EquipmentAsset {
    */
   report_data?: Record<string, string> | null;
   notes?: string | null;
-  status: "active" | "removed";
+  /** Whether it's in service, shown as In Use, Not In Use or Retired. See lib/assetStatus. */
+  status: AssetStatus;
+  /** The asset that took this one's place. For reference only: trends stay separate. */
+  replaced_by_asset_id?: string | null;
   created_by?: string | null;
   updated_by?: string | null;
   created_at?: string;
@@ -88,7 +93,8 @@ export type EquipmentAssetInput = Pick<
   | "report_template_slug"
   | "report_data"
   | "notes"
->;
+> &
+  Partial<Pick<EquipmentAsset, "status">>;
 
 /** Fields the bulk importer can map spreadsheet columns onto. */
 export const IMPORTABLE_ASSET_FIELDS = [

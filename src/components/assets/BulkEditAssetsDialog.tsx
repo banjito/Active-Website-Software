@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { AlertTriangle } from "lucide-react";
+import { ASSET_STATUS_OPTIONS, type AssetStatus } from "@/lib/assetStatus";
 import { Button } from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
@@ -104,6 +105,10 @@ export function BulkEditAssetsDialog({
       ) as Record<EditableColumn, FieldState>,
   );
   const [nameplate, setNameplate] = useState<Record<string, FieldState>>({});
+  const [statusField, setStatusField] = useState<{ enabled: boolean; value: AssetStatus }>({
+    enabled: false,
+    value: "active",
+  });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -114,6 +119,7 @@ export function BulkEditAssetsDialog({
       ) as Record<EditableColumn, FieldState>,
     );
     setNameplate({});
+    setStatusField({ enabled: false, value: "active" });
   }, [open]);
 
   /** The distinct equipment types in the selection, as typed on the assets. */
@@ -154,7 +160,8 @@ export function BulkEditAssetsDialog({
     (k) => columns[k].enabled,
   );
   const enabledNameplate = Object.keys(nameplate).filter((k) => nameplate[k]?.enabled);
-  const changeCount = enabledColumns.length + enabledNameplate.length;
+  const changeCount =
+    enabledColumns.length + enabledNameplate.length + (statusField.enabled ? 1 : 0);
 
   /** What a blank-but-ticked field will wipe, so the confirm can name it. */
   const clearing = useMemo(() => {
@@ -208,6 +215,7 @@ export function BulkEditAssetsDialog({
 
     const updates: BulkAssetUpdate[] = assets.map((asset) => {
       const patch: BulkAssetUpdate["patch"] = {};
+      if (statusField.enabled) patch.status = statusField.value;
       for (const key of enabledColumns) {
         patch[key] = columns[key].value.trim() || null;
       }
@@ -346,6 +354,28 @@ export function BulkEditAssetsDialog({
               {selectedTypes.length === 1
                 ? `All ${selectedTypes[0] || "untyped"}`
                 : `${selectedTypes.length} different equipment types`}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={statusField.enabled}
+                onChange={(e) => setStatusField({ ...statusField, enabled: e.target.checked })}
+              />
+              Status
+            </label>
+            <div className="w-48">
+              <Select
+                aria-label="Status"
+                value={statusField.value}
+                disabled={!statusField.enabled}
+                onChange={(e) =>
+                  setStatusField({ ...statusField, value: e.target.value as AssetStatus })
+                }
+                options={ASSET_STATUS_OPTIONS}
+              />
             </div>
           </div>
 

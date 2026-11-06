@@ -850,3 +850,10 @@
     padding-right: env(safe-area-inset-right);
   }
 }
+
+/* Single-line diagrams: a printed page shows only the drawing. */
+@media print {
+  .react-flow__attribution {
+    display: none;
+  }
+}

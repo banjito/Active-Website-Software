@@ -109,7 +109,7 @@ export const REPORT_SLUG_TO_TABLE: Record<string, string> = {
 };
 
 /** Legacy tables some reports were saved into before slugs were canonicalized. */
-const SLUG_FALLBACK_TABLES: Record<string, string[]> = {
+export const SLUG_FALLBACK_TABLES: Record<string, string[]> = {
   "low-voltage-panelboard-small-breaker-report": ["low_voltage_cable_test_3sets"],
   "low-voltage-switch-multi-device-test": ["low_voltage_cable_test_3sets"],
   "medium-voltage-vlf-mts-report": ["medium_voltage_cable_vlf_test"],

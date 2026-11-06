@@ -15,6 +15,8 @@ import {
   Users,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { BRAND_COLOR } from "@/lib/companyConfig";
+import Aurora from "@/components/ui/Aurora";
 import { useAuth } from "../lib/AuthContext";
 import { jobRequisitionsService } from "@/services/hr/jobRequisitionsService";
 import { candidatesService } from "@/services/hr/candidatesService";
@@ -72,6 +74,41 @@ type TodoItem = {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Midnight today, so "upcoming" includes someone starting later the same day. */
+// Blend two hex colors (t = 0 gives a, 1 gives b). Lets the masthead
+// gradient derive its tints from whatever brand color this instance uses.
+function mixHex(a: string, b: string, t: number): string {
+  const parse = (hex: string) => {
+    const v = hex.replace("#", "");
+    const full = v.length === 3 ? v.split("").map((c) => c + c).join("") : v;
+    return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16));
+  };
+  const isHex = (hex: string) => /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex);
+  if (!isHex(a) || !isHex(b)) return t < 0.5 ? a : b;
+  const [ar, ag, ab] = parse(a);
+  const [br, bg, bb] = parse(b);
+  const ch = (x: number, y: number) =>
+    Math.round(x + (y - x) * t)
+      .toString(16)
+      .padStart(2, "0");
+  return `#${ch(ar, br)}${ch(ag, bg)}${ch(ab, bb)}`;
+}
+
+// Tracks the `dark` class on <html> so the aurora can swap modes.
+function useIsDark(): boolean {
+  const [dark, setDark] = useState(() =>
+    document.documentElement.classList.contains("dark"),
+  );
+  useEffect(() => {
+    const root = document.documentElement;
+    const observer = new MutationObserver(() =>
+      setDark(root.classList.contains("dark")),
+    );
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+  return dark;
+}
+
 function startOfToday(): Date {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
@@ -438,6 +475,14 @@ export const HrDashboard: React.FC = () => {
     },
   ];
 
+  // Tan at the edges, light brand orange in the middle. Kept pale so the
+  // greeting and summary stay easy to read on top of it.
+  const isDark = useIsDark();
+  const auroraStops = useMemo(
+    () => ["#E6CCAB", mixHex(BRAND_COLOR, "#FFFFFF", 0.55), "#E6CCAB"],
+    [],
+  );
+
   const toneBar: Record<TodoItem["tone"], string> = {
     urgent: "bg-brand",
     warm: "bg-brand/50",
@@ -447,10 +492,20 @@ export const HrDashboard: React.FC = () => {
   return (
     <div className={`-m-6 min-h-[calc(100vh-4rem)] ${CANVAS} ${INK}`}>
       <div className="mx-auto max-w-[1400px] px-6 pb-16 pt-8 md:px-10">
-        {/* Masthead */}
-        <div
-          className={`flex flex-wrap items-end justify-between gap-8 border-b pb-7 ${HAIRLINE}`}
-        >
+        {/* Masthead under a slow brand-colored aurora (React Bits Aurora).
+            If WebGL is unavailable the panel just stays plain. */}
+        <div className={`relative overflow-hidden border ${HAIRLINE} ${SURFACE}`}>
+          <div className="absolute inset-0" aria-hidden>
+            <Aurora
+              colorStops={auroraStops}
+              direction="bottom"
+              height={0.4}
+              blend={0.8}
+              speed={0.6}
+              opacity={isDark ? 0.4 : 0.55}
+            />
+          </div>
+          <div className="relative flex flex-wrap items-end justify-between gap-8 px-6 py-8 md:px-9 md:py-10">
           <div className="min-w-[300px] flex-1">
             <div className="text-[11.5px] font-bold uppercase tracking-[0.11em] text-brand">
               {todayLabel}
@@ -474,11 +529,12 @@ export const HrDashboard: React.FC = () => {
             </Link>
             <Link
               to="/hr/handbook"
-              className="inline-flex items-center gap-2 bg-brand px-[18px] py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+              className="inline-flex items-center gap-2 bg-brand px-[18px] py-2.5 text-sm font-bold text-white shadow-sm ring-1 ring-white/70 transition-opacity hover:opacity-90 dark:ring-white/25"
             >
               <BookOpen className="h-4 w-4" aria-hidden />
               Employee Handbook
             </Link>
+          </div>
           </div>
         </div>
 

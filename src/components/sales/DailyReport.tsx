@@ -59,6 +59,7 @@ const DailyReport: React.FC = () => {
           .schema("business")
           .from("opportunities")
           .select("id, title, proposal_due_date, quoted_amount, customer_id")
+          .is("change_order_job_id", null) // Change Order quotes stay on their job
           .not("proposal_due_date", "is", null)
           .gte("proposal_due_date", startOfDay)
           .lte("proposal_due_date", endOfDay)

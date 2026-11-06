@@ -1060,7 +1060,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
               <Menu className="h-5 w-5 text-neutral-600 dark:text-white" />
             </button>
           </div>
-          <main className="flex-1 min-w-0 overflow-y-auto p-6 max-lg:p-4 max-sm:p-3">{children}</main>
+          <main className="hr-warm flex-1 min-w-0 overflow-y-auto bg-[#F7F4F0] p-6 dark:bg-transparent max-lg:p-4 max-sm:p-3">{children}</main>
         </div>
       </div>
     </div>

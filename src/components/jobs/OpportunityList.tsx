@@ -1212,7 +1212,8 @@ export default function OpportunityList() {
   }, [customerSearch, customers]);
 
   function applyOpportunityFilters(query: any) {
-    let filteredQuery = query;
+    // Change Order quotes live on their job, not in the sales list or its totals
+    let filteredQuery = query.is("change_order_job_id", null);
 
     if (divisionFilters.length > 0) {
       filteredQuery = filteredQuery.in("amp_division", divisionFilters);

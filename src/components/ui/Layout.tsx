@@ -896,8 +896,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </>
         )}
 
-        {/* PMs only: "My Jobs" opens their PM Dashboard, inside the Field Tech portal and its cities */}
-        {showCitySwitcher &&
+        {/* PMs only: "My Jobs" opens their PM Dashboard. Shown wherever this menu is (Field Tech portal, its cities, job pages), not in the Office portal */}
+        {!hideJobsAndScheduling &&
           (managesJobs || canOpenPmDashboard(user, divisionLeads)) && (
           <Link to="/pm-dashboard" onClick={() => setIsMobileSidebarOpen(false)}>
             <Button

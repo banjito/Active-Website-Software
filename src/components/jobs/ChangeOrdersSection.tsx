@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { format, parseISO } from "date-fns";
 import {
+  Calculator,
   Check,
   Download,
   Eye,
@@ -35,11 +37,16 @@ import {
   TableRow,
 } from "../ui/Table";
 import { toast } from "@/components/ui/toast";
+import { confirmDialog } from "@/components/ui/confirmDialog";
 import {
   approveChangeOrder,
+  CHANGE_ORDER_STATUS_LABEL,
   createChangeOrder,
+  createChangeOrderQuote,
   deleteChangeOrder,
+  fetchChangeOrderLetterNumbers,
   fetchChangeOrders,
+  formatChangeOrderNumber,
   pushChangeOrderToQuickBooks,
   summarizeChangeOrders,
   updateChangeOrder,
@@ -84,6 +91,9 @@ interface FormState {
   requestedDate: string;
   approvedDate: string;
   approvedByName: string;
+  outsideContract: boolean;
+  /** New Change Orders only: price it on an estimate sheet (own quote and letter number) */
+  useEstimate: boolean;
 }
 
 const EMPTY_FORM: FormState = {
@@ -95,7 +105,12 @@ const EMPTY_FORM: FormState = {
   requestedDate: "",
   approvedDate: "",
   approvedByName: "",
+  outsideContract: false,
+  useEstimate: true,
 };
+
+const quotePath = (opportunityId: string) =>
+  `/sales-dashboard/opportunities/${opportunityId}`;
 
 export default function ChangeOrdersSection({
   jobId,
@@ -104,7 +119,12 @@ export default function ChangeOrdersSection({
   onSummaryChange,
 }: ChangeOrdersSectionProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [changeOrders, setChangeOrders] = useState<ChangeOrder[]>([]);
+  // Quote id -> letter number, for Change Orders priced on an estimate sheet
+  const [letterNumbers, setLetterNumbers] = useState<Record<string, string>>(
+    {},
+  );
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<ChangeOrder | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
@@ -116,7 +136,7 @@ export default function ChangeOrdersSection({
     approvedDate: "",
     approvedByName: "",
   });
-  // Approved COs are already in contract totals and QuickBooks; only tracking fields stay editable
+  // Approved Change Orders are already in contract totals and QuickBooks; only tracking fields stay editable
   const locked = editing?.status === "approved";
 
   const applyList = useCallback(
@@ -129,7 +149,12 @@ export default function ChangeOrdersSection({
 
   const reload = useCallback(async () => {
     try {
-      applyList(await fetchChangeOrders(jobId));
+      const cos = await fetchChangeOrders(jobId);
+      applyList(cos);
+      const quoteIds = cos
+        .map((co) => co.opportunity_id)
+        .filter((id): id is string => !!id);
+      setLetterNumbers(await fetchChangeOrderLetterNumbers(quoteIds));
     } catch (error) {
       console.error("Error fetching change orders:", error);
     }
@@ -160,12 +185,23 @@ export default function ChangeOrdersSection({
       requestedDate: co.requested_date ?? "",
       approvedDate: co.approved_date ?? "",
       approvedByName: co.approved_by_name ?? "",
+      outsideContract: !!co.outside_contract,
+      useEstimate: !!co.opportunity_id,
     });
     setFile(null);
     setShowForm(true);
   };
 
   const openApprove = (co: ChangeOrder) => {
+    if (co.opportunity_id && !Number(co.amount)) {
+      toast({
+        title: "Not priced yet",
+        description:
+          "Open its estimate sheet and save the letter. The price comes from the letter.",
+        variant: "destructive",
+      });
+      return;
+    }
     setApproveForm({ approvedDate: today(), approvedByName: "" });
     setApproving(co);
   };
@@ -196,12 +232,22 @@ export default function ChangeOrdersSection({
 
   const handleSave = async () => {
     if (!user?.id) return;
+    // A Change Order on an estimate sheet gets its price from the letter
+    const priceFromLetter = editing ? !!editing.opportunity_id : form.useEstimate;
     const amount = parseFloat(form.amount);
-    if (!form.title.trim() || isNaN(amount) || amount === 0) {
+    if (!form.title.trim()) {
+      toast({
+        title: "Error",
+        description: "Give the Change Order a title",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!priceFromLetter && !locked && (isNaN(amount) || amount === 0)) {
       toast({
         title: "Error",
         description:
-          "Please enter a title and a non-zero amount (negative for deductive change orders)",
+          "Enter a price other than zero (negative for a deductive Change Order)",
         variant: "destructive",
       });
       return;
@@ -222,9 +268,30 @@ export default function ChangeOrdersSection({
         ...tracking,
         title: form.title.trim(),
         description: form.description.trim() || null,
-        amount,
         schedule_impact_days: scheduleDays,
+        outside_contract: form.outsideContract,
+        ...(priceFromLetter ? {} : { amount }),
       };
+      if (!editing && form.useEstimate) {
+        const created = await createChangeOrderQuote(jobId, {
+          title: input.title,
+          description: input.description,
+          requested_by: tracking.requested_by,
+          requested_date: tracking.requested_date,
+          schedule_impact_days: scheduleDays,
+          outside_contract: form.outsideContract,
+        });
+        if (fileFields) await updateChangeOrder(created.id, fileFields);
+        setShowForm(false);
+        toast({
+          title: `Change Order ${formatChangeOrderNumber(created.co_number)} added`,
+          description: "Build its estimate, then save the letter to set the price.",
+          variant: "success",
+        });
+        if (created.opportunity_id) navigate(quotePath(created.opportunity_id));
+        else await reload();
+        return;
+      }
       if (editing && locked) {
         await updateChangeOrder(editing.id, {
           ...tracking,
@@ -234,20 +301,23 @@ export default function ChangeOrdersSection({
       } else if (editing) {
         await updateChangeOrder(editing.id, input);
       } else {
-        await createChangeOrder(jobId, user.id, input);
+        await createChangeOrder(jobId, user.id, { ...input, amount });
       }
       setShowForm(false);
       await reload();
       toast({
         title: "Success",
-        description: editing ? "Change order updated" : "Change order added",
+        description: editing ? "Change Order updated" : "Change Order added",
         variant: "success",
       });
     } catch (error) {
       console.error("Error saving change order:", error);
       toast({
         title: "Error",
-        description: "Failed to save change order",
+        description:
+          error instanceof Error || (error as any)?.message
+            ? `Couldn't save the Change Order: ${(error as any).message}`
+            : "Couldn't save the Change Order",
         variant: "destructive",
       });
     } finally {
@@ -264,7 +334,7 @@ export default function ChangeOrdersSection({
       console.error("Error updating change order status:", error);
       toast({
         title: "Error",
-        description: "Failed to update change order",
+        description: "Couldn't update the Change Order",
         variant: "destructive",
       });
     } finally {
@@ -291,15 +361,15 @@ export default function ChangeOrdersSection({
       if (qboError) {
         toast({
           title: "Approved, but QuickBooks push failed",
-          description: `${qboError}. Use "Push to QB" on the change order to retry.`,
+          description: `${qboError}. Use "Push to QB" on the Change Order to retry.`,
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Change order approved",
+          title: "Change Order approved",
           description: quickbooksProjectId
             ? "An estimate was created on the linked QuickBooks project."
-            : "Link a QuickBooks project to push approved COs as estimates.",
+            : "Link a QuickBooks project to push approved Change Orders as estimates.",
           variant: "success",
         });
       }
@@ -307,7 +377,7 @@ export default function ChangeOrdersSection({
       console.error("Error approving change order:", error);
       toast({
         title: "Error",
-        description: "Failed to approve change order",
+        description: "Couldn't approve the Change Order",
         variant: "destructive",
       });
     } finally {
@@ -323,7 +393,7 @@ export default function ChangeOrdersSection({
       await reload();
       toast({
         title: "Pushed to QuickBooks",
-        description: `CO #${co.co_number} was created as an estimate on the linked project.`,
+        description: `Change Order ${formatChangeOrderNumber(co.co_number)} was created as an estimate on the linked project.`,
         variant: "success",
       });
     } catch (error) {
@@ -340,27 +410,37 @@ export default function ChangeOrdersSection({
   };
 
   const handleDelete = async (co: ChangeOrder) => {
-    if (
-      !window.confirm(
-        `Delete CO #${co.co_number} "${co.title}"? This cannot be undone.`,
-      )
-    ) {
-      return;
-    }
+    const notes = [
+      co.status === "approved"
+        ? "It's approved, so the contract value drops by its price."
+        : "",
+      co.qbo_estimate_id
+        ? "It was sent to QuickBooks as an estimate. Delete it there too."
+        : "",
+      co.opportunity_id ? "Its estimate sheets and letters are deleted too." : "",
+      "This can't be undone.",
+    ].filter(Boolean);
+    const ok = await confirmDialog({
+      title: `Delete Change Order ${formatChangeOrderNumber(co.co_number)}?`,
+      description: `"${co.title}". ${notes.join(" ")}`,
+      confirmLabel: "Delete",
+      destructive: true,
+    });
+    if (!ok) return;
     setBusyId(co.id);
     try {
       await deleteChangeOrder(co.id);
       await reload();
       toast({
         title: "Success",
-        description: "Change order deleted",
+        description: "Change Order deleted",
         variant: "success",
       });
     } catch (error) {
       console.error("Error deleting change order:", error);
       toast({
         title: "Error",
-        description: "Failed to delete change order",
+        description: "Couldn't delete the Change Order",
         variant: "destructive",
       });
     } finally {
@@ -385,16 +465,17 @@ export default function ChangeOrdersSection({
         {changeOrders.length === 0 ? (
           <div className="text-center py-8 text-neutral-500 dark:text-white">
             <FilePlus2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No change orders yet</p>
+            <p>No Change Orders yet</p>
             <p className="text-sm">
-              Approved change orders roll into the total contract value
+              Approved Change Orders roll into the total contract value
             </p>
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>CO #</TableHead>
+                <TableHead>Change Order</TableHead>
+                <TableHead>Letter</TableHead>
                 <TableHead>Requested</TableHead>
                 <TableHead>Scope</TableHead>
                 <TableHead className="text-right">Price</TableHead>
@@ -411,7 +492,12 @@ export default function ChangeOrdersSection({
                 return (
                   <TableRow key={co.id}>
                     <TableCell className="font-mono font-semibold text-brand whitespace-nowrap">
-                      CO #{co.co_number}
+                      {formatChangeOrderNumber(co.co_number)}
+                    </TableCell>
+                    <TableCell className="font-mono whitespace-nowrap">
+                      {co.opportunity_id
+                        ? letterNumbers[co.opportunity_id] ?? "-"
+                        : "-"}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       <div>{fmtDate(co.requested_date)}</div>
@@ -437,17 +523,30 @@ export default function ChangeOrdersSection({
                             {co.schedule_impact_days} days
                           </div>
                         )}
+                      {co.outside_contract && (
+                        <Badge className="mt-1 bg-neutral-100 text-neutral-800 dark:bg-dark-150 dark:text-neutral-100">
+                          Outside contract terms
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell
                       className={`text-right whitespace-nowrap font-medium ${amount < 0 ? "text-red-600 dark:text-red-400" : ""}`}
                     >
-                      {amount < 0 ? "" : "+"}
-                      {money(amount)}
+                      {co.opportunity_id && amount === 0 && co.status !== "approved" ? (
+                        <span className="font-normal text-neutral-500 dark:text-neutral-400">
+                          Not priced yet
+                        </span>
+                      ) : (
+                        <>
+                          {amount < 0 ? "" : "+"}
+                          {money(amount)}
+                        </>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col items-start gap-1">
                         <Badge className={STATUS_BADGE[co.status]}>
-                          {co.status}
+                          {CHANGE_ORDER_STATUS_LABEL[co.status] ?? co.status}
                         </Badge>
                         {co.qbo_estimate_id && (
                           <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
@@ -462,6 +561,16 @@ export default function ChangeOrdersSection({
                     <TableCell>{co.approved_by_name || "-"}</TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-2 flex-wrap">
+                        {co.opportunity_id && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(quotePath(co.opportunity_id!))}
+                            leftIcon={<Calculator className="h-4 w-4" />}
+                          >
+                            Estimate
+                          </Button>
+                        )}
                         {co.file_url && (
                           <>
                             <Button
@@ -496,7 +605,7 @@ export default function ChangeOrdersSection({
                             disabled={busy}
                             onClick={() => setStatus(co, "submitted")}
                           >
-                            Submit
+                            Mark sent
                           </Button>
                         )}
                         {(co.status === "draft" ||
@@ -546,7 +655,7 @@ export default function ChangeOrdersSection({
                               Push to QB
                             </Button>
                           )}
-                        {co.status !== "approved" && (
+                        {(
                           <Button
                             variant="outline"
                             size="sm"
@@ -566,7 +675,7 @@ export default function ChangeOrdersSection({
             </TableBody>
             <TableFooter>
               <TableRow>
-                <TableCell colSpan={3} className="text-right">
+                <TableCell colSpan={4} className="text-right">
                   Approved total ({summary.approvedCount})
                 </TableCell>
                 <TableCell
@@ -582,7 +691,7 @@ export default function ChangeOrdersSection({
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell colSpan={3} className="text-right">
+                <TableCell colSpan={4} className="text-right">
                   Pending total ({summary.pendingCount})
                 </TableCell>
                 <TableCell className="text-right whitespace-nowrap text-yellow-600 dark:text-yellow-400">
@@ -605,14 +714,14 @@ export default function ChangeOrdersSection({
           <DialogHeader>
             <DialogTitle>
               {editing
-                ? `Edit CO #${editing.co_number}`
+                ? `Edit Change Order ${formatChangeOrderNumber(editing.co_number)}`
                 : "Add Change Order"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {locked && (
               <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                This change order is approved. Title, amount, and scope are
+                This Change Order is approved. Title, price and scope are
                 locked.
               </p>
             )}
@@ -630,10 +739,57 @@ export default function ChangeOrdersSection({
                 disabled={locked}
               />
             </div>
+            {!editing && (
+              <div className="space-y-2">
+                <div className="text-sm font-medium" id="co-price-how">
+                  How will you price it?
+                </div>
+                <div
+                  className="flex flex-wrap gap-2"
+                  role="radiogroup"
+                  aria-labelledby="co-price-how"
+                >
+                  {[
+                    { value: true, label: "Estimate sheet", hint: "Own quote and new letter number" },
+                    { value: false, label: "Enter a price", hint: "Quick line, no estimate" },
+                  ].map((opt) => (
+                    <button
+                      key={String(opt.value)}
+                      type="button"
+                      role="radio"
+                      aria-checked={form.useEstimate === opt.value}
+                      onClick={() =>
+                        setForm((prev) => ({ ...prev, useEstimate: opt.value }))
+                      }
+                      className={`rounded-none border px-3 py-2 text-left text-sm ${
+                        form.useEstimate === opt.value
+                          ? "border-brand bg-brand/10 text-neutral-900 dark:text-white"
+                          : "border-neutral-300 text-neutral-700 hover:border-neutral-400 dark:border-neutral-600 dark:text-neutral-300"
+                      }`}
+                    >
+                      <div className="font-medium">{opt.label}</div>
+                      <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                        {opt.hint}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {(editing ? !!editing.opportunity_id : form.useEstimate) ? (
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Price</div>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-300">
+                    {editing && Number(editing.amount)
+                      ? `${money(Number(editing.amount))}, from the letter.`
+                      : "Comes from the letter on its estimate sheet."}
+                  </p>
+                </div>
+              ) : (
               <div className="space-y-2">
                 <label className="text-sm font-medium" htmlFor="co-amount">
-                  Amount ($)
+                  Price ($)
                 </label>
                 <Input
                   id="co-amount"
@@ -647,6 +803,7 @@ export default function ChangeOrdersSection({
                   disabled={locked}
                 />
               </div>
+              )}
               <div className="space-y-2">
                 <label className="text-sm font-medium" htmlFor="co-days">
                   Schedule Impact (days)
@@ -755,9 +912,31 @@ export default function ChangeOrdersSection({
                 }
               />
             </div>
+            <label className="flex items-start gap-2 text-sm" htmlFor="co-outside">
+              <input
+                id="co-outside"
+                type="checkbox"
+                className="mt-0.5 rounded-none"
+                checked={form.outsideContract}
+                disabled={locked}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    outsideContract: e.target.checked,
+                  }))
+                }
+              />
+              <span>
+                <span className="font-medium">Outside the contract's terms</span>
+                <span className="block text-neutral-500 dark:text-neutral-400">
+                  Billed on its own terms, for example no retainage or
+                  pay-if-paid.
+                </span>
+              </span>
+            </label>
             <div className="space-y-2">
               <label className="text-sm font-medium" htmlFor="co-file">
-                Attachment (optional — signed CO, quote, etc.)
+                Attachment (optional: signed Change Order, quote, etc.)
               </label>
               <Input
                 id="co-file"
@@ -780,7 +959,13 @@ export default function ChangeOrdersSection({
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : editing ? "Save Changes" : "Add Change Order"}
+              {saving
+                ? "Saving..."
+                : editing
+                  ? "Save Changes"
+                  : form.useEstimate
+                    ? "Add and open estimate sheet"
+                    : "Add Change Order"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -794,7 +979,10 @@ export default function ChangeOrdersSection({
       >
         <DialogContent className="sm:max-w-md w-full">
           <DialogHeader>
-            <DialogTitle>Approve CO #{approving?.co_number}</DialogTitle>
+            <DialogTitle>
+              Approve Change Order{" "}
+              {approving ? formatChangeOrderNumber(approving.co_number) : ""}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">

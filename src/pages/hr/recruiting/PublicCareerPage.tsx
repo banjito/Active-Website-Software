@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   jobRequisitionsService,
@@ -85,6 +85,30 @@ export const PublicCareerPage: React.FC = () => {
   const [answers, setAnswers] = useState<
     Record<string, string | string[] | boolean>
   >({});
+
+  // Careers is light mode only. The app's theme provider puts "dark" on <html>
+  // (and can re-add it after this runs), so keep stripping it while this page
+  // is open, then put it back when the visitor leaves.
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    let wantedDark = false;
+    const forceLight = () => {
+      if (root.classList.contains("dark")) {
+        wantedDark = true;
+        root.classList.remove("dark");
+      }
+    };
+    forceLight();
+    const prevScheme = root.style.colorScheme;
+    root.style.colorScheme = "light";
+    const observer = new MutationObserver(forceLight);
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => {
+      observer.disconnect();
+      root.style.colorScheme = prevScheme;
+      if (wantedDark) root.classList.add("dark");
+    };
+  }, []);
 
   useEffect(() => {
     fetchApprovedRequisitions();

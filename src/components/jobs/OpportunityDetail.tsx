@@ -50,6 +50,11 @@ import {
   SubcontractorAgreement,
 } from "../../lib/types/index";
 import EstimateSheet from "../estimates/EstimateSheet";
+import {
+  CHANGE_ORDER_STATUS_LABEL,
+  formatChangeOrderNumber,
+  type ChangeOrderStatus,
+} from "../../services/changeOrderService";
 import SimpleEstimateEditor from "../estimates/SimpleEstimateEditor";
 import FullEstimateBuilder from "../estimates/full/FullEstimateBuilder";
 import { Button } from "@/components/ui/Button";
@@ -723,6 +728,48 @@ export default function OpportunityDetail() {
     allDivisions.find((d) => d.id === division)?.label || division;
   const [opportunity, setOpportunity] =
     useState<OpportunityWithCustomer | null>(null);
+  // Set when this quote is a Change Order on a job (business.opportunities.change_order_job_id)
+  const [changeOrderInfo, setChangeOrderInfo] = useState<{
+    jobId: string;
+    jobNumber: string | null;
+    coNumber: number | null;
+    status: ChangeOrderStatus | null;
+  } | null>(null);
+  const changeOrderJobId: string | null =
+    (opportunity as any)?.change_order_job_id ?? null;
+  useEffect(() => {
+    if (!opportunity?.id || !changeOrderJobId) {
+      setChangeOrderInfo(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const [{ data: co }, { data: job }] = await Promise.all([
+        supabase
+          .schema("neta_ops")
+          .from("job_change_orders")
+          .select("co_number, status")
+          .eq("opportunity_id", opportunity.id)
+          .maybeSingle(),
+        supabase
+          .schema("neta_ops")
+          .from("jobs")
+          .select("job_number")
+          .eq("id", changeOrderJobId)
+          .maybeSingle(),
+      ]);
+      if (cancelled) return;
+      setChangeOrderInfo({
+        jobId: changeOrderJobId,
+        jobNumber: (job as any)?.job_number ?? null,
+        coNumber: (co as any)?.co_number ?? null,
+        status: ((co as any)?.status as ChangeOrderStatus) ?? null,
+      });
+    })().catch((e) => console.warn("Change Order lookup failed:", e));
+    return () => {
+      cancelled = true;
+    };
+  }, [opportunity?.id, changeOrderJobId]);
   const [adjacentOpportunityIds, setAdjacentOpportunityIds] =
     useState<AdjacentOpportunityIds>({ previous: null, next: null });
   const [opportunityCreator, setOpportunityCreator] = useState<string | null>(
@@ -3768,15 +3815,38 @@ export default function OpportunityDetail() {
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-dark-background">
+      {changeOrderJobId && (
+        <div className="border-l-4 border-brand bg-white px-4 py-3 text-sm text-neutral-700 dark:bg-dark-150 dark:text-neutral-200">
+          <span className="font-semibold text-neutral-900 dark:text-white">
+            Change Order
+            {changeOrderInfo?.coNumber
+              ? ` ${formatChangeOrderNumber(changeOrderInfo.coNumber)}`
+              : ""}
+            {changeOrderInfo?.jobNumber
+              ? ` on Job ${changeOrderInfo.jobNumber}`
+              : ""}
+            {changeOrderInfo?.status
+              ? ` · ${CHANGE_ORDER_STATUS_LABEL[changeOrderInfo.status]}`
+              : ""}
+          </span>
+          . Build the estimate and save the letter here; the letter sets the
+          price. Approve or reject it on the job. It stays out of sales
+          totals.
+        </div>
+      )}
       {!isEmbed && (
         <div className="bg-white shadow-sm p-4 mb-6 dark:bg-dark-150 dark:border-b dark:border-dark-200">
           <div className="flex items-center gap-3">
             <Link
-              to="/sales-dashboard/opportunities"
+              to={
+                changeOrderJobId
+                  ? `/jobs/${changeOrderJobId}`
+                  : "/sales-dashboard/opportunities"
+              }
               className="text-neutral-600 hover:text-neutral-900 dark:text-dark-400 dark:hover:text-dark-900 flex items-center"
             >
               <ArrowLeft className="h-5 w-5 mr-2" />
-              Back to Opportunities
+              {changeOrderJobId ? "Back to Job" : "Back to Opportunities"}
             </Link>
             <div className="flex items-center gap-2">
               <button
@@ -3997,7 +4067,7 @@ export default function OpportunityDetail() {
                         ? "Duplicating..."
                         : "Duplicate Opportunity"}
                     </DropdownMenuItem>
-                    {!opportunity.job_id && (
+                    {!opportunity.job_id && !changeOrderJobId && (
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -5182,7 +5252,16 @@ export default function OpportunityDetail() {
                       <p className="text-sm text-neutral-500 dark:text-dark-400">
                         Status
                       </p>
-                      {isStatusEditing ? (
+                      {changeOrderJobId ? (
+                        <p className="mt-1 text-sm text-neutral-900 dark:text-white">
+                          {changeOrderInfo?.status
+                            ? CHANGE_ORDER_STATUS_LABEL[changeOrderInfo.status]
+                            : "Change Order"}
+                          <span className="block text-xs text-neutral-500 dark:text-neutral-400">
+                            Set on the job's Change Orders card.
+                          </span>
+                        </p>
+                      ) : isStatusEditing ? (
                         <div className="relative mt-1">
                           <select
                             value={opportunity.status}
@@ -5231,7 +5310,8 @@ export default function OpportunityDetail() {
                         )}
                       {opportunity.status !== "awarded" &&
                         opportunity.status !== "lost" &&
-                        !opportunity.job_id && (
+                        !opportunity.job_id &&
+                        !changeOrderJobId && (
                           <p className="text-xs text-neutral-500 dark:text-white mt-1">
                             Change status above or use "Convert to Job" button
                             to create a job

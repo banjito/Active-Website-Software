@@ -33,6 +33,7 @@ import {
 import { firstNameOf, fmtHours, fmtMoney, MiniBar, MonthPicker, Notice, StatTile, usePmAccess } from './shared';
 import ChecklistBoard from './ChecklistBoard';
 import CrewBoard from './CrewBoard';
+import ChangeOrdersBoard from './ChangeOrdersBoard';
 
 // QuickBooks is asked about a few jobs at a time so a long list does not stall.
 const BILLED_WORKERS = 3;
@@ -94,7 +95,8 @@ export default function PMDashboard() {
     '';
   const month = searchParams.get('month') ?? monthKey(new Date());
   const viewParam = searchParams.get('view');
-  const view = viewParam === 'checklist' || viewParam === 'crew' ? viewParam : 'jobs';
+  const view =
+    viewParam === 'checklist' || viewParam === 'crew' || viewParam === 'change-orders' ? viewParam : 'jobs';
 
   const setParam = (key: string, value: string) =>
     setSearchParams(
@@ -312,6 +314,7 @@ export default function PMDashboard() {
             ['jobs', 'Jobs'],
             ['checklist', 'Checklist'],
             ['crew', 'Crew'],
+            ['change-orders', 'Change Orders'],
           ] as const
         ).map(([key, label]) => (
           <button
@@ -351,6 +354,8 @@ export default function PMDashboard() {
         <ChecklistBoard jobs={jobs} />
       ) : view === 'crew' ? (
         <CrewBoard jobs={jobs} />
+      ) : view === 'change-orders' ? (
+        <ChangeOrdersBoard jobs={jobs} />
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

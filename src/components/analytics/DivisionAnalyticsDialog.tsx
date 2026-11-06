@@ -79,6 +79,7 @@ export function DivisionAnalyticsDialog({
         .schema("business")
         .from("opportunities")
         .select("*")
+        .is("change_order_job_id", null) // Change Order quotes stay on their job
         .eq("amp_division", division)
         .order("created_at", { ascending: false });
 

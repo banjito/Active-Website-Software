@@ -857,3 +857,62 @@
     display: none;
   }
 }
+
+
+/* ---------------------------------------------------------------
+   HR warm theme. HrLayout puts `hr-warm` on <main>, so every HR page
+   picks up the HR dashboard's palette without per-page edits.
+   Colors are light mode only; dark: utilities are untouched.
+   :where() keeps each rule as weak as one utility class, so
+   hover:/focus: variants on the same element still win.
+   --------------------------------------------------------------- */
+:where(html:not(.dark) .hr-warm) :is(.text-neutral-900, .text-foreground) {
+  color: #23201d;
+}
+:where(html:not(.dark) .hr-warm) :is(.text-neutral-800, .text-neutral-700) {
+  color: #3b352f;
+}
+:where(html:not(.dark) .hr-warm)
+  :is(.text-neutral-600, .text-neutral-500, .text-muted-foreground) {
+  color: #6e655d;
+}
+:where(html:not(.dark) .hr-warm) .text-neutral-400 {
+  color: #948b83;
+}
+:where(html:not(.dark) .hr-warm)
+  :is(.border-neutral-100, .border-neutral-200, .border-neutral-300, .border-black\/10, .border-border) {
+  border-color: #e7e1da;
+}
+:where(html:not(.dark) .hr-warm)
+  :is(.divide-neutral-100, .divide-neutral-200)
+  > :not([hidden]) ~ :not([hidden]) {
+  border-color: #f0eae4;
+}
+:where(html:not(.dark) .hr-warm) .bg-neutral-50 {
+  background-color: #fbf8f5;
+}
+:where(html:not(.dark) .hr-warm) .bg-neutral-100 {
+  background-color: #f3eee9;
+}
+:where(html:not(.dark) .hr-warm) .bg-neutral-200 {
+  background-color: #e9e3dc;
+}
+:where(html:not(.dark) .hr-warm) .hover\:bg-neutral-50:hover {
+  background-color: #fcfaf8;
+}
+:where(html:not(.dark) .hr-warm) .hover\:bg-neutral-100:hover {
+  background-color: #f3eee9;
+}
+
+/* Page titles: editorial serif, like the HR dashboard masthead. */
+.hr-warm h1:is(.text-3xl, .text-2xl) {
+  font-family: theme("fontFamily.serif");
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+@media (min-width: 768px) {
+  .hr-warm h1:is(.text-3xl, .text-2xl) {
+    font-size: 2.375rem;
+  }
+}

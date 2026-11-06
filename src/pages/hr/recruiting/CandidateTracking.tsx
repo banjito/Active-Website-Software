@@ -75,6 +75,58 @@ import { supabase } from "../../../lib/supabase";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { companyConfig, employeeEmailRegex } from "@/lib/companyConfig";
 
+// Warm palette shared with the HR dashboard (src/pages/HrDashboard.tsx).
+const CANVAS = "bg-[#F7F4F0] dark:bg-[#171614]";
+const SURFACE = "bg-white dark:bg-dark-150";
+const HAIRLINE = "border-[#E7E1DA] dark:border-white/10";
+const DIVIDER = "border-[#F0EAE4] dark:border-white/[0.07]";
+const INK = "text-[#23201D] dark:text-white";
+const MUTED = "text-[#6E655D] dark:text-white/65";
+const FAINT = "text-[#948B83] dark:text-white/45";
+const SECONDARY_BTN = `inline-flex items-center gap-1.5 border px-3 py-1.5 text-[13px] font-semibold transition-colors ${HAIRLINE} ${SURFACE} text-[#3B352F] hover:bg-[#FCFAF8] dark:text-white dark:hover:bg-white/5`;
+const FIELD = `rounded-none border text-sm ${HAIRLINE} ${SURFACE} focus:outline-none focus:ring-2 focus:ring-brand`;
+
+// Thin colored edge per pipeline stage.
+const STATUS_BAR: Record<string, string> = {
+  new: "bg-brand",
+  screening: "bg-amber-400",
+  interview: "bg-sky-400",
+  offer: "bg-lime-500",
+  offer_sent: "bg-teal-400",
+  offer_accepted: "bg-emerald-500",
+  hired: "bg-emerald-500",
+  rejected: "bg-[#C3BAB2] dark:bg-white/25",
+};
+
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+
+// "today", "yesterday", "3 days ago", else "Nov 3".
+const friendlyDate = (value: string) => {
+  const d = /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? new Date(`${value}T00:00:00`)
+    : new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const day = new Date(d);
+  day.setHours(0, 0, 0, 0);
+  const diff = Math.round((today.getTime() - day.getTime()) / 86400000);
+  if (diff === 0) return "today";
+  if (diff === 1) return "yesterday";
+  if (diff > 1 && diff < 7) return `${diff} days ago`;
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: d.getFullYear() === today.getFullYear() ? undefined : "numeric",
+  });
+};
+
 export const CandidateTracking: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -868,23 +920,22 @@ export const CandidateTracking: React.FC = () => {
   const getStatusColor = (status: Candidate["status"]) => {
     switch (status) {
       case "new":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+        return "bg-brand/10 text-brand";
       case "screening":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+        return "bg-amber-50 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300";
       case "interview":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+        return "bg-sky-50 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300";
       case "offer":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+        return "bg-lime-50 text-lime-800 dark:bg-lime-500/15 dark:text-lime-300";
       case "offer_sent":
-        return "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200";
+        return "bg-teal-50 text-teal-800 dark:bg-teal-500/15 dark:text-teal-300";
       case "offer_accepted":
-        return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200";
       case "hired":
-        return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200";
+        return "bg-emerald-50 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300";
       case "rejected":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+        return "bg-[#EFEAE5] text-[#6E655D] dark:bg-white/10 dark:text-white/60";
       default:
-        return "bg-neutral-100 text-neutral-800";
+        return "bg-[#EFEAE5] text-[#6E655D] dark:bg-white/10 dark:text-white/60";
     }
   };
 
@@ -908,260 +959,340 @@ export const CandidateTracking: React.FC = () => {
     { value: "rejected", label: "Rejected" },
   ];
 
+  const hasFilters =
+    searchTerm !== "" || filterStatus !== "all" || filterPosition !== "all";
+  const activeCount = candidates.filter(
+    (c) => !["hired", "rejected"].includes(getDisplayStatus(c)),
+  ).length;
+  const weekAgo = Date.now() - 7 * 86400000;
+  const newThisWeek = candidates.filter(
+    (c) => c.applied_date && new Date(c.applied_date).getTime() >= weekAgo,
+  ).length;
+  const interviewingCount = statusCounts.interview || 0;
+  const pipelineSummary = loading
+    ? "Pulling together the pipeline…"
+    : candidates.length === 0
+      ? "No one in the pipeline yet. Add a candidate to get started."
+      : activeCount === 0
+        ? "Nobody active in the pipeline right now."
+        : [
+            `${activeCount} ${activeCount === 1 ? "person" : "people"} in the pipeline`,
+            newThisWeek > 0 ? `${newThisWeek} applied this week` : null,
+            interviewingCount > 0 ? `${interviewingCount} in interviews` : null,
+          ]
+            .filter(Boolean)
+            .join(", ") + ".";
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
-            Candidate Tracking (ATS)
-          </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 mt-2">
-            Manage candidate pipeline and screening
-          </p>
-        </div>
-        <Button
-          className="bg-brand hover:bg-brand/90 text-white"
-          onClick={() => {
-            resetForm();
-            setIsCreateModalOpen(true);
-          }} leftIcon={<Plus className="h-4 w-4" />}>
-          Add Candidate
-        </Button>
-      </div>
-
-      {/* Pipeline Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-        {statusOptions.map((status) => (
-          <Card key={status.value}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
-                {status.label}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-neutral-900 dark:text-white">
-                {statusCounts[status.value] || 0}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
-              <input
-                type="text"
-                placeholder="Search candidates..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
-              />
+    <div className={`-m-6 min-h-[calc(100vh-4rem)] ${CANVAS} ${INK}`}>
+      <div className="mx-auto max-w-[1400px] px-6 pb-16 pt-8 md:px-10">
+        {/* Masthead */}
+        <div
+          className={`flex flex-wrap items-end justify-between gap-8 border-b pb-7 ${HAIRLINE}`}
+        >
+          <div className="min-w-[300px] flex-1">
+            <div className="text-[11.5px] font-bold uppercase tracking-[0.11em] text-brand">
+              Recruiting
             </div>
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-neutral-400" />
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
-              >
-                <option value="all">All Status</option>
-                {statusOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <select
-              value={filterPosition}
-              onChange={(e) => setFilterPosition(e.target.value)}
-              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
-            >
-              <option value="all">All Positions</option>
-              {positions.map((pos) => (
-                <option key={pos} value={pos}>
-                  {pos}
-                </option>
-              ))}
-            </select>
+            <h1 className="mt-2 font-serif text-[38px] font-normal leading-[1.05] tracking-[-0.02em] md:text-[46px]">
+              Candidates
+            </h1>
+            <p className={`mt-2.5 max-w-[62ch] text-[15.5px] leading-relaxed ${MUTED}`}>
+              {pipelineSummary}
+            </p>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Candidates List */}
-      {loading ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center py-12">
-              <LoadingSpinner size="md" />
-            </div>
-          </CardContent>
-        </Card>
-      ) : filteredCandidates.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center py-12">
-              <Users className="mx-auto h-12 w-12 text-neutral-400" />
-              <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-white">
-                No candidates found
-              </h3>
-              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-                {searchTerm ||
-                filterStatus !== "all" ||
-                filterPosition !== "all"
-                  ? "Try adjusting your search or filters"
-                  : "Get started by adding a new candidate"}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {filteredCandidates.map((candidate) => (
-            <Card
-              key={candidate.id}
-              className="hover:shadow-md transition-shadow relative"
+          <div className="flex flex-wrap gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                resetForm();
+                setIsCreateModalOpen(true);
+              }}
+              className="inline-flex items-center gap-2 bg-brand px-[18px] py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
             >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <CardTitle className="text-xl">
-                        {candidate.first_name} {candidate.last_name}
-                      </CardTitle>
-                      <span
-                        className={`px-2 py-1 rounded-none text-xs font-medium ${getStatusColor(getDisplayStatus(candidate))}`}
-                      >
-                        {getStatusLabel(getDisplayStatus(candidate))}
-                      </span>
-                    </div>
-                    <CardDescription className="flex flex-wrap items-center gap-4 mt-2">
-                      <span className="flex items-center gap-1">
-                        <Mail className="h-4 w-4" />
-                        {candidate.email}
-                      </span>
-                      {candidate.phone && (
-                        <span className="flex items-center gap-1">
-                          <Phone className="h-4 w-4" />
-                          {candidate.phone}
-                        </span>
-                      )}
-                      {candidate.location && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4" />
-                          {candidate.location}
-                        </span>
-                      )}
-                      {candidate.expected_compensation && (
-                        <span className="flex items-center gap-1" title="Expected compensation">
-                          <DollarSign className="h-4 w-4" />
-                          {candidate.expected_compensation}
-                        </span>
-                      )}
-                      <span className="flex items-center gap-1">
-                        <FileText className="h-4 w-4" />
-                        {candidate.position_applied}
-                      </span>
-                    </CardDescription>
-                  </div>
-                  <div className="ml-4 flex gap-2">
-                    {["hired", "offer_accepted"].includes(
-                      getDisplayStatus(candidate),
-                    ) && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleSendToOnboarding(candidate)}
-                        disabled={sendingToOnboarding === candidate.id}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600"
-                      >
-                        {sendingToOnboarding === candidate.id ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <UserPlus className="mr-2 h-4 w-4" />
-                        )}
-                        Send to Onboarding
-                      </Button>
-                    )}
-                    {!["offer_accepted", "hired"].includes(
-                      getDisplayStatus(candidate),
-                    ) && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          navigate(
-                            `/hr/recruiting/interview-scheduling?candidateId=${candidate.id}`,
-                          );
-                        }}
-                        className="bg-brand hover:bg-brand/90 text-white border-brand" leftIcon={<Calendar className="h-4 w-4" />}>
-                        Schedule Interview
-                      </Button>
-                    )}
-                  </div>
+              <Plus className="h-4 w-4" aria-hidden />
+              Add candidate
+            </button>
+          </div>
+        </div>
+
+        {/* Pipeline strip: one continuous rule. Click a stage to filter. */}
+        <div
+          className={`mt-7 grid grid-cols-2 gap-px border bg-[#E7E1DA] dark:bg-white/10 ${HAIRLINE} sm:grid-cols-4 xl:grid-cols-8`}
+        >
+          {statusOptions.map((status) => {
+            const active = filterStatus === status.value;
+            return (
+              <button
+                key={status.value}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setFilterStatus(active ? "all" : status.value)}
+                className={`relative px-4 py-4 text-left transition-colors ${
+                  active
+                    ? "bg-[#FCFAF8] dark:bg-white/[0.06]"
+                    : `${SURFACE} hover:bg-[#FCFAF8] dark:hover:bg-white/[0.04]`
+                }`}
+              >
+                {active && (
+                  <span
+                    className="absolute inset-x-0 top-0 h-[3px] bg-brand"
+                    aria-hidden
+                  />
+                )}
+                <div
+                  className={`flex items-center gap-2 text-[12.5px] font-semibold ${MUTED}`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 shrink-0 ${STATUS_BAR[status.value]}`}
+                    aria-hidden
+                  />
+                  {status.label}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-4 text-neutral-600 dark:text-neutral-400">
-                      <span>Source: {candidate.source}</span>
-                      <span>
-                        Applied:{" "}
-                        {new Date(candidate.applied_date).toLocaleDateString()}
-                      </span>
-                      {candidate.last_contact_date && (
-                        <span>
-                          Last Contact:{" "}
-                          {new Date(
-                            candidate.last_contact_date,
-                          ).toLocaleDateString()}
+                <div className="mt-2 text-[30px] font-bold leading-none tracking-[-0.03em]">
+                  {loading ? "-" : statusCounts[status.value] || 0}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Filters */}
+        <div className={`mt-6 flex flex-col border sm:flex-row ${HAIRLINE} ${SURFACE}`}>
+          <div className="relative flex-1">
+            <Search
+              className={`absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 ${FAINT}`}
+              aria-hidden
+            />
+            <input
+              type="text"
+              placeholder="Search by name, email, or position…"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-none border-0 bg-transparent py-3 pl-11 pr-4 text-sm placeholder:text-[#948B83] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand dark:placeholder:text-white/40"
+            />
+          </div>
+          <select
+            aria-label="Filter by status"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className={`rounded-none border-0 border-t px-4 py-3 text-sm sm:border-l sm:border-t-0 ${HAIRLINE} ${SURFACE} focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand`}
+          >
+            <option value="all">All stages</option>
+            {statusOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Filter by position"
+            value={filterPosition}
+            onChange={(e) => setFilterPosition(e.target.value)}
+            className={`rounded-none border-0 border-t px-4 py-3 text-sm sm:border-l sm:border-t-0 ${HAIRLINE} ${SURFACE} focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand`}
+          >
+            <option value="all">All positions</option>
+            {positions.map((pos) => (
+              <option key={pos} value={pos}>
+                {pos}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {!loading && candidates.length > 0 && (
+          <div
+            className={`mt-6 flex items-baseline justify-between text-[12.5px] ${FAINT}`}
+          >
+            <span>
+              Showing {filteredCandidates.length} of {candidates.length}
+            </span>
+            {hasFilters && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTerm("");
+                  setFilterStatus("all");
+                  setFilterPosition("all");
+                }}
+                className="font-semibold text-brand hover:opacity-80"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Candidates list */}
+        {loading ? (
+          <div className={`mt-4 border px-6 py-14 text-center ${HAIRLINE} ${SURFACE}`}>
+            <LoadingSpinner size="md" />
+          </div>
+        ) : filteredCandidates.length === 0 ? (
+          <div className={`mt-4 border border-dashed px-6 py-14 text-center ${HAIRLINE}`}>
+            <Users className={`mx-auto h-9 w-9 ${FAINT}`} aria-hidden />
+            <h3 className="mt-4 font-serif text-[22px] tracking-[-0.01em]">
+              {hasFilters ? "No one matches that" : "No candidates yet"}
+            </h3>
+            <p className={`mt-1.5 text-sm ${MUTED}`}>
+              {hasFilters
+                ? "Try a different search, or clear the filters."
+                : "Add your first candidate to start the pipeline."}
+            </p>
+          </div>
+        ) : (
+          <div className="mt-3 flex flex-col gap-3">
+            {filteredCandidates.map((candidate) => {
+              const status = getDisplayStatus(candidate);
+              const name = `${candidate.first_name} ${candidate.last_name}`;
+              const frSizes = [
+                candidate.fr_shirt_size,
+                candidate.fr_pant_size,
+                candidate.fr_jacket_size,
+              ].filter(Boolean);
+              return (
+                <div
+                  key={candidate.id}
+                  className={`relative border ${HAIRLINE} ${SURFACE}`}
+                >
+                  <span
+                    className={`absolute inset-y-0 left-0 w-[3px] ${STATUS_BAR[status] ?? "bg-[#C3BAB2]"}`}
+                    aria-hidden
+                  />
+                  <div className="flex flex-wrap items-start gap-4 py-4 pl-6 pr-5">
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center text-[13.5px] font-bold ${
+                        status === "new"
+                          ? "bg-brand/10 text-brand"
+                          : "bg-[#E9E3DC] text-[#5C554E] dark:bg-white/10 dark:text-white/70"
+                      }`}
+                    >
+                      {initials(name)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <button
+                          type="button"
+                          onClick={() => openViewModal(candidate)}
+                          className="text-left text-[17.5px] font-bold tracking-[-0.01em] transition-colors hover:text-brand"
+                        >
+                          {name}
+                        </button>
+                        <span
+                          className={`px-2 py-0.5 text-xs font-bold ${getStatusColor(status)}`}
+                        >
+                          {getStatusLabel(status)}
                         </span>
+                      </div>
+                      <div className={`mt-0.5 text-sm ${MUTED}`}>
+                        {candidate.position_applied}
+                        {candidate.source && (
+                          <span className={FAINT}> · via {candidate.source}</span>
+                        )}
+                      </div>
+                      <div
+                        className={`mt-2.5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[13px] ${FAINT}`}
+                      >
+                        <span className="inline-flex items-center gap-1.5">
+                          <Mail className="h-3.5 w-3.5" aria-hidden />
+                          {candidate.email}
+                        </span>
+                        {candidate.phone && (
+                          <span className="inline-flex items-center gap-1.5">
+                            <Phone className="h-3.5 w-3.5" aria-hidden />
+                            {candidate.phone}
+                          </span>
+                        )}
+                        {candidate.location && (
+                          <span className="inline-flex items-center gap-1.5">
+                            <MapPin className="h-3.5 w-3.5" aria-hidden />
+                            {candidate.location}
+                          </span>
+                        )}
+                        {candidate.expected_compensation && (
+                          <span
+                            className="inline-flex items-center gap-1.5"
+                            title="Expected compensation"
+                          >
+                            <DollarSign className="h-3.5 w-3.5" aria-hidden />
+                            {candidate.expected_compensation}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {["hired", "offer_accepted"].includes(status) && (
+                        <button
+                          type="button"
+                          onClick={() => handleSendToOnboarding(candidate)}
+                          disabled={sendingToOnboarding === candidate.id}
+                          className="inline-flex items-center gap-2 bg-emerald-600 px-3.5 py-2 text-[13px] font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                        >
+                          {sendingToOnboarding === candidate.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                          ) : (
+                            <UserPlus className="h-4 w-4" aria-hidden />
+                          )}
+                          Send to onboarding
+                        </button>
+                      )}
+                      {!["offer_accepted", "hired"].includes(status) && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            navigate(
+                              `/hr/recruiting/interview-scheduling?candidateId=${candidate.id}`,
+                            )
+                          }
+                          className="inline-flex items-center gap-2 bg-brand px-3.5 py-2 text-[13px] font-bold text-white transition-opacity hover:opacity-90"
+                        >
+                          <Calendar className="h-4 w-4" aria-hidden />
+                          Schedule interview
+                        </button>
                       )}
                     </div>
                   </div>
+
                   {candidate.notes && (
-                    <div className="p-2 bg-neutral-50 dark:bg-dark-100 rounded text-sm text-neutral-700 dark:text-neutral-300">
-                      <strong>Notes:</strong> {candidate.notes}
+                    <div
+                      className={`mb-4 ml-6 mr-5 border-l-2 border-brand/40 bg-[#FBF8F5] px-3 py-2 text-sm leading-relaxed dark:bg-white/[0.03] ${MUTED}`}
+                    >
+                      {candidate.notes}
                     </div>
                   )}
-                  <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-dark-200">
-                    <div className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-2">
+
+                  <div
+                    className={`flex flex-wrap items-center justify-between gap-3 border-t py-3 pl-6 pr-5 ${DIVIDER}`}
+                  >
+                    <div
+                      className={`flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] ${FAINT}`}
+                    >
+                      {candidate.applied_date && (
+                        <span>Applied {friendlyDate(candidate.applied_date)}</span>
+                      )}
+                      {candidate.last_contact_date && (
+                        <span>
+                          Last contact {friendlyDate(candidate.last_contact_date)}
+                        </span>
+                      )}
+                      {frSizes.length > 0 && <span>FR: {frSizes.join(" / ")}</span>}
                       {candidate.linked_user_email && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-none bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium">
-                          <Link2 className="h-3 w-3" />
+                        <span className="inline-flex items-center gap-1 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                          <Link2 className="h-3 w-3" aria-hidden />
                           {candidate.linked_user_email}
                         </span>
                       )}
-                      {(candidate.fr_shirt_size ||
-                        candidate.fr_pant_size ||
-                        candidate.fr_jacket_size) && (
-                        <span>
-                          FR:{" "}
-                          {[
-                            candidate.fr_shirt_size,
-                            candidate.fr_pant_size,
-                            candidate.fr_jacket_size,
-                          ]
-                            .filter(Boolean)
-                            .join(" / ")}
-                        </span>
-                      )}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                       <select
-                        value={getDisplayStatus(candidate)}
+                        aria-label="Change stage"
+                        value={status}
                         onChange={(e) =>
                           handleStatusChange(
                             candidate.id,
                             e.target.value as Candidate["status"],
                           )
                         }
-                        className="px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
+                        className={`px-2.5 py-1.5 text-[13px] ${FIELD}`}
                       >
                         {statusOptions.map((opt) => (
                           <option key={opt.value} value={opt.value}>
@@ -1169,26 +1300,30 @@ export const CandidateTracking: React.FC = () => {
                           </option>
                         ))}
                       </select>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openViewModal(candidate)} leftIcon={<Eye className="h-4 w-4" />}>
+                      <button
+                        type="button"
+                        onClick={() => openViewModal(candidate)}
+                        className={SECONDARY_BTN}
+                      >
+                        <Eye className="h-3.5 w-3.5" aria-hidden />
                         View
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditModal(candidate)} leftIcon={<Edit className="h-4 w-4" />}>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(candidate)}
+                        className={SECONDARY_BTN}
+                      >
+                        <Edit className="h-3.5 w-3.5" aria-hidden />
                         Edit
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Create Modal */}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>

@@ -25,6 +25,10 @@ export interface ChangeOrder {
   file_size: number | null;
   qbo_estimate_id: string | null;
   qbo_synced_at: string | null;
+  /** The quote holding this Change Order's estimate sheets and letters. Null on older, simple ones. */
+  opportunity_id?: string | null;
+  /** Billed on its own terms, outside the original contract. */
+  outside_contract?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -41,7 +45,19 @@ export interface ChangeOrderInput {
   file_path?: string | null;
   file_type?: string | null;
   file_size?: number | null;
+  outside_contract?: boolean;
 }
+
+/** Shown in place of the raw status value. "submitted" means sent to the customer. */
+export const CHANGE_ORDER_STATUS_LABEL: Record<ChangeOrderStatus, string> = {
+  draft: 'Draft',
+  submitted: 'Sent',
+  approved: 'Approved',
+  rejected: 'Rejected',
+};
+
+/** 1 -> "001", the way Change Orders are numbered on a job. */
+export const formatChangeOrderNumber = (n: number) => String(n).padStart(3, '0');
 
 export interface ChangeOrderSummary {
   approvedTotal: number;
@@ -76,7 +92,7 @@ export async function createChangeOrder(
   userId: string,
   input: ChangeOrderInput
 ): Promise<ChangeOrder> {
-  // Retry once on unique-violation in case two users add a CO simultaneously
+  // Retry once on unique-violation in case two users add a Change Order at the same time
   for (let attempt = 0; ; attempt++) {
     const { data: last } = await table()
       .select('co_number')
@@ -101,6 +117,7 @@ export async function createChangeOrder(
         file_path: input.file_path ?? null,
         file_type: input.file_type ?? null,
         file_size: input.file_size ?? null,
+        outside_contract: input.outside_contract ?? false,
       })
       .select()
       .single();
@@ -128,13 +145,86 @@ export async function updateChangeOrder(
   return data as ChangeOrder;
 }
 
+/**
+ * New Change Order priced on an estimate sheet. The database makes the Change
+ * Order and its own quote (with a brand-new letter number) together; open
+ * /sales-dashboard/opportunities/<opportunity_id> to build the estimate.
+ */
+export async function createChangeOrderQuote(
+  jobId: string,
+  input: {
+    title: string;
+    description?: string | null;
+    requested_by?: string | null;
+    requested_date?: string | null;
+    schedule_impact_days?: number | null;
+    outside_contract?: boolean;
+  }
+): Promise<ChangeOrder> {
+  const { data, error } = await supabase.schema('neta_ops').rpc('create_change_order_quote', {
+    p_job_id: jobId,
+    p_title: input.title,
+    p_description: input.description ?? null,
+    p_requested_by: input.requested_by ?? null,
+    p_requested_date: input.requested_date || null,
+    p_schedule_impact_days: input.schedule_impact_days ?? null,
+    p_outside_contract: input.outside_contract ?? false,
+  });
+  if (error) throw error;
+  return data as ChangeOrder;
+}
+
+/** Badge colors per status, shared by the job card and the PM Dashboard. */
+export const CHANGE_ORDER_STATUS_STYLE: Record<ChangeOrderStatus, string> = {
+  draft: 'bg-neutral-100 text-neutral-800 dark:bg-dark-150 dark:text-neutral-100',
+  submitted: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
+  approved: 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+  rejected: 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
+};
+
+/** Every Change Order on these jobs, for the PM Dashboard. Reads in chunks to keep URLs short. */
+export async function fetchChangeOrdersForJobs(jobIds: string[]): Promise<ChangeOrder[]> {
+  const out: ChangeOrder[] = [];
+  for (let i = 0; i < jobIds.length; i += 100) {
+    const { data, error } = await table()
+      .select('*')
+      .in('job_id', jobIds.slice(i, i + 100))
+      .order('co_number', { ascending: true });
+    if (error) {
+      if ((error as any).code === '42P01') return [];
+      throw error;
+    }
+    out.push(...((data ?? []) as ChangeOrder[]));
+  }
+  return out;
+}
+
+/** Letter numbers for Change Orders that have their own quote, keyed by quote id. */
+export async function fetchChangeOrderLetterNumbers(
+  opportunityIds: string[]
+): Promise<Record<string, string>> {
+  if (opportunityIds.length === 0) return {};
+  const { data, error } = await supabase
+    .schema('business')
+    .from('opportunities')
+    .select('id, quote_number')
+    .in('id', opportunityIds);
+  if (error) throw error;
+  const out: Record<string, string> = {};
+  for (const row of (data ?? []) as { id: string; quote_number: string | null }[]) {
+    if (row.quote_number) out[row.id] = row.quote_number;
+  }
+  return out;
+}
+
+/** Deleting a Change Order also deletes its quote, estimates and letters (database trigger). */
 export async function deleteChangeOrder(id: string): Promise<void> {
   const { error } = await table().delete().eq('id', id);
   if (error) throw error;
 }
 
 /**
- * Approve a CO and, when the job is linked to a QBO project, push it as an
+ * Approve a Change Order and, when the job is linked to a QBO project, push it as an
  * Accepted Estimate. The approval always succeeds locally; a failed QBO push
  * is returned as qboError so the UI can offer a retry instead of blocking.
  */

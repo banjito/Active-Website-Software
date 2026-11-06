@@ -18,11 +18,9 @@
 -- Also:
 --   - Removes TRUNCATE from logged-in users. Row security does not apply to
 --     TRUNCATE, so any logged-in user could otherwise wipe these tables.
---   - Resumes storage folder: anyone with the public key could list and
---     download every applicant's resume. Listing is now recruiting-only.
---     Uploads from the career page still work, and existing resume links
---     still open (the folder stays "public" so saved links don't break; file
---     names are random, so they can't be guessed).
+--   - The resumes storage folder is fixed separately in
+--     lock_resumes_storage.sql (Supabase can refuse storage rule changes, and
+--     one error would undo this whole file).
 --   - Removes anon access to eeo_submissions and to the unused
 --     v_posted_job_requisitions / v_active_job_requisitions /
 --     v_pending_approval_requisitions views (views skip row security).
@@ -104,23 +102,6 @@ BEGIN
   END LOOP;
 END;
 $$;
-
--- Resumes storage: keep public uploads, make listing/editing recruiting-only.
-DROP POLICY IF EXISTS resumes_select ON storage.objects;
-CREATE POLICY resumes_select ON storage.objects
-  FOR SELECT TO authenticated
-  USING (bucket_id = 'resumes' AND (SELECT common.talent_pool_can_access()));
-
-DROP POLICY IF EXISTS resumes_update ON storage.objects;
-CREATE POLICY resumes_update ON storage.objects
-  FOR UPDATE TO authenticated
-  USING (bucket_id = 'resumes' AND (SELECT common.talent_pool_can_access()))
-  WITH CHECK (bucket_id = 'resumes' AND (SELECT common.talent_pool_can_access()));
-
-DROP POLICY IF EXISTS resumes_delete ON storage.objects;
-CREATE POLICY resumes_delete ON storage.objects
-  FOR DELETE TO authenticated
-  USING (bucket_id = 'resumes' AND (SELECT common.talent_pool_can_access()));
 
 -- Verify afterward. Every row should show rls = true and anon_select = false,
 -- and the last line should say promotion_enabled = true:

@@ -101,7 +101,7 @@ import CopyEstimateToOpportunityModal, {
   CopyTargetOpportunity,
 } from "./CopyEstimateToOpportunityModal";
 import type { EstimatingScopeLibraryItem } from "../../services/estimatingScopeLibraryService";
-import { BRAND_COLOR } from "@/lib/companyConfig";
+import { BRAND_COLOR, companyConfig } from "@/lib/companyConfig";
 import {
   planRedistribution,
   sectionSpan,
@@ -291,6 +291,14 @@ interface OpportunityData {
   description: string;
   quote_number?: string;
   jobsite_location?: string;
+  /** Set when this quote is a Change Order on a job; the letter uses Change Order wording. */
+  change_order?: {
+    number: string;
+    jobNumber: string;
+    jobTitle: string;
+    originalLetter: string;
+    outsideContract: boolean;
+  } | null;
   customer: {
     id: string;
     name: string;
@@ -1057,7 +1065,7 @@ export default function EstimateSheet({
       try {
         // 1. Fetch Opportunity from business schema
         const opportunityColumns =
-          "id, title, description, customer_id, contact_id, quote_number, jobsite_location";
+          "id, title, description, customer_id, contact_id, quote_number, jobsite_location, change_order_job_id";
         const { data: oppData, error: oppError } = await supabase
           .schema("business")
           .from("opportunities")
@@ -1139,12 +1147,58 @@ export default function EstimateSheet({
           setContactData(null);
         }
 
+        // Change Order quote: its number, the job, and the job's original letter
+        let changeOrder: OpportunityData["change_order"] = null;
+        const changeOrderJobId = (oppData as any).change_order_job_id as
+          | string
+          | null;
+        if (changeOrderJobId) {
+          try {
+            const [{ data: co }, { data: job }] = await Promise.all([
+              supabase
+                .schema("neta_ops")
+                .from("job_change_orders")
+                .select("co_number, outside_contract")
+                .eq("opportunity_id", opportunityId)
+                .maybeSingle(),
+              supabase
+                .schema("neta_ops")
+                .from("jobs")
+                .select("job_number, title, opportunity_id")
+                .eq("id", changeOrderJobId)
+                .maybeSingle(),
+            ]);
+            let originalLetter = "";
+            if ((job as any)?.opportunity_id) {
+              const { data: parent } = await supabase
+                .schema("business")
+                .from("opportunities")
+                .select("quote_number")
+                .eq("id", (job as any).opportunity_id)
+                .maybeSingle();
+              originalLetter = (parent as any)?.quote_number || "";
+            }
+            changeOrder = {
+              number: (co as any)?.co_number
+                ? String((co as any).co_number).padStart(3, "0")
+                : "",
+              jobNumber: (job as any)?.job_number || "",
+              jobTitle: (job as any)?.title || "",
+              originalLetter,
+              outsideContract: !!(co as any)?.outside_contract,
+            };
+          } catch (e) {
+            console.warn("Change Order details for the letter failed:", e);
+          }
+        }
+
         // 3. Combine data and set state
         const transformedData = {
           title: oppData.title,
           description: oppData.description || "",
           quote_number: (oppData as any).quote_number || "",
           jobsite_location: oppData.jobsite_location,
+          change_order: changeOrder,
           customer: customerInfo || {
             id: "",
             name: "",
@@ -5944,14 +5998,37 @@ export default function EstimateSheet({
       proposalTemplate.footerHtml,
       templateTokens,
     );
-    const introHtml = renderTemplateSection(
-      proposalTemplate.introHtml,
-      templateTokens,
-    );
-    const termsHtml = renderTemplateSection(
-      proposalTemplate.termsHtml,
-      templateTokens,
-    );
+    // A Change Order quote gets its own heading, opening and terms line.
+    const changeOrder = opportunityData?.change_order ?? null;
+    const changeOrderRef = changeOrder
+      ? `Change Order${changeOrder.number ? ` ${escapeProposalText(changeOrder.number)}` : ""}${
+          changeOrder.jobNumber ? ` to Job ${escapeProposalText(changeOrder.jobNumber)}` : ""
+        }${
+          changeOrder.originalLetter
+            ? ` (original Letter # ${escapeProposalText(changeOrder.originalLetter)})`
+            : ""
+        }`
+      : "";
+    const changeOrderHeadingHtml = changeOrder
+      ? `<div class="amp-section" style="margin-bottom: 8px;"><b style="font-size: 1.1em;">${changeOrderRef}</b></div>`
+      : "";
+    const introHtml = changeOrder
+      ? `<div class="amp-section" style="margin: 8px 0;">Dear ${escapeProposalText(contactName)},</div>
+        <div class="amp-section">${escapeProposalText(companyConfig.legalName)} is pleased to offer ${changeOrderRef}. It covers the work listed below, added to ${escapeProposalText(changeOrder.jobTitle || "the original scope")}${escapeProposalText(templateTokens.jobsiteLocation)}.</div>
+        <div class="amp-section" style="margin: 8px 0;">
+          <span id="neta-standard-text">${templateTokens.netaStandardText}</span>
+        </div>`
+      : renderTemplateSection(proposalTemplate.introHtml, templateTokens);
+    const changeOrderTermsHtml = changeOrder
+      ? `<div class="amp-section" style="margin: 8px 0;">${
+          changeOrder.outsideContract
+            ? "This Change Order is billed on its own terms, outside the original contract's terms (for example, no retainage or pay-if-paid)."
+            : "All other terms of the original contract stay the same."
+        }</div>`
+      : "";
+    const termsHtml =
+      changeOrderTermsHtml +
+      renderTemplateSection(proposalTemplate.termsHtml, templateTokens);
     const conclusionHtml = renderTemplateSection(
       proposalTemplate.conclusionHtml,
       templateTokens,
@@ -5972,6 +6049,7 @@ export default function EstimateSheet({
           <span style="font-size: 1em; font-weight: bold; color: #333;">${escapeProposalText(branding.letterBannerText)}</span>
         </div>
         ${headerHtml}
+        ${changeOrderHeadingHtml}
         ${renderCustomSectionsAt("after_header", templateTokens)}
         ${introHtml}
         ${renderCustomSectionsAt("after_intro", templateTokens)}
@@ -6516,14 +6594,37 @@ export default function EstimateSheet({
       proposalTemplate.footerHtml,
       templateTokens,
     );
-    const introHtml = renderTemplateSection(
-      proposalTemplate.introHtml,
-      templateTokens,
-    );
-    const termsHtml = renderTemplateSection(
-      proposalTemplate.termsHtml,
-      templateTokens,
-    );
+    // A Change Order quote gets its own heading, opening and terms line.
+    const changeOrder = opportunityData?.change_order ?? null;
+    const changeOrderRef = changeOrder
+      ? `Change Order${changeOrder.number ? ` ${escapeProposalText(changeOrder.number)}` : ""}${
+          changeOrder.jobNumber ? ` to Job ${escapeProposalText(changeOrder.jobNumber)}` : ""
+        }${
+          changeOrder.originalLetter
+            ? ` (original Letter # ${escapeProposalText(changeOrder.originalLetter)})`
+            : ""
+        }`
+      : "";
+    const changeOrderHeadingHtml = changeOrder
+      ? `<div class="amp-section" style="margin-bottom: 8px;"><b style="font-size: 1.1em;">${changeOrderRef}</b></div>`
+      : "";
+    const introHtml = changeOrder
+      ? `<div class="amp-section" style="margin: 8px 0;">Dear ${escapeProposalText(contactName)},</div>
+        <div class="amp-section">${escapeProposalText(companyConfig.legalName)} is pleased to offer ${changeOrderRef}. It covers the work listed below, added to ${escapeProposalText(changeOrder.jobTitle || "the original scope")}${escapeProposalText(templateTokens.jobsiteLocation)}.</div>
+        <div class="amp-section" style="margin: 8px 0;">
+          <span id="neta-standard-text">${templateTokens.netaStandardText}</span>
+        </div>`
+      : renderTemplateSection(proposalTemplate.introHtml, templateTokens);
+    const changeOrderTermsHtml = changeOrder
+      ? `<div class="amp-section" style="margin: 8px 0;">${
+          changeOrder.outsideContract
+            ? "This Change Order is billed on its own terms, outside the original contract's terms (for example, no retainage or pay-if-paid)."
+            : "All other terms of the original contract stay the same."
+        }</div>`
+      : "";
+    const termsHtml =
+      changeOrderTermsHtml +
+      renderTemplateSection(proposalTemplate.termsHtml, templateTokens);
     const conclusionHtml = renderTemplateSection(
       proposalTemplate.conclusionHtml,
       templateTokens,
@@ -6544,6 +6645,7 @@ export default function EstimateSheet({
           <span style="font-size: 1.1em; font-weight: bold; color: #333;">${escapeProposalText(branding.letterBannerText)}</span>
         </div>
         ${headerHtml}
+        ${changeOrderHeadingHtml}
         ${renderCustomSectionsAt("after_header", templateTokens)}
         ${introHtml}
         ${renderCustomSectionsAt("after_intro", templateTokens)}

@@ -419,6 +419,7 @@ export default function PipelineCalendarPage() {
             .schema("business")
             .from("opportunities")
             .select("*")
+            .is("change_order_job_id", null) // Change Order quotes stay on their job
             .eq("in_pipeline_projection", true);
 
         if (opportunityError) throw opportunityError;

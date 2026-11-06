@@ -94,6 +94,7 @@ const BidsOverview: React.FC = () => {
             .schema("business")
             .from("opportunities")
             .select("*")
+            .is("change_order_job_id", null) // Change Order quotes stay on their job
             .order("created_at", { ascending: false }); // Order by created_at for now, we'll sort later
 
         if (opportunitiesError) throw opportunitiesError;
@@ -438,6 +439,7 @@ const BidsOverview: React.FC = () => {
           .schema("business")
           .from("opportunities")
           .select("*")
+          .is("change_order_job_id", null) // Change Order quotes stay on their job
           .order("created_at", { ascending: false }) // Order by created_at, we'll filter for letter proposals later
           .range(from, from + pageSize - 1);
         if (pageErr) throw pageErr;

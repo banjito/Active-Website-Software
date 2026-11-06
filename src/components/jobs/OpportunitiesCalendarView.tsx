@@ -112,6 +112,7 @@ export function OpportunitiesCalendarView() {
         .schema("business")
         .from("opportunities")
         .select("id, title, quote_number, proposal_due_date")
+        .is("change_order_job_id", null) // Change Order quotes stay on their job
         .not("proposal_due_date", "is", null)
         .order("proposal_due_date", { ascending: true });
 

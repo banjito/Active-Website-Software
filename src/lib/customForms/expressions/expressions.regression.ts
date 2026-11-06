@@ -651,7 +651,7 @@ check("Job Details can be six wide, and Temp / Humidity split into their own fie
     { id: "tcf", label: "TCF", type: "number" },
   ] as any);
   assert.deepEqual(split.map((f) => [f.id, f.type]), [["customer", "text"], ["temperature", "temperature"], ["humidity", "number"], ["tcf", "number"]]);
-  assert.equal(split[1].defaultValue, 70);
+  assert.equal(split[1].defaultValue, undefined, "temperature and humidity start blank");
   assert.equal(split[2].valueSuffix, "%");
 });
 check("the built reports' TCF (rounded °C) is available as a lookup", () => {

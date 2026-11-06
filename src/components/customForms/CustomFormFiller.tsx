@@ -12,7 +12,9 @@ import { reportTestDate } from "@/lib/customForms/equipment";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
+import { useDemoMode } from "@/lib/DemoModeContext";
 import { useJobDetails } from "@/lib/hooks/useJobDetails";
+import { jobFillContext, jobInfoStartValues } from "@/lib/customForms/jobFill";
 import { toast } from "@/components/ui/toast";
 import { Database, History, ArrowLeft, Save, Printer, Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -56,10 +58,10 @@ import {
   type RowInstanceV2,
 } from "@/lib/customForms/instanceState";
 import { validateInstanceStructure } from "@/lib/customForms/compile";
-import { fahrenheitToCelsius, getRoundedTCF } from "@/lib/utils/temperatureCorrection";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import {
   defaultSettingValue,
+  seedBlankEnvironment,
   seedCellDefaults,
   seedContactResistanceRows,
   type ControlSlot,
@@ -107,6 +109,7 @@ export const CustomFormFiller: React.FC = () => {
   // Custom forms skip the app Layout, so they mount reviewer field flags here.
   const fieldFlags = useReportFieldFlags(true);
   const { user } = useAuth();
+  const { isDemoMode, maskCustomerName, maskCustomerAddress } = useDemoMode();
   const { jobDetails } = useJobDetails(jobId);
 
   const [template, setTemplate] = useState<CustomFormTemplate | null>(null);
@@ -197,44 +200,14 @@ export const CustomFormFiller: React.FC = () => {
     if (jobInfoSeededRef.current) return;
     jobInfoSeededRef.current = true;
 
-    const today = new Date().toISOString().slice(0, 10);
-    const initial: Record<string, any> = {};
-    const setTemperature = (fahrenheit: number, humidity?: number) => {
-      const celsius = fahrenheitToCelsius(fahrenheit);
-      initial.temperature = String(fahrenheit);
-      initial.temperatureCelsius = celsius.toFixed(2);
-      initial.tcf = getRoundedTCF(celsius).toFixed(3);
-      if (humidity != null) initial.humidity = String(humidity);
-    };
-
-    jobInfoSection.fields.forEach((f) => {
-      if (f.id === "customer") {
-        initial[f.id] =
-          jobDetails.customer?.company_name ||
-          jobDetails.formattedCustomerName ||
-          jobDetails.customer?.name ||
-          "";
-      } else if (f.id === "siteAddress") {
-        initial[f.id] =
-          jobDetails.site_address || jobDetails.customer?.address || "";
-      } else if (f.id === "jobNumber") {
-        initial[f.id] =
-          jobDetails.job_number || `JOB-${jobId?.slice(0, 8)}` || "";
-      } else if (f.id === "date") {
-        initial[f.id] = jobDetails.start_date?.slice(0, 10) || today;
-      } else if (f.id === "user") {
-        initial[f.id] = user?.email || user?.user_metadata?.full_name || "";
-      } else if (f.id === "temperature") {
-        setTemperature(68);
-      } else if (f.id === "humidity") {
-        initial[f.id] = "50";
-      } else if (
-        f.id === "temperatureHumidity" &&
-        f.defaultTemperature != null
-      ) {
-        setTemperature(f.defaultTemperature ?? 68, f.defaultHumidity ?? 50);
-      }
-    });
+    const initial = jobInfoStartValues(
+      jobInfoSection.fields,
+      jobFillContext(jobDetails, {
+        name: maskCustomerName,
+        address: maskCustomerAddress,
+        hideDescription: isDemoMode,
+      }),
+    );
 
     if (Object.keys(initial).length > 0) {
       // Anything already filled in the block (typed, or from the asset) stays.
@@ -246,7 +219,7 @@ export const CustomFormFiller: React.FC = () => {
         return { ...prev, [jobInfoSection.id]: block };
       });
     }
-  }, [template, jobDetails, jobId, user, existingInstanceId]);
+  }, [template, jobDetails, isDemoMode, maskCustomerName, maskCustomerAddress, existingInstanceId]);
 
   // Opened from an asset in the Assets tab: fill the identifier, location and nameplate
   // fields from it. The report links to the asset on first save (ensureReportAssetLink).
@@ -356,7 +329,9 @@ export const CustomFormFiller: React.FC = () => {
   useEffect(() => {
     if (!template || existingInstanceId != null) return;
     setFormData((prev) =>
-      seedReportLayout(seedCellDefaults(template, seedContactResistanceRows(template, prev))),
+      seedReportLayout(
+        seedBlankEnvironment(template, seedCellDefaults(template, seedContactResistanceRows(template, prev))),
+      ),
     );
   }, [template, existingInstanceId]);
 
@@ -837,7 +812,7 @@ export const CustomFormFiller: React.FC = () => {
   }
 
   return (
-    <ReportWrapper>
+    <ReportWrapper wide>
       <CustomFormPrintHeader template={template} status={status} />
       {paper.on && <PaperViewStyles />}
 
@@ -845,7 +820,7 @@ export const CustomFormFiller: React.FC = () => {
         className={`min-h-screen bg-neutral-50 dark:bg-dark-200 p-4 md:p-6 print:min-h-0 print:bg-white print:p-0 ${paper.on ? PAPER_CLASS : ""}`}
         data-ff-root=""
       >
-        <div className={paper.on ? "print:max-w-none" : "max-w-5xl mx-auto print:max-w-none"}>
+        <div className={paper.on ? "print:max-w-none" : "mx-auto print:max-w-none"}>
           {fieldFlags.showFlags && (
             <div className="print:hidden mb-4 px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-none">
               <p className="text-sm font-semibold text-red-800 dark:text-red-200">
@@ -858,10 +833,44 @@ export const CustomFormFiller: React.FC = () => {
             className={`custom-form-container ${legacyLayout ? "cf-legacy-layout" : ""} bg-white dark:bg-dark-150 rounded-none shadow-md border border-neutral-200 dark:border-neutral-700 p-4 md:p-6 print:shadow-none print:border-0 print:rounded-none print:p-0`}
             style={paper.sheetStyle}
           >
-            <div className={`${PAPER_TOOLBAR_CLASS} print:hidden flex flex-wrap items-center justify-between gap-4 pb-4 mb-4 border-b border-neutral-200 dark:border-neutral-700`}>
-              <div className="flex items-center gap-4">
+            <div className={`${PAPER_TOOLBAR_CLASS} print:hidden pb-4 mb-4 border-b border-neutral-200 dark:border-neutral-700`}>
+              <div className="mb-3">
+                <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+                  {template.name}
+                </h1>
+                <div className="flex items-center gap-2 mt-1">
+                  {template.netaSection && (
+                    <span className="inline-block px-2 py-1 text-xs font-medium bg-brand text-white rounded-none">
+                      {template.netaSection}
+                    </span>
+                  )}
+                  {pinnedVersion ? (
+                    <span
+                      className="text-xs text-neutral-500 dark:text-neutral-400"
+                      title={
+                        renderSource === "pinned"
+                          ? "This form is pinned to this template version. Later edits to the template will not change it."
+                          : "New form, using the template's current published version."
+                      }
+                    >
+                      Template v{pinnedVersion.version}
+                      {pinnedVersion.origin === "imported" && " (imported)"}
+                    </span>
+                  ) : (
+                    <span
+                      className="text-xs text-amber-700 dark:text-amber-300"
+                      title="No published version, so this form follows the editable draft. Publish the template to pin new forms to a fixed version."
+                    >
+                      Unversioned draft
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-4">
                 <Button
                   variant="ghost"
+                  className="whitespace-nowrap"
                   onClick={() => navigate(`/jobs/${jobId}?tab=assets`)}
                   leftIcon={<ArrowLeft className="w-4 h-4" />}
                 >
@@ -869,40 +878,8 @@ export const CustomFormFiller: React.FC = () => {
                 </Button>
                 {/* Report status (renders nothing on unsaved instances) */}
                 <ReportStatusButton />
-                <div>
-                  <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-                    {template.name}
-                  </h1>
-                  <div className="flex items-center gap-2 mt-1">
-                    {template.netaSection && (
-                      <span className="inline-block px-2 py-1 text-xs font-medium bg-brand text-white rounded">
-                        {template.netaSection}
-                      </span>
-                    )}
-                    {pinnedVersion ? (
-                      <span
-                        className="text-xs text-neutral-500 dark:text-neutral-400"
-                        title={
-                          renderSource === "pinned"
-                            ? "This form is pinned to this template version. Later edits to the template will not change it."
-                            : "New form, using the template's current published version."
-                        }
-                      >
-                        Template v{pinnedVersion.version}
-                        {pinnedVersion.origin === "imported" && " (imported)"}
-                      </span>
-                    ) : (
-                      <span
-                        className="text-xs text-amber-700 dark:text-amber-300"
-                        title="No published version, so this form follows the editable draft. Publish the template to pin new forms to a fixed version."
-                      >
-                        Unversioned draft
-                      </span>
-                    )}
-                  </div>
-                </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {template.structure.settings?.includePassFail !== false && (
                   <StatusToggleButton
                     status={status}
@@ -988,6 +965,7 @@ export const CustomFormFiller: React.FC = () => {
                     <Save className="h-6 w-6" />
                   )}
                 </button>
+              </div>
               </div>
             </div>
 

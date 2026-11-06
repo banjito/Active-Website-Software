@@ -16,10 +16,19 @@ import {
   EyeOff,
   Save,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   FileCode2,
   GripVertical,
   Columns,
 } from "lucide-react";
+import {
+  applyTableChoices,
+  rowsDiffer,
+  snapshotRowChoices,
+  tableChoices,
+  type TableChoice,
+} from "@/lib/customForms/checklistChoices";
 import { TableGridEditor } from "./TableGridEditor";
 import { TableLayoutEditor } from "./TableLayoutEditor";
 import { ResultRuleEditor, DEFAULT_RESULT_RULE } from "./ResultRuleEditor";
@@ -38,6 +47,7 @@ import {
 } from "@/lib/customForms/runtime/layout";
 import { ChecklistWidthInput } from "./ChecklistWidthInput";
 import { hasCombinedTemperatureField, splitTemperatureHumidity } from "@/lib/customForms/temperatureFields";
+import { JobFillControl } from "./JobFillControl";
 import {
   combineAsFoundAsLeft,
   pairForColumn,
@@ -1531,6 +1541,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                           id={field.id}
                           field={field}
                           gridColumns={fieldGridColumns}
+                          jobInfo={section.componentType === ComponentType.JOB_INFO}
                           onUpdate={(updates) => {
                             const newFields = [...(section.fields || [])];
                             newFields[index] = { ...field, ...updates };
@@ -1633,58 +1644,10 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
               ))}
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {section.checklistItems.length} items
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    const newItem = {
-                      id: `item-${Date.now()}`,
-                      netaSection: "",
-                      description: "New inspection item",
-                      resultOptions: [
-                        "satisfactory",
-                        "unsatisfactory",
-                        "Not Applicable",
-                      ],
-                    };
-                    onUpdate({
-                      checklistItems: [
-                        ...(section.checklistItems || []),
-                        newItem,
-                      ],
-                    });
-                  }}
-                  leftIcon={<Plus className="w-3 h-3" />}
-                >
-                  Add Item
-                </Button>
-              </div>
-
-              <div className="space-y-2">
-                {section.checklistItems?.map((item, index) => (
-                  <ChecklistItemEditor
-                    key={item.id}
-                    item={item}
-                    onUpdate={(updates) => {
-                      const newItems = [...(section.checklistItems || [])];
-                      newItems[index] = { ...item, ...updates };
-                      onUpdate({ checklistItems: newItems });
-                    }}
-                    onDelete={() => {
-                      const newItems = section.checklistItems?.filter(
-                        (i) => i.id !== item.id,
-                      );
-                      onUpdate({ checklistItems: newItems });
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
+            <ChecklistItemsEditor
+              items={section.checklistItems}
+              onChange={(checklistItems) => onUpdate({ checklistItems })}
+            />
           </div>
         )}
 
@@ -1736,6 +1699,7 @@ const SortableFieldEditor: React.FC<{
   id: string;
   field: FieldConfig;
   gridColumns: number;
+  jobInfo?: boolean;
   onUpdate: (updates: Partial<FieldConfig>) => void;
   onDelete: () => void;
   onAppendOption?: () => void;
@@ -2309,23 +2273,55 @@ export const InlineOptionsEditor: React.FC<{
   onChange: (next: { label: string; value: string }[]) => void;
   onAdd: () => void;
   addDisabled?: boolean;
-}> = ({ options, onChange, onAdd, addDisabled }) => (
+  /** Show arrows that move an option earlier or later in the list. */
+  reorderable?: boolean;
+}> = ({ options, onChange, onAdd, addDisabled, reorderable }) => {
+  const move = (from: number, to: number) => {
+    const next = [...options];
+    next.splice(to, 0, ...next.splice(from, 1));
+    onChange(next);
+  };
+  const arrowBtn =
+    "p-0.5 text-neutral-400 hover:text-brand disabled:opacity-30 disabled:pointer-events-none";
+  return (
   <div className="flex flex-wrap items-center gap-1.5">
     <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
       Options ({options.length}):
     </span>
     {options.map((opt, idx) => (
       <div key={idx} className="flex items-center">
+        {reorderable && (
+          <button
+            type="button"
+            onClick={() => move(idx, idx - 1)}
+            disabled={idx === 0}
+            className={arrowBtn}
+            title="Move earlier in the list"
+          >
+            <ChevronLeft className="w-3 h-3" />
+          </button>
+        )}
         <input
           value={opt?.label ?? opt?.value ?? ""}
           onChange={(e) => {
             const next = [...options];
-            next[idx] = { label: e.target.value, value: e.target.value };
+            next[idx] = { ...next[idx], label: e.target.value, value: e.target.value };
             onChange(next);
           }}
           placeholder="Option text"
           className={`${inlineInputCls} w-32`}
         />
+        {reorderable && (
+          <button
+            type="button"
+            onClick={() => move(idx, idx + 1)}
+            disabled={idx === options.length - 1}
+            className={arrowBtn}
+            title="Move later in the list"
+          >
+            <ChevronRight className="w-3 h-3" />
+          </button>
+        )}
         <button
           type="button"
           onClick={() => onChange(options.filter((_, i) => i !== idx))}
@@ -2346,7 +2342,146 @@ export const InlineOptionsEditor: React.FC<{
       Add
     </button>
   </div>
-);
+  );
+};
+
+type ChecklistItem = NonNullable<SectionConfig["checklistItems"]>[number];
+
+/** Edit the result choices of every checklist row at once. Mount with a key so it starts fresh. */
+export const ChecklistTableChoices: React.FC<{
+  items: ChecklistItem[];
+  onChange: (items: ChecklistItem[]) => void;
+}> = ({ items, onChange }) => {
+  const [before, setBefore] = useState(() => snapshotRowChoices(items));
+  const [choices, setChoices] = useState(() => tableChoices(items));
+  const update = (next: TableChoice[]) => {
+    setChoices(next);
+    onChange(applyTableChoices(items, before, next));
+  };
+  const matchEveryRow = () => {
+    const labels = [...new Set(choices.map((c) => c.label).filter((l) => l.trim()))];
+    const next = items.map((item) => ({ ...item, resultOptions: labels }));
+    setBefore(snapshotRowChoices(next));
+    setChoices(tableChoices(next));
+    onChange(next);
+  };
+  return (
+    <div className="min-w-0 space-y-1">
+      <InlineOptionsEditor
+        reorderable
+        options={choices.map((c) => ({ ...c, value: c.label }))}
+        onChange={(next) => update(next as unknown as TableChoice[])}
+        onAdd={() => update([...choices, { from: null, label: `Option ${choices.length + 1}` }])}
+      />
+      {rowsDiffer(items) && (
+        <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+          Some rows have their own choices. Changes here only reach the rows that use that choice.{" "}
+          <button type="button" onClick={matchEveryRow} className="text-brand hover:underline">
+            Give every row this exact list
+          </button>
+        </p>
+      )}
+    </div>
+  );
+};
+
+/** Edit the result choices of one checklist row. */
+export const ChecklistRowChoices: React.FC<{
+  item: ChecklistItem;
+  onChange: (resultOptions: string[]) => void;
+}> = ({ item, onChange }) => {
+  const list = item.resultOptions ?? [];
+  return (
+    <InlineOptionsEditor
+      reorderable
+      options={list.map((v) => ({ label: v, value: v }))}
+      onChange={(next) => onChange(next.map((o) => o.label))}
+      onAdd={() => onChange([...list, `Option ${list.length + 1}`])}
+    />
+  );
+};
+
+/** The rows of a checklist, with their result choices. */
+const ChecklistItemsEditor: React.FC<{
+  items: ChecklistItem[];
+  onChange: (items: ChecklistItem[]) => void;
+}> = ({ items, onChange }) => {
+  // Which row's result choices are open ("all" = the whole table).
+  const [editing, setEditing] = useState<string | null>(null);
+  const toggle = (target: string) => setEditing((e) => (e === target ? null : target));
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="mr-auto text-xs text-neutral-500 dark:text-neutral-400">
+          {items.length} items
+        </span>
+        {items.length > 0 && (
+          <Button variant="ghost" size="sm" onClick={() => toggle("all")}>
+            {editing === "all" ? "Close result choices" : "Edit result choices for all items"}
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() =>
+            onChange([
+              ...items,
+              {
+                id: `item-${Date.now()}`,
+                netaSection: "",
+                description: "New inspection item",
+                resultOptions: items[0]?.resultOptions ?? [
+                  "satisfactory",
+                  "unsatisfactory",
+                  "Not Applicable",
+                ],
+              },
+            ])
+          }
+          leftIcon={<Plus className="w-3 h-3" />}
+        >
+          Add Item
+        </Button>
+      </div>
+
+      {editing === "all" && (
+        <div className="border border-brand px-2 py-1.5 rounded-none">
+          <ChecklistTableChoices items={items} onChange={onChange} />
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {items.map((item, index) => (
+          <div key={item.id}>
+            <ChecklistItemEditor
+              item={item}
+              choicesOpen={editing === item.id}
+              onToggleChoices={() => toggle(item.id)}
+              onUpdate={(updates) => {
+                const next = [...items];
+                next[index] = { ...item, ...updates };
+                onChange(next);
+              }}
+              onDelete={() => onChange(items.filter((i) => i.id !== item.id))}
+            />
+            {editing === item.id && (
+              <div className="border border-t-0 border-brand px-2 py-1.5 rounded-none">
+                <ChecklistRowChoices
+                  item={item}
+                  onChange={(resultOptions) => {
+                    const next = [...items];
+                    next[index] = { ...item, resultOptions };
+                    onChange(next);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 /**
  * Field Editor for individual fields.
@@ -2363,6 +2498,8 @@ const FieldEditor: React.FC<{
   dragHandleProps?: Record<string, unknown>;
   /** Grid width of the parent grouped-field component; enables the span controls */
   gridColumns?: number;
+  /** A Job Details field, which can start from the job overview. */
+  jobInfo?: boolean;
 }> = ({
   field,
   onUpdate,
@@ -2371,6 +2508,7 @@ const FieldEditor: React.FC<{
   hideDelete,
   dragHandleProps,
   gridColumns,
+  jobInfo,
 }) => {
   const [addOptionCooldown, setAddOptionCooldown] = useState(false);
 
@@ -2504,6 +2642,8 @@ const FieldEditor: React.FC<{
 
         <AssetSourceSelect value={field.assetSource} onChange={(assetSource) => onUpdate({ assetSource })} />
 
+        {jobInfo && <JobFillControl field={field} onChange={onUpdate} />}
+
         <label className="flex items-center gap-1 text-xs text-neutral-700 dark:text-neutral-300 cursor-pointer">
           <input
             type="checkbox"
@@ -2546,7 +2686,9 @@ const ChecklistItemEditor: React.FC<{
   item: any;
   onUpdate: (updates: any) => void;
   onDelete: () => void;
-}> = ({ item, onUpdate, onDelete }) => (
+  choicesOpen: boolean;
+  onToggleChoices: () => void;
+}> = ({ item, onUpdate, onDelete, choicesOpen, onToggleChoices }) => (
   <div className="bg-neutral-50 dark:bg-dark-100 rounded-none px-2 py-1.5 flex items-center gap-2">
     <input
       value={item.netaSection ?? ""}
@@ -2562,6 +2704,16 @@ const ChecklistItemEditor: React.FC<{
       title={item.description}
       className={`${inlineInputCls} flex-1 min-w-0`}
     />
+    <button
+      type="button"
+      onClick={onToggleChoices}
+      className={`shrink-0 text-[11px] hover:text-brand ${
+        choicesOpen ? "text-brand" : "text-neutral-500 dark:text-neutral-400"
+      }`}
+      title={(item.resultOptions ?? []).join(", ") || "No choices yet"}
+    >
+      Choices ({item.resultOptions?.length ?? 0})
+    </button>
     <button
       onClick={onDelete}
       className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"

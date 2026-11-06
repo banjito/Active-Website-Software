@@ -98,19 +98,25 @@ export async function listTemplateVersions(
 /**
  * Whether the draft has moved on since the last publication. Compares the
  * checksum when the version has one, and falls back to the canonical text.
+ *
+ * Publishing stores the COMPILED structure, so the draft is compiled the same
+ * way before comparing. Comparing the raw draft made every template whose
+ * compile normalises anything look "ahead of published" forever, even right
+ * after publishing.
  */
 export async function publicationStatus(
   template: CustomFormTemplate,
   active: CustomFormTemplateVersion | null,
 ): Promise<TemplatePublicationStatus> {
   if (!active) return "unpublished";
-  const draftChecksum = await structureChecksum(template.structure);
+  const draft = compileTemplate(template).structure ?? template.structure;
+  const draftChecksum = await structureChecksum(draft);
   if (active.checksum && draftChecksum) {
     return active.checksum === draftChecksum
       ? "published"
       : "draft_ahead_of_published";
   }
-  return canonicalJson(active.structure) === canonicalJson(template.structure)
+  return canonicalJson(active.structure) === canonicalJson(draft)
     ? "published"
     : "draft_ahead_of_published";
 }

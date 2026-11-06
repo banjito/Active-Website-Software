@@ -133,6 +133,12 @@ export interface FieldConfig {
    * "nameplate.kva" (tables: first row). See lib/customForms/assetFill.ts.
    */
   assetSource?: string;
+  /**
+   * Job Details only: what the field starts with on a new report. `source` links
+   * it to the job overview, `value` is typed, and neither means blank. Unset on
+   * older templates. See lib/customForms/jobFill.ts.
+   */
+  jobFill?: { source?: string; value?: string };
   /** Shown right after the value on screen and paper, e.g. "%" → "21%". */
   valueSuffix?: string;
   /** For TEMPERATURE_HUMIDITY: the labels inside the control. */

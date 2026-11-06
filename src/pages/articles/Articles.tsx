@@ -13,6 +13,7 @@ import {
   ExternalLink,
   ImagePlus,
   Lock,
+  Mail,
   Newspaper,
   Plus,
   Trash2,
@@ -27,6 +28,7 @@ import { toast } from "@/components/ui/toast";
 import { confirmDialog } from "@/components/ui/confirmDialog";
 import { companyConfig } from "@/lib/companyConfig";
 import { ArticleBodyEditor } from "@/components/articles/ArticleBodyEditor";
+import ArticleSubscribers from "./ArticleSubscribers";
 import {
   articleBodyText,
   sanitizeArticleHtml,
@@ -106,6 +108,8 @@ function usePeople() {
 
 export default function Articles() {
   const { id } = useParams<{ id?: string }>();
+  // /articles/subscribers is the email signup list, not an article
+  if (id === "subscribers") return <ArticleSubscribers />;
   return id ? <ArticleEditor key={id} routeId={id} /> : <ArticleList />;
 }
 
@@ -216,6 +220,15 @@ function ArticleList() {
           </div>
         </div>
         <div className="flex gap-2">
+          {publisher && (
+            <Button
+              variant="outline"
+              leftIcon={<Mail className="h-4 w-4" />}
+              onClick={() => navigate("/articles/subscribers")}
+            >
+              Subscribers
+            </Button>
+          )}
           {admin && (
             <Button
               variant="outline"

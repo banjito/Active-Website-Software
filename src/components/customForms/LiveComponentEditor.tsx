@@ -34,7 +34,12 @@ import {
   resolveRowCount,
 } from "@/lib/customForms/runtime/layout";
 import { ChecklistWidthInput } from "./ChecklistWidthInput";
-import { InlineOptionsEditor, inlineInputCls } from "./SectionEditor";
+import {
+  ChecklistRowChoices,
+  ChecklistTableChoices,
+  InlineOptionsEditor,
+  inlineInputCls,
+} from "./SectionEditor";
 import {
   CellDefaultInput,
   HINT_TITLE,
@@ -60,6 +65,8 @@ import {
 } from "@/lib/customForms/asFoundAsLeft";
 import { resultRuleField } from "@/lib/customForms/resultRules";
 import { hasCombinedTemperatureField, splitTemperatureHumidity } from "@/lib/customForms/temperatureFields";
+import { jobFillLabel } from "@/lib/customForms/jobFill";
+import { JobFillControl } from "./JobFillControl";
 import { useLookupTables } from "@/lib/customForms/lookupLibrary";
 import { resolveDeviation } from "./runtime/SectionBody";
 
@@ -206,7 +213,9 @@ const iconBtn =
 const FieldTypeControls: React.FC<{
   field: FieldConfig;
   onChange: (patch: Partial<FieldConfig>) => void;
-}> = ({ field, onChange }) => (
+  /** A Job Details field: "Starts with" replaces the plain default value. */
+  jobInfo?: boolean;
+}> = ({ field, onChange, jobInfo }) => (
   <>
     <select
       value={field.type}
@@ -270,7 +279,8 @@ const FieldTypeControls: React.FC<{
         className={`${inlineInputCls} w-28`}
       />
     )}
-    {field.type !== FieldType.TEMPERATURE_HUMIDITY && field.type !== FieldType.CHECKBOX && (
+    {jobInfo && <JobFillControl field={field} onChange={onChange} />}
+    {!jobInfo && field.type !== FieldType.TEMPERATURE_HUMIDITY && field.type !== FieldType.CHECKBOX && (
       <input
         value={field.defaultValue ?? ""}
         onChange={(e) => onChange({ defaultValue: e.target.value || undefined })}
@@ -332,27 +342,6 @@ const FieldTypeControls: React.FC<{
             className={`${inlineInputCls} w-20`}
           />
         ))}
-        Defaults:
-        <input
-          type="number"
-          value={field.defaultTemperature ?? ""}
-          onChange={(e) =>
-            onChange({ defaultTemperature: e.target.value === "" ? undefined : Number(e.target.value) })
-          }
-          placeholder="68 °F"
-          title="Default temperature (°F)"
-          className={`${inlineInputCls} w-16`}
-        />
-        <input
-          type="number"
-          value={field.defaultHumidity ?? ""}
-          onChange={(e) =>
-            onChange({ defaultHumidity: e.target.value === "" ? undefined : Number(e.target.value) })
-          }
-          placeholder="50 %"
-          title="Default humidity (%)"
-          className={`${inlineInputCls} w-16`}
-        />
       </div>
     )}
     {(field.type === FieldType.SELECT || field.type === FieldType.RADIO) && (
@@ -926,6 +915,7 @@ const LiveFields: React.FC<{
           <FieldTypeControls
             field={selected}
             onChange={(patch) => updateField(selIndex, patch)}
+            jobInfo={section.componentType === ComponentType.JOB_INFO}
           />
           <div className="ml-auto flex items-center gap-0.5">
             <button
@@ -1015,6 +1005,9 @@ const LiveFields: React.FC<{
             <div className="h-5 flex items-center border-b border-neutral-200 dark:border-neutral-700">
               <MockControl field={field} />
             </div>
+            {section.componentType === ComponentType.JOB_INFO && jobFillLabel(field) && (
+              <div className="text-[10px] text-brand truncate">{jobFillLabel(field)}</div>
+            )}
             {n > 1 && (
               <div
                 onPointerDown={(e) => startSpanDrag(i, e)}
@@ -1069,16 +1062,8 @@ const LiveChecklist: React.FC<{
     "w-full bg-transparent px-2 py-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-200 focus:outline-none focus:bg-brand/5";
   // Which item's result choices are open for editing ("all" = every item).
   const [editingResults, setEditingResults] = useState<string | null>(null);
-  const toOptions = (list: string[] = []) => list.map((v) => ({ label: v, value: v }));
-  const fromOptions = (list: { label: string }[]) => list.map((o) => o.label);
   const resultsTarget =
     editingResults === "all" ? items[0] : items.find((it) => it.id === editingResults);
-  const setResults = (next: string[]) =>
-    setItems(
-      items.map((it) =>
-        editingResults === "all" || it.id === editingResults ? { ...it, resultOptions: next } : it,
-      ),
-    );
 
   return (
     <div>
@@ -1090,16 +1075,18 @@ const LiveChecklist: React.FC<{
             : `Result choices · ${resultsTarget.netaSection || resultsTarget.description || "item"}`
         }
       >
-        <InlineOptionsEditor
-          options={toOptions(resultsTarget.resultOptions)}
-          onChange={(next) => setResults(fromOptions(next))}
-          onAdd={() =>
-            setResults([
-              ...(resultsTarget.resultOptions ?? []),
-              `Option ${(resultsTarget.resultOptions?.length ?? 0) + 1}`,
-            ])
-          }
-        />
+        {editingResults === "all" ? (
+          <ChecklistTableChoices items={items} onChange={setItems} />
+        ) : (
+          <ChecklistRowChoices
+            item={resultsTarget}
+            onChange={(resultOptions) =>
+              setItems(
+                items.map((it) => (it.id === editingResults ? { ...it, resultOptions } : it)),
+              )
+            }
+          />
+        )}
         <button
           type="button"
           className="ml-auto text-xs text-neutral-500 hover:text-brand"

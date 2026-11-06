@@ -47,6 +47,9 @@ import { packGroupedFieldGrid } from "@/lib/customForms/groupedFieldGrid";
 
 const BORDER = "border-neutral-300 dark:border-neutral-600";
 
+/** Average on-screen column width a table must keep before it scrolls sideways. */
+const MIN_SCREEN_COLUMN_REM = 5.25;
+
 interface Density {
   table: string;
   th: string;
@@ -385,8 +388,12 @@ const TableRenderer: React.FC<TableProps> = ({
       {chrome.renderSectionHeader?.(v1Section, info)}
 
       <div className="overflow-x-auto">
+        {/* On screen a many-column table keeps usable columns and scrolls
+            sideways rather than squeezing inputs down to a digit or two. Paper
+            view and print still fit the page. */}
         <table
-          className={`w-full table-fixed border-collapse border ${BORDER} ${density.table}`}
+          className={`w-full table-fixed print:!min-w-0 border-collapse border ${BORDER} ${density.table}`}
+          style={{ minWidth: `${visibleColumns.length * MIN_SCREEN_COLUMN_REM}rem` }}
         >
           <colgroup>
             {gutter && <col style={{ width: "2rem" }} />}

@@ -26,6 +26,8 @@ interface ReportWrapperProps {
    * so review approval modals can show "Save & Approve" vs "Approve".
    */
   isEditing?: boolean;
+  /** Use a wider page on screen, for forms with many-column tables. */
+  wide?: boolean;
 }
 
 export const ReportWrapper: React.FC<ReportWrapperProps> = ({
@@ -33,6 +35,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
   isPrintMode = false,
   disablePreview = false,
   isEditing,
+  wide = false,
 }) => {
   const saveResolverRef = useRef<(() => void) | null>(null);
 
@@ -772,12 +775,15 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
             min-width: 0 !important;
           }
 
-          /* Static cell text: same size as the rest of the table, no extra
-             padding on top of the cell's own (it doubled the row height). */
-          #report-container .custom-form-container td .cf-static-text {
+          /* Static and calculated cell text: same size as the rest of the
+             table, no extra padding on top of the cell's own (it doubled the
+             row height, and in narrow columns left room for one character). */
+          #report-container .custom-form-container td .cf-static-text,
+          #report-container .custom-form-container td .cf-calc-value {
             font-size: inherit !important;
             line-height: inherit !important;
             padding: 0 !important;
+            min-height: 0 !important;
           }
 
           /* Result columns are centered. */
@@ -1166,6 +1172,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
         }
         .force-print #report-container .custom-form-container table {
           table-layout: fixed !important;
+          min-width: 0 !important;
           border-collapse: collapse !important;
           width: 100% !important;
           font-size: 10px !important;
@@ -2254,7 +2261,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
     <div
       id="report-container"
       data-report-locked={isReportLocked ? "true" : undefined}
-      className={`w-full max-w-4xl mx-auto p-6 pb-20 ${isPrintMode ? "print-mode" : ""} ${isReportLocked ? "report-locked" : ""} overflow-x-auto screen-min-height`}
+      className={`w-full ${wide ? "max-w-7xl" : "max-w-4xl"} mx-auto p-6 pb-20 ${isPrintMode ? "print-mode" : ""} ${isReportLocked ? "report-locked" : ""} overflow-x-auto screen-min-height`}
     >
       {/* Locked banner is shown once by Layout.tsx for all report pages */}
       {/* Warns the technician when auto-save stops reaching the server, which

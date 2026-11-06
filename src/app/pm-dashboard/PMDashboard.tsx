@@ -21,7 +21,9 @@ import {
 } from '@/services/pmDashboardService';
 import {
   completedPct,
-  computeProgress,
+  mergedProgress,
+  shiftWeekKey,
+  weekKey,
   monthDollars,
   monthKey,
   monthLabel,
@@ -34,6 +36,7 @@ import { firstNameOf, fmtHours, fmtMoney, MiniBar, MonthPicker, Notice, StatTile
 import ChecklistBoard from './ChecklistBoard';
 import CrewBoard from './CrewBoard';
 import ChangeOrdersBoard from './ChangeOrdersBoard';
+import TempHours from './TempHours';
 
 // QuickBooks is asked about a few jobs at a time so a long list does not stall.
 const BILLED_WORKERS = 3;
@@ -63,11 +66,16 @@ function flagsFor(job: PmJob, bundle: JobBundle, attention: JobAttention | undef
   if (job.status === 'ready_to_bill') flags.push({ label: 'Ready to bill', tone: 'go' });
   if (bundle.pendingChangeOrders > 0) {
     flags.push({
-      label: plural(bundle.pendingChangeOrders, 'change order waiting', 'change orders waiting'),
+      label: plural(bundle.pendingChangeOrders, 'Change Order waiting', 'Change Orders waiting'),
       tone: 'warn',
     });
   }
   if (attention?.noLead) flags.push({ label: 'No lead', tone: 'warn' });
+  // The weekly SOV update for last week isn't approved yet
+  const lastWeek = shiftWeekKey(weekKey(new Date()), -1);
+  if (!bundle.seeded && bundle.lines.length > 0 && bundle.weeks[lastWeek]?.status !== 'approved') {
+    flags.push({ label: 'SOV not updated', tone: 'warn' });
+  }
   return flags;
 }
 
@@ -96,7 +104,9 @@ export default function PMDashboard() {
   const month = searchParams.get('month') ?? monthKey(new Date());
   const viewParam = searchParams.get('view');
   const view =
-    viewParam === 'checklist' || viewParam === 'crew' || viewParam === 'change-orders' ? viewParam : 'jobs';
+    viewParam === 'checklist' || viewParam === 'crew' || viewParam === 'temp-hours' || viewParam === 'change-orders'
+      ? viewParam
+      : 'jobs';
 
   const setParam = (key: string, value: string) =>
     setSearchParams(
@@ -183,7 +193,7 @@ export default function PMDashboard() {
         .flatMap((job) => {
           const bundle = bundles[job.id];
           if (!bundle) return [];
-          const progress = computeProgress(bundle.lines, bundle.reports);
+          const progress = mergedProgress(bundle.lines, bundle.reports, bundle.weeks, bundle.gc);
           const estimatedHours = sovHours(bundle.lines) || job.estimated_man_hours || 0;
           const usedHours = totalHours(bundle.hoursByMonth);
           return [
@@ -314,6 +324,7 @@ export default function PMDashboard() {
             ['jobs', 'Jobs'],
             ['checklist', 'Checklist'],
             ['crew', 'Crew'],
+            ['temp-hours', 'Temp hours'],
             ['change-orders', 'Change Orders'],
           ] as const
         ).map(([key, label]) => (
@@ -354,6 +365,8 @@ export default function PMDashboard() {
         <ChecklistBoard jobs={jobs} />
       ) : view === 'crew' ? (
         <CrewBoard jobs={jobs} />
+      ) : view === 'temp-hours' ? (
+        <TempHours jobs={jobs} />
       ) : view === 'change-orders' ? (
         <ChangeOrdersBoard jobs={jobs} />
       ) : (

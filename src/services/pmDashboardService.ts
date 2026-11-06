@@ -3,7 +3,8 @@ import { describeSupabaseError, withWriteRetry } from '@/lib/supabaseRetry';
 import { getReportSlugFromFileUrl, REPORT_NAMES } from '@/components/reports/reportMappings';
 import { getQBOInvoicesByCustomer } from '@/services/quickbooksService';
 import { summarizeChangeOrders, type ChangeOrder } from '@/services/changeOrderService';
-import { sovPricePerLaborHour } from '@/lib/estimatePricing';
+import { sovPricePerLaborHour, summarizeEstimateSnapshot } from '@/lib/estimatePricing';
+import { DEFAULT_ESTIMATING_PRESETS } from '@/services/estimatingPresetsService';
 import { ACTIVE_JOB_STATUSES } from '@/services/pmAccessService';
 import {
   ChecklistSetupMissingError,
@@ -20,6 +21,8 @@ import {
   simpleEstimateRows,
   sovTotal,
   type EstimateOption,
+  type GcSchedule,
+  type SavedWeeks,
   type SentReport,
   type SovLine,
 } from '@/utils/pmDashboardCalculations';
@@ -57,6 +60,10 @@ export interface JobBundle {
   approvedChangeOrders: number;
   /** Change orders drafted or sent, not yet approved */
   pendingChangeOrders: number;
+  /** The PM's weekly SOV updates (empty until sov_weekly.sql is run) */
+  weeks: SavedWeeks;
+  /** General conditions schedule from SOV setup */
+  gc: GcSchedule | null;
 }
 
 export interface BundleResult {
@@ -263,6 +270,8 @@ async function fetchSavedLines(jobIds: string[]): Promise<{ lines: SovLine[]; mi
         unit_price: toNum(row.unit_price),
         report_slugs: row.report_slugs ?? [],
         source_estimate_ids: row.source_estimate_ids ?? [],
+        line_type: row.line_type ?? 'scope',
+        multiplier: toNum(row.multiplier) || 1,
       });
     }
   }
@@ -343,6 +352,24 @@ function toEstimateOption(row: any): EstimateOption {
     console.error('[PM Dashboard] Could not read estimate', row.id, err);
   }
 
+  // Mobilization rides on its own SOV line (see addEstimatesToLines)
+  let mobilization: EstimateOption['mobilization'];
+  if (data.estimateType !== 'simple') {
+    try {
+      const markup = Number(data.materialMarkup);
+      const summary = summarizeEstimateSnapshot(
+        data,
+        travel,
+        Number.isFinite(markup) && markup > 0 ? markup : DEFAULT_ESTIMATING_PRESETS.default_markup_factor,
+      );
+      if (summary.mobilization > 0) {
+        mobilization = { total: summary.mobilization, added: summary.mobilizationAdded };
+      }
+    } catch (err) {
+      console.error('[PM Dashboard] Could not read mobilization', row.id, err);
+    }
+  }
+
   const title = typeof data.title === 'string' ? data.title.trim() : '';
   return {
     id: row.id,
@@ -350,6 +377,7 @@ function toEstimateOption(row: any): EstimateOption {
     updated_at: row.updated_at,
     status: row.status ?? null,
     rows,
+    mobilization,
   };
 }
 
@@ -513,11 +541,13 @@ export async function loadJobBundles(jobs: PmJob[]): Promise<BundleResult> {
   const jobIds = jobs.map((j) => j.id);
   if (jobIds.length === 0) return { bundles: {}, setupMissing: false };
 
-  const [saved, reports, hours, changeOrders] = await Promise.all([
+  const [saved, reports, hours, changeOrders, weeks, gcByJob] = await Promise.all([
     fetchSavedLines(jobIds),
     fetchSentReports(jobIds),
     fetchHours(jobIds),
     fetchChangeOrderTotals(jobIds),
+    fetchSovWeeks(jobIds),
+    fetchGcSchedules(jobIds),
   ]);
 
   const savedByJob = new Map<string, SovLine[]>();
@@ -550,6 +580,8 @@ export async function loadJobBundles(jobs: PmJob[]): Promise<BundleResult> {
       quotedAmount,
       approvedChangeOrders: changeOrders.get(jobId)?.approved ?? 0,
       pendingChangeOrders: changeOrders.get(jobId)?.pending ?? 0,
+      weeks: weeks.get(jobId) ?? {},
+      gc: gcByJob.get(jobId) ?? null,
     };
   }
 
@@ -560,6 +592,203 @@ export async function loadJobBundles(jobs: PmJob[]): Promise<BundleResult> {
  * Replaces a job's SOV with `lines`. Last save wins.
  * Ids are made in the browser, so sending the same save twice stores it once.
  */
+// ---------------------------------------------------------------------------
+// Weekly SOV updates (item 9). Tables: database/migrations/sov_weekly.sql
+// ---------------------------------------------------------------------------
+
+/** Every saved weekly update for these jobs, with its quantities. */
+async function fetchSovWeeks(jobIds: string[]): Promise<Map<string, SavedWeeks>> {
+  const byJob = new Map<string, SavedWeeks>();
+  const periodJob = new Map<string, { jobId: string; week: string }>();
+  for (const ids of chunk(jobIds, ID_CHUNK)) {
+    const { data, error } = await supabase
+      .schema('neta_ops')
+      .from('job_sov_periods')
+      .select('id, job_id, week_start, status, wip_amount, hours, approved_at')
+      .in('job_id', ids);
+    if (error) {
+      if (isMissing(error)) return new Map();
+      throw new Error(describeSupabaseError(error));
+    }
+    for (const p of (data ?? []) as any[]) {
+      const weeks = byJob.get(p.job_id) ?? {};
+      weeks[p.week_start] = {
+        id: p.id,
+        status: p.status,
+        quantities: {},
+        wip_amount: p.wip_amount == null ? null : toNum(p.wip_amount),
+        hours: p.hours == null ? null : toNum(p.hours),
+        approved_at: p.approved_at ?? null,
+      };
+      byJob.set(p.job_id, weeks);
+      periodJob.set(p.id, { jobId: p.job_id, week: p.week_start });
+    }
+  }
+  for (const ids of chunk([...periodJob.keys()], ID_CHUNK)) {
+    const { data, error } = await supabase
+      .schema('neta_ops')
+      .from('job_sov_quantities')
+      .select('period_id, line_id, quantity')
+      .in('period_id', ids);
+    if (error) throw new Error(describeSupabaseError(error));
+    for (const q of (data ?? []) as any[]) {
+      const where = periodJob.get(q.period_id);
+      if (!where) continue;
+      byJob.get(where.jobId)![where.week].quantities[q.line_id] = toNum(q.quantity);
+    }
+  }
+  return byJob;
+}
+
+async function fetchGcSchedules(jobIds: string[]): Promise<Map<string, GcSchedule>> {
+  const out = new Map<string, GcSchedule>();
+  for (const ids of chunk(jobIds, ID_CHUNK)) {
+    const { data, error } = await supabase
+      .schema('neta_ops')
+      .from('job_sov_settings')
+      .select('job_id, gc_start, gc_months')
+      .in('job_id', ids);
+    if (error) {
+      if (isMissing(error)) return out;
+      throw new Error(describeSupabaseError(error));
+    }
+    for (const row of (data ?? []) as any[]) {
+      out.set(row.job_id, { start: row.gc_start ?? null, months: row.gc_months == null ? null : toNum(row.gc_months) });
+    }
+  }
+  return out;
+}
+
+/** Saves a week's numbers. Approving also stamps the work-in-progress $ and hours. */
+export async function saveSovWeek(
+  jobId: string,
+  week: string,
+  quantities: Record<string, number>,
+  opts: { approve: boolean; wipAmount: number; hours: number; userId?: string },
+): Promise<void> {
+  const now = new Date().toISOString();
+  const { data: period, error } = await withWriteRetry(
+    () =>
+      supabase
+        .schema('neta_ops')
+        .from('job_sov_periods')
+        .upsert(
+          {
+            job_id: jobId,
+            week_start: week,
+            status: opts.approve ? 'approved' : 'draft',
+            saved_by: opts.userId ?? null,
+            saved_at: now,
+            ...(opts.approve
+              ? { approved_by: opts.userId ?? null, approved_at: now, wip_amount: opts.wipAmount, hours: opts.hours }
+              : { approved_by: null, approved_at: null }),
+          },
+          { onConflict: 'job_id,week_start' },
+        )
+        .select('id')
+        .single(),
+    { label: 'save SOV week' },
+  );
+  if (error) throw new Error(describeSupabaseError(error));
+  const periodId = (period as any).id as string;
+
+  const rows = Object.entries(quantities).map(([line_id, quantity]) => ({
+    period_id: periodId,
+    line_id,
+    quantity: Math.max(0, quantity || 0),
+  }));
+  if (rows.length) {
+    const { error: qError } = await withWriteRetry(
+      () =>
+        supabase
+          .schema('neta_ops')
+          .from('job_sov_quantities')
+          .upsert(rows, { onConflict: 'period_id,line_id' }),
+      { label: 'save SOV week quantities' },
+    );
+    if (qError) throw new Error(describeSupabaseError(qError));
+  }
+}
+
+/** Opens an approved week back up for changes. */
+export async function reopenSovWeek(jobId: string, week: string): Promise<void> {
+  const { error } = await supabase
+    .schema('neta_ops')
+    .from('job_sov_periods')
+    .update({ status: 'draft', approved_by: null, approved_at: null })
+    .eq('job_id', jobId)
+    .eq('week_start', week);
+  if (error) throw new Error(describeSupabaseError(error));
+}
+
+/** week (Sunday) -> clock hours plus temp hours, for one job. Empty until sov_weekly.sql runs. */
+export async function fetchHoursByWeek(jobId: string): Promise<Record<string, number>> {
+  const { data, error } = await supabase.schema('common').rpc('time_job_hours_by_week', { p_job_ids: [jobId] });
+  if (error) {
+    if (isMissing(error)) return {};
+    throw new Error(describeSupabaseError(error));
+  }
+  const out: Record<string, number> = {};
+  for (const row of (data ?? []) as any[]) out[row.week_start] = toNum(row.hours);
+  return out;
+}
+
+export type BillingFrequency = 'monthly' | 'weekly' | 'one_time';
+
+export interface SovSettings {
+  billing_frequency: BillingFrequency;
+  gc_monthly: number | null;
+  gc_months: number | null;
+  gc_start: string | null;
+  /** General conditions came out of the other lines, so the total stayed the same */
+  gc_from_price: boolean;
+}
+
+export const DEFAULT_SOV_SETTINGS: SovSettings = {
+  billing_frequency: 'monthly',
+  gc_monthly: null,
+  gc_months: null,
+  gc_start: null,
+  gc_from_price: true,
+};
+
+/** Billing frequency and general conditions for one job. Null when sov_setup.sql hasn't run. */
+export async function fetchSovSettings(jobId: string): Promise<SovSettings | null> {
+  const { data, error } = await supabase
+    .schema('neta_ops')
+    .from('job_sov_settings')
+    .select('billing_frequency, gc_monthly, gc_months, gc_start, gc_from_price')
+    .eq('job_id', jobId)
+    .maybeSingle();
+  if (error) {
+    if (isMissing(error)) return null;
+    throw new Error(describeSupabaseError(error));
+  }
+  if (!data) return { ...DEFAULT_SOV_SETTINGS };
+  return {
+    billing_frequency: (data.billing_frequency as BillingFrequency) ?? 'monthly',
+    gc_monthly: data.gc_monthly == null ? null : toNum(data.gc_monthly),
+    gc_months: data.gc_months == null ? null : toNum(data.gc_months),
+    gc_start: data.gc_start ?? null,
+    gc_from_price: data.gc_from_price ?? true,
+  };
+}
+
+export async function saveSovSettings(jobId: string, settings: SovSettings, userId?: string): Promise<void> {
+  const { error } = await withWriteRetry(
+    () =>
+      supabase
+        .schema('neta_ops')
+        .from('job_sov_settings')
+        .upsert(
+          { job_id: jobId, ...settings, updated_at: new Date().toISOString(), updated_by: userId ?? null },
+          { onConflict: 'job_id' },
+        ),
+    { label: 'save SOV settings' },
+  );
+  if (error) throw new Error(describeSupabaseError(error));
+}
+
 export async function saveSovLines(jobId: string, lines: SovLine[]): Promise<void> {
   const rows = lines.map((line, i) => ({
     id: line.id,
@@ -571,6 +800,8 @@ export async function saveSovLines(jobId: string, lines: SovLine[]): Promise<voi
     unit_price: line.unit_price,
     report_slugs: line.report_slugs,
     source_estimate_ids: line.source_estimate_ids,
+    line_type: line.line_type ?? 'scope',
+    multiplier: line.multiplier ?? 1,
   }));
 
   if (rows.length > 0) {
@@ -581,10 +812,12 @@ export async function saveSovLines(jobId: string, lines: SovLine[]): Promise<voi
       );
 
     let { error } = await upsert(rows);
-    // PGRST204 = the table has no source_estimate_ids column yet, because
-    // pm_dashboard_estimate_sources.sql has not been run. Save everything else.
+    // PGRST204 = a column is missing because pm_dashboard_estimate_sources.sql or
+    // sov_setup.sql has not been run. Save everything else.
     if ((error as { code?: string } | null)?.code === 'PGRST204') {
-      ({ error } = await upsert(rows.map(({ source_estimate_ids, ...rest }) => rest)));
+      ({ error } = await upsert(
+        rows.map(({ source_estimate_ids, line_type, multiplier, ...rest }) => rest),
+      ));
     }
     if (error) throw new Error(describeSupabaseError(error));
   }

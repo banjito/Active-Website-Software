@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { usePmAccess } from "@/app/pm-dashboard/shared";
 import { format, parseISO } from "date-fns";
 import {
   Calculator,
   Check,
+  ListOrdered,
   Download,
   Eye,
   FilePlus2,
@@ -151,6 +153,8 @@ export default function ChangeOrdersSection({
 }: ChangeOrdersSectionProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  // PMs and admins get a shortcut to the job's schedule of values
+  const pmAccess = usePmAccess();
   const [changeOrders, setChangeOrders] = useState<ChangeOrder[]>([]);
   // Quote id -> letter number, for Change Orders priced on an estimate sheet
   const [letterNumbers, setLetterNumbers] = useState<Record<string, string>>(
@@ -630,9 +634,21 @@ export default function ChangeOrdersSection({
             <FilePlus2 className="h-5 w-5 text-brand" />
             <span>Change Orders</span>
           </CardTitle>
-          <Button onClick={openAdd} leftIcon={<Plus className="h-4 w-4" />}>
-            Add Change Order
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {pmAccess.allowed && (
+              <Link to={`/pm-dashboard/${jobId}`}>
+                <Button
+                  variant="outline"
+                  leftIcon={<ListOrdered className="h-4 w-4" />}
+                >
+                  Schedule of values
+                </Button>
+              </Link>
+            )}
+            <Button onClick={openAdd} leftIcon={<Plus className="h-4 w-4" />}>
+              Add Change Order
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>

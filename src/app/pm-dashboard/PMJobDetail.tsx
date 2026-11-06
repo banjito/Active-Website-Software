@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { AlertTriangle, ArrowLeft, Copy, Pencil, Plus, Save, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Check, ChevronLeft, ChevronRight, Copy, Pencil, Plus, Save, Settings, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { useDemoMode } from '@/lib/DemoModeContext';
 import { Button } from '@/components/ui/Button';
@@ -9,34 +9,49 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { REPORT_NAMES } from '@/components/reports/reportMappings';
 import {
   contractTotal,
+  DEFAULT_SOV_SETTINGS,
   fetchBilledToDate,
   fetchEstimateOptions,
   fetchPmJob,
+  fetchHoursByWeek,
+  fetchSovSettings,
   loadJobBundles,
+  reopenSovWeek,
+  saveSovWeek,
   reportTypeLabel,
   saveSovLines,
+  saveSovSettings,
+  type BillingFrequency,
   type JobBundle,
   type PmJob,
+  type SovSettings,
 } from '@/services/pmDashboardService';
 import {
   addEstimatesToLines,
+  applyGeneralConditions,
   bestLineFor,
   completedPct,
-  computeProgress,
   estimateOverlaps,
   estimateTotal,
   guessLineSlugs,
   lineDone,
+  mergedProgress,
   monthDollars,
   monthKey,
   monthLabel,
   monthRange,
   pct,
   shiftMonth,
+  shiftWeekKey,
   sovHours,
   sovTotal,
   totalHours,
+  weekKey,
+  weeklyQuantities,
+  weekMonth,
+  weekRangeLabel,
   type EstimateOption,
+  type GeneralConditions,
   type SovLine,
 } from '@/utils/pmDashboardCalculations';
 import {
@@ -93,6 +108,16 @@ function readMonthCount(userId: string | undefined): number {
   }
 }
 
+const fmtDay = (ymd: string) => {
+  const [y, m, d] = ymd.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
+const gcFromSettings = (s: SovSettings | null): GeneralConditions | null =>
+  s && (s.gc_monthly ?? 0) > 0 && (s.gc_months ?? 0) > 0
+    ? { monthly: s.gc_monthly!, months: s.gc_months!, fromPrice: s.gc_from_price }
+    : null;
+
 export default function PMJobDetail() {
   const { jobId } = useParams<{ jobId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -148,6 +173,22 @@ export default function PMJobDetail() {
   const [estimates, setEstimates] = useState<EstimateOption[]>([]);
   const [estimatePickerOpen, setEstimatePickerOpen] = useState(false);
   const [pickedEstimateIds, setPickedEstimateIds] = useState<string[]>([]);
+  // Reserve blocks: how many times the picked estimates repeat
+  const [estimateTimes, setEstimateTimes] = useState(1);
+  // Billing frequency and general conditions. null = sov_setup.sql not run yet.
+  const [settings, setSettings] = useState<SovSettings | null>(null);
+  const [savedSettings, setSavedSettings] = useState<SovSettings | null>(null);
+  // General conditions currently reflected in the lines (saved or just applied)
+  const [appliedGc, setAppliedGc] = useState<GeneralConditions | null>(null);
+  const [gcDraft, setGcDraft] = useState({ monthly: '', months: '', start: '', fromPrice: true });
+  const [setupOpen, setSetupOpen] = useState(false);
+  // Weekly update (item 9): defaults to last week, the one due on Monday
+  const lastWeek = shiftWeekKey(weekKey(new Date()), -1);
+  const [week, setWeek] = useState(lastWeek);
+  const [weekDraft, setWeekDraft] = useState<Record<string, string>>({});
+  const [weekSaving, setWeekSaving] = useState(false);
+  const [hoursByWeek, setHoursByWeek] = useState<Record<string, number>>({});
+  const [billingDraft, setBillingDraft] = useState<BillingFrequency>('monthly');
 
   const load = useCallback(async () => {
     if (!jobId) return;
@@ -159,15 +200,31 @@ export default function PMJobDetail() {
         setError('Job not found.');
         return;
       }
-      const [result, options] = await Promise.all([
+      const [result, options, sovSettings] = await Promise.all([
         loadJobBundles([loaded]),
         // If the estimates will not load, the rest of the page still should.
         fetchEstimateOptions(loaded).catch((err) => {
           console.error('[PM Dashboard] Estimates failed to load:', err);
           return [] as EstimateOption[];
         }),
+        fetchSovSettings(loaded.id).catch((err) => {
+          console.error('[PM Dashboard] SOV settings failed to load:', err);
+          return null;
+        }),
       ]);
       setEstimates(options);
+      fetchHoursByWeek(loaded.id)
+        .then(setHoursByWeek)
+        .catch((err) => console.error('[PM Dashboard] Weekly hours failed to load:', err));
+      setSettings(sovSettings);
+      setSavedSettings(sovSettings);
+      setAppliedGc(gcFromSettings(sovSettings));
+      setGcDraft({
+        monthly: sovSettings?.gc_monthly ? String(sovSettings.gc_monthly) : '',
+        months: sovSettings?.gc_months ? String(sovSettings.gc_months) : '',
+        start: sovSettings?.gc_start ?? loaded.start_date ?? '',
+        fromPrice: sovSettings?.gc_from_price ?? true,
+      });
       setJob(loaded);
       setBundle(result.bundles[loaded.id]);
       setLines(result.bundles[loaded.id].lines);
@@ -203,7 +260,17 @@ export default function PMJobDetail() {
   const reports = bundle?.reports ?? [];
   const hoursByMonth = bundle?.hoursByMonth ?? {};
 
-  const progress = useMemo(() => computeProgress(lines, reports), [lines, reports]);
+  const weeks = bundle?.weeks ?? {};
+  const gcSchedule = settings
+    ? { start: settings.gc_start, months: settings.gc_months }
+    : bundle?.gc ?? null;
+  // Typed weekly numbers win; sent reports fill the weeks nobody typed
+  const progress = useMemo(
+    () => mergedProgress(lines, reports, weeks, gcSchedule),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lines, reports, weeks, gcSchedule?.start, gcSchedule?.months],
+  );
+  const weekly = useMemo(() => weeklyQuantities(lines, reports, weeks), [lines, reports, weeks]);
 
   /** report type -> how many of this job's reports of that type have been sent */
   const sentByType = useMemo(() => {
@@ -270,6 +337,7 @@ export default function PMJobDetail() {
   const usedEstimateIds = new Set(lines.flatMap((line) => line.source_estimate_ids));
 
   const openEstimatePicker = () => {
+    setEstimateTimes(1);
     setPickedEstimateIds(
       estimates.filter((e) => e.rows.length > 0 && !usedEstimateIds.has(e.id)).map((e) => e.id),
     );
@@ -285,7 +353,7 @@ export default function PMJobDetail() {
     const picked = estimates.filter((e) => pickedEstimateIds.includes(e.id));
     markChanged(
       guessLineSlugs(
-        addEstimatesToLines(job.id, lines, picked, () => crypto.randomUUID()),
+        addEstimatesToLines(job.id, lines, picked, () => crypto.randomUUID(), estimateTimes),
         Object.keys(sentByType),
       ),
     );
@@ -298,7 +366,136 @@ export default function PMJobDetail() {
     setTypeSearch('');
   };
 
+  /** Puts general conditions on the SOV from the form. Saved with the SOV. */
+  const applyGc = () => {
+    if (!job || !settings) return;
+    const monthly = parseNumber(gcDraft.monthly);
+    const months = Math.round(parseNumber(gcDraft.months));
+    const next: GeneralConditions | null =
+      monthly > 0 && months > 0 ? { monthly, months, fromPrice: gcDraft.fromPrice } : null;
+    const unchanged =
+      (!appliedGc && !next) ||
+      (!!appliedGc &&
+        !!next &&
+        appliedGc.monthly === next.monthly &&
+        appliedGc.months === next.months &&
+        appliedGc.fromPrice === next.fromPrice);
+    // Only touch the lines when general conditions changed, so prices never drift by a cent
+    if (unchanged) setDirty(true);
+    else markChanged(applyGeneralConditions(job.id, lines, appliedGc, next, () => crypto.randomUUID()));
+    setAppliedGc(next);
+    setSetupOpen(false);
+    setSettings({
+      ...settings,
+      billing_frequency: billingDraft,
+      gc_monthly: next ? monthly : null,
+      gc_months: next ? months : null,
+      gc_start: gcDraft.start || null,
+      gc_from_price: gcDraft.fromPrice,
+    });
+  };
+
+  const openSetup = () => {
+    if (!settings) return;
+    setBillingDraft(settings.billing_frequency);
+    setGcDraft({
+      monthly: appliedGc ? String(appliedGc.monthly) : '',
+      months: appliedGc ? String(appliedGc.months) : '',
+      start: settings.gc_start ?? job?.start_date ?? '',
+      fromPrice: appliedGc?.fromPrice ?? settings.gc_from_price,
+    });
+    setSetupOpen(true);
+  };
+
+  const BILLING_LABEL: Record<BillingFrequency, string> = { monthly: 'monthly', weekly: 'weekly', one_time: 'one time' };
+  const setupSummary = settings
+    ? [
+        `Bills ${BILLING_LABEL[settings.billing_frequency]}`,
+        appliedGc
+          ? `General conditions ${fmtMoney(appliedGc.monthly)} × ${appliedGc.months} mo${
+              settings.gc_start ? ` from ${fmtDay(settings.gc_start)}` : ''
+            }`
+          : 'No general conditions',
+      ].join(' · ')
+    : null;
+
+  // ---- Weekly update -------------------------------------------------------
+  const weekLines = lines.filter((line) => line.line_type !== 'general_conditions');
+  const savedWeek = weeks[week];
+  const weekLocked = savedWeek?.status === 'approved';
+  /** What the box shows: the typed draft, else the saved or suggested number */
+  const weekValue = (lineId: string) => weekDraft[lineId] ?? String(weekly[lineId]?.[week] || '');
+  const doneBefore = (lineId: string) =>
+    Object.entries(weekly[lineId] ?? {}).reduce((sum, [w, n]) => (w < week ? sum + n : sum), 0);
+  const weekQuantities = () =>
+    Object.fromEntries(weekLines.map((line) => [line.id, parseNumber(weekValue(line.id))]));
+  /** This month's $ so far, counting this week's numbers as typed */
+  const wipFor = (quantities: Record<string, number>) => {
+    const withThisWeek = {
+      ...weeks,
+      [week]: {
+        id: savedWeek?.id ?? '',
+        status: savedWeek?.status ?? 'draft',
+        quantities,
+        wip_amount: null,
+        hours: null,
+        approved_at: null,
+      },
+    };
+    return monthDollars(lines, mergedProgress(lines, reports, withThisWeek, gcSchedule), weekMonth(week));
+  };
+  const changeWeek = (by: number) => {
+    setWeek(shiftWeekKey(week, by));
+    setWeekDraft({});
+  };
+
+  const saveWeek = async (approve: boolean) => {
+    if (!job || !bundle) return;
+    const quantities = weekQuantities();
+    const wipAmount = wipFor(quantities);
+    const hours = hoursByWeek[week] ?? 0;
+    setWeekSaving(true);
+    try {
+      await saveSovWeek(job.id, week, quantities, { approve, wipAmount, hours, userId: user?.id });
+      setBundle({
+        ...bundle,
+        weeks: {
+          ...bundle.weeks,
+          [week]: {
+            id: savedWeek?.id ?? '',
+            status: approve ? 'approved' : 'draft',
+            quantities,
+            wip_amount: approve ? wipAmount : null,
+            hours: approve ? hours : null,
+            approved_at: approve ? new Date().toISOString() : null,
+          },
+        },
+      });
+      setWeekDraft({});
+    } catch (err) {
+      console.error('[PM Dashboard] Weekly SOV save failed:', err);
+      setSaveError(err instanceof Error ? err.message : 'Could not save the week.');
+    } finally {
+      setWeekSaving(false);
+    }
+  };
+
+  const reopenWeek = async () => {
+    if (!job || !bundle || !savedWeek) return;
+    setWeekSaving(true);
+    try {
+      await reopenSovWeek(job.id, week);
+      setBundle({ ...bundle, weeks: { ...bundle.weeks, [week]: { ...savedWeek, status: 'draft', approved_at: null } } });
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Could not reopen the week.');
+    } finally {
+      setWeekSaving(false);
+    }
+  };
+
   const discard = () => {
+    setSettings(savedSettings);
+    setAppliedGc(gcFromSettings(savedSettings));
     setLines(bundle?.lines ?? []);
     setDirty(false);
     setEditing(false);
@@ -311,6 +508,10 @@ export default function PMJobDetail() {
     setSaveError(null);
     try {
       await saveSovLines(job.id, lines);
+      if (settings) {
+        await saveSovSettings(job.id, settings, user?.id);
+        setSavedSettings(settings);
+      }
       setBundle({ ...bundle, lines, seeded: false });
       setDirty(false);
       setEditing(false);
@@ -385,7 +586,10 @@ export default function PMJobDetail() {
   const sovGapMatters = Math.abs(sovGap) > contract * 0.01;
 
   const pickedEstimates = estimates.filter((e) => pickedEstimateIds.includes(e.id));
-  const pickedTotal = pickedEstimates.reduce((sum, e) => sum + estimateTotal(e), 0);
+  // Mobilization added on top counts too; the baked-in part only moves to its own line
+  const pickedTotal =
+    pickedEstimates.reduce((sum, e) => sum + estimateTotal(e) + (e.mobilization?.added ?? 0), 0) *
+    (estimateTimes > 0 ? estimateTimes : 1);
   // The SOV as it stands counts as one more sheet: adding an item it already has doubles it too.
   const overlaps = estimateOverlaps([
     {
@@ -502,9 +706,144 @@ export default function PMJobDetail() {
         />
       </div>
 
+      {weekLines.length > 0 && (
+        <div className="space-y-3 rounded-none border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Weekly update</h2>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                Enter what got done. Sent reports fill in a suggestion; your numbers win.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" aria-label="Previous week" onClick={() => changeWeek(-1)}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="min-w-[11rem] text-center text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                {weekRangeLabel(week)}
+              </div>
+              <Button variant="outline" size="sm" aria-label="Next week" onClick={() => changeWeek(1)}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <span
+                className={`whitespace-nowrap rounded-none border px-2 py-0.5 text-xs ${
+                  weekLocked
+                    ? 'border-green-300 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200'
+                    : week === lastWeek
+                      ? 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200'
+                      : 'border-neutral-300 text-neutral-600 dark:border-neutral-600 dark:text-neutral-300'
+                }`}
+              >
+                {weekLocked ? 'Approved' : week === lastWeek ? 'Due Monday' : savedWeek ? 'Draft' : 'Not started'}
+              </span>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr>
+                  <th className={`${TH} text-left`}>Item</th>
+                  <th className={`${TH} text-right`}>Total qty</th>
+                  <th className={`${TH} text-right`}>Done before</th>
+                  <th className={`${TH} text-right`}>This week</th>
+                  <th className={`${TH} text-right`}>Left</th>
+                </tr>
+              </thead>
+              <tbody>
+                {weekLines.map((line) => {
+                  const before = doneBefore(line.id);
+                  const thisWeek = parseNumber(weekValue(line.id));
+                  const left = line.quantity - before - thisWeek;
+                  return (
+                    <tr key={line.id} className={ROW}>
+                      <td className={TD}>{line.item || 'Unnamed line'}</td>
+                      <td className={NUM}>
+                        <Count value={line.quantity} />
+                      </td>
+                      <td className={NUM}>
+                        <Count value={before} />
+                      </td>
+                      <td className={NUM}>
+                        <input
+                          aria-label={`${line.item || 'Line'} this week`}
+                          type="number"
+                          min={0}
+                          className={`${NUMBER_INPUT} w-20`}
+                          disabled={weekLocked}
+                          placeholder="0"
+                          value={weekValue(line.id)}
+                          onChange={(e) => setWeekDraft({ ...weekDraft, [line.id]: e.target.value })}
+                        />
+                      </td>
+                      <td className={`${NUM} ${left < 0 ? 'text-amber-700 dark:text-amber-300' : ''}`}>
+                        <Count value={left} />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-3 text-sm dark:border-neutral-700">
+            <div className="flex flex-wrap gap-x-6 gap-y-1 text-neutral-600 dark:text-neutral-300">
+              <span>
+                Hours this week <b className="text-neutral-900 dark:text-neutral-100">{fmtHours(hoursByWeek[week] ?? 0)}</b>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400"> clock + temps</span>
+              </span>
+              <span>
+                Work in progress <b className="text-neutral-900 dark:text-neutral-100">{fmtMoney(wipFor(weekQuantities()))}</b>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400"> {monthLabel(weekMonth(week), 'long')} so far</span>
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              {(dirty || bundle.seeded) && !weekLocked && (
+                <span className="text-xs text-amber-700 dark:text-amber-300">Save the SOV first</span>
+              )}
+              {weekLocked ? (
+                <Button variant="outline" size="sm" isLoading={weekSaving} onClick={reopenWeek}>
+                  Reopen
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    isLoading={weekSaving}
+                    disabled={dirty || bundle.seeded}
+                    onClick={() => saveWeek(false)}
+                  >
+                    Save draft
+                  </Button>
+                  <Button
+                    size="sm"
+                    leftIcon={<Check className="h-4 w-4" />}
+                    isLoading={weekSaving}
+                    disabled={dirty || bundle.seeded}
+                    onClick={() => saveWeek(true)}
+                  >
+                    Approve week
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            Billing ahead? Add the extra in the month's last week; the customer only sees the month. General
+            conditions bill on their own each month.
+          </p>
+        </div>
+      )}
+
       <div className="space-y-3 rounded-none border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Schedule of values</h2>
+          <div>
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Schedule of values</h2>
+            {setupSummary && (
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">{setupSummary}</p>
+            )}
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             {dirty && <span className="text-xs text-amber-700 dark:text-amber-300">Unsaved changes</span>}
             <select
@@ -519,6 +858,16 @@ export default function PMJobDetail() {
                 </option>
               ))}
             </select>
+            {settings && (
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Settings className="h-4 w-4" />}
+                onClick={openSetup}
+              >
+                Setup
+              </Button>
+            )}
             {estimates.length > 0 && (
               <Button
                 variant="outline"
@@ -669,7 +1018,17 @@ export default function PMJobDetail() {
                           onChange={(e) => updateLine(line.id, { item: e.target.value })}
                         />
                       ) : (
-                        line.item || 'Unnamed line'
+                        <>
+                          {line.item || 'Unnamed line'}
+                          {line.line_type === 'general_conditions' && (
+                            <span className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">
+                              monthly{settings?.gc_start ? ` from ${settings.gc_start}` : ''}
+                            </span>
+                          )}
+                          {line.line_type === 'mobilization' && (
+                            <span className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">from the estimate</span>
+                          )}
+                        </>
                       )}
                     </td>
                     <td className={NUM}>
@@ -682,6 +1041,10 @@ export default function PMJobDetail() {
                           value={line.quantity}
                           onChange={(e) => updateLine(line.id, { quantity: parseNumber(e.target.value) })}
                         />
+                      ) : (line.multiplier ?? 1) > 1 ? (
+                        <span title={`${line.multiplier} times ${line.quantity / (line.multiplier ?? 1)}`}>
+                          {line.multiplier} × <Count value={line.quantity / (line.multiplier ?? 1)} />
+                        </span>
                       ) : (
                         <Count value={line.quantity} />
                       )}
@@ -867,6 +1230,108 @@ export default function PMJobDetail() {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={setupOpen} onOpenChange={setSetupOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>SOV setup</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 text-sm">
+            <div className="space-y-2">
+              <div className="font-medium text-neutral-900 dark:text-neutral-100" id="sov-billing">
+                Billing
+              </div>
+              <div className="flex" role="radiogroup" aria-labelledby="sov-billing">
+                {(
+                  [
+                    ['monthly', 'Monthly'],
+                    ['weekly', 'Weekly'],
+                    ['one_time', '1 time'],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    role="radio"
+                    aria-checked={billingDraft === value}
+                    onClick={() => setBillingDraft(value)}
+                    className={`-ml-px flex-1 border px-3 py-1.5 first:ml-0 ${
+                      billingDraft === value
+                        ? 'relative z-10 border-brand bg-brand/10 font-medium text-neutral-900 dark:text-white'
+                        : 'border-neutral-300 text-neutral-600 hover:border-neutral-400 dark:border-neutral-600 dark:text-neutral-300'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="font-medium text-neutral-900 dark:text-neutral-100">General conditions</div>
+              <div className="grid grid-cols-3 gap-2">
+                <label className="space-y-1 text-xs text-neutral-500 dark:text-neutral-400" htmlFor="sov-gc-monthly">
+                  <span>$ a month</span>
+                  <input
+                    id="sov-gc-monthly"
+                    type="number"
+                    min={0}
+                    placeholder="0"
+                    className={`${NUMBER_INPUT} w-full`}
+                    value={gcDraft.monthly}
+                    onChange={(e) => setGcDraft({ ...gcDraft, monthly: e.target.value })}
+                  />
+                </label>
+                <label className="space-y-1 text-xs text-neutral-500 dark:text-neutral-400" htmlFor="sov-gc-months">
+                  <span>Months</span>
+                  <input
+                    id="sov-gc-months"
+                    type="number"
+                    min={0}
+                    placeholder="0"
+                    className={`${NUMBER_INPUT} w-full`}
+                    value={gcDraft.months}
+                    onChange={(e) => setGcDraft({ ...gcDraft, months: e.target.value })}
+                  />
+                </label>
+                <label className="space-y-1 text-xs text-neutral-500 dark:text-neutral-400" htmlFor="sov-gc-start">
+                  <span>From</span>
+                  <input
+                    id="sov-gc-start"
+                    type="date"
+                    className={`${CELL_INPUT} w-full`}
+                    value={gcDraft.start}
+                    onChange={(e) => setGcDraft({ ...gcDraft, start: e.target.value })}
+                  />
+                </label>
+              </div>
+              <label className="flex items-center gap-2 text-neutral-700 dark:text-neutral-300" htmlFor="sov-gc-from-price">
+                <input
+                  id="sov-gc-from-price"
+                  type="checkbox"
+                  className="rounded-none accent-brand"
+                  checked={gcDraft.fromPrice}
+                  onChange={(e) => setGcDraft({ ...gcDraft, fromPrice: e.target.checked })}
+                />
+                Take it out of the other lines
+              </label>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                Bills each month from the start date, then stops, even if the job runs long. Leave
+                blank for none.
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setSetupOpen(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={applyGc}>
+              Apply
+            </Button>
+          </div>
+          <p className="-mt-2 text-right text-xs text-neutral-500 dark:text-neutral-400">Then Save the SOV.</p>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={estimatePickerOpen} onOpenChange={setEstimatePickerOpen}>
         <DialogContent>
           <DialogHeader>
@@ -946,6 +1411,21 @@ export default function PMJobDetail() {
               </ul>
             </Notice>
           )}
+          <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300" htmlFor="sov-times">
+            Times
+            <input
+              id="sov-times"
+              type="number"
+              min={1}
+              step={1}
+              className={`${NUMBER_INPUT} w-20`}
+              value={estimateTimes}
+              onChange={(e) => setEstimateTimes(Math.max(1, Math.round(parseNumber(e.target.value)) || 1))}
+            />
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
+              For reserve blocks: 10 blocks add each line at 10 times the quantity.
+            </span>
+          </label>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm text-neutral-600 dark:text-neutral-300">
               Adding {fmtMoney(pickedTotal)}. SOV would be {fmtMoney(sovDollars + pickedTotal)}

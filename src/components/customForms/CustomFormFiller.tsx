@@ -191,32 +191,36 @@ export const CustomFormFiller: React.FC = () => {
   // Auto-populate job info from the job record when a new form opens.
   useEffect(() => {
     if (!template || !jobDetails || existingInstanceId != null) return;
-    const jobInfoSection = template.structure.sections.find(
-      (s) => s.componentType === "job-info",
+    const jobInfoSections = template.structure.sections.filter(
+      (s) => s.componentType === "job-info" && s.fields?.length,
     );
-    if (!jobInfoSection?.fields?.length) return;
+    if (!jobInfoSections.length) return;
     // Seed once. Checking for an empty block instead lost the job details
     // whenever the asset prefill wrote the identifier into it first.
     if (jobInfoSeededRef.current) return;
     jobInfoSeededRef.current = true;
 
-    const initial = jobInfoStartValues(
-      jobInfoSection.fields,
-      jobFillContext(jobDetails, {
-        name: maskCustomerName,
-        address: maskCustomerAddress,
-        hideDescription: isDemoMode,
-      }),
-    );
+    const context = jobFillContext(jobDetails, {
+      name: maskCustomerName,
+      address: maskCustomerAddress,
+      hideDescription: isDemoMode,
+    });
+    const starts = jobInfoSections
+      .map((section) => ({ id: section.id, initial: jobInfoStartValues(section.fields, context) }))
+      .filter(({ initial }) => Object.keys(initial).length > 0);
 
-    if (Object.keys(initial).length > 0) {
+    if (starts.length > 0) {
       // Anything already filled in the block (typed, or from the asset) stays.
       setFormData((prev) => {
-        const block = { ...(prev[jobInfoSection.id] || {}) };
-        for (const [key, value] of Object.entries(initial)) {
-          if (block[key] == null || block[key] === "") block[key] = value;
+        const next = { ...prev };
+        for (const { id, initial } of starts) {
+          const block = { ...(prev[id] || {}) };
+          for (const [key, value] of Object.entries(initial)) {
+            if (block[key] == null || block[key] === "") block[key] = value;
+          }
+          next[id] = block;
         }
-        return { ...prev, [jobInfoSection.id]: block };
+        return next;
       });
     }
   }, [template, jobDetails, isDemoMode, maskCustomerName, maskCustomerAddress, existingInstanceId]);

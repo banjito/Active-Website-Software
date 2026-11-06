@@ -125,6 +125,78 @@ export function jobFillSourcesFor(field: FieldConfig): JobFillSource[] {
   return JOB_FILL_SOURCES;
 }
 
+/**
+ * Field names that mean a job value. Lets a field the builder added or renamed
+ * ("Customer Name", "Job No.", "Site Address") fill itself without being linked
+ * by hand. Keys are names after `nameKey`.
+ */
+const SOURCES_BY_NAME: Record<string, string> = {
+  customer: 'customer.name',
+  'customer name': 'customer.name',
+  client: 'customer.name',
+  'client name': 'customer.name',
+  company: 'customer.name',
+  'customer address': 'customer.address',
+  'client address': 'customer.address',
+  'job number': 'job.number',
+  job: 'job.number',
+  'project number': 'job.number',
+  'work order': 'job.number',
+  'work order number': 'job.number',
+  'job title': 'job.title',
+  'job name': 'job.title',
+  'project name': 'job.title',
+  project: 'job.title',
+  address: 'site.address',
+  'site address': 'site.address',
+  'job site': 'site.address',
+  jobsite: 'site.address',
+  'jobsite address': 'site.address',
+  'job site address': 'site.address',
+  'job address': 'site.address',
+  'site location': 'site.address',
+  site: 'site.address',
+  'end user': 'job.endUser',
+  user: 'job.endUser',
+  division: 'job.division',
+  'fireteam lead': 'job.fireteamLead',
+  description: 'job.description',
+  'job description': 'job.description',
+  'start date': 'job.startDate',
+  'job start date': 'job.startDate',
+  'due date': 'job.dueDate',
+  'job due date': 'job.dueDate',
+  'est man hours': 'job.estimatedManHours',
+  'estimated man hours': 'job.estimatedManHours',
+  date: 'report.today',
+  'test date': 'report.today',
+  'report date': 'report.today',
+  'inspection date': 'report.today',
+  'date tested': 'report.today',
+};
+
+/** "Job #" / "Job No." / "jobNumber" all become "job number". */
+function nameKey(name: string | undefined): string {
+  return (name ?? '')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .toLowerCase()
+    .replace(/#/g, ' number ')
+    .replace(/\bno\b\.?/g, ' number ')
+    .replace(/\bnum\b\.?/g, ' number ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+/** The job value a field's label (or id) names, if it fits the field's type. */
+function sourceFromName(field: FieldConfig): string | undefined {
+  const fits = jobFillSourcesFor(field);
+  for (const name of [field.label, field.id]) {
+    const source = SOURCES_BY_NAME[nameKey(name)];
+    if (source && fits.some((s) => s.id === source)) return source;
+  }
+  return undefined;
+}
+
 /** The field's setting, including what a template saved before the setting existed means. */
 export function jobFillSetting(field: FieldConfig): NonNullable<FieldConfig['jobFill']> {
   if (field.jobFill) return field.jobFill;
@@ -132,7 +204,9 @@ export function jobFillSetting(field: FieldConfig): NonNullable<FieldConfig['job
   if (source) return { source };
   if (isEnvironment(field)) return {};
   const value = field.defaultValue;
-  return value === undefined || value === null || value === '' ? {} : { value: String(value) };
+  if (value !== undefined && value !== null && value !== '') return { value: String(value) };
+  const named = sourceFromName(field);
+  return named ? { source: named } : {};
 }
 
 function printedDate(iso: string): string {

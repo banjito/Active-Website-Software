@@ -14,7 +14,16 @@ export interface SovLine {
   report_slugs: string[];
   /** Estimates this line was copied from, so the same estimate is not added twice */
   source_estimate_ids: string[];
+  /** scope (estimate rows or typed in), general_conditions, or mobilization */
+  line_type?: SovLineType;
+  /** Times the estimate scope repeats. Quantity already includes it; shown as "10 x 6". */
+  multiplier?: number;
 }
+
+export type SovLineType = 'scope' | 'general_conditions' | 'mobilization';
+
+export const GENERAL_CONDITIONS_ITEM = 'General conditions';
+export const MOBILIZATION_ITEM = 'Mobilization';
 
 export interface SentReport {
   id: string;
@@ -59,6 +68,11 @@ export interface EstimateOption {
   updated_at: string;
   status: string | null;
   rows: EstimateRow[];
+  /**
+   * Mobilization on the estimate. total is what the letter quotes; added is the part on
+   * top of the price. The rest is "baked in": already inside the row prices.
+   */
+  mobilization?: { total: number; added: number };
 }
 
 /** An item found in more than one estimate, with how many each one carries. */
@@ -91,6 +105,44 @@ export const shiftMonth = (month: string, by: number): string => {
 export const monthLabel = (month: string, style: 'short' | 'long' = 'short'): string => {
   const [y, m] = month.split('-').map(Number);
   return new Date(y, m - 1, 1).toLocaleDateString(undefined, { month: style, year: 'numeric' });
+};
+
+// ---------------------------------------------------------------------------
+// Weeks: Sunday to Saturday, like pay weeks
+// ---------------------------------------------------------------------------
+
+const ymdLocal = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+const parseDay = (ymd: string): Date => {
+  const [y, m, d] = ymd.split('-').map(Number);
+  return new Date(y, m - 1, d);
+};
+
+/** The Sunday (YYYY-MM-DD) starting the week this moment falls in, on this computer's clock. */
+export const weekKey = (d: Date | string): string => {
+  const date = typeof d === 'string' ? new Date(d) : d;
+  const sunday = new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay());
+  return ymdLocal(sunday);
+};
+
+export const shiftWeekKey = (week: string, by: number): string => {
+  const d = parseDay(week);
+  return ymdLocal(new Date(d.getFullYear(), d.getMonth(), d.getDate() + by * 7));
+};
+
+/** A week counts toward the month its Wednesday falls in (temp hours use the same rule). */
+export const weekMonth = (week: string): string => {
+  const d = parseDay(week);
+  return monthKey(new Date(d.getFullYear(), d.getMonth(), d.getDate() + 3));
+};
+
+/** "Nov 2 to Nov 8, 2026" */
+export const weekRangeLabel = (week: string): string => {
+  const start = parseDay(week);
+  const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+  const short = (x: Date) => x.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return `${short(start)} to ${short(end)}, ${end.getFullYear()}`;
 };
 
 /** Every month from `from` through `to`, in order. */
@@ -269,14 +321,28 @@ export function addEstimatesToLines(
   lines: SovLine[],
   options: EstimateOption[],
   makeId: () => string,
+  /** How many times the scope repeats (reserve blocks). Quantities and hours are multiplied. */
+  times = 1,
 ): SovLine[] {
   const next = lines.map((line) => ({ ...line }));
+  const n = times > 0 ? times : 1;
 
   for (const option of options) {
+    // Mobilization gets its own line. The baked-in part already sits inside the row
+    // prices, so take it back out of them; the added part is on top of the price.
+    const mob = option.mobilization;
+    const rowsTotal = option.rows.reduce((sum, row) => sum + row.quantity * row.unitPrice, 0);
+    const baked = mob ? Math.max(0, mob.total - mob.added) : 0;
+    const priceFactor = baked > 0 && rowsTotal > baked ? (rowsTotal - baked) / rowsTotal : 1;
+
     for (const row of option.rows) {
       const key = nameKey(row.item);
-      const hours = round2(row.quantity * row.unitHours);
-      const existing = key ? next.find((line) => nameKey(line.item) === key) : undefined;
+      const rowQty = row.quantity * n;
+      const rowPrice = round2(row.unitPrice * priceFactor);
+      const hours = round2(rowQty * row.unitHours);
+      const existing = key
+        ? next.find((line) => (line.line_type ?? 'scope') === 'scope' && nameKey(line.item) === key)
+        : undefined;
 
       if (!existing) {
         next.push({
@@ -284,19 +350,23 @@ export function addEstimatesToLines(
           job_id: jobId,
           sort_order: next.length,
           item: row.item,
-          quantity: row.quantity,
+          quantity: rowQty,
           total_hours: hours,
-          unit_price: row.unitPrice,
+          unit_price: rowPrice,
           report_slugs: [],
           source_estimate_ids: [option.id],
+          line_type: 'scope',
+          multiplier: n,
         });
         continue;
       }
 
-      const quantity = existing.quantity + row.quantity;
+      if ((existing.multiplier ?? 1) !== n) existing.multiplier = 1;
+      const row2 = { quantity: rowQty, unitPrice: rowPrice };
+      const quantity = existing.quantity + row2.quantity;
       if (quantity > 0) {
         existing.unit_price = round2(
-          (existing.quantity * existing.unit_price + row.quantity * row.unitPrice) / quantity,
+          (existing.quantity * existing.unit_price + row2.quantity * row2.unitPrice) / quantity,
         );
       }
       existing.quantity = quantity;
@@ -305,9 +375,92 @@ export function addEstimatesToLines(
         existing.source_estimate_ids = [...existing.source_estimate_ids, option.id];
       }
     }
+
+    if (mob && mob.total > 0) {
+      const amount = round2(mob.total * n);
+      const mobLine = next.find((line) => line.line_type === 'mobilization');
+      if (mobLine) {
+        mobLine.unit_price = round2(mobLine.quantity * mobLine.unit_price + amount);
+        mobLine.quantity = 1;
+        if (!mobLine.source_estimate_ids.includes(option.id)) {
+          mobLine.source_estimate_ids = [...mobLine.source_estimate_ids, option.id];
+        }
+      } else {
+        next.push({
+          id: makeId(),
+          job_id: jobId,
+          sort_order: next.length,
+          item: MOBILIZATION_ITEM,
+          quantity: 1,
+          total_hours: 0,
+          unit_price: amount,
+          report_slugs: [],
+          source_estimate_ids: [option.id],
+          line_type: 'mobilization',
+          multiplier: 1,
+        });
+      }
+    }
   }
 
   return next;
+}
+
+export interface GeneralConditions {
+  monthly: number;
+  months: number;
+  /** true: take it out of the scope lines so the SOV total stays the same */
+  fromPrice: boolean;
+}
+
+/**
+ * Puts general conditions on the SOV as one line (months x monthly amount), replacing
+ * any earlier one. With fromPrice, the scope lines give up that amount in proportion,
+ * so the total still matches the contract. The earlier setting is undone first, so
+ * applying twice never takes it out twice. Mobilization lines are left alone.
+ */
+export function applyGeneralConditions(
+  jobId: string,
+  lines: SovLine[],
+  previous: GeneralConditions | null,
+  next: GeneralConditions | null,
+  makeId: () => string,
+): SovLine[] {
+  const isScope = (line: SovLine) => (line.line_type ?? 'scope') === 'scope';
+  const scopeTotal = (list: SovLine[]) =>
+    list.filter(isScope).reduce((sum, line) => sum + line.quantity * line.unit_price, 0);
+  const scale = (list: SovLine[], factor: number) =>
+    list.map((line) => (isScope(line) ? { ...line, unit_price: round2(line.unit_price * factor) } : line));
+
+  let out = lines.filter((line) => line.line_type !== 'general_conditions').map((line) => ({ ...line }));
+
+  // Give back what the earlier general conditions took out
+  const before = previous && previous.fromPrice ? previous.monthly * previous.months : 0;
+  const nowScope = scopeTotal(out);
+  if (before > 0 && nowScope > 0) out = scale(out, (nowScope + before) / nowScope);
+
+  if (!next || next.monthly <= 0 || next.months <= 0) return out;
+
+  const amount = next.monthly * next.months;
+  const scope = scopeTotal(out);
+  if (next.fromPrice && scope > amount) out = scale(out, (scope - amount) / scope);
+
+  return [
+    {
+      id: makeId(),
+      job_id: jobId,
+      sort_order: 0,
+      item: GENERAL_CONDITIONS_ITEM,
+      quantity: next.months,
+      total_hours: 0,
+      unit_price: round2(next.monthly),
+      report_slugs: [],
+      source_estimate_ids: [],
+      line_type: 'general_conditions',
+      multiplier: 1,
+    },
+    ...out,
+  ].map((line, i) => ({ ...line, sort_order: i }));
 }
 
 /**
@@ -341,7 +494,12 @@ export function estimateOverlaps(options: EstimateOption[]): EstimateOverlap[] {
 // ---------------------------------------------------------------------------
 
 /** Buckets sent reports by SOV line and by the month they were sent. */
-export function computeProgress(lines: SovLine[], reports: SentReport[]): SovProgress {
+export function computeProgress(
+  lines: SovLine[],
+  reports: SentReport[],
+  /** Bucket for each sent report: its month by default, or its week */
+  bucket: (sentAt: string) => string = monthKey,
+): SovProgress {
   const lineForSlug = new Map<string, string>();
   for (const line of lines) {
     for (const slug of line.report_slugs) {
@@ -356,11 +514,90 @@ export function computeProgress(lines: SovLine[], reports: SentReport[]): SovPro
       progress.unmatched[report.slug] = (progress.unmatched[report.slug] ?? 0) + 1;
       continue;
     }
-    const month = monthKey(report.sent_at);
-    const byMonth = (progress.qty[lineId] ??= {});
-    byMonth[month] = (byMonth[month] ?? 0) + 1;
+    const key = bucket(report.sent_at);
+    const byKey = (progress.qty[lineId] ??= {});
+    byKey[key] = (byKey[key] ?? 0) + 1;
   }
   return progress;
+}
+
+/** One saved weekly update: the PM's numbers for each line that week. */
+export interface SavedWeek {
+  id: string;
+  status: 'draft' | 'approved';
+  /** line id -> units done that week */
+  quantities: Record<string, number>;
+  wip_amount: number | null;
+  hours: number | null;
+  approved_at: string | null;
+}
+
+/** week (YYYY-MM-DD Sunday) -> saved update */
+export type SavedWeeks = Record<string, SavedWeek>;
+
+/** General conditions bill once a month from the start month, for this many months. */
+export interface GcSchedule {
+  start: string | null;
+  months: number | null;
+}
+
+/**
+ * Units per line per week. Weeks the PM saved use their numbers (typed wins); other
+ * weeks use sent reports as the suggestion.
+ */
+export function weeklyQuantities(
+  lines: SovLine[],
+  reports: SentReport[],
+  saved: SavedWeeks = {},
+): Record<string, Record<string, number>> {
+  const fromReports = computeProgress(lines, reports, weekKey).qty;
+  const out: Record<string, Record<string, number>> = {};
+  for (const line of lines) {
+    const byWeek: Record<string, number> = { ...(fromReports[line.id] ?? {}) };
+    for (const [week, update] of Object.entries(saved)) byWeek[week] = update.quantities[line.id] ?? 0;
+    out[line.id] = byWeek;
+  }
+  return out;
+}
+
+/**
+ * Progress by month, built from the weekly numbers: saved weeks win, sent reports fill
+ * the rest, and each week lands in the month of its Wednesday. General conditions
+ * count one per month from their start, up to this month and no more than planned.
+ */
+export function mergedProgress(
+  lines: SovLine[],
+  reports: SentReport[],
+  saved: SavedWeeks = {},
+  gc?: GcSchedule | null,
+): SovProgress {
+  const weekly = weeklyQuantities(lines, reports, saved);
+  const qty: SovProgress['qty'] = {};
+  const thisMonth = monthKey(new Date());
+
+  for (const line of lines) {
+    const byMonth: Record<string, number> = {};
+    if (line.line_type === 'general_conditions') {
+      const months = Math.min(gc?.months ?? 0, line.quantity || 0);
+      if (gc?.start && months > 0) {
+        const first = gc.start.slice(0, 7);
+        for (let i = 0; i < months; i++) {
+          const m = shiftMonth(first, i);
+          if (m > thisMonth) break;
+          byMonth[m] = 1;
+        }
+      }
+    } else {
+      for (const [week, n] of Object.entries(weekly[line.id] ?? {})) {
+        if (!n) continue;
+        const m = weekMonth(week);
+        byMonth[m] = (byMonth[m] ?? 0) + n;
+      }
+    }
+    if (Object.keys(byMonth).length) qty[line.id] = byMonth;
+  }
+
+  return { qty, unmatched: computeProgress(lines, reports).unmatched };
 }
 
 export const lineDone = (progress: SovProgress, lineId: string): number =>
@@ -388,7 +625,10 @@ export const pct = (part: number, whole: number): number | null =>
  * Each line stops at its own quantity: extra breakers do not finish the transformers.
  * Falls back to a plain unit count when the SOV has no prices.
  */
-export function completedPct(lines: SovLine[], progress: SovProgress): number | null {
+export function completedPct(allLines: SovLine[], progress: SovProgress): number | null {
+  // Work done is measured on scope lines. General conditions and mobilization bill on
+  // their own schedule, not by sent reports, so they'd hold the bar below 100%.
+  const lines = allLines.filter((line) => (line.line_type ?? 'scope') === 'scope');
   const done = (line: SovLine) => Math.min(lineDone(progress, line.id), line.quantity);
   const total = sovTotal(lines);
   if (total > 0) {

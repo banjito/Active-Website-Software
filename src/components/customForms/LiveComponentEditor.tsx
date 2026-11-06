@@ -65,7 +65,7 @@ import {
 } from "@/lib/customForms/asFoundAsLeft";
 import { resultRuleField } from "@/lib/customForms/resultRules";
 import { hasCombinedTemperatureField, splitTemperatureHumidity } from "@/lib/customForms/temperatureFields";
-import { jobFillLabel } from "@/lib/customForms/jobFill";
+import { isJobInfoSection, jobFillLabel } from "@/lib/customForms/jobFill";
 import { JobFillControl } from "./JobFillControl";
 import { useLookupTables } from "@/lib/customForms/lookupLibrary";
 import { resolveDeviation } from "./runtime/SectionBody";
@@ -915,7 +915,7 @@ const LiveFields: React.FC<{
           <FieldTypeControls
             field={selected}
             onChange={(patch) => updateField(selIndex, patch)}
-            jobInfo={section.componentType === ComponentType.JOB_INFO}
+            jobInfo={isJobInfoSection(section)}
           />
           <div className="ml-auto flex items-center gap-0.5">
             <button
@@ -1005,7 +1005,7 @@ const LiveFields: React.FC<{
             <div className="h-5 flex items-center border-b border-neutral-200 dark:border-neutral-700">
               <MockControl field={field} />
             </div>
-            {section.componentType === ComponentType.JOB_INFO && jobFillLabel(field) && (
+            {isJobInfoSection(section) && jobFillLabel(field) && (
               <div className="text-[10px] text-brand truncate">{jobFillLabel(field)}</div>
             )}
             {n > 1 && (

@@ -81,6 +81,7 @@ import RoleManagement from "./components/admin/RoleManagement";
 import NotificationDevControls from "./components/admin/NotificationDevControls";
 import CalibrationReportRecipients from "./components/admin/CalibrationReportRecipients";
 import InProgressDashboard from "./components/admin/InProgressDashboard";
+import ReportTimeCard from "./components/admin/ReportTimeCard";
 import IntegrationsSettings from "./components/admin/IntegrationsSettings";
 import QuickBooksDashboard from "./components/admin/QuickBooksDashboard";
 import WebsiteThemeSettings from "./components/admin/WebsiteThemeSettings";
@@ -731,6 +732,7 @@ function App() {
                       element={<SystemHealthMonitoring />}
                     />
                     <Route path="system-logs" element={<SystemLogsCard />} />
+                    <Route path="report-time" element={<ReportTimeCard />} />
                     <Route path="data-backup" element={<DataBackupControls />} />
                     <Route
                       path="encryption"

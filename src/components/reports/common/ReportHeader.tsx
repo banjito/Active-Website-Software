@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { AutoSaveIndicator } from "./AutoSaveIndicator";
+import { useReportTimer } from "@/lib/useReportTimer";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { ReportPhotosButton } from "./ReportPhotos";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Check, LogOut, Printer, Save, SquarePen } from "lucide-react";
@@ -72,6 +74,9 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
   loading = false,
   extraActions,
 }) => {
+  // Counts time spent editing this report in the background (Admin Dashboard → Report time)
+  useReportTimer(isEditing && !isPrintMode && !loading);
+  usePageTitle(title);
   const [tooltip, setTooltip] = useState<{
     text: string;
     x: number;

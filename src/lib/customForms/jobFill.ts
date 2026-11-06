@@ -10,7 +10,7 @@
  * that value is not treated as a default for these two fields.
  */
 
-import { FieldType, type FieldConfig } from '@/lib/types/customForms';
+import { FieldType, type FieldConfig, type SectionConfig } from '@/lib/types/customForms';
 import { todayISO } from '@/lib/types/testScheduling';
 import { formatDivisionDisplay } from '@/lib/utils/divisionDisplay';
 import { fahrenheitToCelsius, getRoundedTCF } from '@/lib/utils/temperatureCorrection';
@@ -99,6 +99,17 @@ export function jobFillContext(job: JobFillJob, masks: JobFillMasks = {}): JobFi
     'job.estimatedManHours': job.estimated_man_hours,
     'report.today': todayISO(),
   };
+}
+
+/**
+ * A section that holds the job's details: the Job Details block, or a field
+ * section the builder titled "Job Information" / "Job Info" / "Job Details"
+ * (imported and hand-built templates often use a plain field section).
+ */
+export function isJobInfoSection(section: Pick<SectionConfig, 'componentType' | 'title' | 'fields'>): boolean {
+  if (section.componentType === 'job-info') return true;
+  if (!section.fields?.length) return false;
+  return /^\s*job\s*(info|information|details|data)\b/i.test(section.title ?? '');
 }
 
 const isTemperature = (field: FieldConfig) => field.type === FieldType.TEMPERATURE || field.id === 'temperature';

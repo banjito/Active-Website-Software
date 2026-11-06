@@ -7,6 +7,7 @@ import { companyConfig } from "@/lib/companyConfig";
 import { fetchEngineeringCompany, setEngineeringCompany } from "@/lib/engineering/engineeringCompany";
 import { jobFieldValues } from "@/lib/engineering/reportStore";
 import { useDivisions } from "@/hooks/useDivisions";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { jobDivisionOptions } from "@/services/divisionsService";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { toast } from "@/components/ui/toast";
@@ -65,6 +66,9 @@ export default function EngineeringJobPage({ jobId }: { jobId: string }) {
   const tab = (TABS.find((t) => t.id === params.get("tab"))?.id ?? "overview") as Tab;
   const reportId = params.get("report");
   const [job, setJob] = useState<EngJob | null>(null);
+  usePageTitle(
+    job ? [job.job_number, job.title].filter(Boolean).join(" - ") : null,
+  );
   // null = the company column doesn't exist yet, so the switch is hidden.
   const [ceJob, setCeJob] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);

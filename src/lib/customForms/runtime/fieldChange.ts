@@ -4,7 +4,7 @@
 
 import type { CustomFormTemplate } from "@/lib/types/customForms";
 import { fahrenheitToCelsius, getRoundedTCF } from "@/lib/utils/temperatureCorrection";
-import { jobInfoStartValues } from "@/lib/customForms/jobFill";
+import { isJobInfoSection, jobInfoStartValues } from "@/lib/customForms/jobFill";
 import { INLINE_DEVIATION_KEY, deviationResult, phaseDeviation } from "@/lib/customForms/deviation";
 import type { FormData } from "./rowMutations";
 
@@ -77,9 +77,7 @@ export function seedJobInfoDefaults(
   template: CustomFormTemplate,
   formData: FormData,
 ): FormData {
-  const jobInfo = template.structure.sections.find(
-    (s) => s.componentType === "job-info",
-  );
+  const jobInfo = template.structure.sections.find(isJobInfoSection);
   if (!jobInfo?.fields?.length) return formData;
 
   const existing = formData[jobInfo.id] || {};

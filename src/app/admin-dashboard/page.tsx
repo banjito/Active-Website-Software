@@ -7,6 +7,7 @@ import {
   Settings,
   Users,
   ArrowLeft,
+  ArrowRight,
   FileText,
   Database,
   LockKeyhole,
@@ -14,23 +15,24 @@ import {
   Ruler,
   Clock,
   Link2,
-  DollarSign,
   ClipboardList,
   Activity,
   Palette,
+  Timer,
+  Briefcase,
 } from "lucide-react";
-import Card, { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { HeaderBar } from "@/components/ui/HeaderBar";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { supabase } from "@/lib/supabase";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 
 // ─── Shared types ────────────────────────────────────────────────────────────
 
 const subPathTitles: Record<string, string> = {
   "in-progress": "In Progress Dashboard",
+  "report-time": "Report time",
   "user-management": "User Management",
   "role-management": "Role Management",
   "notification-controls": "Notification Dev Controls",
@@ -45,9 +47,8 @@ const subPathTitles: Record<string, string> = {
 
 type AdminCard = {
   title: string;
+  description: string;
   icon: React.ComponentType<{ className?: string }>;
-  iconClassName: string;
-  cardClassName: string;
   path: string;
 };
 
@@ -58,113 +59,6 @@ const QuickBooksIcon = ({ className }: { className?: string }) => (
     className={className}
   />
 );
-
-const adminCards: AdminCard[] = [
-  {
-    title: "In Progress Dashboard",
-    icon: Clock,
-    iconClassName: "text-cyan-700 dark:text-cyan-200",
-    cardClassName:
-      "border-cyan-200 bg-cyan-50/80 dark:border-cyan-900 dark:bg-cyan-950/30",
-    path: "/admin-dashboard/in-progress",
-  },
-  {
-    title: "User Management",
-    icon: Users,
-    iconClassName: "text-indigo-700 dark:text-indigo-200",
-    cardClassName:
-      "border-indigo-200 bg-indigo-50/80 dark:border-indigo-900 dark:bg-indigo-950/30",
-    path: "/admin-dashboard/user-management",
-  },
-  {
-    title: "Role Management",
-    icon: ShieldCheck,
-    iconClassName: "text-emerald-700 dark:text-emerald-200",
-    cardClassName:
-      "border-emerald-200 bg-emerald-50/80 dark:border-emerald-900 dark:bg-emerald-950/30",
-    path: "/admin-dashboard/role-management",
-  },
-  {
-    title: "Notification Dev Controls",
-    icon: Bell,
-    iconClassName: "text-rose-700 dark:text-rose-200",
-    cardClassName:
-      "border-rose-200 bg-rose-50/80 dark:border-rose-900 dark:bg-rose-950/30",
-    path: "/admin-dashboard/notification-controls",
-  },
-  {
-    title: "Calibration Report Recipients",
-    icon: Ruler,
-    iconClassName: "text-orange-700 dark:text-orange-200",
-    cardClassName:
-      "border-orange-200 bg-orange-50/80 dark:border-orange-900 dark:bg-orange-950/30",
-    path: "/admin-dashboard/calibration-recipients",
-  },
-  {
-    title: "System Health",
-    icon: Settings,
-    iconClassName: "text-blue-700 dark:text-blue-200",
-    cardClassName:
-      "border-blue-200 bg-blue-50/80 dark:border-blue-900 dark:bg-blue-950/30",
-    path: "/admin-dashboard/system-health",
-  },
-  {
-    title: "System Logs",
-    icon: FileText,
-    iconClassName: "text-yellow-800 dark:text-yellow-200",
-    cardClassName:
-      "border-yellow-200 bg-yellow-50/80 dark:border-yellow-900 dark:bg-yellow-950/30",
-    path: "/admin-dashboard/system-logs",
-  },
-  {
-    title: "Data Backup",
-    icon: Database,
-    iconClassName: "text-teal-700 dark:text-teal-200",
-    cardClassName:
-      "border-teal-200 bg-teal-50/80 dark:border-teal-900 dark:bg-teal-950/30",
-    path: "/admin-dashboard/data-backup",
-  },
-  {
-    title: "Encryption Settings",
-    icon: LockKeyhole,
-    iconClassName: "text-red-700 dark:text-red-200",
-    cardClassName:
-      "border-red-200 bg-red-50/80 dark:border-red-900 dark:bg-red-950/30",
-    path: "/admin-dashboard/encryption",
-  },
-  {
-    title: "Integrations",
-    icon: Link2,
-    iconClassName: "text-green-700 dark:text-green-200",
-    cardClassName:
-      "border-green-200 bg-green-50/80 dark:border-green-900 dark:bg-green-950/30",
-    path: "/admin-dashboard/integrations",
-  },
-  {
-    title: "QuickBooks Dashboard",
-    icon: QuickBooksIcon,
-    iconClassName: "",
-    cardClassName:
-      "border-lime-200 bg-lime-50/80 dark:border-lime-900 dark:bg-lime-950/30",
-    path: "/admin-dashboard/quickbooks",
-  },
-  {
-    title: "Website Theme",
-    icon: Palette,
-    iconClassName: "text-brand",
-    cardClassName:
-      "border-orange-200 bg-orange-50/80 dark:border-orange-900 dark:bg-orange-950/30",
-    path: "/admin-dashboard/site-theme",
-  },
-  {
-    title: "Custom Report Builder",
-    icon: ClipboardList,
-    iconClassName: "text-amber-800 dark:text-amber-200",
-    cardClassName:
-      "border-amber-200 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/30",
-    path: "/custom-forms/templates",
-  },
-];
 
 // ─── Dashboard index types ────────────────────────────────────────────────────
 
@@ -185,100 +79,190 @@ interface ActivityItem {
   timestamp: string;
 }
 
+// One tint per section keeps the page calm (was one color per tile).
+type Tone = "indigo" | "brand" | "sky" | "emerald";
+
+const TONE_ICON: Record<Tone, string> = {
+  indigo:
+    "bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:ring-indigo-900",
+  brand: "bg-brand/10 text-brand ring-brand/25 dark:bg-brand/15",
+  sky: "bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:ring-sky-900",
+  emerald:
+    "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-900",
+};
+
 type CategorySection = {
   label: string;
+  tone: Tone;
   cards: AdminCard[];
-  gridClass?: string;
 };
 
 const CATEGORIES: CategorySection[] = [
   {
     label: "People & Access",
-    cards: adminCards.filter((c) =>
-      [
-        "/admin-dashboard/user-management",
-        "/admin-dashboard/role-management",
-        "/admin-dashboard/integrations",
-      ].includes(c.path),
-    ),
+    tone: "indigo",
+    cards: [
+      {
+        title: "User Management",
+        description: "Add, edit, and deactivate accounts",
+        icon: Users,
+        path: "/admin-dashboard/user-management",
+      },
+      {
+        title: "Role Management",
+        description: "Control who can see and do what",
+        icon: ShieldCheck,
+        path: "/admin-dashboard/role-management",
+      },
+    ],
   },
   {
     label: "Operations",
-    cards: adminCards.filter((c) =>
-      [
-        "/admin-dashboard/in-progress",
-        "/admin-dashboard/quickbooks",
-        "/custom-forms/templates",
-      ].includes(c.path),
-    ),
+    tone: "brand",
+    cards: [
+      {
+        title: "In Progress Dashboard",
+        description: "Jobs underway across divisions",
+        icon: Clock,
+        path: "/admin-dashboard/in-progress",
+      },
+      {
+        title: "Report time",
+        description: "How long reports take to fill out",
+        icon: Timer,
+        path: "/admin-dashboard/report-time",
+      },
+      {
+        title: "QuickBooks Dashboard",
+        description: "Sync status and job linking",
+        icon: QuickBooksIcon,
+        path: "/admin-dashboard/quickbooks",
+      },
+      {
+        title: "Custom Report Builder",
+        description: "Build and edit report templates",
+        icon: ClipboardList,
+        path: "/custom-forms/templates",
+      },
+    ],
   },
   {
     label: "System",
-    cards: adminCards.filter((c) =>
-      [
-        "/admin-dashboard/system-health",
-        "/admin-dashboard/system-logs",
-        "/admin-dashboard/data-backup",
-        "/admin-dashboard/encryption",
-      ].includes(c.path),
-    ),
-    gridClass: "grid-cols-2",
+    tone: "sky",
+    cards: [
+      {
+        title: "System Health",
+        description: "Service status and checks",
+        icon: Settings,
+        path: "/admin-dashboard/system-health",
+      },
+      {
+        title: "System Logs",
+        description: "What changed, who did it, and when",
+        icon: FileText,
+        path: "/admin-dashboard/system-logs",
+      },
+      {
+        title: "Data Backup",
+        description: "Back up and restore data",
+        icon: Database,
+        path: "/admin-dashboard/data-backup",
+      },
+      {
+        title: "Encryption Settings",
+        description: "Keys and data protection",
+        icon: LockKeyhole,
+        path: "/admin-dashboard/encryption",
+      },
+    ],
   },
   {
     label: "Configuration",
-    cards: adminCards.filter((c) =>
-      [
-        "/admin-dashboard/notification-controls",
-        "/admin-dashboard/calibration-recipients",
-        "/admin-dashboard/site-theme",
-      ].includes(c.path),
-    ),
+    tone: "emerald",
+    cards: [
+      {
+        title: "Integrations",
+        description: "Connected apps and services",
+        icon: Link2,
+        path: "/admin-dashboard/integrations",
+      },
+      {
+        title: "Notification Dev Controls",
+        description: "Test and toggle notifications",
+        icon: Bell,
+        path: "/admin-dashboard/notification-controls",
+      },
+      {
+        title: "Calibration Report Recipients",
+        description: "Who gets calibration report emails",
+        icon: Ruler,
+        path: "/admin-dashboard/calibration-recipients",
+      },
+      {
+        title: "Website Theme",
+        description: "Brand colors and look",
+        icon: Palette,
+        path: "/admin-dashboard/site-theme",
+      },
+    ],
   },
 ];
 
 // ─── Inline helper components ─────────────────────────────────────────────────
 
-function StatCard({
+function StatusDot({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span
+        className={`h-2 w-2 shrink-0 rounded-none ${ok ? "bg-emerald-500" : "bg-red-500"}`}
+      />
+      {label}
+    </span>
+  );
+}
+
+function StatCell({
   icon,
   label,
   value,
   helper,
   loading,
+  large = true,
+  valueClassName = "text-neutral-900 dark:text-white",
 }: {
   icon: React.ReactNode;
   label: string;
-  value: string;
+  value: React.ReactNode;
   helper: string;
   loading: boolean;
+  large?: boolean;
+  valueClassName?: string;
 }) {
-  if (loading) return <Skeleton className="h-[88px] w-full rounded-none" />;
-
   return (
-    <div className="rounded-none border border-neutral-200 bg-white p-4 dark:border-dark-300 dark:bg-dark-200">
-      <div className="flex items-start gap-3">
-        <div className="shrink-0 rounded-none bg-neutral-100 p-2 dark:bg-dark-300">
-          {icon}
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-            {label}
-          </p>
-          <p
-            className={`mt-1 font-bold text-neutral-900 dark:text-white ${
-              /^\d|^—/.test(value)
-                ? "text-2xl"
-                : value.length > 8
-                  ? "text-lg"
-                  : "text-xl"
-            }`}
+    <div className="flex flex-col gap-2 bg-white p-4 dark:bg-dark-150 sm:p-5">
+      <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400">
+        {icon}
+        <span className="text-[11px] font-semibold uppercase tracking-widest">
+          {label}
+        </span>
+      </div>
+      {loading ? (
+        <>
+          <Skeleton className="h-8 w-20 rounded-none" />
+          <Skeleton className="h-3 w-32 rounded-none" />
+        </>
+      ) : (
+        <>
+          <div
+            className={`flex h-8 items-end font-semibold leading-none tabular-nums ${large ? "text-3xl" : "text-lg"} ${valueClassName}`}
           >
             {value}
-          </p>
-          <p className="mt-0.5 truncate text-xs text-neutral-500 dark:text-neutral-400">
+          </div>
+          <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
             {helper}
           </p>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }
@@ -286,7 +270,7 @@ function StatCard({
 function SectionHeader({ title }: { title: string }) {
   return (
     <div className="flex items-center gap-3">
-      <h2 className="shrink-0 text-xs font-semibold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+      <h2 className="shrink-0 text-[11px] font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
         {title}
       </h2>
       <div className="h-px flex-1 bg-neutral-200 dark:bg-dark-300" />
@@ -296,61 +280,78 @@ function SectionHeader({ title }: { title: string }) {
 
 function NavCard({
   card,
-  navigate,
+  tone,
+  meta,
+  onOpen,
 }: {
   card: AdminCard;
-  navigate: (path: string) => void;
+  tone: Tone;
+  meta?: React.ReactNode;
+  onOpen: (path: string) => void;
 }) {
-  const { title, icon: Icon, iconClassName, cardClassName, path } = card;
+  const { title, description, icon: Icon, path } = card;
   return (
-    <Card
-      role="button"
-      tabIndex={0}
-      aria-label={title}
-      className={`group cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:hover:shadow-black/30 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-black ${cardClassName}`}
-      onClick={() => navigate(path)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          navigate(path);
-        }
-      }}
+    <button
+      type="button"
+      onClick={() => onOpen(path)}
+      className="group relative flex w-full items-start gap-3 overflow-hidden rounded-none border border-neutral-200 bg-white p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 dark:border-dark-300 dark:bg-dark-150 dark:hover:border-brand/50 dark:hover:shadow-black/40 dark:focus-visible:ring-offset-black"
     >
-      <CardContent className="flex min-h-[56px] items-center justify-center gap-3 px-4 !pt-4 pb-4">
-        <Icon className={`h-7 w-7 shrink-0 ${iconClassName}`} />
-        <span className="text-sm font-medium text-neutral-900 dark:text-white">
-          {title}
+      {/* Brand edge that grows in on hover */}
+      <span
+        aria-hidden
+        className="absolute inset-y-0 left-0 w-0.5 origin-top scale-y-0 bg-brand transition-transform duration-200 group-hover:scale-y-100 group-focus-visible:scale-y-100"
+      />
+      <span
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-none ring-1 ring-inset ${TONE_ICON[tone]}`}
+      >
+        <Icon className="h-5 w-5" />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="flex items-center justify-between gap-2">
+          <span className="truncate text-sm font-semibold text-neutral-900 dark:text-white">
+            {title}
+          </span>
+          <ArrowRight className="h-4 w-4 shrink-0 text-neutral-300 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-brand dark:text-neutral-600" />
         </span>
-      </CardContent>
-    </Card>
+        <span className="mt-0.5 line-clamp-2 text-xs text-neutral-500 dark:text-neutral-400">
+          {description}
+        </span>
+        {meta && (
+          <span className="mt-2 text-xs font-medium text-neutral-700 dark:text-neutral-300">
+            {meta}
+          </span>
+        )}
+      </span>
+    </button>
   );
 }
 
-function getActivityIcon(kind: ActivityKind): React.ReactNode {
-  switch (kind) {
-    case "notification":
-      return <Bell className="h-4 w-4 text-blue-500 dark:text-blue-300" />;
-    case "role":
-      return (
-        <ShieldCheck className="h-4 w-4 text-purple-500 dark:text-purple-300" />
-      );
-    case "system":
-      return (
-        <Settings className="h-4 w-4 text-orange-500 dark:text-orange-300" />
-      );
+const ACTIVITY_META: Record<
+  ActivityKind,
+  {
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    className: string;
   }
-}
-
-function getActivityBadgeClass(kind: ActivityKind): string {
-  switch (kind) {
-    case "notification":
-      return "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-900";
-    case "role":
-      return "bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/30 dark:text-purple-300 dark:border-purple-900";
-    case "system":
-      return "bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-950/30 dark:text-orange-300 dark:border-orange-900";
-  }
-}
+> = {
+  notification: {
+    label: "Alert",
+    icon: Bell,
+    className:
+      "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300",
+  },
+  role: {
+    label: "Role change",
+    icon: ShieldCheck,
+    className:
+      "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300",
+  },
+  system: {
+    label: "System",
+    icon: Settings,
+    className: "bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-300",
+  },
+};
 
 // ─── AdminDashboardIndex ──────────────────────────────────────────────────────
 
@@ -504,151 +505,184 @@ export const AdminDashboardIndex: React.FC = () => {
 
   const fmt = (n: number | null) => (n === null ? "—" : n.toLocaleString());
 
+  // Live status shown on the matching tile.
+  const tileMeta: Record<string, React.ReactNode> = {
+    "/admin-dashboard/user-management":
+      stats.activeUsers !== null ? `${fmt(stats.activeUsers)} active` : null,
+    "/admin-dashboard/quickbooks":
+      stats.qbConnected === null ? null : (
+        <StatusDot
+          ok={stats.qbConnected}
+          label={stats.qbConnected ? "Connected" : "Not connected"}
+        />
+      ),
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Page header */}
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold text-neutral-950 dark:text-white">
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-brand">
+          {format(new Date(), "EEEE, MMMM d")}
+        </p>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-neutral-950 dark:text-white">
           Admin Dashboard
         </h1>
+        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          People, operations, and system settings in one place.
+        </p>
       </div>
 
-      {/* KPI stat row */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
+      {/* KPI strip: gap-px over a tinted background draws the dividers */}
+      <div className="grid grid-cols-2 gap-px overflow-hidden border border-neutral-200 bg-neutral-200 dark:border-dark-300 dark:bg-dark-300 xl:grid-cols-4">
+        <StatCell
           loading={loading}
-          icon={
-            <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-300" />
-          }
-          label="Active Users"
+          icon={<Users className="h-3.5 w-3.5" />}
+          label="Active users"
           value={fmt(stats.activeUsers)}
-          helper="Accounts currently active"
+          helper="Accounts that can sign in"
         />
-        <StatCard
+        <StatCell
           loading={loading}
-          icon={
-            <ClipboardList className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
-          }
-          label="Total Jobs"
+          icon={<Briefcase className="h-3.5 w-3.5" />}
+          label="Total jobs"
           value={fmt(stats.totalJobs)}
-          helper="Non-deleted jobs across all divisions"
+          helper="Across all divisions"
         />
-        <StatCard
+        <StatCell
           loading={loading}
-          icon={<Bell className="h-5 w-5 text-rose-600 dark:text-rose-300" />}
-          label="Unread Alerts"
+          icon={<Bell className="h-3.5 w-3.5" />}
+          label="Unread alerts"
           value={fmt(stats.unreadAlerts)}
+          valueClassName={
+            stats.unreadAlerts
+              ? "text-rose-600 dark:text-rose-400"
+              : "text-neutral-900 dark:text-white"
+          }
           helper={
             stats.unreadAlerts === 0
               ? "All caught up"
-              : "Unread admin notifications"
+              : "Admin notifications to review"
           }
         />
-        <StatCard
+        <StatCell
           loading={loading}
-          icon={
-            <DollarSign className="h-5 w-5 text-lime-700 dark:text-lime-300" />
-          }
+          icon={<QuickBooksIcon className="h-3.5 w-3.5" />}
           label="QuickBooks"
+          large={false}
           value={
-            stats.qbConnected === null
-              ? "—"
-              : stats.qbConnected
-                ? "Connected"
-                : "Disconnected"
+            stats.qbConnected === null ? (
+              "—"
+            ) : (
+              <StatusDot
+                ok={stats.qbConnected}
+                label={stats.qbConnected ? "Connected" : "Not connected"}
+              />
+            )
           }
           helper={
             stats.qbConnected === null
               ? "Status unavailable"
-              : stats.qbConnected && stats.qbCompanyName
-                ? stats.qbCompanyName
-                : stats.qbConnected
-                  ? "Active integration found"
-                  : "No active QB integration"
+              : stats.qbConnected
+                ? stats.qbCompanyName || "Active integration"
+                : "No active integration"
           }
         />
       </div>
 
-      {/* Categorized nav (2/3) + activity feed (1/3) */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Categorized navigation */}
-        <div className="space-y-6 lg:col-span-2">
+      {/* Tools (2/3) + activity feed (1/3) */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="space-y-8 lg:col-span-2">
           {CATEGORIES.map((section) => (
             <div key={section.label} className="space-y-3">
               <SectionHeader title={section.label} />
-              <div
-                className={`grid grid-cols-1 gap-3 ${section.gridClass ?? "sm:grid-cols-2 md:grid-cols-3"}`}
-              >
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {section.cards.map((card) => (
-                  <NavCard key={card.title} card={card} navigate={navigate} />
+                  <NavCard
+                    key={card.path}
+                    card={card}
+                    tone={section.tone}
+                    meta={tileMeta[card.path]}
+                    onOpen={navigate}
+                  />
                 ))}
               </div>
             </div>
           ))}
         </div>
 
-        {/* Recent activity feed */}
+        {/* Recent activity */}
         <div className="lg:col-span-1">
-          <Card className="border border-neutral-200 bg-white shadow-sm dark:border-dark-300 dark:bg-dark-150">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base font-medium text-neutral-900 dark:text-white">
-                <Activity className="h-4 w-4 text-neutral-500" />
-                Recent Activity
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
+          <div className="border border-neutral-200 bg-white dark:border-dark-300 dark:bg-dark-150">
+            <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-dark-300">
+              <div className="flex items-center gap-2">
+                <Activity className="h-4 w-4 text-brand" />
+                <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">
+                  Recent activity
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate("/admin-dashboard/system-logs")}
+                className="inline-flex items-center gap-1 text-xs font-medium text-neutral-500 transition-colors hover:text-brand dark:text-neutral-400"
+              >
+                View all
+                <ArrowRight className="h-3 w-3" />
+              </button>
+            </div>
+
+            <div className="p-2">
               {loading ? (
-                <div className="space-y-2">
+                <div className="space-y-2 p-2">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <Skeleton key={i} className="h-14 w-full" />
+                    <Skeleton key={i} className="h-12 w-full rounded-none" />
                   ))}
                 </div>
               ) : activity.length === 0 ? (
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                  No recent activity found.
-                </p>
+                <div className="flex flex-col items-center gap-2 px-4 py-10 text-center">
+                  <span className="flex h-10 w-10 items-center justify-center bg-neutral-100 text-neutral-400 dark:bg-dark-200 dark:text-neutral-500">
+                    <Activity className="h-5 w-5" />
+                  </span>
+                  <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                    Nothing new
+                  </p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    Changes and alerts show up here.
+                  </p>
+                </div>
               ) : (
-                <div className="divide-y divide-neutral-100 dark:divide-dark-300">
-                  {activity.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-start justify-between gap-3 py-3"
-                    >
-                      <div className="flex min-w-0 items-start gap-2">
-                        <div className="mt-0.5 shrink-0">
-                          {getActivityIcon(item.kind)}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm text-neutral-700 dark:text-neutral-200">
+                <ol>
+                  {activity.map((item) => {
+                    const meta = ACTIVITY_META[item.kind];
+                    const KindIcon = meta.icon;
+                    return (
+                      <li
+                        key={item.id}
+                        className="flex gap-3 px-2 py-2.5 transition-colors hover:bg-neutral-50 dark:hover:bg-dark-200"
+                      >
+                        <span
+                          className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-none ${meta.className}`}
+                        >
+                          <KindIcon className="h-3.5 w-3.5" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="line-clamp-2 text-sm text-neutral-800 dark:text-neutral-200">
                             {item.message}
                           </p>
-                          <span
-                            className={`mt-1 inline-block rounded px-1.5 py-0.5 text-xs font-medium ${getActivityBadgeClass(item.kind)}`}
-                          >
-                            {item.kind}
-                          </span>
+                          <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                            {meta.label} ·{" "}
+                            {formatDistanceToNow(new Date(item.timestamp), {
+                              addSuffix: true,
+                            })}
+                          </p>
                         </div>
-                      </div>
-                      <span className="shrink-0 whitespace-nowrap text-xs text-neutral-400 dark:text-neutral-500">
-                        {formatDistanceToNow(new Date(item.timestamp), {
-                          addSuffix: true,
-                        })}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                      </li>
+                    );
+                  })}
+                </ol>
               )}
-              <div className="mt-4 border-t border-neutral-100 pt-3 dark:border-dark-300">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate("/admin-dashboard/system-logs")}
-                >
-                  View all logs
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>

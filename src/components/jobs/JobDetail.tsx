@@ -96,6 +96,7 @@ import {
 import { describeSupabaseError, withWriteRetry } from "@/lib/supabaseRetry";
 import { createBatchedRowLookup } from "@/lib/batchedRowLookup";
 import { usePersistentState } from "@/hooks/usePersistentState";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { format } from "date-fns";
 import { Button } from "../ui/Button";
 import ChangeOrdersSection from "./ChangeOrdersSection";
@@ -837,6 +838,11 @@ export default function JobDetail() {
     isSuperUser(user?.email);
 
   const [job, setJob] = useState<Job | null>(null);
+  usePageTitle(
+    job
+      ? [job.job_number, maskJobTitle(job.title)].filter(Boolean).join(" - ")
+      : null,
+  );
   // Engineering jobs (AMP or C&E) open on the engineering portal's job page.
   useEffect(() => {
     if (job?.division === "engineering" && id) {

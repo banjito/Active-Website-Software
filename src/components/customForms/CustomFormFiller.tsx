@@ -14,7 +14,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { useJobDetails } from "@/lib/hooks/useJobDetails";
-import { jobFillContext, jobInfoStartValues } from "@/lib/customForms/jobFill";
+import { isJobInfoSection, jobFillContext, jobInfoStartValues } from "@/lib/customForms/jobFill";
 import { toast } from "@/components/ui/toast";
 import { Database, History, ArrowLeft, Save, Printer, Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -97,6 +97,7 @@ import {
   type CustomFormStatus,
 } from "./runtime/PrintHeader";
 import { useReportCssIsolation } from "./runtime/useReportCssIsolation";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export const CustomFormFiller: React.FC = () => {
   useReportCssIsolation();
@@ -113,6 +114,7 @@ export const CustomFormFiller: React.FC = () => {
   const { jobDetails } = useJobDetails(jobId);
 
   const [template, setTemplate] = useState<CustomFormTemplate | null>(null);
+  usePageTitle(template?.name);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
@@ -192,7 +194,7 @@ export const CustomFormFiller: React.FC = () => {
   useEffect(() => {
     if (!template || !jobDetails || existingInstanceId != null) return;
     const jobInfoSections = template.structure.sections.filter(
-      (s) => s.componentType === "job-info" && s.fields?.length,
+      (s) => isJobInfoSection(s) && s.fields?.length,
     );
     if (!jobInfoSections.length) return;
     // Seed once. Checking for an empty block instead lost the job details

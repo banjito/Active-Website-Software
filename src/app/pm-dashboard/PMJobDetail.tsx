@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AlertTriangle, ArrowLeft, Check, ChevronLeft, ChevronRight, Copy, Pencil, Plus, Save, Settings, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { useDemoMode } from '@/lib/DemoModeContext';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -154,6 +155,11 @@ export default function PMJobDetail() {
     );
 
   const [job, setJob] = useState<PmJob | null>(null);
+  usePageTitle(
+    job
+      ? [job.job_number, maskJobTitle(job.title)].filter(Boolean).join(' - ')
+      : null,
+  );
   const [bundle, setBundle] = useState<JobBundle | null>(null);
   const [lines, setLines] = useState<SovLine[]>([]);
   const [billed, setBilled] = useState<number | null>(null);

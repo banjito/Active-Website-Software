@@ -69,7 +69,7 @@ import {
 } from "@/lib/customForms/layoutGroups";
 import { getComponentDefinition } from "@/lib/customForms/componentLibrary";
 import { getSectionReferenceCode } from "@/lib/customForms/formCellResolution";
-import { jobFillLabel } from "@/lib/customForms/jobFill";
+import { isJobInfoSection, jobFillLabel } from "@/lib/customForms/jobFill";
 import {
   cellKey,
   classifySection,
@@ -186,7 +186,7 @@ const SectionPreview: React.FC<SectionPreviewProps> = ({
   const code = getSectionReferenceCode(section);
   /** Where a Job Details field starts, so links show without opening each field. */
   const startLabel = (fieldId: string) => {
-    if (section.componentType !== "job-info") return "";
+    if (!isJobInfoSection(section)) return "";
     const field = section.fields?.find((f) => f.id === fieldId);
     return field ? jobFillLabel(field) : "";
   };

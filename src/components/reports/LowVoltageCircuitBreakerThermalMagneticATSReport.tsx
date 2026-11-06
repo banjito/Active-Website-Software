@@ -23,6 +23,11 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 // Temperature conversion and correction factor lookup tables (from PanelboardReport)
 const tcfTable: { [key: string]: number } = {
@@ -352,7 +357,24 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
 
   useEffect(() => {
     setCurrentReportId(reportId);
+    if (reportId) reportIdRef.current = reportId;
   }, [reportId]);
+
+  // Which row this report writes to, decided before any request leaves the
+  // browser so two saves racing each other land on the same row. State alone
+  // is not enough here: auto-save can fire again before React has committed
+  // the id from the first save.
+  const reportIdRef = React.useRef<string | undefined>(
+    reportId || reportIdFromUrl(),
+  );
+  // The asset name the job list was last told; re-sent when the identifier
+  // changes, since auto-save creates the asset before anything is typed.
+  const linkedAssetNameRef = React.useRef<string | undefined>(undefined);
+  const savingRef = React.useRef(false);
+  const saveAgainRef = React.useRef(false);
+  const loadFailedRef = React.useRef(false);
+  const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -585,6 +607,13 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
   // Autofill the "User" header field with the signed-in employee's name (new reports only).
   useReportUserAutofill(setFormData, reportId, "user");
 
+  // Auto-save reads the form through a ref so an in-flight save never writes a
+  // stale copy back over what is being typed now.
+  const formDataRef = React.useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+
   // --- Load Job Info (Keep from Electronic) ---
   const loadJobInfo = async () => {
     if (!jobId) return;
@@ -773,6 +802,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
       }
     } catch (error) {
       console.error("Error loading report:", error);
+      loadFailedRef.current = true;
       alert(`Failed to load report: ${(error as Error).message}`);
       setIsEditing(true);
     } finally {
@@ -780,10 +810,20 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
     }
   };
 
-  // --- Save Report (Adapt for Thermal-Magnetic) ---
-  const handleSave = async () => {
-    if (!jobId || !user?.id || !isEditing) return;
-    setIsSaving(true);
+  /**
+   * Writes the report and returns its id. Save, Ready for Review and
+   * auto-save all go through here and all write to one row.
+   */
+  const persistReport = React.useCallback(async (): Promise<string> => {
+    if (!jobId || !user?.id) {
+      throw new Error("Missing required job ID or user ID");
+    }
+    if (loadFailedRef.current) {
+      throw new Error(
+        "This report could not be loaded, so it was not saved. Reload the page and try again.",
+      );
+    }
+    const formData = formDataRef.current;
 
     // Structure data for Supabase JSONB columns matching the new FormData
     const reportPayload = {
@@ -826,69 +866,142 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
       comments: formData.comments,
     };
 
-    try {
-      let result;
-      // *** IMPORTANT: Use the correct table name for Thermal-Magnetic reports ***
-      const tableName = "low_voltage_circuit_breaker_thermal_magnetic_ats"; // Placeholder
+    // One id for the whole save, claimed synchronously so nothing else can
+    // now decide to create a row.
+    const isNewReport = !reportIdRef.current;
+    if (isNewReport) reportIdRef.current = newReportId();
+    const saveId = reportIdRef.current as string;
 
-      if (reportId) {
-        // Update existing report
-        result = await supabase
-          .schema("neta_ops")
-          .from(tableName)
-          .update(reportPayload)
-          .eq("id", reportId)
-          .select()
-          .single();
-      } else {
-        // Create new report
-        result = await supabase
-          .schema("neta_ops")
-          .from(tableName)
-          .insert(reportPayload)
-          .select()
-          .single();
+    let result;
+    if (!isNewReport) {
+      // Update existing report. job_id and user_id are left out so the
+      // original author stays on the report.
+      const { job_id: _jobId, user_id: _userId, ...updateData } =
+        reportPayload;
+      result = await supabase
+        .schema("neta_ops")
+        .from("low_voltage_circuit_breaker_thermal_magnetic_ats")
+        .update(updateData)
+        .eq("id", saveId)
+        .select()
+        .single();
+    } else {
+      // New report: the id is claimed before the request goes out, so a save
+      // that runs twice overwrites the same row.
+      result = await supabase
+        .schema("neta_ops")
+        .from("low_voltage_circuit_breaker_thermal_magnetic_ats")
+        .upsert({ id: saveId, ...reportPayload }, { onConflict: "id" })
+        .select()
+        .single();
+    }
 
-        // Create asset entry for the new report
-        if (result.data) {
-          const newReportId = result.data.id;
-          const assetData = {
-            // *** Update Asset Name and URL ***
-            name: getAssetName(
-              reportSlug,
-              formData.identifier || formData.eqptLocation || "",
-            ),
-            file_url: `report:/jobs/${jobId}/low-voltage-circuit-breaker-thermal-magnetic-ats-report/${newReportId}`, // Needs routing
-            user_id: user.id,
-          };
+    if (result.error) throw result.error;
 
-          // `assetResult` never existed in this scope, so linking a report that
-          // was opened from the equipment registry threw a ReferenceError and
-          // took the whole save down with it.
-          const assetId = await ensureReportAssetLink(
-            jobId,
-            assetData,
-            user.id,
-          );
-          if (equipmentAssetId) {
-            await setReportAssetEquipmentLink(assetId, equipmentAssetId);
-          }
-        }
+    const assetName = getAssetName(
+      reportSlug,
+      formData.identifier || formData.eqptLocation || "",
+    );
+    if (linkedAssetNameRef.current !== assetName) {
+      const assetId = await ensureReportAssetLink(
+        jobId,
+        {
+          name: assetName,
+          file_url: `report:/jobs/${jobId}/${reportSlug}/${saveId}`,
+          user_id: user.id,
+          equipment_asset_id: equipmentAssetId,
+        },
+        user.id,
+      );
+      if (isNewReport && equipmentAssetId) {
+        await setReportAssetEquipmentLink(assetId, equipmentAssetId);
       }
+      linkedAssetNameRef.current = assetName;
+    }
 
-      if (result.error) throw result.error;
+    if (isNewReport) {
+      setCurrentReportId(saveId);
+      window.history.replaceState(
+        {},
+        "",
+        `/jobs/${jobId}/${reportSlug}/${saveId}`,
+      );
+    }
+    return saveId;
+  }, [
+    jobId,
+    user?.id,
+    reportSlug,
+    equipmentAssetId,
+    maskCustomerName,
+    maskCustomerAddress,
+  ]);
+
+  const autoSave = React.useCallback(async () => {
+    if (!jobId || !user?.id) return;
+
+    // One save at a time. Anything typed while this one is in flight is picked
+    // up by the follow-up pass below, which reads the form fresh.
+    if (savingRef.current) {
+      saveAgainRef.current = true;
+      return;
+    }
+    savingRef.current = true;
+
+    try {
+      setIsAutoSaving(true);
+      do {
+        saveAgainRef.current = false;
+        await persistReport();
+      } while (saveAgainRef.current);
+      reportSaveSucceeded();
+    } catch (error) {
+      console.error("Auto-save error:", error);
+      reportSaveFailed(error);
+    } finally {
+      savingRef.current = false;
+      saveAgainRef.current = false;
+      setIsAutoSaving(false);
+    }
+  }, [jobId, user?.id, persistReport]);
+
+  // Auto-save effect with debounce
+  useEffect(() => {
+    if (!isEditing || loading) return;
+
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    autoSaveTimerRef.current = setTimeout(() => {
+      autoSave();
+    }, 500); // 500ms debounce
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, [formData, isEditing, loading, autoSave]);
+
+  // --- Save Report ---
+  const handleSave = async () => {
+    if (!jobId || !user?.id || !isEditing) return;
+    setIsSaving(true);
+
+    try {
+      const wasExistingReport = Boolean(reportIdRef.current);
+      const newId = await persistReport();
+      reportSaveSucceeded();
 
       setJustSaved(true);
-      if (!reportId) {
+      if (!wasExistingReport) {
         setIsEditing(false);
-        const newId = (result as any)?.data?.id || (result as any)?.id;
-        if (newId) {
-          setCurrentReportId(newId);
-          navigate(`/jobs/${jobId}/${reportSlug}/${newId}`, { replace: true });
-        }
+        navigate(`/jobs/${jobId}/${reportSlug}/${newId}`, { replace: true });
       }
     } catch (error: any) {
       console.error("Error saving report:", error);
+      reportSaveFailed(error);
       let errorMessage = "Unknown error";
       if (error) {
         if (error.message) errorMessage = error.message;
@@ -903,7 +1016,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
 
   const handleSaveAndClose = async () => {
     await handleSave();
-    if (reportId) {
+    if (reportIdRef.current) {
       setIsEditing(false);
     }
   };
@@ -1301,7 +1414,7 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
             />
           }
             title={reportName}
-            isAutoSaving={false}
+            isAutoSaving={isAutoSaving}
             isEditing={isEditing}
             justSaved={justSaved}
             isSaving={isSaving}
@@ -3315,7 +3428,8 @@ const LowVoltageCircuitBreakerThermalMagneticATSReport: React.FC = () => {
 
                 // Get the report ID (may have been created by save)
                 const savedReportId =
-                  reportId || window.location.pathname.split("/").pop();
+                  reportIdRef.current ||
+                  window.location.pathname.split("/").pop();
                 if (!savedReportId) throw new Error("Failed to save report");
 
                 // Update asset status to ready_for_review

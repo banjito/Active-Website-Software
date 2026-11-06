@@ -8,6 +8,12 @@ import { ReportHeader } from "./common/ReportHeader";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { companyConfig } from "@/lib/companyConfig";
+import { ensureReportAssetLink } from "./linkReportAsset";
+import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 
 // Slug used for routing AND for asset.file_url. Detected by JobDetail to
 // classify this asset as an "Internal Form".
@@ -219,6 +225,30 @@ const JobHazardAnalysisForm: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [assetStatus, setAssetStatus] = useState<string | null>(null);
+  // Set when auto-save creates the report. Kept apart from currentReportId on
+  // purpose: changing that reloads the form and leaves edit mode.
+  const [savedReportId, setSavedReportId] = useState<string | null>(null);
+
+  // Which row this report writes to, decided before any request leaves the
+  // browser so two saves racing each other land on the same row.
+  const reportIdRef = React.useRef<string | undefined>(
+    reportId || reportIdFromUrl(),
+  );
+  // The asset name the job list was last told; re-sent when the activity
+  // changes, since auto-save creates the asset before anything is typed.
+  const linkedAssetNameRef = React.useRef<string | undefined>(undefined);
+  const savingRef = React.useRef(false);
+  const saveAgainRef = React.useRef(false);
+  const loadFailedRef = React.useRef(false);
+  const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+
+  // Auto-save reads the form through a ref so an in-flight save never writes a
+  // stale copy back over what is being typed now.
+  const formDataRef = React.useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
 
   const isLocked = assetStatus === "approved" || assetStatus === "sent";
 
@@ -321,6 +351,7 @@ const JobHazardAnalysisForm: React.FC = () => {
       }
     } catch (err) {
       console.error("Error loading JHA report:", err);
+      loadFailedRef.current = true;
       alert("Failed to load Job Hazard Analysis form.");
     } finally {
       setLoading(false);
@@ -330,6 +361,7 @@ const JobHazardAnalysisForm: React.FC = () => {
   useEffect(() => {
     if (reportId) {
       setCurrentReportId(reportId);
+      reportIdRef.current = reportId;
     }
   }, [reportId]);
 
@@ -337,92 +369,167 @@ const JobHazardAnalysisForm: React.FC = () => {
     if (currentReportId) loadReport();
   }, [currentReportId, loadReport]);
 
-  // Save handler — creates or updates the report row and the linked asset.
+  /**
+   * Writes the report and returns its id. Save, Ready for Review and
+   * auto-save all go through here and all write to one row.
+   */
+  const persistReport = useCallback(async (): Promise<string> => {
+    if (!jobId || !user?.id) {
+      throw new Error("Missing required job ID or user ID");
+    }
+    if (loadFailedRef.current) {
+      throw new Error(
+        "This form could not be loaded, so it was not saved. Reload the page and try again.",
+      );
+    }
+    const formData = formDataRef.current;
+    const payload = {
+      report_info: {
+        activity: formData.activity,
+        project_location: formData.project_location,
+        contract_number: formData.contract_number,
+        date_prepared: formData.date_prepared,
+        prepared_by: formData.prepared_by,
+        reviewed_by: formData.reviewed_by,
+        notes: formData.notes,
+        overall_rac: formData.overall_rac,
+      },
+      job_steps: formData.job_steps,
+      equipment_to_be_used: formData.equipment_to_be_used,
+      training: formData.training,
+      inspection_requirements: formData.inspection_requirements,
+      safety_brief: formData.safety_brief,
+    };
+
+    // One id for the whole save, claimed synchronously so nothing else can
+    // now decide to create a row.
+    const isNewReport = !reportIdRef.current;
+    if (isNewReport) reportIdRef.current = newReportId();
+    const saveId = reportIdRef.current as string;
+
+    if (!isNewReport) {
+      // Plain update, so the original author stays on the form.
+      const { error } = await supabase
+        .schema("neta_ops")
+        .from("job_hazard_analysis_reports")
+        .update(payload)
+        .eq("id", saveId);
+      if (error) throw error;
+    } else {
+      // New form: the id is claimed before the request goes out, so a save
+      // that runs twice overwrites the same row.
+      const { error } = await supabase
+        .schema("neta_ops")
+        .from("job_hazard_analysis_reports")
+        .upsert(
+          { id: saveId, job_id: jobId, user_id: user.id, ...payload },
+          { onConflict: "id" },
+        );
+      if (error) throw error;
+    }
+
+    const suffix = (
+      formData.activity ||
+      formData.project_location ||
+      ""
+    ).trim();
+    const assetName = suffix
+      ? `${JOB_HAZARD_ANALYSIS_DISPLAY_NAME} - ${suffix}`
+      : JOB_HAZARD_ANALYSIS_DISPLAY_NAME;
+    if (linkedAssetNameRef.current !== assetName) {
+      await ensureReportAssetLink(
+        jobId,
+        {
+          name: assetName,
+          file_url: `report:/jobs/${jobId}/${JOB_HAZARD_ANALYSIS_SLUG}/${saveId}`,
+          user_id: user.id,
+        },
+        user.id,
+      );
+      linkedAssetNameRef.current = assetName;
+    }
+
+    if (isNewReport) {
+      setSavedReportId(saveId);
+      window.history.replaceState(
+        {},
+        "",
+        `/jobs/${jobId}/${JOB_HAZARD_ANALYSIS_SLUG}/${saveId}${window.location.search}`,
+      );
+    }
+    return saveId;
+  }, [jobId, user?.id]);
+
+  const autoSave = useCallback(async () => {
+    if (!jobId || !user?.id) return;
+
+    // One save at a time. Anything typed while this one is in flight is picked
+    // up by the follow-up pass below, which reads the form fresh.
+    if (savingRef.current) {
+      saveAgainRef.current = true;
+      return;
+    }
+    savingRef.current = true;
+
+    try {
+      setIsAutoSaving(true);
+      do {
+        saveAgainRef.current = false;
+        await persistReport();
+      } while (saveAgainRef.current);
+      reportSaveSucceeded();
+    } catch (error) {
+      console.error("Auto-save error:", error);
+      reportSaveFailed(error);
+    } finally {
+      savingRef.current = false;
+      saveAgainRef.current = false;
+      setIsAutoSaving(false);
+    }
+  }, [jobId, user?.id, persistReport]);
+
+  // Auto-save effect with debounce. Approved or sent forms never auto-save.
+  useEffect(() => {
+    if (!isEditing || loading || isLocked) return;
+
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    autoSaveTimerRef.current = setTimeout(() => {
+      autoSave();
+    }, 500); // 500ms debounce
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, [formData, isEditing, loading, isLocked, autoSave]);
+
+  // Save handler: creates or updates the report row and the linked asset.
   const handleSave = useCallback(async (): Promise<string | null> => {
     if (!jobId || !user?.id) return null;
-    if (isLocked) return currentReportId;
+    if (isLocked) return reportIdRef.current || null;
 
     setSaving(true);
     try {
-      const payload = {
-        job_id: jobId,
-        user_id: user.id,
-        report_info: {
-          activity: formData.activity,
-          project_location: formData.project_location,
-          contract_number: formData.contract_number,
-          date_prepared: formData.date_prepared,
-          prepared_by: formData.prepared_by,
-          reviewed_by: formData.reviewed_by,
-          notes: formData.notes,
-          overall_rac: formData.overall_rac,
-        },
-        job_steps: formData.job_steps,
-        equipment_to_be_used: formData.equipment_to_be_used,
-        training: formData.training,
-        inspection_requirements: formData.inspection_requirements,
-        safety_brief: formData.safety_brief,
-      };
+      const wasExistingReport = Boolean(reportIdRef.current);
+      const savedId = await persistReport();
+      reportSaveSucceeded();
 
-      let savedId = currentReportId;
-
-      if (currentReportId) {
-        const { error } = await supabase
-          .schema("neta_ops")
-          .from("job_hazard_analysis_reports")
-          .update(payload)
-          .eq("id", currentReportId);
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .schema("neta_ops")
-          .from("job_hazard_analysis_reports")
-          .insert(payload)
-          .select("id")
-          .single();
-        if (error) throw error;
-        savedId = data?.id || null;
-
-        if (savedId) {
-          const baseName = JOB_HAZARD_ANALYSIS_DISPLAY_NAME;
-          const suffix = (
-            formData.activity ||
-            formData.project_location ||
-            ""
-          ).trim();
-          const assetName = suffix ? `${baseName} - ${suffix}` : baseName;
-          const fileUrl = `report:/jobs/${jobId}/${JOB_HAZARD_ANALYSIS_SLUG}/${savedId}`;
-
-          const { data: assetRow, error: assetError } = await supabase
-            .schema("neta_ops")
-            .from("assets")
-            .insert({
-              name: assetName,
-              file_url: fileUrl,
-              user_id: user.id,
-            })
-            .select("id")
-            .single();
-          if (assetError) throw assetError;
-
-          await supabase.schema("neta_ops").from("job_assets").insert({
-            job_id: jobId,
-            asset_id: assetRow!.id,
-            user_id: user.id,
-          });
-
-          setCurrentReportId(savedId);
-          // Update URL so subsequent saves update the existing report.
-          navigate(
-            `/jobs/${jobId}/${JOB_HAZARD_ANALYSIS_SLUG}/${savedId}${location.search || ""}`,
-            { replace: true },
-          );
-        }
+      if (!wasExistingReport) {
+        setCurrentReportId(savedId);
+        // Update URL so subsequent saves update the existing report.
+        navigate(
+          `/jobs/${jobId}/${JOB_HAZARD_ANALYSIS_SLUG}/${savedId}${location.search || ""}`,
+          { replace: true },
+        );
       }
-
       return savedId;
     } catch (err: any) {
       console.error("Error saving JHA:", err);
+      reportSaveFailed(err);
       alert(
         `Failed to save Job Hazard Analysis: ${err?.message || "Unknown error"}`,
       );
@@ -430,15 +537,7 @@ const JobHazardAnalysisForm: React.FC = () => {
     } finally {
       setSaving(false);
     }
-  }, [
-    jobId,
-    user,
-    formData,
-    currentReportId,
-    isLocked,
-    navigate,
-    location.search,
-  ]);
+  }, [jobId, user?.id, isLocked, persistReport, navigate, location.search]);
 
   // Wrapper for ReportHeader's onSave (returns void)
   const onSave = useCallback(() => {
@@ -657,12 +756,12 @@ const JobHazardAnalysisForm: React.FC = () => {
         {/* Top toolbar (does not print) */}
         <ReportHeader
           title={JOB_HAZARD_ANALYSIS_DISPLAY_NAME}
-          isAutoSaving={false}
+          isAutoSaving={isAutoSaving}
           isEditing={isEditing}
           justSaved={justSaved}
           isSaving={saving}
           status={formData.overall_rac || "N/A"}
-          hasReport={!!currentReportId}
+          hasReport={!!(currentReportId || savedReportId)}
           onStatusToggle={() => {}}
           onSave={onSave}
           onSaveAndClose={handleSaveAndClose}

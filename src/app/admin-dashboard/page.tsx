@@ -79,6 +79,10 @@ interface ActivityItem {
   timestamp: string;
 }
 
+// Shared card surface.
+const CARD =
+  "border border-neutral-200 bg-white dark:border-dark-300 dark:bg-dark-150";
+
 // One tint per section keeps the page calm (was one color per tile).
 type Tone = "indigo" | "brand" | "sky" | "emerald";
 
@@ -239,7 +243,7 @@ function StatCell({
   valueClassName?: string;
 }) {
   return (
-    <div className="flex flex-col gap-2 bg-white p-4 dark:bg-dark-150 sm:p-5">
+    <div className={`flex flex-col gap-2 p-4 sm:p-5 ${CARD}`}>
       <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400">
         {icon}
         <span className="text-[11px] font-semibold uppercase tracking-widest">
@@ -294,7 +298,7 @@ function NavCard({
     <button
       type="button"
       onClick={() => onOpen(path)}
-      className="group relative flex w-full items-start gap-3 overflow-hidden rounded-none border border-neutral-200 bg-white p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 dark:border-dark-300 dark:bg-dark-150 dark:hover:border-brand/50 dark:hover:shadow-black/40 dark:focus-visible:ring-offset-black"
+      className={`group relative flex w-full items-start gap-3 overflow-hidden rounded-none p-4 text-left ${CARD} transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 dark:hover:border-brand/50 dark:hover:shadow-black/40 dark:focus-visible:ring-offset-black`}
     >
       {/* Brand edge that grows in on hover */}
       <span
@@ -525,16 +529,13 @@ export const AdminDashboardIndex: React.FC = () => {
         <p className="text-[11px] font-semibold uppercase tracking-widest text-brand">
           {format(new Date(), "EEEE, MMMM d")}
         </p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-neutral-950 dark:text-white">
+        <h1 className="font-bitcount mt-2 text-4xl text-neutral-950 dark:text-white sm:text-5xl">
           Admin Dashboard
         </h1>
-        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-          People, operations, and system settings in one place.
-        </p>
       </div>
 
-      {/* KPI strip: gap-px over a tinted background draws the dividers */}
-      <div className="grid grid-cols-2 gap-px overflow-hidden border border-neutral-200 bg-neutral-200 dark:border-dark-300 dark:bg-dark-300 xl:grid-cols-4">
+      {/* KPI tiles */}
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <StatCell
           loading={loading}
           icon={<Users className="h-3.5 w-3.5" />}
@@ -613,7 +614,7 @@ export const AdminDashboardIndex: React.FC = () => {
 
         {/* Recent activity */}
         <div className="lg:col-span-1">
-          <div className="border border-neutral-200 bg-white dark:border-dark-300 dark:bg-dark-150">
+          <div className={CARD}>
             <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-dark-300">
               <div className="flex items-center gap-2">
                 <Activity className="h-4 w-4 text-brand" />

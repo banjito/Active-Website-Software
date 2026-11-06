@@ -141,7 +141,9 @@ module.exports = {
         sans: ['Helvetica Neue', 'Helvetica', 'ui-sans-serif', 'system-ui', '-apple-system', 'Arial', 'sans-serif'],
         // Editorial accent face. Self-hosted in public/fonts/serif; Georgia
         // is a close enough fallback that a blocked/slow load is not jarring.
-        serif: ['Souvenir', 'Georgia', 'Times New Roman', 'serif']
+        serif: ['Souvenir', 'Georgia', 'Times New Roman', 'serif'],
+        // Dot-grid display face for page titles (src/index.css @font-face).
+        bitcount: ['"Bitcount Grid Single"', 'ui-monospace', 'monospace']
       },
       borderRadius: {
         lg: "var(--radius)",

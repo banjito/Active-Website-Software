@@ -31,6 +31,16 @@
   font-style: italic;
   font-display: swap;
 }
+/* Bitcount Grid Single: dot-grid display face (same as the offline app's
+   greeting). Latin subset, variable weight 100-900. SIL OFL 1.1, see
+   public/fonts/bitcount/OFL-bitcount-grid-single.txt. Use class font-bitcount. */
+@font-face {
+  font-family: "Bitcount Grid Single";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/bitcount/bitcount-grid-single-latin.woff2") format("woff2");
+}
 
 @layer base {
     html,

@@ -20,6 +20,11 @@ import JobInfoPrintTable from "./common/JobInfoPrintTable";
 import { EquipmentAutocomplete } from "../equipment/EquipmentAutocomplete";
 import { getPassFailBadgeClass } from "@/lib/reportPassFailStatus";
 import { ensureReportAssetLink } from "./linkReportAsset";
+import { newReportId, reportIdFromUrl } from "./common/reportIdentity";
+import {
+  reportSaveFailed,
+  reportSaveSucceeded,
+} from "./common/autoSaveStatus";
 import { useReportUserAutofill } from "./useReportUserAutofill";
 
 const REPORT_SLUG = "grounding-fall-of-potential-slope-method-test";
@@ -175,7 +180,23 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
 
   useEffect(() => {
     setCurrentReportId(reportId);
+    if (reportId) reportIdRef.current = reportId;
   }, [reportId]);
+
+  // Which row this report writes to, decided before any request leaves the
+  // browser so two saves racing each other land on the same row.
+  const reportIdRef = React.useRef<string | undefined>(
+    reportId || reportIdFromUrl(),
+  );
+  // The job-list entry (folder + name) last written; re-sent when the
+  // substation or identifier changes, since auto-save creates the entry
+  // before anything is typed.
+  const linkedAssetKeyRef = React.useRef<string | undefined>(undefined);
+  const savingRef = React.useRef(false);
+  const saveAgainRef = React.useRef(false);
+  const loadFailedRef = React.useRef(false);
+  const autoSaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -339,12 +360,15 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
       }
       try {
         setLoading(true);
-        const { data } = await supabase
+        const { data, error: loadError } = await supabase
           .schema("neta_ops")
           .from(TABLE_NAME)
           .select("*")
           .eq("id", reportId)
           .maybeSingle();
+        // Never let auto-save write blank defaults over a report that did
+        // not load.
+        if (loadError || !data) loadFailedRef.current = true;
         if (data) {
           const info = data.report_info || {};
           setStatus((info.status || "PASS") === "FAIL" ? "FAIL" : "PASS");
@@ -390,6 +414,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
           setIsEditing(false);
         }
       } catch {
+        loadFailedRef.current = true;
       } finally {
         setLoading(false);
       }
@@ -397,80 +422,211 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
     loadExisting();
   }, [reportId]);
 
+  // Everything the report saves, rebuilt only when one of its parts changes.
+  const reportInfo = useMemo(
+    () => ({
+      ...jobInfo,
+      temperature,
+      groundTestEquipment,
+      soil,
+      dcFeet,
+      r40,
+      r60,
+      r80,
+      rDp,
+      u,
+      dpFeet,
+      groundResistanceAtDp,
+      comments,
+      status,
+      title: reportName,
+    }),
+    [
+      jobInfo,
+      temperature,
+      groundTestEquipment,
+      soil,
+      dcFeet,
+      r40,
+      r60,
+      r80,
+      rDp,
+      u,
+      dpFeet,
+      groundResistanceAtDp,
+      comments,
+      status,
+      reportName,
+    ],
+  );
+  // Auto-save reads the form through a ref so an in-flight save never writes a
+  // stale copy back over what is being typed now.
+  const reportInfoRef = React.useRef(reportInfo);
+  useEffect(() => {
+    reportInfoRef.current = reportInfo;
+  }, [reportInfo]);
+
+  /**
+   * Writes the report and returns its id. Save, Ready for Review and
+   * auto-save all go through here and all write to one row.
+   */
+  const persistReport = React.useCallback(async (): Promise<string> => {
+    if (!jobId || !user?.id) {
+      throw new Error("Missing required job ID or user ID");
+    }
+    if (loadFailedRef.current) {
+      throw new Error(
+        "This report could not be loaded, so it was not saved. Reload the page and try again.",
+      );
+    }
+    const info = reportInfoRef.current;
+
+    // One id for the whole save, claimed synchronously so nothing else can
+    // now decide to create a row.
+    const isNewReport = !reportIdRef.current;
+    if (isNewReport) reportIdRef.current = newReportId();
+    const saveId = reportIdRef.current as string;
+
+    let result;
+    if (!isNewReport) {
+      // Plain update, so the original author stays on the report.
+      result = await supabase
+        .schema("neta_ops")
+        .from(TABLE_NAME)
+        .update({ report_info: info } as any)
+        .eq("id", saveId)
+        .select()
+        .single();
+    } else {
+      // New report: the id is claimed before the request goes out, so a save
+      // that runs twice overwrites the same row.
+      result = await supabase
+        .schema("neta_ops")
+        .from(TABLE_NAME)
+        .upsert(
+          { id: saveId, job_id: jobId, user_id: user.id, report_info: info } as any,
+          { onConflict: "id" },
+        )
+        .select()
+        .single();
+    }
+    if (result.error) throw result.error;
+
+    // The job-list entry is filed in a folder named after the substation.
+    // Use encodeURIComponent so the original substation name (e.g. "P2(I)")
+    // round-trips losslessly through the asset file_url and back into the
+    // Linked Reports grouping display.
+    const substationFolder =
+      info.substation && info.substation.trim()
+        ? encodeURIComponent(info.substation.trim())
+        : "general";
+    const fileUrl = `report:/jobs/${jobId}/${REPORT_SLUG}/${substationFolder}/${saveId}`;
+    const assetName = getAssetName(
+      REPORT_SLUG,
+      info.identifier || info.eqptLocation || "",
+    );
+    const assetKey = `${fileUrl}|${assetName}`;
+    if (linkedAssetKeyRef.current !== assetKey) {
+      // The substation is usually typed after auto-save has already filed the
+      // report, so find its entry by report id (whatever folder it is in) and
+      // move it, rather than filing a second copy under the new folder.
+      const { data: existing, error: lookupError } = await supabase
+        .schema("neta_ops")
+        .from("assets")
+        .select("id, file_url")
+        .like("file_url", `%/${saveId}`)
+        .limit(1)
+        .maybeSingle();
+      if (lookupError) throw lookupError;
+      if (existing && existing.file_url !== fileUrl) {
+        const { error: moveError } = await supabase
+          .schema("neta_ops")
+          .from("assets")
+          .update({ file_url: fileUrl })
+          .eq("id", existing.id);
+        if (moveError) throw moveError;
+      }
+      await ensureReportAssetLink(
+        jobId,
+        { name: assetName, file_url: fileUrl, user_id: user.id },
+        user.id,
+      );
+      linkedAssetKeyRef.current = assetKey;
+    }
+
+    if (isNewReport) {
+      setCurrentReportId(saveId);
+      window.history.replaceState(
+        {},
+        "",
+        `/jobs/${jobId}/${REPORT_SLUG}/${saveId}`,
+      );
+    }
+    return saveId;
+  }, [jobId, user?.id]);
+
+  const autoSave = React.useCallback(async () => {
+    if (!jobId || !user?.id) return;
+
+    // One save at a time. Anything typed while this one is in flight is picked
+    // up by the follow-up pass below, which reads the form fresh.
+    if (savingRef.current) {
+      saveAgainRef.current = true;
+      return;
+    }
+    savingRef.current = true;
+
+    try {
+      setIsAutoSaving(true);
+      do {
+        saveAgainRef.current = false;
+        await persistReport();
+      } while (saveAgainRef.current);
+      reportSaveSucceeded();
+    } catch (error) {
+      console.error("Auto-save error:", error);
+      reportSaveFailed(error);
+    } finally {
+      savingRef.current = false;
+      saveAgainRef.current = false;
+      setIsAutoSaving(false);
+    }
+  }, [jobId, user?.id, persistReport]);
+
+  // Auto-save effect with debounce
+  useEffect(() => {
+    if (!isEditing || loading) return;
+
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    autoSaveTimerRef.current = setTimeout(() => {
+      autoSave();
+    }, 500); // 500ms debounce
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, [reportInfo, isEditing, loading, autoSave]);
+
   const handleSave = async () => {
     if (!jobId || !user?.id || !isEditing) return;
-    const wasExistingReport = Boolean(reportId);
+    const wasExistingReport = Boolean(reportIdRef.current);
     try {
       setLoading(true);
-      const payload = {
-        job_id: jobId,
-        user_id: user.id,
-        report_info: {
-          ...jobInfo,
-          temperature,
-          groundTestEquipment,
-          soil,
-          dcFeet,
-          r40,
-          r60,
-          r80,
-          rDp,
-          u,
-          dpFeet,
-          groundResistanceAtDp,
-          comments,
-          status,
-          title: reportName,
-        },
-      } as any;
-      let result;
-      if (reportId) {
-        result = await supabase
-          .schema("neta_ops")
-          .from(TABLE_NAME)
-          .update(payload)
-          .eq("id", reportId)
-          .select()
-          .single();
-      } else {
-        result = await supabase
-          .schema("neta_ops")
-          .from(TABLE_NAME)
-          .insert(payload)
-          .select()
-          .single();
-        if (result.data) {
-          // Create folder structure by substation.
-          // Use encodeURIComponent so the original substation name (e.g. "P2(I)")
-          // round-trips losslessly through the asset file_url and back into the
-          // Linked Reports grouping display.
-          const substationFolder =
-            jobInfo.substation && jobInfo.substation.trim()
-              ? encodeURIComponent(jobInfo.substation.trim())
-              : "general";
-
-          const assetData = {
-            name: getAssetName(
-              REPORT_SLUG,
-              jobInfo.identifier || jobInfo.eqptLocation || "",
-            ),
-            file_url: `report:/jobs/${jobId}/${REPORT_SLUG}/${substationFolder}/${result.data.id}`,
-            user_id: user.id,
-          };
-          await ensureReportAssetLink(jobId, assetData, user.id);
-        }
-      }
-      if (result?.error) throw result.error;
+      const newId = await persistReport();
+      reportSaveSucceeded();
       setJustSaved(true);
       if (!wasExistingReport) {
         setIsEditing(false);
-        const newId = result?.data?.id;
-        if (newId) {
-          setCurrentReportId(newId);
-          navigate(`/jobs/${jobId}/${REPORT_SLUG}/${newId}`, { replace: true });
-        }
+        navigate(`/jobs/${jobId}/${REPORT_SLUG}/${newId}`, { replace: true });
       }
-    } catch {
+    } catch (error) {
+      console.error("Error saving report:", error);
+      reportSaveFailed(error);
     } finally {
       setLoading(false);
     }
@@ -478,7 +634,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
 
   const handleSaveAndClose = async () => {
     await handleSave();
-    if (currentReportId) {
+    if (reportIdRef.current) {
       setIsEditing(false);
     }
   };
@@ -563,7 +719,7 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
           <div className="hidden print:block w-full h-1 bg-brand mb-4"></div>
           <ReportHeader
             title={reportName}
-            isAutoSaving={false}
+            isAutoSaving={isAutoSaving}
             isEditing={isEditing}
             justSaved={justSaved}
             isSaving={loading}
@@ -1402,7 +1558,8 @@ const GroundingFallOfPotentialSlopeMethodTest: React.FC = () => {
 
                 // Get the report ID (may have been created by save)
                 const savedReportId =
-                  reportId || window.location.pathname.split("/").pop();
+                  reportIdRef.current ||
+                  window.location.pathname.split("/").pop();
                 if (!savedReportId) throw new Error("Failed to save report");
 
                 // Update asset status to ready_for_review.

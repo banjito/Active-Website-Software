@@ -1085,9 +1085,13 @@ export const offersService = {
   },
 
 
-  // Get offer by signing token (for public signing page)
-  // This is secure - only returns the offer if the exact token matches
-  async getBySigningToken(token: string): Promise<Offer | null> {
+  // Public signing page (/sign-offer/:token). The visitor is not logged in, so
+  // these go through token-checked database functions instead of the tables
+  // (see database/migrations/offer_signing_token_functions.sql). Expiry is
+  // checked server-side too.
+  async getBySigningToken(
+    token: string,
+  ): Promise<(Offer & { attachments?: { id: string; name: string; file_url: string }[] }) | null> {
     if (!token || token.length !== 64) {
       // Token should be 64 hex characters (32 bytes * 2)
       return null;
@@ -1095,57 +1099,45 @@ export const offersService = {
 
     const { data, error } = await supabase
       .schema('common')
-      .from('offers')
-      .select('*')
-      .eq('signing_token', token)
-      .single();
+      .rpc('get_offer_for_signing', { p_token: token });
 
     if (error) {
-      // Don't log the error details to prevent information leakage
-      // Just return null if token doesn't match
-      if (error.code === 'PGRST116') {
-        // No rows returned - invalid token
-        return null;
-      }
-      console.error('Error fetching offer by token:', error);
+      // Don't log details; a bad token just shows "not found".
+      console.error('Error fetching offer by token:', error.code);
       return null;
     }
 
-    if (!data) return null;
+    return (data as any) || null;
+  },
 
-    const offerData = data as Offer;
-    if (
-      offerData.expiration_date &&
-      !['accepted', 'declined', 'withdrawn', 'expired'].includes(offerData.status)
-    ) {
-      const now = new Date();
-      const expiration = new Date(offerData.expiration_date);
-      expiration.setHours(23, 59, 59, 999);
-      if (!Number.isNaN(expiration.getTime()) && now > expiration) {
-        await supabase
-          .schema('common')
-          .from('offers')
-          .update({
-            status: 'expired',
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', offerData.id);
-        return null;
-      }
-    }
-
-    // Fetch candidate separately
-    const { data: candidateData } = await supabase
+  async signByToken(
+    token: string,
+    signer: {
+      signer_name: string;
+      signer_email: string;
+      signature_image: string;
+      user_agent?: string;
+      ip_address?: string;
+    },
+  ): Promise<void> {
+    const { error } = await supabase
       .schema('common')
-      .from('candidates')
-      .select('id, first_name, last_name, email, position_applied')
-      .eq('id', (data as any).candidate_id)
-      .single();
+      .rpc('sign_offer_by_token', {
+        p_token: token,
+        p_signer_name: signer.signer_name,
+        p_signer_email: signer.signer_email,
+        p_signature_image: signer.signature_image,
+        p_user_agent: signer.user_agent ?? null,
+        p_client_ip: signer.ip_address ?? null,
+      });
+    if (error) throw error;
+  },
 
-    return {
-      ...data,
-      candidate: candidateData || undefined,
-    };
+  async declineByToken(token: string): Promise<void> {
+    const { error } = await supabase
+      .schema('common')
+      .rpc('decline_offer_by_token', { p_token: token });
+    if (error) throw error;
   },
 
   // Generate signing link for an offer

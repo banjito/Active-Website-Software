@@ -65,15 +65,7 @@ export const PublicOfferSigning: React.FC = () => {
       }
 
       setOffer(offerData);
-
-      try {
-        const list = await offersService.getAttachments(offerData.id);
-        setAttachments(
-          list.map((a) => ({ id: a.id, name: a.name, file_url: a.file_url })),
-        );
-      } catch {
-        setAttachments([]);
-      }
+      setAttachments(offerData.attachments ?? []);
 
       // Pre-fill signer info from candidate
       if (offerData.candidate) {
@@ -213,23 +205,15 @@ export const PublicOfferSigning: React.FC = () => {
         // Ignore IP fetch errors
       }
 
-      const signatureInfo = {
-        signer_id: offer.candidate_id,
+      // One server call: checks the token, records the signature, marks the
+      // offer accepted and updates the candidate.
+      await offersService.signByToken(token!, {
         signer_email: signerEmail,
         signer_name: signerName,
         signature_image: signatureData,
-        signature_data: {
-          signedAt: new Date().toISOString(),
-          signerType: "candidate",
-          ipAddress,
-          userAgent: navigator.userAgent,
-        },
         ip_address: ipAddress,
         user_agent: navigator.userAgent,
-      };
-
-      await offersService.createSignature(offer.id, "candidate", signatureInfo);
-      await offersService.updateStatus(offer.id, "accepted");
+      });
 
       setSigned(true);
       toast({
@@ -255,7 +239,7 @@ export const PublicOfferSigning: React.FC = () => {
 
     try {
       setSigning(true);
-      await offersService.updateStatus(offer.id, "declined");
+      await offersService.declineByToken(token!);
       toast({
         title: "Offer Declined",
         description: "You have declined this offer.",

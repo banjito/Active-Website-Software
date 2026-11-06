@@ -291,38 +291,31 @@ export const SignOnboardingForm: React.FC = () => {
             </p>
           )}
           {!alreadySigned && (
-            <>
-              <div className="space-y-2">
+            // Pinned to the bottom of the scroll area so the signature box and
+            // Submit button stay on screen while the document scrolls above.
+            <div className="sticky bottom-0 z-10 -mx-6 -mb-6 space-y-2 border-t border-neutral-200 bg-white px-6 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] dark:border-neutral-700 dark:bg-neutral-900">
+              <div className="flex items-center justify-between gap-2">
                 <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   Your signature
                 </label>
-                <div className="border rounded-none bg-white dark:bg-dark-150 p-2">
-                  <canvas
-                    ref={canvasRef}
-                    width={500}
-                    height={120}
-                    className="border border-neutral-300 dark:border-neutral-600 rounded w-full cursor-crosshair touch-none"
-                    style={{ maxWidth: "100%", height: "120px" }}
-                    onMouseDown={startDrawing}
-                    onMouseMove={draw}
-                    onMouseUp={stopDrawing}
-                    onMouseLeave={stopDrawing}
-                    onTouchStart={startDrawing}
-                    onTouchMove={draw}
-                    onTouchEnd={stopDrawing}
-                  />
-                  <div className="flex gap-2 mt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={clearSignature}
-                    >
-                      Clear
-                    </Button>
-                  </div>
-                </div>
+                <Button variant="outline" size="sm" onClick={clearSignature}>
+                  Clear
+                </Button>
               </div>
-              <div className="flex gap-2">
+              <canvas
+                ref={canvasRef}
+                width={500}
+                height={120}
+                className="block h-[120px] w-full max-w-full cursor-crosshair touch-none rounded-none border border-neutral-300 bg-white dark:border-neutral-600 [@media(max-height:800px)]:h-20"
+                onMouseDown={startDrawing}
+                onMouseMove={draw}
+                onMouseUp={stopDrawing}
+                onMouseLeave={stopDrawing}
+                onTouchStart={startDrawing}
+                onTouchMove={draw}
+                onTouchEnd={stopDrawing}
+              />
+              <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => navigate(backPath)}>
                   Cancel
                 </Button>
@@ -330,16 +323,18 @@ export const SignOnboardingForm: React.FC = () => {
                   onClick={handleSubmit}
                   disabled={!signatureData || signing}
                   className="bg-brand hover:bg-brand/90 text-white"
+                  leftIcon={
+                    signing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <PenTool className="h-4 w-4" />
+                    )
+                  }
                 >
-                  {signing ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <PenTool className="h-4 w-4 mr-2" />
-                  )}
                   Submit signature
                 </Button>
               </div>
-            </>
+            </div>
           )}
           {alreadySigned && (
             <Button variant="outline" onClick={() => navigate(backPath)} leftIcon={<ArrowLeft className="h-4 w-4" />}>

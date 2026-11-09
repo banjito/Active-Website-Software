@@ -71,6 +71,7 @@ export const companyConfig = {
   allowedEmailDomains: list(env.VITE_COMPANY_EMAIL_DOMAINS, [
     "@ampqes.com",
     "@cedsi.com",
+    "@armadillosafe.com",
   ]),
   /** Emails that always get full admin access. */
   superuserEmails: list(env.VITE_COMPANY_SUPERUSER_EMAILS, [

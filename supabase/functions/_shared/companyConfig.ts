@@ -91,7 +91,7 @@ export const COMPANY_SUPERUSER_EMAILS = env(
  */
 export const COMPANY_EMPLOYEE_DOMAINS = env(
   "COMPANY_EMPLOYEE_DOMAINS",
-  "@ampqes.com,@cedsi.com"
+  "@ampqes.com,@cedsi.com,@armadillosafe.com"
 )
   .split(",")
   .map((d) => d.trim().toLowerCase())

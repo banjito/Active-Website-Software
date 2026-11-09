@@ -85,6 +85,8 @@ export function buildMvCableNameplateCopy<T extends object>(
     const blankStep = blank.tanDeltaTest.values?.[0] || {};
     copy.tanDeltaTest = {
       ...blank.tanDeltaTest,
+      // Keep the on/off toggle so copies of a no-Tan-Delta cable stay off.
+      ...(current.tanDeltaTest?.enabled === false ? { enabled: false } : {}),
       systemVoltageL2G:
         current.tanDeltaTest?.systemVoltageL2G ||
         blank.tanDeltaTest.systemVoltageL2G,

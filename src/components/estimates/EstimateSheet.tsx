@@ -17,6 +17,11 @@ import {
   Trash,
   Edit,
   BookOpen,
+  ChevronDown,
+  ChevronRight,
+  ListTree,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import {
   LetterImageHandler,
@@ -321,6 +326,12 @@ interface EstimateLineItem {
   laborMen: number | string;
   laborHours: number | string;
   notes: string;
+  // Optional breakdown rows. When present, they drive the parent's
+  // materialPrice and laborHours (see rollUpSubItems).
+  subItems?: EstimateLineItem[];
+  subItemsCollapsed?: boolean;
+  // When true, the proposal lists this row's sub-items under it.
+  showSubItemsInProposal?: boolean;
 }
 
 interface EstimateData {
@@ -468,10 +479,45 @@ const normalizeEstimateLineItem = (item: any): EstimateLineItem => {
       ? item.rowType
       : "item";
 
-  return {
+  const normalized: EstimateLineItem = {
     ...EMPTY_LINE_ITEM,
     ...(item || {}),
     rowType,
+  };
+  if (Array.isArray(item?.subItems) && item.subItems.length > 0) {
+    normalized.subItems = item.subItems.map((sub: any) => ({
+      ...EMPTY_LINE_ITEM,
+      ...(sub || {}),
+      rowType: "item" as const,
+    }));
+  } else {
+    delete normalized.subItems;
+  }
+  return normalized;
+};
+
+const hasSubItems = (item: any): boolean =>
+  Array.isArray(item?.subItems) && item.subItems.length > 0;
+
+// Parent material price = sum of sub-row material extensions.
+// Parent labor hours = sum of sub-row labor totals / parent techs, so the
+// parent's labor unit (techs x hours) equals the sub-rows' combined labor.
+const rollUpSubItems = (parent: EstimateLineItem): EstimateLineItem => {
+  if (!hasSubItems(parent)) return parent;
+  const subs = parent.subItems as EstimateLineItem[];
+  const material = subs.reduce(
+    (sum, s) => sum + calculateMaterialExtension(s.quantity, s.materialPrice),
+    0,
+  );
+  const laborTotal = subs.reduce(
+    (sum, s) => sum + calculateLaborTotal(s.quantity, s.laborMen, s.laborHours),
+    0,
+  );
+  const techs = Number(parent.laborMen) || 0;
+  return {
+    ...parent,
+    materialPrice: Math.round(material * 100) / 100,
+    laborHours: techs > 0 ? laborTotal / techs : 0,
   };
 };
 
@@ -3632,10 +3678,11 @@ export default function EstimateSheet({
     const itemsKey = section === "sov" ? "sovItems" : "nonSovItems";
     const newItems = [...data[itemsKey]];
 
-    newItems[index] = {
+    // Rows with sub-items keep their material price and labor hours derived.
+    newItems[index] = rollUpSubItems({
       ...newItems[index],
       [field]: value,
-    };
+    });
 
     setData((prev) => {
       const newData = {
@@ -3663,6 +3710,127 @@ export default function EstimateSheet({
     setIsDirty(true);
   };
 
+  // Updates one SOV parent row (via `update`), re-derives its rolled-up
+  // values, and refreshes the labor-hours summary.
+  const updateSovParentRow = (
+    index: number,
+    update: (parent: EstimateLineItem) => EstimateLineItem,
+    recalcHours = true,
+  ) => {
+    setData((prev) => {
+      const newItems = [...prev.sovItems];
+      if (!newItems[index]) return prev;
+      newItems[index] = rollUpSubItems(update(newItems[index]));
+      const newData = { ...prev, sovItems: newItems };
+      if (recalcHours) {
+        setIsManualLaborHours(false);
+        const defaultHours = calculateDefaultLaborHours(newData);
+        newData.hoursSummary = {
+          ...newData.hoursSummary,
+          straightTimeHours: defaultHours.straightTime,
+          overtimeHours: defaultHours.overtime,
+          doubleTimeHours: defaultHours.doubleTime,
+        };
+      }
+      return newData;
+    });
+    setIsDirty(true);
+  };
+
+  const handleAddSubItem = (index: number) => {
+    updateSovParentRow(index, (parent) => ({
+      ...parent,
+      // Labor hours divide by techs, so a parent needs at least one tech.
+      laborMen: Number(parent.laborMen) > 0 ? parent.laborMen : 1,
+      subItems: [...(parent.subItems || []), createEmptyLineItem()],
+      subItemsCollapsed: false,
+    }));
+  };
+
+  const handleSubItemChange = (
+    index: number,
+    subIndex: number,
+    field: string,
+    value: string | number,
+  ) => {
+    updateSovParentRow(
+      index,
+      (parent) => ({
+        ...parent,
+        subItems: (parent.subItems || []).map((sub, i) =>
+          i === subIndex ? { ...sub, [field]: value } : sub,
+        ),
+      }),
+      field !== "item" && field !== "notes",
+    );
+  };
+
+  const handleRemoveSubItem = (index: number, subIndex: number) => {
+    updateSovParentRow(index, (parent) => {
+      const remaining = (parent.subItems || []).filter(
+        (_, i) => i !== subIndex,
+      );
+      const next = { ...parent, subItems: remaining };
+      // Last sub-row gone: parent becomes a normal editable row again,
+      // keeping its last rolled-up values.
+      if (remaining.length === 0) {
+        delete next.subItems;
+        delete next.subItemsCollapsed;
+        delete next.showSubItemsInProposal;
+      }
+      return next;
+    });
+  };
+
+  const handleMoveSubItem = (index: number, from: number, to: number) => {
+    if (from === to) return;
+    updateSovParentRow(
+      index,
+      (parent) => {
+        const subs = [...(parent.subItems || [])];
+        if (!subs[from] || to < 0 || to >= subs.length) return parent;
+        const [moved] = subs.splice(from, 1);
+        subs.splice(to, 0, moved);
+        return { ...parent, subItems: subs };
+      },
+      false,
+    );
+  };
+
+  const toggleShowSubItemsInProposal = (index: number) => {
+    updateSovParentRow(
+      index,
+      (parent) => ({
+        ...parent,
+        showSubItemsInProposal: !parent.showSubItemsInProposal,
+      }),
+      false,
+    );
+  };
+
+  // Which sub-row is being dragged (parent row + sub index).
+  const [subDrag, setSubDrag] = useState<{
+    parent: number;
+    from: number;
+  } | null>(null);
+  const [subDragOver, setSubDragOver] = useState<{
+    parent: number;
+    to: number;
+  } | null>(null);
+
+  const toggleSubItemsCollapsed = (index: number) => {
+    setData((prev) => {
+      const newItems = [...prev.sovItems];
+      if (!newItems[index]) return prev;
+      newItems[index] = {
+        ...newItems[index],
+        subItemsCollapsed: !newItems[index].subItemsCollapsed,
+      };
+      return { ...prev, sovItems: newItems };
+    });
+    setIsDirty(true);
+  };
+
   const applyScopeLibraryItemToRow = (
     section: "sov" | "nonSov",
     index: number,
@@ -3675,16 +3843,18 @@ export default function EstimateSheet({
       const existingItem = newItems[index] || createEmptyLineItem();
       const existingQuantity = Number(existingItem.quantity);
 
-      newItems[index] = normalizeEstimateLineItem({
-        ...existingItem,
-        rowType: "item",
-        item: libraryItem.item_name,
-        quantity: existingQuantity > 0 ? existingItem.quantity : 1,
-        materialPrice: Number(libraryItem.material_cost) || 0,
-        laborMen: Number(libraryItem.tech_count) || 0,
-        laborHours: Number(libraryItem.hours) || 0,
-        notes: libraryItem.estimate_notes || "",
-      });
+      newItems[index] = rollUpSubItems(
+        normalizeEstimateLineItem({
+          ...existingItem,
+          rowType: "item",
+          item: libraryItem.item_name,
+          quantity: existingQuantity > 0 ? existingItem.quantity : 1,
+          materialPrice: Number(libraryItem.material_cost) || 0,
+          laborMen: Number(libraryItem.tech_count) || 0,
+          laborHours: Number(libraryItem.hours) || 0,
+          notes: libraryItem.estimate_notes || "",
+        }),
+      );
 
       const newData = {
         ...prev,
@@ -5036,10 +5206,40 @@ export default function EstimateSheet({
     };
     const resizeHandle =
       '<span class="amp-col-resize print-hidden" contenteditable="false" style="position:absolute;right:-5px;top:0;width:10px;height:100%;cursor:col-resize;z-index:2;border-right:2px solid rgba(242,103,34,0.35);"></span>';
+    // Parents opted in via showSubItemsInProposal list their sub-rows
+    // (indented) right under them.
     const rows =
       sovItems && sovItems.length > 0
         ? sovItems
         : [{ item: "24-hour Power Study", quantity: 1, notes: "" }];
+
+    // Parents opted in via showSubItemsInProposal list their sub-items as a
+    // small table inside their own Item cell, with its own header. Keeping it
+    // inside one cell means the outer Quantity column only ever holds the
+    // parent's quantity, and sub-quantities read as "per one of the parent".
+    const buildSubItemsTableHtml = (item: any): string => {
+      if (!(item?.showSubItemsInProposal && hasSubItems(item))) return "";
+      const subs = item.subItems.filter(shouldShowSovItemInProposal);
+      if (subs.length === 0) return "";
+      const headCell =
+        "padding:3px 8px;font-size:0.72em;letter-spacing:0.06em;text-transform:uppercase;font-weight:600;color:#000;background:transparent;border:0;border-bottom:1px solid #e5e7eb;";
+      const bodyCell =
+        "padding:3px 8px;font-size:0.92em;font-weight:normal;color:#000;border:0;vertical-align:top;";
+      const subRows = subs
+        .map((sub: any, i: number) => {
+          const divider =
+            i !== subs.length - 1 ? "border-bottom:1px dotted #e5e7eb;" : "";
+          const subName = escapeLetterHtml(sub?.item || "");
+          const subNotes =
+            includeNotes && sub?.notes
+              ? `<div style="font-size:0.85em;color:#000;margin-top:1px;">${escapeLetterHtml(sub.notes)}</div>`
+              : "";
+          const subQty = escapeLetterHtml(sub?.quantity ?? 1);
+          return `<tr><td style="${bodyCell}${divider}text-align:left;">&#8627; ${subName}${subNotes}</td><td style="${bodyCell}${divider}text-align:right;white-space:nowrap;">${subQty}</td></tr>`;
+        })
+        .join("");
+      return `<table class="amp-sov-subtable" style="width:100%;border-collapse:collapse;border:0;border-left:3px solid #f26722;margin:6px 0 2px 0;table-layout:auto;"><thead><tr><th style="${headCell}text-align:left;">Includes</th><th style="${headCell}text-align:right;width:1%;white-space:nowrap;">Qty each</th></tr></thead><tbody>${subRows}</tbody></table>`;
+    };
     const columnCount = includeNotes ? 3 : 2;
     const colgroup = includeNotes
       ? '<colgroup><col style="width:55%;" /><col style="width:15%;" /><col style="width:30%;" /></colgroup>'
@@ -5068,6 +5268,10 @@ export default function EstimateSheet({
         const notesCell = includeNotes
           ? `<td style="${makeCellStyle({ right: false, bottom })}">${escapeLetterHtml(item?.notes || "")}</td>`
           : "";
+        const subTable = buildSubItemsTableHtml(item);
+        if (subTable) {
+          return `<tr class="amp-sov-parent-row"><td style="${makeCellStyle({ bottom })}"><div style="font-weight:bold;">${name}</div>${subTable}</td><td class="amp-sov-parent-qty" style="${makeCellStyle({ right: includeNotes, bottom, align: "center" })};font-weight:bold;vertical-align:middle;">${qty}</td>${notesCell}</tr>`;
+        }
         return `<tr><td style="${makeCellStyle({ bottom })}">${name}</td><td style="${makeCellStyle({ right: includeNotes, bottom, align: "center" })}">${qty}</td>${notesCell}</tr>`;
       })
       .join("");
@@ -6998,6 +7202,52 @@ export default function EstimateSheet({
             height: 18px !important;
             padding: 10px 0 !important;
           }
+          .amp-sov-table .amp-sov-parent-row > td {
+            font-weight: 700 !important;
+          }
+          .amp-sov-table .amp-sov-parent-row > td.amp-sov-parent-qty {
+            vertical-align: middle !important;
+          }
+          /* Sub-items table nested in a parent's Item cell. Overrides the
+             generic .amp-sov-table th/td rules above, which also match it. */
+          .amp-sov-table .amp-sov-subtable {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            border: 0 !important;
+            border-left: 3px solid #f26722 !important;
+            margin: 6px 0 2px 0 !important;
+            table-layout: auto !important;
+          }
+          .amp-sov-table .amp-sov-subtable th,
+          .amp-sov-table .amp-sov-subtable td {
+            border: 0 !important;
+            padding: 3px 8px !important;
+            vertical-align: top !important;
+          }
+          .amp-sov-table .amp-sov-subtable th {
+            background: transparent !important;
+            color: #000 !important;
+            font-size: 7.5pt !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.06em !important;
+            text-transform: uppercase !important;
+            border-bottom: 1px solid #e5e7eb !important;
+            text-align: left !important;
+          }
+          .amp-sov-table .amp-sov-subtable td {
+            font-size: 10pt !important;
+            font-weight: 400 !important;
+            color: #000 !important;
+            text-align: left !important;
+          }
+          .amp-sov-table .amp-sov-subtable th:last-child,
+          .amp-sov-table .amp-sov-subtable td:last-child {
+            text-align: right !important;
+            white-space: nowrap !important;
+          }
+          .amp-sov-table .amp-sov-subtable tbody tr:not(:last-child) > td {
+            border-bottom: 1px dotted #e5e7eb !important;
+          }
           .amp-sov-table tr {
             break-inside: avoid !important;
             page-break-inside: avoid !important;
@@ -8616,9 +8866,15 @@ export default function EstimateSheet({
                                 laborUnit,
                               );
 
+                              const rowHasSubItems = hasSubItems(item);
+                              const subItemsOpen =
+                                rowHasSubItems && !item.subItemsCollapsed;
+                              const groupBar = "3px solid var(--brand)";
+                              const subRowBg = "rgba(242, 103, 34, 0.06)";
+
                               return (
+                                <React.Fragment key={index}>
                                 <tr
-                                  key={index}
                                   onDragOver={(e) => handleDragOver(e, index)}
                                   onDragLeave={handleDragLeave}
                                   onDrop={(e) => handleDrop(e, index, "sov")}
@@ -8668,6 +8924,9 @@ export default function EstimateSheet({
                                       ...styles.tableCell,
                                       width: toPx(itemColWidth),
                                       minWidth: toPx(itemColWidth),
+                                      ...(rowHasSubItems
+                                        ? { borderLeft: groupBar }
+                                        : {}),
                                     }}
                                   >
                                     <div
@@ -8721,11 +8980,56 @@ export default function EstimateSheet({
                                           ⋮⋮
                                         </div>
                                       )}
+                                      {rowHasSubItems && (
+                                        <button
+                                          type="button"
+                                          className="print:hidden"
+                                          onClick={() =>
+                                            toggleSubItemsCollapsed(index)
+                                          }
+                                          title={
+                                            subItemsOpen
+                                              ? "Hide sub-items"
+                                              : `Show ${item.subItems!.length} sub-item${item.subItems!.length === 1 ? "" : "s"}`
+                                          }
+                                          aria-expanded={subItemsOpen}
+                                          style={{
+                                            background: "none",
+                                            border: "none",
+                                            color: "var(--brand)",
+                                            cursor: "pointer",
+                                            padding: "2px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            borderRadius: 0,
+                                          }}
+                                        >
+                                          {subItemsOpen ? (
+                                            <ChevronDown className="h-5 w-5" />
+                                          ) : (
+                                            <ChevronRight className="h-5 w-5" />
+                                          )}
+                                          {!subItemsOpen && (
+                                            <span
+                                              style={{
+                                                fontSize: "11px",
+                                                fontWeight: 600,
+                                                marginLeft: 2,
+                                              }}
+                                            >
+                                              {item.subItems!.length}
+                                            </span>
+                                          )}
+                                        </button>
+                                      )}
                                       <input
                                         type="text"
                                         style={{
                                           ...styles.tableInput,
                                           flex: 1,
+                                          ...(rowHasSubItems
+                                            ? { fontWeight: 600 }
+                                            : {}),
                                         }}
                                         value={item.item}
                                         onChange={(e) =>
@@ -8777,6 +9081,70 @@ export default function EstimateSheet({
                                           <BookOpen className="h-5 w-5" />
                                         </button>
                                       )}
+                                      {!isViewMode && (
+                                        <button
+                                          type="button"
+                                          className="print:hidden"
+                                          onClick={() =>
+                                            handleAddSubItem(index)
+                                          }
+                                          title="Add sub-item (breaks this row into parts)"
+                                          aria-label="Add sub-item"
+                                          style={{
+                                            background: "none",
+                                            border: "none",
+                                            color: "var(--brand)",
+                                            cursor: "pointer",
+                                            padding: "3px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            borderRadius: 0,
+                                          }}
+                                        >
+                                          <ListTree className="h-5 w-5" />
+                                        </button>
+                                      )}
+                                      {rowHasSubItems && (
+                                        <button
+                                          type="button"
+                                          className="print:hidden"
+                                          onClick={() =>
+                                            !isViewMode &&
+                                            toggleShowSubItemsInProposal(index)
+                                          }
+                                          disabled={isViewMode}
+                                          title={
+                                            item.showSubItemsInProposal
+                                              ? "Sub-items WILL show in the proposal (click to hide)"
+                                              : "Sub-items are hidden from the proposal (click to show)"
+                                          }
+                                          aria-pressed={
+                                            !!item.showSubItemsInProposal
+                                          }
+                                          style={{
+                                            background: "none",
+                                            border: "none",
+                                            color: item.showSubItemsInProposal
+                                              ? "var(--brand)"
+                                              : "#9ca3af",
+                                            cursor: isViewMode
+                                              ? "default"
+                                              : "pointer",
+                                            padding: "3px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            borderRadius: 0,
+                                          }}
+                                        >
+                                          {item.showSubItemsInProposal ? (
+                                            <Eye className="h-5 w-5" />
+                                          ) : (
+                                            <EyeOff className="h-5 w-5" />
+                                          )}
+                                        </button>
+                                      )}
                                     </div>
                                   </td>
                                   <td style={styles.tableCell}>
@@ -8806,6 +9174,19 @@ export default function EstimateSheet({
                                       readOnly={isViewMode}
                                     />
                                   </td>
+                                  {rowHasSubItems ? (
+                                    <td
+                                      style={{
+                                        ...styles.tableCell,
+                                        ...styles.calculated,
+                                      }}
+                                      title="Sum of sub-item material extensions"
+                                    >
+                                      {formatCurrency(
+                                        Number(item.materialPrice) || 0,
+                                      )}
+                                    </td>
+                                  ) : (
                                   <td style={styles.tableCell}>
                                     <EstimateNumberInput
                                       style={styles.tableInput}
@@ -8833,6 +9214,7 @@ export default function EstimateSheet({
                                       readOnly={isViewMode}
                                     />
                                   </td>
+                                  )}
                                   <td
                                     style={{
                                       ...styles.tableCell,
@@ -8868,6 +9250,19 @@ export default function EstimateSheet({
                                       readOnly={isViewMode}
                                     />
                                   </td>
+                                  {rowHasSubItems ? (
+                                    <td
+                                      style={{
+                                        ...styles.tableCell,
+                                        ...styles.calculated,
+                                      }}
+                                      title="Sub-item labor total ÷ techs"
+                                    >
+                                      {formatNumber(
+                                        Number(item.laborHours) || 0,
+                                      )}
+                                    </td>
+                                  ) : (
                                   <td style={styles.tableCell}>
                                     <EstimateNumberInput
                                       style={styles.tableInput}
@@ -8895,6 +9290,7 @@ export default function EstimateSheet({
                                       readOnly={isViewMode}
                                     />
                                   </td>
+                                  )}
                                   <td
                                     style={{
                                       ...styles.tableCell,
@@ -8980,6 +9376,245 @@ export default function EstimateSheet({
                                     </td>
                                   )}
                                 </tr>
+                                {subItemsOpen &&
+                                  item.subItems!.map((sub, subIndex) => {
+                                    const subMaterialExt =
+                                      calculateMaterialExtension(
+                                        sub.quantity,
+                                        sub.materialPrice,
+                                      );
+                                    const subLaborUnit = calculateLaborUnit(
+                                      sub.laborMen,
+                                      sub.laborHours,
+                                    );
+                                    const subLaborTotal = calculateLaborTotal(
+                                      sub.quantity,
+                                      sub.laborMen,
+                                      sub.laborHours,
+                                    );
+                                    const isLastSub =
+                                      subIndex === item.subItems!.length - 1;
+                                    const subCell: React.CSSProperties = {
+                                      ...styles.tableCell,
+                                      backgroundColor: subRowBg,
+                                      fontSize: "0.92em",
+                                      ...(isLastSub
+                                        ? {
+                                            borderBottom:
+                                              "2px solid var(--brand)",
+                                          }
+                                        : {}),
+                                    };
+                                    const subCalc: React.CSSProperties = {
+                                      ...subCell,
+                                      ...styles.calculated,
+                                      backgroundColor: subRowBg,
+                                    };
+                                    const subInput = (
+                                      field:
+                                        | "quantity"
+                                        | "materialPrice"
+                                        | "laborMen"
+                                        | "laborHours",
+                                    ) => (
+                                      <td style={subCell}>
+                                        <EstimateNumberInput
+                                          style={styles.tableInput}
+                                          value={sub[field]}
+                                          onValueChange={(value) =>
+                                            handleSubItemChange(
+                                              index,
+                                              subIndex,
+                                              field,
+                                              value,
+                                            )
+                                          }
+                                          readOnly={isViewMode}
+                                        />
+                                      </td>
+                                    );
+                                    const isSubDropTarget =
+                                      subDrag?.parent === index &&
+                                      subDragOver?.parent === index &&
+                                      subDragOver.to === subIndex &&
+                                      subDrag.from !== subIndex;
+                                    return (
+                                      <tr
+                                        key={`sub-${index}-${subIndex}`}
+                                        onDragOver={(e) => {
+                                          // Only accept sub-rows from this same parent.
+                                          if (subDrag?.parent !== index) return;
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          if (
+                                            subDragOver?.parent !== index ||
+                                            subDragOver.to !== subIndex
+                                          ) {
+                                            setSubDragOver({
+                                              parent: index,
+                                              to: subIndex,
+                                            });
+                                          }
+                                        }}
+                                        onDrop={(e) => {
+                                          if (subDrag?.parent !== index) return;
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          handleMoveSubItem(
+                                            index,
+                                            subDrag.from,
+                                            subIndex,
+                                          );
+                                          setSubDrag(null);
+                                          setSubDragOver(null);
+                                        }}
+                                        style={
+                                          isSubDropTarget
+                                            ? {
+                                                outline:
+                                                  "2px solid var(--brand)",
+                                                outlineOffset: "-2px",
+                                              }
+                                            : undefined
+                                        }
+                                      >
+                                        <td style={subCell} />
+                                        <td
+                                          style={{
+                                            ...subCell,
+                                            borderLeft: groupBar,
+                                          }}
+                                        >
+                                          <div
+                                            style={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              gap: "6px",
+                                              paddingLeft: "18px",
+                                            }}
+                                          >
+                                            {!isViewMode && (
+                                              <div
+                                                className="print:hidden"
+                                                draggable={true}
+                                                onDragStart={(e) => {
+                                                  e.stopPropagation();
+                                                  e.dataTransfer.effectAllowed =
+                                                    "move";
+                                                  e.dataTransfer.setData(
+                                                    "text/plain",
+                                                    `sub-${index}-${subIndex}`,
+                                                  );
+                                                  setSubDrag({
+                                                    parent: index,
+                                                    from: subIndex,
+                                                  });
+                                                }}
+                                                onDragEnd={(e) => {
+                                                  e.stopPropagation();
+                                                  setSubDrag(null);
+                                                  setSubDragOver(null);
+                                                }}
+                                                style={{
+                                                  cursor: "grab",
+                                                  color: "#6b7280",
+                                                  fontSize: "13px",
+                                                  userSelect: "none",
+                                                  padding: "2px",
+                                                  borderRadius: 0,
+                                                }}
+                                                title="Drag to reorder sub-item"
+                                              >
+                                                ⋮⋮
+                                              </div>
+                                            )}
+                                            <span
+                                              aria-hidden="true"
+                                              style={{
+                                                color: "var(--brand)",
+                                                userSelect: "none",
+                                              }}
+                                            >
+                                              ↳
+                                            </span>
+                                            <input
+                                              type="text"
+                                              style={{
+                                                ...styles.tableInput,
+                                                flex: 1,
+                                              }}
+                                              value={sub.item}
+                                              placeholder="Sub-item"
+                                              onChange={(e) =>
+                                                handleSubItemChange(
+                                                  index,
+                                                  subIndex,
+                                                  "item",
+                                                  e.target.value,
+                                                )
+                                              }
+                                              readOnly={isViewMode}
+                                            />
+                                          </div>
+                                        </td>
+                                        {subInput("quantity")}
+                                        {subInput("materialPrice")}
+                                        <td style={subCalc}>
+                                          {formatCurrency(subMaterialExt)}
+                                        </td>
+                                        {subInput("laborMen")}
+                                        {subInput("laborHours")}
+                                        <td style={subCalc}>
+                                          {formatNumber(subLaborUnit)}
+                                        </td>
+                                        <td style={subCalc}>
+                                          {formatNumber(subLaborTotal)}
+                                        </td>
+                                        {/* SOV item price is parent-only */}
+                                        <td style={subCell} />
+                                        <td style={subCell}>
+                                          <input
+                                            type="text"
+                                            style={styles.tableInput}
+                                            value={sub.notes}
+                                            onChange={(e) =>
+                                              handleSubItemChange(
+                                                index,
+                                                subIndex,
+                                                "notes",
+                                                e.target.value,
+                                              )
+                                            }
+                                            readOnly={isViewMode}
+                                          />
+                                        </td>
+                                        {!isViewMode && (
+                                          <td style={subCell}>
+                                            <button
+                                              type="button"
+                                              onClick={() =>
+                                                handleRemoveSubItem(
+                                                  index,
+                                                  subIndex,
+                                                )
+                                              }
+                                              style={{
+                                                background: "none",
+                                                border: "none",
+                                                color: "#ef4444",
+                                                cursor: "pointer",
+                                                padding: "2px",
+                                              }}
+                                              title="Delete this sub-item"
+                                            >
+                                              <Trash className="h-4 w-4" />
+                                            </button>
+                                          </td>
+                                        )}
+                                      </tr>
+                                    );
+                                  })}
+                                </React.Fragment>
                               );
                             })}
                           </tbody>

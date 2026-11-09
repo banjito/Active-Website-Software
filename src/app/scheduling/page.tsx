@@ -115,8 +115,10 @@ export default function SchedulingPage() {
           </h1>
         </div>
 
-        {isFieldTechAll && <DivisionScheduleCards refreshKey={refreshKey} />}
-
+        {/* Field Tech (All) is just shortcuts to each city's schedule. */}
+        {isFieldTechAll ? (
+          <DivisionScheduleCards refreshKey={refreshKey} />
+        ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
           <TabsList className="flex h-auto w-full justify-start gap-2 rounded-none border-b border-neutral-200 bg-transparent p-0 dark:border-neutral-700 dark:bg-transparent">
             <TabsTrigger value="listed" className={UNDERLINE_TAB}>
@@ -149,6 +151,7 @@ export default function SchedulingPage() {
             />
           </TabsContent>
         </Tabs>
+        )}
 
         <AssignmentDetailsDialog
           assignment={selectedAssignment}

@@ -6,12 +6,16 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Info,
+  Printer,
   Table2,
   Trash2,
+  TrendingUp,
   X,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useReportCssIsolation } from "@/components/customForms/runtime/useReportCssIsolation";
 import { supabase } from "@/lib/supabase";
 import {
   PipelineJob,
@@ -26,7 +30,12 @@ type SortDirection = "asc" | "desc";
 type PopoverPosition = { top: number; left: number };
 
 const regions: PipelineRegion[] = ["AL", "TN", "GA", "VA", "International"];
-const statuses: PipelineStatus[] = ["confirmed", "expected", "dropped"];
+const statuses: PipelineStatus[] = [
+  "confirmed",
+  "forecast",
+  "expected",
+  "dropped",
+];
 
 const regionPalette: Record<
   PipelineRegion,
@@ -41,6 +50,7 @@ const regionPalette: Record<
 
 const statusLabels: Record<PipelineStatus, string> = {
   confirmed: "Awarded",
+  forecast: "Forecast win",
   expected: "Expected",
   dropped: "Dropped",
 };
@@ -55,9 +65,19 @@ const defaultRegionFilter: Record<PipelineRegion, boolean> = {
 
 const defaultStatusFilter: Record<PipelineStatus, boolean> = {
   confirmed: true,
+  forecast: true,
   expected: true,
   dropped: true,
 };
+
+// Filters saved before "forecast" existed have no key for it, so a missing
+// key counts as on.
+function isStatusOn(
+  filter: Record<PipelineStatus, boolean>,
+  status: PipelineStatus,
+): boolean {
+  return filter[status] !== false;
+}
 
 const dayMs = 24 * 60 * 60 * 1000;
 
@@ -117,7 +137,15 @@ function clampDate(date: Date, minDate: Date, maxDate: Date): Date {
   return date;
 }
 
+// Amounts are stored in millions. Under $100k, show thousands instead so a
+// small job doesn't read as "$0.0m".
 function formatMillions(amount: number): string {
+  if (amount === 0) return "$0";
+  if (Math.abs(amount) < 0.1) {
+    const thousands = Math.round(amount * 1000);
+    return thousands === 0 ? "<$1k" : `$${thousands}k`;
+  }
+
   return `$${amount.toLocaleString("en-US", {
     minimumFractionDigits: amount % 1 === 0 ? 0 : 1,
     maximumFractionDigits: 2,
@@ -156,6 +184,31 @@ function jobOverlapsRange(
   const jobEnd = job.endDate ? parseDate(job.endDate) : viewEnd;
 
   return jobStart <= viewEnd && jobEnd >= viewStart;
+}
+
+// The part of a job's dollars that lands in the range, spread evenly across
+// its days. A job with no end date can't be spread, so it counts in full in
+// the range where it starts and nowhere else.
+function getAmountInRange(
+  job: PipelineJob,
+  viewStart: Date,
+  viewEnd: Date,
+): number {
+  const jobStart = parseDate(job.startDate);
+  const startsInRange = jobStart >= viewStart && jobStart <= viewEnd;
+  if (!job.endDate) return startsInRange ? job.amount : 0;
+
+  const jobEnd = parseDate(job.endDate);
+  const totalDays = Math.round((jobEnd.getTime() - jobStart.getTime()) / dayMs) + 1;
+  if (totalDays <= 0) return startsInRange ? job.amount : 0;
+
+  const overlapStart = jobStart > viewStart ? jobStart : viewStart;
+  const overlapEnd = jobEnd < viewEnd ? jobEnd : viewEnd;
+  if (overlapEnd < overlapStart) return 0;
+
+  const overlapDays =
+    Math.round((overlapEnd.getTime() - overlapStart.getTime()) / dayMs) + 1;
+  return (job.amount * overlapDays) / totalDays;
 }
 
 function getMonthSegments(viewStart: Date, viewEnd: Date) {
@@ -253,13 +306,24 @@ function sortJobs(
 
 function StatusIcon({ status }: { status: PipelineStatus }) {
   if (status === "confirmed") return <Check className="h-3.5 w-3.5" />;
+  if (status === "forecast") return <TrendingUp className="h-3.5 w-3.5" />;
   if (status === "dropped") return <X className="h-3.5 w-3.5" />;
   return <span className="h-2 w-2 rounded-none bg-current" />;
 }
 
+const statusDotClasses: Record<PipelineStatus, string> = {
+  confirmed: "bg-emerald-500",
+  forecast: "bg-sky-500",
+  expected: "bg-purple-500",
+  dropped: "bg-red-500",
+};
+
 function getStatusBadgeClasses(status: PipelineStatus): string {
   if (status === "confirmed") {
     return "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200";
+  }
+  if (status === "forecast") {
+    return "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200";
   }
   if (status === "expected") {
     return "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-200";
@@ -281,6 +345,163 @@ function StatusBadge({ status }: { status: PipelineStatus }) {
   );
 }
 
+type ProjectionTotals = {
+  awarded: number;
+  forecast: number;
+  expected: number;
+  dropped: number;
+  active: number;
+};
+
+function getInRangeNote(rangeLabel: string): string {
+  return `Totals and the "In ${rangeLabel}" column count only the part of each job that falls in ${rangeLabel}, spread evenly across its dates. Jobs with no end date count in full where they start.`;
+}
+
+// Print-only copy of the projection. Plain black on white so it prints the
+// same from light or dark mode, whichever view (calendar or table) is open.
+function PipelinePrintReport({
+  jobs,
+  shares,
+  totals,
+  rangeLabel,
+  statusFilter,
+  regionFilter,
+}: {
+  jobs: PipelineJob[];
+  shares: Map<string, number>;
+  totals: ProjectionTotals;
+  rangeLabel: string;
+  statusFilter: Record<PipelineStatus, boolean>;
+  regionFilter: Record<PipelineRegion, boolean>;
+}) {
+  const onStatuses = statuses.filter((status) =>
+    isStatusOn(statusFilter, status),
+  );
+  const onRegions = regions.filter((region) => regionFilter[region]);
+  const printedOn = new Date().toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  const totalCells: Array<[string, number]> = [
+    ["Awarded", totals.awarded],
+    ["Forecast win", totals.forecast],
+    ["Expected", totals.expected],
+    ["Active total", totals.active],
+    ["Dropped", totals.dropped],
+  ];
+
+  return (
+    <div className="pipeline-print-report hidden bg-white text-black print:block">
+      <div className="flex items-end justify-between border-b-2 border-black pb-2">
+        <div>
+          <div className="text-xl font-bold">Pipeline Projection</div>
+          <div className="text-sm font-semibold">{rangeLabel}</div>
+        </div>
+        <div className="text-right text-xs">
+          <div>Printed {printedOn}</div>
+          <div>
+            Status:{" "}
+            {onStatuses.length === statuses.length
+              ? "All"
+              : onStatuses.map((status) => statusLabels[status]).join(", ") ||
+                "None"}
+          </div>
+          <div>
+            Region:{" "}
+            {onRegions.length === regions.length
+              ? "All"
+              : onRegions.join(", ") || "None"}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 grid grid-cols-5 border border-black text-xs">
+        {totalCells.map(([label, value], index) => (
+          <div
+            key={label}
+            className={cn("px-3 py-2", index > 0 && "border-l border-black")}
+          >
+            <div className="font-semibold uppercase">{label}</div>
+            <div className="mt-1 text-lg font-bold">
+              {formatMillions(value)}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="mt-2 text-[10px]">{getInRangeNote(rangeLabel)}</p>
+
+      <table className="mt-3 w-full border-collapse text-[11px]">
+        <thead>
+          <tr className="border-b-2 border-black text-left uppercase">
+            <th className="py-1 pr-2">Dates</th>
+            <th className="py-1 pr-2">Customer</th>
+            <th className="py-1 pr-2">Data center</th>
+            <th className="py-1 pr-2">Job #</th>
+            <th className="py-1 pr-2">Region</th>
+            <th className="py-1 pr-2">Location</th>
+            <th className="py-1 pr-2">Status</th>
+            <th className="py-1 pr-2 text-right">Amount</th>
+            <th className="py-1 text-right">In {rangeLabel}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {jobs.map((job) => (
+            <tr
+              key={job.id}
+              className={cn(
+                "break-inside-avoid border-b border-neutral-300 align-top",
+                job.status === "dropped" && "text-neutral-500",
+              )}
+            >
+              <td className="whitespace-nowrap py-1 pr-2">
+                {formatDate(job.startDate)} - {formatDate(job.endDate)}
+              </td>
+              <td
+                className={cn(
+                  "py-1 pr-2 font-semibold",
+                  job.status === "dropped" && "line-through",
+                )}
+              >
+                {job.customer}
+              </td>
+              <td className="py-1 pr-2">{job.dataCenterId || "-"}</td>
+              <td className="whitespace-nowrap py-1 pr-2">
+                {job.jobNumber || "-"}
+              </td>
+              <td className="py-1 pr-2">{job.region}</td>
+              <td className="py-1 pr-2">{job.location}</td>
+              <td className="whitespace-nowrap py-1 pr-2">
+                {statusLabels[job.status]}
+              </td>
+              <td className="whitespace-nowrap py-1 pr-2 text-right">
+                {formatMillions(job.amount)}
+              </td>
+              <td className="whitespace-nowrap py-1 text-right font-semibold">
+                {formatMillions(shares.get(job.id) || 0)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr className="border-t-2 border-black font-bold">
+            <td colSpan={8} className="py-1 pr-2 text-right">
+              Active total (excludes dropped)
+            </td>
+            <td className="whitespace-nowrap py-1 text-right">
+              {formatMillions(totals.active)}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+
+      {jobs.length === 0 && (
+        <p className="mt-4 text-sm">No opportunities match these filters.</p>
+      )}
+    </div>
+  );
+}
+
 function getRegionFromOpportunity(opportunity: any): PipelineRegion {
   const division = String(opportunity?.amp_division || "").toLowerCase();
 
@@ -297,13 +518,8 @@ function getRegionFromOpportunity(opportunity: any): PipelineRegion {
 function getStatusFromOpportunity(opportunity: any): PipelineStatus {
   const status = String(opportunity?.status || "").toLowerCase();
 
-  if (
-    status === "awarded" ||
-    status === "decision - forecasted win" ||
-    status === "won"
-  ) {
-    return "confirmed";
-  }
+  if (status === "awarded" || status === "won") return "confirmed";
+  if (status === "decision - forecasted win") return "forecast";
 
   if (
     status === "lost" ||
@@ -365,6 +581,10 @@ function mapOpportunityToPipelineJob(
 }
 
 export default function PipelineCalendarPage() {
+  // Every hard-coded report loads global print CSS at startup (forced
+  // portrait page, boxed and centred table cells). Switch it off here so the
+  // projection prints landscape with its own table styling.
+  useReportCssIsolation();
   const [jobs, setJobs] = useState<PipelineJob[]>([]);
   const [viewMode, setViewMode] = usePersistentState<ViewMode>(
     "pipelineProjection:viewMode",
@@ -542,7 +762,7 @@ export default function PipelineCalendarPage() {
   const filteredJobs = useMemo(
     () =>
       jobs.filter((job) => {
-        return regionFilter[job.region] && statusFilter[job.status];
+        return regionFilter[job.region] && isStatusOn(statusFilter, job.status);
       }),
     [jobs, regionFilter, statusFilter],
   );
@@ -572,25 +792,38 @@ export default function PipelineCalendarPage() {
     [jobs, selectedJobId],
   );
 
-  // Totals add up the jobs in the selected date range, so they match the list.
-  const totals = useMemo(() => {
-    const awarded = sortedListJobs
-      .filter((job) => job.status === "confirmed")
-      .reduce((sum, job) => sum + job.amount, 0);
-    const expected = sortedListJobs
-      .filter((job) => job.status === "expected")
-      .reduce((sum, job) => sum + job.amount, 0);
-    const dropped = sortedListJobs
-      .filter((job) => job.status === "dropped")
-      .reduce((sum, job) => sum + job.amount, 0);
+  const rangeLabel = getRangeLabel(anchorDate, rangeMode);
+
+  // Each job's dollars that land in the range, so a long job isn't counted
+  // in full in every month it touches.
+  const rangeShares = useMemo(
+    () =>
+      new Map(
+        sortedListJobs.map((job) => [
+          job.id,
+          getAmountInRange(job, viewStart, viewEnd),
+        ]),
+      ),
+    [sortedListJobs, viewStart, viewEnd],
+  );
+
+  const totals = useMemo<ProjectionTotals>(() => {
+    const sumFor = (status: PipelineStatus) =>
+      sortedListJobs
+        .filter((job) => job.status === status)
+        .reduce((sum, job) => sum + (rangeShares.get(job.id) || 0), 0);
+    const awarded = sumFor("confirmed");
+    const forecast = sumFor("forecast");
+    const expected = sumFor("expected");
 
     return {
       awarded,
+      forecast,
       expected,
-      dropped,
-      active: awarded + expected,
+      dropped: sumFor("dropped"),
+      active: awarded + forecast + expected,
     };
-  }, [sortedListJobs]);
+  }, [sortedListJobs, rangeShares]);
 
   const monthSegments = useMemo(
     () => getMonthSegments(viewStart, viewEnd),
@@ -719,48 +952,126 @@ export default function PipelineCalendarPage() {
   };
 
   return (
-    <div className="mx-auto flex max-w-[1500px] flex-col gap-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50">
-            Pipeline Projection
-          </h1>
+    <>
+    {/* Rendered only while this page is open, so landscape never leaks
+        into other pages' printing. The report sheets that force portrait
+        are switched off by useReportCssIsolation above. */}
+    <style>{`@media print { @page { size: landscape; margin: 0.5in; } }`}</style>
+    <div className="mx-auto flex max-w-[1500px] flex-col gap-4 print:hidden">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50">
+          Pipeline Projection
+        </h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex rounded-none border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-700 dark:bg-neutral-900">
+            {(["month", "quarter", "year"] as RangeMode[]).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setRangeMode(mode)}
+                className={cn(
+                  "h-8 rounded-none px-3 text-sm font-medium capitalize text-neutral-600 dark:text-neutral-300",
+                  rangeMode === mode &&
+                    "bg-white text-neutral-950 shadow-sm dark:bg-neutral-800 dark:text-neutral-50",
+                )}
+              >
+                {mode}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-1 rounded-none border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-700 dark:bg-neutral-900">
+            <button
+              type="button"
+              aria-label="Previous range"
+              onClick={() => moveRange(-1)}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-none text-neutral-600 hover:bg-white hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <div className="min-w-28 px-2 text-center text-sm font-semibold text-neutral-950 dark:text-neutral-50">
+              {rangeLabel}
+            </div>
+            <button
+              type="button"
+              aria-label="Next range"
+              onClick={() => moveRange(1)}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-none text-neutral-600 hover:bg-white hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="inline-flex rounded-none border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-700 dark:bg-neutral-900">
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="inline-flex h-8 items-center gap-2 rounded-none px-3 text-sm font-medium text-neutral-600 hover:bg-white hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
+            >
+              <Printer className="h-4 w-4" />
+              Print / PDF
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-4">
-        <div className="rounded-none border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-dark-150">
-          <div className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">
-            Pipeline
+      {/* One strip, lines drawn by the 1px gap over a neutral background. */}
+      <div className="grid grid-cols-2 gap-px rounded-none border border-neutral-200 bg-neutral-200 dark:border-neutral-800 dark:bg-neutral-800 lg:grid-cols-5">
+        <div className="col-span-2 bg-white p-4 dark:bg-dark-150 lg:col-span-1">
+          <div className="flex items-center gap-1.5 text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">
+            Active pipeline
+            <span
+              title={getInRangeNote(rangeLabel)}
+              aria-label={getInRangeNote(rangeLabel)}
+              className="inline-flex cursor-help"
+            >
+              <Info className="h-3.5 w-3.5" />
+            </span>
           </div>
-          <div className="mt-2 text-2xl font-semibold text-neutral-950 dark:text-neutral-50">
-            {formatMillions(totals.awarded)} / {formatMillions(totals.active)}
+          <div className="mt-1 text-2xl font-semibold text-neutral-950 dark:text-neutral-50">
+            {formatMillions(totals.active)}
           </div>
-        </div>
-        <div className="rounded-none border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-dark-150">
-          <div className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">
-            Awarded
-          </div>
-          <div className="mt-2 text-2xl font-semibold text-neutral-950 dark:text-neutral-50">
-            {formatMillions(totals.awarded)}
-          </div>
-        </div>
-        <div className="rounded-none border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-dark-150">
-          <div className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">
-            Expected
-          </div>
-          <div className="mt-2 text-2xl font-semibold text-neutral-950 dark:text-neutral-50">
-            {formatMillions(totals.expected)}
+          <div className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+            {totals.active > 0
+              ? Math.round((totals.awarded / totals.active) * 100)
+              : 0}
+            % awarded
           </div>
         </div>
-        <div className="rounded-none border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-dark-150">
-          <div className="text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">
-            Dropped
-          </div>
-          <div className="mt-2 text-2xl font-semibold text-neutral-500 dark:text-neutral-400">
-            {formatMillions(totals.dropped)}
-          </div>
-        </div>
+        {(
+          [
+            ["confirmed", totals.awarded],
+            ["forecast", totals.forecast],
+            ["expected", totals.expected],
+            ["dropped", totals.dropped],
+          ] as Array<[PipelineStatus, number]>
+        ).map(([status, value]) => {
+          const count = sortedListJobs.filter(
+            (job) => job.status === status,
+          ).length;
+
+          return (
+            <div key={status} className="bg-white p-4 dark:bg-dark-150">
+              <div className="flex items-center gap-1.5 text-xs font-medium uppercase text-neutral-500 dark:text-neutral-400">
+                <span
+                  className={cn("h-2 w-2 rounded-none", statusDotClasses[status])}
+                />
+                {statusLabels[status]}
+              </div>
+              <div
+                className={cn(
+                  "mt-1 text-xl font-semibold text-neutral-950 dark:text-neutral-50",
+                  status === "dropped" && "text-neutral-500 dark:text-neutral-400",
+                )}
+              >
+                {formatMillions(value)}
+              </div>
+              <div className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                {count} {count === 1 ? "job" : "jobs"}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {storageError && (
@@ -771,14 +1082,14 @@ export default function PipelineCalendarPage() {
 
       <section className="rounded-none border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-dark-150">
         <div className="flex flex-col gap-4 border-b border-neutral-200 p-4 dark:border-neutral-800">
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-2">
               <div className="inline-flex rounded-none border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-700 dark:bg-neutral-900">
                 <button
                   type="button"
                   onClick={() => setViewMode("calendar")}
                   className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-none px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
+                    "inline-flex h-8 items-center gap-2 rounded-none px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
                     viewMode === "calendar" &&
                       "bg-white text-neutral-950 shadow-sm dark:bg-neutral-800 dark:text-neutral-50",
                   )}
@@ -790,7 +1101,7 @@ export default function PipelineCalendarPage() {
                   type="button"
                   onClick={() => setViewMode("list")}
                   className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-none px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
+                    "inline-flex h-8 items-center gap-2 rounded-none px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
                     viewMode === "list" &&
                       "bg-white text-neutral-950 shadow-sm dark:bg-neutral-800 dark:text-neutral-50",
                   )}
@@ -800,63 +1111,6 @@ export default function PipelineCalendarPage() {
                 </button>
               </div>
 
-              <div className="inline-flex rounded-none border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-700 dark:bg-neutral-900">
-                <button
-                  type="button"
-                  onClick={() => setRangeMode("month")}
-                  className={cn(
-                    "h-9 rounded-none px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
-                    rangeMode === "month" &&
-                      "bg-white text-neutral-950 shadow-sm dark:bg-neutral-800 dark:text-neutral-50",
-                  )}
-                >
-                  Month
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRangeMode("quarter")}
-                  className={cn(
-                    "h-9 rounded-none px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
-                    rangeMode === "quarter" &&
-                      "bg-white text-neutral-950 shadow-sm dark:bg-neutral-800 dark:text-neutral-50",
-                  )}
-                >
-                  Quarter
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRangeMode("year")}
-                  className={cn(
-                    "h-9 rounded-none px-3 text-sm font-medium text-neutral-600 dark:text-neutral-300",
-                    rangeMode === "year" &&
-                      "bg-white text-neutral-950 shadow-sm dark:bg-neutral-800 dark:text-neutral-50",
-                  )}
-                >
-                  Year
-                </button>
-              </div>
-
-              <div className="flex items-center gap-1 rounded-none border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-700 dark:bg-neutral-900">
-                <button
-                  type="button"
-                  aria-label="Previous range"
-                  onClick={() => moveRange(-1)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-none text-neutral-600 hover:bg-white hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <div className="min-w-32 px-2 text-center text-sm font-semibold text-neutral-950 dark:text-neutral-50">
-                  {getRangeLabel(anchorDate, rangeMode)}
-                </div>
-                <button
-                  type="button"
-                  aria-label="Next range"
-                  onClick={() => moveRange(1)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-none text-neutral-600 hover:bg-white hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-50"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -867,12 +1121,12 @@ export default function PipelineCalendarPage() {
                   onClick={() =>
                     setStatusFilter((current) => ({
                       ...current,
-                      [status]: !current[status],
+                      [status]: !isStatusOn(current, status),
                     }))
                   }
                   className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-none border px-3 text-sm font-semibold",
-                    statusFilter[status]
+                    "inline-flex h-8 items-center gap-1.5 rounded-none border px-2.5 text-sm font-semibold",
+                    isStatusOn(statusFilter, status)
                       ? cn("border-transparent", getStatusBadgeClasses(status))
                       : "border-neutral-200 bg-neutral-50 text-neutral-400 opacity-70 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-500",
                   )}
@@ -881,6 +1135,11 @@ export default function PipelineCalendarPage() {
                   {statusLabels[status]}
                 </button>
               ))}
+
+              <span
+                aria-hidden
+                className="mx-1 h-6 w-px bg-neutral-200 dark:bg-neutral-700"
+              />
 
               {regions.map((region) => (
                 <button
@@ -893,7 +1152,7 @@ export default function PipelineCalendarPage() {
                     }))
                   }
                   className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-none border px-3 text-sm font-medium",
+                    "inline-flex h-8 items-center gap-1.5 rounded-none border px-2.5 text-sm font-medium",
                     regionFilter[region]
                       ? "border-neutral-300 bg-white text-neutral-950 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-50"
                       : "border-neutral-200 bg-neutral-50 text-neutral-400 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-500",
@@ -1096,6 +1355,9 @@ export default function PipelineCalendarPage() {
                       </button>
                     </th>
                   ))}
+                  <th className="whitespace-nowrap px-3 py-3 font-semibold">
+                    In {rangeLabel}
+                  </th>
                   <th className="px-3 py-3 font-semibold">Job #</th>
                   <th className="px-3 py-3 font-semibold">Data center</th>
                   <th className="px-3 py-3 font-semibold">Location</th>
@@ -1171,6 +1433,9 @@ export default function PipelineCalendarPage() {
                         {job.region}
                       </span>
                     </td>
+                    <td className="whitespace-nowrap px-3 py-3 font-semibold">
+                      {formatMillions(rangeShares.get(job.id) || 0)}
+                    </td>
                     <td className="whitespace-nowrap px-3 py-3">
                       {job.jobNumber || "-"}
                     </td>
@@ -1202,7 +1467,7 @@ export default function PipelineCalendarPage() {
         typeof document !== "undefined" &&
         createPortal(
           <div
-            className="fixed z-[1000] w-72 rounded-none border border-neutral-200 bg-white p-3 text-sm text-neutral-900 shadow-xl ring-1 ring-black/5 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+            className="fixed z-[1000] w-72 rounded-none border print:hidden border-neutral-200 bg-white p-3 text-sm text-neutral-900 shadow-xl ring-1 ring-black/5 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
             style={{
               top: popoverPosition.top,
               left: popoverPosition.left,
@@ -1289,5 +1554,14 @@ export default function PipelineCalendarPage() {
           document.body,
         )}
     </div>
+    <PipelinePrintReport
+      jobs={sortedListJobs}
+      shares={rangeShares}
+      totals={totals}
+      rangeLabel={rangeLabel}
+      statusFilter={statusFilter}
+      regionFilter={regionFilter}
+    />
+    </>
   );
 }

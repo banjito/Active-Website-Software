@@ -46,7 +46,7 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
 
       <div className="flex min-h-0 flex-1">
         <div
-          className={`w-64 min-w-64 flex-shrink-0 flex flex-col border-r border-black/10 bg-white dark:bg-dark-150 dark:border-dark-200 max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50 max-lg:overflow-y-auto max-lg:transition-transform max-lg:duration-300 ${
+          className={`print:hidden w-64 min-w-64 flex-shrink-0 flex flex-col border-r border-black/10 bg-white dark:bg-dark-150 dark:border-dark-200 max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50 max-lg:overflow-y-auto max-lg:transition-transform max-lg:duration-300 ${
             isMenuOpen ? "" : "max-lg:-translate-x-full"
           }`}
         >
@@ -196,7 +196,7 @@ export const SalesLayout: React.FC<SalesLayoutProps> = ({ children }) => {
               <Menu className="h-5 w-5 text-neutral-600 dark:text-white" />
             </button>
           </div>
-          <main className="flex-1 min-w-0 overflow-y-auto p-6 max-lg:p-4 max-sm:p-3">{children}</main>
+          <main className="flex-1 min-w-0 overflow-y-auto p-6 max-lg:p-4 max-sm:p-3 print:overflow-visible print:p-0">{children}</main>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 export type PipelineRegion = "AL" | "TN" | "GA" | "VA" | "International";
-export type PipelineStatus = "confirmed" | "expected" | "dropped";
+export type PipelineStatus = "confirmed" | "forecast" | "expected" | "dropped";
 
 export interface PipelineJob {
   id: string;

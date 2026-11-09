@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import dayjs from "dayjs";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, MapPin } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { schedulingService } from "@/lib/services/schedulingService";
 import { useDivisions } from "@/hooks/useDivisions";
@@ -77,27 +77,43 @@ export const DivisionScheduleCards: React.FC<Props> = ({ refreshKey }) => {
         Divisions this week ({dayjs(weekStart).format("MMM D")} -{" "}
         {dayjs(weekEnd).format("MMM D")})
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cities.map((city) => {
           const s = stats?.[city.id];
           return (
             <Link
               key={city.id}
               to={`/${city.id}/scheduling`}
-              className="group flex items-center justify-between gap-2 rounded-none border border-neutral-200 bg-white px-4 py-3 transition-colors hover:border-brand dark:border-neutral-700 dark:bg-dark-150 dark:hover:border-brand"
+              className="group flex flex-col gap-4 rounded-none border border-neutral-200 bg-white p-5 transition-all duration-150 hover:-translate-y-0.5 hover:border-brand dark:border-neutral-700 dark:bg-dark-150 dark:hover:border-brand"
               title={`Open ${city.label} scheduling`}
             >
-              <div className="min-w-0">
-                <div className="truncate font-semibold text-neutral-900 dark:text-white">
-                  {city.label}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-2">
+                  <MapPin className="h-5 w-5 shrink-0 text-brand" />
+                  <span className="truncate text-lg font-semibold text-neutral-900 dark:text-white">
+                    {city.label}
+                  </span>
                 </div>
-                <div className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {s
-                    ? `${s.people} ${s.people === 1 ? "person" : "people"} · ${s.jobs} ${s.jobs === 1 ? "job" : "jobs"}`
-                    : "..."}
+                <ChevronRight className="h-5 w-5 shrink-0 text-neutral-400 transition-colors group-hover:text-brand" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="text-2xl font-bold text-neutral-900 dark:text-white">
+                    {s ? s.people : "-"}
+                  </div>
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                    {s?.people === 1 ? "Person" : "People"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-neutral-900 dark:text-white">
+                    {s ? s.jobs : "-"}
+                  </div>
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                    {s?.jobs === 1 ? "Job" : "Jobs"}
+                  </div>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 shrink-0 text-neutral-400 transition-colors group-hover:text-brand" />
             </Link>
           );
         })}

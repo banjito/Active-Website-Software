@@ -978,6 +978,9 @@ const MediumVoltageCableVLFTest = () => {
   };
 
   // Generic change handler for form fields
+  // Missing flag (older reports) counts as on.
+  const tanDeltaOn = formData.tanDeltaTest?.enabled !== false;
+
   const handleChange = (field, value) => {
     setJustSaved(false);
     setFormData((prev) => ({
@@ -4341,11 +4344,39 @@ const MediumVoltageCableVLFTest = () => {
           </section>
 
           {/* Add Tan Delta Test Section */}
-          <section className="mb-6 tan-delta-section">
-            <div className="w-full h-1 bg-[#f26722] mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
-              Tan Delta (Power Factor) Test
+          {/* Off = section hidden on screen (collapsed) and left out of print. Old reports have no flag, so they stay on. */}
+          <section
+            className={`mb-6 tan-delta-section ${tanDeltaOn ? "" : "print:hidden"}`}
+          >
+            <div className="w-full h-1 bg-brand mb-4"></div>
+            <h2 className="flex items-center justify-between gap-4 text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2">
+              <span>Tan Delta (Power Factor) Test</span>
+              <label
+                className={`print:hidden flex items-center gap-2 text-sm font-normal text-neutral-700 dark:text-neutral-300 ${isEditMode ? "cursor-pointer" : "opacity-60 cursor-not-allowed"}`}
+              >
+                <input
+                  type="checkbox"
+                  className="rounded-none h-4 w-4 accent-brand"
+                  checked={tanDeltaOn}
+                  disabled={!isEditMode}
+                  onChange={(e) =>
+                    handleChange("tanDeltaTest", {
+                      ...formData.tanDeltaTest,
+                      enabled: e.target.checked,
+                    })
+                  }
+                />
+                Include in report
+              </label>
             </h2>
+
+            {!tanDeltaOn ? (
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 italic">
+                Tan Delta test is turned off for this report and will not
+                print.
+              </p>
+            ) : (
+            <>
 
             {/* System Voltage Line to Ground */}
             <div className="flex items-center mb-6">
@@ -4726,6 +4757,8 @@ const MediumVoltageCableVLFTest = () => {
                 <option value="WARNING">WARNING</option>
               </select>
             </div>
+            </>
+            )}
           </section>
 
           {/* Test Results, Equipment Used, Recommendations Sections */}

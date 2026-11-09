@@ -54,7 +54,7 @@ export const REPORT_NAMES: { [key: string]: string } = {
   'electrical-tan-delta-test-mts-form': '4-Medium Voltage Cable VLF Tan Delta MTS',
   'medium-voltage-vlf-tan-delta-mts': '4-Medium Voltage Cable VLF Tan Delta Test MTS',
   'medium-voltage-vlf-mts-report': '4-Medium Voltage Cable VLF Test Report MTS',
-  'medium-voltage-cable-vlf-tan-delta-mts23': '7.3.3 Medium Voltage Cable VLF Test With Tan Delta MTS 23',
+  'medium-voltage-cable-vlf-tan-delta-mts23': '7.3.3 Medium Voltage Cable VLF Test MTS 23',
   'medium-voltage-cable-vlf-test-mts': '4-Medium Voltage Cable VLF Test With Tan Delta MTS',
   'low-voltage-circuit-breaker-electronic-trip-mts-report': '8-Low Voltage Circuit Breaker Electronic Trip Unit MTS - Primary Injection',
   'low-voltage-circuit-breaker-thermal-magnetic-mts-report': '8-Low Voltage Circuit Breaker Thermal-Magnetic MTS',

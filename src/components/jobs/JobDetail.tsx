@@ -3294,7 +3294,7 @@ export default function JobDetail() {
     },
     {
       id: "medium-voltage-cable-vlf-tan-delta-mts23",
-      name: "7.3.3 Medium Voltage Cable VLF Test With Tan Delta MTS 23",
+      name: "7.3.3 Medium Voltage Cable VLF Test MTS 23",
       file_url: `report:/jobs/${id}/medium-voltage-cable-vlf-tan-delta-mts23?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: "MTS",

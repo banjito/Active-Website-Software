@@ -6,30 +6,30 @@ import { useTheme } from "../theme/theme-provider";
 import {
   Mail,
   Lock,
-  LogIn,
-  UserPlus,
-  Shield,
-  Zap,
-  Users,
-  Award,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  AlertCircle,
+  CheckCircle2,
+  MailCheck,
   RefreshCw,
 } from "lucide-react";
-import {
-  Button,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-  Input,
-} from "../ui";
-import Card from "../ui/Card";
-import { EditProfilePopup } from "../profile/EditProfilePopup";
+import { Button } from "../ui";
 import { companyConfig, emailPlaceholder } from "@/lib/companyConfig";
 import { useSiteLogos } from "@/services/siteThemeService";
 
 const ALLOWED_EMAIL_DOMAINS = companyConfig.allowedEmailDomains;
-const ALLOWED_EMAIL_DOMAINS_LABEL = ALLOWED_EMAIL_DOMAINS.join(" or ");
+const ALLOWED_EMAIL_DOMAINS_LABEL =
+  ALLOWED_EMAIL_DOMAINS.length <= 1
+    ? ALLOWED_EMAIL_DOMAINS.join("")
+    : `${ALLOWED_EMAIL_DOMAINS.slice(0, -1).join(", ")} or ${
+        ALLOWED_EMAIL_DOMAINS[ALLOWED_EMAIL_DOMAINS.length - 1]
+      }`;
+
+const MIN_PASSWORD_LENGTH = 6;
+const RESEND_COOLDOWN_SECONDS = 60;
 
 const isAllowedEmailDomain = (value: string) =>
   ALLOWED_EMAIL_DOMAINS.some((domain) =>
@@ -40,84 +40,124 @@ const getFriendlyAuthMessage = (error: unknown, fallback: string) => {
   if (!(error instanceof Error)) return fallback;
 
   const message = error.message.toLowerCase();
+  const status = (error as { status?: number }).status ?? 0;
+
+  // A server crash (5xx) often reaches us as the literal message "{}".
+  if (message === "{}" || status >= 500) {
+    return `Something went wrong on our end. Try again in a few minutes, or email ${companyConfig.supportEmail}.`;
+  }
+
+  if (message.includes("error sending confirmation email")) {
+    return `We couldn't send the confirmation email. Email ${companyConfig.supportEmail} for help.`;
+  }
 
   if (message.includes("rate limit") || message.includes("rate_limit")) {
-    return `Server rate limit exceeded. Email ${companyConfig.supportEmail} to reset in the meantime.`;
+    return `Too many emails sent. Wait a few minutes, or email ${companyConfig.supportEmail} for help.`;
   }
 
   if (message.includes("email not confirmed")) {
-    return "Check your email for the sign-in link first.";
+    return "Confirm your email first. Check your inbox for the link.";
+  }
+
+  if (message.includes("invalid login credentials")) {
+    return "Email or password is incorrect.";
   }
 
   return error.message;
 };
 
-// Helper function to clear only user-specific storage
-const clearAllStorage = () => {
-  try {
-    // Save essential data
-    const themePreference = localStorage.getItem("vite-ui-theme");
-    const supabaseAuth = localStorage.getItem("sb-auth-token");
+type Mode = "signin" | "signup" | "reset";
+type Notice = { tone: "error" | "success" | "warning"; text: string } | null;
 
-    // Get all localStorage keys
-    const keys = Object.keys(localStorage);
+const COPY: Record<Mode, { title: string; subtitle: string; submit: string }> =
+  {
+    signin: {
+      title: "Sign in",
+      subtitle: "Welcome back. Sign in to continue.",
+      submit: "Sign in",
+    },
+    signup: {
+      title: "Create your account",
+      subtitle: "Use your company email to get started.",
+      submit: "Create account",
+    },
+    reset: {
+      title: "Reset your password",
+      subtitle: "Enter your email and we'll send you a reset link.",
+      submit: "Send reset link",
+    },
+  };
 
-    // Clear only specific items from localStorage
-    keys.forEach((key) => {
-      // Keep theme, auth token, and Supabase cache data
-      if (
-        !key.includes("theme") &&
-        !key.includes("sb-auth-token") &&
-        !key.startsWith("sb-") &&
-        !key.includes("supabase")
-      ) {
-        localStorage.removeItem(key);
-      }
-    });
+const inputClass =
+  "w-full h-11 pl-10 bg-white border border-neutral-300 rounded-none text-[15px] text-neutral-900 placeholder:text-neutral-400 transition-[border-color,box-shadow] hover:border-neutral-400 focus:outline-none focus:border-brand focus:ring-4 focus:ring-brand/15";
 
-    // Clear only user-specific sessionStorage
-    const sessionKeys = Object.keys(sessionStorage);
-    sessionKeys.forEach((key) => {
-      if (!key.includes("supabase") && !key.startsWith("sb-")) {
-        sessionStorage.removeItem(key);
-      }
-    });
+function NoticeBox({ notice }: { notice: NonNullable<Notice> }) {
+  const tones = {
+    error: "border-red-200 bg-red-50 text-red-800",
+    warning: "border-amber-200 bg-amber-50 text-amber-900",
+    success: "border-green-200 bg-green-50 text-green-800",
+  };
+  const Icon = notice.tone === "success" ? CheckCircle2 : AlertCircle;
+  return (
+    <div
+      role={notice.tone === "error" ? "alert" : "status"}
+      className={`flex items-start gap-2.5 border px-3.5 py-3 text-sm rounded-none ${tones[notice.tone]}`}
+    >
+      <Icon className="h-4 w-4 mt-0.5 shrink-0" />
+      <span>{notice.text}</span>
+    </div>
+  );
+}
 
-    // Remove only user-specific cookies
-    document.cookie.split(";").forEach((cookie) => {
-      const [name] = cookie.trim().split("=");
-      // Keep theme, auth, and Supabase-related cookies
-      if (
-        !name.includes("theme") &&
-        !name.includes("sb-") &&
-        !name.includes("supabase")
-      ) {
-        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-      }
-    });
-
-    console.log("User-specific storage cleared while preserving app data");
-  } catch (e) {
-    console.error("Storage clear failed:", e);
-  }
-};
+/** One live requirement row: square box that fills in when met. */
+function Requirement({
+  met,
+  bad,
+  children,
+}: {
+  met: boolean;
+  bad?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <p
+      className={`mt-2 flex items-center gap-2 text-xs transition-colors ${
+        met ? "text-green-700" : bad ? "text-red-600" : "text-neutral-500"
+      }`}
+    >
+      <span
+        className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center border rounded-none transition-colors ${
+          met
+            ? "border-green-600 bg-green-600 text-white"
+            : bad
+              ? "border-red-400"
+              : "border-neutral-300"
+        }`}
+      >
+        {met && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
+      </span>
+      {children}
+    </p>
+  );
+}
 
 export default function Login() {
   const { logoUrl, hideLogo } = useSiteLogos();
+  const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showProfileSetup, setShowProfileSetup] = useState(false);
-  const [isSignUpMode, setIsSignUpMode] = useState(false);
-  const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false);
-  const [showResendOption, setShowResendOption] = useState(false);
+  const [notice, setNotice] = useState<Notice>(null);
+  // After sign-up: the address we sent the confirmation link to.
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
-  const [resendEmail, setResendEmail] = useState("");
+  const [cooldown, setCooldown] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, setUser } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { user } = useAuth();
+  const { setTheme } = useTheme();
 
   // Where to send the user after a successful sign-in. RequireAuth redirects
   // unauthenticated users here with state={{ from: location }}, so we honor that
@@ -144,13 +184,10 @@ export default function Login() {
 
   // Dynamic favicon change for login page
   useEffect(() => {
-    // Simple but effective favicon change with cache busting
     const setFavicon = (href: string) => {
-      // Remove existing favicon links
       const existingLinks = document.querySelectorAll('link[rel*="icon"]');
       existingLinks.forEach((link) => link.remove());
 
-      // Create new favicon link with cache busting
       const link = document.createElement("link");
       link.rel = "icon";
       link.type = "image/png";
@@ -158,31 +195,44 @@ export default function Login() {
       document.head.appendChild(link);
     };
 
-    // Set login favicon
-    console.log("Setting ampOS favicon for login page...");
     setFavicon(companyConfig.faviconPath);
 
-    // Cleanup: restore default favicon when leaving login page
     return () => {
       setFavicon(companyConfig.faviconPath);
     };
   }, []);
 
   // Redirect if already logged in
-  React.useEffect(() => {
+  useEffect(() => {
     if (user) {
       navigate(redirectTo, { replace: true });
     }
   }, [user, navigate, redirectTo]);
 
-  async function handleSubmit(e: React.FormEvent) {
+  // Count down the resend timer.
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = window.setTimeout(() => setCooldown((s) => s - 1), 1000);
+    return () => window.clearTimeout(t);
+  }, [cooldown]);
+
+  const switchMode = (next: Mode) => {
+    setMode(next);
+    setNotice(null);
+    setSentTo(null);
+    setAlreadyRegistered(false);
+    setShowPassword(false);
+    if (next === "reset") setPassword("");
+  };
+
+  async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setNotice(null);
 
     try {
       const { error: loginError } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
 
@@ -190,7 +240,10 @@ export default function Login() {
 
       navigate(redirectTo, { replace: true });
     } catch (error) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      setNotice({
+        tone: "error",
+        text: getFriendlyAuthMessage(error, "Could not sign in"),
+      });
     } finally {
       setLoading(false);
     }
@@ -198,16 +251,14 @@ export default function Login() {
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setShowResendOption(false);
+    setNotice(null);
 
     if (!email.trim()) {
-      setError("Enter your email first");
-      setLoading(false);
+      setNotice({ tone: "error", text: "Enter your email first." });
       return;
     }
 
+    setLoading(true);
     try {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
         email.trim(),
@@ -218,9 +269,15 @@ export default function Login() {
 
       if (resetError) throw resetError;
 
-      setError("Password reset email sent. Check your inbox.");
+      setNotice({
+        tone: "success",
+        text: "Reset link sent. Check your inbox.",
+      });
     } catch (error) {
-      setError(getFriendlyAuthMessage(error, "Could not send reset email"));
+      setNotice({
+        tone: "error",
+        text: getFriendlyAuthMessage(error, "Could not send reset email"),
+      });
     } finally {
       setLoading(false);
     }
@@ -228,74 +285,62 @@ export default function Login() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setNotice(null);
+
+    const trimmedEmail = email.trim();
+
+    if (!isAllowedEmailDomain(trimmedEmail)) {
+      setNotice({
+        tone: "error",
+        text: `Use an email ending in ${ALLOWED_EMAIL_DOMAINS_LABEL}.`,
+      });
+      return;
+    }
+
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setNotice({
+        tone: "error",
+        text: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
+      });
+      return;
+    }
+
     setLoading(true);
-    setError(null);
-    setShowResendOption(false);
-
-    // Check email domain
-    if (!isAllowedEmailDomain(email)) {
-      setError(
-        `Only ${ALLOWED_EMAIL_DOMAINS_LABEL} email addresses are allowed to create accounts.`,
-      );
-      setLoading(false);
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
-      setLoading(false);
-      return;
-    }
-
     try {
-      console.log("Attempting signup with email:", email);
-      const { data, error } = await supabase.auth.signUp({
-        email,
+      const { error } = await supabase.auth.signUp({
+        email: trimmedEmail,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
-            email: email,
+            email: trimmedEmail,
           },
         },
       });
 
       if (error) throw error;
 
-      if (data?.user) {
-        console.log("Signup successful, user:", data.user.id);
-        setShowProfileSetup(true);
-        setResendEmail(email);
-        setShowResendOption(true);
-        setError(
-          "Account created successfully! Please check your email for a verification link. If you don't receive it within a few minutes, you can resend it below.",
-        );
-      } else {
-        console.log("No user data returned from signup");
-        setResendEmail(email);
-        setShowResendOption(true);
-        setError(
-          "Account created! Please check your email for a verification link. If you don't receive it within a few minutes, you can resend it below.",
-        );
-      }
+      setSentTo(trimmedEmail);
+      setAlreadyRegistered(false);
+      setPassword("");
+      setCooldown(RESEND_COOLDOWN_SECONDS);
     } catch (error) {
       console.error("Signup error:", error);
-      if (error instanceof Error) {
-        // Check if user already exists but email not confirmed
-        if (
-          error.message.includes("already registered") ||
-          error.message.includes("already exists")
-        ) {
-          setResendEmail(email);
-          setShowResendOption(true);
-          setError(
-            "This email is already registered. If you haven't verified your email yet, you can resend the verification link below.",
-          );
-        } else {
-          setError(error.message);
-        }
+      const message = error instanceof Error ? error.message : "";
+      if (
+        message.includes("already registered") ||
+        message.includes("already exists")
+      ) {
+        setSentTo(trimmedEmail);
+        setAlreadyRegistered(true);
       } else {
-        setError("An unexpected error occurred during signup");
+        setNotice({
+          tone: "error",
+          text: getFriendlyAuthMessage(
+            error,
+            "Something went wrong creating your account.",
+          ),
+        });
       }
     } finally {
       setLoading(false);
@@ -303,19 +348,14 @@ export default function Login() {
   };
 
   const handleResendVerification = async () => {
-    if (!resendEmail || !isAllowedEmailDomain(resendEmail)) {
-      setError(
-        `Please enter a valid ${ALLOWED_EMAIL_DOMAINS_LABEL} email address to resend verification.`,
-      );
-      return;
-    }
+    if (!sentTo) return;
 
     setResendLoading(true);
+    setNotice(null);
     try {
-      console.log("Resending verification email to:", resendEmail);
       const { error } = await supabase.auth.resend({
         type: "signup",
-        email: resendEmail,
+        email: sentTo,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
@@ -323,264 +363,304 @@ export default function Login() {
 
       if (error) throw error;
 
-      setError(
-        "Verification email sent! Please check your inbox and spam folder. Note: Supabase free tier limits emails to 4 per hour.",
-      );
+      setNotice({
+        tone: "success",
+        text: "Sent again. Check your inbox and spam folder.",
+      });
+      setCooldown(RESEND_COOLDOWN_SECONDS);
     } catch (error) {
       console.error("Resend verification error:", error);
-      if (error instanceof Error) {
-        if (error.message.includes("rate") || error.message.includes("limit")) {
-          setError(
-            "Email rate limit reached. Please wait a few minutes before trying again. Supabase free tier allows 4 confirmation emails per hour.",
-          );
-        } else {
-          setError(`Failed to resend: ${error.message}`);
-        }
-      } else {
-        setError(
-          "Failed to resend verification email. Please try again later.",
-        );
-      }
+      setNotice({
+        tone: "error",
+        text: getFriendlyAuthMessage(error, "Could not resend the email."),
+      });
     } finally {
       setResendLoading(false);
     }
   };
 
-  const handleProfileSetupComplete = () => {
-    // This function might not be needed here anymore if setup happens on a different page
-    // Or it could navigate the user away after setup
-    setShowProfileSetup(false);
-    navigate("/portal"); // Navigate to portal after setup is complete
-  };
+  const copy = COPY[mode];
+  const onSubmit =
+    mode === "signin"
+      ? handleSignIn
+      : mode === "signup"
+        ? handleSignUp
+        : handleForgotPassword;
+
+  // Live checks shown under the fields while creating an account.
+  const passwordOk = password.length >= MIN_PASSWORD_LENGTH;
+
+  const linkClass =
+    "font-semibold text-neutral-900 underline-offset-4 hover:text-brand hover:underline disabled:opacity-50";
 
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col justify-center items-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-      {/* Logo - stacked on top */}
+    <div className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col items-center justify-center px-4 py-10 sm:py-16">
       {!hideLogo && (
-        <div className="flex justify-center mb-8 sm:mb-10">
-          <img
-            src={logoUrl}
-            alt="ampOS"
-            className="h-20 sm:h-[5rem] w-auto"
-          />
-        </div>
+        <img
+          src={logoUrl}
+          alt="ampOS"
+          className="h-14 sm:h-16 w-auto mb-8 sm:mb-10"
+        />
       )}
 
-      {/* Login Form */}
-      <div className="w-full flex flex-col justify-center">
-        <div className="mx-auto w-full max-w-md">
-          <div className="text-center mb-6 sm:mb-8">
-            <h2 className="text-3xl font-bold text-black mb-2">
-              {isForgotPasswordMode
-                ? "Reset password"
-                : isSignUpMode
-                  ? "Make your account"
-                  : "Welcome back"}
-            </h2>
-          </div>
+      <div className="w-full max-w-[420px]">
+        <div className="bg-white border border-neutral-200 rounded-none shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_40px_-20px_rgba(0,0,0,0.25)]">
+          {/* Thin brand strip across the top */}
+          <div className="h-1 bg-brand" />
 
-          <Card className="bg-brand border border-neutral-800 shadow-sm">
-            <CardContent className="p-6 sm:p-10 md:p-12">
-              <form
-                className="space-y-6 sm:space-y-8"
-                onSubmit={
-                  isForgotPasswordMode
-                    ? handleForgotPassword
-                    : isSignUpMode
-                      ? handleSignUp
-                      : handleSubmit
-                }
-              >
-                <div className="space-y-6 pt-4">
-                  <Input
-                    label="Email address"
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    leftIcon={<Mail className="h-5 w-5 text-neutral-800" />}
-                    placeholder="you@email.com"
-                    className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 text-base h-14 sm:h-12 focus:!border-brand focus:!ring-2 focus:!ring-brand focus:!ring-offset-2 focus:!ring-offset-neutral-200"
-                  />
-
-                  {!isForgotPasswordMode && (
-                    <Input
-                      label="Password"
-                      id="password"
-                      name="password"
-                      type="password"
-                      autoComplete={
-                        isSignUpMode ? "new-password" : "current-password"
-                      }
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      leftIcon={<Lock className="h-5 w-5 text-neutral-400" />}
-                      minLength={6}
-                      placeholder="Enter your password"
-                      hint={
-                        isSignUpMode
-                          ? "Password must be at least 6 characters"
-                          : undefined
-                      }
-                      className="bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 text-base h-14 sm:h-12 focus:!border-brand focus:!ring-2 focus:!ring-brand focus:!ring-offset-2 focus:!ring-offset-neutral-200"
-                    />
-                  )}
-
-                  {!isSignUpMode && !isForgotPasswordMode && (
-                    <div className="flex justify-end">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsForgotPasswordMode(true);
-                          setError(null);
-                          setPassword("");
-                          setShowResendOption(false);
-                        }}
-                        className="text-sm font-medium text-black hover:underline"
-                      >
-                        Forgot password?
-                      </button>
-                    </div>
+          <div className="px-6 py-8 sm:px-10 sm:py-10">
+            {sentTo ? (
+              /* ---------- After sign-up: check your inbox ---------- */
+              <div className="text-center">
+                <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center bg-brand/10 text-brand rounded-none">
+                  {alreadyRegistered ? (
+                    <AlertCircle className="h-6 w-6" />
+                  ) : (
+                    <MailCheck className="h-6 w-6" />
                   )}
                 </div>
+                <h1 className="text-2xl font-semibold tracking-tight">
+                  {alreadyRegistered
+                    ? "Already registered"
+                    : "Check your inbox"}
+                </h1>
+                <p className="mt-2 text-sm leading-relaxed text-neutral-500">
+                  {alreadyRegistered ? (
+                    <>
+                      <span className="font-medium text-neutral-900">
+                        {sentTo}
+                      </span>{" "}
+                      already has an account. Sign in, or resend the
+                      confirmation link if you never clicked it.
+                    </>
+                  ) : (
+                    <>
+                      We sent a confirmation link to{" "}
+                      <span className="font-medium text-neutral-900">
+                        {sentTo}
+                      </span>
+                      . Click it to finish setting up your account.
+                    </>
+                  )}
+                </p>
 
-                {error && (
-                  <div
-                    className={`rounded-none p-4 ${
-                      error.startsWith("Success") ||
-                      error.includes("created successfully") ||
-                      error.includes("Verification email sent") ||
-                      error.includes("Password reset email sent")
-                        ? "bg-transparent border border-green-700 text-green-950"
-                        : error.includes("already registered") ||
-                            error.includes("haven't verified")
-                          ? "bg-transparent border border-yellow-700 text-yellow-950"
-                          : "bg-transparent border border-red-700 text-red-950"
-                    }`}
+                {notice && (
+                  <div className="mt-5 text-left">
+                    <NoticeBox notice={notice} />
+                  </div>
+                )}
+
+                <div className="mt-6 space-y-3">
+                  {alreadyRegistered && (
+                    <Button
+                      type="button"
+                      variant="primary"
+                      fullWidth
+                      onClick={() => switchMode("signin")}
+                      rightIcon={<ArrowRight className="h-4 w-4" />}
+                      className="h-11"
+                    >
+                      Sign in
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    fullWidth
+                    onClick={handleResendVerification}
+                    isLoading={resendLoading}
+                    disabled={cooldown > 0}
+                    leftIcon={<RefreshCw className="h-4 w-4" />}
+                    className="h-11"
                   >
-                    <div className="text-sm font-medium">{error}</div>
-                  </div>
-                )}
+                    {cooldown > 0
+                      ? `Resend email in ${cooldown}s`
+                      : "Resend email"}
+                  </Button>
+                </div>
 
-                {showResendOption && (
-                  <div className="mt-4 p-4 bg-neutral-700/50 rounded-none border border-neutral-600">
-                    <p className="text-sm text-neutral-300 mb-3">
-                      Didn't receive the email? Check your spam folder or resend
-                      it:
-                    </p>
-                    <div className="flex gap-2">
-                      <Input
+                <p className="mt-5 text-xs text-neutral-500">
+                  Not seeing it? Check your spam folder.
+                </p>
+              </div>
+            ) : (
+              /* ---------- Sign in / Create account / Reset ---------- */
+              <>
+                <div className="mb-7">
+                  <h1 className="text-2xl font-semibold tracking-tight">
+                    {copy.title}
+                  </h1>
+                  <p className="mt-1.5 text-sm text-neutral-500">
+                    {copy.subtitle}
+                  </p>
+                </div>
+
+                <form className="space-y-5" onSubmit={onSubmit}>
+                  {/* Email */}
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="mb-1.5 block text-sm font-medium text-neutral-800"
+                    >
+                      {mode === "signup" ? "Work email" : "Email"}
+                    </label>
+                    <div className="relative">
+                      <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                      <input
+                        id="email"
+                        name="email"
                         type="email"
-                        value={resendEmail}
-                        onChange={(e) => setResendEmail(e.target.value)}
+                        autoComplete="email"
+                        required
+                        autoFocus
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         placeholder={emailPlaceholder}
-                        className="flex-1 bg-neutral-200 border-neutral-400 text-black placeholder-neutral-500 h-10"
+                        className={`${inputClass} pr-3`}
                       />
-                      <Button
-                        type="button"
-                        variant="primary"
-                        onClick={handleResendVerification}
-                        disabled={resendLoading}
-                        isLoading={resendLoading}
-                        leftIcon={<RefreshCw className="h-4 w-4" />}
-                        className="text-white h-10 px-4"
-                      >
-                        Resend
-                      </Button>
                     </div>
-                    <p className="text-xs text-neutral-400 mt-2">
-                      Note: Supabase free tier limits to 4 confirmation emails
-                      per hour.
-                    </p>
                   </div>
-                )}
 
-                <div>
+                  {/* Password */}
+                  {mode !== "reset" && (
+                    <div>
+                      <div className="mb-1.5 flex items-center justify-between">
+                        <label
+                          htmlFor="password"
+                          className="block text-sm font-medium text-neutral-800"
+                        >
+                          Password
+                        </label>
+                        {mode === "signin" && (
+                          <button
+                            type="button"
+                            onClick={() => switchMode("reset")}
+                            className="text-xs font-medium text-neutral-500 hover:text-neutral-900"
+                          >
+                            Forgot password?
+                          </button>
+                        )}
+                      </div>
+                      <div className="relative">
+                        <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                        <input
+                          id="password"
+                          name="password"
+                          type={showPassword ? "text" : "password"}
+                          autoComplete={
+                            mode === "signup"
+                              ? "new-password"
+                              : "current-password"
+                          }
+                          required
+                          minLength={
+                            mode === "signup" ? MIN_PASSWORD_LENGTH : undefined
+                          }
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder={
+                            mode === "signup"
+                              ? "Create a password"
+                              : "Your password"
+                          }
+                          className={`${inputClass} pr-11`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((v) => !v)}
+                          aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                          }
+                          className="absolute inset-y-0 right-0 flex items-center px-3.5 text-neutral-400 hover:text-neutral-700 focus:outline-none focus-visible:text-brand"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                      {mode === "signup" && (
+                        <Requirement met={passwordOk}>
+                          At least {MIN_PASSWORD_LENGTH} characters
+                        </Requirement>
+                      )}
+                    </div>
+                  )}
+
+                  {notice && <NoticeBox notice={notice} />}
+
                   <Button
                     type="submit"
                     variant="primary"
-                    size="lg"
                     fullWidth
                     isLoading={loading}
-                    leftIcon={
-                      isForgotPasswordMode ? (
-                        <Mail className="h-5 w-5" />
-                      ) : isSignUpMode ? (
-                        <UserPlus className="h-5 w-5" />
-                      ) : (
-                        <LogIn className="h-5 w-5" />
-                      )
-                    }
-                    className="h-14 sm:h-12 text-base font-medium hover:bg-brand/75"
+                    rightIcon={<ArrowRight className="h-4 w-4" />}
+                    className="h-11 !mt-7"
                   >
-                    {isForgotPasswordMode
-                      ? "Send reset link"
-                      : isSignUpMode
-                        ? "Create account"
-                        : "Sign in"}
+                    {copy.submit}
                   </Button>
-                </div>
-              </form>
+                </form>
+              </>
+            )}
+          </div>
 
-              <div>
-                <Button
+          {/* Card footer: switch between views */}
+          <div className="border-t border-neutral-100 bg-neutral-50/70 px-6 py-4 text-center text-sm text-neutral-600 sm:px-10">
+            {sentTo ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSentTo(null);
+                  setAlreadyRegistered(false);
+                  setNotice(null);
+                }}
+                className={linkClass}
+              >
+                Use a different email
+              </button>
+            ) : mode === "signin" ? (
+              <>
+                New here?{" "}
+                <button
                   type="button"
-                  variant="outline"
-                  size="lg"
-                  fullWidth
-                  onClick={() => {
-                    if (isForgotPasswordMode) {
-                      setIsForgotPasswordMode(false);
-                    } else {
-                      setIsSignUpMode(!isSignUpMode);
-                    }
-                    setError(null);
-                    setShowResendOption(false);
-                  }}
+                  onClick={() => switchMode("signup")}
                   disabled={loading}
-                  leftIcon={
-                    isForgotPasswordMode || isSignUpMode ? (
-                      <LogIn className="h-5 w-5" />
-                    ) : (
-                      <UserPlus className="h-5 w-5" />
-                    )
-                  }
-                  className="mt-6 h-14 sm:h-12 text-base font-medium bg-transparent border-none hover:bg-neutral-800/10"
+                  className={linkClass}
                 >
-                  {isForgotPasswordMode
-                    ? "Back to sign in"
-                    : isSignUpMode
-                      ? "Sign in instead"
-                      : "Create account"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                  Create an account
+                </button>
+              </>
+            ) : mode === "signup" ? (
+              <>
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => switchMode("signin")}
+                  disabled={loading}
+                  className={linkClass}
+                >
+                  Sign in
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => switchMode("signin")}
+                disabled={loading}
+                className={`${linkClass} inline-flex items-center gap-1.5`}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to sign in
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Footer */}
-        <div className="mt-8 text-center">
-          <p className="text-xs text-[#9A9487]">
-            © 2026 ampOS. All rights reserved.
-          </p>
-        </div>
+        <p className="mt-8 text-center text-xs text-neutral-400">
+          © {new Date().getFullYear()} ampOS. All rights reserved.
+        </p>
       </div>
-
-      {/* Remove the direct rendering of EditProfilePopup from the Login component */}
-      {/* {showProfileSetup && (
-        <EditProfilePopup
-          isOpen={showProfileSetup}
-          onClose={handleProfileSetupComplete}
-          currentUser={{
-            email: email // This would need the actual user object after verification
-          }}
-          isNewUser={true}
-        />
-      )} */}
     </div>
   );
 }

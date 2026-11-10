@@ -22,8 +22,12 @@
 --     lock_resumes_storage.sql (Supabase can refuse storage rule changes, and
 --     one error would undo this whole file).
 --   - Removes anon access to eeo_submissions and to the unused
---     v_posted_job_requisitions / v_active_job_requisitions /
---     v_pending_approval_requisitions views (views skip row security).
+--     v_active_job_requisitions / v_pending_approval_requisitions views
+--     (views skip row security).
+--   - Keeps anon SELECT on v_posted_job_requisitions. It is NOT unused:
+--     ampqes.com/careers reads it at build time with the publishable key, and
+--     revoking it fails every ampqes.com deploy. It only exposes public
+--     columns of live postings (see harden_public_job_postings_view.sql).
 --
 -- After this, common.talent_pool_promotion_enabled() returns true by itself,
 -- which turns Talent Pool promotion on.
@@ -87,12 +91,13 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE common.candidate_question_answers 
 -- Unused views over requisitions; views skip row security, so close them to
 -- the public key. (v_public_application_questions stays: the career page
 -- needs it and it only shows questions for live postings.)
+-- v_posted_job_requisitions is deliberately left out: it is the public
+-- contract for the ampqes.com build. Do not add it back to this list.
 DO $$
 DECLARE
   v text;
 BEGIN
   FOREACH v IN ARRAY ARRAY[
-    'v_posted_job_requisitions',
     'v_active_job_requisitions',
     'v_pending_approval_requisitions'
   ] LOOP
@@ -102,6 +107,10 @@ BEGIN
   END LOOP;
 END;
 $$;
+
+-- Restore the read an earlier run of this file revoked (2026-11-06), which
+-- broke the ampqes.com build with "permission denied for view".
+GRANT SELECT ON common.v_posted_job_requisitions TO anon;
 
 -- Verify afterward. Every row should show rls = true and anon_select = false,
 -- and the last line should say promotion_enabled = true:

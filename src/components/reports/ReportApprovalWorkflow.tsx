@@ -103,6 +103,12 @@ interface ReportApprovalWorkflowProps {
 
 const REPORT_APPROVAL_LOAD_LIMIT = 500;
 
+// Built-in reports are saved as "report:/jobs/..." and custom-form reports as
+// "custom-form:/jobs/{jobId}/custom-form/{templateId}/{instanceId}". Both must
+// show up in approvals, so every query and URL parse here accepts either.
+const REPORT_URL_PREFIX = /^(report|custom-form):\/jobs\//;
+const REPORT_URL_FILTER = "file_url.like.report:/%,file_url.like.custom-form:/%";
+
 // Inline SVGs (lucide) for the vanilla-JS review modal toolbar buttons.
 const EYE_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
 const PRINTER_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>`;
@@ -491,7 +497,7 @@ export function ReportApprovalWorkflow({
   // approved reports into the Rejected/Issue tab without changing their status.
   const assetToReport = (asset: any): TechnicalReport => {
     const urlParts = (asset.file_url || "")
-      .replace("report:/jobs/", "")
+      .replace(REPORT_URL_PREFIX, "")
       .split("/");
     const assetJobId = urlParts.length >= 1 ? urlParts[0] : "";
     const reportSlug = urlParts.length >= 2 ? urlParts[1] : "";
@@ -713,7 +719,7 @@ export function ReportApprovalWorkflow({
               "id, name, file_url, status, created_at, submitted_at, approved_at, sent_at, urgency, substation",
             )
             .in("id", chunk)
-            .or("file_url.like.report:/%,file_url.ilike.%.pdf");
+            .or(`${REPORT_URL_FILTER},file_url.ilike.%.pdf`);
           if (assetStatusFilter) {
             assetQuery = assetQuery.eq("status", assetStatusFilter);
           }
@@ -748,7 +754,7 @@ export function ReportApprovalWorkflow({
           } else {
             // Extract report type from file_url: report:/jobs/{jobId}/{reportSlug}/{reportId}
             const urlParts = (asset.file_url || "")
-              .replace("report:/jobs/", "")
+              .replace(REPORT_URL_PREFIX, "")
               .split("/");
             reportSlug = urlParts.length >= 2 ? urlParts[1] : "";
             reportId = urlParts.length >= 3 ? urlParts[2] : asset.id;
@@ -1032,7 +1038,7 @@ export function ReportApprovalWorkflow({
                 linkedAssetFileUrl ||
                 ((r as any)?.report_data?.file_url as string | undefined);
               if (!fileUrl || !fileUrl.startsWith("report:/jobs/")) return;
-              const parts = fileUrl.replace("report:/jobs/", "").split("/");
+              const parts = fileUrl.replace(REPORT_URL_PREFIX, "").split("/");
               // parts can be:
               // ['jobId', 'slug', 'reportId'] (standard format)
               // ['jobId', 'slug', 'substationFolder', 'reportId'] (grounding reports with substation)
@@ -1118,7 +1124,7 @@ export function ReportApprovalWorkflow({
           .select(
             "id, name, file_url, status, created_at, submitted_at, approved_at, sent_at, urgency",
           )
-          .like("file_url", "report:/%"); // Only get report assets
+          .or(REPORT_URL_FILTER); // Only get report assets
 
         if (assetStatusFilter) {
           assetQuery = assetQuery.eq("status", assetStatusFilter);
@@ -1161,7 +1167,7 @@ export function ReportApprovalWorkflow({
           let reports: TechnicalReport[] = (assetsData || []).map((asset) => {
             // Extract job_id and report type from file_url
             const urlParts = (asset.file_url || "")
-              .replace("report:/jobs/", "")
+              .replace(REPORT_URL_PREFIX, "")
               .split("/");
             const assetJobId = urlParts.length >= 1 ? urlParts[0] : "";
             const reportSlug = urlParts.length >= 2 ? urlParts[1] : "";
@@ -1273,7 +1279,7 @@ export function ReportApprovalWorkflow({
             .schema("neta_ops")
             .from("assets")
             .select("id, status")
-            .like("file_url", "report:/%")
+            .or(REPORT_URL_FILTER)
             .in("id", chunk);
           if (assetsError) {
             console.error("Error fetching assets for metrics:", assetsError);
@@ -1287,7 +1293,7 @@ export function ReportApprovalWorkflow({
           .schema("neta_ops")
           .from("assets")
           .select("id, status")
-          .like("file_url", "report:/%")
+          .or(REPORT_URL_FILTER)
           .limit(REPORT_APPROVAL_LOAD_LIMIT);
         if (assetsError) {
           console.error("Error fetching assets for metrics:", assetsError);
@@ -1795,7 +1801,7 @@ export function ReportApprovalWorkflow({
       return;
     }
 
-    if (!fileUrl.startsWith("report:/jobs/")) {
+    if (!REPORT_URL_PREFIX.test(fileUrl)) {
       toast({
         title: "Error",
         description: "Invalid report URL format",
@@ -1804,7 +1810,7 @@ export function ReportApprovalWorkflow({
       return;
     }
 
-    const urlParts = fileUrl.replace("report:/jobs/", "").split("/");
+    const urlParts = fileUrl.replace(REPORT_URL_PREFIX, "").split("/");
     if (urlParts.length < 2) {
       toast({
         title: "Error",

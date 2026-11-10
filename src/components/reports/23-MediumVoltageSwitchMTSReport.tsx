@@ -37,6 +37,7 @@ const visualOptions = [
 ];
 
 const testVoltageOptions = ["250V", "500V", "1000V", "2500V", "5000V"];
+const INSULATION_RESISTANCE_UNITS = ["kΩ", "MΩ", "GΩ"];
 
 // Temperature Correction Factor lookup (Celsius → multiplier)
 const TCF_TABLE: Record<string, number> = {
@@ -210,6 +211,7 @@ interface ReportData {
   };
   insulation: {
     testVoltage: string;
+    units?: string;
     rows: Array<{ label: string; position: string; readings: ThreePhase }>;
   };
   insulationCorrected: {
@@ -408,6 +410,7 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
     },
     insulation: {
       testVoltage: "2500V",
+      units: "MΩ",
       rows: [
         { label: "Pole to Pole", position: "Closed", readings: makeEmpty3() },
         { label: "Pole to Frame", position: "Closed", readings: makeEmpty3() },
@@ -505,6 +508,8 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
       return { ...prev, insulationCorrected: { rows: corrected } };
     });
   }, [form.insulation.rows, form.temperature.tcf]);
+
+  const irUnits = form.insulation.units || "MΩ";
 
   const loadJobInfo = async () => {
     if (!jobId) return;
@@ -1600,6 +1605,24 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
                 </option>
               ))}
             </select>
+            <span className="ml-2">Units</span>
+            <select
+              className="form-select w-20"
+              value={irUnits}
+              onChange={(e) =>
+                setForm((p) => ({
+                  ...p,
+                  insulation: { ...p.insulation, units: e.target.value },
+                }))
+              }
+              disabled={!isEditMode}
+            >
+              {INSULATION_RESISTANCE_UNITS.map((u) => (
+                <option key={u} value={u}>
+                  {u}
+                </option>
+              ))}
+            </select>
           </div>
           <table className="w-full border-collapse text-sm">
             <colgroup>
@@ -1611,9 +1634,9 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
             <thead>
               <tr>
                 <th className="border p-2">&nbsp;</th>
-                <th className="border p-2">P1 MΩ</th>
-                <th className="border p-2">P2 MΩ</th>
-                <th className="border p-2">P3 MΩ</th>
+                <th className="border p-2">P1 {irUnits}</th>
+                <th className="border p-2">P2 {irUnits}</th>
+                <th className="border p-2">P3 {irUnits}</th>
               </tr>
             </thead>
             <tbody>
@@ -1667,9 +1690,9 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr>
-                <th className="border p-2">P1 MΩ</th>
-                <th className="border p-2">P2 MΩ</th>
-                <th className="border p-2">P3 MΩ</th>
+                <th className="border p-2">P1 {irUnits}</th>
+                <th className="border p-2">P2 {irUnits}</th>
+                <th className="border p-2">P3 {irUnits}</th>
               </tr>
             </thead>
             <tbody>
@@ -1797,9 +1820,9 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
               <th className="border p-1 text-left">
                 Test Voltage {form.insulation.testVoltage}
               </th>
-              <th className="border p-1 text-center">P1 MΩ</th>
-              <th className="border p-1 text-center">P2 MΩ</th>
-              <th className="border p-1 text-center">P3 MΩ</th>
+              <th className="border p-1 text-center">P1 {irUnits}</th>
+              <th className="border p-1 text-center">P2 {irUnits}</th>
+              <th className="border p-1 text-center">P3 {irUnits}</th>
             </tr>
           </thead>
           <tbody>
@@ -1832,9 +1855,9 @@ const MediumVoltageSwitchMTSReport: React.FC = () => {
               </th>
             </tr>
             <tr>
-              <th className="border p-1 text-center">P1 MΩ</th>
-              <th className="border p-1 text-center">P2 MΩ</th>
-              <th className="border p-1 text-center">P3 MΩ</th>
+              <th className="border p-1 text-center">P1 {irUnits}</th>
+              <th className="border p-1 text-center">P2 {irUnits}</th>
+              <th className="border p-1 text-center">P3 {irUnits}</th>
             </tr>
           </thead>
           <tbody>

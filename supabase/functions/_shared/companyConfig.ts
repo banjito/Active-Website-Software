@@ -61,7 +61,7 @@ export const COMPANY_HR_EMAIL = env(
  */
 export const COMPANY_SUPPRESSED_EMAILS = env(
   "COMPANY_SUPPRESSED_EMAILS",
-  "jack.lyons@ampqes.com"
+  ""
 )
   .split(",")
   .map((e) => e.trim().toLowerCase())

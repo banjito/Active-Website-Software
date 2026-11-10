@@ -75,6 +75,7 @@ interface FormData {
   // Test Results - Insulation Resistance
   insulationResistance: {
     testVoltage: string;
+    units?: string;
     pole1: {
       poleToPole: string;
       poleToFrame: string;
@@ -405,6 +406,7 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
 
     insulationResistance: {
       testVoltage: "1000VDC",
+      units: "MΩ",
       pole1: {
         poleToPole: "0",
         poleToFrame: "0",
@@ -1687,19 +1689,19 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                         className="border border-neutral-300 dark:border-neutral-600 p-2 text-neutral-900 dark:text-white"
                         colSpan={2}
                       >
-                        Pole 1 MΩ
+                        Pole 1 {formData.insulationResistance.units || "MΩ"}
                       </th>
                       <th
                         className="border border-neutral-300 dark:border-neutral-600 p-2 text-neutral-900 dark:text-white"
                         colSpan={2}
                       >
-                        Pole 2 MΩ
+                        Pole 2 {formData.insulationResistance.units || "MΩ"}
                       </th>
                       <th
                         className="border border-neutral-300 dark:border-neutral-600 p-2 text-neutral-900 dark:text-white"
                         colSpan={2}
                       >
-                        Pole 3 MΩ
+                        Pole 3 {formData.insulationResistance.units || "MΩ"}
                       </th>
                     </tr>
                     <tr className="bg-neutral-50 dark:bg-dark-200">
@@ -1752,7 +1754,30 @@ const LowVoltageSwitchMaintMTSReport: React.FC = () => {
                       <td
                         className="border border-neutral-300 dark:border-neutral-600 p-2"
                         colSpan={6}
-                      ></td>
+                      >
+                        <div className="flex items-center gap-2 text-neutral-900 dark:text-white">
+                          <span>Units</span>
+                          <select
+                            value={
+                              formData.insulationResistance.units || "MΩ"
+                            }
+                            onChange={(e) =>
+                              handleChange(
+                                "insulationResistance.units",
+                                e.target.value,
+                              )
+                            }
+                            disabled={!isEditMode}
+                            className={`form-select w-24 ${!isEditMode ? "bg-neutral-100 dark:bg-dark-200" : ""}`}
+                          >
+                            {["kΩ", "MΩ", "GΩ"].map((u) => (
+                              <option key={u} value={u}>
+                                {u}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </td>
                     </tr>
                     <tr>
                       <td className="border border-neutral-300 dark:border-neutral-600 p-2 text-neutral-900 dark:text-white">

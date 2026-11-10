@@ -18,6 +18,7 @@ import {
   EstimatingTestEquipment,
   getEstimatingScopeLibraryItems,
   getEstimatingTestEquipment,
+  isScopeLibraryAssembly,
   updateEstimatingScopeLibraryItem,
 } from "../../services/estimatingScopeLibraryService";
 
@@ -34,6 +35,21 @@ type ScopeLibraryFormState = {
   estimate_notes: string;
   library_notes: string;
   equipment_ids: string[];
+  components: FormPart[];
+};
+
+// One part of an assembly in the form. `item` is kept so the row can show
+// the part's library numbers without another lookup.
+type FormPart = {
+  component_id: string;
+  default_quantity: string;
+  item: {
+    item_name: string;
+    material_cost: number;
+    tech_count: number;
+    hours: number;
+    is_active: boolean;
+  };
 };
 
 const EMPTY_FORM: ScopeLibraryFormState = {
@@ -45,6 +61,7 @@ const EMPTY_FORM: ScopeLibraryFormState = {
   estimate_notes: "",
   library_notes: "",
   equipment_ids: [],
+  components: [],
 };
 
 const COMMON_ACTIVITIES = [
@@ -77,10 +94,14 @@ const getItemSearchText = (item: EstimatingScopeLibraryItem) =>
     item.estimate_notes,
     item.library_notes,
     ...(item.equipment || []).map((equipment) => equipment.name),
+    ...(item.components || []).map((part) => part.item.item_name),
   ]
     .filter(Boolean)
     .join(" ")
     .toLowerCase();
+
+const inputClass =
+  "w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white disabled:opacity-50";
 
 export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
   userId,
@@ -98,6 +119,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
   const [editingItem, setEditingItem] =
     useState<EstimatingScopeLibraryItem | null>(null);
   const [form, setForm] = useState<ScopeLibraryFormState>(EMPTY_FORM);
+  const [partSearch, setPartSearch] = useState("");
 
   const loadLibrary = useCallback(async () => {
     setLoading(true);
@@ -138,6 +160,97 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
     });
   }, [activityFilter, items, searchQuery]);
 
+  const isAssemblyForm = form.components.length > 0;
+
+  // Assemblies that already use the item being edited. One level only, so an
+  // item that is a part can't get parts of its own.
+  const usedAsPartIn = useMemo(
+    () =>
+      editingItem
+        ? items.filter((item) =>
+            (item.components || []).some(
+              (part) => part.component_id === editingItem.id,
+            ),
+          )
+        : [],
+    [editingItem, items],
+  );
+
+  const partMatches = useMemo(() => {
+    const query = partSearch.trim().toLowerCase();
+    if (!query) return [];
+    const taken = new Set(form.components.map((part) => part.component_id));
+    return items
+      .filter(
+        (item) =>
+          item.is_active &&
+          item.id !== editingItem?.id &&
+          !isScopeLibraryAssembly(item) &&
+          !taken.has(item.id) &&
+          getItemSearchText(item).includes(query),
+      )
+      .slice(0, 10);
+  }, [editingItem, form.components, items, partSearch]);
+
+  // What the assembly adds up to at the default quantities.
+  const partsTotals = useMemo(
+    () =>
+      form.components.reduce(
+        (totals, part) => {
+          const qty = parseNumber(part.default_quantity);
+          return {
+            material: totals.material + qty * (part.item.material_cost || 0),
+            laborHours:
+              totals.laborHours +
+              qty * (part.item.tech_count || 0) * (part.item.hours || 0),
+          };
+        },
+        { material: 0, laborHours: 0 },
+      ),
+    [form.components],
+  );
+
+  const addPart = (item: EstimatingScopeLibraryItem) => {
+    setForm((prev) => ({
+      ...prev,
+      components: [
+        ...prev.components,
+        {
+          component_id: item.id,
+          default_quantity: "0",
+          item: {
+            item_name: item.item_name,
+            material_cost: item.material_cost,
+            tech_count: item.tech_count,
+            hours: item.hours,
+            is_active: item.is_active,
+          },
+        },
+      ],
+    }));
+    setPartSearch("");
+  };
+
+  const updatePartQuantity = (componentId: string, value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      components: prev.components.map((part) =>
+        part.component_id === componentId
+          ? { ...part, default_quantity: value }
+          : part,
+      ),
+    }));
+  };
+
+  const removePart = (componentId: string) => {
+    setForm((prev) => ({
+      ...prev,
+      components: prev.components.filter(
+        (part) => part.component_id !== componentId,
+      ),
+    }));
+  };
+
   const clearMessages = () => {
     setError(null);
     setSuccessMessage(null);
@@ -147,6 +260,7 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
     clearMessages();
     setEditingItem(null);
     setForm(EMPTY_FORM);
+    setPartSearch("");
     setIsFormOpen(true);
   };
 
@@ -164,7 +278,19 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
       equipment_ids: (item.equipment || []).map(
         (equipmentItem) => equipmentItem.id,
       ),
+      components: (item.components || []).map((part) => ({
+        component_id: part.component_id,
+        default_quantity: String(part.default_quantity ?? 0),
+        item: {
+          item_name: part.item.item_name,
+          material_cost: part.item.material_cost,
+          tech_count: part.item.tech_count,
+          hours: part.item.hours,
+          is_active: part.item.is_active,
+        },
+      })),
     });
+    setPartSearch("");
     setIsFormOpen(true);
   };
 
@@ -211,6 +337,10 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
         estimate_notes: form.estimate_notes,
         library_notes: form.library_notes,
         equipment_ids: form.equipment_ids,
+        components: form.components.map((part) => ({
+          component_id: part.component_id,
+          default_quantity: parseNumber(part.default_quantity),
+        })),
       };
 
       if (editingItem) {
@@ -233,9 +363,18 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
   };
 
   const handleArchive = async (item: EstimatingScopeLibraryItem) => {
+    const assemblies = items
+      .filter((other) =>
+        (other.components || []).some((part) => part.component_id === item.id),
+      )
+      .map((other) => other.item_name);
+    const partNote =
+      assemblies.length > 0
+        ? ` It is a part of ${assemblies.join(", ")}, and will be left out when those are added to estimates.`
+        : "";
     if (
       !window.confirm(
-        `Archive scope library item "${item.item_name}"? It will no longer show in estimate row searches.`,
+        `Archive scope library item "${item.item_name}"? It will no longer show in estimate row searches.${partNote}`,
       )
     ) {
       return;
@@ -411,7 +550,9 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                   step="0.01"
                   value={form.material_cost}
                   onChange={(e) => updateForm("material_cost", e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                  disabled={isAssemblyForm}
+                  title={isAssemblyForm ? "Comes from the parts" : undefined}
+                  className={inputClass}
                 />
               </div>
               <div>
@@ -437,9 +578,17 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                   step="0.25"
                   value={form.hours}
                   onChange={(e) => updateForm("hours", e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white"
+                  disabled={isAssemblyForm}
+                  title={isAssemblyForm ? "Comes from the parts" : undefined}
+                  className={inputClass}
                 />
               </div>
+              {isAssemblyForm && (
+                <p className="col-span-3 text-xs text-neutral-500 dark:text-neutral-400">
+                  This is an assembly: material and hours add up from its
+                  parts. # Techs sets the crew size on the estimate row.
+                </p>
+              )}
             </div>
 
             <div>
@@ -466,6 +615,146 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                 placeholder="Internal estimating guidance; not imported into the estimate."
                 className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white resize-vertical"
               />
+            </div>
+
+            <div className="lg:col-span-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                Parts
+              </label>
+              <p className="mb-2 text-xs text-neutral-500 dark:text-neutral-400">
+                Add parts to make this an assembly. Picking it in an estimate
+                adds a row with these parts as sub-rows, so estimators only
+                type the quantities.
+              </p>
+              {usedAsPartIn.length > 0 ? (
+                <div className="rounded-none border border-dashed border-neutral-300 dark:border-neutral-600 p-3 text-sm text-neutral-500 dark:text-neutral-400">
+                  This item is a part of{" "}
+                  {usedAsPartIn.map((item) => item.item_name).join(", ")}, so
+                  it can't have parts of its own.
+                </div>
+              ) : (
+                <>
+                  {form.components.length > 0 && (
+                    <div className="overflow-x-auto border border-neutral-200 dark:border-neutral-700 rounded-none mb-2">
+                      <table className="min-w-full text-sm">
+                        <thead className="bg-neutral-50 dark:bg-dark-200">
+                          <tr>
+                            <th className="px-3 py-2 text-left font-semibold text-neutral-700 dark:text-neutral-200">
+                              Part
+                            </th>
+                            <th className="px-3 py-2 text-right font-semibold text-neutral-700 dark:text-neutral-200 w-28">
+                              Default Qty
+                            </th>
+                            <th className="px-3 py-2 text-right font-semibold text-neutral-700 dark:text-neutral-200">
+                              Material
+                            </th>
+                            <th className="px-3 py-2 text-right font-semibold text-neutral-700 dark:text-neutral-200">
+                              Techs × Hours
+                            </th>
+                            <th className="px-3 py-2 w-10" />
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
+                          {form.components.map((part) => (
+                            <tr key={part.component_id}>
+                              <td className="px-3 py-2 text-neutral-900 dark:text-white">
+                                {part.item.item_name}
+                                {!part.item.is_active && (
+                                  <span className="ml-1 text-xs text-red-600 dark:text-red-400">
+                                    (archived, left out of estimates)
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="1"
+                                  value={part.default_quantity}
+                                  onChange={(e) =>
+                                    updatePartQuantity(
+                                      part.component_id,
+                                      e.target.value,
+                                    )
+                                  }
+                                  aria-label={`Default quantity for ${part.item.item_name}`}
+                                  className={`${inputClass} text-right py-1`}
+                                />
+                              </td>
+                              <td className="px-3 py-2 text-right text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
+                                {formatCurrency(part.item.material_cost)}
+                              </td>
+                              <td className="px-3 py-2 text-right text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
+                                {part.item.tech_count || 0} ×{" "}
+                                {part.item.hours || 0}
+                              </td>
+                              <td className="px-3 py-2 text-right">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    removePart(part.component_id)
+                                  }
+                                  className="text-neutral-400 hover:text-red-600 transition-colors"
+                                  title="Remove part"
+                                  aria-label={`Remove ${part.item.item_name}`}
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      <div className="px-3 py-2 text-xs text-neutral-500 dark:text-neutral-400 border-t border-neutral-200 dark:border-neutral-700">
+                        At default quantities: {formatCurrency(partsTotals.material)}{" "}
+                        material,{" "}
+                        {Math.round(partsTotals.laborHours * 100) / 100} labor
+                        hours. Leave
+                        quantities at 0 to make estimators fill them in.
+                      </div>
+                    </div>
+                  )}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                    <input
+                      type="text"
+                      value={partSearch}
+                      onChange={(e) => setPartSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape") setPartSearch("");
+                      }}
+                      placeholder="Search the library to add a part..."
+                      className={`${inputClass} pl-9`}
+                    />
+                    {partSearch.trim() && (
+                      <div className="absolute z-10 mt-1 w-full max-h-64 overflow-y-auto rounded-none border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-dark-100 shadow-lg">
+                        {partMatches.length === 0 ? (
+                          <div className="px-3 py-2 text-sm text-neutral-500 dark:text-neutral-400">
+                            No matching items. Assemblies can't be parts.
+                          </div>
+                        ) : (
+                          partMatches.map((item) => (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => addPart(item)}
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-orange-50 dark:hover:bg-dark-200 flex items-center justify-between gap-3"
+                            >
+                              <span className="text-neutral-900 dark:text-white">
+                                {item.item_name}
+                              </span>
+                              <span className="text-xs text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
+                                {formatCurrency(item.material_cost)} ·{" "}
+                                {item.tech_count || 0} × {item.hours || 0} hrs
+                              </span>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="lg:col-span-2">
@@ -576,18 +865,32 @@ export const ScopeLibraryManager: React.FC<ScopeLibraryManagerProps> = ({
                   >
                     <td className="px-4 py-3 align-top font-medium text-neutral-900 dark:text-white min-w-[220px]">
                       {item.item_name}
+                      {isScopeLibraryAssembly(item) && (
+                        <div className="mt-1 text-xs font-normal text-neutral-500 dark:text-neutral-400">
+                          <span className="inline-flex rounded-none px-1.5 py-0.5 mr-1 bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 font-medium">
+                            Assembly
+                          </span>
+                          {item
+                            .components!.map((part) => part.item.item_name)
+                            .join(", ")}
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-3 align-top text-neutral-700 dark:text-neutral-300 min-w-[120px]">
                       {item.activity || "—"}
                     </td>
                     <td className="px-4 py-3 align-top text-right text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
-                      {formatCurrency(item.material_cost)}
+                      {isScopeLibraryAssembly(item)
+                        ? "From parts"
+                        : formatCurrency(item.material_cost)}
                     </td>
                     <td className="px-4 py-3 align-top text-right text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
                       {item.tech_count || 0}
                     </td>
                     <td className="px-4 py-3 align-top text-right text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
-                      {item.hours || 0}
+                      {isScopeLibraryAssembly(item)
+                        ? "From parts"
+                        : item.hours || 0}
                     </td>
                     <td className="px-4 py-3 align-top text-neutral-700 dark:text-neutral-300 min-w-[260px] max-w-[420px]">
                       <div>

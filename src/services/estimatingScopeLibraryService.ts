@@ -34,7 +34,26 @@ export interface EstimatingScopeLibraryItem {
   created_by: string | null;
   updated_by: string | null;
   equipment?: EstimatingTestEquipment[];
+  // Parts of an assembly. Empty for a normal item.
+  components?: EstimatingScopeLibraryComponent[];
 }
+
+/** One part of a library assembly, with the part's own library row. */
+export interface EstimatingScopeLibraryComponent {
+  component_id: string;
+  default_quantity: number;
+  sort_order: number;
+  item: Omit<EstimatingScopeLibraryItem, "equipment" | "components">;
+}
+
+export type EstimatingScopeLibraryComponentInput = {
+  component_id: string;
+  default_quantity?: number;
+};
+
+export const isScopeLibraryAssembly = (
+  item: Pick<EstimatingScopeLibraryItem, "components"> | null | undefined,
+): boolean => (item?.components?.length ?? 0) > 0;
 
 export type EstimatingTestEquipmentInput = {
   name: string;
@@ -52,6 +71,7 @@ export type EstimatingScopeLibraryItemInput = {
   library_notes?: string | null;
   is_active?: boolean;
   equipment_ids?: string[];
+  components?: EstimatingScopeLibraryComponentInput[];
 };
 
 type ScopeLibraryEquipmentLink = {
@@ -59,7 +79,10 @@ type ScopeLibraryEquipmentLink = {
   equipment_id: string;
 };
 
-type ScopeLibraryItemRow = Omit<EstimatingScopeLibraryItem, "equipment">;
+type ScopeLibraryItemRow = Omit<
+  EstimatingScopeLibraryItem,
+  "equipment" | "components"
+>;
 
 const toNumber = (value: unknown): number => {
   const parsed = Number(value);
@@ -89,6 +112,92 @@ const normalizeScopeItemRow = (item: any): ScopeLibraryItemRow => ({
   created_by: item.created_by ?? null,
   updated_by: item.updated_by ?? null,
 });
+
+// Postgres "table missing" / PostgREST "not in schema cache". Lets the library
+// keep working before estimating_scope_library_assemblies.sql has been run.
+const isMissingTableError = (error: any): boolean =>
+  error?.code === "42P01" || error?.code === "PGRST205";
+
+const hydrateScopeItemsWithComponents = async (
+  items: EstimatingScopeLibraryItem[],
+): Promise<EstimatingScopeLibraryItem[]> => {
+  if (items.length === 0) return [];
+
+  const { data: links, error: linksError } = await supabase
+    .schema("business")
+    .from("estimating_scope_library_item_components")
+    .select("assembly_id, component_id, default_quantity, sort_order")
+    .in(
+      "assembly_id",
+      items.map((item) => item.id),
+    )
+    .order("sort_order", { ascending: true });
+
+  if (linksError) {
+    if (isMissingTableError(linksError)) {
+      return items.map((item) => ({ ...item, components: [] }));
+    }
+    console.error("Error fetching scope library assembly parts:", linksError);
+    throw linksError;
+  }
+
+  if (!links || links.length === 0) {
+    return items.map((item) => ({ ...item, components: [] }));
+  }
+
+  // Parts may be archived, so they can be missing from `items`.
+  const byId = new Map<string, ScopeLibraryItemRow>(
+    items.map((item) => [item.id, item] as [string, ScopeLibraryItemRow]),
+  );
+  const missingIds = Array.from(
+    new Set(links.map((link) => link.component_id)),
+  ).filter((id) => !byId.has(id));
+
+  if (missingIds.length > 0) {
+    const { data: partRows, error: partsError } = await supabase
+      .schema("business")
+      .from("estimating_scope_library_items")
+      .select("*")
+      .in("id", missingIds);
+
+    if (partsError) {
+      console.error("Error fetching scope library parts:", partsError);
+      throw partsError;
+    }
+    (partRows || []).forEach((row) => {
+      const normalized = normalizeScopeItemRow(row);
+      byId.set(normalized.id, normalized);
+    });
+  }
+
+  const componentsByAssembly = new Map<
+    string,
+    EstimatingScopeLibraryComponent[]
+  >();
+  links.forEach((link) => {
+    const part = byId.get(link.component_id);
+    if (!part) return;
+    const { equipment: _e, components: _c, ...partRow } = part as any;
+    const list = componentsByAssembly.get(link.assembly_id) || [];
+    list.push({
+      component_id: link.component_id,
+      default_quantity: toNumber(link.default_quantity),
+      sort_order: toNumber(link.sort_order),
+      item: partRow,
+    });
+    componentsByAssembly.set(link.assembly_id, list);
+  });
+
+  return items.map((item) => ({
+    ...item,
+    components: componentsByAssembly.get(item.id) || [],
+  }));
+};
+
+const hydrateScopeItems = async (
+  rows: ScopeLibraryItemRow[],
+): Promise<EstimatingScopeLibraryItem[]> =>
+  hydrateScopeItemsWithComponents(await hydrateScopeItemsWithEquipment(rows));
 
 const hydrateScopeItemsWithEquipment = async (
   rows: ScopeLibraryItemRow[],
@@ -163,9 +272,7 @@ const getScopeLibraryItemById = async (
     throw error;
   }
 
-  const hydrated = await hydrateScopeItemsWithEquipment([
-    normalizeScopeItemRow(data),
-  ]);
+  const hydrated = await hydrateScopeItems([normalizeScopeItemRow(data)]);
   return hydrated[0];
 };
 
@@ -204,6 +311,46 @@ const syncScopeItemEquipment = async (
   }
 };
 
+// Replaces an assembly's parts with `components`, in the order given.
+const syncScopeItemComponents = async (
+  assemblyId: string,
+  components: EstimatingScopeLibraryComponentInput[] = [],
+): Promise<void> => {
+  const { error: deleteError } = await supabase
+    .schema("business")
+    .from("estimating_scope_library_item_components")
+    .delete()
+    .eq("assembly_id", assemblyId);
+
+  if (deleteError) {
+    // Table not created yet and nothing to save: nothing to do.
+    if (isMissingTableError(deleteError) && components.length === 0) return;
+    console.error("Error clearing scope library assembly parts:", deleteError);
+    throw deleteError;
+  }
+
+  const rows = components
+    .filter((c) => c.component_id && c.component_id !== assemblyId)
+    .map((c, index) => ({
+      assembly_id: assemblyId,
+      component_id: c.component_id,
+      default_quantity: Math.max(0, toNumber(c.default_quantity)),
+      sort_order: index,
+    }));
+
+  if (rows.length === 0) return;
+
+  const { error: insertError } = await supabase
+    .schema("business")
+    .from("estimating_scope_library_item_components")
+    .insert(rows);
+
+  if (insertError) {
+    console.error("Error saving scope library assembly parts:", insertError);
+    throw insertError;
+  }
+};
+
 /**
  * Fetch scope library items, ordered by item name.
  */
@@ -228,7 +375,7 @@ export async function getEstimatingScopeLibraryItems(
       throw error;
     }
 
-    return hydrateScopeItemsWithEquipment(
+    return hydrateScopeItems(
       ((data || []) as any[]).map(normalizeScopeItemRow),
     );
   } catch (error) {
@@ -256,6 +403,7 @@ export async function searchEstimatingScopeLibraryItems(
       item.estimate_notes,
       item.library_notes,
       ...(item.equipment || []).map((equipment) => equipment.name),
+      ...(item.components || []).map((part) => part.item.item_name),
     ]
       .filter(Boolean)
       .join(" ")
@@ -303,6 +451,9 @@ export async function createEstimatingScopeLibraryItem(
   }
 
   await syncScopeItemEquipment(data.id, input.equipment_ids || []);
+  if (input.components && input.components.length > 0) {
+    await syncScopeItemComponents(data.id, input.components);
+  }
   return getScopeLibraryItemById(data.id);
 }
 
@@ -358,6 +509,9 @@ export async function updateEstimatingScopeLibraryItem(
 
   if (input.equipment_ids !== undefined) {
     await syncScopeItemEquipment(id, input.equipment_ids);
+  }
+  if (input.components !== undefined) {
+    await syncScopeItemComponents(id, input.components);
   }
 
   return getScopeLibraryItemById(id);

@@ -6,12 +6,16 @@ import { LoadingSpinner } from "../ui/LoadingSpinner";
 import {
   EstimatingScopeLibraryItem,
   getEstimatingScopeLibraryItems,
+  isScopeLibraryAssembly,
 } from "../../services/estimatingScopeLibraryService";
 
 interface ScopeLibraryPickerModalProps {
   open: boolean;
   onClose: () => void;
   onSelect: (item: EstimatingScopeLibraryItem) => void;
+  // Hide assemblies, for rows that can't hold sub-rows (sub-rows themselves,
+  // non-SOV rows, the full estimate flow).
+  excludeAssemblies?: boolean;
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -28,6 +32,7 @@ const getSearchableText = (item: EstimatingScopeLibraryItem) =>
     item.estimate_notes,
     item.library_notes,
     ...(item.equipment || []).map((equipment) => equipment.name),
+    ...(item.components || []).map((part) => part.item.item_name),
   ]
     .filter(Boolean)
     .join(" ")
@@ -35,7 +40,7 @@ const getSearchableText = (item: EstimatingScopeLibraryItem) =>
 
 export const ScopeLibraryPickerModal: React.FC<
   ScopeLibraryPickerModalProps
-> = ({ open, onClose, onSelect }) => {
+> = ({ open, onClose, onSelect, excludeAssemblies = false }) => {
   const [items, setItems] = useState<EstimatingScopeLibraryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,9 +92,12 @@ export const ScopeLibraryPickerModal: React.FC<
 
   const filteredItems = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    if (!query) return items;
-    return items.filter((item) => getSearchableText(item).includes(query));
-  }, [items, searchQuery]);
+    const usable = excludeAssemblies
+      ? items.filter((item) => !isScopeLibraryAssembly(item))
+      : items;
+    if (!query) return usable;
+    return usable.filter((item) => getSearchableText(item).includes(query));
+  }, [excludeAssemblies, items, searchQuery]);
 
   if (!open) return null;
 
@@ -220,18 +228,33 @@ export const ScopeLibraryPickerModal: React.FC<
                       </td>
                       <td className="px-3 py-3 align-top font-medium text-neutral-900 dark:text-white min-w-[220px]">
                         {item.item_name}
+                        {isScopeLibraryAssembly(item) && (
+                          <div className="mt-1 text-xs font-normal text-neutral-500 dark:text-neutral-400">
+                            <span className="inline-flex rounded-none px-1.5 py-0.5 mr-1 bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 font-medium">
+                              Assembly
+                            </span>
+                            {item
+                              .components!.filter((part) => part.item.is_active)
+                              .map((part) => part.item.item_name)
+                              .join(", ")}
+                          </div>
+                        )}
                       </td>
                       <td className="px-3 py-3 align-top text-neutral-700 dark:text-neutral-300 min-w-[120px]">
                         {item.activity || "—"}
                       </td>
                       <td className="px-3 py-3 align-top text-right text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
-                        {formatCurrency(item.material_cost)}
+                        {isScopeLibraryAssembly(item)
+                          ? "From parts"
+                          : formatCurrency(item.material_cost)}
                       </td>
                       <td className="px-3 py-3 align-top text-right text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
                         {item.tech_count || 0}
                       </td>
                       <td className="px-3 py-3 align-top text-right text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
-                        {item.hours || 0}
+                        {isScopeLibraryAssembly(item)
+                          ? "From parts"
+                          : item.hours || 0}
                       </td>
                       <td className="px-3 py-3 align-top text-neutral-700 dark:text-neutral-300 min-w-[220px] max-w-[320px]">
                         {item.estimate_notes || "—"}

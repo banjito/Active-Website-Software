@@ -433,6 +433,7 @@ export function SovStep({ data, update }: StepProps) {
 
       <ScopeLibraryPickerModal
         open={pickerIndex != null}
+        excludeAssemblies
         onClose={() => setPickerIndex(null)}
         onSelect={(libraryItem) => {
           if (pickerIndex == null) return;

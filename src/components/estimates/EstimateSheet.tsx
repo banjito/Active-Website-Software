@@ -949,6 +949,8 @@ export default function EstimateSheet({
     open: boolean;
     section: "sov" | "nonSov";
     index: number;
+    // Set when filling a sub-row of SOV row `index`.
+    subIndex?: number;
   } | null>(null);
 
   // Clear justSaved indicator when edits are made
@@ -3835,26 +3837,80 @@ export default function EstimateSheet({
     section: "sov" | "nonSov",
     index: number,
     libraryItem: EstimatingScopeLibraryItem,
+    subIndex?: number,
   ) => {
     const itemsKey = section === "sov" ? "sovItems" : "nonSovItems";
+
+    // Sub-row: fill only that sub-row; the parent re-adds itself up.
+    if (section === "sov" && subIndex != null) {
+      updateSovParentRow(index, (parent) => ({
+        ...parent,
+        subItems: (parent.subItems || []).map((sub, i) =>
+          i === subIndex
+            ? {
+                ...sub,
+                item: libraryItem.item_name,
+                quantity: Number(sub.quantity) > 0 ? sub.quantity : 1,
+                materialPrice: Number(libraryItem.material_cost) || 0,
+                laborMen: Number(libraryItem.tech_count) || 0,
+                laborHours: Number(libraryItem.hours) || 0,
+                notes: libraryItem.estimate_notes || "",
+              }
+            : sub,
+        ),
+      }));
+      return;
+    }
+
+    // Assembly: the row comes in with its parts as sub-rows. Archived parts
+    // are left out. Only SOV rows can hold sub-rows.
+    const parts =
+      section === "sov"
+        ? (libraryItem.components || []).filter((part) => part.item.is_active)
+        : [];
+    if (
+      parts.length > 0 &&
+      hasSubItems(data.sovItems[index]) &&
+      !window.confirm(
+        `Replace this row's sub-items with the parts of "${libraryItem.item_name}"?`,
+      )
+    ) {
+      return;
+    }
 
     setData((prev) => {
       const newItems = [...prev[itemsKey]];
       const existingItem = newItems[index] || createEmptyLineItem();
       const existingQuantity = Number(existingItem.quantity);
 
-      newItems[index] = rollUpSubItems(
-        normalizeEstimateLineItem({
-          ...existingItem,
-          rowType: "item",
-          item: libraryItem.item_name,
-          quantity: existingQuantity > 0 ? existingItem.quantity : 1,
-          materialPrice: Number(libraryItem.material_cost) || 0,
-          laborMen: Number(libraryItem.tech_count) || 0,
-          laborHours: Number(libraryItem.hours) || 0,
-          notes: libraryItem.estimate_notes || "",
-        }),
-      );
+      const fromLibrary: EstimateLineItem = {
+        ...existingItem,
+        rowType: "item",
+        item: libraryItem.item_name,
+        quantity: existingQuantity > 0 ? existingItem.quantity : 1,
+        materialPrice: Number(libraryItem.material_cost) || 0,
+        laborMen: Number(libraryItem.tech_count) || 0,
+        laborHours: Number(libraryItem.hours) || 0,
+        notes: libraryItem.estimate_notes || "",
+      };
+      if (parts.length > 0) {
+        // Labor hours divide by techs, so a parent needs at least one tech.
+        fromLibrary.laborMen = Number(libraryItem.tech_count) > 0
+          ? Number(libraryItem.tech_count)
+          : 1;
+        fromLibrary.subItems = parts.map((part) => ({
+          ...EMPTY_LINE_ITEM,
+          item: part.item.item_name,
+          quantity: part.default_quantity,
+          materialPrice: Number(part.item.material_cost) || 0,
+          laborMen: Number(part.item.tech_count) || 0,
+          laborHours: Number(part.item.hours) || 0,
+          notes: part.item.estimate_notes || "",
+        }));
+        fromLibrary.subItemsCollapsed = false;
+      }
+
+      newItems[index] = rollUpSubItems(normalizeEstimateLineItem(fromLibrary));
 
       const newData = {
         ...prev,
@@ -5219,7 +5275,11 @@ export default function EstimateSheet({
     // parent's quantity, and sub-quantities read as "per one of the parent".
     const buildSubItemsTableHtml = (item: any): string => {
       if (!(item?.showSubItemsInProposal && hasSubItems(item))) return "";
-      const subs = item.subItems.filter(shouldShowSovItemInProposal);
+      // Zero-quantity parts (assembly parts left at 0) aren't included.
+      const subs = item.subItems.filter(
+        (sub: any) =>
+          Number(sub?.quantity) > 0 && shouldShowSovItemInProposal(sub),
+      );
       if (subs.length === 0) return "";
       const headCell =
         "padding:3px 8px;font-size:0.72em;letter-spacing:0.06em;text-transform:uppercase;font-weight:600;color:#000;background:transparent;border:0;border-bottom:1px solid #e5e7eb;";
@@ -9555,6 +9615,35 @@ export default function EstimateSheet({
                                               }
                                               readOnly={isViewMode}
                                             />
+                                            {!isViewMode && (
+                                              <button
+                                                type="button"
+                                                className="print:hidden"
+                                                onClick={() =>
+                                                  setScopeLibraryPicker({
+                                                    open: true,
+                                                    section: "sov",
+                                                    index,
+                                                    subIndex,
+                                                  })
+                                                }
+                                                title="Search scope item library"
+                                                aria-label="Search scope item library for this sub-item"
+                                                style={{
+                                                  background: "none",
+                                                  border: "none",
+                                                  color: "var(--brand)",
+                                                  cursor: "pointer",
+                                                  padding: "3px",
+                                                  display: "flex",
+                                                  alignItems: "center",
+                                                  justifyContent: "center",
+                                                  borderRadius: 0,
+                                                }}
+                                              >
+                                                <BookOpen className="h-4 w-4" />
+                                              </button>
+                                            )}
                                           </div>
                                         </td>
                                         {subInput("quantity")}
@@ -16560,12 +16649,17 @@ export default function EstimateSheet({
       <ScopeLibraryPickerModal
         open={Boolean(scopeLibraryPicker?.open)}
         onClose={() => setScopeLibraryPicker(null)}
+        excludeAssemblies={
+          scopeLibraryPicker?.section === "nonSov" ||
+          scopeLibraryPicker?.subIndex != null
+        }
         onSelect={(libraryItem) => {
           if (!scopeLibraryPicker) return;
           applyScopeLibraryItemToRow(
             scopeLibraryPicker.section,
             scopeLibraryPicker.index,
             libraryItem,
+            scopeLibraryPicker.subIndex,
           );
           setScopeLibraryPicker(null);
         }}

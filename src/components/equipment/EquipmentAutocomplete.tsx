@@ -161,7 +161,12 @@ export const EquipmentAutocomplete: React.FC<EquipmentAutocompleteProps> = ({
           list = list.filter((e) => !excludeEquipmentIds.includes(e.id));
         }
         setSuggestions(list);
-        setShowSuggestions(true);
+        // Only pop the list open while the person is typing in this box.
+        // Loading a saved report fills the box too, which used to open a
+        // stray dropdown over the page.
+        if (document.activeElement === inputRef.current) {
+          setShowSuggestions(true);
+        }
       } catch (error) {
         console.error("Error searching equipment:", error);
         setSuggestions([]);

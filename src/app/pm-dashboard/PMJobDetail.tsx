@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { AlertTriangle, ArrowLeft, Check, ChevronLeft, ChevronRight, Copy, Pencil, Plus, Save, Settings, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Pencil, Plus, Save, Settings, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { useDemoMode } from '@/lib/DemoModeContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { REPORT_NAMES } from '@/components/reports/reportMappings';
+import { formatChangeOrderNumber } from '@/services/changeOrderService';
 import {
   contractTotal,
   DEFAULT_SOV_SETTINGS,
@@ -25,6 +26,7 @@ import {
   type BillingFrequency,
   type JobBundle,
   type PmJob,
+  type SovChangeOrder,
   type SovSettings,
 } from '@/services/pmDashboardService';
 import {
@@ -35,7 +37,9 @@ import {
   estimateOverlaps,
   estimateTotal,
   guessLineSlugs,
+  isOriginalLine,
   lineDone,
+  linesComplete,
   mergedProgress,
   monthDollars,
   monthKey,
@@ -195,6 +199,8 @@ export default function PMJobDetail() {
   const [weekSaving, setWeekSaving] = useState(false);
   const [hoursByWeek, setHoursByWeek] = useState<Record<string, number>>({});
   const [billingDraft, setBillingDraft] = useState<BillingFrequency>('monthly');
+  // Change Order groups the PM opened or closed. Untouched: open until every line is done.
+  const [openCos, setOpenCos] = useState<Record<string, boolean>>({});
 
   const load = useCallback(async () => {
     if (!jobId) return;
@@ -518,7 +524,12 @@ export default function PMJobDetail() {
         await saveSovSettings(job.id, settings, user?.id);
         setSavedSettings(settings);
       }
-      setBundle({ ...bundle, lines, seeded: false });
+      setBundle({
+        ...bundle,
+        lines,
+        seeded: false,
+        changeOrders: bundle.changeOrders.map((co) => ({ ...co, seeded: false })),
+      });
       setDirty(false);
       setEditing(false);
     } catch (err) {
@@ -603,7 +614,7 @@ export default function PMJobDetail() {
       title: 'SOV now',
       updated_at: '',
       status: null,
-      rows: lines.map((line) => ({
+      rows: lines.filter(isOriginalLine).map((line) => ({
         item: line.item,
         quantity: line.quantity,
         unitHours: 0,
@@ -626,6 +637,172 @@ export default function PMJobDetail() {
         .filter((slug) => !search || reportTypeLabel(slug).toLowerCase().includes(search))
         .sort((a, b) => (sentByType[b] ?? 0) - (sentByType[a] ?? 0) || reportTypeLabel(a).localeCompare(reportTypeLabel(b)))
     : [];
+
+  // Change Orders on the SOV: each one's lines sit in their own group under the original lines
+  const sovCos = bundle.changeOrders;
+  const originalLines = lines.filter(isOriginalLine);
+  const coLinesOf = (coId: string) => lines.filter((line) => line.change_order_id === coId);
+  const coOpen = (coId: string) => openCos[coId] ?? !linesComplete(coLinesOf(coId), progress);
+  const toggleCo = (coId: string) => setOpenCos((prev) => ({ ...prev, [coId]: !coOpen(coId) }));
+  const coNumberById = new Map(sovCos.map((co) => [co.id, co.number]));
+  const coLabel = (co: SovChangeOrder) =>
+    [`Change Order ${formatChangeOrderNumber(co.number)}`, co.letter && `Letter ${co.letter}`, co.title.trim()]
+      .filter(Boolean)
+      .join(' · ');
+  const seededCos = sovCos.filter((co) => co.seeded);
+  // Lines copied in but not saved: the weekly update waits until they're saved
+  const needsSave = bundle.seeded || seededCos.length > 0;
+
+  /** One SOV row: an original line, or a line inside a Change Order group. */
+  const renderSovRow = (line: SovLine) => {
+    const done = lineDone(progress, line.id);
+    return (
+      <tr key={line.id} className={`${ROW} hover:bg-neutral-50 dark:hover:bg-neutral-700/40`}>
+        <td className={line.change_order_id ? `${TD} pl-8` : TD}>
+          {editing ? (
+            <input
+              aria-label="Item"
+              className={CELL_INPUT}
+              value={line.item}
+              onChange={(e) => updateLine(line.id, { item: e.target.value })}
+            />
+          ) : (
+            <>
+              {line.item || 'Unnamed line'}
+              {line.line_type === 'general_conditions' && (
+                <span className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">
+                  monthly{settings?.gc_start ? ` from ${settings.gc_start}` : ''}
+                </span>
+              )}
+              {line.line_type === 'mobilization' && (
+                <span className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">from the estimate</span>
+              )}
+            </>
+          )}
+        </td>
+        <td className={NUM}>
+          {editing ? (
+            <input
+              aria-label="Quantity"
+              type="number"
+              min={0}
+              className={`${NUMBER_INPUT} min-w-[5rem]`}
+              value={line.quantity}
+              onChange={(e) => updateLine(line.id, { quantity: parseNumber(e.target.value) })}
+            />
+          ) : (line.multiplier ?? 1) > 1 ? (
+            <span title={`${line.multiplier} times ${line.quantity / (line.multiplier ?? 1)}`}>
+              {line.multiplier} × <Count value={line.quantity / (line.multiplier ?? 1)} />
+            </span>
+          ) : (
+            <Count value={line.quantity} />
+          )}
+        </td>
+        <td className={NUM}>
+          {editing ? (
+            <input
+              aria-label="Total hours"
+              type="number"
+              min={0}
+              className={`${NUMBER_INPUT} min-w-[5rem]`}
+              value={line.total_hours}
+              onChange={(e) => updateLine(line.id, { total_hours: parseNumber(e.target.value) })}
+            />
+          ) : (
+            fmtHours(line.total_hours)
+          )}
+        </td>
+        <td className={NUM}>
+          {editing ? (
+            <input
+              aria-label="Dollars each"
+              type="number"
+              min={0}
+              className={`${NUMBER_INPUT} min-w-[6rem]`}
+              value={line.unit_price}
+              onChange={(e) => updateLine(line.id, { unit_price: parseNumber(e.target.value) })}
+            />
+          ) : (
+            fmtMoney(line.unit_price)
+          )}
+        </td>
+        {months.map((m) => (
+          <td key={m} className={m === month ? NUM_ACTIVE : NUM}>
+            <Count value={progress.qty[line.id]?.[m] ?? 0} />
+          </td>
+        ))}
+        <td className={NUM}>
+          {done.toLocaleString('en-US')}
+          {line.quantity > 0 && (
+            <span className="text-neutral-500 dark:text-neutral-400">
+              {' '}
+              / {line.quantity.toLocaleString('en-US')}
+            </span>
+          )}
+        </td>
+        <td className={TD}>
+          <button
+            type="button"
+            onClick={() => setPickerLineId(line.id)}
+            className="whitespace-nowrap text-neutral-700 underline decoration-neutral-300 underline-offset-4 hover:text-neutral-900 dark:text-neutral-300 dark:decoration-neutral-600 dark:hover:text-neutral-100"
+          >
+            {line.report_slugs.length === 0
+              ? 'None'
+              : `${line.report_slugs.length} type${line.report_slugs.length === 1 ? '' : 's'}`}
+          </button>
+        </td>
+        {editing && (
+          <td className="px-1 py-1 text-right">
+            {/* A Change Order keeps at least one line, or its lines get copied in again */}
+            {!(line.change_order_id && coLinesOf(line.change_order_id).length === 1) && (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`Remove ${line.item || 'line'}`}
+                onClick={() => markChanged(lines.filter((l) => l.id !== line.id))}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </td>
+        )}
+      </tr>
+    );
+  };
+
+  /** One row of the weekly update box. */
+  const renderWeekRow = (line: SovLine) => {
+    const before = doneBefore(line.id);
+    const thisWeek = parseNumber(weekValue(line.id));
+    const left = line.quantity - before - thisWeek;
+    return (
+      <tr key={line.id} className={ROW}>
+        <td className={line.change_order_id ? `${TD} pl-8` : TD}>{line.item || 'Unnamed line'}</td>
+        <td className={NUM}>
+          <Count value={line.quantity} />
+        </td>
+        <td className={NUM}>
+          <Count value={before} />
+        </td>
+        <td className={NUM}>
+          <input
+            aria-label={`${line.item || 'Line'} this week`}
+            type="number"
+            min={0}
+            step="any"
+            className={`${NUMBER_INPUT} w-20`}
+            disabled={weekLocked}
+            placeholder="0"
+            value={weekValue(line.id)}
+            onChange={(e) => setWeekDraft({ ...weekDraft, [line.id]: e.target.value })}
+          />
+        </td>
+        <td className={`${NUM} ${left < 0 ? 'text-amber-700 dark:text-amber-300' : ''}`}>
+          <Count value={left} />
+        </td>
+      </tr>
+    );
+  };
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6">
@@ -757,35 +934,35 @@ export default function PMJobDetail() {
                 </tr>
               </thead>
               <tbody>
-                {weekLines.map((line) => {
-                  const before = doneBefore(line.id);
-                  const thisWeek = parseNumber(weekValue(line.id));
-                  const left = line.quantity - before - thisWeek;
+                {weekLines.filter(isOriginalLine).map(renderWeekRow)}
+                {sovCos.map((co) => {
+                  const coWeekLines = weekLines.filter((line) => line.change_order_id === co.id);
+                  if (coWeekLines.length === 0) return null;
+                  const open = coOpen(co.id);
                   return (
-                    <tr key={line.id} className={ROW}>
-                      <td className={TD}>{line.item || 'Unnamed line'}</td>
-                      <td className={NUM}>
-                        <Count value={line.quantity} />
-                      </td>
-                      <td className={NUM}>
-                        <Count value={before} />
-                      </td>
-                      <td className={NUM}>
-                        <input
-                          aria-label={`${line.item || 'Line'} this week`}
-                          type="number"
-                          min={0}
-                          className={`${NUMBER_INPUT} w-20`}
-                          disabled={weekLocked}
-                          placeholder="0"
-                          value={weekValue(line.id)}
-                          onChange={(e) => setWeekDraft({ ...weekDraft, [line.id]: e.target.value })}
-                        />
-                      </td>
-                      <td className={`${NUM} ${left < 0 ? 'text-amber-700 dark:text-amber-300' : ''}`}>
-                        <Count value={left} />
-                      </td>
-                    </tr>
+                    <React.Fragment key={co.id}>
+                      <tr className={`${ROW} bg-neutral-50 dark:bg-neutral-900/40`}>
+                        <td className={TD} colSpan={5}>
+                          <button
+                            type="button"
+                            aria-expanded={open}
+                            onClick={() => toggleCo(co.id)}
+                            className="flex items-center gap-1.5 text-left font-medium text-neutral-900 dark:text-neutral-100"
+                          >
+                            {open ? (
+                              <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 flex-shrink-0" />
+                            )}
+                            {coLabel(co)}
+                            {linesComplete(coLinesOf(co.id), progress) && (
+                              <span className="ml-2 text-xs font-normal text-green-700 dark:text-green-400">Done</span>
+                            )}
+                          </button>
+                        </td>
+                      </tr>
+                      {open && coWeekLines.map(renderWeekRow)}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
@@ -804,7 +981,7 @@ export default function PMJobDetail() {
               </span>
             </div>
             <div className="flex items-center gap-2">
-              {(dirty || bundle.seeded) && !weekLocked && (
+              {(dirty || needsSave) && !weekLocked && (
                 <span className="text-xs text-amber-700 dark:text-amber-300">Save the SOV first</span>
               )}
               {weekLocked ? (
@@ -817,7 +994,7 @@ export default function PMJobDetail() {
                     variant="outline"
                     size="sm"
                     isLoading={weekSaving}
-                    disabled={dirty || bundle.seeded}
+                    disabled={dirty || needsSave}
                     onClick={() => saveWeek(false)}
                   >
                     Save draft
@@ -826,7 +1003,7 @@ export default function PMJobDetail() {
                     size="sm"
                     leftIcon={<Check className="h-4 w-4" />}
                     isLoading={weekSaving}
-                    disabled={dirty || bundle.seeded}
+                    disabled={dirty || needsSave}
                     onClick={() => saveWeek(true)}
                   >
                     Approve week
@@ -904,7 +1081,7 @@ export default function PMJobDetail() {
                 {dirty ? 'Discard' : 'Done'}
               </Button>
             )}
-            {(dirty || (bundle.seeded && lines.length > 0)) && (
+            {(dirty || (needsSave && lines.length > 0)) && (
               <Button
                 size="sm"
                 leftIcon={<Save className="h-4 w-4" />}
@@ -922,6 +1099,14 @@ export default function PMJobDetail() {
           <Notice>
             Copied from the estimate and not saved yet. Check the lines and which reports count, then
             Save to keep this SOV for the job.
+          </Notice>
+        )}
+        {seededCos.length > 0 && !dirty && (
+          <Notice>
+            {seededCos.length === 1
+              ? `${coLabel(seededCos[0])} is approved. Its lines were copied from its estimate`
+              : `${seededCos.length} Change Orders are approved. Their lines were copied from their estimates`}
+            , priced to add up to the approved amount. Check them, then Save to put them on the SOV.
           </Notice>
         )}
         {saveError && (
@@ -950,6 +1135,9 @@ export default function PMJobDetail() {
                       <option value="">Count toward...</option>
                       {lines.map((line) => (
                         <option key={line.id} value={line.id}>
+                          {line.change_order_id
+                            ? `Change Order ${formatChangeOrderNumber(coNumberById.get(line.change_order_id) ?? 0)}: `
+                            : ''}
                           {line.item || 'Unnamed line'}
                           {line.id === suggested?.id ? ' (best guess)' : ''}
                         </option>
@@ -1011,116 +1199,73 @@ export default function PMJobDetail() {
                   </td>
                 </tr>
               )}
-              {lines.map((line) => {
-                const done = lineDone(progress, line.id);
+              {originalLines.map(renderSovRow)}
+              {sovCos.map((co) => {
+                const coLines = coLinesOf(co.id);
+                const open = coOpen(co.id);
+                const share = completedPct(coLines, progress);
                 return (
-                  <tr key={line.id} className={`${ROW} hover:bg-neutral-50 dark:hover:bg-neutral-700/40`}>
-                    <td className={TD}>
-                      {editing ? (
-                        <input
-                          aria-label="Item"
-                          className={CELL_INPUT}
-                          value={line.item}
-                          onChange={(e) => updateLine(line.id, { item: e.target.value })}
-                        />
-                      ) : (
-                        <>
-                          {line.item || 'Unnamed line'}
-                          {line.line_type === 'general_conditions' && (
-                            <span className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">
-                              monthly{settings?.gc_start ? ` from ${settings.gc_start}` : ''}
-                            </span>
-                          )}
-                          {line.line_type === 'mobilization' && (
-                            <span className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">from the estimate</span>
-                          )}
-                        </>
-                      )}
-                    </td>
-                    <td className={NUM}>
-                      {editing ? (
-                        <input
-                          aria-label="Quantity"
-                          type="number"
-                          min={0}
-                          className={`${NUMBER_INPUT} min-w-[5rem]`}
-                          value={line.quantity}
-                          onChange={(e) => updateLine(line.id, { quantity: parseNumber(e.target.value) })}
-                        />
-                      ) : (line.multiplier ?? 1) > 1 ? (
-                        <span title={`${line.multiplier} times ${line.quantity / (line.multiplier ?? 1)}`}>
-                          {line.multiplier} × <Count value={line.quantity / (line.multiplier ?? 1)} />
-                        </span>
-                      ) : (
-                        <Count value={line.quantity} />
-                      )}
-                    </td>
-                    <td className={NUM}>
-                      {editing ? (
-                        <input
-                          aria-label="Total hours"
-                          type="number"
-                          min={0}
-                          className={`${NUMBER_INPUT} min-w-[5rem]`}
-                          value={line.total_hours}
-                          onChange={(e) => updateLine(line.id, { total_hours: parseNumber(e.target.value) })}
-                        />
-                      ) : (
-                        fmtHours(line.total_hours)
-                      )}
-                    </td>
-                    <td className={NUM}>
-                      {editing ? (
-                        <input
-                          aria-label="Dollars each"
-                          type="number"
-                          min={0}
-                          className={`${NUMBER_INPUT} min-w-[6rem]`}
-                          value={line.unit_price}
-                          onChange={(e) => updateLine(line.id, { unit_price: parseNumber(e.target.value) })}
-                        />
-                      ) : (
-                        fmtMoney(line.unit_price)
-                      )}
-                    </td>
-                    {months.map((m) => (
-                      <td key={m} className={m === month ? NUM_ACTIVE : NUM}>
-                        <Count value={progress.qty[line.id]?.[m] ?? 0} />
+                  <React.Fragment key={co.id}>
+                    <tr className={`${ROW} bg-neutral-50 dark:bg-neutral-900/40`}>
+                      <td className={TD} colSpan={4}>
+                        <div className="flex items-center justify-between gap-3">
+                          <button
+                            type="button"
+                            aria-expanded={open}
+                            onClick={() => toggleCo(co.id)}
+                            className="flex items-center gap-1.5 text-left font-medium text-neutral-900 dark:text-neutral-100"
+                          >
+                            {open ? (
+                              <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 flex-shrink-0" />
+                            )}
+                            {coLabel(co)}
+                          </button>
+                          <span className="whitespace-nowrap font-medium tabular-nums">{fmtMoney(sovTotal(coLines))}</span>
+                        </div>
+                        {co.status !== 'approved' && (
+                          <p className="ml-6 mt-1 text-xs text-amber-700 dark:text-amber-300">
+                            Not approved anymore. Approve it again, or Edit SOV and remove its lines.
+                          </p>
+                        )}
                       </td>
-                    ))}
-                    <td className={NUM}>
-                      {done.toLocaleString('en-US')}
-                      {line.quantity > 0 && (
-                        <span className="text-neutral-500 dark:text-neutral-400">
-                          {' '}
-                          / {line.quantity.toLocaleString('en-US')}
-                        </span>
-                      )}
-                    </td>
-                    <td className={TD}>
-                      <button
-                        type="button"
-                        onClick={() => setPickerLineId(line.id)}
-                        className="whitespace-nowrap text-neutral-700 underline decoration-neutral-300 underline-offset-4 hover:text-neutral-900 dark:text-neutral-300 dark:decoration-neutral-600 dark:hover:text-neutral-100"
-                      >
-                        {line.report_slugs.length === 0
-                          ? 'None'
-                          : `${line.report_slugs.length} type${line.report_slugs.length === 1 ? '' : 's'}`}
-                      </button>
-                    </td>
-                    {editing && (
-                      <td className="px-1 py-1 text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label={`Remove ${line.item || 'line'}`}
-                          onClick={() => markChanged(lines.filter((l) => l.id !== line.id))}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      {months.map((m) => {
+                        const dollars = monthDollars(coLines, progress, m);
+                        return (
+                          <td key={m} className={m === month ? NUM_ACTIVE : NUM}>
+                            {dollars ? fmtMoney(dollars) : ''}
+                          </td>
+                        );
+                      })}
+                      <td className={NUM}>
+                        {linesComplete(coLines, progress) ? (
+                          <span className="text-green-700 dark:text-green-400">Done</span>
+                        ) : share != null ? (
+                          `${Math.round(share * 100)}%`
+                        ) : (
+                          ''
+                        )}
                       </td>
-                    )}
-                  </tr>
+                      <td className={TD}>
+                        {editing && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={<Plus className="h-4 w-4" />}
+                            onClick={() => {
+                              setOpenCos((prev) => ({ ...prev, [co.id]: true }));
+                              markChanged([...lines, newLine({ change_order_id: co.id })]);
+                            }}
+                          >
+                            Line
+                          </Button>
+                        )}
+                      </td>
+                      {editing && <td />}
+                    </tr>
+                    {open && coLines.map(renderSovRow)}
+                  </React.Fragment>
                 );
               })}
               {lines.length > 0 && (

@@ -21,6 +21,7 @@ import {
 } from '@/services/pmDashboardService';
 import {
   completedPct,
+  isOriginalLine,
   mergedProgress,
   shiftWeekKey,
   weekKey,
@@ -208,7 +209,7 @@ export default function PMDashboard() {
               overHours: estimatedHours > 0 && usedHours > estimatedHours,
               unmatched: unmatchedCount(progress),
               hasSov: bundle.lines.length > 0,
-              pickEstimates: bundle.lines.length === 0 && bundle.estimateCount > 1,
+              pickEstimates: !bundle.lines.some(isOriginalLine) && bundle.estimateCount > 1,
             },
           ];
         })

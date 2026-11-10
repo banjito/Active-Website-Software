@@ -18,7 +18,12 @@ export interface SovLine {
   line_type?: SovLineType;
   /** Times the estimate scope repeats. Quantity already includes it; shown as "10 x 6". */
   multiplier?: number;
+  /** The Change Order this line bills. Null or missing: part of the original contract. */
+  change_order_id?: string | null;
 }
+
+/** True for lines from the original contract, false for Change Order lines. */
+export const isOriginalLine = (line: SovLine): boolean => !line.change_order_id;
 
 export type SovLineType = 'scope' | 'general_conditions' | 'mobilization';
 
@@ -340,8 +345,12 @@ export function addEstimatesToLines(
       const rowQty = row.quantity * n;
       const rowPrice = round2(row.unitPrice * priceFactor);
       const hours = round2(rowQty * row.unitHours);
+      // Change Order lines stay in their own group: never fold an estimate row into them
       const existing = key
-        ? next.find((line) => (line.line_type ?? 'scope') === 'scope' && nameKey(line.item) === key)
+        ? next.find(
+            (line) =>
+              isOriginalLine(line) && (line.line_type ?? 'scope') === 'scope' && nameKey(line.item) === key,
+          )
         : undefined;
 
       if (!existing) {
@@ -378,7 +387,7 @@ export function addEstimatesToLines(
 
     if (mob && mob.total > 0) {
       const amount = round2(mob.total * n);
-      const mobLine = next.find((line) => line.line_type === 'mobilization');
+      const mobLine = next.find((line) => isOriginalLine(line) && line.line_type === 'mobilization');
       if (mobLine) {
         mobLine.unit_price = round2(mobLine.quantity * mobLine.unit_price + amount);
         mobLine.quantity = 1;
@@ -406,6 +415,59 @@ export function addEstimatesToLines(
   return next;
 }
 
+/** What the SOV needs to know about one Change Order. */
+export interface ChangeOrderForSov {
+  id: string;
+  number: number;
+  title: string;
+  /** What the customer approved */
+  amount: number;
+}
+
+/**
+ * The SOV lines for one approved Change Order, copied from its estimate sheet. Prices are
+ * scaled so the lines add up to the approved amount: that is what gets billed. With no
+ * usable estimate (a quick priced Change Order, or a credit) it is one line for the amount.
+ */
+export function changeOrderLines(
+  jobId: string,
+  co: ChangeOrderForSov,
+  option: EstimateOption | null,
+  makeId: () => string,
+): SovLine[] {
+  let lines = option && co.amount >= 0 ? addEstimatesToLines(jobId, [], [option], makeId) : [];
+  const total = sovTotal(lines);
+
+  if (lines.length === 0 || total <= 0) {
+    lines = [
+      {
+        id: makeId(),
+        job_id: jobId,
+        sort_order: 0,
+        item: co.title.trim() || `Change Order ${String(co.number).padStart(3, '0')}`,
+        quantity: 1,
+        total_hours: 0,
+        unit_price: round2(co.amount),
+        report_slugs: [],
+        source_estimate_ids: option ? [option.id] : [],
+        line_type: 'scope',
+        multiplier: 1,
+      },
+    ];
+  } else if (co.amount > 0 && Math.abs(total - co.amount) >= 0.01) {
+    const factor = co.amount / total;
+    lines = lines.map((line) => ({ ...line, unit_price: round2(line.unit_price * factor) }));
+  }
+
+  return lines.map((line) => ({ ...line, change_order_id: co.id }));
+}
+
+/** Every line of the group is done. With nothing to count, it is not done. */
+export function linesComplete(lines: SovLine[], progress: SovProgress): boolean {
+  const counted = lines.filter((line) => line.quantity > 0);
+  return counted.length > 0 && counted.every((line) => lineDone(progress, line.id) >= line.quantity);
+}
+
 export interface GeneralConditions {
   monthly: number;
   months: number;
@@ -426,7 +488,8 @@ export function applyGeneralConditions(
   next: GeneralConditions | null,
   makeId: () => string,
 ): SovLine[] {
-  const isScope = (line: SovLine) => (line.line_type ?? 'scope') === 'scope';
+  // Change Orders are priced on their own, so general conditions never come out of them
+  const isScope = (line: SovLine) => isOriginalLine(line) && (line.line_type ?? 'scope') === 'scope';
   const scopeTotal = (list: SovLine[]) =>
     list.filter(isScope).reduce((sum, line) => sum + line.quantity * line.unit_price, 0);
   const scale = (list: SovLine[], factor: number) =>

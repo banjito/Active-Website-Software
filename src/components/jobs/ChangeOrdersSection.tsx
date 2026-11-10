@@ -590,7 +590,7 @@ export default function ChangeOrdersSection({
   const handleDelete = async (co: ChangeOrder) => {
     const notes = [
       co.status === "approved"
-        ? "It's approved, so the contract value drops by its price."
+        ? "It's approved, so the contract value drops by its price, and its SOV lines and weekly numbers are deleted."
         : "",
       co.qbo_estimate_id
         ? "It was sent to QuickBooks as an estimate. Delete it there too."

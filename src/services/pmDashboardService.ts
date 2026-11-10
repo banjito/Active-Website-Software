@@ -2,7 +2,11 @@ import { supabase } from '@/lib/supabase';
 import { describeSupabaseError, withWriteRetry } from '@/lib/supabaseRetry';
 import { getReportSlugFromFileUrl, REPORT_NAMES } from '@/components/reports/reportMappings';
 import { getQBOInvoicesByCustomer } from '@/services/quickbooksService';
-import { summarizeChangeOrders, type ChangeOrder } from '@/services/changeOrderService';
+import {
+  fetchChangeOrderLetterNumbers,
+  summarizeChangeOrders,
+  type ChangeOrder,
+} from '@/services/changeOrderService';
 import { sovPricePerLaborHour, summarizeEstimateSnapshot } from '@/lib/estimatePricing';
 import { DEFAULT_ESTIMATING_PRESETS } from '@/services/estimatingPresetsService';
 import { ACTIVE_JOB_STATUSES } from '@/services/pmAccessService';
@@ -16,8 +20,11 @@ import {
 import {
   OTHER_FILES_KEY,
   addEstimatesToLines,
+  changeOrderLines,
   estimateRows,
+  estimateTotal,
   guessLineSlugs,
+  isOriginalLine,
   simpleEstimateRows,
   sovTotal,
   type EstimateOption,
@@ -43,11 +50,27 @@ export interface PmJob {
   project_manager_id: string | null;
 }
 
+/** A Change Order with lines on the SOV: approved, or with lines saved before. */
+export interface SovChangeOrder {
+  id: string;
+  number: number;
+  title: string;
+  amount: number;
+  status: ChangeOrder['status'];
+  /** Letter proposal number, when it has its own quote */
+  letter: string | null;
+  /** Its lines were just copied from its estimate and are not saved yet */
+  seeded: boolean;
+}
+
 /** Everything the dashboard needs to know about one job, apart from QuickBooks billing. */
 export interface JobBundle {
+  /** Original contract lines first, then each Change Order's lines (change_order_id set) */
   lines: SovLine[];
-  /** True when the lines come straight from the estimate and nothing is saved yet */
+  /** True when the original lines come straight from the estimate and nothing is saved yet */
   seeded: boolean;
+  /** Change Orders on the SOV, in number order */
+  changeOrders: SovChangeOrder[];
   /**
    * Estimates on the job's quote, counted only while the job has no saved SOV. With one,
    * it is copied in. With more, nothing is copied: the PM picks which ones apply.
@@ -272,6 +295,7 @@ async function fetchSavedLines(jobIds: string[]): Promise<{ lines: SovLine[]; mi
         source_estimate_ids: row.source_estimate_ids ?? [],
         line_type: row.line_type ?? 'scope',
         multiplier: toNum(row.multiplier) || 1,
+        change_order_id: row.change_order_id ?? null,
       });
     }
   }
@@ -436,30 +460,61 @@ export async function fetchEstimateOptions(job: PmJob): Promise<EstimateOption[]
   return ((data ?? []) as any[]).map(toEstimateOption);
 }
 
-async function fetchChangeOrderTotals(
-  jobIds: string[],
-): Promise<Map<string, { approved: number; pending: number }>> {
-  const byJob = new Map<string, ChangeOrder[]>();
+type JobChangeOrderRow = Pick<ChangeOrder, 'id' | 'job_id' | 'co_number' | 'title' | 'amount' | 'status'> & {
+  opportunity_id: string | null;
+};
+
+/** Every Change Order on these jobs, grouped by job. */
+async function fetchJobChangeOrders(jobIds: string[]): Promise<Map<string, JobChangeOrderRow[]>> {
+  const byJob = new Map<string, JobChangeOrderRow[]>();
   for (const ids of chunk(jobIds, ID_CHUNK)) {
     const { data, error } = await supabase
       .schema('neta_ops')
       .from('job_change_orders')
-      .select('job_id, amount, status')
-      .in('job_id', ids);
+      .select('id, job_id, co_number, title, amount, status, opportunity_id')
+      .in('job_id', ids)
+      .order('co_number', { ascending: true });
     if (error) {
       if (isMissing(error)) return new Map();
       throw new Error(describeSupabaseError(error));
     }
-    for (const co of (data ?? []) as ChangeOrder[]) {
-      byJob.set(co.job_id, [...(byJob.get(co.job_id) ?? []), co]);
+    for (const co of (data ?? []) as any[]) {
+      byJob.set(co.job_id, [
+        ...(byJob.get(co.job_id) ?? []),
+        { ...co, amount: toNum(co.amount), opportunity_id: co.opportunity_id ?? null },
+      ]);
     }
   }
-  const totals = new Map<string, { approved: number; pending: number }>();
-  for (const [jobId, cos] of byJob) {
-    const summary = summarizeChangeOrders(cos);
-    totals.set(jobId, { approved: summary.approvedTotal, pending: summary.pendingCount });
+  return byJob;
+}
+
+/**
+ * The estimate each Change Order quote was priced from, keyed by quote id. A quote with
+ * several sheets (options, revisions) uses the one closest to the approved amount.
+ */
+async function fetchChangeOrderEstimates(
+  wanted: { oppId: string; amount: number }[],
+): Promise<Map<string, EstimateOption>> {
+  const amountByOpp = new Map(wanted.map((w) => [w.oppId, w.amount]));
+  const best = new Map<string, EstimateOption>();
+  for (const ids of chunk([...amountByOpp.keys()], ID_CHUNK)) {
+    const { data, error } = await supabase
+      .schema('business')
+      .from('estimates')
+      .select(ESTIMATE_COLUMNS)
+      .in('opportunity_id', ids)
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(describeSupabaseError(error));
+    for (const row of (data ?? []) as any[]) {
+      const option = toEstimateOption(row);
+      if (option.rows.length === 0) continue;
+      const amount = amountByOpp.get(row.opportunity_id) ?? 0;
+      const gap = (o: EstimateOption) => Math.abs(estimateTotal(o) + (o.mobilization?.added ?? 0) - amount);
+      const current = best.get(row.opportunity_id);
+      if (!current || gap(option) < gap(current)) best.set(row.opportunity_id, option);
+    }
   }
-  return totals;
+  return best;
 }
 
 /** Reports marked sent to the customer, grouped by job. */
@@ -545,7 +600,7 @@ export async function loadJobBundles(jobs: PmJob[]): Promise<BundleResult> {
     fetchSavedLines(jobIds),
     fetchSentReports(jobIds),
     fetchHours(jobIds),
-    fetchChangeOrderTotals(jobIds),
+    fetchJobChangeOrders(jobIds),
     fetchSovWeeks(jobIds),
     fetchGcSchedules(jobIds),
   ]);
@@ -555,7 +610,22 @@ export async function loadJobBundles(jobs: PmJob[]): Promise<BundleResult> {
     savedByJob.set(line.job_id, [...(savedByJob.get(line.job_id) ?? []), line]);
   }
 
-  const { quoted, oppByJob } = await linkOpportunities(jobs);
+  // Change Orders that belong on the SOV: approved, or with lines saved already.
+  // Approved ones with no lines yet get them copied from their estimate.
+  const savedCoIds = new Set(saved.lines.flatMap((line) => line.change_order_id ?? []));
+  const sovCos = [...changeOrders.values()].flat().filter((co) => co.status === 'approved' || savedCoIds.has(co.id));
+  const toSeed = sovCos.filter((co) => !savedCoIds.has(co.id) && co.opportunity_id);
+  const coOppIds = [...new Set(sovCos.flatMap((co) => co.opportunity_id ?? []))];
+
+  const [{ quoted, oppByJob }, coEstimates, letters] = await Promise.all([
+    linkOpportunities(jobs),
+    fetchChangeOrderEstimates(toSeed.map((co) => ({ oppId: co.opportunity_id!, amount: co.amount }))),
+    // Letter numbers are a label only; the SOV still works without them.
+    fetchChangeOrderLetterNumbers(coOppIds).catch((err) => {
+      console.error('[PM Dashboard] Change Order letter numbers failed to load:', err);
+      return {} as Record<string, string>;
+    }),
+  ]);
   const seedOppIds = jobIds.filter((id) => !savedByJob.has(id)).flatMap((id) => oppByJob.get(id) ?? []);
   const seeds = await fetchSeedEstimates([...new Set(seedOppIds)]);
 
@@ -565,21 +635,51 @@ export async function loadJobBundles(jobs: PmJob[]): Promise<BundleResult> {
     const quotedAmount = quoted.get(jobId) ?? 0;
     const savedLines = savedByJob.get(jobId);
     const seed = savedLines ? undefined : seeds.get(oppByJob.get(jobId) ?? '');
+    const originalLines =
+      savedLines?.filter(isOriginalLine) ??
+      guessLineSlugs(
+        addEstimatesToLines(jobId, [], seed?.only ? [seed.only] : [], () => crypto.randomUUID()),
+        [...new Set(jobReports.map((r) => r.slug))],
+      );
 
+    const jobCos: SovChangeOrder[] = [];
+    const coLines: SovLine[] = [];
+    for (const co of changeOrders.get(jobId) ?? []) {
+      const hasLines = savedCoIds.has(co.id);
+      if (!hasLines && co.status !== 'approved') continue;
+      coLines.push(
+        ...(hasLines
+          ? savedLines!.filter((line) => line.change_order_id === co.id)
+          : changeOrderLines(
+              jobId,
+              { id: co.id, number: co.co_number, title: co.title ?? '', amount: co.amount },
+              co.opportunity_id ? coEstimates.get(co.opportunity_id) ?? null : null,
+              () => crypto.randomUUID(),
+            )),
+      );
+      jobCos.push({
+        id: co.id,
+        number: co.co_number,
+        title: co.title ?? '',
+        amount: co.amount,
+        status: co.status,
+        letter: co.opportunity_id ? letters[co.opportunity_id] ?? null : null,
+        seeded: !hasLines,
+      });
+    }
+
+    // Only amount and status are read
+    const coTotals = summarizeChangeOrders((changeOrders.get(jobId) ?? []) as unknown as ChangeOrder[]);
     bundles[jobId] = {
-      lines:
-        savedLines ??
-        guessLineSlugs(
-          addEstimatesToLines(jobId, [], seed?.only ? [seed.only] : [], () => crypto.randomUUID()),
-          [...new Set(jobReports.map((r) => r.slug))],
-        ),
+      lines: [...originalLines, ...coLines],
       seeded: !savedLines,
+      changeOrders: jobCos,
       estimateCount: seed?.count ?? 0,
       reports: jobReports,
       hoursByMonth: hours.hours.get(jobId) ?? {},
       quotedAmount,
-      approvedChangeOrders: changeOrders.get(jobId)?.approved ?? 0,
-      pendingChangeOrders: changeOrders.get(jobId)?.pending ?? 0,
+      approvedChangeOrders: coTotals.approvedTotal,
+      pendingChangeOrders: coTotals.pendingCount,
       weeks: weeks.get(jobId) ?? {},
       gc: gcByJob.get(jobId) ?? null,
     };
@@ -790,7 +890,9 @@ export async function saveSovSettings(jobId: string, settings: SovSettings, user
 }
 
 export async function saveSovLines(jobId: string, lines: SovLine[]): Promise<void> {
-  const rows = lines.map((line, i) => ({
+  // Original lines first, then each Change Order's lines, so the order holds on reload
+  const ordered = [...lines.filter(isOriginalLine), ...lines.filter((line) => !isOriginalLine(line))];
+  const rows = ordered.map((line, i) => ({
     id: line.id,
     job_id: jobId,
     sort_order: i,
@@ -802,6 +904,7 @@ export async function saveSovLines(jobId: string, lines: SovLine[]): Promise<voi
     source_estimate_ids: line.source_estimate_ids,
     line_type: line.line_type ?? 'scope',
     multiplier: line.multiplier ?? 1,
+    change_order_id: line.change_order_id ?? null,
   }));
 
   if (rows.length > 0) {
@@ -812,11 +915,15 @@ export async function saveSovLines(jobId: string, lines: SovLine[]): Promise<voi
       );
 
     let { error } = await upsert(rows);
-    // PGRST204 = a column is missing because pm_dashboard_estimate_sources.sql or
-    // sov_setup.sql has not been run. Save everything else.
+    // PGRST204 = a column is missing because pm_dashboard_estimate_sources.sql,
+    // sov_setup.sql or sov_change_orders.sql has not been run. Save everything else.
+    // Change Order lines are left out: saved without their Change Order they would
+    // count as original contract lines. They get copied in again on the next load.
     if ((error as { code?: string } | null)?.code === 'PGRST204') {
       ({ error } = await upsert(
-        rows.map(({ source_estimate_ids, line_type, multiplier, ...rest }) => rest),
+        rows
+          .filter((row) => !row.change_order_id)
+          .map(({ source_estimate_ids, line_type, multiplier, change_order_id, ...rest }) => rest),
       ));
     }
     if (error) throw new Error(describeSupabaseError(error));
@@ -852,9 +959,13 @@ export function fetchBilledToDate(quickbooksProjectId: string): Promise<number> 
   return amount;
 }
 
-/** What the job is worth: quoted amount (or the SOV total if none) plus approved change orders. */
+/**
+ * What the job is worth: quoted amount (or the original SOV lines if none) plus approved
+ * Change Orders. Change Order lines are left out of the SOV part so they don't count twice.
+ */
 export const contractTotal = (bundle: JobBundle, lines: SovLine[] = bundle.lines): number =>
-  (bundle.quotedAmount > 0 ? bundle.quotedAmount : sovTotal(lines)) + bundle.approvedChangeOrders;
+  (bundle.quotedAmount > 0 ? bundle.quotedAmount : sovTotal(lines.filter(isOriginalLine))) +
+  bundle.approvedChangeOrders;
 
 export const reportTypeLabel = (slug: string): string => {
   if (slug === OTHER_FILES_KEY) return 'Other files';

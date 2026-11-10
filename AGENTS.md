@@ -44,38 +44,14 @@ The user is a non-technical solo founder building this app. Follow these rules i
 
 ### Imports & Formatting
 - Use `@/` alias for src imports (e.g., `@/lib/AuthContext`)
-- ESLint config allows unused vars and any types
-- Use TypeScript with strict mode enabled but `noImplicitAny: false`
-
-### Naming Conventions
-- Components: PascalCase (e.g., `OilInspectionReport`)
-- Files: kebab-case for utilities, PascalCase for components
-- Use semantic class names following Tailwind patterns
 
 ### Styling Requirements
 - **MANDATORY**: All reports must include comprehensive print CSS (see STYLING_GUIDE.mdc)
-- Use Tailwind CSS with dark mode support (`dark:` modifier)
-- Brand color: `#f26722` (orange)
+- Brand color: use `bg-brand` / `var(--brand)` / `BRAND_COLOR`. Never hardcode `#f26722`.
 - **Square corners everywhere.** Use `rounded-none`. Never `rounded`, `rounded-md/lg/xl/2xl`, or `rounded-full` — including status dots, pills, badges, inputs, and cards. In non-Tailwind contexts (`@react-pdf/renderer`, inline styles) set `borderRadius: 0`.
 - `Button` icon + text: use the `leftIcon`/`rightIcon` props, never put the icon as a child next to text (children get wrapped in one `<span>`, so the icon stacks above the text when the button is squeezed). This applies ONLY to our own `@/components/ui/Button`. A `react-bootstrap` `Button` (imported from `react-bootstrap/Button`) has no `leftIcon` prop — there, keep the icon as a child. Check the import before adding `leftIcon`.
 - Follow predefined component classes: `.form-input`, `.btn-primary`, `.card`, etc.
 
-### Error Handling
-- Use try-catch blocks with proper error logging
-- Check for Supabase errors: `if (error) throw error`
-- Provide user feedback for failed operations
-
-### Database Patterns
-- Use Supabase client for all database operations
-- Follow the established table relationships (Jobs→Customers, Opportunities→Customers)
-- Use TypeScript interfaces for type safety
-
-### Authentication
-- Use `useAuth` hook from `@/lib/AuthContext`
-- Protect routes with `RequireAuth` component
-- Handle session persistence automatically
-
 ### Critical Requirements
 - **Print Styles**: Every report component MUST include print CSS that removes dropdown arrows, spin buttons, and provides clean professional output
 - **Dark Mode**: All components must support both light and dark themes
-- **Type Safety**: Use TypeScript interfaces but `any` is allowed for flexibility

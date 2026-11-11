@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Textarea";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { toast } from "@/components/ui/toast";
+import { canOpenPmDashboard } from "@/services/pmAccessService";
+import { fetchDivisionLeads, type DivisionLeads } from "@/services/divisionLeadsService";
 import {
   AUTO_RULE_LABELS,
   CHECKLIST_PHASES,
@@ -105,6 +107,17 @@ export default function JobChecklist({ jobId }: JobChecklistProps) {
   const [savingStep, setSavingStep] = useState<string | null>(null);
   const [noteStep, setNoteStep] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
+  const [leads, setLeads] = useState<DivisionLeads>({});
+
+  useEffect(() => {
+    let alive = true;
+    void fetchDivisionLeads()
+      .then((l) => alive && setLeads(l))
+      .catch((err) => console.error("[JobChecklist] Division leads failed to load:", err));
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -184,6 +197,9 @@ export default function JobChecklist({ jobId }: JobChecklistProps) {
 
   const today = new Date();
   const summary = summarizeJobChecklist(steps, items, facts, today);
+  // PM work, not the leads'. Same people the database lets save (job_checklist_pm_only.sql).
+  const canEdit =
+    canOpenPmDashboard(user, leads) || (!!user?.id && facts?.project_manager_id === user.id);
 
   return (
     <div className="space-y-4 p-4">
@@ -197,6 +213,11 @@ export default function JobChecklist({ jobId }: JobChecklistProps) {
         {summary.late > 0 && (
           <span className="text-sm font-medium text-red-600 dark:text-red-400">
             {summary.late} late
+          </span>
+        )}
+        {!canEdit && (
+          <span className="text-sm text-neutral-500 dark:text-neutral-400">
+            Only the job's PM can tick these.
           </span>
         )}
       </div>
@@ -228,7 +249,7 @@ export default function JobChecklist({ jobId }: JobChecklistProps) {
                   key={step.id}
                   className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 border-t border-neutral-200 px-3 py-2.5 first:border-t-0 dark:border-neutral-700"
                 >
-                  {display === "auto" ? (
+                  {display === "auto" || !canEdit ? (
                     <ChecklistBox display={display} />
                   ) : (
                     <button
@@ -299,28 +320,30 @@ export default function JobChecklist({ jobId }: JobChecklistProps) {
                       )
                     )}
                   </div>
-                  <div className="flex gap-3 text-xs">
-                    {(display === "open" || display === "late" || display === "na") && (
+                  {canEdit && (
+                    <div className="flex gap-3 text-xs">
+                      {(display === "open" || display === "late" || display === "na") && (
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => void save(status, { state: display === "na" ? "open" : "na" })}
+                          className="text-neutral-500 underline underline-offset-2 hover:text-neutral-800 disabled:opacity-50 dark:text-neutral-400 dark:hover:text-neutral-200"
+                        >
+                          {display === "na" ? "Undo N/A" : "N/A"}
+                        </button>
+                      )}
                       <button
                         type="button"
-                        disabled={busy}
-                        onClick={() => void save(status, { state: display === "na" ? "open" : "na" })}
-                        className="text-neutral-500 underline underline-offset-2 hover:text-neutral-800 disabled:opacity-50 dark:text-neutral-400 dark:hover:text-neutral-200"
+                        onClick={() => {
+                          setNoteStep(step.id);
+                          setNoteDraft(item?.note ?? "");
+                        }}
+                        className="text-neutral-500 underline underline-offset-2 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200"
                       >
-                        {display === "na" ? "Undo N/A" : "N/A"}
+                        {item?.note ? "Edit note" : "Note"}
                       </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setNoteStep(step.id);
-                        setNoteDraft(item?.note ?? "");
-                      }}
-                      className="text-neutral-500 underline underline-offset-2 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200"
-                    >
-                      {item?.note ? "Edit note" : "Note"}
-                    </button>
-                  </div>
+                    </div>
+                  )}
                 </div>
               );
             })}

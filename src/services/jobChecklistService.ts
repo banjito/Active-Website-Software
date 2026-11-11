@@ -10,7 +10,7 @@ export type ChecklistPhase = 'Sales' | 'Setup' | 'Field' | 'Closeout';
 export const CHECKLIST_PHASES: ChecklistPhase[] = ['Sales', 'Setup', 'Field', 'Closeout'];
 
 export type DueAnchor = 'contract' | 'start' | 'end';
-export type AutoRule = 'lead_assigned' | 'quickbooks_linked' | 'job_billed';
+export type AutoRule = 'lead_assigned' | 'quickbooks_linked' | 'job_billed' | 'sov_created';
 export type ItemState = 'open' | 'done' | 'na';
 
 export interface ChecklistStep {
@@ -45,12 +45,17 @@ export interface ChecklistJobFacts {
   start_date: string | null;
   due_date: string | null;
   completed_date: string | null;
+  /** The job's PM. Only they and full-access PMs can tick boxes. */
+  project_manager_id: string | null;
+  /** The job's SOV has been saved (original contract lines) */
+  has_sov: boolean;
 }
 
 export const AUTO_RULE_LABELS: Record<AutoRule, string> = {
   lead_assigned: 'A lead is set on the job',
   quickbooks_linked: 'Job is linked to QuickBooks',
   job_billed: 'Job is marked Billed',
+  sov_created: "The job's SOV is saved",
 };
 
 export const DUE_ANCHOR_LABELS: Record<DueAnchor, string> = {
@@ -66,7 +71,7 @@ const STEP_COLUMNS =
   'id, key, name, phase, sort_order, due_anchor, due_offset_days, auto_rule, archived_at';
 const ITEM_COLUMNS = 'id, job_id, step_id, state, done_at, done_by, done_by_name, note';
 const FACT_COLUMNS =
-  'id, status, fireteam_lead, quickbooks_project_id, start_date, due_date, completed_date';
+  'id, status, fireteam_lead, quickbooks_project_id, start_date, due_date, completed_date, project_manager_id';
 
 // Keeps .in() lists short enough for the URL
 const ID_CHUNK = 150;
@@ -126,9 +131,24 @@ export async function fetchChecklistJobFacts(jobIds: string[]): Promise<Checklis
       .select(FACT_COLUMNS)
       .in('id', ids);
     if (error) throw new Error(describeSupabaseError(error));
-    out.push(...((data ?? []) as ChecklistJobFacts[]));
+    const withSov = await fetchJobsWithSov(ids);
+    for (const row of (data ?? []) as Omit<ChecklistJobFacts, 'has_sov'>[]) {
+      out.push({ ...row, has_sov: withSov.has(row.id) });
+    }
   }
   return out;
+}
+
+/** Job ids with a saved SOV. Empty when the SQL hasn't been run yet. */
+async function fetchJobsWithSov(jobIds: string[]): Promise<Set<string>> {
+  const { data, error } = await supabase
+    .schema('common')
+    .rpc('jobs_with_sov', { p_job_ids: jobIds });
+  if (error) {
+    if (error.code === 'PGRST202' || error.code === '42883') return new Set();
+    throw new Error(describeSupabaseError(error));
+  }
+  return new Set(((data ?? []) as { job_id: string }[]).map((r) => r.job_id));
 }
 
 export interface ChecklistActor {
@@ -222,6 +242,9 @@ function autoDetail(rule: AutoRule, facts: ChecklistJobFacts): string | undefine
   }
   if (rule === 'quickbooks_linked') {
     return facts.quickbooks_project_id ? 'Linked to QuickBooks' : undefined;
+  }
+  if (rule === 'sov_created') {
+    return facts.has_sov ? 'SOV saved' : undefined;
   }
   return facts.status === 'billed' ? 'Job marked Billed' : undefined;
 }

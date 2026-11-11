@@ -32,6 +32,8 @@ import {
   ArrowUp,
   ArrowDown,
   Wrench,
+  Copy,
+  Settings,
 } from "lucide-react";
 import { Dialog } from "@headlessui/react";
 import { supabase } from "../../lib/supabase";
@@ -104,6 +106,9 @@ interface FieldEquipment {
   maintenance_reason: string | null;
   out_of_service_at: string | null;
   out_of_service_by: string | null;
+  is_rented?: boolean;
+  rental_vendor: string | null;
+  rental_return_date: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -128,6 +133,9 @@ interface EquipmentFormData {
   notes: string;
   tracking_url: string;
   in_service: boolean;
+  is_rented: boolean;
+  rental_vendor: string;
+  rental_return_date: string;
 }
 
 const initialFormData: EquipmentFormData = {
@@ -144,6 +152,9 @@ const initialFormData: EquipmentFormData = {
   notes: "",
   tracking_url: "",
   in_service: true,
+  is_rented: false,
+  rental_vendor: "",
+  rental_return_date: "",
 };
 
 const emptySubComponent: SubComponent = {
@@ -224,6 +235,79 @@ export default function FieldEquipmentList() {
   }>({});
   const userSelectorRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const actionMenuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  // Row actions live behind a gear that appears in the margin left of the hovered row.
+  // The old Actions column sat past the right edge of the screen. The gear is
+  // fixed-positioned so the table's scroll box can't clip it. Touch screens have no
+  // hover, so there the gear sits inside the row instead.
+  const [isTouchDevice] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      (window.matchMedia?.("(hover: none) and (pointer: coarse)").matches ??
+        false),
+  );
+  const [gearRow, setGearRow] = useState<{
+    id: string;
+    top: number;
+    left: number;
+    menuUp: boolean;
+  } | null>(null);
+  const gearRowIdRef = useRef<string | null>(null);
+  const gearHideTimer = useRef<number | null>(null);
+  const tableCardRef = useRef<HTMLDivElement | null>(null);
+  const anyActionMenuOpen = Object.values(openActionMenus).some(Boolean);
+  const anyActionMenuOpenRef = useRef(false);
+  anyActionMenuOpenRef.current = anyActionMenuOpen;
+
+  const GEAR_SIZE = 28;
+  const keepGear = () => {
+    if (gearHideTimer.current) {
+      window.clearTimeout(gearHideTimer.current);
+      gearHideTimer.current = null;
+    }
+  };
+  const showGearFor = (id: string, row: HTMLElement) => {
+    if (isTouchDevice) return;
+    keepGear();
+    // While a menu is open the gear stays put, so the menu doesn't jump rows.
+    if (gearRowIdRef.current === id || anyActionMenuOpenRef.current) return;
+    const rowRect = row.getBoundingClientRect();
+    const cardLeft =
+      tableCardRef.current?.getBoundingClientRect().left ?? rowRect.left;
+    // In the page margin left of the table; if the margin is too narrow, overlap the edge.
+    const left = Math.max(2, cardLeft - GEAR_SIZE - 4);
+    const top = rowRect.top + rowRect.height / 2 - GEAR_SIZE / 2;
+    gearRowIdRef.current = id;
+    setGearRow({ id, top, left, menuUp: top > window.innerHeight - 260 });
+  };
+  // Short delay so the pointer can cross the gap between the row and the gear.
+  const hideGearSoon = () => {
+    keepGear();
+    gearHideTimer.current = window.setTimeout(() => {
+      if (anyActionMenuOpenRef.current) return;
+      gearRowIdRef.current = null;
+      setGearRow(null);
+    }, 250);
+  };
+
+  // When a menu closes, let the gear go unless the pointer is still on a row.
+  useEffect(() => {
+    if (!anyActionMenuOpen && gearRowIdRef.current) hideGearSoon();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anyActionMenuOpen]);
+
+  // A fixed gear would float away from its row on scroll, so drop it.
+  useEffect(() => {
+    if (!gearRow) return;
+    const onScroll = () => {
+      keepGear();
+      setOpenActionMenus({});
+      gearRowIdRef.current = null;
+      setGearRow(null);
+    };
+    window.addEventListener("scroll", onScroll, true);
+    return () => window.removeEventListener("scroll", onScroll, true);
+  }, [gearRow]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [viewingCertificate, setViewingCertificate] = useState<string | null>(
@@ -280,8 +364,9 @@ export default function FieldEquipmentList() {
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
-  // Service filter: show all equipment or only in-service (out-of-service viewable only here)
-  type ServiceFilter = "all" | "in_service";
+  // Service filter: show all equipment, only in-service (out-of-service viewable only here),
+  // or only rented items.
+  type ServiceFilter = "all" | "in_service" | "rented";
   const [serviceFilter, setServiceFilter] = useState<ServiceFilter>("all");
 
   // Category filter: limits list to equipment in the selected category (saved categories)
@@ -389,7 +474,7 @@ export default function FieldEquipmentList() {
       if (searchTerm.trim()) {
         const searchLower = `%${searchTerm.toLowerCase()}%`;
         query = query.or(
-          `equipment_name.ilike.${searchLower},amp_id.ilike.${searchLower},serial_number.ilike.${searchLower},notes.ilike.${searchLower},category.ilike.${searchLower},location.ilike.${searchLower}`,
+          `equipment_name.ilike.${searchLower},amp_id.ilike.${searchLower},serial_number.ilike.${searchLower},notes.ilike.${searchLower},category.ilike.${searchLower},location.ilike.${searchLower},rental_vendor.ilike.${searchLower}`,
         );
       }
 
@@ -1094,6 +1179,114 @@ export default function FieldEquipmentList() {
     return date.toLocaleDateString();
   };
 
+  // Long names and locations stretched the table past the screen edge. Cap them in the
+  // list; the full text shows on hover and in the detail view.
+  const NAME_CHAR_CAP = 30;
+  const LOCATION_CHAR_CAP = 24;
+  const capText = (text: string | null, max: number): string => {
+    if (!text) return "-";
+    return text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text;
+  };
+
+  const copySerialNumber = async (serial: string) => {
+    try {
+      await navigator.clipboard.writeText(serial);
+      toast({
+        title: "Copied",
+        description: `Serial number ${serial} copied`,
+        variant: "success",
+      });
+    } catch {
+      toast({
+        title: "Could not copy",
+        description: "Open the item and select the serial number instead.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // One action menu, opened from the hover gear left of a row (mouse) or the gear inside
+  // the row (touch screens, which have no hover).
+  const renderActionMenuItems = (item: FieldEquipment) => (
+    <>
+        {item.checked_out_by ? (
+          <button
+            type="button"
+            onClick={() => handleCheckIn(item.id)}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100"
+          >
+            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+            Check In
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => handleCheckOut(item.id)}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100"
+          >
+            <ArrowUp className="h-4 w-4 text-brand" />
+            Check Out
+          </button>
+        )}
+        <div className="my-1 border-t border-neutral-200 dark:border-neutral-700" />
+        {item.in_service === false ? (
+          <button
+            type="button"
+            onClick={() => handleReturnToService(item)}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100"
+          >
+            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+            Return to Service
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setOpenActionMenus((prev) => ({
+                ...prev,
+                [item.id]: false,
+              }));
+              setServiceReason("");
+              setServiceDialogFor(item);
+            }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100"
+          >
+            <Wrench className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            Out for Maintenance
+          </button>
+        )}
+        <div className="my-1 border-t border-neutral-200 dark:border-neutral-700" />
+        <button
+          type="button"
+          onClick={() => {
+            setOpenActionMenus((prev) => ({
+              ...prev,
+              [item.id]: false,
+            }));
+            handleEdit(item);
+          }}
+          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100"
+        >
+          <Pencil className="h-4 w-4 text-brand" />
+          Edit
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setOpenActionMenus((prev) => ({
+              ...prev,
+              [item.id]: false,
+            }));
+            handleDelete(item.id);
+          }}
+          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+        >
+          <Trash2 className="h-4 w-4" />
+          Delete
+        </button>
+    </>
+  );
+
   // The window the director's monthly calibration report will use. Keeping the page and
   // the email on one number means what someone sees here is what lands in their inbox.
   const CALIBRATION_DUE_SOON_DAYS = 60;
@@ -1254,6 +1447,14 @@ export default function FieldEquipmentList() {
         sub_components:
           validSubComponents.length > 0 ? validSubComponents : null,
         in_service: formData.in_service !== false,
+        is_rented: formData.is_rented === true,
+        // Vendor and return date only mean something on a rental; clear them when it isn't.
+        rental_vendor: formData.is_rented
+          ? formData.rental_vendor.trim() || null
+          : null,
+        rental_return_date: formData.is_rented
+          ? formData.rental_return_date || null
+          : null,
       };
 
       // Handle certificate URL - use new upload or keep existing
@@ -1418,6 +1619,9 @@ export default function FieldEquipmentList() {
       notes: equipmentItem.notes || "",
       tracking_url: equipmentItem.tracking_url || "",
       in_service: equipmentItem.in_service !== false,
+      is_rented: equipmentItem.is_rented === true,
+      rental_vendor: equipmentItem.rental_vendor || "",
+      rental_return_date: equipmentItem.rental_return_date || "",
     });
     setCategoryInput(equipmentItem.category || "");
     setLocationInput(equipmentItem.location || "");
@@ -1821,6 +2025,9 @@ export default function FieldEquipmentList() {
     if (serviceFilter === "in_service" && activeTab !== "maintenance") {
       filtered = filtered.filter((item) => item.in_service !== false);
     }
+    if (serviceFilter === "rented") {
+      filtered = filtered.filter((item) => item.is_rented === true);
+    }
 
     switch (activeTab) {
       case "in-cal":
@@ -2009,6 +2216,9 @@ export default function FieldEquipmentList() {
               : "",
         },
         { header: "In Service", value: (i) => (i.in_service !== false ? "Yes" : "No") },
+        { header: "Rented", value: (i) => (i.is_rented ? "Yes" : "No") },
+        { header: "Rental Company", value: (i) => i.rental_vendor || "" },
+        { header: "Rental Return Date", value: (i) => i.rental_return_date || "" },
         { header: "Maintenance Reason", value: (i) => i.maintenance_reason || "" },
         {
           header: "Out Of Service Since",
@@ -2143,6 +2353,7 @@ export default function FieldEquipmentList() {
             >
               <option value="all">All equipment</option>
               <option value="in_service">In service only</option>
+              <option value="rented">Rented only</option>
             </select>
           </div>
           <div className="flex items-center gap-2">
@@ -2407,7 +2618,10 @@ export default function FieldEquipmentList() {
             <LoadingSpinner size="md" />
           </div>
         ) : (
-          <div className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-dark-200 overflow-hidden">
+          <div
+            ref={tableCardRef}
+            className="bg-white dark:bg-dark-150 rounded-none border border-neutral-200 dark:border-dark-200 overflow-hidden"
+          >
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-neutral-50 dark:bg-dark-200">
@@ -2521,9 +2735,6 @@ export default function FieldEquipmentList() {
                         Certificate
                       </th>
                     )}
-                    <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                      Actions
-                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-dark-200">
@@ -2564,7 +2775,9 @@ export default function FieldEquipmentList() {
                                         ? "No equipment available"
                                       : serviceFilter === "in_service"
                                         ? "No in-service equipment found"
-                                        : "No equipment available"}
+                                        : serviceFilter === "rented"
+                                          ? "No rented equipment found"
+                                          : "No equipment available"}
                       </td>
                     </tr>
                   ) : (
@@ -2581,6 +2794,10 @@ export default function FieldEquipmentList() {
                       return (
                         <tr
                           key={item.id}
+                          onMouseMove={(e) =>
+                            showGearFor(item.id, e.currentTarget)
+                          }
+                          onMouseLeave={hideGearSoon}
                           className={`hover:bg-neutral-50 dark:hover:bg-dark-100 cursor-pointer ${
                             isPastDue
                               ? "bg-red-50 dark:bg-red-900/20"
@@ -2595,6 +2812,7 @@ export default function FieldEquipmentList() {
                               target.closest("button") ||
                               target.closest("a") ||
                               target.closest(".relative") ||
+                              target.closest("[data-row-actions]") ||
                               target.tagName === "BUTTON" ||
                               target.tagName === "A"
                             ) {
@@ -2605,9 +2823,61 @@ export default function FieldEquipmentList() {
                         >
                           <td className="px-4 py-3 whitespace-nowrap">
                             <div className="flex items-center">
-                              <span className="text-sm font-medium text-neutral-900 dark:text-white">
-                                {item.equipment_name}
+                              {(isTouchDevice || gearRow?.id === item.id) && (
+                                <div
+                                  data-row-actions
+                                  ref={(el) => {
+                                    actionMenuRefs.current[item.id] = el;
+                                  }}
+                                  className={
+                                    isTouchDevice ? "relative mr-2" : "fixed z-40"
+                                  }
+                                  style={
+                                    !isTouchDevice && gearRow
+                                      ? { top: gearRow.top, left: gearRow.left }
+                                      : undefined
+                                  }
+                                  onMouseEnter={keepGear}
+                                  onMouseLeave={hideGearSoon}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setOpenActionMenus((prev) => ({
+                                        ...prev,
+                                        [item.id]: !prev[item.id],
+                                      }))
+                                    }
+                                    className="flex h-7 w-7 items-center justify-center rounded-none text-neutral-500 dark:text-neutral-400 hover:text-brand"
+                                    title="Actions"
+                                    aria-label={`Actions for ${item.equipment_name}`}
+                                  >
+                                    <Settings className="h-4 w-4" />
+                                  </button>
+                                  {openActionMenus[item.id] && (
+                                    <div
+                                      className={`absolute left-0 ${
+                                        !isTouchDevice && gearRow?.menuUp
+                                          ? "bottom-full mb-1"
+                                          : "top-full mt-1"
+                                      } w-48 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-lg z-40 py-1`}
+                                    >
+                                      {renderActionMenuItems(item)}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              <span
+                                className="text-sm font-medium text-neutral-900 dark:text-white"
+                                title={item.equipment_name}
+                              >
+                                {capText(item.equipment_name, NAME_CHAR_CAP)}
                               </span>
+                              {item.is_rented && (
+                                <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 rounded-none">
+                                  RENTED
+                                </span>
+                              )}
                               {isPastDue && (
                                 <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-red-500 text-white rounded">
                                   PAST DUE
@@ -2633,7 +2903,21 @@ export default function FieldEquipmentList() {
                           )}
                           {activeTab === "all" && (
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                              {item.serial_number || "-"}
+                              {item.serial_number ? (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    copySerialNumber(item.serial_number!)
+                                  }
+                                  title="Click to copy"
+                                  className="group inline-flex items-center gap-1 rounded-none hover:text-brand"
+                                >
+                                  {item.serial_number}
+                                  <Copy className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </button>
+                              ) : (
+                                "-"
+                              )}
                             </td>
                           )}
                           {activeTab !== "category" && (
@@ -2709,8 +2993,11 @@ export default function FieldEquipmentList() {
                           )}
                           {(activeTab === "all" ||
                             activeTab === "category") && (
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                              {item.location || "-"}
+                            <td
+                              className="px-4 py-3 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400"
+                              title={item.location || undefined}
+                            >
+                              {capText(item.location, LOCATION_CHAR_CAP)}
                             </td>
                           )}
                           {activeTab === "all" && allTabShowExtraColumns && (
@@ -3172,108 +3459,6 @@ export default function FieldEquipmentList() {
                               )}
                             </td>
                           )}
-                          <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                            <div
-                              className="relative inline-block"
-                              ref={(el) => {
-                                actionMenuRefs.current[item.id] = el;
-                              }}
-                            >
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setOpenActionMenus((prev) => ({
-                                    ...prev,
-                                    [item.id]: !prev[item.id],
-                                  }))
-                                }
-                                className="inline-flex items-center gap-1 px-2 py-1 text-sm text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-dark-100 rounded-none transition-colors"
-                                title="Actions"
-                              >
-                                Actions
-                                <ChevronDown className="h-3.5 w-3.5" />
-                              </button>
-                              {openActionMenus[item.id] && (
-                                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-lg z-40 py-1">
-                                  {item.checked_out_by ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleCheckIn(item.id)}
-                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100"
-                                    >
-                                      <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                                      Check In
-                                    </button>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleCheckOut(item.id)}
-                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100"
-                                    >
-                                      <ArrowUp className="h-4 w-4 text-brand" />
-                                      Check Out
-                                    </button>
-                                  )}
-                                  <div className="my-1 border-t border-neutral-200 dark:border-neutral-700" />
-                                  {item.in_service === false ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleReturnToService(item)}
-                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100"
-                                    >
-                                      <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                                      Return to Service
-                                    </button>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setOpenActionMenus((prev) => ({
-                                          ...prev,
-                                          [item.id]: false,
-                                        }));
-                                        setServiceReason("");
-                                        setServiceDialogFor(item);
-                                      }}
-                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100"
-                                    >
-                                      <Wrench className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                                      Out for Maintenance
-                                    </button>
-                                  )}
-                                  <div className="my-1 border-t border-neutral-200 dark:border-neutral-700" />
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setOpenActionMenus((prev) => ({
-                                        ...prev,
-                                        [item.id]: false,
-                                      }));
-                                      handleEdit(item);
-                                    }}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-100"
-                                  >
-                                    <Pencil className="h-4 w-4 text-brand" />
-                                    Edit
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setOpenActionMenus((prev) => ({
-                                        ...prev,
-                                        [item.id]: false,
-                                      }));
-                                      handleDelete(item.id);
-                                    }}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                    Delete
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </td>
                         </tr>
                       );
                     })
@@ -3681,6 +3866,57 @@ export default function FieldEquipmentList() {
                       equipment selection but remains in this list and can be
                       placed back in service.
                     </p>
+                  </div>
+
+                  <div className="py-2">
+                    <div className="flex items-center justify-between gap-4 mb-2">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                        Rented
+                      </label>
+                      <Switch
+                        checked={formData.is_rented}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            is_rented: checked,
+                          }))
+                        }
+                        checkedClassName="bg-brand"
+                      />
+                    </div>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                      Turn on for equipment rented from another company. Use
+                      "Rented only" in the Show filter to list just these.
+                    </p>
+                    {formData.is_rented && (
+                      <div className="grid grid-cols-2 gap-4 mt-3">
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                            Rental Company
+                          </label>
+                          <Input
+                            type="text"
+                            name="rental_vendor"
+                            value={formData.rental_vendor}
+                            onChange={handleInputChange}
+                            placeholder="Who it's rented from"
+                            className="w-full"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                            Return Date
+                          </label>
+                          <Input
+                            type="date"
+                            name="rental_return_date"
+                            value={formData.rental_return_date}
+                            onChange={handleInputChange}
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Sub Components Section */}
@@ -4240,12 +4476,31 @@ export default function FieldEquipmentList() {
                 <Dialog.Title className="text-xl font-semibold text-neutral-900 dark:text-white">
                   Equipment Details
                 </Dialog.Title>
-                <button
-                  onClick={() => setViewingEquipment(null)}
-                  className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+                <div className="flex items-center gap-4">
+                  {viewingEquipment && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setViewingEquipment(null);
+                        handleEdit(viewingEquipment);
+                      }}
+                      className="text-neutral-400 hover:text-brand dark:hover:text-brand"
+                      title="Edit equipment"
+                      aria-label="Edit equipment"
+                    >
+                      <Pencil className="h-5 w-5" />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setViewingEquipment(null)}
+                    className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+                    title="Close"
+                    aria-label="Close"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
 
               <div className="flex-1 overflow-y-auto p-6">
@@ -4324,6 +4579,19 @@ export default function FieldEquipmentList() {
                           )}
                         </p>
                       </div>
+
+                      {viewingEquipment.is_rented && (
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">
+                            Rental
+                          </label>
+                          <p className="text-base text-neutral-900 dark:text-white">
+                            {viewingEquipment.rental_vendor || "Rented"}
+                            {viewingEquipment.rental_return_date &&
+                              `, due back ${formatLocalDate(viewingEquipment.rental_return_date)}`}
+                          </p>
+                        </div>
+                      )}
 
                       <div>
                         <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">
@@ -4595,28 +4863,6 @@ export default function FieldEquipmentList() {
                     </div>
                   </div>
                 )}
-              </div>
-
-              <div className="flex justify-end p-6 pt-4 border-t border-neutral-200 dark:border-dark-200 flex-shrink-0">
-                <div className="flex gap-2">
-                  {viewingEquipment && (
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setViewingEquipment(null);
-                        handleEdit(viewingEquipment);
-                      }}
-                      className="flex items-center gap-2" leftIcon={<Pencil className="h-4 w-4" />}>
-                      Edit Equipment
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    onClick={() => setViewingEquipment(null)}
-                  >
-                    Close
-                  </Button>
-                </div>
               </div>
             </Dialog.Panel>
           </div>

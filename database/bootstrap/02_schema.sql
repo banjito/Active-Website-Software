@@ -11885,6 +11885,9 @@ CREATE TABLE neta_ops.field_equipment (
     maintenance_reason text,
     out_of_service_at timestamp with time zone,
     out_of_service_by uuid,
+    is_rented boolean DEFAULT false NOT NULL,
+    rental_vendor text,
+    rental_return_date date,
     CONSTRAINT field_equipment_assigned_type_check CHECK (((assigned_type IS NULL) OR (assigned_type = ANY (ARRAY['user'::text, 'job_site'::text, 'truck'::text])))),
     CONSTRAINT field_equipment_assignment_target_check CHECK ((((assigned_site_id IS NULL) OR (assigned_type = 'job_site'::text)) AND ((assigned_truck_id IS NULL) OR (assigned_type = 'truck'::text)) AND ((assigned_user_id IS NULL) OR (assigned_type = 'user'::text)) AND (num_nonnulls(assigned_site_id, assigned_truck_id, assigned_user_id) <= 1))),
     CONSTRAINT field_equipment_calibration_interval_check CHECK (((calibration_interval_months IS NULL) OR ((calibration_interval_months >= 1) AND (calibration_interval_months <= 120))))

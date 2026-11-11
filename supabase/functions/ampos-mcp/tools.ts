@@ -27,6 +27,7 @@ import {
   trimDeep,
 } from "./lib.ts";
 import { parseFileUrl, splitReportName } from "./reports.ts";
+import { OFFICE_TOOLS } from "./office.ts";
 
 export interface Tool {
   name: string;
@@ -34,6 +35,8 @@ export interface Tool {
   description: string;
   inputSchema: Record<string, unknown>;
   annotations?: Record<string, unknown>;
+  /** Hide the tool from people the app wouldn't show this data to. */
+  allowed?: (ctx: ToolContext) => boolean;
   run: (args: Row, ctx: ToolContext) => Promise<Record<string, unknown>>;
 }
 
@@ -53,7 +56,7 @@ const fail = (what: string, error: any): never => {
   throw new Error(`${what}: ${error?.message ?? "unknown error"}`);
 };
 
-export const TOOLS: Tool[] = [
+const FIELD_TOOLS: Tool[] = [
   // ---------------------------------------------------------------- account
   {
     name: "whoami",
@@ -708,3 +711,6 @@ export const TOOLS: Tool[] = [
     },
   },
 ];
+
+/** Every tool the connector offers. mcp.ts hides ones whose `allowed` says no. */
+export const TOOLS: Tool[] = [...FIELD_TOOLS, ...OFFICE_TOOLS];

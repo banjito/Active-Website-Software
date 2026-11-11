@@ -14,7 +14,7 @@ export interface ToolContext {
 const SUPPORTED_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 const FALLBACK_VERSION = "2025-06-18";
 
-const SERVER_INFO = { name: "ampos", title: "ampOS", version: "0.2.0" };
+const SERVER_INFO = { name: "ampos", title: "ampOS", version: "0.3.0" };
 
 const INSTRUCTIONS =
   "ampOS is the operations app for an electrical testing and maintenance company " +
@@ -70,7 +70,7 @@ async function handleOne(raw: unknown, ctx: ToolContext): Promise<unknown | null
 
     case "tools/list":
       return ok({
-        tools: TOOLS.map((t) => ({
+        tools: TOOLS.filter((t) => !t.allowed || t.allowed(ctx)).map((t) => ({
           name: t.name,
           title: t.title,
           description: t.description,
@@ -83,6 +83,12 @@ async function handleOne(raw: unknown, ctx: ToolContext): Promise<unknown | null
       const name = String(msg.params?.name ?? "");
       const tool = TOOLS.find((t) => t.name === name);
       if (!tool) return fail(-32602, `Unknown tool: ${name}`);
+      if (tool.allowed && !tool.allowed(ctx)) {
+        return ok({
+          content: [{ type: "text", text: "Your ampOS role doesn't include this area of the app." }],
+          isError: true,
+        });
+      }
       const args = (msg.params?.arguments ?? {}) as Record<string, unknown>;
       try {
         const result = await tool.run(args, ctx);

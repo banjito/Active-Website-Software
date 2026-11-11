@@ -24,17 +24,18 @@ type View =
   | { kind: "redirecting" }
   | { kind: "error"; message: string };
 
-type Destination = { host: string; tone: "claude" | "local" | "unknown" };
+type Destination = { host: string; tone: "known" | "local" | "unknown" };
 
-const CLAUDE_DOMAINS = ["claude.ai", "claude.com", "anthropic.com"];
+// AI apps we expect: Claude and ChatGPT.
+const KNOWN_DOMAINS = ["claude.ai", "claude.com", "anthropic.com", "chatgpt.com", "openai.com"];
 const LOCAL_HOSTS = ["localhost", "127.0.0.1", "[::1]"];
 
 function describeDestination(redirectUri: string): Destination {
   try {
     const url = new URL(redirectUri);
     const host = url.hostname.toLowerCase();
-    const isClaude = CLAUDE_DOMAINS.some((d) => host === d || host.endsWith(`.${d}`));
-    if (url.protocol === "https:" && isClaude) return { host, tone: "claude" };
+    const isKnown = KNOWN_DOMAINS.some((d) => host === d || host.endsWith(`.${d}`));
+    if (url.protocol === "https:" && isKnown) return { host, tone: "known" };
     if (LOCAL_HOSTS.includes(host)) return { host, tone: "local" };
     return { host, tone: "unknown" };
   } catch {
@@ -52,7 +53,7 @@ export default function OAuthConsent() {
     if (!authorizationId) {
       setView({
         kind: "error",
-        message: "This link is missing its request ID. Start the connection again from Claude.",
+        message: "This link is missing its request ID. Start the connection again from Claude or ChatGPT.",
       });
       return;
     }
@@ -63,7 +64,7 @@ export default function OAuthConsent() {
       if (error || !data) {
         setView({
           kind: "error",
-          message: "This request expired or was already used. Start the connection again from Claude.",
+          message: "This request expired or was already used. Start the connection again from Claude or ChatGPT.",
         });
         return;
       }
@@ -90,7 +91,7 @@ export default function OAuthConsent() {
       setBusy(null);
       setView({
         kind: "error",
-        message: error?.message || "Something went wrong. Start the connection again from Claude.",
+        message: error?.message || "Something went wrong. Start the connection again from Claude or ChatGPT.",
       });
       return;
     }
@@ -167,7 +168,7 @@ function ConsentBody({
         <li>You can disconnect it any time from that app's settings.</li>
       </ul>
 
-      {dest.tone === "claude" && (
+      {dest.tone === "known" && (
         <div className="border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 rounded-none">
           Sends you back to <span className="font-medium">{dest.host}</span>
         </div>
@@ -179,7 +180,7 @@ function ConsentBody({
       )}
       {dest.tone === "unknown" && (
         <div className="border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-sm text-amber-900 dark:text-amber-200 rounded-none">
-          <span className="font-semibold">This isn't Claude.</span> After you allow, you'll go to{" "}
+          <span className="font-semibold">This isn't Claude or ChatGPT.</span> After you allow, you'll go to{" "}
           <span className="font-medium">{dest.host}</span>. Only allow it if you trust it.
         </div>
       )}

@@ -14,12 +14,16 @@ export interface ToolContext {
 const SUPPORTED_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 const FALLBACK_VERSION = "2025-06-18";
 
-const SERVER_INFO = { name: "ampos", title: "ampOS", version: "0.1.0" };
+const SERVER_INFO = { name: "ampos", title: "ampOS", version: "0.2.0" };
 
 const INSTRUCTIONS =
   "ampOS is the operations app for an electrical testing and maintenance company " +
   "(NETA acceptance and maintenance testing). These tools read live ampOS data as the " +
-  "signed-in person, so they only see what that person can see in the app.";
+  "signed-in person, so they only see what that person can see in the app. " +
+  "Jobs have numbers like 26103; test reports have codes like 26103-203; action items " +
+  "have codes like 26103-203-2. Equipment assets live at customer sites and link to their " +
+  "test reports. For NETA questions, search the standards and cite section or table numbers. " +
+  "All tools are read-only.";
 
 type JsonRpcId = string | number | null;
 type JsonRpcMessage = {

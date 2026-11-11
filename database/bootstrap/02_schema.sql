@@ -11888,6 +11888,8 @@ CREATE TABLE neta_ops.field_equipment (
     is_rented boolean DEFAULT false NOT NULL,
     rental_vendor text,
     rental_return_date date,
+    division text,
+    CONSTRAINT field_equipment_division_not_aggregate CHECK (((division IS NULL) OR (division <> 'field_tech'::text))),
     CONSTRAINT field_equipment_assigned_type_check CHECK (((assigned_type IS NULL) OR (assigned_type = ANY (ARRAY['user'::text, 'job_site'::text, 'truck'::text])))),
     CONSTRAINT field_equipment_assignment_target_check CHECK ((((assigned_site_id IS NULL) OR (assigned_type = 'job_site'::text)) AND ((assigned_truck_id IS NULL) OR (assigned_type = 'truck'::text)) AND ((assigned_user_id IS NULL) OR (assigned_type = 'user'::text)) AND (num_nonnulls(assigned_site_id, assigned_truck_id, assigned_user_id) <= 1))),
     CONSTRAINT field_equipment_calibration_interval_check CHECK (((calibration_interval_months IS NULL) OR ((calibration_interval_months >= 1) AND (calibration_interval_months <= 120))))
@@ -20486,6 +20488,13 @@ CREATE INDEX idx_field_equipment_assigned_type ON neta_ops.field_equipment USING
 
 
 --
+-- Name: idx_field_equipment_division; Type: INDEX; Schema: neta_ops; Owner: -
+--
+
+CREATE INDEX idx_field_equipment_division ON neta_ops.field_equipment USING btree (division) WHERE (division IS NOT NULL);
+
+
+--
 -- Name: idx_field_equipment_assigned_user_id; Type: INDEX; Schema: neta_ops; Owner: -
 --
 
@@ -27718,6 +27727,14 @@ ALTER TABLE ONLY neta_ops.jobs
 
 ALTER TABLE ONLY neta_ops.jobs
     ADD CONSTRAINT jobs_division_fkey FOREIGN KEY (division) REFERENCES common.divisions(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: field_equipment field_equipment_division_fkey; Type: FK CONSTRAINT; Schema: neta_ops; Owner: -
+--
+
+ALTER TABLE ONLY neta_ops.field_equipment
+    ADD CONSTRAINT field_equipment_division_fkey FOREIGN KEY (division) REFERENCES common.divisions(id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --

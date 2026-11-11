@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import {
   Plus,
   Pencil,
@@ -46,6 +46,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/Tabs";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Switch } from "../ui/Switch";
 import { employeeEmailRegex, employeeNameEmailRegex } from "@/lib/companyConfig";
+import { useDivisions } from "@/hooks/useDivisions";
+import { fieldTechCities } from "@/services/divisionsService";
+import { describeSupabaseError, withWriteRetry } from "@/lib/supabaseRetry";
 
 interface SubComponent {
   qty: number;
@@ -109,6 +112,8 @@ interface FieldEquipment {
   is_rented?: boolean;
   rental_vendor: string | null;
   rental_return_date: string | null;
+  /** common.divisions id where the item is being used now; null = not assigned yet. */
+  division: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -128,6 +133,8 @@ interface EquipmentFormData {
   calibration_interval_months: string;
   category: string;
   location: string;
+  /** "" = no division yet. */
+  division: string;
   assigned_to: string | null;
   assigned_type: AssignedType | null;
   notes: string;
@@ -147,6 +154,7 @@ const initialFormData: EquipmentFormData = {
   calibration_interval_months: "",
   category: "",
   location: "",
+  division: "",
   assigned_to: null,
   assigned_type: null,
   notes: "",
@@ -204,6 +212,35 @@ export default function FieldEquipmentList() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const openId = searchParams.get("open");
+
+  // Division comes from the URL. /georgia/field-equipment shows only Atlanta's
+  // equipment. /field-tech/field-equipment (Field Tech (All)) and the Global Portal's
+  // /neta/field-equipment show everything, with a Division filter. Checked against the
+  // known non-city ids rather than the city list, so an admin-added city (Chattanooga)
+  // filters correctly before common.divisions has loaded.
+  const { division: routeDivision } = useParams<{ division?: string }>();
+  const allDivisions = useDivisions();
+  const equipmentDivisions = fieldTechCities(allDivisions);
+  const pageDivision =
+    routeDivision &&
+    !["field-tech", "field_tech", "neta"].includes(routeDivision) &&
+    !allDivisions.some((d) => d.id === routeDivision && !d.is_field_tech)
+      ? routeDivision
+      : null;
+  const divisionLabel = (id: string | null | undefined): string =>
+    id ? (allDivisions.find((d) => d.id === id)?.label ?? id) : "No division";
+  /** Field Tech (All) only: "" = every division, "__unassigned__" = no division yet. */
+  const [divisionFilter, setDivisionFilter] = useState<string>("");
+
+  // Bulk "Move to division": tick rows, pick a division, move them all at once.
+  // Built for the first sort, when every item starts with no division.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDivision, setBulkDivision] = useState<string>("");
+  const [bulkMoving, setBulkMoving] = useState(false);
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [pageDivision]);
+
   const [equipment, setEquipment] = useState<FieldEquipment[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -451,17 +488,28 @@ export default function FieldEquipmentList() {
     };
   }, []);
 
+  // Switching city keeps this page mounted (same route, new URL), so the
+  // "Total Equipment" number has to follow the city.
+  useEffect(() => {
+    if (user) void fetchTotalCount();
+  }, [user, pageDivision]);
+
+  /** Total for the page's scope (one city, or everything), ignoring search. */
+  async function fetchTotalCount() {
+    let countQuery = supabase
+      .schema("neta_ops")
+      .from("field_equipment")
+      .select("*", { count: "exact", head: true });
+    if (pageDivision) countQuery = countQuery.eq("division", pageDivision);
+    const { count } = await countQuery;
+    setTotalCount(count || 0);
+  }
+
   async function fetchEquipment() {
     try {
       setLoading(true);
 
-      // Get total count (without search filter)
-      const { count: totalCountResult } = await supabase
-        .schema("neta_ops")
-        .from("field_equipment")
-        .select("*", { count: "exact", head: true });
-
-      setTotalCount(totalCountResult || 0);
+      await fetchTotalCount();
 
       // Get filtered equipment
       let query = supabase
@@ -1444,6 +1492,7 @@ export default function FieldEquipmentList() {
         tracking_url: formData.tracking_url || null,
         category: formData.category?.trim() || null,
         location: formData.location?.trim() || null,
+        division: formData.division || null,
         sub_components:
           validSubComponents.length > 0 ? validSubComponents : null,
         in_service: formData.in_service !== false,
@@ -1612,6 +1661,7 @@ export default function FieldEquipmentList() {
           : "",
       category: equipmentItem.category || "",
       location: equipmentItem.location || "",
+      division: equipmentItem.division || "",
       assigned_to: equipmentItem.assigned_to,
       assigned_type:
         equipmentItem.assigned_type ??
@@ -2029,6 +2079,15 @@ export default function FieldEquipmentList() {
       filtered = filtered.filter((item) => item.is_rented === true);
     }
 
+    // Division: a city page shows only that city's equipment. Field Tech (All) shows
+    // everything unless narrowed with the Division filter.
+    const activeDivision = pageDivision ?? divisionFilter;
+    if (activeDivision === "__unassigned__") {
+      filtered = filtered.filter((item) => !item.division);
+    } else if (activeDivision) {
+      filtered = filtered.filter((item) => item.division === activeDivision);
+    }
+
     switch (activeTab) {
       case "in-cal":
         // Show equipment with calibration dates
@@ -2175,6 +2234,78 @@ export default function FieldEquipmentList() {
 
   const filteredEquipment = getFilteredEquipment();
 
+  // Only rows still on screen count. Ticking something and then filtering it out
+  // should not move it without the person seeing it.
+  const selectedVisible = filteredEquipment.filter((i) => selectedIds.has(i.id));
+  const allVisibleSelected =
+    filteredEquipment.length > 0 &&
+    selectedVisible.length === filteredEquipment.length;
+
+  const toggleSelected = (id: string) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const toggleSelectAllVisible = () =>
+    setSelectedIds(
+      allVisibleSelected
+        ? new Set()
+        : new Set(filteredEquipment.map((i) => i.id)),
+    );
+
+  async function handleBulkMove() {
+    const ids = selectedVisible.map((i) => i.id);
+    if (!ids.length || !bulkDivision) return;
+    const target = bulkDivision === "__none__" ? null : bulkDivision;
+    setBulkMoving(true);
+    try {
+      // Chunked: hundreds of ids in one ?id=in.(...) URL can exceed the request size limit.
+      let moved = 0;
+      for (let i = 0; i < ids.length; i += 100) {
+        const chunk = ids.slice(i, i + 100);
+        const { data, error } = await withWriteRetry(
+          () =>
+            supabase
+              .schema("neta_ops")
+              .from("field_equipment")
+              .update({ division: target })
+              .in("id", chunk)
+              .select("id"),
+          { label: "bulk move equipment division" },
+        );
+        if (error) throw error;
+        moved += data?.length ?? 0;
+      }
+      const where = target ? divisionLabel(target) : "No division";
+      if (moved < ids.length) {
+        toast({
+          title: `Moved ${moved} of ${ids.length} to ${where}`,
+          description: "Some items could not be changed. Refresh and try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: `Moved ${moved} item${moved === 1 ? "" : "s"} to ${where}`,
+          variant: "success",
+        });
+      }
+      setSelectedIds(new Set());
+      setBulkDivision("");
+      fetchEquipment();
+    } catch (error) {
+      toast({
+        title: "Couldn't move equipment",
+        description: describeSupabaseError(error as any),
+        variant: "destructive",
+      });
+    } finally {
+      setBulkMoving(false);
+    }
+  }
+
   /**
    * Export what is currently on screen, not the whole table: the tab, search, and the
    * service, category and site filters are the question the person is asking, and a CSV
@@ -2188,6 +2319,7 @@ export default function FieldEquipmentList() {
         { header: "Serial Number", value: (i) => i.serial_number || "" },
         { header: "Category", value: (i) => i.category || "" },
         { header: "Location", value: (i) => i.location || "" },
+        { header: "Division", value: (i) => (i.division ? divisionLabel(i.division) : "") },
         { header: "Assigned Type", value: (i) => getAssignedTypeLabel(i.assigned_type) },
         { header: "Assigned To", value: (i) => getAssignedLabel(i) },
         { header: "Calibration Date", value: (i) => i.calibration_date || "" },
@@ -2253,7 +2385,7 @@ export default function FieldEquipmentList() {
     const link = document.createElement("a");
     const stamp = new Date().toISOString().split("T")[0];
     link.href = url;
-    link.download = `field-equipment-${activeTab}-${stamp}.csv`;
+    link.download = `field-equipment-${pageDivision ? `${pageDivision}-` : ""}${activeTab}-${stamp}.csv`;
     link.click();
     URL.revokeObjectURL(url);
 
@@ -2270,11 +2402,20 @@ export default function FieldEquipmentList() {
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
               Field Equipment
+              {pageDivision && (
+                <span className="font-normal text-neutral-500 dark:text-neutral-400">
+                  {" "}·{" "}
+                  <span className="font-bitcount text-3xl">
+                    {divisionLabel(pageDivision)}
+                  </span>
+                </span>
+              )}
             </h1>
             <div className="flex items-center gap-2">
               <Button
                 onClick={() => {
-                  setFormData(initialFormData);
+                  // Added from a city page = that city's equipment.
+                  setFormData({ ...initialFormData, division: pageDivision ?? "" });
                   setCategoryInput("");
                   setLocationInput("");
                   setFormSubComponents([]);
@@ -2298,7 +2439,7 @@ export default function FieldEquipmentList() {
                 <span className="font-semibold text-neutral-900 dark:text-white">
                   {totalCount}
                 </span>
-                {(searchTerm || categoryFilter || locationFilter) &&
+                {(searchTerm || categoryFilter || locationFilter || (!pageDivision && divisionFilter)) &&
                   filteredEquipment.length !== totalCount && (
                     <span className="ml-2 text-neutral-500 dark:text-neutral-500">
                       (Showing {filteredEquipment.length} of {totalCount})
@@ -2318,7 +2459,7 @@ export default function FieldEquipmentList() {
                 <span className="font-semibold text-neutral-900 dark:text-white">
                   {filteredEquipment.length}
                 </span>
-                {(searchTerm || categoryFilter || locationFilter) && (
+                {(searchTerm || categoryFilter || locationFilter || (!pageDivision && divisionFilter)) && (
                   <span className="ml-2 text-neutral-500 dark:text-neutral-500">
                     (filtered from {totalCount} total)
                   </span>
@@ -2356,6 +2497,26 @@ export default function FieldEquipmentList() {
               <option value="rented">Rented only</option>
             </select>
           </div>
+          {!pageDivision && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap">
+                Division:
+              </span>
+              <select
+                value={divisionFilter}
+                onChange={(e) => setDivisionFilter(e.target.value)}
+                className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              >
+                <option value="">All divisions</option>
+                <option value="__unassigned__">No division</option>
+                {equipmentDivisions.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <span className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap">
               Category:
@@ -2612,6 +2773,54 @@ export default function FieldEquipmentList() {
         </button>
         </div>
 
+        {/* Bulk move popup: floats at the bottom of the screen once any row is
+            ticked, so it never pushes the table down. Portaled to <body> so the
+            page's overflow containers can't clip it. */}
+        {!loading && selectedVisible.length > 0 && createPortal(
+          <div
+            role="toolbar"
+            aria-label="Bulk move equipment"
+            className="fixed bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50 flex flex-wrap items-center gap-3 border border-neutral-200 dark:border-dark-200 bg-white dark:bg-dark-150 px-4 py-3 rounded-none shadow-lg print:hidden"
+          >
+            <span className="text-sm font-medium text-neutral-900 dark:text-white">
+              {selectedVisible.length} selected
+            </span>
+            <span className="text-sm text-neutral-600 dark:text-neutral-400">
+              Move to division:
+            </span>
+            <select
+              value={bulkDivision}
+              onChange={(e) => setBulkDivision(e.target.value)}
+              className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            >
+              <option value="">Choose a division</option>
+              {equipmentDivisions.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.label}
+                </option>
+              ))}
+              <option value="__none__">No division</option>
+            </select>
+            <Button
+              size="sm"
+              onClick={handleBulkMove}
+              disabled={!bulkDivision || bulkMoving}
+              className="rounded-none"
+            >
+              {bulkMoving ? "Moving..." : "Move"}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setSelectedIds(new Set())}
+              className="rounded-none"
+            >
+              Clear
+            </Button>
+          </div>,
+          document.body,
+        )}
+
         {/* Equipment Table */}
         {loading ? (
           <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
@@ -2630,6 +2839,15 @@ export default function FieldEquipmentList() {
                       className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider cursor-pointer select-none hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
                       onClick={() => handleSort("equipment_name")}
                     >
+                      <input
+                        type="checkbox"
+                        aria-label="Select all shown equipment"
+                        title="Select all shown"
+                        checked={allVisibleSelected}
+                        onChange={toggleSelectAllVisible}
+                        onClick={(e) => e.stopPropagation()}
+                        className="mr-3 h-4 w-4 align-middle rounded-none accent-brand cursor-pointer"
+                      />
                       Equipment Name{renderSortIcon("equipment_name")}
                     </th>
                     {(activeTab === "all" || activeTab === "category") && (
@@ -2798,7 +3016,7 @@ export default function FieldEquipmentList() {
                             showGearFor(item.id, e.currentTarget)
                           }
                           onMouseLeave={hideGearSoon}
-                          className={`hover:bg-neutral-50 dark:hover:bg-dark-100 cursor-pointer ${
+                          className={`group hover:bg-neutral-50 dark:hover:bg-dark-100 cursor-pointer ${
                             isPastDue
                               ? "bg-red-50 dark:bg-red-900/20"
                               : isDueSoon
@@ -2867,6 +3085,22 @@ export default function FieldEquipmentList() {
                                   )}
                                 </div>
                               )}
+                              {/* Bulk-move tick box, beside the gear. Shows on row hover like
+                                  the gear does. Stays visible once ticked, and every box shows
+                                  while anything is ticked so adding more is one click. Faded
+                                  with opacity, not removed, so names don't shift on hover. */}
+                              <input
+                                type="checkbox"
+                                aria-label={`Select ${item.equipment_name}`}
+                                checked={selectedIds.has(item.id)}
+                                onChange={() => toggleSelected(item.id)}
+                                onClick={(e) => e.stopPropagation()}
+                                className={`mr-3 h-4 w-4 shrink-0 rounded-none accent-brand cursor-pointer transition-opacity ${
+                                  isTouchDevice || selectedVisible.length > 0
+                                    ? "opacity-100"
+                                    : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                                }`}
+                              />
                               <span
                                 className="text-sm font-medium text-neutral-900 dark:text-white"
                                 title={item.equipment_name}
@@ -2876,6 +3110,11 @@ export default function FieldEquipmentList() {
                               {item.is_rented && (
                                 <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 rounded-none">
                                   RENTED
+                                </span>
+                              )}
+                              {!pageDivision && item.division && (
+                                <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-neutral-100 text-neutral-700 dark:bg-dark-200 dark:text-neutral-300 rounded-none">
+                                  {divisionLabel(item.division)}
                                 </span>
                               )}
                               {isPastDue && (
@@ -3714,6 +3953,32 @@ export default function FieldEquipmentList() {
                     </div>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                       Select an existing category or type to create a new one
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                      Division
+                    </label>
+                    <select
+                      value={formData.division}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          division: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                    >
+                      <option value="">No division</option>
+                      {equipmentDivisions.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.label}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                      Where it's being used now. Change it when it moves to another office.
                     </p>
                   </div>
 
@@ -4558,6 +4823,15 @@ export default function FieldEquipmentList() {
                         </label>
                         <p className="text-base text-neutral-900 dark:text-white">
                           {viewingEquipment.location || "-"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">
+                          Division
+                        </label>
+                        <p className="text-base text-neutral-900 dark:text-white">
+                          {divisionLabel(viewingEquipment.division)}
                         </p>
                       </div>
 

@@ -44,6 +44,7 @@ import OpportunityDetail from "./components/jobs/OpportunityDetail";
 import EstimatesListPage from "./components/estimates/EstimatesListPage";
 import OpportunitiesCalendarView from "./components/jobs/OpportunitiesCalendarView";
 import { AuthProvider, RequireAuth } from "./lib/AuthContext";
+import { companyConfig } from "./lib/companyConfig";
 import { ThemeProvider } from "./components/theme/theme-provider";
 import { DemoModeProvider } from "./lib/DemoModeContext";
 import DebugTableCheck from "./components/debug/debug-table";
@@ -215,7 +216,6 @@ import { LabDashboard } from "./components/lab/LabDashboard";
 
 // Import division-specific dashboards
 import CalibrationDashboard from "./app/dashboards/CalibrationDashboard";
-import ScavengerDashboard from "./app/dashboards/ScavengerDashboard";
 import FieldTechDashboard from "./app/dashboards/FieldTechDashboard";
 
 // Import Maintenance Management
@@ -431,6 +431,18 @@ function ScrollToTop() {
   }, [pathname, navigationType]);
 
   return null;
+}
+
+// Redirect /scavenger/dashboard to the Scavenger app (old links, shortcuts, sidebar)
+function ScavengerRedirect() {
+  useEffect(() => {
+    window.location.href = companyConfig.scavengerUrl;
+  }, []);
+  return (
+    <div className="min-h-screen flex items-center justify-center text-neutral-600 dark:text-neutral-400">
+      Redirecting to Scavenger…
+    </div>
+  );
 }
 
 // Redirect /armadillo/dashboard to external Armadillo Base
@@ -2129,9 +2141,7 @@ function App() {
                     path="/scavenger/dashboard"
                     element={
                       <RequireAuth>
-                        <Layout>
-                          <ScavengerDashboard />
-                        </Layout>
+                        <ScavengerRedirect />
                       </RequireAuth>
                     }
                   />

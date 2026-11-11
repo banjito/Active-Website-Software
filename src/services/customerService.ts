@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { fetchAllRows } from '@/lib/csv';
 
 /**
  * Wrap a value for safe use inside a PostgREST `.or()` / `.and()` filter string.
@@ -478,8 +479,36 @@ export async function syncGoogleDriveDocuments(customerId: string) {
 }
 
 // Customer Functions
+type CustomerListFilters = { category_id?: string | null; status?: string | null; startsWith?: string | null; divisions?: string[] | null };
+
+/**
+ * Every customer matching the same filters/search as getCustomers, all pages.
+ * Used by the customer list's Export CSV button.
+ */
+export async function getAllCustomers(
+  filters?: CustomerListFilters,
+  options?: { search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }
+): Promise<Customer[]> {
+  const search = options?.search?.trim();
+  return fetchAllRows<Customer>((from, to) => {
+    let q = supabase.schema('common').from('customers').select('*');
+    if (filters?.category_id) q = q.eq('category_id', filters.category_id);
+    if (filters?.status) q = q.eq('status', filters.status);
+    if (filters?.divisions && filters.divisions.length > 0) q = q.overlaps('divisions', filters.divisions);
+    if (search) {
+      const like = escapeOrFilterValue(`%${search}%`);
+      q = q.or(`name.ilike.${like},company_name.ilike.${like},email.ilike.${like}`);
+    }
+    if (filters?.startsWith) q = q.ilike('company_name', `${filters.startsWith}%`);
+    return q
+      .order(options?.sortBy || 'company_name', { ascending: (options?.sortOrder || 'asc') === 'asc' })
+      .order('id')
+      .range(from, to);
+  });
+}
+
 export async function getCustomers(
-  filters?: { category_id?: string | null; status?: string | null; startsWith?: string | null; divisions?: string[] | null },
+  filters?: CustomerListFilters,
   options?: { page?: number; pageSize?: number; search?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' }
 ): Promise<{ data: Customer[]; totalCount: number }> {
   try {

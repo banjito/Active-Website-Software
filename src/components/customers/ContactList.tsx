@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, X, ArrowUpAZ, ArrowDownAZ } from "lucide-react";
+import { Plus, Pencil, Trash2, X, ArrowUpAZ, ArrowDownAZ, Download } from "lucide-react";
+import { buildCsv, downloadCsv, fetchAllRows } from "@/lib/csv";
 import { Dialog } from "@headlessui/react";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../lib/AuthContext";
@@ -138,6 +139,7 @@ export default function ContactList() {
   );
   const [searchLoading, setSearchLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(
     initialSettings.sortOrder,
   );
@@ -255,6 +257,134 @@ export default function ContactList() {
     }
   }, [customerSearch, customers]);
 
+  // Search / letter / division filters, shared by the list and the CSV export
+  // so both always match the same contacts.
+  async function getContactFilters() {
+    // If division filter is active, first get the customer IDs that match
+    let divisionCustomerIds: string[] | null = null;
+    if (activeDivisionTabs.length > 0) {
+      try {
+        const { data: divCustomers, error: divError } = await supabase
+          .schema("common")
+          .from("customers")
+          .select("id")
+          .overlaps("divisions", activeDivisionTabs);
+
+        if (divError) throw divError;
+        divisionCustomerIds = (divCustomers || []).map((c) => c.id);
+      } catch {
+        // divisions column may not exist yet -- skip filter
+        divisionCustomerIds = null;
+      }
+    }
+
+    // Matches contacts whose OWN divisions tag matches any selected division,
+    // OR whose customer's divisions match. Only includes the contact-level
+    // match if the column is known to exist.
+    const buildDivisionOrClause = (
+      includeContactLevel: boolean,
+    ): string | null => {
+      if (activeDivisionTabs.length === 0) return null;
+      const parts: string[] = [];
+      if (includeContactLevel) {
+        parts.push(`divisions.ov.{${activeDivisionTabs.join(",")}}`);
+      }
+      if (divisionCustomerIds && divisionCustomerIds.length > 0) {
+        parts.push(`customer_id.in.(${divisionCustomerIds.join(",")})`);
+      }
+      return parts.length > 0 ? parts.join(",") : null;
+    };
+
+    const applyFilters = <T,>(query: T, includeContactLevel: boolean): T => {
+      let q = query as any;
+      const divOr = buildDivisionOrClause(includeContactLevel);
+      if (divOr) q = q.or(divOr);
+      if (debouncedSearch) {
+        // Split into tokens so a full-name search ("Hunter Hearn") matches
+        // across first_name + last_name. Each token must match some column
+        // (AND across tokens), and within a token we OR across columns.
+        const tokens = debouncedSearch
+          .split(/\s+/)
+          .map((t) => t.replace(/[(),]/g, "").trim())
+          .filter(Boolean);
+        for (const token of tokens) {
+          const like = `%${token}%`;
+          q = q.or(
+            `first_name.ilike.${like},last_name.ilike.${like},email.ilike.${like},phone.ilike.${like}`,
+          );
+        }
+      }
+      if (startsWithFilter) {
+        q = q.ilike("last_name", `${startsWithFilter}%`);
+      }
+      return q as T;
+    };
+
+    // Division filter active but neither the contacts.divisions column exists
+    // nor any customers match: nothing to show.
+    const nothingMatches = (includeContactLevel: boolean) =>
+      activeDivisionTabs.length > 0 &&
+      !includeContactLevel &&
+      (!divisionCustomerIds || divisionCustomerIds.length === 0);
+
+    return { applyFilters, nothingMatches };
+  }
+
+  // Exports every contact matching the current search/filters (all pages, not just this one).
+  async function handleExportCsv() {
+    setExporting(true);
+    try {
+      const { applyFilters, nothingMatches } = await getContactFilters();
+      const includeContactLevel = !contactsDivisionsMissing;
+      const rows = nothingMatches(includeContactLevel)
+        ? []
+        : await fetchAllRows<Contact>((from, to) =>
+            applyFilters(
+              supabase.schema("common").from("contacts").select("*"),
+              includeContactLevel,
+            )
+              .order("last_name")
+              .order("first_name")
+              .order("id")
+              .range(from, to),
+          );
+      if (rows.length === 0) {
+        alert("No contacts to export.");
+        return;
+      }
+      const companies = await fetchAllRows<Customer>((from, to) =>
+        supabase
+          .schema("common")
+          .from("customers")
+          .select("id, name, company_name")
+          .order("id")
+          .range(from, to),
+      );
+      const companyById = new Map(
+        companies.map((c) => [c.id, c.company_name || c.name]),
+      );
+      const csv = buildCsv(
+        ["First Name", "Last Name", "Company", "Position", "Email", "Phone", "Primary Contact", "Divisions"],
+        rows.map((c) => [
+          c.first_name,
+          c.last_name,
+          companyById.get(c.customer_id) || "",
+          c.position,
+          c.email,
+          c.phone,
+          c.is_primary ? "Yes" : "No",
+          (c.divisions || []).join("; "),
+        ]),
+      );
+      downloadCsv(csv, "contacts");
+    } catch (error) {
+      console.error("Error exporting contacts:", error);
+      alert("Export failed. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   async function fetchContacts(currentSortOrder: "asc" | "desc" | null = null) {
     setLoadError(null);
     if (debouncedSearch || startsWithFilter) {
@@ -271,76 +401,11 @@ export default function ContactList() {
     }, 30000);
 
     try {
-      // If division filter is active, first get the customer IDs that match
-      let divisionCustomerIds: string[] | null = null;
-      if (activeDivisionTabs.length > 0) {
-        try {
-          const { data: divCustomers, error: divError } = await supabase
-            .schema("common")
-            .from("customers")
-            .select("id")
-            .overlaps("divisions", activeDivisionTabs);
-
-          if (divError) throw divError;
-          divisionCustomerIds = (divCustomers || []).map((c) => c.id);
-        } catch {
-          // divisions column may not exist yet -- skip filter
-          divisionCustomerIds = null;
-        }
-      }
-
-      // Build a shared clause that matches contacts whose OWN divisions tag
-      // matches any selected division, OR whose customer's divisions match.
-      // Only includes contact-level match if the column is known to exist.
-      const buildDivisionOrClause = (
-        includeContactLevel: boolean,
-      ): string | null => {
-        if (activeDivisionTabs.length === 0) return null;
-        const parts: string[] = [];
-        if (includeContactLevel) {
-          parts.push(`divisions.ov.{${activeDivisionTabs.join(",")}}`);
-        }
-        if (divisionCustomerIds && divisionCustomerIds.length > 0) {
-          parts.push(`customer_id.in.(${divisionCustomerIds.join(",")})`);
-        }
-        return parts.length > 0 ? parts.join(",") : null;
-      };
-
-      const applyCommonFilters = <
-        T extends { or: (s: string) => T; ilike: (c: string, v: string) => T },
-      >(
-        q: T,
-      ): T => {
-        if (debouncedSearch) {
-          // Split into tokens so a full-name search ("Hunter Hearn") matches
-          // across first_name + last_name. Each token must match some column
-          // (AND across tokens), and within a token we OR across columns.
-          const tokens = debouncedSearch
-            .split(/\s+/)
-            .map((t) => t.replace(/[(),]/g, "").trim())
-            .filter(Boolean);
-          for (const token of tokens) {
-            const like = `%${token}%`;
-            q = q.or(
-              `first_name.ilike.${like},last_name.ilike.${like},email.ilike.${like},phone.ilike.${like}`,
-            );
-          }
-        }
-        if (startsWithFilter) {
-          q = q.ilike("last_name", `${startsWithFilter}%`);
-        }
-        return q;
-      };
+      const { applyFilters, nothingMatches } = await getContactFilters();
 
       let useContactLevelDivisions = !contactsDivisionsMissing;
 
-      // If division filter is active but neither the contacts.divisions column
-      // exists nor any customers match, there is nothing to show.
-      if (
-        activeDivisionTabs.length > 0 &&
-        !useContactLevelDivisions &&
-        (!divisionCustomerIds || divisionCustomerIds.length === 0)
-      ) {
+      if (nothingMatches(useContactLevelDivisions)) {
         setContacts([]);
         setTotalCount(0);
         return;
@@ -348,14 +413,11 @@ export default function ContactList() {
 
       // 1. First get total count with filters applied
       const runCountQuery = async (includeContactLevel: boolean) => {
-        let q = supabase
+        const q = supabase
           .schema("common")
           .from("contacts")
           .select("*", { count: "exact", head: true });
-        const divOr = buildDivisionOrClause(includeContactLevel);
-        if (divOr) q = q.or(divOr);
-        q = applyCommonFilters(q as any) as any;
-        return await q;
+        return await applyFilters(q, includeContactLevel);
       };
 
       let { count, error: countError } = await runCountQuery(
@@ -378,14 +440,10 @@ export default function ContactList() {
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
-      let query = supabase.schema("common").from("contacts").select("*");
-
-      const divOrData = buildDivisionOrClause(useContactLevelDivisions);
-      if (divOrData) {
-        query = query.or(divOrData);
-      }
-
-      query = applyCommonFilters(query as any) as any;
+      let query = applyFilters(
+        supabase.schema("common").from("contacts").select("*"),
+        useContactLevelDivisions,
+      );
 
       // When division tabs are active, default to alphabetical sort
       const effectiveSortOrder =
@@ -790,6 +848,16 @@ export default function ContactList() {
               : sortOrder === "desc"
                 ? "Z-A"
                 : "Sort"}
+          </button>
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            disabled={exporting}
+            title="Download every contact matching the current search and filters"
+            className="inline-flex items-center justify-center rounded-none border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm hover:bg-neutral-50 disabled:opacity-60 dark:border-neutral-600 dark:bg-dark-150 dark:text-neutral-200 dark:hover:bg-dark-200"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            {exporting ? "Exporting..." : "Export CSV"}
           </button>
           <button
             type="button"

@@ -35,6 +35,8 @@ export const companyConfig = {
   /** Engineering portal brand: logo above the title (light on dark, in /public). */
   engineeringName: str(env.VITE_ENGINEERING_NAME, "C&E Design"),
   engineeringLogoPath: str(env.VITE_ENGINEERING_LOGO, "/ce-design-logo-reversed.svg"),
+  /** Scavenger portal lives in its own app; the portal card and /scavenger/dashboard go here. */
+  scavengerUrl: str(env.VITE_SCAVENGER_URL, "https://os.scavenger.equipment"),
   /** Full company name used on documents (proposals, POs, reports). */
   fullName: str(env.VITE_COMPANY_FULL_NAME, "AMP Quality Energy Services"),
   /** Legal entity name used in contract/terms language. */

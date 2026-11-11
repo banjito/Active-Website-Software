@@ -11,7 +11,9 @@ import {
   Phone,
   Mail,
   Blend,
+  Download,
 } from "lucide-react";
+import { buildCsv, downloadCsv } from "@/lib/csv";
 import { Dialog } from "@headlessui/react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../../lib/AuthContext";
@@ -21,6 +23,7 @@ import { supabase } from "../../lib/supabase";
 import {
   Customer,
   getCustomers,
+  getAllCustomers,
   createCustomer,
   updateCustomer,
   deleteCustomer,
@@ -147,6 +150,7 @@ export default function CustomerList() {
   );
   const [searchLoading, setSearchLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
   const [activeFilters, setActiveFilters] = useState<{
     status?: string | null;
   }>(initialSettings.activeFilters);
@@ -392,6 +396,53 @@ export default function CustomerList() {
       // Always clear loading state - BOTH states to handle all scenarios
       setLoading(false);
       setSearchLoading(false);
+    }
+  }
+
+  // Exports every customer matching the current search/filters (all pages, not just this one).
+  async function handleExportCsv() {
+    setExporting(true);
+    try {
+      const filters = {
+        ...activeFilters,
+        startsWith: startsWithFilter || null,
+        divisions: activeDivisionTabs.length > 0 ? activeDivisionTabs : null,
+      };
+      const sort = {
+        search: debouncedSearch,
+        sortBy: sortOrder ? sortField : "company_name",
+        sortOrder: sortOrder || "asc",
+      } as const;
+      let rows: Customer[];
+      try {
+        rows = await getAllCustomers(filters, sort);
+      } catch {
+        // Same fallback as the list: divisions column may not exist
+        const { divisions: _d, ...filtersWithoutDiv } = filters;
+        rows = await getAllCustomers(filtersWithoutDiv, sort);
+      }
+      if (rows.length === 0) {
+        alert("No customers to export.");
+        return;
+      }
+      const csv = buildCsv(
+        ["Company Name", "Email", "Phone", "Address", "Status", "Divisions", "Created"],
+        rows.map((c) => [
+          c.company_name || c.name,
+          c.email,
+          c.phone,
+          c.address,
+          c.status,
+          (c.divisions || []).join("; "),
+          c.created_at ? c.created_at.slice(0, 10) : "",
+        ]),
+      );
+      downloadCsv(csv, "customers");
+    } catch (error) {
+      console.error("Error exporting customers:", error);
+      alert("Export failed. Please try again.");
+    } finally {
+      setExporting(false);
     }
   }
 
@@ -789,6 +840,16 @@ export default function CustomerList() {
               </div>
             )}
           </div>
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            disabled={exporting}
+            title="Download every customer matching the current search and filters"
+            className="inline-flex items-center justify-center rounded-none border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm hover:bg-neutral-50 disabled:opacity-60 dark:border-neutral-600 dark:bg-dark-150 dark:text-neutral-200 dark:hover:bg-dark-200"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            {exporting ? "Exporting..." : "Export CSV"}
+          </button>
           <button
             type="button"
             onClick={() => {

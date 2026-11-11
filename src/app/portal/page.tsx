@@ -1147,7 +1147,7 @@ export default function PortalLanding({
         window.open("https://armadillobase.vercel.app", "_blank");
         break;
       case "Scavenger Portal":
-        handleDivisionClick("scavenger");
+        window.open(companyConfig.scavengerUrl, "_blank");
         break;
       case "Office Admins Portal":
         handlePortalClick("Office Admins Portal", "/office");

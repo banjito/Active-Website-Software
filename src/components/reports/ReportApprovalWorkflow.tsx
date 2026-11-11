@@ -60,6 +60,7 @@ import "jspdf-autotable";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { supabase } from "@/lib/supabase";
 import { createBatchedRowLookup } from "@/lib/batchedRowLookup";
+import { summarizeCustomFormInstance } from "@/lib/customForms/instanceSummary";
 import { canApproveReports, canExportReports } from "@/lib/roles";
 import { BRAND_COLOR } from "@/lib/companyConfig";
 import {
@@ -115,6 +116,153 @@ const PRINTER_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" hei
 const PENCIL_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`;
 
 const FLAG_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>`;
+
+// ---------------------------------------------------------------------------
+// Review preview zoom. Zooms the report inside the preview iframe, like the
+// PDF viewer, instead of the whole browser page. The zoom sits in a
+// screen-only rule injected into the iframe, so printing is never scaled.
+// ---------------------------------------------------------------------------
+const REPORT_ZOOM_STEPS = [0.5, 0.67, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3];
+const REPORT_ZOOM_STYLE_ID = "review-preview-zoom";
+// Kept for the session, so the next report opens at the same zoom.
+let reportPreviewZoom = 1;
+
+const ZOOM_BTN_STYLE =
+  "width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:none;background:white;cursor:pointer;font-size:18px;line-height:1;color:#374151;border-radius:0;";
+const REPORT_ZOOM_CONTROLS_HTML = `
+  <div id="report-zoom-controls" style="position:absolute;top:12px;right:28px;z-index:2;display:flex;align-items:center;background:white;border:1px solid #d1d5db;box-shadow:0 1px 3px rgba(0,0,0,0.15);border-radius:0;">
+    <button id="report-zoom-out" title="Zoom out (Ctrl + scroll)" aria-label="Zoom out" style="${ZOOM_BTN_STYLE}">&minus;</button>
+    <button id="report-zoom-reset" title="Reset zoom" aria-label="Reset zoom" style="min-width:52px;height:32px;border:none;border-left:1px solid #e5e7eb;border-right:1px solid #e5e7eb;background:white;cursor:pointer;font-size:12px;color:#374151;border-radius:0;">100%</button>
+    <button id="report-zoom-in" title="Zoom in (Ctrl + scroll)" aria-label="Zoom in" style="${ZOOM_BTN_STYLE}">+</button>
+  </div>
+`;
+
+/** Wires the zoom buttons, Ctrl + scroll and Ctrl +/-/0 to the preview iframe. */
+function wireReportZoom() {
+  const iframe = document.querySelector(
+    'iframe[title="Report Preview"]',
+  ) as HTMLIFrameElement | null;
+  if (!iframe) return;
+  const label = document.getElementById("report-zoom-reset");
+
+  const apply = () => {
+    if (label) label.textContent = `${Math.round(reportPreviewZoom * 100)}%`;
+    try {
+      const doc = iframe.contentDocument;
+      if (!doc?.head) return;
+      let style = doc.getElementById(REPORT_ZOOM_STYLE_ID) as HTMLStyleElement | null;
+      if (!style) {
+        style = doc.createElement("style");
+        style.id = REPORT_ZOOM_STYLE_ID;
+        doc.head.appendChild(style);
+      }
+      // The report is laid out on a fixed letter-size sheet (8.5in; the
+      // preview's 0.25in padding stands in for the print margins), so it
+      // wraps exactly as it prints. Zoom scales that sheet; it never reflows,
+      // and a sheet wider than the window scrolls sideways.
+      doc.documentElement.setAttribute("data-review-sheet", "");
+      style.textContent = `@media screen {
+        html[data-review-sheet][data-review-sheet] {
+          zoom: ${reportPreviewZoom} !important;
+          background: #e5e7eb !important;
+        }
+        html[data-review-sheet] body {
+          width: 8.5in !important;
+          min-width: 8.5in !important;
+          max-width: none !important;
+          margin: 16px auto !important;
+          background: #ffffff !important;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.2) !important;
+          overflow: visible !important;
+        }
+        html[data-review-sheet] #report-container {
+          width: auto !important;
+          max-width: none !important;
+          margin: 0 !important;
+          overflow: visible !important;
+        }
+        /* Custom-form sections set to print landscape start their own 11in
+           page. Show them at that width (10.5in inside the 0.25in margins) as
+           a sheet of their own, extending past the portrait sheet, so they
+           wrap exactly as printed. */
+        html[data-review-sheet] .cf-page-landscape {
+          box-sizing: content-box !important;
+          width: 10.5in !important;
+          min-width: 10.5in !important;
+          max-width: none !important;
+          padding: 0.25in !important;
+          margin: 24px 0 24px -0.25in !important;
+          background: #ffffff !important;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.2) !important;
+          position: relative !important;
+        }
+        html[data-review-sheet] .cf-page-landscape::before {
+          content: "Landscape page";
+          position: absolute;
+          top: -18px;
+          left: 0;
+          font-size: 11px;
+          color: #6b7280;
+        }
+      }`;
+    } catch {
+      /* report not readable yet (still loading) */
+    }
+  };
+
+  const step = (direction: 1 | -1) => {
+    const current = REPORT_ZOOM_STEPS.findIndex((z) => z >= reportPreviewZoom - 0.001);
+    const index = current === -1 ? REPORT_ZOOM_STEPS.length - 1 : current;
+    const next = Math.min(
+      REPORT_ZOOM_STEPS.length - 1,
+      Math.max(0, index + direction),
+    );
+    reportPreviewZoom = REPORT_ZOOM_STEPS[next];
+    apply();
+  };
+  const reset = () => {
+    reportPreviewZoom = 1;
+    apply();
+  };
+
+  const zoomOut = document.getElementById("report-zoom-out");
+  const zoomIn = document.getElementById("report-zoom-in");
+  if (zoomOut) zoomOut.onclick = () => step(-1);
+  if (zoomIn) zoomIn.onclick = () => step(1);
+  if (label) label.onclick = reset;
+
+  // Inside the report, Ctrl + scroll and Ctrl +/-/0 zoom the report rather
+  // than the browser page. Re-attached each time the iframe loads (Edit and
+  // Flag swap its address).
+  const attach = () => {
+    apply();
+    try {
+      const win = iframe.contentWindow;
+      if (!win) return;
+      win.addEventListener(
+        "wheel",
+        (e: WheelEvent) => {
+          if (!e.ctrlKey && !e.metaKey) return;
+          e.preventDefault();
+          step(e.deltaY < 0 ? 1 : -1);
+        },
+        { passive: false },
+      );
+      win.addEventListener("keydown", (e: KeyboardEvent) => {
+        if (!e.ctrlKey && !e.metaKey) return;
+        if (e.key === "+" || e.key === "=") step(1);
+        else if (e.key === "-") step(-1);
+        else if (e.key === "0") reset();
+        else return;
+        e.preventDefault();
+      });
+    } catch {
+      /* not same-origin; buttons still work once readable */
+    }
+  };
+  iframe.addEventListener("load", attach);
+  apply();
+}
 
 export function ReportApprovalWorkflow({
   division,
@@ -1024,6 +1172,7 @@ export function ReportApprovalWorkflow({
           };
 
           const subMap: Record<string, string> = {};
+          const nameMap: Record<string, string> = {};
           // Rows are fetched a hundred at a time. One request per report timed out on
           // the biggest jobs, and a report with no answer was filed under 'Other'.
           const reportRows = createBatchedRowLookup();
@@ -1037,6 +1186,28 @@ export function ReportApprovalWorkflow({
               const fileUrl =
                 linkedAssetFileUrl ||
                 ((r as any)?.report_data?.file_url as string | undefined);
+              // Custom forms keep substation + identifier in their saved form
+              // data (same lookup as the job's Reports tab).
+              if (fileUrl?.startsWith("custom-form:/jobs/")) {
+                // ['jobId', 'custom-form', templateId, instanceId]
+                const cfParts = fileUrl.replace(REPORT_URL_PREFIX, "").split("/");
+                const instanceId = (cfParts[3] || "").split("?")[0];
+                if (!instanceId) return;
+                const inst = await reportRows
+                  .load("custom_form_instances", instanceId, "id, data")
+                  .catch(() => null);
+                if (!inst) return;
+                const { substation, identifier, templateName } =
+                  summarizeCustomFormInstance((inst as any).data);
+                if (substation) subMap[r.id] = substation;
+                if (identifier) {
+                  // Saved as "<template> – <date>"; show "<template> - <identifier>"
+                  const baseName =
+                    templateName || (r.title || "").split(" – ")[0].trim();
+                  if (baseName) nameMap[r.id] = `${baseName} - ${identifier}`;
+                }
+                return;
+              }
               if (!fileUrl || !fileUrl.startsWith("report:/jobs/")) return;
               const parts = fileUrl.replace(REPORT_URL_PREFIX, "").split("/");
               // parts can be:
@@ -1107,6 +1278,13 @@ export function ReportApprovalWorkflow({
             setReportSubstations((prev) => ({ ...prev, ...subMap }));
           } else {
             setReportSubstations(subMap);
+          }
+          if (Object.keys(nameMap).length > 0) {
+            setReports((prev) =>
+              prev.map((r) =>
+                nameMap[r.id] ? { ...r, title: nameMap[r.id] } : r,
+              ),
+            );
           }
         } catch {}
 
@@ -1951,7 +2129,8 @@ export function ReportApprovalWorkflow({
             </div>
 
             <!-- Report Content -->
-            <div style="flex:1;overflow:hidden;background:#f9fafb;">
+            <div style="flex:1;overflow:hidden;background:#f9fafb;position:relative;">
+              ${REPORT_ZOOM_CONTROLS_HTML}
               <iframe
                 src="${fullReportUrl}"
                 style="width:100%;height:100%;border:none;"
@@ -1962,6 +2141,8 @@ export function ReportApprovalWorkflow({
         </div>
       </div>
     `;
+
+    wireReportZoom();
 
     // Whether the reviewer has swapped the preview iframe for the live,
     // editable report, and whether that report currently has an open edit

@@ -42,6 +42,9 @@ const IR_COLUMNS: { label: string; key: string }[] = [
   { label: "N-G", key: "nToG" },
 ];
 
+const IR_CONFIGURATIONS = ["3-Wire + Ground", "4-Wire + Ground"];
+const IR_NEUTRAL_KEYS = ["aToN", "bToN", "cToN", "nToG"];
+
 const BUS_RES_KEYS = ["p1", "p2", "p3", "neutral"] as const;
 
 // A second, third, etc. busway on the same report. Busway 1 stays in the
@@ -73,9 +76,12 @@ const normalizeExtraBusways = (raw: any): ExtraBusway[] =>
     : [];
 
 // Measured reading x TCF, keeping a leading ">" (e.g. ">2000").
+// Text with no digits (e.g. "N/A") is copied over unchanged.
 const correctIrReading = (raw: string | undefined, tcf: number): string => {
   const measured = (raw || "").trim();
-  if (!measured || !tcf || Number.isNaN(tcf)) return "";
+  if (!measured) return "";
+  if (!/\d/.test(measured)) return measured;
+  if (!tcf || Number.isNaN(tcf)) return "";
   const n = parseFloat(
     measured.replace(/,/g, "").replace(/[^0-9eE+\-.]/g, ""),
   );
@@ -179,6 +185,8 @@ interface FormData {
     [key: string]: string;
   };
 
+  // IR wiring: "3-Wire + Ground" hides the neutral columns
+  irConfiguration: string;
   // Busway 1 name (shown once more busways are added) + busways 2, 3, ...
   buswayLabel: string;
   extraBusways: ExtraBusway[];
@@ -252,6 +260,7 @@ interface ReportData {
 
     testVoltage1: string;
     insulationResistance: { [key: string]: string };
+    irConfiguration?: string;
     buswayLabel: string;
     extraBusways: ExtraBusway[];
 
@@ -543,6 +552,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
       "N-G": "",
     },
 
+    irConfiguration: "4-Wire + Ground",
     buswayLabel: "",
     extraBusways: [],
 
@@ -649,29 +659,17 @@ const MetalEnclosedBuswayReport: React.FC = () => {
     };
 
     const tcf = Number(formData.tcf);
-    if (!tcf || Number.isNaN(tcf)) {
-      // Clear corrected values when TCF is invalid
-      const cleared: Record<string, string> = {} as any;
-      keys.forEach((k) => {
-        cleared[k] = "";
-      });
-      const changed = keys.some(
-        (k) =>
-          (formData.correctedInsulationResistance[k] || "") !==
-          (cleared[k] || ""),
-      );
-      if (changed) {
-        setFormData((prev) => ({
-          ...prev,
-          correctedInsulationResistance: cleared,
-        }));
-      }
-      return;
-    }
+    const tcfValid = !!tcf && !Number.isNaN(tcf);
 
     const computed: Record<string, string> = {} as any;
     keys.forEach((k) => {
-      const base = parseReading((formData.insulationResistance as any)[k]);
+      const raw = String((formData.insulationResistance as any)[k] ?? "").trim();
+      // Text like "N/A" (no digits) is copied straight across
+      if (raw && !/\d/.test(raw)) {
+        computed[k] = raw;
+        return;
+      }
+      const base = tcfValid ? parseReading(raw) : null;
       computed[k] = base === null ? "" : (base * tcf).toFixed(2);
     });
 
@@ -1184,6 +1182,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             nToG: J("insulation_resistance")?.correctedReadings?.nToG || "",
           },
 
+          irConfiguration: R("irConfiguration") || "4-Wire + Ground",
           buswayLabel: R("buswayLabel") || "",
           extraBusways: normalizeExtraBusways(R("extraBusways", [])),
 
@@ -1304,6 +1303,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
 
         testVoltage1: formData.testVoltage1,
         insulationResistance: formData.insulationResistance,
+        irConfiguration: formData.irConfiguration || "4-Wire + Ground",
         buswayLabel: formData.buswayLabel || "",
         extraBusways: formData.extraBusways || [],
 
@@ -1635,13 +1635,13 @@ const MetalEnclosedBuswayReport: React.FC = () => {
     />
   );
 
-  // Busway rows: the "Busway" name column only shows once a 2nd busway exists
+  // Busway rows: the "Busway" name column always shows so column widths stay fixed
   const extraBusways = formData.extraBusways || [];
-  const hasExtraBusways = extraBusways.length > 0;
+  const showBuswayColumn = true;
   const testInputClass = `block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`;
   const headerCellClass =
     "px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase";
-  const buswayHeader = hasExtraBusways ? (
+  const buswayHeader = showBuswayColumn ? (
     <th rowSpan={2} className={`${headerCellClass} align-bottom`}>
       Busway
     </th>
@@ -1658,17 +1658,24 @@ const MetalEnclosedBuswayReport: React.FC = () => {
     </div>
   ) : null;
   // Name cell for an extra busway. Editable tables get a remove button.
-  const extraBuswayNameCell = (index: number, editable: boolean) => {
+  const extraBuswayNameCell = (
+    index: number,
+    editable: boolean,
+    rowSpan?: number,
+  ) => {
     const row = extraBusways[index];
     if (!editable) {
       return (
-        <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white whitespace-nowrap">
+        <td
+          rowSpan={rowSpan}
+          className="px-3 py-2 text-sm text-neutral-900 dark:text-white whitespace-nowrap"
+        >
           {row.label || `Busway ${index + 2}`}
         </td>
       );
     }
     return (
-      <td className="px-3 py-2 min-w-[8rem]">
+      <td rowSpan={rowSpan} className="px-3 py-2 min-w-[8rem] align-middle">
         <div className="flex items-center gap-1">
           <input
             type="text"
@@ -1698,25 +1705,35 @@ const MetalEnclosedBuswayReport: React.FC = () => {
       </td>
     );
   };
-  const buswayOneNameCell = (editable: boolean) =>
-    !hasExtraBusways ? null : editable ? (
-      <td className="px-3 py-2 min-w-[8rem]">
+  // Single-busway reports default to "Busway"; multi-busway to "Busway 1"
+  const buswayOneDefault =
+    extraBusways.length > 0 ? "Busway 1" : "Busway";
+  const buswayOneNameCell = (editable: boolean, rowSpan?: number) =>
+    !showBuswayColumn ? null : editable ? (
+      <td rowSpan={rowSpan} className="px-3 py-2 min-w-[8rem] align-middle">
         <input
           type="text"
           name="buswayLabel"
           value={formData.buswayLabel}
           onChange={handleInputChange}
           readOnly={!isEditing}
-          placeholder="Busway 1"
+          placeholder={buswayOneDefault}
           className={testInputClass}
         />
       </td>
     ) : (
-      <td className="px-3 py-2 text-sm text-neutral-900 dark:text-white whitespace-nowrap">
-        {formData.buswayLabel || "Busway 1"}
+      <td
+        rowSpan={rowSpan}
+        className="px-3 py-2 text-sm text-neutral-900 dark:text-white whitespace-nowrap"
+      >
+        {formData.buswayLabel || buswayOneDefault}
       </td>
     );
-  const irTableClass = `min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 ir-table${hasExtraBusways ? " ir-has-label" : ""}`;
+  const isThreeWire = formData.irConfiguration === "3-Wire + Ground";
+  const visibleIrColumns = isThreeWire
+    ? IR_COLUMNS.filter((c) => !IR_NEUTRAL_KEYS.includes(c.key))
+    : IR_COLUMNS;
+  const irTableClass = `min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 ir-table${showBuswayColumn ? " ir-has-label" : ""}${isThreeWire ? " ir-3wire" : ""}`;
 
   return (
     <ReportWrapper isPrintMode={isPrintMode}>
@@ -2385,150 +2402,173 @@ const MetalEnclosedBuswayReport: React.FC = () => {
             {addBuswayButton}
           </section>
 
-          {/* Electrical Tests - Insulation Resistance */}
+          {/* Electrical Tests - Insulation Resistance: one section, measured
+              table then the temperature-corrected table under a subheading */}
           <section className="mb-6">
             <div className="w-full h-1 bg-brand mb-4"></div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
               Electrical Tests - Insulation Resistance
             </h2>
-            <div className="flex justify-end mb-2 space-x-4">
-              <div className="w-48 border border-neutral-300 dark:border-neutral-700 p-2">
-                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
-                  Test Voltage:
-                </label>
-                <select
-                  name="testVoltage1"
-                  value={formData.testVoltage1}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                >
-                  <option value="">Select Voltage</option>
-                  {INSULATION_TEST_VOLTAGES.map((voltage) => (
-                    <option key={voltage} value={voltage}>
-                      {voltage}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="w-48 border border-neutral-300 dark:border-neutral-700 p-2">
-                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
-                  Unit:
-                </label>
-                <select
-                  name="insulationResistanceUnit"
-                  value={formData.insulationResistanceUnit}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
-                >
-                  {INSULATION_RESISTANCE_UNITS.map((unit) => (
-                    <option key={unit.value} value={unit.value}>
-                      {unit.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            {/* Test conditions: one 1x6 row, styled like the Nameplate Data table */}
+            <table className="w-full table-fixed border-collapse border border-neutral-300 dark:border-neutral-700 print:border-black print-comment-table mb-4 text-sm text-neutral-900 dark:text-white">
+              <colgroup>
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <col key={i} style={{ width: "16.66%" }} />
+                ))}
+              </colgroup>
+              <tbody>
+                <tr>
+                  <td className="p-2 border border-neutral-300 dark:border-neutral-700 print:border-black">
+                    <div className="font-semibold">Test Voltage:</div>
+                    {isEditing ? (
+                      <>
+                        <select
+                          name="testVoltage1"
+                          value={formData.testVoltage1}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white print:hidden"
+                        >
+                          <option value="">Select Voltage</option>
+                          {INSULATION_TEST_VOLTAGES.map((voltage) => (
+                            <option key={voltage} value={voltage}>
+                              {voltage}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="mt-1 hidden print:block">
+                          {formData.testVoltage1 || ""}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="mt-1">{formData.testVoltage1 || ""}</div>
+                    )}
+                  </td>
+                  <td className="p-2 border border-neutral-300 dark:border-neutral-700 print:border-black">
+                    <div className="font-semibold">Temperature (°F):</div>
+                    <div className="mt-1">{formData.temperature || ""}</div>
+                  </td>
+                  <td className="p-2 border border-neutral-300 dark:border-neutral-700 print:border-black">
+                    <div className="font-semibold">Temperature (°C):</div>
+                    <div className="mt-1">
+                      {formData.temperature
+                        ? (
+                            ((parseFloat(formData.temperature) - 32) * 5) /
+                            9
+                          ).toFixed(1)
+                        : ""}
+                    </div>
+                  </td>
+                  <td className="p-2 border border-neutral-300 dark:border-neutral-700 print:border-black">
+                    <div className="font-semibold">TCF:</div>
+                    <div className="mt-1">
+                      {formData.tcf ? formData.tcf.toFixed(3) : ""}
+                    </div>
+                  </td>
+                  <td className="p-2 border border-neutral-300 dark:border-neutral-700 print:border-black">
+                    <div className="font-semibold">Units:</div>
+                    {isEditing ? (
+                      <>
+                        <select
+                          name="insulationResistanceUnit"
+                          value={formData.insulationResistanceUnit}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white print:hidden"
+                        >
+                          {INSULATION_RESISTANCE_UNITS.map((unit) => (
+                            <option key={unit.value} value={unit.value}>
+                              {unit.label}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="mt-1 hidden print:block">
+                          {formData.insulationResistanceUnit}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="mt-1">{formData.insulationResistanceUnit}</div>
+                    )}
+                  </td>
+                  <td className="p-2 border border-neutral-300 dark:border-neutral-700 print:border-black">
+                    <div className="font-semibold">Configuration:</div>
+                    {isEditing ? (
+                      <>
+                        <select
+                          name="irConfiguration"
+                          value={formData.irConfiguration || "4-Wire + Ground"}
+                          onChange={handleInputChange}
+                          className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white print:hidden"
+                        >
+                          {IR_CONFIGURATIONS.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="mt-1 hidden print:block">
+                          {formData.irConfiguration || "4-Wire + Ground"}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="mt-1">
+                        {formData.irConfiguration || "4-Wire + Ground"}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3 className="mt-6 mb-3 text-base font-semibold text-neutral-900 dark:text-white print:text-black">
+              Measured Values
+            </h3>
 
             <div className="overflow-x-auto">
               <table className={irTableClass}>
                 {/* Print-only column sizing */}
                 <colgroup>
-                  {hasExtraBusways && <col className="ir-label-col" />}
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-units-col" />
+                  {showBuswayColumn && <col className="ir-label-col" />}
+                  {visibleIrColumns.map((col) => (
+                    <col key={col.key} className="ir-col" />
+                  ))}
                 </colgroup>
                 <thead>
                   <tr>
                     {buswayHeader}
                     <th
-                      colSpan={10}
+                      colSpan={visibleIrColumns.length}
                       className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
                     >
                       Insulation Resistance
                     </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider ir-units">
-                      Units
-                    </th>
                   </tr>
                   <tr>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      A-B
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      B-C
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      C-A
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      A-N
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      B-N
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      C-N
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      A-G
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      B-G
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      C-G
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      N-G
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase"></th>
+                    {visibleIrColumns.map((col) => (
+                      <th key={col.key} className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
+                        {col.label}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                   <tr>
                     {buswayOneNameCell(true)}
-                    {[
-                      "A-B",
-                      "B-C",
-                      "C-A",
-                      "A-N",
-                      "B-N",
-                      "C-N",
-                      "A-G",
-                      "B-G",
-                      "C-G",
-                      "N-G",
-                    ].map((key) => (
-                      <td key={key} className="px-3 py-2">
+                    {visibleIrColumns.map((col) => (
+                      <td key={col.key} className="px-3 py-2">
                         <input
                           type="text"
-                          name={key}
-                          value={formData.insulationResistance[getDataKey(key)]}
+                          name={col.label}
+                          value={formData.insulationResistance[getDataKey(col.label)]}
                           onChange={handleInsulationChange}
                           readOnly={!isEditing}
                           className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                     ))}
-                    <td className="px-3 py-2 text-center text-sm text-neutral-900 dark:text-white ir-units">
-                      {formData.insulationResistanceUnit}
-                    </td>
                   </tr>
                   {extraBusways.map((row, index) => (
                     <tr key={index}>
                       {extraBuswayNameCell(index, true)}
-                      {IR_COLUMNS.map((col) => (
+                      {visibleIrColumns.map((col) => (
                         <td key={col.key} className="px-3 py-2">
                           <input
                             type="text"
@@ -2547,162 +2587,51 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                           />
                         </td>
                       ))}
-                      <td className="px-3 py-2 text-center text-sm text-neutral-900 dark:text-white ir-units">
-                        {formData.insulationResistanceUnit}
-                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
             {addBuswayButton}
-          </section>
 
-          {/* Electrical Tests - Temperature Corrected Insulation Resistance Values */}
-          <section className="mb-6">
-            <div className="w-full h-1 bg-brand mb-4"></div>
-            <h2 className="text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
-              Electrical Tests - Temperature Corrected Insulation Resistance
-              Values
-            </h2>
-            <div className="flex justify-end mb-2">
-              <div className="w-48 border border-neutral-300 dark:border-neutral-700 p-2">
-                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
-                  Test Voltage:
-                </label>
-                <input
-                  type="text"
-                  value={formData.testVoltage1}
-                  readOnly
-                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
-                />
-              </div>
-            </div>
-
-            {/* Temperature and TCF Information - CORRECTED VALUES SECTION */}
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
-                  Temperature (°F):
-                </label>
-                <input
-                  type="text"
-                  value={formData.temperature || ""}
-                  readOnly
-                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
-                  Temperature (°C):
-                </label>
-                <input
-                  type="text"
-                  value={
-                    formData.temperature
-                      ? (
-                          ((parseFloat(formData.temperature) - 32) * 5) /
-                          9
-                        ).toFixed(1)
-                      : ""
-                  }
-                  readOnly
-                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-white">
-                  TCF:
-                </label>
-                <input
-                  type="text"
-                  value={formData.tcf ? formData.tcf.toFixed(3) : ""}
-                  readOnly
-                  className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm dark:text-white"
-                />
-              </div>
-            </div>
+            {/* Temperature-corrected values: same section, smaller subheading
+                instead of a second section bar and title */}
+            <h3 className="mt-6 mb-3 text-base font-semibold text-neutral-900 dark:text-white print:text-black">
+              Temperature Corrected Values
+            </h3>
 
             <div className="overflow-x-auto">
               <table className={irTableClass}>
                 {/* Print-only column sizing */}
                 <colgroup>
-                  {hasExtraBusways && <col className="ir-label-col" />}
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-col" />
-                  <col className="ir-units-col" />
+                  {showBuswayColumn && <col className="ir-label-col" />}
+                  {visibleIrColumns.map((col) => (
+                    <col key={col.key} className="ir-col" />
+                  ))}
                 </colgroup>
                 <thead>
                   <tr>
                     {buswayHeader}
                     <th
-                      colSpan={10}
+                      colSpan={visibleIrColumns.length}
                       className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
                     >
                       Temperature Corrected Values
                     </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider ir-units">
-                      Units
-                    </th>
                   </tr>
                   <tr>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      A-B
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      B-C
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      C-A
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      A-N
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      B-N
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      C-N
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      A-G
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      B-G
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      C-G
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
-                      N-G
-                    </th>
-                    <th className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase"></th>
+                    {visibleIrColumns.map((col) => (
+                      <th key={col.key} className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase">
+                        {col.label}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                   <tr>
                     {buswayOneNameCell(false)}
-                    {[
-                      "A-B",
-                      "B-C",
-                      "C-A",
-                      "A-N",
-                      "B-N",
-                      "C-N",
-                      "A-G",
-                      "B-G",
-                      "C-G",
-                      "N-G",
-                    ].map((key) => {
-                      const dataKey = getDataKey(key);
+                    {visibleIrColumns.map((col) => {
+                      const dataKey = getDataKey(col.label);
                       const measured = (
                         formData.insulationResistance[dataKey] || ""
                       ).trim();
@@ -2712,7 +2641,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                         ? ">" + rawCorrected.replace(/^\s*>/, "")
                         : rawCorrected;
                       return (
-                        <td key={key} className="px-3 py-2">
+                        <td key={col.key} className="px-3 py-2">
                           <input
                             type="text"
                             value={displayCorrected}
@@ -2722,14 +2651,11 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                         </td>
                       );
                     })}
-                    <td className="px-3 py-2 text-center text-sm text-neutral-900 dark:text-white ir-units">
-                      {formData.insulationResistanceUnit}
-                    </td>
                   </tr>
                   {extraBusways.map((row, index) => (
                     <tr key={index}>
                       {extraBuswayNameCell(index, false)}
-                      {IR_COLUMNS.map((col) => (
+                      {visibleIrColumns.map((col) => (
                         <td key={col.key} className="px-3 py-2">
                           <input
                             type="text"
@@ -2742,9 +2668,6 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                           />
                         </td>
                       ))}
-                      <td className="px-3 py-2 text-center text-sm text-neutral-900 dark:text-white ir-units">
-                        {formData.insulationResistanceUnit}
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -3225,15 +3148,14 @@ if (typeof document !== "undefined") {
       .nameplate-print { display: table !important; width: 100% !important; border-collapse: collapse !important; }
       .nameplate-print td { border: 1px solid black !important; padding: 2px 4px !important; font-size: 9px !important; }
       .nameplate-screen { display: none !important; }
-      /* Insulation Resistance tables: narrow Units col on right */
+      /* Insulation Resistance tables: busway name column + readings (units live in the table above) */
       .ir-table { table-layout: fixed !important; width: 100% !important; }
       .ir-table .ir-col { width: 9% !important; }
-      .ir-table .ir-units-col { width: 10% !important; }
-      .ir-table .ir-units { font-size: 9px !important; }
-      /* Extra busways: name column first, readings narrower */
-      .ir-table.ir-has-label .ir-label-col { width: 12% !important; }
+      .ir-table.ir-has-label .ir-label-col { width: 20% !important; }
       .ir-table.ir-has-label .ir-col { width: 8% !important; }
-      .ir-table.ir-has-label .ir-units-col { width: 8% !important; }
+      /* 3-Wire + Ground: 6 reading columns */
+      .ir-table.ir-has-label.ir-3wire .ir-label-col { width: 22% !important; }
+      .ir-table.ir-has-label.ir-3wire .ir-col { width: 13% !important; }
       /* Visual & Mechanical standardized three-column layout */
       table.vm-standard { table-layout: fixed !important; width: 100% !important; }
       table.vm-standard thead th:nth-child(1),

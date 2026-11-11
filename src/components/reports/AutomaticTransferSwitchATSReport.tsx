@@ -1057,6 +1057,14 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
       style.id = "print-css-ats";
       style.textContent = `
         @media print {
+          /* Other reports' print sheets left-align every table input
+             (unscoped "table input"); this table's values stay centered. */
+          #report-container table.ats-ir-table td,
+          #report-container table.ats-ir-table input,
+          #report-container table.ats-ir-table select {
+            text-align: center !important;
+            text-align-last: center !important;
+          }
           body { margin: 0; padding: 20px; font-family: Arial, Helvetica, sans-serif; }
           .print\\:break-before-page { page-break-before: always; }
           .print\\:break-after-page { page-break-after: always; }
@@ -1426,12 +1434,12 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
       ({ ...initialInsulationRow } as any);
     return (
       <tr>
-        <td className="px-6 py-4 text-sm text-neutral-700 dark:text-white whitespace-nowrap">
+        <td className="px-3 py-4 text-sm text-center text-neutral-700 dark:text-white break-words">
           {title}
         </td>
         {(["p1", "p2", "p3"] as const).map((pole) => (
           <React.Fragment key={pole}>
-            <td className="px-3 py-4">
+            <td className="px-1 py-4">
               <input
                 type="text"
                 value={rowData[pole + "Reading"] || ""}
@@ -1446,7 +1454,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 className={`form-input w-full text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               />
             </td>
-            <td className="px-3 py-4">
+            <td className="px-1 py-4">
               <input
                 type="text"
                 value={calculateTempCorrectedReading(
@@ -1461,7 +1469,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
         ))}
         {hasNeutral ? (
           <React.Fragment>
-            <td className="px-3 py-4">
+            <td className="px-1 py-4">
               <input
                 type="text"
                 value={rowData.neutralReading || ""}
@@ -1476,7 +1484,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                 className={`form-input w-full text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               />
             </td>
-            <td className="px-3 py-4">
+            <td className="px-1 py-4">
               <input
                 type="text"
                 value={calculateTempCorrectedReading(
@@ -1494,7 +1502,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
             <td className="px-3 py-4 bg-neutral-50 dark:bg-dark-150"></td>
           </>
         )}
-        <td className="px-6 py-4">
+        <td className="px-1 py-4">
           <select
             value={units}
             onChange={(e) =>
@@ -1505,7 +1513,8 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
               )
             }
             disabled={!isEditing}
-            className={`form-select w-full ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+            className={`form-select w-full text-center ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+            style={{ textAlignLast: "center" }}
           >
             {unitOptions.map((u) => (
               <option key={u} value={u}>
@@ -2034,12 +2043,21 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
+            {/* Percentage columns so the table always fits the page width:
+                test points 22%, eight reading / @20°C columns 9% each, units 6%. */}
+            <table className="ats-ir-table w-full table-fixed divide-y divide-neutral-200 dark:divide-neutral-700">
+              <colgroup>
+                <col style={{ width: "22%" }} />
+                {Array.from({ length: 8 }, (_, i) => (
+                  <col key={i} style={{ width: "9%" }} />
+                ))}
+                <col style={{ width: "6%" }} />
+              </colgroup>
               <thead className="bg-neutral-50 dark:bg-dark-150">
                 <tr>
                   <th
                     rowSpan={2}
-                    className="px-6 py-3 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
+                    className="px-3 py-3 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
                   >
                     Test Points
                   </th>
@@ -2069,7 +2087,7 @@ const AutomaticTransferSwitchATSReport: React.FC = () => {
                   </th>
                   <th
                     rowSpan={2}
-                    className="px-6 py-3 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
+                    className="px-1 py-3 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider"
                   >
                     Units
                   </th>

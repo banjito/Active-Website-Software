@@ -95,6 +95,7 @@ import {
 } from "@/services/reportFieldFlagService";
 import { describeSupabaseError, withWriteRetry } from "@/lib/supabaseRetry";
 import { createBatchedRowLookup } from "@/lib/batchedRowLookup";
+import { summarizeCustomFormInstance } from "@/lib/customForms/instanceSummary";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { format } from "date-fns";
@@ -6464,24 +6465,13 @@ export default function JobDetail() {
             if (formSerials.length > 0) {
               serialUpdates[asset.id] = formSerials;
             }
-            let substation = "";
-            let identifier = "";
-            for (const sec of Object.values(sections)) {
-              if (!sec || typeof sec !== "object") continue;
-              const s = sec as Record<string, any>;
-              if (!substation && typeof s.substation === "string")
-                substation = s.substation;
-              if (!identifier && typeof s.identifier === "string")
-                identifier = s.identifier;
-              if (!identifier && typeof s.eqptLocation === "string")
-                identifier = s.eqptLocation;
+            const { substation, identifier, templateName } =
+              summarizeCustomFormInstance(instData);
+            if (substation) {
+              substationUpdates[asset.id] = substation;
             }
-            if (substation.trim()) {
-              substationUpdates[asset.id] = substation.trim();
-            }
-            if (identifier.trim() && instData?.templateName) {
-              nameUpdates[asset.id] =
-                `${instData.templateName} - ${identifier.trim()}`;
+            if (identifier && templateName) {
+              nameUpdates[asset.id] = `${templateName} - ${identifier}`;
             }
             return;
           }

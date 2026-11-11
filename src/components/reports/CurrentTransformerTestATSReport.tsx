@@ -1,5 +1,6 @@
 import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useState, useEffect } from "react";
+import { useReportScopeClass } from "./common/useReportScopeClass";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAssetFormPrefill } from "./useAssetFormPrefill";
 import { supabase } from "@/lib/supabase";
@@ -259,6 +260,7 @@ interface FormData {
 }
 
 const CurrentTransformerTestATSReport: React.FC = () => {
+  useReportScopeClass("rpt-ct-test-ats");
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
   const [currentReportId, setCurrentReportId] = useState<string | undefined>(
     reportId,
@@ -1798,7 +1800,8 @@ if (typeof document !== "undefined") {
         margin: 0 !important;
         border-radius: 0 !important;
       }
-      table input {
+      /* Scoped: unscoped, this left-aligned table inputs in every report. */
+      :where(html.rpt-ct-test-ats) table input {
         text-align: left !important;
       }
 

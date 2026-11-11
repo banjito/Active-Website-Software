@@ -1,5 +1,6 @@
 import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useState, useEffect } from "react";
+import { useReportScopeClass } from "./common/useReportScopeClass";
 import {
   useParams,
   useNavigate,
@@ -407,6 +408,7 @@ const tableStyles = {
 
 // Rename component
 const LowVoltageCircuitBreakerElectronicTripATSReport: React.FC = () => {
+  useReportScopeClass("rpt-lvcb-et-ats");
   const { id: jobId, reportId: initialReportId } = useParams<{
     id: string;
     reportId: string;
@@ -6475,13 +6477,17 @@ if (typeof document !== "undefined") {
         display: table-cell !important;
       }
 
+      /* Scoped: unscoped, this left-aligned table inputs in every report. */
+      :where(html.rpt-lvcb-et-ats) table input, :where(html.rpt-lvcb-et-ats) table select {
+        text-align: left !important;
+      }
+
       /* Specific input styling in tables */
       table input, table select {
         border: 1px solid black !important;
         padding: 2px 3px !important;
         margin: 0 !important;
         height: 12px !important;
-        text-align: left !important;
         width: 60px !important;
         font-size: 8px !important;
         background: white !important;
@@ -7271,7 +7277,6 @@ if (typeof document !== "undefined") {
       .primary-injection-main-table select,
       .primary-injection-poles-table input,
       .primary-injection-poles-table select {
-        text-align: left !important;
         text-overflow: clip !important;
         font-stretch: normal !important;
         letter-spacing: normal !important;
@@ -7280,6 +7285,26 @@ if (typeof document !== "undefined") {
         font-weight: normal !important;
         font-style: normal !important;
         line-height: 1.2 !important;
+      }
+      /* Left-align inputs, scoped to this report (unscoped, it reached every
+         report). :where() keeps the original specificity so the centered
+         overrides below still win. */
+      :where(html.rpt-lvcb-et-ats) input,
+      :where(html.rpt-lvcb-et-ats) select,
+      :where(html.rpt-lvcb-et-ats) textarea,
+      :where(html.rpt-lvcb-et-ats) .max-w-7xl input,
+      :where(html.rpt-lvcb-et-ats) .max-w-7xl select,
+      :where(html.rpt-lvcb-et-ats) .max-w-7xl textarea,
+      :where(html.rpt-lvcb-et-ats) .max-w-7xl table input,
+      :where(html.rpt-lvcb-et-ats) .max-w-7xl table select,
+      :where(html.rpt-lvcb-et-ats) .max-w-7xl table textarea,
+      :where(html.rpt-lvcb-et-ats) .primary-injection-table input,
+      :where(html.rpt-lvcb-et-ats) .primary-injection-table select,
+      :where(html.rpt-lvcb-et-ats) .primary-injection-main-table input,
+      :where(html.rpt-lvcb-et-ats) .primary-injection-main-table select,
+      :where(html.rpt-lvcb-et-ats) .primary-injection-poles-table input,
+      :where(html.rpt-lvcb-et-ats) .primary-injection-poles-table select {
+        text-align: left !important;
       }
       .text-center input,
       input.text-center,

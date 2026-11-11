@@ -165,8 +165,45 @@ function wireReportZoom() {
         html[data-review-sheet][data-review-sheet] {
           zoom: ${reportPreviewZoom} !important;
           background: #e5e7eb !important;
+          /* Some reports' print CSS sets html to 100vw. Under zoom, vw is
+             scaled too, so html ends up narrower/wider than the window and
+             the centered sheet drifts sideways. Let html size naturally. */
+          width: auto !important;
+          min-width: 0 !important;
+          max-width: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          /* Reports set html { height: 100% } and body { overflow-x: hidden },
+             which hides the sideways scroll bar. The page itself scrolls both
+             ways so a zoomed-in sheet wider than the window can be scrolled. */
+          height: auto !important;
+          overflow: auto !important;
+          /* Some reports hide every scroll bar (::-webkit-scrollbar
+             { display: none }). Setting scrollbar-color makes Chrome/Edge
+             ignore those rules and draw a normal scroll bar again. */
+          scrollbar-width: auto !important;
+          scrollbar-color: #9ca3af #e5e7eb !important;
+        }
+        /* Safari still uses the -webkit- rules, so restyle them visibly. */
+        html[data-review-sheet]::-webkit-scrollbar {
+          display: block !important;
+          width: 12px !important;
+          height: 12px !important;
+          background: #e5e7eb !important;
+        }
+        html[data-review-sheet]::-webkit-scrollbar-thumb {
+          display: block !important;
+          background: #9ca3af !important;
+          border-radius: 0 !important;
+        }
+        html[data-review-sheet]::-webkit-scrollbar-corner {
+          background: #e5e7eb !important;
         }
         html[data-review-sheet] body {
+          /* Anchor absolutely-positioned items (print titles, PASS/FAIL
+             boxes) to the sheet, not the window, so zoom can't move them
+             off the page. */
+          position: relative !important;
           width: 8.5in !important;
           min-width: 8.5in !important;
           max-width: none !important;
@@ -664,7 +701,7 @@ export function ReportApprovalWorkflow({
       sent_at: asset.sent_at,
       created_at: asset.created_at,
       report_data: { file_url: asset.file_url, urgency: asset.urgency },
-    } as TechnicalReport;
+    } as unknown as TechnicalReport;
   };
 
   // On the Rejected/Issue tab, also surface reports that are still approved/sent
@@ -930,7 +967,7 @@ export function ReportApprovalWorkflow({
               urgency: asset.urgency,
               substation: asset.substation,
             },
-          } as TechnicalReport;
+          } as unknown as TechnicalReport;
         });
 
         console.log("[ReportApproval] converted reports:", merged.length);
@@ -1374,7 +1411,7 @@ export function ReportApprovalWorkflow({
                 file_url: asset.file_url,
                 urgency: asset.urgency,
               },
-            } as TechnicalReport;
+            } as unknown as TechnicalReport;
           });
 
           // Apply report type filter if specified

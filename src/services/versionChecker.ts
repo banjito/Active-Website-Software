@@ -7,6 +7,15 @@ interface VersionInfo {
   timestamp: string;
 }
 
+function isEmbeddedFrame(): boolean {
+  try {
+    return window.self !== window.top;
+  } catch {
+    // Cross-origin parent blocks access to window.top -> we're framed.
+    return true;
+  }
+}
+
 export class VersionChecker {
   private static instance: VersionChecker;
   private currentVersion: string | null = null;
@@ -27,6 +36,11 @@ export class VersionChecker {
   }
 
   private async initialize() {
+    // Embedded copies of the app (report review preview iframe, PDF render
+    // frames) must not check: the main window already does, and the toast
+    // would land inside the embedded frame instead of the main screen.
+    if (isEmbeddedFrame()) return;
+
     // Get current version on startup
     this.currentVersion = await this.fetchVersion();
 

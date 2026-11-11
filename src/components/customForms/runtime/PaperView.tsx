@@ -50,8 +50,15 @@ function readState(): PaperViewState {
 }
 
 /** Paper view on/off and zoom, remembered per browser. */
-export function usePaperView() {
-  const [state, setState] = React.useState<PaperViewState>(readState);
+/**
+ * `disabled`: the page already renders its print stylesheet (the review
+ * window's preview). The saved paper-view setting must not apply there: paper
+ * view keeps each value's print copy hidden while print styles hide the input,
+ * which left every field blank.
+ */
+export function usePaperView(disabled = false) {
+  const [saved, setState] = React.useState<PaperViewState>(readState);
+  const state = disabled ? { ...saved, on: false } : saved;
   const update = (patch: Partial<PaperViewState>) =>
     setState((prev) => {
       const next = { ...prev, ...patch };

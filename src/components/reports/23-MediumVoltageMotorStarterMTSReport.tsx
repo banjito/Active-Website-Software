@@ -1,5 +1,6 @@
 import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
 import React, { useState, useEffect } from "react";
+import { useReportScopeClass } from "./common/useReportScopeClass";
 import {
   useParams,
   useNavigate,
@@ -473,6 +474,7 @@ const initialVisualMechanicalItems = [
 ];
 
 const MediumVoltageMotorStarterMTSReport: React.FC = () => {
+  useReportScopeClass("rpt-mv-motor-starter-mts");
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
   const [currentReportId, setCurrentReportId] = useState<string | undefined>(
     reportId,
@@ -4097,13 +4099,17 @@ if (typeof document !== "undefined") {
         border: 1.5px solid black !important;
       }
 
+      /* Scoped: unscoped, this left-aligned table inputs in every report. */
+      :where(html.rpt-mv-motor-starter-mts) table input, :where(html.rpt-mv-motor-starter-mts) table select {
+        text-align: left !important;
+      }
+
       /* Specific input styling in tables */
       table input, table select {
         border: 1px solid black !important;
         padding: 2px 3px !important;
         margin: 0 !important;
         height: 12px !important;
-        text-align: left !important;
         width: 60px !important;
         font-size: 8px !important;
         background: white !important;

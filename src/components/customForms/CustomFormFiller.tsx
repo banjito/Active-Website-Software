@@ -9,7 +9,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { reportTestDate } from "@/lib/customForms/equipment";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
@@ -107,6 +107,10 @@ export const CustomFormFiller: React.FC = () => {
     instanceId: string;
   }>();
   const navigate = useNavigate();
+  // The review window shows the report with ?print=true: read-only paper, like
+  // built-in reports. Its Edit button reopens it without the flag.
+  const [searchParams] = useSearchParams();
+  const previewOnly = searchParams.get("print") === "true";
   // Custom forms skip the app Layout, so they mount reviewer field flags here.
   const fieldFlags = useReportFieldFlags(true);
   const { user } = useAuth();
@@ -470,7 +474,7 @@ export const CustomFormFiller: React.FC = () => {
   const liveCalibration = useLiveEquipmentCalibration(template?.structure, formData);
   // Calibration is judged on the report's test date, not today.
   const testDate = React.useMemo(() => reportTestDate(template?.structure, formData), [template, formData]);
-  const renderControlOverride = useEquipmentControlOverride(formData, setFormDataByUser, false, liveCalibration, testDate);
+  const renderControlOverride = useEquipmentControlOverride(formData, setFormDataByUser, previewOnly, liveCalibration, testDate);
 
   /** Report context the template's declarative bindings resolve against. */
   const bindingValues = React.useMemo(
@@ -498,7 +502,12 @@ export const CustomFormFiller: React.FC = () => {
     [jobDetails, user],
   );
 
-  const paper = usePaperView();
+  // Pages shown as paper by ReportWrapper (print styles rendered on screen).
+  const printStylesOnScreen =
+    previewOnly ||
+    searchParams.get("embedded") === "true" ||
+    searchParams.get("preview") === "true";
+  const paper = usePaperView(printStylesOnScreen);
   // Formulas may read the shared lookup tables; re-render once they load.
   useLookupTables();
   // A saved report without the mark keeps printing as it was issued.
@@ -508,6 +517,7 @@ export const CustomFormFiller: React.FC = () => {
     formData,
     applyMutation,
     setFormData: setFormDataByUser,
+    readOnly: previewOnly,
     renderControlOverride,
     bindingValues,
     instanceRows,
@@ -756,7 +766,7 @@ export const CustomFormFiller: React.FC = () => {
   // last edit (never a locked/approved one, and never a brand-new form, which
   // is created on the first manual save).
   useEffect(() => {
-    if (!hasUnsavedChanges || !existingInstanceId || pendingDraft) return;
+    if (!hasUnsavedChanges || !existingInstanceId || pendingDraft || previewOnly) return;
     const timer = window.setTimeout(() => {
       const locked = document.getElementById("report-container")?.dataset.reportLocked === "true";
       if (!locked) handleSave({ silent: true });
@@ -818,7 +828,11 @@ export const CustomFormFiller: React.FC = () => {
   }
 
   return (
-    <ReportWrapper wide>
+    <ReportWrapper
+      wide
+      isPrintMode={previewOnly}
+      isEditing={previewOnly ? false : hasUnsavedChanges}
+    >
       <CustomFormPrintHeader template={template} status={status} />
       {paper.on && <PaperViewStyles />}
 

@@ -124,6 +124,7 @@ import { PublicOfferSigning } from "./pages/hr/offers/PublicOfferSigning";
 const PublicChangeOrderSigning = React.lazy(
   () => import("./pages/changeOrders/PublicChangeOrderSigning"),
 );
+const OAuthConsent = React.lazy(() => import("./components/auth/OAuthConsent"));
 import { CandidateTracking } from "./pages/hr/recruiting/CandidateTracking";
 import { TalentPool } from "./pages/hr/recruiting/TalentPool";
 import { InterviewScheduling } from "./pages/hr/recruiting/InterviewScheduling";
@@ -659,6 +660,17 @@ function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
+                  {/* Supabase OAuth server approval page (ampOS Claude connector). */}
+                  <Route
+                    path="/oauth/consent"
+                    element={
+                      <RequireAuth>
+                        <React.Suspense fallback={null}>
+                          <OAuthConsent />
+                        </React.Suspense>
+                      </RequireAuth>
+                    }
+                  />
                   <Route
                     path="/auth/quickbooks/callback"
                     element={<QuickBooksCallback />}

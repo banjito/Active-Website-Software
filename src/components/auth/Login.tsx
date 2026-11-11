@@ -162,9 +162,13 @@ export default function Login() {
   // Where to send the user after a successful sign-in. RequireAuth redirects
   // unauthenticated users here with state={{ from: location }}, so we honor that
   // (e.g. /sales-dashboard/mobile-log) and fall back to /portal otherwise.
-  const redirectTo =
-    (location.state as { from?: { pathname?: string } } | null)?.from
-      ?.pathname || "/portal";
+  // Keeps the query string too: /oauth/consent needs its ?authorization_id.
+  const fromLocation = (
+    location.state as { from?: { pathname?: string; search?: string } } | null
+  )?.from;
+  const redirectTo = fromLocation?.pathname
+    ? `${fromLocation.pathname}${fromLocation.search ?? ""}`
+    : "/portal";
 
   // Store the current theme and force light mode
   useEffect(() => {

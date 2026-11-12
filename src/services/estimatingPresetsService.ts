@@ -6,6 +6,7 @@
  */
 
 import { supabase } from "../lib/supabase";
+import { DEFAULT_ESTIMATING_PRESETS as SHARED_ESTIMATING_DEFAULTS } from "../lib/estimatePricing";
 
 export interface EstimatingPresets {
   id: string;
@@ -64,42 +65,14 @@ export interface EstimatingPresets {
   updated_by: string | null;
 }
 
-// Default values if no presets exist in the database.
-// NOTE: proposal_* template fields are deliberately omitted — they are managed
-// by the Proposal Template tab, and resetEstimatingPresets() must not wipe
-// admin-edited letter text when resetting the numeric presets.
+// Default values if no presets exist in the database. The numbers live in
+// supabase/functions/_shared/estimateMath.ts (shared with the AI connector).
+// proposal_* template fields are deliberately omitted: resetEstimatingPresets()
+// must not wipe admin-edited letter text.
 export const DEFAULT_ESTIMATING_PRESETS: Omit<
   EstimatingPresets,
   "id" | "created_at" | "updated_at" | "updated_by"
-> = {
-  // General
-  default_hourly_rate: 240.0,
-  overtime_rate: 360.0,
-  double_time_rate: 480.0,
-  default_tax_factor: 1.09,
-  default_markup_factor: 1.3,
-  default_number_of_men: 2,
-  default_hours_per_day: 8,
-
-  // Travel - Vehicle
-  default_number_of_vehicles: 1,
-  default_vehicle_cost_per_mile: 3.0,
-  default_average_speed: 50,
-
-  // Travel - Per Diem & Lodging
-  default_per_diem_rate: 65.0,
-  default_lodging_rate: 210.0,
-  default_local_miles_per_day: 50,
-
-  // Travel - Flights
-  default_flight_number_of_men: 2,
-  default_flight_rate: 600.0,
-  default_flight_luggage_fees: 50.0,
-
-  // Travel - Rental Car
-  default_rental_number_of_cars: 1,
-  default_rental_rate: 750.0,
-};
+> = SHARED_ESTIMATING_DEFAULTS;
 
 /**
  * Fetch the current estimating presets

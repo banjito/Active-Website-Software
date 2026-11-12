@@ -1,4 +1,5 @@
-// Tools Claude can call. Each one is a fixed, read-only question: never raw SQL.
+// Tools Claude can call. Each one is a fixed question, never raw SQL. All are
+// read-only except create_estimate and update_estimate (estimates.ts).
 // Every query uses ctx.supabase, which is signed in as the person using Claude,
 // so row security limits results exactly like the app does.
 //
@@ -28,6 +29,7 @@ import {
 } from "./lib.ts";
 import { parseFileUrl, splitReportName } from "./reports.ts";
 import { OFFICE_TOOLS } from "./office.ts";
+import { ESTIMATE_TOOLS } from "./estimates.ts";
 
 export interface Tool {
   name: string;
@@ -713,4 +715,4 @@ const FIELD_TOOLS: Tool[] = [
 ];
 
 /** Every tool the connector offers. mcp.ts hides ones whose `allowed` says no. */
-export const TOOLS: Tool[] = [...FIELD_TOOLS, ...OFFICE_TOOLS];
+export const TOOLS: Tool[] = [...FIELD_TOOLS, ...OFFICE_TOOLS, ...ESTIMATE_TOOLS];

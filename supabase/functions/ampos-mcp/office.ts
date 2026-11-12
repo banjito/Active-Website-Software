@@ -1,10 +1,10 @@
-// Office pack: Change Orders, sales pipeline, quotes, estimates, RFIs, schedule.
+// Office pack: Change Orders, sales pipeline, quotes, RFIs, schedule.
 // Read-only. Sales tools carry `allowed`, so people without the app's Sales
-// portal never see them (see access.ts).
+// portal never see them (see access.ts). Estimates live in estimates.ts.
 //
 // Prices: use opportunities.quoted_amount (what the app recorded as quoted).
-// Estimate JSON totals (grandTotal etc.) are NOT the price; the app computes the
-// price with src/lib/estimatePricing.ts, which isn't mirrored here.
+// Estimate JSON totals (grandTotal etc.) are NOT the price; estimates.ts prices
+// estimates with the app's own math (_shared/estimateMath.ts).
 
 import { canUseSales } from "./access.ts";
 import {
@@ -40,7 +40,7 @@ const addDays = (days: number): string => {
   return d.toISOString().slice(0, 10);
 };
 
-async function resolveOpportunity(ctx: Parameters<Tool["run"]>[1], args: Row): Promise<Row> {
+export async function resolveOpportunity(ctx: Parameters<Tool["run"]>[1], args: Row): Promise<Row> {
   const id = str(args.opportunity_id);
   const quote = str(args.quote_number);
   if (!id && !quote) throw new Error("Give a quote_number or an opportunity_id.");
@@ -325,59 +325,6 @@ export const OFFICE_TOOLS: Tool[] = [
       return { quote_number: opp.quote_number, title: opp.title, count: (data ?? []).length, rfis: data ?? [] };
     },
   },
-  {
-    name: "get_estimate",
-    title: "Read an estimate's scope",
-    description:
-      "One estimate's stored scope: line items, labor, equipment, travel. Use it to compare scope " +
-      "between jobs. Totals inside the estimate are NOT the price: use the opportunity's " +
-      "quoted_amount for what was quoted. Look up by estimate_id, or quote_number for the newest one.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        estimate_id: { type: "string" },
-        quote_number: { type: "string" },
-      },
-      additionalProperties: false,
-    },
-    annotations: READ_ONLY,
-    allowed: salesOnly,
-    async run(args, ctx) {
-      let q = ctx.supabase
-        .schema("business")
-        .from("estimates")
-        .select("id, opportunity_id, quote_number, status, data, travel_data, created_at, updated_at");
-      if (str(args.estimate_id)) q = q.eq("id", str(args.estimate_id));
-      else if (str(args.quote_number)) q = q.eq("quote_number", str(args.quote_number));
-      else throw new Error("Give an estimate_id or a quote_number.");
-      const { data, error } = await q.order("updated_at", { ascending: false }).limit(1);
-      if (error) fail("Couldn't read the estimate", error);
-      if (!data?.length) throw new Error("No estimate found, or your account can't see it.");
-      const est = data[0] as Row;
-      // Data is sometimes JSON stored as a string inside jsonb.
-      const parse = (v: unknown) => {
-        if (typeof v !== "string") return v;
-        try {
-          return JSON.parse(v);
-        } catch {
-          return v;
-        }
-      };
-      const body = trimDeep({ scope: parse(est.data), travel: parse(est.travel_data) });
-      let text = JSON.stringify(body);
-      const big = text.length > 100_000;
-      if (big) text = text.slice(0, 100_000);
-      return {
-        estimate_id: est.id,
-        quote_number: est.quote_number,
-        status: est.status,
-        updated_at: est.updated_at,
-        price_note: "Totals inside the estimate are not the quoted price. Use get_opportunity for quoted_amount.",
-        ...(big ? { note: "Estimate too large; first part only.", partial: text } : { estimate: body }),
-      };
-    },
-  },
-
   // --------------------------------------------------------------- schedule
   {
     name: "get_schedule",

@@ -23,7 +23,14 @@ const INSTRUCTIONS =
   "Jobs have numbers like 26103; test reports have codes like 26103-203; action items " +
   "have codes like 26103-203-2. Equipment assets live at customer sites and link to their " +
   "test reports. For NETA questions, search the standards and cite section or table numbers. " +
-  "All tools are read-only.";
+  "All tools are read-only except create_estimate and update_estimate, which save to ampOS. " +
+  "Estimates: an opportunity (quote number like 4189) holds estimate versions v1, v2... " +
+  "To build one from drawings: list the equipment in scope, look up standard techs and hours " +
+  "with search_estimate_library, group rows under section rows (by area or equipment type), " +
+  "one row per equipment type with a quantity, and put assumptions and sheet references in " +
+  "row notes. Never invent hours when the library has the item. Show the person the rows and " +
+  "totals and get a yes before saving. Quote prices from get_estimate (NET 30/60/90), never " +
+  "from your own math.";
 
 type JsonRpcId = string | number | null;
 type JsonRpcMessage = {

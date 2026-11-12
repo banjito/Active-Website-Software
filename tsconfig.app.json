@@ -31,6 +31,6 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "supabase/functions/_shared/estimateMath.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

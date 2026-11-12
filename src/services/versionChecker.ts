@@ -1,6 +1,13 @@
 // Automatic version checker - notifies users when a new version is deployed
 // so they can refresh on their own terms (no surprise auto-reload)
 import { toast } from "../components/ui/toast";
+import { getPreferenceSync } from "@/services/userPreferencesService";
+import {
+  UPDATE_SOUND_DEFAULT,
+  UPDATE_SOUND_PREF,
+  playUpdateSound as playChosenSound,
+  type UpdateSoundId,
+} from "@/lib/updateSound";
 
 interface VersionInfo {
   version: string;
@@ -118,15 +125,10 @@ export class VersionChecker {
   }
 
   private playUpdateSound() {
-    try {
-      const audio = new Audio("/update.mp3");
-      audio.volume = 0.5;
-      // Autoplay can be blocked if the user hasn't interacted with the page yet.
-      // The toast is the real notification, so a silent failure is fine.
-      void audio.play().catch(() => {});
-    } catch {
-      // Ignore - sound is a nicety, not a requirement
-    }
+    // Each user picks their sound (or silence) in the Settings menu.
+    playChosenSound(
+      getPreferenceSync<UpdateSoundId>(UPDATE_SOUND_PREF, UPDATE_SOUND_DEFAULT),
+    );
   }
 
   private handleUpdate(newVersion: string) {

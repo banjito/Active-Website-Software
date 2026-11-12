@@ -165,7 +165,61 @@ const CONFIGURATION_OPTIONS = ["Select One", "3 wire", "4 wire"];
 // styles (html gets .print-emulated or .force-print), so these must stay off
 // there or the table spills past the page. :where() adds no specificity.
 const LIVE_EDIT = ":where(html:not(.print-emulated):not(.force-print))";
+// Sizes a From/To box to its text so the table cell can center it vertically.
+// A fixed-height box always draws its text at the top.
+const autoSizeTextarea = (el: HTMLTextAreaElement | null) => {
+  if (!el) return;
+  el.style.height = "auto";
+  el.style.height = `${el.scrollHeight}px`;
+};
+
 const SCREEN_TABLE_STYLES = `
+      /* Every value in the electrical tests table sits in the middle of its
+         cell, both ways, on screen, in review and in print. text-align-last
+         is what centers a dropdown's chosen value in Safari/iPad. */
+      /* "html body ... #report-container" outranks the shared print rules in
+         ReportWrapper (#report-container td { vertical-align: top }). */
+      html body .low-voltage-cable-ats-report #report-container table.electrical-tests-table td,
+      html body .low-voltage-cable-ats-report table.electrical-tests-table td {
+        text-align: center !important;
+        vertical-align: middle !important;
+      }
+      /* Fields sit in the normal flow (no absolute offsets) so the cell's
+         middle alignment centers them, whatever the row height. */
+      html body .low-voltage-cable-ats-report #report-container table.electrical-tests-table td > input,
+      html body .low-voltage-cable-ats-report #report-container table.electrical-tests-table td > select,
+      html body .low-voltage-cable-ats-report table.electrical-tests-table td > input,
+      html body .low-voltage-cable-ats-report table.electrical-tests-table td > select {
+        position: static !important;
+        transform: none !important;
+        display: block !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        text-indent: 0 !important;
+      }
+      /* An old print rule gave these 24px minimum height, which only mattered
+         while they floated over the cell. In the flow it would make rows tall. */
+      @media print {
+        html body .low-voltage-cable-ats-report #report-container table.electrical-tests-table td > input,
+        html body .low-voltage-cable-ats-report table.electrical-tests-table td > input {
+          min-height: 0 !important;
+          height: auto !important;
+        }
+      }
+      html body .low-voltage-cable-ats-report #report-container table.electrical-tests-table input,
+      html body .low-voltage-cable-ats-report #report-container table.electrical-tests-table select,
+      html body .low-voltage-cable-ats-report #report-container table.electrical-tests-table textarea,
+      html body .low-voltage-cable-ats-report #report-container table.electrical-tests-table td > div,
+      html body .low-voltage-cable-ats-report table.electrical-tests-table input,
+      html body .low-voltage-cable-ats-report table.electrical-tests-table select,
+      html body .low-voltage-cable-ats-report table.electrical-tests-table textarea,
+      html body .low-voltage-cable-ats-report table.electrical-tests-table td > div {
+        text-align: center !important;
+        text-align-last: center !important;
+      }
       @media screen {
         ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table {
           min-width: 1320px;
@@ -194,13 +248,18 @@ const SCREEN_TABLE_STYLES = `
           min-height: 32px !important;
         }
 
+        /* From/To boxes grow to fit their text (see autoSizeTextarea), so the
+           cell can center them; no tall fixed height leaving text at the top. */
         ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table textarea {
-          min-height: 46px !important;
+          min-height: 32px !important;
+          overflow: hidden !important;
         }
 
-        /* Keep the From value clear of the remove-row button */
+        /* Keep the From value clear of the remove-row button, with equal
+           space on the right so the value stays centered. */
         ${LIVE_EDIT} .low-voltage-cable-ats-report .electrical-tests-table tbody tr td:first-child textarea {
           padding-left: 20px !important;
+          padding-right: 20px !important;
         }
 
         /* Highlight the field being typed into */
@@ -2064,6 +2123,8 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
           background: transparent !important;
           width: 100% !important;
           height: auto !important;
+          /* Fit the text so the cell centers it (rows alone leaves it high) */
+          field-sizing: content !important;
           min-height: 16px !important;
           max-height: none !important;
           word-wrap: break-word !important;
@@ -3164,9 +3225,10 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
             <div className="hidden print:block">
               <table className="w-full table-fixed border-collapse border border-neutral-300 print:border-black print:border text-[0.85rem]">
                 <colgroup>
-                  <col style={{ width: "33.33%" }} />
-                  <col style={{ width: "33.33%" }} />
-                  <col style={{ width: "33.33%" }} />
+                  <col style={{ width: "25%" }} />
+                  <col style={{ width: "25%" }} />
+                  <col style={{ width: "25%" }} />
+                  <col style={{ width: "25%" }} />
                 </colgroup>
                 <tbody>
                   <tr>
@@ -3184,14 +3246,14 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                         {formData.conductorMaterial || ""}
                       </div>
                     </td>
-                  </tr>
-                  <tr>
                     <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                       <div className="font-semibold">Insulation Type:</div>
                       <div className="mt-0">
                         {formData.insulationType || ""}
                       </div>
                     </td>
+                  </tr>
+                  <tr>
                     <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                       <div className="font-semibold">System Voltage:</div>
                       <div className="mt-0">{formData.systemVoltage || ""}</div>
@@ -3200,15 +3262,12 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                       <div className="font-semibold">Rated Voltage:</div>
                       <div className="mt-0">{formData.ratedVoltage || ""}</div>
                     </td>
-                  </tr>
-                  <tr>
-                    <td
-                      className="p-2 align-top border border-neutral-300 print:border-black print:border"
-                      colSpan={3}
-                    >
+                    <td className="p-2 align-top border border-neutral-300 print:border-black print:border">
                       <div className="font-semibold">Length:</div>
                       <div className="mt-0">{formData.length || ""}</div>
                     </td>
+                    {/* Intentionally blank */}
+                    <td className="p-2 align-top border border-neutral-300 print:border-black print:border" />
                   </tr>
                 </tbody>
               </table>
@@ -3300,7 +3359,12 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
               Electrical Tests
             </h2>
 
-            <div className="flex justify-end mb-4 gap-4">
+            {/* Editing only: test voltage already prints under the table and
+                the set count is obvious from the rows. isPrintMode covers the
+                PDF export, which renders with screen styles. */}
+            <div
+              className={`flex justify-end mb-4 gap-4 print:hidden ${isPrintMode ? "hidden" : ""}`}
+            >
               <div className="w-48">
                 <label
                   htmlFor="numberOfCables"
@@ -3534,13 +3598,15 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                                 data-position={`${(set.id - 1) * 2}-0`}
                                 aria-label={`Set ${set.id} From`}
                                 value={set.from}
-                                onChange={(e) =>
+                                ref={(el) => autoSizeTextarea(el)}
+                                onChange={(e) => {
+                                  autoSizeTextarea(e.currentTarget);
                                   handleTestSetChange(
                                     set.id,
                                     "from",
                                     e.target.value,
-                                  )
-                                }
+                                  );
+                                }}
                                 onKeyDown={(e) =>
                                   handleKeyDown(e, {
                                     row: (set.id - 1) * 2,
@@ -3548,7 +3614,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                                   })
                                 }
                                 className="w-full text-xs text-center text-neutral-900 dark:text-white border-none bg-transparent resize-none"
-                                rows={2}
+                                rows={1}
                                 style={{
                                   minHeight: "28px",
                                   height: "auto",
@@ -3570,7 +3636,6 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                               <div
                                 className="text-xs text-center w-full text-neutral-900 dark:text-white"
                                 style={{
-                                  minHeight: "28px",
                                   lineHeight: "1.1",
                                   fontSize: "9px",
                                   padding: "2px 1px",
@@ -3596,13 +3661,15 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                               data-position={`${(set.id - 1) * 2}-1`}
                               aria-label={`Set ${set.id} To`}
                               value={set.to}
-                              onChange={(e) =>
+                              ref={(el) => autoSizeTextarea(el)}
+                              onChange={(e) => {
+                                autoSizeTextarea(e.currentTarget);
                                 handleTestSetChange(
                                   set.id,
                                   "to",
                                   e.target.value,
-                                )
-                              }
+                                );
+                              }}
                               onKeyDown={(e) =>
                                 handleKeyDown(e, {
                                   row: (set.id - 1) * 2,
@@ -3610,7 +3677,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                                 })
                               }
                               className="w-full text-xs text-center text-neutral-900 dark:text-white border-none bg-transparent resize-none"
-                              rows={2}
+                              rows={1}
                               style={{
                                 minHeight: "28px",
                                 height: "auto",
@@ -3621,7 +3688,7 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                                 whiteSpace: "pre-wrap",
                                 lineHeight: "1.1",
                                 fontSize: "9px",
-                                padding: "2px 1px 2px 10px",
+                                padding: "2px 1px",
                                 resize: "none",
                                 border: "none",
                                 outline: "none",
@@ -3632,7 +3699,6 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                             <div
                               className="text-xs text-center w-full text-neutral-900 dark:text-white"
                               style={{
-                                minHeight: "28px",
                                 lineHeight: "1.1",
                                 fontSize: "9px",
                                 padding: "2px 1px",
@@ -3715,6 +3781,12 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                             className="px-1 py-0.5 text-center border border-neutral-300 dark:border-neutral-600"
                             key={`${set.id}-reading-${key}`}
                           >
+                            {/* View/print/review: plain text, like the 20°C
+                                row, so it centers exactly. A read-only input
+                                draws its text off-center in print. */}
+                            {!isEditMode ? (
+                              set.readings[key as keyof typeof set.readings]
+                            ) : (
                             <input
                               type="text"
                               data-position={`${(set.id - 1) * 2}-${idx + 3}`}
@@ -3736,8 +3808,8 @@ const TwelveSetsLowVoltageCableTestForm: React.FC = () => {
                                 })
                               }
                               className="form-input text-xs py-1 px-1 text-center w-full text-neutral-900 dark:text-white border-none bg-transparent"
-                              readOnly={!isEditMode}
                             />
+                            )}
                           </td>
                         ))}
 

@@ -1158,6 +1158,16 @@ export default function FieldEquipmentList() {
     overdue: number;
   }
 
+  // Division: a city page shows only that city's equipment. Field Tech (All) shows
+  // everything unless narrowed with the Division filter. Shared by the list and the
+  // Location picker, so the picker's counts match what the list will show.
+  const inDivisionScope = (item: FieldEquipment): boolean => {
+    const activeDivision = pageDivision ?? divisionFilter;
+    if (activeDivision === "__unassigned__") return !item.division;
+    if (activeDivision) return item.division === activeDivision;
+    return true;
+  };
+
   const locationOptions = (): LocationOption[] => {
     const options = new Map<string, LocationOption>();
 
@@ -1181,7 +1191,9 @@ export default function FieldEquipmentList() {
     for (const truck of trucks) add(`truck:${truck.id}`, truck.name, "", "Truck", 1);
 
     // People and any unresolved holders only show up when they are actually holding kit.
+    // Counted within this page's division, or a city page offers "12 here" and shows none.
     for (const item of equipment) {
+      if (!inDivisionScope(item)) continue;
       const holder = holderOf(item);
       add(holder.key, holder.label, "", holder.kind as LocationOption["kind"], holder.order);
       const option = options.get(holder.key)!;
@@ -2079,14 +2091,7 @@ export default function FieldEquipmentList() {
       filtered = filtered.filter((item) => item.is_rented === true);
     }
 
-    // Division: a city page shows only that city's equipment. Field Tech (All) shows
-    // everything unless narrowed with the Division filter.
-    const activeDivision = pageDivision ?? divisionFilter;
-    if (activeDivision === "__unassigned__") {
-      filtered = filtered.filter((item) => !item.division);
-    } else if (activeDivision) {
-      filtered = filtered.filter((item) => item.division === activeDivision);
-    }
+    filtered = filtered.filter(inDivisionScope);
 
     switch (activeTab) {
       case "in-cal":

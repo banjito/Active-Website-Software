@@ -47,6 +47,8 @@ export interface Customer {
   // See @/lib/paymentTerms.
   allowed_payment_terms?: string[] | null;
   payment_terms_note?: string | null;
+  /** % held back from each payment until the job is done. Null or 0 = none. */
+  retainage_pct?: number | null;
 }
 
 export const DIVISION_OPTIONS = [

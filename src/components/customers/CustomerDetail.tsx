@@ -142,6 +142,7 @@ export default function CustomerDetail() {
     brand_primary: string;
     allowed_payment_terms: string[];
     payment_terms_note: string;
+    retainage_pct: string;
   }>({
     company_name: "",
     email: "",
@@ -153,6 +154,7 @@ export default function CustomerDetail() {
     brand_primary: "",
     allowed_payment_terms: [],
     payment_terms_note: "",
+    retainage_pct: "",
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
@@ -378,6 +380,10 @@ export default function CustomerDetail() {
           customerData.allowed_payment_terms,
         ),
         payment_terms_note: customerData.payment_terms_note || "",
+        retainage_pct:
+          customerData.retainage_pct != null
+            ? String(Number(customerData.retainage_pct))
+            : "",
       });
       setLogoFile(null);
       setLogoPreviewUrl(null);
@@ -477,8 +483,19 @@ export default function CustomerDetail() {
         brand_primary,
         allowed_payment_terms,
         payment_terms_note,
+        retainage_pct,
         ...rest
       } = customerEditForm;
+
+      const retainageText = retainage_pct.trim().replace(/%$/, "");
+      const retainage = retainageText === "" ? null : Number(retainageText);
+      if (retainage != null && (!Number.isFinite(retainage) || retainage < 0 || retainage > 100)) {
+        throw new Error("Retainage must be a % from 0 to 100.");
+      }
+      const nextRetainage = retainage || null;
+      // Only sent when changed, so saving still works before customer_retainage.sql is run
+      const retainageChanged =
+        nextRetainage !== (customer.retainage_pct != null ? Number(customer.retainage_pct) || null : null);
 
       const normalizedColor = brand_primary.trim().toUpperCase();
       if (normalizedColor && !/^#[0-9A-F]{6}$/.test(normalizedColor)) {
@@ -500,6 +517,7 @@ export default function CustomerDetail() {
         allowed_payment_terms:
           allowed_payment_terms.length > 0 ? allowed_payment_terms : null,
         payment_terms_note: payment_terms_note.trim() || null,
+        ...(retainageChanged ? { retainage_pct: nextRetainage } : {}),
       });
       setIsCustomerEditOpen(false);
       await fetchCustomerData();
@@ -1075,6 +1093,17 @@ export default function CustomerDetail() {
                       : ""}
                   </p>
                 )}
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-neutral-900 dark:text-white flex items-center mb-2">
+                  <Tag className="h-4 w-4 text-neutral-400 mr-2" />
+                  Retainage
+                </h3>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  {customer.retainage_pct
+                    ? `${Number(customer.retainage_pct)}% held back from each payment.`
+                    : "None held back."}
+                </p>
               </div>
               <div className="flex items-start">
                 <Mail className="h-5 w-5 text-brand mt-0.5" />
@@ -2799,6 +2828,32 @@ export default function CustomerDetail() {
                   }
                   placeholder="e.g. Paid-when-paid contracts and payment history — NET 90 only."
                   className="mt-1 block w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="retainage_pct"
+                  className="block text-sm font-medium text-neutral-700 dark:text-white mb-1"
+                >
+                  Retainage %
+                </label>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
+                  What this customer holds back from each payment until the
+                  job is done. Leave empty if none. Used on the SOV printout.
+                </p>
+                <input
+                  id="retainage_pct"
+                  type="text"
+                  inputMode="decimal"
+                  value={customerEditForm.retainage_pct}
+                  onChange={(e) =>
+                    setCustomerEditForm((prev) => ({
+                      ...prev,
+                      retainage_pct: e.target.value,
+                    }))
+                  }
+                  placeholder="e.g. 10"
+                  className="block w-32 p-2 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-sm focus:outline-none focus:ring-brand focus:border-brand dark:bg-dark-150 dark:text-white"
                 />
               </div>
               <div>

@@ -705,3 +705,119 @@ export function completedPct(allLines: SovLine[], progress: SovProgress): number
 
 export const totalHours = (hoursByMonth: Record<string, number>): number =>
   Object.values(hoursByMonth).reduce((sum, h) => sum + h, 0);
+
+// ---------------------------------------------------------------------------
+// Pay application (the AIA-style SOV printout)
+// ---------------------------------------------------------------------------
+
+const cents = (n: number): number => Math.round(n * 100) / 100;
+
+export interface PayAppRow {
+  line: SovLine;
+  scheduled: number;
+  /** Billed in months before this one */
+  previous: number;
+  thisPeriod: number;
+  /** previous + thisPeriod */
+  completed: number;
+  /** completed / scheduled; null when the line has no value */
+  pct: number | null;
+  balance: number;
+  retainage: number;
+}
+
+export interface PayApp {
+  rows: PayAppRow[];
+  /** Scheduled value of the original contract lines */
+  originalContract: number;
+  /** Scheduled value of the Change Order lines */
+  changeOrders: number;
+  contractToDate: number;
+  previous: number;
+  thisPeriod: number;
+  completed: number;
+  retainage: number;
+  /** Retainage on the work billed before this month */
+  previousRetainage: number;
+  /** completed - retainage */
+  earnedLessRetainage: number;
+  /** What was due on earlier applications: previous - previousRetainage */
+  previousCertificates: number;
+  /** earnedLessRetainage - previousCertificates */
+  currentDue: number;
+  /** contractToDate - earnedLessRetainage */
+  balanceWithRetainage: number;
+  /** Months with billing before this one, plus this one */
+  applicationNumber: number;
+}
+
+/**
+ * One month's pay application from the SOV: per line, what was billed before, this
+ * month, to date, what's left and what the customer holds back.
+ */
+export function payApplication(
+  lines: SovLine[],
+  progress: SovProgress,
+  month: string,
+  retainagePct: number,
+): PayApp {
+  const rate = Math.max(0, Math.min(100, retainagePct || 0)) / 100;
+  const priorMonths = new Set<string>();
+
+  const rows = lines.map((line): PayAppRow => {
+    const byMonth = progress.qty[line.id] ?? {};
+    let prevUnits = 0;
+    for (const [m, n] of Object.entries(byMonth)) {
+      if (m < month && n) {
+        prevUnits += n;
+        priorMonths.add(m);
+      }
+    }
+    const scheduled = cents(line.quantity * line.unit_price);
+    const previous = cents(prevUnits * line.unit_price);
+    const thisPeriod = cents((byMonth[month] ?? 0) * line.unit_price);
+    const completed = cents(previous + thisPeriod);
+    return {
+      line,
+      scheduled,
+      previous,
+      thisPeriod,
+      completed,
+      pct: scheduled ? completed / scheduled : null,
+      balance: cents(scheduled - completed),
+      retainage: cents(completed * rate),
+    };
+  });
+
+  const sum = (pick: (r: PayAppRow) => number, only?: (r: PayAppRow) => boolean) =>
+    cents(rows.filter(only ?? (() => true)).reduce((s, r) => s + pick(r), 0));
+
+  const originalContract = sum((r) => r.scheduled, (r) => isOriginalLine(r.line));
+  const changeOrders = sum((r) => r.scheduled, (r) => !isOriginalLine(r.line));
+  const contractToDate = cents(originalContract + changeOrders);
+  const previous = sum((r) => r.previous);
+  const thisPeriod = sum((r) => r.thisPeriod);
+  const completed = sum((r) => r.completed);
+  // Taken on the totals, the same way as previous retainage, so no stray cents
+  const retainage = cents(completed * rate);
+  const previousRetainage = cents(previous * rate);
+  const earnedLessRetainage = cents(completed - retainage);
+  const previousCertificates = cents(previous - previousRetainage);
+
+  return {
+    rows,
+    originalContract,
+    changeOrders,
+    contractToDate,
+    previous,
+    thisPeriod,
+    completed,
+    retainage,
+    previousRetainage,
+    earnedLessRetainage,
+    previousCertificates,
+    currentDue: cents(earnedLessRetainage - previousCertificates),
+    balanceWithRetainage: cents(contractToDate - earnedLessRetainage),
+    applicationNumber: priorMonths.size + 1,
+  };
+}

@@ -258,6 +258,32 @@ export async function fetchCrew(
   return { rows, missing: false };
 }
 
+/** The customer details the SOV printout needs. */
+export interface SovCustomer {
+  name: string;
+  address: string | null;
+  /** 0 to 100. 0 when the customer holds nothing back (or customer_retainage.sql isn't run). */
+  retainagePct: number;
+}
+
+export async function fetchSovCustomer(customerId: string | null): Promise<SovCustomer | null> {
+  if (!customerId) return null;
+  // select * so this still works before customer_retainage.sql adds the column
+  const { data, error } = await supabase
+    .schema('common')
+    .from('customers')
+    .select('*')
+    .eq('id', customerId)
+    .maybeSingle();
+  if (error) throw new Error(describeSupabaseError(error));
+  if (!data) return null;
+  return {
+    name: data.company_name || data.name || '',
+    address: data.address || null,
+    retainagePct: Number(data.retainage_pct) || 0,
+  };
+}
+
 export async function fetchPmJob(jobId: string): Promise<PmJob | null> {
   const { data, error } = await supabase
     .schema('neta_ops')

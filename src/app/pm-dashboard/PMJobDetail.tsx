@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { AlertTriangle, ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Pencil, Plus, Save, Settings, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Pencil, Plus, Printer, Save, Settings, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { useDemoMode } from '@/lib/DemoModeContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -64,8 +64,7 @@ import {
   fmtMoney,
   MonthPicker,
   Notice,
-  ProgressBar,
-  StatTile,
+  fmtPct,
   usePmAccess,
 } from './shared';
 
@@ -85,6 +84,28 @@ const TD = 'px-3 py-2 align-middle';
 const NUM = `${TD} text-right tabular-nums whitespace-nowrap`;
 const NUM_ACTIVE = `${NUM} bg-brand/10`;
 const ROW = 'border-t border-neutral-200 dark:border-neutral-700';
+
+type JobTab = 'week' | 'sov' | 'month';
+
+const fmtCount = (n: number): string => n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+
+/** Thin progress bar. Capped at full; `over` turns it red. */
+function Bar({ value, over }: { value: number | null | undefined; over?: boolean }) {
+  return (
+    <div className="h-1.5 w-full bg-neutral-200 dark:bg-neutral-700" aria-hidden="true">
+      <div
+        className={`h-full ${over ? 'bg-red-600' : 'bg-brand'}`}
+        style={{ width: `${Math.min(1, Math.max(0, value ?? 0)) * 100}%` }}
+      />
+    </div>
+  );
+}
+
+const CHIP =
+  'inline-flex items-center gap-1 whitespace-nowrap rounded-none border border-neutral-300 bg-white px-2 py-1 text-xs text-neutral-800 hover:border-neutral-500 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-neutral-400';
+const SEG_BASE = 'rounded-none px-3 py-1.5 text-sm';
+const SEG_ON = `${SEG_BASE} bg-neutral-800 text-white dark:bg-neutral-200 dark:text-neutral-900`;
+const SEG_OFF = `${SEG_BASE} bg-white text-neutral-700 hover:bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700`;
 
 /** A count with zeros faded, so the months that had work stand out. */
 function Count({ value }: { value: number }) {
@@ -171,7 +192,6 @@ export default function PMJobDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [editing, setEditing] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -201,6 +221,8 @@ export default function PMJobDetail() {
   const [billingDraft, setBillingDraft] = useState<BillingFrequency>('monthly');
   // Change Order groups the PM opened or closed. Untouched: open until every line is done.
   const [openCos, setOpenCos] = useState<Record<string, boolean>>({});
+  // Billing by month: units instead of dollars
+  const [monthUnits, setMonthUnits] = useState(false);
 
   const load = useCallback(async () => {
     if (!jobId) return;
@@ -242,7 +264,6 @@ export default function PMJobDetail() {
       setLines(result.bundles[loaded.id].lines);
       setSetupMissing(result.setupMissing);
       setDirty(false);
-      setEditing(false);
     } catch (err) {
       console.error('[PM Dashboard] Job load failed:', err);
       setError(err instanceof Error ? err.message : 'Failed to load the job.');
@@ -510,7 +531,6 @@ export default function PMJobDetail() {
     setAppliedGc(gcFromSettings(savedSettings));
     setLines(bundle?.lines ?? []);
     setDirty(false);
-    setEditing(false);
     setSaveError(null);
   };
 
@@ -531,7 +551,6 @@ export default function PMJobDetail() {
         changeOrders: bundle.changeOrders.map((co) => ({ ...co, seeded: false })),
       });
       setDirty(false);
-      setEditing(false);
     } catch (err) {
       console.error('[PM Dashboard] SOV save failed:', err);
       setSaveError(err instanceof Error ? err.message : 'Could not save the SOV.');
@@ -653,124 +672,185 @@ export default function PMJobDetail() {
   // Lines copied in but not saved: the weekly update waits until they're saved
   const needsSave = bundle.seeded || seededCos.length > 0;
 
-  /** One SOV row: an original line, or a line inside a Change Order group. */
+  // ---- Page layout ----------------------------------------------------------
+  // Three tabs. Defaults to the weekly update once the SOV is saved, else the SOV itself.
+  const tabParam = searchParams.get('tab');
+  const tab: JobTab =
+    tabParam === 'week' || tabParam === 'sov' || tabParam === 'month'
+      ? tabParam
+      : weekLines.length > 0 && !needsSave
+        ? 'week'
+        : 'sov';
+  const setTab = (next: JobTab) =>
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        params.set('tab', next);
+        return params;
+      },
+      { replace: true },
+    );
+  const openWeek = (w: string) => {
+    setWeek(w);
+    setWeekDraft({});
+    setTab('week');
+  };
+
+  const lineValue = (line: SovLine) => line.quantity * line.unit_price;
+  const earnedOf = (list: SovLine[]) =>
+    list.reduce((sum, line) => sum + lineDone(progress, line.id) * line.unit_price, 0);
+  const earnedToDate = earnedOf(lines);
+  const workDone = completedPct(lines, progress);
+  const canPrint = lines.length > 0 && !dirty && !needsSave;
+  const printSov = () => window.open(`/pm-dashboard/${job.id}/sov?month=${month}`, '_blank', 'noopener');
+
+  // Running item numbers: original lines first, then each Change Order's
+  const lineNumber = new Map(
+    [...originalLines, ...sovCos.flatMap((co) => coLinesOf(co.id))].map((line, i) => [line.id, i + 1]),
+  );
+
+  // What changed since the last save, for the save bar
+  const savedById = new Map(bundle.lines.map((line) => [line.id, line]));
+  const changedCount =
+    lines.filter((line) => {
+      const saved = savedById.get(line.id);
+      return (
+        !saved ||
+        saved.item !== line.item ||
+        saved.quantity !== line.quantity ||
+        saved.unit_price !== line.unit_price ||
+        saved.total_hours !== line.total_hours ||
+        saved.report_slugs.join(',') !== line.report_slugs.join(',')
+      );
+    }).length + bundle.lines.filter((saved) => !lines.some((line) => line.id === saved.id)).length;
+  const showSaveBar = dirty || (needsSave && lines.length > 0);
+  const saveBarText = dirty
+    ? changedCount > 0
+      ? `${changedCount} line${changedCount === 1 ? '' : 's'} changed. Not saved yet.`
+      : 'Setup changed. Not saved yet.'
+    : "Lines were copied in and aren't saved yet. Check them, then save.";
+
+  // Things that need the PM, in one box at the top
+  const lastWeekOpen =
+    weekLines.length > 0 &&
+    !needsSave &&
+    !!job.start_date &&
+    job.start_date < weekKey(new Date()) &&
+    weeks[lastWeek]?.status !== 'approved';
+  const seededNotice = bundle.seeded && lines.length > 0 && !dirty;
+  const coNotice = seededCos.length > 0 && !dirty;
+  const attentionCount = (lastWeekOpen ? 1 : 0) + (seededNotice ? 1 : 0) + (coNotice ? 1 : 0) + unmatched.length;
+
+  const reportsLabel = (line: SovLine) => {
+    const [first, ...rest] = line.report_slugs;
+    if (!first) return 'Pick reports';
+    return rest.length ? `${reportTypeLabel(first)} +${rest.length}` : reportTypeLabel(first);
+  };
+
+  /** One SOV row: an original line, or a line inside a Change Order group. Always editable. */
   const renderSovRow = (line: SovLine) => {
     const done = lineDone(progress, line.id);
+    const isGc = line.line_type === 'general_conditions';
+    // A Change Order keeps at least one line, or its lines get copied in again
+    const lastInCo = !!line.change_order_id && coLinesOf(line.change_order_id).length === 1;
     return (
       <tr key={line.id} className={`${ROW} hover:bg-neutral-50 dark:hover:bg-neutral-700/40`}>
+        <td className={`${TD} w-8 text-xs tabular-nums text-neutral-500 dark:text-neutral-400`}>
+          {lineNumber.get(line.id)}
+        </td>
         <td className={line.change_order_id ? `${TD} pl-8` : TD}>
-          {editing ? (
-            <input
-              aria-label="Item"
-              className={CELL_INPUT}
-              value={line.item}
-              onChange={(e) => updateLine(line.id, { item: e.target.value })}
-            />
-          ) : (
-            <>
-              {line.item || 'Unnamed line'}
-              {line.line_type === 'general_conditions' && (
-                <span className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">
-                  monthly{settings?.gc_start ? ` from ${settings.gc_start}` : ''}
-                </span>
-              )}
-              {line.line_type === 'mobilization' && (
-                <span className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">from the estimate</span>
-              )}
-            </>
+          <input
+            aria-label="Item"
+            className={`${CELL_INPUT} min-w-[14rem]`}
+            placeholder="Name this line"
+            value={line.item}
+            onChange={(e) => updateLine(line.id, { item: e.target.value })}
+          />
+          {line.line_type === 'mobilization' && (
+            <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">From the estimate</p>
           )}
         </td>
         <td className={NUM}>
-          {editing ? (
-            <input
-              aria-label="Quantity"
-              type="number"
-              min={0}
-              className={`${NUMBER_INPUT} min-w-[5rem]`}
-              value={line.quantity}
-              onChange={(e) => updateLine(line.id, { quantity: parseNumber(e.target.value) })}
-            />
-          ) : (line.multiplier ?? 1) > 1 ? (
-            <span title={`${line.multiplier} times ${line.quantity / (line.multiplier ?? 1)}`}>
+          <input
+            aria-label="Qty"
+            type="number"
+            min={0}
+            step="any"
+            className={`${NUMBER_INPUT} min-w-[5rem]`}
+            value={line.quantity}
+            onChange={(e) => updateLine(line.id, { quantity: parseNumber(e.target.value) })}
+          />
+          {(line.multiplier ?? 1) > 1 && (
+            <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
               {line.multiplier} × <Count value={line.quantity / (line.multiplier ?? 1)} />
+            </p>
+          )}
+        </td>
+        <td className={NUM}>
+          <input
+            aria-label="Price each"
+            type="number"
+            min={0}
+            step="any"
+            className={`${NUMBER_INPUT} min-w-[7rem]`}
+            value={line.unit_price}
+            onChange={(e) => updateLine(line.id, { unit_price: parseNumber(e.target.value) })}
+          />
+        </td>
+        <td className={`${NUM} font-semibold`}>{fmtMoney(lineValue(line))}</td>
+        <td className={NUM}>
+          <input
+            aria-label="Estimated hours"
+            type="number"
+            min={0}
+            step="any"
+            className={`${NUMBER_INPUT} min-w-[5rem]`}
+            value={line.total_hours}
+            onChange={(e) => updateLine(line.id, { total_hours: parseNumber(e.target.value) })}
+          />
+        </td>
+        <td className={TD}>
+          {isGc ? (
+            <span className="whitespace-nowrap text-xs text-neutral-500 dark:text-neutral-400">
+              Bills monthly{settings?.gc_start ? ` from ${fmtDay(settings.gc_start)}` : ''}
             </span>
           ) : (
-            <Count value={line.quantity} />
-          )}
-        </td>
-        <td className={NUM}>
-          {editing ? (
-            <input
-              aria-label="Total hours"
-              type="number"
-              min={0}
-              className={`${NUMBER_INPUT} min-w-[5rem]`}
-              value={line.total_hours}
-              onChange={(e) => updateLine(line.id, { total_hours: parseNumber(e.target.value) })}
-            />
-          ) : (
-            fmtHours(line.total_hours)
-          )}
-        </td>
-        <td className={NUM}>
-          {editing ? (
-            <input
-              aria-label="Dollars each"
-              type="number"
-              min={0}
-              className={`${NUMBER_INPUT} min-w-[6rem]`}
-              value={line.unit_price}
-              onChange={(e) => updateLine(line.id, { unit_price: parseNumber(e.target.value) })}
-            />
-          ) : (
-            fmtMoney(line.unit_price)
-          )}
-        </td>
-        {months.map((m) => (
-          <td key={m} className={m === month ? NUM_ACTIVE : NUM}>
-            <Count value={progress.qty[line.id]?.[m] ?? 0} />
-          </td>
-        ))}
-        <td className={NUM}>
-          {done.toLocaleString('en-US')}
-          {line.quantity > 0 && (
-            <span className="text-neutral-500 dark:text-neutral-400">
-              {' '}
-              / {line.quantity.toLocaleString('en-US')}
-            </span>
+            <button
+              type="button"
+              onClick={() => setPickerLineId(line.id)}
+              className={`${CHIP} ${line.report_slugs.length ? '' : 'text-neutral-500 dark:text-neutral-400'}`}
+              title={line.report_slugs.map((slug) => reportTypeLabel(slug)).join(', ') || undefined}
+            >
+              <span className="max-w-[11rem] truncate">{reportsLabel(line)}</span>
+              <ChevronDown className="h-3.5 w-3.5 flex-shrink-0" />
+            </button>
           )}
         </td>
         <td className={TD}>
-          <button
-            type="button"
-            onClick={() => setPickerLineId(line.id)}
-            className="whitespace-nowrap text-neutral-700 underline decoration-neutral-300 underline-offset-4 hover:text-neutral-900 dark:text-neutral-300 dark:decoration-neutral-600 dark:hover:text-neutral-100"
-          >
-            {line.report_slugs.length === 0
-              ? 'None'
-              : `${line.report_slugs.length} type${line.report_slugs.length === 1 ? '' : 's'}`}
-          </button>
+          <div className="flex min-w-[9rem] items-center gap-2">
+            <Bar value={line.quantity > 0 ? done / line.quantity : null} />
+            <span className="whitespace-nowrap text-xs tabular-nums text-neutral-600 dark:text-neutral-300">
+              {fmtCount(done)} of {fmtCount(line.quantity)}
+            </span>
+          </div>
         </td>
-        {editing && (
-          <td className="px-1 py-1 text-right">
-            {/* A Change Order keeps at least one line, or its lines get copied in again */}
-            {!(line.change_order_id && coLinesOf(line.change_order_id).length === 1) && (
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={`Remove ${line.item || 'line'}`}
-                onClick={() => markChanged(lines.filter((l) => l.id !== line.id))}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
-          </td>
-        )}
+        <td className="px-1 py-1 text-right">
+          {!lastInCo && (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={`Remove ${line.item || 'line'}`}
+              onClick={() => markChanged(lines.filter((l) => l.id !== line.id))}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+        </td>
       </tr>
     );
   };
 
-  /** One row of the weekly update box. */
+  /** One row of the weekly update. */
   const renderWeekRow = (line: SovLine) => {
     const before = doneBefore(line.id);
     const thisWeek = parseNumber(weekValue(line.id));
@@ -790,7 +870,7 @@ export default function PMJobDetail() {
             type="number"
             min={0}
             step="any"
-            className={`${NUMBER_INPUT} w-20`}
+            className={`${NUMBER_INPUT} min-w-[5rem]`}
             disabled={weekLocked}
             placeholder="0"
             value={weekValue(line.id)}
@@ -800,13 +880,132 @@ export default function PMJobDetail() {
         <td className={`${NUM} ${left < 0 ? 'text-amber-700 dark:text-amber-300' : ''}`}>
           <Count value={left} />
         </td>
+        <td className={`${TD} w-36`}>
+          <Bar value={line.quantity > 0 ? (before + thisWeek) / line.quantity : null} />
+        </td>
       </tr>
     );
   };
 
+  /** One row of Billing by month: dollars, or units when that's picked. */
+  const renderMonthRow = (line: SovLine) => {
+    const done = lineDone(progress, line.id);
+    const show = (units: number) => (monthUnits ? <Count value={units} /> : fmtMoney(units * line.unit_price));
+    return (
+      <tr key={line.id} className={ROW}>
+        <td className={line.change_order_id ? `${TD} pl-8` : TD}>{line.item || 'Unnamed line'}</td>
+        <td className={NUM}>{show(line.quantity)}</td>
+        {months.map((m) => {
+          const units = progress.qty[line.id]?.[m] ?? 0;
+          return (
+            <td key={m} className={m === month ? NUM_ACTIVE : NUM}>
+              {units ? show(units) : ''}
+            </td>
+          );
+        })}
+        <td className={NUM}>{show(done)}</td>
+        <td className={NUM}>{show(line.quantity - done)}</td>
+      </tr>
+    );
+  };
+
+  /** Group row in Billing by month: dollar subtotals, blank in units (units don't add up across lines). */
+  const monthGroupCells = (list: SovLine[]) =>
+    monthUnits ? (
+      <td colSpan={months.length + 3} />
+    ) : (
+      <>
+        <td className={NUM}>{fmtMoney(sovTotal(list))}</td>
+        {months.map((m) => {
+          const dollars = monthDollars(list, progress, m);
+          return (
+            <td key={m} className={m === month ? NUM_ACTIVE : NUM}>
+              {dollars ? fmtMoney(dollars) : ''}
+            </td>
+          );
+        })}
+        <td className={NUM}>{fmtMoney(earnedOf(list))}</td>
+        <td className={NUM}>{fmtMoney(sovTotal(list) - earnedOf(list))}</td>
+      </>
+    );
+
+  /** Change Order group heading, shared by the three tabs. */
+  const coToggle = (co: SovChangeOrder) => {
+    const open = coOpen(co.id);
+    return (
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => toggleCo(co.id)}
+        className="flex items-center gap-1.5 text-left font-medium text-neutral-900 dark:text-neutral-100"
+      >
+        {open ? <ChevronDown className="h-4 w-4 flex-shrink-0" /> : <ChevronRight className="h-4 w-4 flex-shrink-0" />}
+        {coLabel(co)}
+        {linesComplete(coLinesOf(co.id), progress) && (
+          <span className="ml-2 text-xs font-normal text-green-700 dark:text-green-400">Done</span>
+        )}
+      </button>
+    );
+  };
+
+  const GROUP_ROW = `${ROW} bg-neutral-50 dark:bg-neutral-900/40`;
+
+  const stats: { label: string; value: string; note: string; bar?: number | null; over?: boolean }[] = [
+    {
+      label: 'Contract',
+      value: fmtMoney(contract),
+      note: bundle.approvedChangeOrders
+        ? `Includes ${fmtMoney(bundle.approvedChangeOrders)} in Change Orders`
+        : bundle.quotedAmount > 0
+          ? 'From the quote'
+          : 'Adds up the SOV lines',
+    },
+    {
+      label: 'Billed to date',
+      value: !qboId ? 'n/a' : billed == null ? '...' : fmtMoney(billed),
+      note: !qboId
+        ? 'Job is not linked to QuickBooks'
+        : billed == null
+          ? 'Checking QuickBooks...'
+          : `${fmtPct(pct(billed, contract))} · from QuickBooks`,
+      bar: qboId && billed != null ? pct(billed, contract) : undefined,
+    },
+    {
+      label: `Earned in ${monthName}`,
+      value: fmtMoney(monthDollars(lines, progress, month)),
+      note: 'From the weekly numbers',
+    },
+    {
+      label: 'Work done',
+      value: fmtPct(workDone),
+      note: sovDollars > 0 ? `${fmtMoney(earnedToDate)} of ${fmtMoney(sovDollars)}` : 'Fill in Qty and Price each',
+      bar: workDone,
+    },
+    {
+      label: 'Hours used',
+      value: fmtHours(usedHours),
+      note:
+        estimatedHours > 0
+          ? `${fmtPct(pct(usedHours, estimatedHours))} of ${fmtHours(estimatedHours)} estimated`
+          : 'No hours estimate yet',
+      bar: estimatedHours > 0 ? pct(usedHours, estimatedHours) : undefined,
+      over: estimatedHours > 0 && usedHours > estimatedHours,
+    },
+  ];
+
+  const tabs: { id: JobTab; label: string; sub: string }[] = [
+    { id: 'week', label: 'Weekly update', sub: weekRangeLabel(week) },
+    {
+      id: 'sov',
+      label: 'Schedule of values',
+      sub: `${lines.length} line${lines.length === 1 ? '' : 's'} · ${fmtMoney(sovDollars)}`,
+    },
+    { id: 'month', label: 'Billing by month', sub: `${fmtMoney(monthDollars(lines, progress, month))} in ${monthLabel(month)}` },
+  ];
+
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <div className="mx-auto max-w-7xl space-y-4 p-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Button variant="ghost" size="sm" leftIcon={<ArrowLeft className="h-4 w-4" />} onClick={backToList}>
             All jobs
@@ -827,490 +1026,533 @@ export default function PMJobDetail() {
         </Notice>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile
-          label={`$ earned in ${monthName}`}
-          value={fmtMoney(monthDollars(lines, progress, month))}
-          note="Reports sent this month times $ each"
-        />
-        <StatTile
-          label={`Hours worked in ${monthName}`}
-          value={fmtHours(hoursByMonth[month] ?? 0)}
-          note="From the TimeStAMP clock"
-        />
-        <StatTile
-          label="Contract value"
-          value={fmtMoney(contract)}
-          note={
-            bundle.approvedChangeOrders
-              ? `Includes ${fmtMoney(bundle.approvedChangeOrders)} in approved change orders`
-              : undefined
-          }
-        />
-        <StatTile
-          label="Billed to date"
-          value={!qboId ? 'n/a' : billed == null ? '...' : fmtMoney(billed)}
-          note={qboId ? 'QuickBooks invoices' : 'Job is not linked to QuickBooks'}
-        />
+      <div className="grid grid-cols-2 border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800 sm:grid-cols-3 lg:grid-cols-5">
+        {stats.map((s) => (
+          <div key={s.label} className="flex flex-col gap-1 border-b border-r border-neutral-100 p-4 dark:border-neutral-700">
+            <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">{s.label}</span>
+            <span className="font-mono text-xl font-semibold text-neutral-900 dark:text-neutral-100">{s.value}</span>
+            {s.bar !== undefined && <Bar value={s.bar} over={s.over} />}
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">{s.note}</span>
+          </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 rounded-none border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800 lg:grid-cols-3">
-        <ProgressBar
-          label="Billed"
-          value={qboId && billed != null ? pct(billed, contract) : null}
-          detail={
-            !qboId
-              ? 'Job is not linked to QuickBooks'
-              : billed == null
-                ? 'Checking QuickBooks...'
-                : contract > 0
-                  ? `${fmtMoney(billed)} invoiced in QuickBooks of ${fmtMoney(contract)} contract`
-                  : `${fmtMoney(billed)} invoiced in QuickBooks. No contract value yet: fill in Qty and $ each below.`
-          }
-        />
-        <ProgressBar
-          label="Job completed"
-          value={completedPct(lines, progress)}
-          detail={
-            sovTotal(lines) > 0
-              ? 'Reports sent to the customer, weighted by $ each'
-              : 'Fill in Qty and $ each on the SOV lines below to see this.'
-          }
-        />
-        <ProgressBar
-          label="Hours used"
-          value={pct(usedHours, estimatedHours)}
-          over={estimatedHours > 0 && usedHours > estimatedHours}
-          detail={
-            estimatedHours > 0
-              ? `${fmtHours(usedHours)} worked of ${fmtHours(estimatedHours)} estimated`
-              : `${fmtHours(usedHours)} worked. Fill in Hours on the SOV lines below to compare.`
-          }
-        />
-      </div>
-
-      {weekLines.length > 0 && (
-        <div className="space-y-3 rounded-none border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Weekly update</h2>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Enter what got done. Sent reports fill in a suggestion; your numbers win.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" aria-label="Previous week" onClick={() => changeWeek(-1)}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <div className="min-w-[11rem] text-center text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                {weekRangeLabel(week)}
-              </div>
-              <Button variant="outline" size="sm" aria-label="Next week" onClick={() => changeWeek(1)}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <span
-                className={`whitespace-nowrap rounded-none border px-2 py-0.5 text-xs ${
-                  weekLocked
-                    ? 'border-green-300 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200'
-                    : week === lastWeek
-                      ? 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200'
-                      : 'border-neutral-300 text-neutral-600 dark:border-neutral-600 dark:text-neutral-300'
-                }`}
-              >
-                {weekLocked ? 'Approved' : week === lastWeek ? 'Due Monday' : savedWeek ? 'Draft' : 'Not started'}
-              </span>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr>
-                  <th className={`${TH} text-left`}>Item</th>
-                  <th className={`${TH} text-right`}>Total qty</th>
-                  <th className={`${TH} text-right`}>Done before</th>
-                  <th className={`${TH} text-right`}>This week</th>
-                  <th className={`${TH} text-right`}>Left</th>
-                </tr>
-              </thead>
-              <tbody>
-                {weekLines.filter(isOriginalLine).map(renderWeekRow)}
-                {sovCos.map((co) => {
-                  const coWeekLines = weekLines.filter((line) => line.change_order_id === co.id);
-                  if (coWeekLines.length === 0) return null;
-                  const open = coOpen(co.id);
-                  return (
-                    <React.Fragment key={co.id}>
-                      <tr className={`${ROW} bg-neutral-50 dark:bg-neutral-900/40`}>
-                        <td className={TD} colSpan={5}>
-                          <button
-                            type="button"
-                            aria-expanded={open}
-                            onClick={() => toggleCo(co.id)}
-                            className="flex items-center gap-1.5 text-left font-medium text-neutral-900 dark:text-neutral-100"
-                          >
-                            {open ? (
-                              <ChevronDown className="h-4 w-4 flex-shrink-0" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4 flex-shrink-0" />
-                            )}
-                            {coLabel(co)}
-                            {linesComplete(coLinesOf(co.id), progress) && (
-                              <span className="ml-2 text-xs font-normal text-green-700 dark:text-green-400">Done</span>
-                            )}
-                          </button>
-                        </td>
-                      </tr>
-                      {open && coWeekLines.map(renderWeekRow)}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-3 text-sm dark:border-neutral-700">
-            <div className="flex flex-wrap gap-x-6 gap-y-1 text-neutral-600 dark:text-neutral-300">
-              <span>
-                Hours this week <b className="text-neutral-900 dark:text-neutral-100">{fmtHours(hoursByWeek[week] ?? 0)}</b>
-                <span className="text-xs text-neutral-500 dark:text-neutral-400"> clock + temps</span>
-              </span>
-              <span>
-                Work in progress <b className="text-neutral-900 dark:text-neutral-100">{fmtMoney(wipFor(weekQuantities()))}</b>
-                <span className="text-xs text-neutral-500 dark:text-neutral-400"> {monthLabel(weekMonth(week), 'long')} so far</span>
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {(dirty || needsSave) && !weekLocked && (
-                <span className="text-xs text-amber-700 dark:text-amber-300">Save the SOV first</span>
-              )}
-              {weekLocked ? (
-                <Button variant="outline" size="sm" isLoading={weekSaving} onClick={reopenWeek}>
-                  Reopen
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    isLoading={weekSaving}
-                    disabled={dirty || needsSave}
-                    onClick={() => saveWeek(false)}
-                  >
-                    Save draft
-                  </Button>
-                  <Button
-                    size="sm"
-                    leftIcon={<Check className="h-4 w-4" />}
-                    isLoading={weekSaving}
-                    disabled={dirty || needsSave}
-                    onClick={() => saveWeek(true)}
-                  >
-                    Approve week
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            Billing ahead? Add the extra in the month's last week; the customer only sees the month. General
-            conditions bill on their own each month.
-          </p>
+      {saveError && (
+        <div className="rounded-none border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+          {saveError}
         </div>
       )}
 
-      <div className="space-y-3 rounded-none border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Schedule of values</h2>
-            {setupSummary && (
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">{setupSummary}</p>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {dirty && <span className="text-xs text-amber-700 dark:text-amber-300">Unsaved changes</span>}
-            <select
-              aria-label="Months to show"
-              value={monthCount}
-              onChange={(e) => changeMonthCount(Number(e.target.value))}
-              className="rounded-none border border-neutral-300 bg-white px-2 py-1.5 text-sm text-neutral-900 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+      {attentionCount > 0 && (
+        <div className="space-y-2 rounded-none border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
+          <p className="font-semibold">
+            {attentionCount === 1 ? '1 thing needs you' : `${attentionCount} things need you`}
+          </p>
+          {lastWeekOpen && (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span>Week of {weekRangeLabel(lastWeek)} isn't approved yet.</span>
+              <Button variant="outline" size="sm" onClick={() => openWeek(lastWeek)}>
+                Open that week
+              </Button>
+            </div>
+          )}
+          {seededNotice && (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span>The SOV was copied from the estimate and isn't saved yet. Check the lines and which reports count.</span>
+              {tab !== 'sov' && (
+                <Button variant="outline" size="sm" onClick={() => setTab('sov')}>
+                  Review
+                </Button>
+              )}
+            </div>
+          )}
+          {coNotice && (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span>
+                {seededCos.length === 1
+                  ? `${coLabel(seededCos[0])} is approved. Its lines were copied from its estimate`
+                  : `${seededCos.length} Change Orders are approved. Their lines were copied from their estimates`}
+                , priced to add up to the approved amount. Check them, then save.
+              </span>
+              {tab !== 'sov' && (
+                <Button variant="outline" size="sm" onClick={() => setTab('sov')}>
+                  Review
+                </Button>
+              )}
+            </div>
+          )}
+          {unmatched.map(([slug, count]) => {
+            const suggested = bestLineFor(lines, slug);
+            return (
+              <div key={slug} className="flex flex-wrap items-center justify-between gap-2">
+                <span>
+                  {count} sent {reportTypeLabel(slug)} report{count === 1 ? '' : 's'} {count === 1 ? "doesn't" : "don't"}{' '}
+                  count toward any line yet.
+                </span>
+                <select
+                  aria-label={`Count ${reportTypeLabel(slug)} toward`}
+                  value=""
+                  onChange={(e) => assignUnmatched(slug, e.target.value)}
+                  className="rounded-none border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
+                >
+                  <option value="">Choose a line...</option>
+                  {lines.map((line) => (
+                    <option key={line.id} value={line.id}>
+                      {line.change_order_id
+                        ? `Change Order ${formatChangeOrderNumber(coNumberById.get(line.change_order_id) ?? 0)}: `
+                        : ''}
+                      {line.item || 'Unnamed line'}
+                      {line.id === suggested?.id ? ' (best guess)' : ''}
+                    </option>
+                  ))}
+                  <option value={NEW_LINE}>New SOV line</option>
+                </select>
+              </div>
+            );
+          })}
+          {unmatched.length > 1 && (
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<Plus className="h-4 w-4" />}
+              onClick={() => markChanged([...lines, ...unmatched.map(([slug]) => lineForType(slug))])}
             >
-              {MONTH_COUNT_OPTIONS.map((n) => (
-                <option key={n} value={n}>
-                  {n === 1 ? 'Show 1 month' : `Show ${n} months`}
-                </option>
-              ))}
-            </select>
-            {settings && (
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Settings className="h-4 w-4" />}
-                onClick={openSetup}
-              >
-                Setup
-              </Button>
-            )}
-            {estimates.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Copy className="h-4 w-4" />}
-                onClick={openEstimatePicker}
-              >
-                Copy from estimate
-              </Button>
-            )}
-            {editing && (
-              <Button variant="outline" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={addLine}>
-                Add line
-              </Button>
-            )}
-            {!editing && (
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Pencil className="h-4 w-4" />}
-                onClick={() => setEditing(true)}
-              >
-                Edit SOV
-              </Button>
-            )}
-            {(dirty || editing) && (
-              <Button variant="ghost" size="sm" onClick={discard} disabled={saving}>
-                {dirty ? 'Discard' : 'Done'}
-              </Button>
-            )}
-            {(dirty || (needsSave && lines.length > 0)) && (
-              <Button
-                size="sm"
-                leftIcon={<Save className="h-4 w-4" />}
-                onClick={save}
-                isLoading={saving}
-                disabled={setupMissing}
-              >
-                Save
-              </Button>
-            )}
-          </div>
+              Make a line for each
+            </Button>
+          )}
+        </div>
+      )}
+
+      <div className="rounded-none border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
+        <div role="tablist" aria-label="Job sections" className="flex flex-wrap gap-1 border-b border-neutral-200 px-3 dark:border-neutral-700">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.id}
+              onClick={() => setTab(t.id)}
+              className={`-mb-px min-h-[3rem] border-b-[3px] px-3 text-left text-sm ${
+                tab === t.id
+                  ? 'border-brand font-semibold text-neutral-900 dark:text-neutral-100'
+                  : 'border-transparent font-medium text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200'
+              }`}
+            >
+              {t.label}
+              <span className="ml-2 text-xs font-normal text-neutral-500 dark:text-neutral-400">{t.sub}</span>
+            </button>
+          ))}
         </div>
 
-        {bundle.seeded && lines.length > 0 && !dirty && (
-          <Notice>
-            Copied from the estimate and not saved yet. Check the lines and which reports count, then
-            Save to keep this SOV for the job.
-          </Notice>
-        )}
-        {seededCos.length > 0 && !dirty && (
-          <Notice>
-            {seededCos.length === 1
-              ? `${coLabel(seededCos[0])} is approved. Its lines were copied from its estimate`
-              : `${seededCos.length} Change Orders are approved. Their lines were copied from their estimates`}
-            , priced to add up to the approved amount. Check them, then Save to put them on the SOV.
-          </Notice>
-        )}
-        {saveError && (
-          <div className="rounded-none border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
-            {saveError}
-          </div>
-        )}
-
-        {unmatched.length > 0 && (
-          <Notice>
-            <p className="font-medium">Sent reports not counted toward any line:</p>
-            <ul className="mt-1 space-y-1">
-              {unmatched.map(([slug, count]) => {
-                const suggested = bestLineFor(lines, slug);
-                return (
-                  <li key={slug} className="flex flex-wrap items-center gap-2">
-                    <span>
-                      {reportTypeLabel(slug)} ({count})
-                    </span>
-                    <select
-                      aria-label={`Count ${reportTypeLabel(slug)} toward`}
-                      value=""
-                      onChange={(e) => assignUnmatched(slug, e.target.value)}
-                      className="rounded-none border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100"
+        {tab === 'week' && (
+          <div className="space-y-3 p-4">
+            {weekLines.length === 0 ? (
+              <p className="py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
+                Add lines on the Schedule of values tab first.
+              </p>
+            ) : (
+              <>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" aria-label="Previous week" onClick={() => changeWeek(-1)}>
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <div className="min-w-[11rem] text-center text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                      {weekRangeLabel(week)}
+                    </div>
+                    <Button variant="outline" size="sm" aria-label="Next week" onClick={() => changeWeek(1)}>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <span
+                      className={`whitespace-nowrap rounded-none border px-2 py-0.5 text-xs ${
+                        weekLocked
+                          ? 'border-green-300 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200'
+                          : week === lastWeek
+                            ? 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200'
+                            : 'border-neutral-300 text-neutral-600 dark:border-neutral-600 dark:text-neutral-300'
+                      }`}
                     >
-                      <option value="">Count toward...</option>
-                      {lines.map((line) => (
-                        <option key={line.id} value={line.id}>
-                          {line.change_order_id
-                            ? `Change Order ${formatChangeOrderNumber(coNumberById.get(line.change_order_id) ?? 0)}: `
-                            : ''}
-                          {line.item || 'Unnamed line'}
-                          {line.id === suggested?.id ? ' (best guess)' : ''}
-                        </option>
-                      ))}
-                      <option value={NEW_LINE}>New SOV line</option>
-                    </select>
-                  </li>
-                );
-              })}
-            </ul>
-            {unmatched.length > 1 && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-2"
-                leftIcon={<Plus className="h-4 w-4" />}
-                onClick={() => markChanged([...lines, ...unmatched.map(([slug]) => lineForType(slug))])}
-              >
-                Make a line for each
-              </Button>
-            )}
-          </Notice>
-        )}
+                      {weekLocked ? 'Approved' : week === lastWeek ? 'Due Monday' : savedWeek ? 'Draft' : 'Not started'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    Type what got done this week. Sent reports fill in a guess; your numbers win.
+                  </p>
+                </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-neutral-900 dark:text-neutral-100">
-            <thead>
-              <tr>
-                <th className={`${TH} min-w-[14rem] text-left`}>Item</th>
-                <th className={`${TH} text-right`}>Qty</th>
-                <th className={`${TH} text-right`}>Hours</th>
-                <th className={`${TH} text-right`}>$ each</th>
-                {months.map((m) => (
-                  <th
-                    key={m}
-                    className={`${m === month ? TH_ACTIVE : TH} cursor-pointer text-right`}
-                    onClick={() => setMonth(m)}
-                  >
-                    {monthLabel(m)}
-                  </th>
-                ))}
-                <th className={`${TH} text-right`}>Done</th>
-                <th className={`${TH} text-left`}>Reports</th>
-                {editing && <th className={TH} />}
-              </tr>
-            </thead>
-            <tbody>
-              {lines.length === 0 && (
-                <tr className={ROW}>
-                  <td
-                    colSpan={6 + months.length + (editing ? 1 : 0)}
-                    className="px-3 py-6 text-center text-neutral-500 dark:text-neutral-400"
-                  >
-                    {estimates.length > 1
-                      ? `This job's quote has ${estimates.length} estimates. Use Copy from estimate to pick the ones that apply.`
-                      : estimates.length === 1
-                        ? 'No SOV lines. Use Copy from estimate, or Edit SOV to add lines by hand.'
-                        : 'No SOV lines. This job has no estimate to copy from. Use Edit SOV to add lines.'}
-                  </td>
-                </tr>
-              )}
-              {originalLines.map(renderSovRow)}
-              {sovCos.map((co) => {
-                const coLines = coLinesOf(co.id);
-                const open = coOpen(co.id);
-                const share = completedPct(coLines, progress);
-                return (
-                  <React.Fragment key={co.id}>
-                    <tr className={`${ROW} bg-neutral-50 dark:bg-neutral-900/40`}>
-                      <td className={TD} colSpan={4}>
-                        <div className="flex items-center justify-between gap-3">
-                          <button
-                            type="button"
-                            aria-expanded={open}
-                            onClick={() => toggleCo(co.id)}
-                            className="flex items-center gap-1.5 text-left font-medium text-neutral-900 dark:text-neutral-100"
-                          >
-                            {open ? (
-                              <ChevronDown className="h-4 w-4 flex-shrink-0" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4 flex-shrink-0" />
-                            )}
-                            {coLabel(co)}
-                          </button>
-                          <span className="whitespace-nowrap font-medium tabular-nums">{fmtMoney(sovTotal(coLines))}</span>
-                        </div>
-                        {co.status !== 'approved' && (
-                          <p className="ml-6 mt-1 text-xs text-amber-700 dark:text-amber-300">
-                            Not approved anymore. Approve it again, or Edit SOV and remove its lines.
-                          </p>
-                        )}
-                      </td>
-                      {months.map((m) => {
-                        const dollars = monthDollars(coLines, progress, m);
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-neutral-900 dark:text-neutral-100">
+                    <thead>
+                      <tr>
+                        <th className={`${TH} text-left`}>Item</th>
+                        <th className={`${TH} text-right`}>Total</th>
+                        <th className={`${TH} text-right`}>Done before</th>
+                        <th className={`${TH} text-right`}>This week</th>
+                        <th className={`${TH} text-right`}>Left</th>
+                        <th className={`${TH} text-left`}>Progress</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {weekLines.filter(isOriginalLine).map(renderWeekRow)}
+                      {sovCos.map((co) => {
+                        const coWeekLines = weekLines.filter((line) => line.change_order_id === co.id);
+                        if (coWeekLines.length === 0) return null;
                         return (
-                          <td key={m} className={m === month ? NUM_ACTIVE : NUM}>
-                            {dollars ? fmtMoney(dollars) : ''}
-                          </td>
+                          <React.Fragment key={co.id}>
+                            <tr className={GROUP_ROW}>
+                              <td className={TD} colSpan={6}>
+                                {coToggle(co)}
+                              </td>
+                            </tr>
+                            {coOpen(co.id) && coWeekLines.map(renderWeekRow)}
+                          </React.Fragment>
                         );
                       })}
-                      <td className={NUM}>
-                        {linesComplete(coLines, progress) ? (
-                          <span className="text-green-700 dark:text-green-400">Done</span>
-                        ) : share != null ? (
-                          `${Math.round(share * 100)}%`
-                        ) : (
-                          ''
-                        )}
-                      </td>
-                      <td className={TD}>
-                        {editing && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            leftIcon={<Plus className="h-4 w-4" />}
-                            onClick={() => {
-                              setOpenCos((prev) => ({ ...prev, [co.id]: true }));
-                              markChanged([...lines, newLine({ change_order_id: co.id })]);
-                            }}
-                          >
-                            Line
-                          </Button>
-                        )}
-                      </td>
-                      {editing && <td />}
-                    </tr>
-                    {open && coLines.map(renderSovRow)}
-                  </React.Fragment>
-                );
-              })}
-              {lines.length > 0 && (
-                <tr className="border-t-2 border-neutral-300 font-semibold dark:border-neutral-600">
-                  <td className={TD}>Total $</td>
-                  <td />
-                  <td className={NUM}>{fmtHours(sovHours(lines))}</td>
-                  <td className={NUM}>{fmtMoney(sovTotal(lines))}</td>
-                  {months.map((m) => (
-                    <td key={m} className={m === month ? NUM_ACTIVE : NUM}>
-                      {fmtMoney(monthDollars(lines, progress, m))}
-                    </td>
-                  ))}
-                  <td />
-                  <td />
-                  {editing && <td />}
-                </tr>
-              )}
-              <tr className={`${ROW} text-neutral-500 dark:text-neutral-400`}>
-                <td colSpan={4} className={TD}>
-                  Hours worked
-                </td>
-                {months.map((m) => (
-                  <td key={m} className={m === month ? NUM_ACTIVE : NUM}>
-                    {fmtHours(hoursByMonth[m] ?? 0)}
-                  </td>
-                ))}
-                <td className={NUM}>{fmtHours(usedHours)}</td>
-                <td />
-                {editing && <td />}
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                    </tbody>
+                  </table>
+                </div>
+                {lines.some((line) => line.line_type === 'general_conditions') && (
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    General conditions aren't listed. They bill on their own each month.
+                  </p>
+                )}
 
-        {lines.length > 0 && bundle.quotedAmount > 0 && (
-          <p
-            className={`text-xs ${
-              sovGapMatters ? 'text-amber-700 dark:text-amber-300' : 'text-neutral-500 dark:text-neutral-400'
-            }`}
-          >
-            SOV adds up to {fmtMoney(sovDollars)}. Contract is {fmtMoney(contract)}.
-            {sovGapMatters && sovGap > 0 && ` ${fmtMoney(sovGap)} is not on the SOV yet.`}
-            {sovGapMatters && sovGap < 0 && ` SOV is ${fmtMoney(-sovGap)} over the contract.`}
-          </p>
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-3 text-sm dark:border-neutral-700">
+                  <div className="flex flex-wrap gap-x-6 gap-y-1 text-neutral-600 dark:text-neutral-300">
+                    <span>
+                      Hours this week{' '}
+                      <b className="text-neutral-900 dark:text-neutral-100">{fmtHours(hoursByWeek[week] ?? 0)}</b>
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400"> clock + temps</span>
+                    </span>
+                    <span>
+                      Earned in {monthLabel(weekMonth(week), 'long')} so far{' '}
+                      <b className="text-neutral-900 dark:text-neutral-100">{fmtMoney(wipFor(weekQuantities()))}</b>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {(dirty || needsSave) && !weekLocked && (
+                      <span className="text-xs text-amber-700 dark:text-amber-300">Save the SOV first</span>
+                    )}
+                    {weekLocked ? (
+                      <Button variant="outline" size="sm" isLoading={weekSaving} onClick={reopenWeek}>
+                        Reopen
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          isLoading={weekSaving}
+                          disabled={dirty || needsSave}
+                          onClick={() => saveWeek(false)}
+                        >
+                          Save draft
+                        </Button>
+                        <Button
+                          size="sm"
+                          leftIcon={<Check className="h-4 w-4" />}
+                          isLoading={weekSaving}
+                          disabled={dirty || needsSave}
+                          onClick={() => saveWeek(true)}
+                        >
+                          Approve week
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  Billing ahead? Add the extra in the month's last week; the customer only sees the month.
+                </p>
+              </>
+            )}
+          </div>
+        )}
+
+        {tab === 'sov' && (
+          <div className="space-y-3 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm text-neutral-600 dark:text-neutral-300">
+                  What the job is worth, line by line. Click any box to change it.
+                </p>
+                {setupSummary && <p className="text-xs text-neutral-500 dark:text-neutral-400">{setupSummary}</p>}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant="outline" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={addLine}>
+                  Add line
+                </Button>
+                {estimates.length > 0 && (
+                  <Button variant="outline" size="sm" leftIcon={<Copy className="h-4 w-4" />} onClick={openEstimatePicker}>
+                    Copy from estimate
+                  </Button>
+                )}
+                {settings && (
+                  <Button variant="outline" size="sm" leftIcon={<Settings className="h-4 w-4" />} onClick={openSetup}>
+                    Setup
+                  </Button>
+                )}
+                {lines.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    leftIcon={<Printer className="h-4 w-4" />}
+                    onClick={printSov}
+                    disabled={!canPrint}
+                    title={canPrint ? undefined : 'Save the SOV first'}
+                  >
+                    Print SOV
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-neutral-900 dark:text-neutral-100">
+                <thead>
+                  <tr>
+                    <th className={`${TH} text-left`}>#</th>
+                    <th className={`${TH} text-left`}>Item</th>
+                    <th className={`${TH} text-right`}>Qty</th>
+                    <th className={`${TH} text-right`}>Price each</th>
+                    <th className={`${TH} text-right`}>Line total</th>
+                    <th className={`${TH} text-right`}>Est. hours</th>
+                    <th className={`${TH} text-left`}>Counts these reports</th>
+                    <th className={`${TH} text-left`}>Done</th>
+                    <th className={TH} />
+                  </tr>
+                </thead>
+                <tbody>
+                  {lines.length === 0 && (
+                    <tr className={ROW}>
+                      <td colSpan={9} className="px-3 py-6 text-center text-neutral-500 dark:text-neutral-400">
+                        {estimates.length > 1
+                          ? `This job's quote has ${estimates.length} estimates. Use Copy from estimate to pick the ones that apply.`
+                          : estimates.length === 1
+                            ? 'No SOV lines yet. Use Copy from estimate, or Add line.'
+                            : 'No SOV lines yet. This job has no estimate to copy from. Use Add line.'}
+                      </td>
+                    </tr>
+                  )}
+                  {sovCos.length > 0 && originalLines.length > 0 && (
+                    <tr className={GROUP_ROW}>
+                      <td className={TD} />
+                      <td className={`${TD} font-medium`} colSpan={3}>
+                        Original contract
+                      </td>
+                      <td className={`${NUM} font-medium`}>{fmtMoney(sovTotal(originalLines))}</td>
+                      <td colSpan={4} />
+                    </tr>
+                  )}
+                  {originalLines.map(renderSovRow)}
+                  {sovCos.map((co) => {
+                    const coLines = coLinesOf(co.id);
+                    const share = completedPct(coLines, progress);
+                    return (
+                      <React.Fragment key={co.id}>
+                        <tr className={GROUP_ROW}>
+                          <td className={TD} />
+                          <td className={TD} colSpan={3}>
+                            {coToggle(co)}
+                            {co.status !== 'approved' && (
+                              <p className="ml-6 mt-1 text-xs text-amber-700 dark:text-amber-300">
+                                Not approved anymore. Approve it again, or remove its lines.
+                              </p>
+                            )}
+                          </td>
+                          <td className={`${NUM} font-medium`}>{fmtMoney(sovTotal(coLines))}</td>
+                          <td />
+                          <td className={TD}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              leftIcon={<Plus className="h-4 w-4" />}
+                              onClick={() => {
+                                setOpenCos((prev) => ({ ...prev, [co.id]: true }));
+                                markChanged([...lines, newLine({ change_order_id: co.id })]);
+                              }}
+                            >
+                              Line
+                            </Button>
+                          </td>
+                          <td className={`${TD} text-xs text-neutral-600 dark:text-neutral-300`}>
+                            {!linesComplete(coLines, progress) && share != null ? `${Math.round(share * 100)}% done` : ''}
+                          </td>
+                          <td />
+                        </tr>
+                        {coOpen(co.id) && coLines.map(renderSovRow)}
+                      </React.Fragment>
+                    );
+                  })}
+                  {lines.length > 0 && (
+                    <tr className="border-t-2 border-neutral-300 font-semibold dark:border-neutral-600">
+                      <td className={TD} />
+                      <td className={TD} colSpan={3}>
+                        Total
+                      </td>
+                      <td className={NUM}>{fmtMoney(sovDollars)}</td>
+                      <td className={NUM}>{fmtHours(sovHours(lines))}</td>
+                      <td />
+                      <td className={`${TD} text-xs`}>{workDone != null ? `${fmtPct(workDone)} done` : ''}</td>
+                      <td />
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {lines.length > 0 && bundle.quotedAmount > 0 && (
+              <p
+                className={`flex items-center gap-1.5 text-xs ${
+                  sovGapMatters ? 'text-amber-700 dark:text-amber-300' : 'text-green-700 dark:text-green-400'
+                }`}
+              >
+                {!sovGapMatters && <Check className="h-4 w-4" />}
+                {sovGapMatters
+                  ? `SOV adds up to ${fmtMoney(sovDollars)}. Contract is ${fmtMoney(contract)}. ${
+                      sovGap > 0 ? `${fmtMoney(sovGap)} is not on the SOV yet.` : `SOV is ${fmtMoney(-sovGap)} over the contract.`
+                    }`
+                  : `Adds up to the contract (${fmtMoney(contract)}).`}
+              </p>
+            )}
+          </div>
+        )}
+
+        {tab === 'month' && (
+          <div className="space-y-3 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="inline-flex border border-neutral-300 dark:border-neutral-600" role="group" aria-label="Months to show">
+                  {MONTH_COUNT_OPTIONS.map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      aria-pressed={monthCount === n}
+                      onClick={() => changeMonthCount(n)}
+                      className={monthCount === n ? SEG_ON : SEG_OFF}
+                    >
+                      {n === 1 ? '1 month' : `${n} months`}
+                    </button>
+                  ))}
+                </div>
+                <div className="inline-flex border border-neutral-300 dark:border-neutral-600" role="group" aria-label="Show as">
+                  <button type="button" aria-pressed={!monthUnits} onClick={() => setMonthUnits(false)} className={monthUnits ? SEG_OFF : SEG_ON}>
+                    Dollars
+                  </button>
+                  <button type="button" aria-pressed={monthUnits} onClick={() => setMonthUnits(true)} className={monthUnits ? SEG_ON : SEG_OFF}>
+                    Units
+                  </button>
+                </div>
+              </div>
+              {lines.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Printer className="h-4 w-4" />}
+                  onClick={printSov}
+                  disabled={!canPrint}
+                  title={canPrint ? undefined : 'Save the SOV first'}
+                >
+                  Print SOV
+                </Button>
+              )}
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-neutral-900 dark:text-neutral-100">
+                <thead>
+                  <tr>
+                    <th className={`${TH} min-w-[14rem] text-left`}>Item</th>
+                    <th className={`${TH} text-right`}>{monthUnits ? 'Qty' : 'Line total'}</th>
+                    {months.map((m) => (
+                      <th key={m} className={`${m === month ? TH_ACTIVE : TH} text-right`}>
+                        <button type="button" onClick={() => setMonth(m)} className="hover:underline">
+                          {monthLabel(m)}
+                        </button>
+                      </th>
+                    ))}
+                    <th className={`${TH} text-right`}>{monthUnits ? 'Done to date' : 'Earned to date'}</th>
+                    <th className={`${TH} text-right`}>Left</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lines.length === 0 && (
+                    <tr className={ROW}>
+                      <td colSpan={4 + months.length} className="px-3 py-6 text-center text-neutral-500 dark:text-neutral-400">
+                        Add lines on the Schedule of values tab first.
+                      </td>
+                    </tr>
+                  )}
+                  {sovCos.length > 0 && originalLines.length > 0 && (
+                    <tr className={GROUP_ROW}>
+                      <td className={`${TD} font-medium`}>Original contract</td>
+                      {monthGroupCells(originalLines)}
+                    </tr>
+                  )}
+                  {originalLines.map(renderMonthRow)}
+                  {sovCos.map((co) => {
+                    const coLines = coLinesOf(co.id);
+                    return (
+                      <React.Fragment key={co.id}>
+                        <tr className={GROUP_ROW}>
+                          <td className={TD}>{coToggle(co)}</td>
+                          {monthGroupCells(coLines)}
+                        </tr>
+                        {coOpen(co.id) && coLines.map(renderMonthRow)}
+                      </React.Fragment>
+                    );
+                  })}
+                  {lines.length > 0 && !monthUnits && (
+                    <tr className="border-t-2 border-neutral-300 font-semibold dark:border-neutral-600">
+                      <td className={TD}>Total</td>
+                      <td className={NUM}>{fmtMoney(sovDollars)}</td>
+                      {months.map((m) => (
+                        <td key={m} className={m === month ? NUM_ACTIVE : NUM}>
+                          {fmtMoney(monthDollars(lines, progress, m))}
+                        </td>
+                      ))}
+                      <td className={NUM}>{fmtMoney(earnedToDate)}</td>
+                      <td className={NUM}>{fmtMoney(sovDollars - earnedToDate)}</td>
+                    </tr>
+                  )}
+                  <tr className={`${ROW} text-neutral-500 dark:text-neutral-400`}>
+                    <td className={TD} colSpan={2}>
+                      Hours worked
+                    </td>
+                    {months.map((m) => (
+                      <td key={m} className={m === month ? NUM_ACTIVE : NUM}>
+                        {fmtHours(hoursByMonth[m] ?? 0)}
+                      </td>
+                    ))}
+                    <td className={NUM}>{fmtHours(usedHours)}</td>
+                    <td />
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {showSaveBar && (
+          <div className="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white dark:bg-neutral-950">
+            <span>{saveBarText}</span>
+            <div className="flex items-center gap-2">
+              {dirty && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={discard}
+                  disabled={saving}
+                  className="border-neutral-500 bg-transparent text-white hover:bg-neutral-800 dark:bg-transparent"
+                >
+                  Discard
+                </Button>
+              )}
+              <Button size="sm" leftIcon={<Save className="h-4 w-4" />} onClick={save} isLoading={saving} disabled={setupMissing}>
+                Save SOV
+              </Button>
+            </div>
+          </div>
         )}
       </div>
 

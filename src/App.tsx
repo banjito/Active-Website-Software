@@ -197,6 +197,7 @@ const DiagramDefaultsPage = lazy(() => import("./components/diagrams/DiagramDefa
 // Text lives in common.standard_sections, never in the bundle.
 const StandardsPage = lazy(() => import("./app/standards/StandardsPage"));
 const PMJobDetail = lazy(() => import("./app/pm-dashboard/PMJobDetail"));
+const SovPrintPage = lazy(() => import("./app/pm-dashboard/SovPrintPage"));
 
 // Articles for ampqes.com/articles: anyone writes, publishers publish.
 const ArticlesPage = lazy(() => import("./pages/articles/Articles"));
@@ -2044,6 +2045,23 @@ function App() {
                             <PMDashboard />
                           </Suspense>
                         </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  {/* Printable SOV: no Layout, so the sidebar stays off the page */}
+                  <Route
+                    path="/pm-dashboard/:jobId/sov"
+                    element={
+                      <RequireAuth>
+                        <Suspense
+                          fallback={
+                            <div className="flex min-h-[300px] items-center justify-center">
+                              <LoadingSpinner size="md" />
+                            </div>
+                          }
+                        >
+                          <SovPrintPage />
+                        </Suspense>
                       </RequireAuth>
                     }
                   />

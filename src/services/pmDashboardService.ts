@@ -148,6 +148,25 @@ export async function fetchPmJobs(division: string): Promise<PmJob[]> {
   return withCustomerNames(data ?? []);
 }
 
+/** Every active job at every location, for the Office home. */
+export async function fetchActiveJobs(): Promise<PmJob[]> {
+  const rows: any[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .schema('neta_ops')
+      .from('jobs')
+      .select(JOB_COLUMNS)
+      .in('status', ACTIVE_JOB_STATUSES)
+      .is('deleted_at', null)
+      .order('job_number_numeric', { ascending: false, nullsFirst: false })
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(describeSupabaseError(error));
+    rows.push(...(data ?? []));
+    if (!data || data.length < PAGE) break;
+  }
+  return withCustomerNames(rows);
+}
+
 /** Active jobs where this person is the PM, at every location. */
 export async function fetchMyPmJobs(userId: string): Promise<PmJob[]> {
   const { data, error } = await supabase

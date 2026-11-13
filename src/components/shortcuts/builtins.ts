@@ -106,8 +106,8 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
     key: "office",
     label: "Office",
     options: [
+      { label: "Jobs & billing", path: "/office" },
       { label: "Vendors", path: "/office/vendors" },
-      { label: "Vendor PO's", path: "/office" },
     ],
   },
   {

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AlertTriangle, ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Pencil, Plus, Printer, Save, Settings, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
@@ -1533,8 +1534,10 @@ export default function PMJobDetail() {
           </div>
         )}
 
-        {showSaveBar && (
-          <div className="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white dark:bg-neutral-950">
+        {/* Floats at the bottom of the screen, so nothing on the page shifts when it appears */}
+        {showSaveBar &&
+          createPortal(
+          <div className="fixed bottom-6 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 flex-wrap items-center justify-between gap-3 rounded-none border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm text-white shadow-lg print:hidden dark:border-neutral-600 dark:bg-neutral-950">
             <span>{saveBarText}</span>
             <div className="flex items-center gap-2">
               {dirty && (
@@ -1552,8 +1555,9 @@ export default function PMJobDetail() {
                 Save SOV
               </Button>
             </div>
-          </div>
-        )}
+          </div>,
+            document.body,
+          )}
       </div>
 
       <Dialog

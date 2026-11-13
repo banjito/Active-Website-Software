@@ -866,6 +866,18 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Office Admin menu items */}
         {(isOfficeAdmin || isOfficePortal) && (
           <>
+            <Link to="/office" onClick={() => setIsMobileSidebarOpen(false)}>
+              <Button
+                variant="ghost"
+                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
+                  location.pathname === "/office"
+                    ? "bg-black/5 dark:bg-dark-50"
+                    : ""
+                }`}
+              >
+                Jobs & billing
+              </Button>
+            </Link>
             <Link
               to="/office/vendors"
               onClick={() => setIsMobileSidebarOpen(false)}
@@ -879,18 +891,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 }`}
               >
                 Vendors
-              </Button>
-            </Link>
-            <Link to="/office" onClick={() => setIsMobileSidebarOpen(false)}>
-              <Button
-                variant="ghost"
-                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
-                  location.pathname === "/office"
-                    ? "bg-black/5 dark:bg-dark-50"
-                    : ""
-                }`}
-              >
-                Vendor PO's
               </Button>
             </Link>
           </>

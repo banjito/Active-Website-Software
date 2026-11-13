@@ -232,8 +232,9 @@ import { StandardsComplianceUpdates } from "./components/engineering/StandardsCo
 import DrawingRepository from "./components/engineering/DrawingRepository";
 
 // Import Office Administration Portal component
-import VendorPOs from "./app/office/VendorPOs";
 import Vendors from "./app/office/Vendors";
+// Office home: active jobs and billing (Project Management scope, item 16)
+const OfficeHome = lazy(() => import("./app/office/OfficeHome"));
 
 // Import Resource Management component
 import ResourceManagement from "./components/resources/ResourceManagement";
@@ -971,7 +972,15 @@ function App() {
                     element={
                       <RequireAuth>
                         <Layout>
-                          <VendorPOs />
+                          <Suspense
+                            fallback={
+                              <div className="flex min-h-[300px] items-center justify-center">
+                                <LoadingSpinner size="md" />
+                              </div>
+                            }
+                          >
+                            <OfficeHome />
+                          </Suspense>
                         </Layout>
                       </RequireAuth>
                     }

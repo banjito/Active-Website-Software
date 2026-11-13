@@ -1121,6 +1121,162 @@ export async function getQBOTimeActivitiesByCustomer(customerId: string): Promis
 /**
  * Get Invoice rows for a single QBO customer (job sub-customer).
  */
+/**
+ * Total invoiced per QuickBooks customer or project id, across every invoice, in one
+ * paged query. For lists of many jobs, where one call per job is too slow.
+ * Throws when QuickBooks can't be reached (e.g. this person hasn't connected it).
+ */
+export async function getQBOInvoiceTotalsByCustomer(): Promise<Map<string, number>> {
+  const totals = new Map<string, number>();
+  for (const inv of await getQBOInvoiceSummaries()) {
+    totals.set(inv.customerId, (totals.get(inv.customerId) ?? 0) + inv.total);
+  }
+  return totals;
+}
+
+export interface QBOInvoiceSummary {
+  customerId: string;
+  total: number;
+  /** YYYY-MM-DD */
+  txnDate: string;
+}
+
+/** Every invoice's customer or project, total and date, in one paged query. */
+export async function getQBOInvoiceSummaries(): Promise<QBOInvoiceSummary[]> {
+  const invoices = await queryAllQBO('Invoice', 'Id, CustomerRef, TotalAmt, TxnDate');
+  return invoices
+    .filter((inv) => inv?.CustomerRef?.value)
+    .map((inv) => ({
+      customerId: String(inv.CustomerRef.value),
+      total: Number(inv.TotalAmt ?? 0),
+      txnDate: String(inv.TxnDate ?? ''),
+    }));
+}
+
+// ---------------------------------------------------------------------------
+// Company KPIs (Office home): profit and loss totals, account balances, class sales
+// ---------------------------------------------------------------------------
+
+export interface QBOProfitAndLoss {
+  income: number;
+  cogs: number;
+  expenses: number;
+  otherIncome: number;
+  otherExpenses: number;
+  netIncome: number;
+}
+
+/**
+ * Profit and loss totals for a date range (YYYY-MM-DD, accrual), optionally for one
+ * class. Reads each section's total row from QuickBooks' ProfitAndLoss report.
+ */
+export async function getQBOProfitAndLoss(start: string, end: string, classId?: string): Promise<QBOProfitAndLoss> {
+  const params = new URLSearchParams({
+    start_date: start,
+    end_date: end,
+    accounting_method: 'Accrual',
+    minorversion: '65',
+  });
+  if (classId) params.set('class', classId);
+  const report = await quickBooksApiCall(`/v3/company/{realmId}/reports/ProfitAndLoss?${params.toString()}`);
+  const totals: Record<string, number> = {};
+  for (const row of report?.Rows?.Row ?? []) {
+    const cols = row?.Summary?.ColData;
+    if (!row?.group || !Array.isArray(cols) || cols.length < 2) continue;
+    totals[row.group] = Number(cols[cols.length - 1]?.value) || 0;
+  }
+  return {
+    income: totals.Income ?? 0,
+    cogs: totals.COGS ?? 0,
+    expenses: totals.Expenses ?? 0,
+    otherIncome: totals.OtherIncome ?? 0,
+    otherExpenses: totals.OtherExpenses ?? 0,
+    netIncome: totals.NetIncome ?? 0,
+  };
+}
+
+export interface QBOAccountBalance {
+  id: string;
+  name: string;
+  balance: number;
+}
+
+/** Accounts of one type (e.g. 'Bank', 'Accounts Receivable') with today's balance. */
+export async function getQBOAccountsByType(accountType: string): Promise<QBOAccountBalance[]> {
+  const accounts = await queryAllQBO(
+    'Account',
+    'Id, Name, FullyQualifiedName, CurrentBalance, Active',
+    `AccountType = '${accountType.replace(/'/g, "\\'")}'`,
+  );
+  return accounts
+    .filter((a) => a.Active !== false)
+    .map((a) => ({
+      id: String(a.Id),
+      name: String(a.FullyQualifiedName ?? a.Name ?? ''),
+      balance: Number(a.CurrentBalance ?? 0),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** A class's id by its name (case doesn't matter), or null when there's no such class. */
+export async function findQBOClassId(name: string): Promise<string | null> {
+  const classes = await queryAllQBO('Class', 'Id, Name, FullyQualifiedName');
+  const want = name.trim().toLowerCase();
+  const hit = classes.find(
+    (c) => String(c.Name ?? '').toLowerCase() === want || String(c.FullyQualifiedName ?? '').toLowerCase() === want,
+  );
+  return hit ? String(hit.Id) : null;
+}
+
+/** Share of an invoice that belongs to a class: all of it when the invoice is tagged, else its tagged lines. */
+function classShare(inv: any, classId: string): { amount: number; share: number } {
+  const total = Number(inv?.TotalAmt ?? 0);
+  if (inv?.ClassRef?.value === classId) return { amount: total, share: 1 };
+  let amount = 0;
+  let lineTotal = 0;
+  for (const line of inv?.Line ?? []) {
+    const detail = line?.SalesItemLineDetail;
+    if (!detail) continue;
+    const lineAmount = Number(line.Amount ?? 0);
+    lineTotal += lineAmount;
+    if (detail.ClassRef?.value === classId) amount += lineAmount;
+  }
+  return { amount, share: lineTotal ? amount / lineTotal : 0 };
+}
+
+/** Invoiced to a class between two dates (by invoice date). */
+export async function getQBOClassInvoiced(classId: string, start: string, end: string): Promise<number> {
+  const invoices = await queryAllQBO('Invoice', '*', `TxnDate >= '${start}' AND TxnDate <= '${end}'`);
+  return invoices.reduce((sum, inv) => sum + classShare(inv, classId).amount, 0);
+}
+
+/**
+ * Payments received between two dates for a class's invoices. A payment on an invoice
+ * that's only partly the class counts that same part.
+ */
+export async function getQBOClassReceived(classId: string, start: string, end: string): Promise<number> {
+  const payments = await queryAllQBO('Payment', '*', `TxnDate >= '${start}' AND TxnDate <= '${end}'`);
+  const applied: { invoiceId: string; amount: number }[] = [];
+  for (const payment of payments) {
+    for (const line of payment?.Line ?? []) {
+      for (const linked of line?.LinkedTxn ?? []) {
+        if (linked?.TxnType === 'Invoice' && linked.TxnId) {
+          applied.push({ invoiceId: String(linked.TxnId), amount: Number(line.Amount ?? 0) });
+        }
+      }
+    }
+  }
+  const ids = [...new Set(applied.map((a) => a.invoiceId))];
+  const shares = new Map<string, number>();
+  for (let i = 0; i < ids.length; i += 50) {
+    const chunk = ids.slice(i, i + 50).map((id) => `'${id}'`).join(', ');
+    for (const inv of await queryAllQBO('Invoice', '*', `Id IN (${chunk})`)) {
+      shares.set(String(inv.Id), classShare(inv, classId).share);
+    }
+  }
+  return applied.reduce((sum, a) => sum + a.amount * (shares.get(a.invoiceId) ?? 0), 0);
+}
+
 export async function getQBOInvoicesByCustomer(customerId: string): Promise<QBOInvoiceRow[]> {
   try {
     const query = `SELECT * FROM Invoice WHERE CustomerRef = '${customerId}' MAXRESULTS 1000`;

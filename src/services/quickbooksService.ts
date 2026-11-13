@@ -21,6 +21,8 @@ interface QuickBooksConnectionStatus {
 class QuickBooksRateLimiter {
   private queue: Array<() => Promise<any>> = [];
   private processing = false;
+  private active = 0;
+  private readonly maxConcurrent = 4;
   private lastRequestTime = 0;
   private readonly minDelayMs = 120; // 120ms = ~500 req/min (QBO's actual limit)
   private readonly maxRetries = 3;
@@ -84,7 +86,9 @@ class QuickBooksRateLimiter {
 
     this.processing = true;
 
-    while (this.queue.length > 0) {
+    // Run a few calls at once instead of one by one. QuickBooks allows 10 at a time
+    // per company; 4 leaves room for other tabs and server jobs.
+    while (this.queue.length > 0 && this.active < this.maxConcurrent) {
       const now = Date.now();
       const timeSinceLastRequest = now - this.lastRequestTime;
 
@@ -95,7 +99,12 @@ class QuickBooksRateLimiter {
       const task = this.queue.shift();
       if (task) {
         this.lastRequestTime = Date.now();
-        await task();
+        this.active++;
+        // Tasks never throw (execute() catches), so a free slot always restarts the queue
+        task().finally(() => {
+          this.active--;
+          this.processQueue();
+        });
       }
     }
 

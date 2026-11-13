@@ -76,6 +76,8 @@ export interface Deliverable {
   report_asset_ids: string[] | null;
   /** Storage path of the cover letter PDF; null until staff publish it. */
   cover_pdf_path: string | null;
+  /** Storage path of the merged full packet PDF; null until staff publish it. */
+  packet_pdf_path?: string | null;
 }
 
 export interface Company {
@@ -365,6 +367,16 @@ export async function getPacketCoverDownloadUrl(
   deliverableId: string,
 ): Promise<string> {
   return invokeDownload({ deliverable_id: deliverableId });
+}
+
+/**
+ * Signed URL for a delivered Report Packet's single merged PDF (cover letter +
+ * every report). Same packet check as the cover letter.
+ */
+export async function getPacketFullDownloadUrl(
+  deliverableId: string,
+): Promise<string> {
+  return invokeDownload({ deliverable_id: deliverableId, kind: "packet" });
 }
 
 async function invokeDownload(body: Record<string, string>): Promise<string> {

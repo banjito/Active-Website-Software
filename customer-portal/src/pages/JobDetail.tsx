@@ -238,6 +238,9 @@ export function JobDetail() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-2">
+                  {packet.packet_pdf_path && (
+                    <PacketCoverRow packet={packet} kind="full" />
+                  )}
                   {packet.cover_pdf_path && <PacketCoverRow packet={packet} />}
                   {items.length === 0 ? (
                     <p className="text-sm text-muted-foreground">

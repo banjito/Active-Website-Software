@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 import { isEmployeeEmailDomain, isEmployeeRole } from '../_shared/companyConfig.ts'
+import { rebuildPacketsContaining } from '../_shared/packetPdf.ts'
 
 // Removes a report's viewing access from the customer portal (ampOS ACCESS).
 //
@@ -107,6 +108,10 @@ serve(async (req) => {
       .update({ published_pdf_path: null })
       .eq('id', assetId)
     if (dbErr) throw new Error(`db update failed: ${dbErr.message}`)
+
+    // Rebuild full packet PDFs without this report (or remove them if that
+    // fails) so the customer can't still get it inside a packet.
+    await rebuildPacketsContaining(admin, assetId)
 
     return json({ ok: true, removed: Boolean(path) })
   } catch (e) {

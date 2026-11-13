@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 import { isEmployeeEmailDomain, isEmployeeRole } from '../_shared/companyConfig.ts'
+import { rebuildPacketsContaining } from '../_shared/packetPdf.ts'
 
 // Renders an approved/sent report to a REAL, print-styled PDF and publishes it
 // to the private customer-reports bucket (ampOS ACCESS).
@@ -229,6 +230,10 @@ serve(async (req) => {
       .update({ published_pdf_path: path })
       .eq('id', assetId)
     if (dbErr) throw new Error(`db update failed: ${dbErr.message}`)
+
+    // Refresh any delivered packet's full PDF so it holds this new copy. The
+    // staff app's packet publish skips this and builds the packet once at the end.
+    if (!body?.skipPackets) await rebuildPacketsContaining(admin, assetId)
 
     return json({ ok: true, path })
   } catch (e) {

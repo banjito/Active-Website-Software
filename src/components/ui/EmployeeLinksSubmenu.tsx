@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   ClipboardList,
   ExternalLink,
+  Clock,
 } from "lucide-react";
 import { companyConfig } from "@/lib/companyConfig";
 import { toast } from "@/components/ui/toast";
@@ -49,6 +50,7 @@ export const EmployeeLinksSubmenu: React.FC<EmployeeLinksSubmenuProps> = ({
   onClose,
 }) => {
   const links: LinkItem[] = [
+    { label: "TimeStAMP", url: companyConfig.timeClockUrl, icon: Clock },
     { label: "My Pay", url: companyConfig.paycheckUrl, icon: Banknote },
     { label: "Travel", url: companyConfig.travelUrl, icon: Plane },
     { label: "Benefits", url: companyConfig.benefitsUrl, icon: HeartHandshake },

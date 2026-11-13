@@ -145,6 +145,11 @@ export const companyConfig = {
     env.VITE_COMPANY_HR_SUPPORT_EMAIL,
     "dionne.tubby@ampqes.com",
   ),
+  /** TimeStAMP, the clock-in app. AMP only for now; buyers leave it empty. */
+  timeClockUrl: optionalStr(
+    env.VITE_COMPANY_TIME_CLOCK_URL,
+    "https://time.ampos.io",
+  ),
   paycheckUrl: optionalStr(
     env.VITE_COMPANY_PAYCHECK_URL,
     "https://workforce.intuit.com/app/payroll-employee-portal-ui/portal/paychecks",

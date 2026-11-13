@@ -96,12 +96,28 @@ import {
 } from "@/services/quickbooksService";
 import QuickBooksTimeEntryTest from "./QuickBooksTimeEntryTest";
 
+/** Gray placeholder until a section's QuickBooks data has arrived */
+const Pending: React.FC<{
+  ready: boolean;
+  className?: string;
+  children: React.ReactNode;
+}> = ({ ready, className = "h-32", children }) =>
+  ready ? <>{children}</> : <Skeleton className={className} />;
+
+const LOADING_LABELS = [
+  "Connecting to QuickBooks...",
+  "Thinking and pondering...",
+  "Hacking the mainframe...",
+  "Checking Jackie's bank account...",
+  "Poking the bear...",
+  "Counting the beans...",
+];
+
 export const QuickBooksDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [loadingLabel, setLoadingLabel] = useState(
-    "Connecting to QuickBooks...",
-  );
+  // Which QuickBooks pulls have finished (worked or failed), so each section knows when to show
+  const [loaded, setLoaded] = useState<Set<string>>(new Set());
+  const [loadTotal, setLoadTotal] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [connected, setConnected] = useState(false);
   const [companyInfo, setCompanyInfo] = useState<any>(null);
@@ -480,386 +496,119 @@ export const QuickBooksDashboard: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
-    setLoadingProgress(0);
-    setLoadingLabel("Connecting to QuickBooks...");
     setError(null);
 
     try {
       const qbStatus = await getQuickBooksStatus();
       const isConnected = qbStatus.connected;
       setConnected(isConnected);
-      setLoadingProgress(10);
-      setLoadingLabel("Thinking and pondering...");
 
       if (!isConnected) {
         setError(
           "QuickBooks is not connected. Go to Admin Dashboard → Integrations to connect.",
         );
-        setLoading(false);
-        setInitialLoadComplete(true);
         return;
       }
 
-      // Get date ranges for each section
-      const pnlDateRange = getDateRangeFor(profitLossDateRange);
-      const transactionsDateRangeObj = getDateRangeFor(transactionsDateRange);
-
-      // Batch API calls sequentially to prevent overwhelming the API
-      // The rate limiter will handle spacing, but we'll process in smaller batches
-      // Batch 1: Core financial data (most important, runs first)
-      setLoadingProgress(20);
-      setLoadingLabel("Hacking the mainframe...");
-
-      // Process in smaller sub-batches to reduce initial queue size
-      const batch1a = await Promise.allSettled([
-        getQuickBooksCompanyInfo(),
-        getQuickBooksProfitAndLoss(
-          undefined,
-          pnlDateRange.start,
-          pnlDateRange.end,
-        ),
-        getQuickBooksAccounts(),
-      ]);
-      setLoadingProgress(45);
-      setLoadingLabel("Checking Jackie's bank account...");
-
-      const batch1b = await Promise.allSettled([
-        getQuickBooksInvoices(),
-        getQuickBooksPayments(),
-        getQuickBooksDeposits(),
-      ]);
-      setLoadingProgress(70);
-      setLoadingLabel("Poking the bear...");
-
-      const cashFlowDateRange = getCashFlowDateRange();
-      const batch1c = await Promise.allSettled([
-        getQuickBooksCashFlow(cashFlowDateRange.start, cashFlowDateRange.end),
-        getQuickBooksEmployees(),
-      ]);
-      setLoadingProgress(100);
-      setLoadingLabel("Counting the beans...");
-
-      // Combine results
-      const batch1 = [...batch1a, ...batch1b, ...batch1c];
-
-      // Process batch 1 results immediately - use functional updates to ensure state is set
-      if (batch1[0].status === "fulfilled") {
-        setCompanyInfo(batch1[0].value || null);
-      } else {
-        console.warn("[QB Dashboard] CompanyInfo failed:", batch1[0].reason);
-      }
-
-      if (batch1[1].status === "fulfilled") {
-        const pnlData = batch1[1].value;
-        console.log(
-          "[QB Dashboard] P&L Raw Data:",
-          JSON.stringify(pnlData, null, 2),
-        );
-        setProfitAndLoss(pnlData);
-      } else {
-        console.warn("[QB Dashboard] ProfitAndLoss failed:", batch1[1].reason);
-      }
-
-      if (batch1[2].status === "fulfilled") setAccounts(batch1[2].value || []);
-      if (batch1[3].status === "fulfilled") setInvoices(batch1[3].value || []);
-      if (batch1[4].status === "fulfilled") setPayments(batch1[4].value || []);
-      if (batch1[5].status === "fulfilled") setDeposits(batch1[5].value || []);
-      if (batch1[6].status === "fulfilled") setCashFlow(batch1[6].value);
-      if (batch1[7].status === "fulfilled") setEmployees(batch1[7].value || []);
-
-      // Log batch 1 results
-      const batch1Names = [
-        "CompanyInfo",
-        "ProfitAndLoss",
-        "Accounts",
-        "Invoices",
-        "Payments",
-        "Deposits",
-        "CashFlow",
-        "Employees",
-      ];
-      batch1.forEach((result, index) => {
-        const name = batch1Names[index];
-        if (result.status === "rejected") {
-          console.error(
-            `[QB Dashboard] Failed to load ${name}:`,
-            result.reason,
-          );
-        } else {
-          console.log(
-            `[QB Dashboard] Loaded ${name}:`,
-            Array.isArray(result.value)
-              ? `${result.value.length} items`
-              : result.value
-                ? "data received"
-                : "empty/null",
-          );
-        }
-      });
-
-      // Set loading to false after critical data is loaded so UI can render
-      // Even if some API calls failed, we should still render what we have
-      console.log(
-        "[QB Dashboard] Setting loading to false, connected:",
-        isConnected,
-      );
-
-      // Check what data we actually have
-      const hasCompanyInfo =
-        batch1[0].status === "fulfilled" && batch1[0].value;
-      const hasPnL = batch1[1].status === "fulfilled" && batch1[1].value;
-      const hasAccounts =
-        batch1[2].status === "fulfilled" && Array.isArray(batch1[2].value);
-      console.log(
-        "[QB Dashboard] Data status - CompanyInfo:",
-        hasCompanyInfo,
-        "P&L:",
-        hasPnL,
-        "Accounts:",
-        hasAccounts,
-      );
-
+      // Show the page now. Each section fills in as its own data lands.
       setLoading(false);
       setInitialLoadComplete(true);
 
-      // Batch 2–5 load in the background after the dashboard is visible
-      // Batch 2: Secondary data (customers, purchases, time activities)
+      const pnlDateRange = getDateRangeFor(profitLossDateRange);
+      const transactionsDateRangeObj = getDateRangeFor(transactionsDateRange);
+      const cashFlowDateRange = getCashFlowDateRange();
 
-      const batch2a = await Promise.allSettled([
-        getQuickBooksCustomers(),
-        getQuickBooksPurchases(),
-        // TimeActivities - handle errors gracefully, don't block loading
-        getQuickBooksTimeActivities(
-          transactionsDateRangeObj.start,
-          transactionsDateRangeObj.end,
-        ).catch((err) => {
-          console.warn(
-            "[QB Dashboard] TimeActivities failed, continuing without it:",
-            err,
-          );
-          return [];
-        }),
-      ]);
+      // One QuickBooks call per section. They queue in this order (top of the page
+      // first), the rate limiter runs a few at a time, and one failure never blocks the rest.
+      const load = <T,>(
+        key: string,
+        fetcher: () => Promise<T>,
+        apply: (value: T) => void,
+      ) =>
+        fetcher()
+          .then(apply)
+          .catch((err) =>
+            console.error(`[QB Dashboard] Failed to load ${key}:`, err),
+          )
+          .finally(() => setLoaded((prev) => new Set(prev).add(key)));
 
-      const batch2b = await Promise.allSettled([
-        getQuickBooksBills(),
-        getQuickBooksVendors(),
-        getQuickBooksEstimates(),
-      ]);
-
-      const batch2 = [...batch2a, ...batch2b];
-
-      if (batch2[0].status === "fulfilled") setCustomers(batch2[0].value || []);
-      if (batch2[1].status === "fulfilled") setPurchases(batch2[1].value || []);
-      if (batch2[2].status === "fulfilled")
-        setTimeActivities(batch2[2].value || []);
-      if (batch2[3].status === "fulfilled") setBills(batch2[3].value || []);
-      if (batch2[4].status === "fulfilled") setVendors(batch2[4].value || []);
-      if (batch2[5].status === "fulfilled") setEstimates(batch2[5].value || []);
-
-      const batch2Names = [
-        "Customers",
-        "Purchases",
-        "TimeActivities",
-        "Bills",
-        "Vendors",
-        "Estimates",
-      ];
-      batch2.forEach((result, index) => {
-        const name = batch2Names[index];
-        if (result.status === "rejected") {
-          console.error(
-            `[QB Dashboard] Failed to load ${name}:`,
-            result.reason,
-          );
-        } else {
-          console.log(
-            `[QB Dashboard] Loaded ${name}:`,
-            Array.isArray(result.value)
-              ? `${result.value.length} items`
-              : result.value
-                ? "data received"
-                : "empty/null",
-          );
-        }
-      });
-
-      // Batch 3: Additional transaction data
-      console.log("[QB Dashboard] Loading batch 3: Transaction data...");
-
-      const batch3a = await Promise.allSettled([
-        getQuickBooksItems(),
-        getQuickBooksSalesReceipts(),
-        getQuickBooksCreditMemos(),
-      ]);
-
-      const batch3b = await Promise.allSettled([
-        getQuickBooksRefundReceipts(),
-        getQuickBooksJournalEntries(),
-        getQuickBooksBillPayments(),
-      ]);
-
-      const batch3 = [...batch3a, ...batch3b];
-
-      if (batch3[0].status === "fulfilled") setItems(batch3[0].value || []);
-      if (batch3[1].status === "fulfilled")
-        setSalesReceipts(batch3[1].value || []);
-      if (batch3[2].status === "fulfilled")
-        setCreditMemos(batch3[2].value || []);
-      if (batch3[3].status === "fulfilled")
-        setRefundReceipts(batch3[3].value || []);
-      if (batch3[4].status === "fulfilled")
-        setJournalEntries(batch3[4].value || []);
-      if (batch3[5].status === "fulfilled")
-        setBillPayments(batch3[5].value || []);
-
-      const batch3Names = [
-        "Items",
-        "SalesReceipts",
-        "CreditMemos",
-        "RefundReceipts",
-        "JournalEntries",
-        "BillPayments",
-      ];
-      batch3.forEach((result, index) => {
-        const name = batch3Names[index];
-        if (result.status === "rejected") {
-          console.error(
-            `[QB Dashboard] Failed to load ${name}:`,
-            result.reason,
-          );
-        } else {
-          console.log(
-            `[QB Dashboard] Loaded ${name}:`,
-            Array.isArray(result.value)
-              ? `${result.value.length} items`
-              : result.value
-                ? "data received"
-                : "empty/null",
-          );
-        }
-      });
-
-      // Batch 4: Configuration and settings data
-      console.log("[QB Dashboard] Loading batch 4: Configuration data...");
-
-      const batch4a = await Promise.allSettled([
-        getQuickBooksClasses(),
-        getQuickBooksDepartments(),
-        getQuickBooksVendorCredits(),
-        getQuickBooksTransfers(),
-      ]);
-
-      const batch4b = await Promise.allSettled([
-        getQuickBooksPaymentMethods(),
-        getQuickBooksPurchaseOrders(),
-        getQuickBooksTaxCodes(),
-        getQuickBooksTerms(),
-      ]);
-
-      const batch4 = [...batch4a, ...batch4b];
-
-      if (batch4[0].status === "fulfilled") setClasses(batch4[0].value || []);
-      if (batch4[1].status === "fulfilled")
-        setDepartments(batch4[1].value || []);
-      if (batch4[2].status === "fulfilled")
-        setVendorCredits(batch4[2].value || []);
-      if (batch4[3].status === "fulfilled") setTransfers(batch4[3].value || []);
-      if (batch4[4].status === "fulfilled")
-        setPaymentMethods(batch4[4].value || []);
-      if (batch4[5].status === "fulfilled")
-        setPurchaseOrders(batch4[5].value || []);
-      if (batch4[6].status === "fulfilled") setTaxCodes(batch4[6].value || []);
-      if (batch4[7].status === "fulfilled") setTerms(batch4[7].value || []);
-
-      const batch4Names = [
-        "Classes",
-        "Departments",
-        "VendorCredits",
-        "Transfers",
-        "PaymentMethods",
-        "PurchaseOrders",
-        "TaxCodes",
-        "Terms",
-      ];
-      batch4.forEach((result, index) => {
-        const name = batch4Names[index];
-        if (result.status === "rejected") {
-          console.error(
-            `[QB Dashboard] Failed to load ${name}:`,
-            result.reason,
-          );
-        } else {
-          console.log(
-            `[QB Dashboard] Loaded ${name}:`,
-            Array.isArray(result.value)
-              ? `${result.value.length} items`
-              : result.value
-                ? "data received"
-                : "empty/null",
-          );
-        }
-      });
-
-      // Batch 5: Payroll data (may require QuickBooks Payroll subscription)
-      console.log("[QB Dashboard] Loading batch 5: Payroll data...");
-      const batch5 = await Promise.allSettled([
-        getQuickBooksPayrollSummary(
-          transactionsDateRangeObj.start,
-          transactionsDateRangeObj.end,
+      const tasks = [
+        load("companyInfo", getQuickBooksCompanyInfo, (v) => setCompanyInfo(v || null)),
+        load("invoices", getQuickBooksInvoices, (v) => setInvoices(v || [])),
+        load("payments", getQuickBooksPayments, (v) => setPayments(v || [])),
+        load("deposits", getQuickBooksDeposits, (v) => setDeposits(v || [])),
+        load(
+          "pnl",
+          () => getQuickBooksProfitAndLoss(undefined, pnlDateRange.start, pnlDateRange.end),
+          setProfitAndLoss,
         ),
-        getQuickBooksPayrollDetails(
-          transactionsDateRangeObj.start,
-          transactionsDateRangeObj.end,
+        load("accounts", getQuickBooksAccounts, (v) => setAccounts(v || [])),
+        load(
+          "cashFlow",
+          () => getQuickBooksCashFlow(cashFlowDateRange.start, cashFlowDateRange.end),
+          setCashFlow,
         ),
-        getQuickBooksTimeOffBalances(),
-        getQuickBooksEmployeeCompensation(),
-      ]);
-
-      if (batch5[0].status === "fulfilled") {
-        console.log("[QB Dashboard] Payroll Summary:", batch5[0].value);
-        setPayrollSummary(batch5[0].value);
-      }
-      if (batch5[1].status === "fulfilled") {
-        console.log("[QB Dashboard] Payroll Details:", batch5[1].value);
-        setPayrollDetails(batch5[1].value);
-      }
-      if (batch5[2].status === "fulfilled") {
-        console.log("[QB Dashboard] Time Off Balances:", batch5[2].value);
-        setTimeOffBalances(batch5[2].value);
-      }
-      if (batch5[3].status === "fulfilled") {
-        console.log("[QB Dashboard] Employee Compensation:", batch5[3].value);
-        setEmployeeCompensation(batch5[3].value || []);
-      }
-
-      const batch5Names = [
-        "PayrollSummary",
-        "PayrollDetails",
-        "TimeOffBalances",
-        "EmployeeCompensation",
+        load("employees", getQuickBooksEmployees, (v) => setEmployees(v || [])),
+        load(
+          "timeActivities",
+          () =>
+            getQuickBooksTimeActivities(
+              transactionsDateRangeObj.start,
+              transactionsDateRangeObj.end,
+            ),
+          (v) => setTimeActivities(v || []),
+        ),
+        load("customers", getQuickBooksCustomers, (v) => setCustomers(v || [])),
+        load("purchases", getQuickBooksPurchases, (v) => setPurchases(v || [])),
+        load("bills", getQuickBooksBills, (v) => setBills(v || [])),
+        load("vendors", getQuickBooksVendors, (v) => setVendors(v || [])),
+        load("estimates", getQuickBooksEstimates, (v) => setEstimates(v || [])),
+        load("items", getQuickBooksItems, (v) => setItems(v || [])),
+        load("salesReceipts", getQuickBooksSalesReceipts, (v) => setSalesReceipts(v || [])),
+        load("creditMemos", getQuickBooksCreditMemos, (v) => setCreditMemos(v || [])),
+        load("refundReceipts", getQuickBooksRefundReceipts, (v) => setRefundReceipts(v || [])),
+        load("journalEntries", getQuickBooksJournalEntries, (v) => setJournalEntries(v || [])),
+        load("billPayments", getQuickBooksBillPayments, (v) => setBillPayments(v || [])),
+        load("classes", getQuickBooksClasses, (v) => setClasses(v || [])),
+        load("departments", getQuickBooksDepartments, (v) => setDepartments(v || [])),
+        load("vendorCredits", getQuickBooksVendorCredits, (v) => setVendorCredits(v || [])),
+        load("transfers", getQuickBooksTransfers, (v) => setTransfers(v || [])),
+        load("paymentMethods", getQuickBooksPaymentMethods, (v) => setPaymentMethods(v || [])),
+        load("purchaseOrders", getQuickBooksPurchaseOrders, (v) => setPurchaseOrders(v || [])),
+        load("taxCodes", getQuickBooksTaxCodes, (v) => setTaxCodes(v || [])),
+        load("terms", getQuickBooksTerms, (v) => setTerms(v || [])),
+        // Payroll may need a QuickBooks Payroll subscription; failures just leave it empty
+        load(
+          "payrollSummary",
+          () =>
+            getQuickBooksPayrollSummary(
+              transactionsDateRangeObj.start,
+              transactionsDateRangeObj.end,
+            ),
+          setPayrollSummary,
+        ),
+        load(
+          "payrollDetails",
+          () =>
+            getQuickBooksPayrollDetails(
+              transactionsDateRangeObj.start,
+              transactionsDateRangeObj.end,
+            ),
+          setPayrollDetails,
+        ),
+        load("timeOffBalances", getQuickBooksTimeOffBalances, setTimeOffBalances),
+        load(
+          "employeeCompensation",
+          getQuickBooksEmployeeCompensation,
+          (v) => setEmployeeCompensation(v || []),
+        ),
       ];
-      batch5.forEach((result, index) => {
-        const name = batch5Names[index];
-        if (result.status === "rejected") {
-          console.error(
-            `[QB Dashboard] Failed to load ${name}:`,
-            result.reason,
-          );
-        } else {
-          console.log(
-            `[QB Dashboard] Loaded ${name}:`,
-            Array.isArray(result.value)
-              ? `${result.value.length} items`
-              : result.value
-                ? "data received"
-                : "empty/null",
-          );
-        }
-      });
+      setLoadTotal(tasks.length);
+      await Promise.all(tasks);
     } catch (err: any) {
       console.error("Error loading QuickBooks data:", err);
       setError(err?.message || "Failed to load QuickBooks data");
+    } finally {
       setLoading(false);
       setInitialLoadComplete(true);
     }
@@ -2214,30 +1963,47 @@ export const QuickBooksDashboard: React.FC = () => {
     setExpandedSection(expandedSection === section ? null : section);
   };
 
-  if (loading || !initialLoadComplete) {
+  // Before the connection check finishes there is no total yet, so show a sliver
+  const loadPercent = loadTotal
+    ? Math.round((loaded.size / loadTotal) * 100)
+    : 5;
+  const loadingBar = (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
+        <span>
+          {
+            LOADING_LABELS[
+              Math.min(
+                LOADING_LABELS.length - 1,
+                Math.floor((loadPercent / 100) * LOADING_LABELS.length),
+              )
+            ]
+          }
+        </span>
+        <span>{loadPercent}%</span>
+      </div>
+      <div className="h-2 w-full overflow-hidden rounded-none bg-neutral-200 dark:bg-neutral-700">
+        <div
+          className="relative h-full overflow-hidden rounded-none bg-[#2CA01C] transition-all duration-500 ease-out"
+          style={{ width: `${loadPercent}%` }}
+        >
+          <div className="absolute inset-0 animate-[shimmer_1.2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+        </div>
+      </div>
+      <style>{`
+        @keyframes shimmer {
+          0%   { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
+    </div>
+  );
+
+  // Full gray page only while checking the connection. A refresh keeps the old numbers up.
+  if (!initialLoadComplete) {
     return (
       <div className="space-y-6">
-        {/* Accurate progress bar */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
-            <span>{loadingLabel}</span>
-            <span>{loadingProgress}%</span>
-          </div>
-          <div className="h-2 w-full overflow-hidden rounded-none bg-neutral-200 dark:bg-neutral-700">
-            <div
-              className="relative h-full overflow-hidden rounded-none bg-[#2CA01C] transition-all duration-500 ease-out"
-              style={{ width: `${loadingProgress}%` }}
-            >
-              <div className="absolute inset-0 animate-[shimmer_1.2s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-            </div>
-          </div>
-          <style>{`
-            @keyframes shimmer {
-              0%   { transform: translateX(-100%); }
-              100% { transform: translateX(100%); }
-            }
-          `}</style>
-        </div>
+        {loadingBar}
         <Skeleton className="h-8 w-64" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
@@ -2314,6 +2080,8 @@ export const QuickBooksDashboard: React.FC = () => {
         </div>
       </div>
 
+      {loadPercent < 100 && loadingBar}
+
       {error && (
         <Card className="border-red-500 bg-red-50 dark:bg-red-900/20">
           <CardContent className="p-4">
@@ -2338,6 +2106,11 @@ export const QuickBooksDashboard: React.FC = () => {
             className="text-sm"
           />
         </div>
+        <Pending
+          ready={["invoices", "payments", "deposits"].every((k) =>
+            loaded.has(k),
+          )}
+        >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Not Paid */}
           <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
@@ -2389,9 +2162,11 @@ export const QuickBooksDashboard: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+        </Pending>
       </div>
 
       {/* Profit & Loss and Expenses */}
+      <Pending ready={loaded.has("pnl")} className="h-80">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Profit & Loss */}
         <Card>
@@ -2566,8 +2341,13 @@ export const QuickBooksDashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+      </Pending>
 
       {/* Cash Flow / Bank Transactions */}
+      <Pending
+        ready={loaded.has("cashFlow") && loaded.has("accounts")}
+        className="h-96"
+      >
       <Card>
         <CardHeader
           className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
@@ -2885,6 +2665,7 @@ export const QuickBooksDashboard: React.FC = () => {
           </CardContent>
         )}
       </Card>
+      </Pending>
 
       {/* Bank Accounts Detail */}
       {bankAccounts.length > 0 && (
@@ -2920,6 +2701,7 @@ export const QuickBooksDashboard: React.FC = () => {
       )}
 
       {/* Employees & Time Tracking Section */}
+      <Pending ready={loaded.has("employees")}>
       <Card>
         <CardHeader
           className="cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
@@ -3363,6 +3145,7 @@ export const QuickBooksDashboard: React.FC = () => {
           </CardContent>
         )}
       </Card>
+      </Pending>
 
       {/* Customers Section */}
       <Card>

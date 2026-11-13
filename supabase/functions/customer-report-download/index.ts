@@ -2,7 +2,8 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
 // Mints a short-lived signed URL for a published report PDF, or for a delivered
-// Report Packet's cover letter PDF (body.deliverable_id).
+// Report Packet's cover letter PDF (body.deliverable_id), or its merged full
+// packet PDF (body.deliverable_id + body.kind = 'packet').
 // Security: access is re-checked server-side by running the SAME RLS predicate
 // the portal trusts — common.customer_can_select_technical_report(report_id) —
 // evaluated AS THE CALLING USER (their JWT is forwarded). The storage bucket
@@ -65,14 +66,23 @@ serve(async (req) => {
         .rpc('customer_deliverables')
       if (rpcError) return json({ error: rpcError.message }, 400)
 
-      const match = (rows as Array<{ id: string; cover_pdf_path: string | null }> | null)
-        ?.find((r) => r.id === deliverableId)
+      const match = (rows as Array<{
+        id: string
+        cover_pdf_path: string | null
+        packet_pdf_path?: string | null
+      }> | null)?.find((r) => r.id === deliverableId)
       if (!match) return json({ error: 'Not authorized for this packet' }, 403)
 
-      path = match.cover_pdf_path
+      // kind 'packet' = the single merged PDF; default = the cover letter.
+      const wantsPacket = String(body?.kind || '') === 'packet'
+      path = wantsPacket ? (match.packet_pdf_path ?? null) : match.cover_pdf_path
       if (!path) {
         return json(
-          { error: 'This cover letter has not been published as a downloadable PDF yet.' },
+          {
+            error: wantsPacket
+              ? 'The full packet PDF is not ready yet.'
+              : 'This cover letter has not been published as a downloadable PDF yet.',
+          },
           409,
         )
       }

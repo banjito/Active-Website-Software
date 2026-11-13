@@ -276,7 +276,7 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
 
   // Call an edge function and surface its JSON `error` instead of the generic
   // "non-2xx status code" message.
-  const invokeEdge = async (fn: string, body: Record<string, string>) => {
+  const invokeEdge = async (fn: string, body: Record<string, unknown>) => {
     const { data, error } = await supabase.functions.invoke(fn, { body });
     if (error) {
       let detail = error.message;
@@ -323,12 +323,28 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
           a.file_url?.startsWith("report:") &&
           ["approved", "sent"].includes(String(a.status || "").toLowerCase()),
       );
+      // skipPackets: build the merged packet once below, not after every report.
       for (const r of reports) {
         try {
-          await invokeEdge("publish-report-pdf", { assetId: r.id });
+          await invokeEdge("publish-report-pdf", {
+            assetId: r.id,
+            skipPackets: true,
+          });
           published++;
         } catch (e) {
           errors.push(`${r.name}: ${e instanceof Error ? e.message : e}`);
+        }
+      }
+
+      // Last: stitch everything above into the one "full packet" PDF.
+      if (reports.length > 0) {
+        try {
+          await invokeEdge("publish-packet-pdf", {
+            deliverableId: deliverable.id,
+          });
+          published++;
+        } catch (e) {
+          errors.push(`Full packet: ${e instanceof Error ? e.message : e}`);
         }
       }
 
@@ -775,7 +791,7 @@ const JobDeliverables: React.FC<JobDeliverablesProps> = ({ jobId }) => {
                   <Button
                     onClick={() => publishPacketToAccess(selectedDeliverable)}
                     disabled={publishingId !== null}
-                    title="Re-render the cover letter and report PDFs the customer sees in ampOS ACCESS"
+                    title="Re-render the cover letter, report PDFs and full packet PDF the customer sees in ampOS ACCESS"
                   >
                     {publishingId === selectedDeliverable.id
                       ? "Publishing…"

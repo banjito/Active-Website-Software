@@ -28,10 +28,12 @@ interface QuickBooksIntegration {
   environment: "sandbox" | "production";
   expires_at: string;
   created_at: string;
+  connected_by: string | null;
 }
 
 interface ConnectionStatus {
   connected: boolean;
+  can_manage?: boolean;
   integration?: QuickBooksIntegration;
   error?: string;
 }
@@ -54,6 +56,7 @@ export const IntegrationsSettings: React.FC = () => {
       const qbStatus = await getQuickBooksStatus();
       setStatus({
         connected: qbStatus.connected,
+        can_manage: qbStatus.can_manage,
         integration: qbStatus.integration,
       });
 
@@ -83,6 +86,7 @@ export const IntegrationsSettings: React.FC = () => {
       const qbStatus = await getQuickBooksStatus();
       setStatus({
         connected: qbStatus.connected,
+        can_manage: qbStatus.can_manage,
         integration: qbStatus.integration,
       });
     } catch (error: any) {
@@ -117,7 +121,7 @@ export const IntegrationsSettings: React.FC = () => {
   const handleDisconnect = async () => {
     if (
       !confirm(
-        "Are you sure you want to disconnect QuickBooks? You will need to reconnect to use QuickBooks features.",
+        "Disconnect QuickBooks for the whole company? QuickBooks features stop working for everyone until an admin reconnects.",
       )
     ) {
       return;
@@ -231,6 +235,10 @@ export const IntegrationsSettings: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            One connection, shared by the whole company. Connecting again
+            replaces it for everyone. Only admins can connect or disconnect.
+          </p>
           {status.connected && status.integration ? (
             <>
               {/* Connection Details */}
@@ -277,9 +285,12 @@ export const IntegrationsSettings: React.FC = () => {
                 <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-none">
                   <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mb-1">
                     <Clock className="h-4 w-4" />
-                    Connected On
+                    Connected By
                   </div>
                   <p className="font-medium">
+                    {status.integration.connected_by || "Unknown"}
+                  </p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
                     {formatDate(status.integration.created_at)}
                   </p>
                 </div>
@@ -344,15 +355,17 @@ export const IntegrationsSettings: React.FC = () => {
                   className="flex items-center gap-2" leftIcon={<Download className={`h-4 w-4 ${fetchingData ? "animate-spin" : ""}`} />}>
                   {fetchingData ? "Syncing..." : "Sync Company Info"}
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleDisconnect}
-                  disabled={disconnecting}
-                  className="flex items-center gap-2 text-red-600 border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-700 dark:hover:bg-red-900/20"
-                  leftIcon={<Unplug className="h-4 w-4" />}
-                >
-                  {disconnecting ? "Disconnecting..." : "Disconnect"}
-                </Button>
+                {status.can_manage && (
+                  <Button
+                    variant="outline"
+                    onClick={handleDisconnect}
+                    disabled={disconnecting}
+                    className="flex items-center gap-2 text-red-600 border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-700 dark:hover:bg-red-900/20"
+                    leftIcon={<Unplug className="h-4 w-4" />}
+                  >
+                    {disconnecting ? "Disconnecting..." : "Disconnect"}
+                  </Button>
+                )}
                 <a
                   href="https://quickbooks.intuit.com"
                   target="_blank"
@@ -368,12 +381,18 @@ export const IntegrationsSettings: React.FC = () => {
             <>
               {/* Not Connected State */}
               <div className="py-8 text-center">
-                <Button
-                  onClick={handleConnect}
-                  className="bg-[#2CA01C] hover:bg-[#2CA01C]/85 text-white"
-                >
-                  Connect QuickBooks
-                </Button>
+                {status.can_manage ? (
+                  <Button
+                    onClick={handleConnect}
+                    className="bg-[#2CA01C] hover:bg-[#2CA01C]/85 text-white"
+                  >
+                    Connect QuickBooks
+                  </Button>
+                ) : (
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    Ask an admin to connect QuickBooks.
+                  </p>
+                )}
               </div>
 
               {/* Error Message */}

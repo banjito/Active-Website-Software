@@ -107,7 +107,7 @@ export function OfficeKpis() {
 
       {allFailed && (
         <div className="rounded-none border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200">
-          QuickBooks couldn't be reached: {kpis[0].error} Connect your QuickBooks account, then hit refresh.
+          QuickBooks couldn't be reached: {kpis[0].error} Once an admin connects it in Admin → Integrations, hit refresh.
         </div>
       )}
 

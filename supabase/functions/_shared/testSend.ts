@@ -1,3 +1,5 @@
+import { timingSafeEqual } from './timingSafeEqual.ts'
+
 /**
  * Test sends for notification emails.
  *
@@ -17,7 +19,7 @@ async function isServiceRoleCaller(req: Request): Promise<boolean> {
   const url = Deno.env.get('SUPABASE_URL')
   const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '')
   if (!url || !token) return false
-  if (token === Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')) return true
+  if (timingSafeEqual(token, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '')) return true
   try {
     const res = await fetch(`${url}/auth/v1/admin/users?per_page=1`, {
       headers: { 'Authorization': `Bearer ${token}`, 'apikey': token }

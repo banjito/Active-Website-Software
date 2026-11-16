@@ -26,6 +26,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { HeaderBar } from "@/components/ui/HeaderBar";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { supabase } from "@/lib/supabase";
+import { getQuickBooksStatus } from "@/services/quickbooksService";
 import { format, formatDistanceToNow } from "date-fns";
 
 // ─── Shared types ────────────────────────────────────────────────────────────
@@ -396,13 +397,11 @@ export const AdminDashboardIndex: React.FC = () => {
             .eq("is_read", false)
             .order("created_at", { ascending: false })
             .limit(5),
-          supabase
-            .schema("common")
-            .from("quickbooks_integrations")
-            .select("id, company_name, is_active")
-            .eq("is_active", true)
-            .limit(1)
-            .maybeSingle(),
+          // The company's shared connection (the table itself only shows your own rows)
+          getQuickBooksStatus().then((s) => ({
+            data: s.connected ? { company_name: s.integration?.company_name ?? null } : null,
+            error: null,
+          })),
           supabase
             .schema("common")
             .from("system_change_logs")

@@ -14,6 +14,12 @@ The QuickBooks integration connects an ampOS job to a QuickBooks **project**, so
 
 You are returned to ampOS with the connection active.
 
+There is **one connection for the whole company**. An admin connects once, and every employee's QuickBooks features use it. Nobody connects their own account.
+
+::: warning
+QuickBooks allows only one ampOS connection per company. Connecting again replaces the current one for everyone, so only admins can connect or disconnect.
+:::
+
 ::: note
 This is a real connection to your live accounting system. Anything pushed to QuickBooks lands in your actual books.
 :::

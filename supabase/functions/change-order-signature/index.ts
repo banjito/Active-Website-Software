@@ -274,7 +274,9 @@ ${button(link, 'Review and sign')}
         return json({ error: why[state] || 'This link can no longer be used.' }, 409)
       }
 
-      const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || null
+      // Cloudflare sets cf-connecting-ip and overwrites any value the client sends.
+      // The first X-Forwarded-For entry is client-typed, so it can't go on a signature record.
+      const ip = (req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || '').trim() || null
       const userAgent = (req.headers.get('user-agent') || '').slice(0, 500) || null
       const { data: sender } = sig.sent_by ? await db.auth.admin.getUserById(sig.sent_by) : { data: null }
       const senderEmail = (sender as any)?.user?.email ?? null

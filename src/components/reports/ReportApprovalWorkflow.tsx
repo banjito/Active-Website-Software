@@ -116,6 +116,221 @@ const PRINTER_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" hei
 const PENCIL_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`;
 
 const FLAG_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>`;
+const CHEVRONS_LEFT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>`;
+
+// ---------------------------------------------------------------------------
+// Review sidebar. Three stacked parts: icon toolbar (top, fixed), scrolling
+// body (history, action items, notes), and the decision buttons pinned to the
+// bottom so they can never be pushed off-screen or covered when zoomed in.
+// Collapses to a slim rail so the report gets nearly the full width.
+// ---------------------------------------------------------------------------
+// Kept for the session, so the next report opens the same way.
+let reviewSidebarCollapsed = false;
+const REVIEW_SIDEBAR_STYLE_ID = "review-sidebar-style";
+const REVIEW_SIDEBAR_CSS = `
+  #review-sidebar { width: 300px; transition: width 0.15s ease; }
+  #review-sidebar[data-collapsed="true"] { width: 60px; }
+  #review-sidebar[data-collapsed="true"] .rs-full { display: none !important; }
+  #review-sidebar:not([data-collapsed="true"]) .rs-mini { display: none !important; }
+  #review-sidebar[data-collapsed="true"] .rs-toolbar { flex-direction: column; align-items: center; padding: 0.625rem; }
+  #review-sidebar[data-collapsed="true"] #review-sidebar-toggle { order: -1; margin: 0; }
+  #review-sidebar[data-collapsed="true"] #review-sidebar-toggle svg { transform: rotate(180deg); }
+
+  /* Dark mode. The review window is plain HTML with inline light colors, so
+     each light color is matched and swapped here. The report sheet inside the
+     iframe stays as-is (white paper, like the printout). */
+  .dark #report-view-modal { color: #f5f5f5; }
+  .dark #report-view-modal [style*="background:white"] { background: #1e1e1e !important; }
+  .dark #report-view-modal [style*="background:#f3f4f6"] { background: #262626 !important; }
+  .dark #report-view-modal [style*="background:#f9fafb"] { background: #3f3f3f !important; }
+  /* Status pill: dark tinted background + bright text. */
+  .dark #report-view-modal [style*="background:#fef3c7"] { background: rgba(245, 158, 11, 0.18) !important; color: #fcd34d !important; }
+  .dark #report-view-modal [style*="background:#d1fae5"] { background: rgba(16, 185, 129, 0.18) !important; color: #6ee7b7 !important; }
+  .dark #report-view-modal [style*="background:#fee2e2"] { background: rgba(239, 68, 68, 0.18) !important; color: #fca5a5 !important; }
+  .dark #report-view-modal [style*="#e5e7eb"],
+  .dark #report-view-modal [style*="#d1d5db"] { border-color: #3f3f3f !important; }
+  .dark #report-view-modal [style*="color:#111827"],
+  .dark #report-view-modal [style*="color:#374151"] { color: #e5e5e5 !important; }
+  .dark #report-view-modal [style*="color:#6b7280"] { color: #a3a3a3 !important; }
+  .dark #report-view-modal [style*="background:#fffbeb"] { background: rgba(245, 158, 11, 0.1) !important; border-color: #78350f !important; }
+  .dark #report-view-modal [style*="color:#92400e"] { color: #fbbf24 !important; }
+  .dark #report-view-modal [style*="color:#b91c1c"] { color: #f87171 !important; }
+  .dark #report-view-modal [style*="color:#dc2626"] { color: #f87171 !important; }
+  .dark #report-view-modal [style*="#fca5a5"] { border-color: #7f1d1d !important; }
+  .dark #report-view-modal textarea { background: #262626 !important; color: #f5f5f5 !important; }
+  .dark #report-view-modal textarea::placeholder { color: #8a8a8a; }
+`;
+
+const APPROVE_OPT_STYLE =
+  "display:block;width:100%;text-align:left;padding:0.5rem 0.75rem;background:white;border:none;border-radius:0;cursor:pointer;font-size:0.8125rem;color:#374151;";
+
+// What the main Approve button does. Saved in this browser so the choice
+// sticks between reviews and visits.
+type ApproveMode = "approve" | "next";
+const APPROVE_MODE_KEY = "review-approve-mode";
+function getApproveMode(): ApproveMode {
+  try {
+    return localStorage.getItem(APPROVE_MODE_KEY) === "next" ? "next" : "approve";
+  } catch {
+    return "approve";
+  }
+}
+function setApproveMode(mode: ApproveMode) {
+  try {
+    localStorage.setItem(APPROVE_MODE_KEY, mode);
+  } catch {
+    /* storage blocked; choice lasts for this window only */
+  }
+}
+
+/**
+ * Sets the Approve button label from: the saved mode, whether a next report
+ * is waiting (data-has-next) and whether edits still need saving
+ * (data-unsaved).
+ */
+function refreshApproveLabel() {
+  const btn = document.getElementById("review-approve-btn");
+  if (!btn) return;
+  const unsaved = btn.dataset.unsaved === "true";
+  const openNext = getApproveMode() === "next" && btn.dataset.hasNext === "true";
+  btn.textContent = openNext
+    ? unsaved
+      ? "✓ Save, Approve & Open Next"
+      : "✓ Approve & Open Next"
+    : unsaved
+      ? "✓ Save & Approve"
+      : "✓ Approve";
+  const mini = document.getElementById("review-mini-approve");
+  if (mini) mini.title = btn.textContent.replace("✓ ", "");
+  // Mark the saved choice in the menu.
+  document.querySelectorAll<HTMLElement>("[data-approve-mode]").forEach((opt) => {
+    const selected = opt.dataset.approveMode === getApproveMode();
+    opt.setAttribute("aria-checked", String(selected));
+    opt.style.fontWeight = selected ? "600" : "400";
+    const base = opt.dataset.approveMode === "next" ? "Approve & Open Next" : "Approve";
+    opt.textContent = `${selected ? "✓ " : ""}${base}`;
+  });
+}
+
+const MINI_BTN_STYLE =
+  "width:40px;height:40px;border-radius:0;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;font-weight:600;";
+
+function buildReviewSidebarHtml(opts: {
+  toolbarHtml: string;
+  bodyHtml: string;
+  canReview: boolean;
+  readOnlyHtml: string;
+}) {
+  const { toolbarHtml, bodyHtml, canReview, readOnlyHtml } = opts;
+  return `
+    <div id="review-sidebar" data-collapsed="${reviewSidebarCollapsed}" style="flex-shrink:0;border-right:1px solid #e5e7eb;background:white;display:flex;flex-direction:column;overflow:hidden;">
+      <div class="rs-toolbar" style="flex-shrink:0;display:flex;flex-wrap:wrap;gap:0.5rem;padding:1rem 1rem 0.75rem;">
+        ${toolbarHtml}
+        <button id="review-sidebar-toggle" title="Collapse / expand panel" aria-label="Collapse or expand review panel" style="margin-left:auto;width:40px;height:40px;border-radius:0;display:flex;align-items:center;justify-content:center;border:1px solid #d1d5db;cursor:pointer;color:#374151;background:white;">
+          ${CHEVRONS_LEFT_SVG}
+        </button>
+      </div>
+      <div class="rs-full" style="flex:1;min-height:0;overflow-y:auto;padding:0 1rem 1rem;display:flex;flex-direction:column;gap:1rem;">
+        ${bodyHtml}
+        ${
+          canReview
+            ? `
+        <div style="display:flex;flex-direction:column;flex:1 0 auto;">
+          <label for="review-comments-input" style="display:block;font-size:0.875rem;font-weight:500;color:#374151;margin-bottom:0.5rem;">Review Notes</label>
+          <textarea
+            id="review-comments-input"
+            placeholder="Add comments about this report (required for rejection)..."
+            style="width:100%;flex:1;min-height:120px;padding:0.5rem 0.75rem;border:1px solid #d1d5db;border-radius:0;font-size:0.875rem;resize:none;box-sizing:border-box;"
+          ></textarea>
+        </div>`
+            : readOnlyHtml
+        }
+      </div>
+      ${
+        canReview
+          ? `
+      <div class="rs-full" style="flex-shrink:0;padding:0.75rem 1rem 1rem;border-top:1px solid #e5e7eb;display:flex;flex-direction:column;gap:0.5rem;">
+        <div style="position:relative;display:flex;">
+          <button id="review-approve-btn" style="flex:1;min-width:0;padding:0.625rem 1rem;background:#16a34a;border:none;border-radius:0;cursor:pointer;font-size:0.875rem;color:white;font-weight:500;">
+            ✓ Approve
+          </button>
+          <button id="review-approve-menu-btn" title="Approve options" aria-label="Approve options" aria-haspopup="true" aria-expanded="false" style="width:36px;flex-shrink:0;background:#15803d;border:none;border-left:1px solid rgba(255,255,255,0.35);border-radius:0;cursor:pointer;color:white;font-size:0.75rem;">▾</button>
+          <div id="review-approve-menu" role="menu" style="display:none;position:absolute;left:0;right:0;bottom:100%;margin-bottom:4px;z-index:5;background:white;border:1px solid #d1d5db;box-shadow:0 4px 12px rgba(0,0,0,0.15);flex-direction:column;">
+            <button role="menuitemradio" data-approve-mode="approve" style="${APPROVE_OPT_STYLE}">Approve</button>
+            <button role="menuitemradio" data-approve-mode="next" style="${APPROVE_OPT_STYLE}border-top:1px solid #e5e7eb;">Approve &amp; Open Next</button>
+          </div>
+        </div>
+        <button id="review-reject-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #fca5a5;border-radius:0;cursor:pointer;font-size:0.875rem;color:#dc2626;font-weight:500;">
+          ✕ Reject / Mark as Issue
+        </button>
+        <button id="review-archive-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #d1d5db;border-radius:0;cursor:pointer;font-size:0.875rem;color:#374151;font-weight:500;">
+          Archive
+        </button>
+      </div>
+      <div class="rs-mini" style="flex-shrink:0;margin-top:auto;padding:0.625rem;display:flex;flex-direction:column;align-items:center;gap:0.5rem;border-top:1px solid #e5e7eb;">
+        <button id="review-mini-approve" title="Approve" aria-label="Approve" style="${MINI_BTN_STYLE}border:none;background:#16a34a;color:white;">✓</button>
+        <button id="review-mini-reject" title="Reject (opens notes)" aria-label="Reject, opens notes" style="${MINI_BTN_STYLE}border:1px solid #fca5a5;background:white;color:#dc2626;">✕</button>
+      </div>`
+          : ""
+      }
+    </div>`;
+}
+
+/** Collapse toggle + the slim-rail shortcut buttons. */
+function wireReviewSidebar() {
+  if (!document.getElementById(REVIEW_SIDEBAR_STYLE_ID)) {
+    const style = document.createElement("style");
+    style.id = REVIEW_SIDEBAR_STYLE_ID;
+    style.textContent = REVIEW_SIDEBAR_CSS;
+    document.head.appendChild(style);
+  }
+  const sidebar = document.getElementById("review-sidebar");
+  if (!sidebar) return;
+  const setCollapsed = (collapsed: boolean) => {
+    reviewSidebarCollapsed = collapsed;
+    sidebar.setAttribute("data-collapsed", String(collapsed));
+  };
+  const toggle = document.getElementById("review-sidebar-toggle");
+  if (toggle) toggle.onclick = () => setCollapsed(!reviewSidebarCollapsed);
+
+  // Approve from the rail runs the real button, so all its checks still apply.
+  const miniApprove = document.getElementById("review-mini-approve");
+  if (miniApprove)
+    miniApprove.onclick = () =>
+      (document.getElementById("review-approve-btn") as HTMLButtonElement | null)?.click();
+  // Approve dropdown: picks what the main Approve button does, saved for next time.
+  const menuBtn = document.getElementById("review-approve-menu-btn");
+  const menu = document.getElementById("review-approve-menu");
+  if (menuBtn && menu) {
+    const setOpen = (open: boolean) => {
+      menu.style.display = open ? "flex" : "none";
+      menuBtn.setAttribute("aria-expanded", String(open));
+    };
+    menuBtn.onclick = (e) => {
+      e.stopPropagation();
+      setOpen(menu.style.display === "none");
+    };
+    menu.querySelectorAll<HTMLElement>("[data-approve-mode]").forEach((opt) => {
+      opt.onclick = (e) => {
+        e.stopPropagation();
+        setApproveMode(opt.dataset.approveMode === "next" ? "next" : "approve");
+        setOpen(false);
+        refreshApproveLabel();
+      };
+    });
+    // Click anywhere else in the window closes the menu.
+    document.getElementById("report-view-modal")?.addEventListener("click", () => setOpen(false));
+  }
+  refreshApproveLabel();
+
+  // Reject needs notes, so open the panel and put the cursor in the notes box.
+  const miniReject = document.getElementById("review-mini-reject");
+  if (miniReject)
+    miniReject.onclick = () => {
+      setCollapsed(false);
+      (document.getElementById("review-comments-input") as HTMLTextAreaElement | null)?.focus();
+    };
+}
 
 // ---------------------------------------------------------------------------
 // Review preview zoom. Zooms the report inside the preview iframe, like the
@@ -161,10 +376,14 @@ function wireReportZoom() {
       // wraps exactly as it prints. Zoom scales that sheet; it never reflows,
       // and a sheet wider than the window scrolls sideways.
       doc.documentElement.setAttribute("data-review-sheet", "");
+      // Backdrop behind the sheet follows the app theme; the sheet stays white.
+      const dark = document.documentElement.classList.contains("dark");
+      const backdrop = dark ? "#3f3f3f" : "#e5e7eb";
+      const thumb = dark ? "#6b6b6b" : "#9ca3af";
       style.textContent = `@media screen {
         html[data-review-sheet][data-review-sheet] {
           zoom: ${reportPreviewZoom} !important;
-          background: #e5e7eb !important;
+          background: ${backdrop} !important;
           /* Some reports' print CSS sets html to 100vw. Under zoom, vw is
              scaled too, so html ends up narrower/wider than the window and
              the centered sheet drifts sideways. Let html size naturally. */
@@ -182,22 +401,22 @@ function wireReportZoom() {
              { display: none }). Setting scrollbar-color makes Chrome/Edge
              ignore those rules and draw a normal scroll bar again. */
           scrollbar-width: auto !important;
-          scrollbar-color: #9ca3af #e5e7eb !important;
+          scrollbar-color: ${thumb} ${backdrop} !important;
         }
         /* Safari still uses the -webkit- rules, so restyle them visibly. */
         html[data-review-sheet]::-webkit-scrollbar {
           display: block !important;
           width: 12px !important;
           height: 12px !important;
-          background: #e5e7eb !important;
+          background: ${backdrop} !important;
         }
         html[data-review-sheet]::-webkit-scrollbar-thumb {
           display: block !important;
-          background: #9ca3af !important;
+          background: ${thumb} !important;
           border-radius: 0 !important;
         }
         html[data-review-sheet]::-webkit-scrollbar-corner {
-          background: #e5e7eb !important;
+          background: ${backdrop} !important;
         }
         html[data-review-sheet] body {
           /* Anchor absolutely-positioned items (print titles, PASS/FAIL
@@ -1647,8 +1866,68 @@ export function ReportApprovalWorkflow({
     return true;
   };
 
-  const handleViewReport = async (report: TechnicalReport) => {
+  // navList: the table the report was opened from, in on-screen order. Drives
+  // the Previous / Next buttons so a reviewer can walk the queue without
+  // closing the window.
+  const handleViewReport = async (
+    report: TechnicalReport,
+    navList: TechnicalReport[] = [],
+  ) => {
     console.log("[ViewDialog] handleViewReport called for:", report.id);
+
+    const navIndex = navList.findIndex((r) => r.id === report.id);
+    const navHtml =
+      navIndex === -1 || navList.length < 2
+        ? ""
+        : `
+              <div style="display:flex;align-items:center;border:1px solid #d1d5db;">
+                <button id="report-nav-prev" title="Previous report" aria-label="Previous report" ${navIndex === 0 ? "disabled" : ""} style="height:34px;padding:0 0.75rem;border:none;background:#f3f4f6;cursor:${navIndex === 0 ? "default" : "pointer"};font-size:0.875rem;border-radius:0;opacity:${navIndex === 0 ? 0.4 : 1};">‹ Prev</button>
+                <span style="padding:0 0.75rem;font-size:0.8125rem;color:#374151;white-space:nowrap;">${navIndex + 1} of ${navList.length}</span>
+                <button id="report-nav-next" title="Next report" aria-label="Next report" ${navIndex === navList.length - 1 ? "disabled" : ""} style="height:34px;padding:0 0.75rem;border:none;background:#f3f4f6;cursor:${navIndex === navList.length - 1 ? "default" : "pointer"};font-size:0.875rem;border-radius:0;opacity:${navIndex === navList.length - 1 ? 0.4 : 1};">Next ›</button>
+              </div>`;
+    // Goes through the Close button so its unsaved-changes prompt and cleanup
+    // still run; if the reviewer cancels, the modal stays and we stop.
+    const wireReviewNav = () => {
+      const go = (delta: number) => {
+        const target = navList[navIndex + delta];
+        if (!target) return;
+        document.getElementById("report-view-close-btn")?.click();
+        if (document.getElementById("report-view-modal")) return;
+        handleViewReport(target, navList);
+      };
+      const prev = document.getElementById("report-nav-prev");
+      const next = document.getElementById("report-nav-next");
+      if (prev) prev.onclick = () => go(-1);
+      if (next) next.onclick = () => go(1);
+
+      // Each Approve click reads the saved dropdown choice at that moment.
+      // "Open next" only applies when a later report is still waiting.
+      const approveBtn = document.getElementById("review-approve-btn");
+      if (!approveBtn) return;
+      approveBtn.dataset.hasNext = String(!!nextReviewable);
+      refreshApproveLabel();
+      approveBtn.addEventListener("click", () => {
+        advanceAfterApprove = getApproveMode() === "next" && !!nextReviewable;
+      });
+    };
+    // Next report after this one that still needs review.
+    const nextReviewable =
+      navIndex === -1
+        ? undefined
+        : navList.slice(navIndex + 1).find((r) => r.status === "submitted");
+    let advanceAfterApprove = false;
+    // Called after a successful approve. The list was captured when the
+    // window opened, so mark this report approved in it; going back with
+    // Prev then shows it as approved, not still waiting.
+    const afterApproved = () => {
+      const updatedList = navList.map((r) =>
+        r.id === report.id ? { ...r, status: "approved" as TechnicalReport["status"] } : r,
+      );
+      if (advanceAfterApprove && nextReviewable) {
+        advanceAfterApprove = false;
+        handleViewReport(nextReviewable, updatedList);
+      }
+    };
 
     // Build the report URL
     if (!report.report_data?.file_url) {
@@ -1706,6 +1985,76 @@ export function ReportApprovalWorkflow({
       : jobNumber
         ? `${report.title} - #${jobNumber}`
         : report.title;
+
+    // Header: identifier as the headline, report type under it, then a strip
+    // of details (urgency, substation, submitted...) so each report is easy
+    // to place while clicking through with Prev / Next.
+    const esc = (v: unknown) =>
+      String(v ?? "").replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+      );
+    const nameParts = getReportNameParts(report);
+    const headIdentifier = getReportIdentifier(report);
+    const headline = headIdentifier || nameParts.reportType || report.title;
+    const subline = headIdentifier ? nameParts.reportType || "" : "";
+    const linkedAssets: ReportLinkedAsset[] =
+      ((window as any).__reportApprovalAssetsMap || {})[report.id] || [];
+    const isCriticalReport =
+      linkedAssets.some((a) => a.urgency === "critical") ||
+      (report.report_data as any)?.urgency === "critical";
+    const substationName = String(
+      reportSubstations[report.id] || report.report_data?.substation || "",
+    ).trim();
+    const evaluation = evaluationsByReport[report.id];
+    const statusLabel =
+      String(report.status).charAt(0).toUpperCase() + String(report.status).slice(1);
+    const statusBg =
+      report.status === "submitted" ? "#fef3c7" : report.status === "approved" ? "#d1fae5" : "#fee2e2";
+    const statusFg =
+      report.status === "submitted" ? "#92400e" : report.status === "approved" ? "#065f46" : "#991b1b";
+    const PILL = "display:inline-block;padding:0.125rem 0.5rem;border-radius:0;font-size:0.75rem;font-weight:600;";
+    const detail = (label: string, valueHtml: string) => `
+      <div style="display:flex;flex-direction:column;gap:0.125rem;padding:0 1rem;border-left:1px solid #e5e7eb;min-width:0;">
+        <span style="font-size:0.625rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#6b7280;">${label}</span>
+        <span style="font-size:0.8125rem;color:#111827;white-space:nowrap;">${valueHtml}</span>
+      </div>`;
+    const detailsHtml = [
+      detail(
+        "Urgency",
+        isCriticalReport
+          ? `<span style="${PILL}background:#fee2e2;color:#991b1b;">⚠ Critical</span>`
+          : `<span style="${PILL}background:#f3f4f6;color:#374151;">Normal</span>`,
+      ),
+      detail("Substation", substationName ? esc(substationName) : "—"),
+      detail("Submitted", esc(report.submitted_at ? formatDate(report.submitted_at) : "—")),
+      evaluation
+        ? detail(
+            "Result",
+            `<span style="${PILL}background:${evaluation === "PASS" ? "#d1fae5" : evaluation === "FAIL" ? "#fee2e2" : "#fef3c7"};color:${evaluation === "PASS" ? "#065f46" : evaluation === "FAIL" ? "#991b1b" : "#92400e"};">${esc(evaluation)}</span>`,
+          )
+        : "",
+      reportCode ? detail("Report #", esc(reportCode)) : "",
+      jobNumber ? detail("Job #", esc(jobNumber)) : "",
+      report.approved_at ? detail("Approved", esc(formatDate(report.approved_at))) : "",
+    ].join("");
+    // Uses navHtml, built above from the Prev / Next list.
+    const buildHeaderHtml = () => `
+      <div style="flex-shrink:0;border-bottom:1px solid #e5e7eb;background:white;">
+        <div style="padding:0.75rem 1rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
+          <div style="min-width:0;">
+            <h2 title="${esc(displayTitle)}" style="font-size:1.125rem;font-weight:600;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(headline)}</h2>
+            ${subline ? `<div style="font-size:0.8125rem;color:#6b7280;margin-top:0.125rem;">${esc(subline)}</div>` : ""}
+          </div>
+          <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+            ${navHtml}
+            <span style="padding:0.25rem 0.75rem;border-radius:0;font-size:0.75rem;font-weight:600;background:${statusBg};color:${statusFg};">${esc(statusLabel)}</span>
+            <button id="report-view-close-btn" style="padding:0.5rem 1rem;background:#f3f4f6;border:1px solid #d1d5db;border-radius:0;cursor:pointer;font-size:0.875rem;">Close</button>
+          </div>
+        </div>
+        <div style="padding:0 0 0.75rem;margin-left:-1px;display:flex;flex-wrap:wrap;row-gap:0.5rem;overflow:hidden;">
+          ${detailsHtml}
+        </div>
+      </div>`;
 
     // Earlier send-backs to Issue and the tech's fix notes, so the reviewer can
     // check the old comments were dealt with. Best effort.
@@ -1767,65 +2116,24 @@ export function ReportApprovalWorkflow({
       modalContainer.innerHTML = `
         <div id="report-view-modal" style="position:fixed;inset:0;z-index:99999;isolation:isolate;">
           <div style="position:absolute;inset:0;background:rgba(0,0,0,0.75);"></div>
-          <div style="position:absolute;inset:2rem;background:white;border-radius:12px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);display:flex;flex-direction:column;overflow:hidden;">
+          <div style="position:absolute;inset:0.75rem;background:white;border-radius:0;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);display:flex;flex-direction:column;overflow:hidden;">
             <!-- Header -->
-            <div style="flex-shrink:0;padding:1rem;border-bottom:1px solid #e5e7eb;background:white;display:flex;justify-content:space-between;align-items:center;">
-              <div>
-                <h2 style="font-size:1.125rem;font-weight:600;margin:0;">${displayTitle}</h2>
-              </div>
-              <div style="display:flex;align-items:center;gap:0.75rem;">
-                <span style="padding:0.25rem 0.75rem;border-radius:0;font-size:0.75rem;font-weight:500;background:${report.status === "submitted" ? "#fef3c7" : report.status === "approved" ? "#d1fae5" : "#fee2e2"};color:${report.status === "submitted" ? "#92400e" : report.status === "approved" ? "#065f46" : "#991b1b"};">
-                  ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}
-                </span>
-                <button id="report-view-close-btn" style="padding:0.5rem 1rem;background:#f3f4f6;border:1px solid #d1d5db;border-radius:0;cursor:pointer;font-size:0.875rem;">
-                  Close
-                </button>
-              </div>
-            </div>
+            ${buildHeaderHtml()}
 
             <!-- Body: review sidebar + PDF preview -->
             <div style="flex:1;display:flex;overflow:hidden;">
-              <!-- Left review sidebar -->
-              <div style="width:300px;flex-shrink:0;border-right:1px solid #e5e7eb;background:white;display:flex;flex-direction:column;overflow-y:auto;padding:1rem;gap:1rem;">
-                <!-- Preview / Print toolbar -->
-                <div style="display:flex;gap:0.5rem;">
+              ${buildReviewSidebarHtml({
+                toolbarHtml: `
                   <button id="report-preview-btn" title="Open in new tab" style="width:40px;height:40px;border-radius:0;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#2563eb;">
                     ${EYE_ICON_SVG}
                   </button>
                   <button id="report-print-btn" title="Print" style="width:40px;height:40px;border-radius:0;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#525252;">
                     ${PRINTER_ICON_SVG}
-                  </button>
-                </div>
-                ${reviewHistoryHtml}
-                ${actionItemsSectionHtml}
-                ${
-                  canReview
-                    ? `
-                <div style="display:flex;flex-direction:column;flex:1;min-height:0;">
-                  <label style="display:block;font-size:0.875rem;font-weight:500;color:#374151;margin-bottom:0.5rem;">Review Notes</label>
-                  <textarea
-                    id="review-comments-input"
-                    placeholder="Add comments about this report (required for rejection)..."
-                    style="width:100%;flex:1;min-height:120px;padding:0.5rem 0.75rem;border:1px solid #d1d5db;border-radius:0;font-size:0.875rem;resize:none;box-sizing:border-box;"
-                  ></textarea>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:0.5rem;">
-                  <button id="review-approve-btn" style="padding:0.625rem 1rem;background:#16a34a;border:none;border-radius:0;cursor:pointer;font-size:0.875rem;color:white;font-weight:500;">
-                    ✓ Save & Approve
-                  </button>
-                  <button id="review-reject-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #fca5a5;border-radius:0;cursor:pointer;font-size:0.875rem;color:#dc2626;font-weight:500;">
-                    ✕ Reject / Mark as Issue
-                  </button>
-                  <button id="review-archive-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #d1d5db;border-radius:0;cursor:pointer;font-size:0.875rem;color:#374151;font-weight:500;">
-                    Archive
-                  </button>
-                </div>
-                `
-                    : `
-                <p style="font-size:0.8125rem;color:#6b7280;margin:0;">This is a read-only preview.</p>
-                `
-                }
-              </div>
+                  </button>`,
+                bodyHtml: `${reviewHistoryHtml}${actionItemsSectionHtml}`,
+                canReview,
+                readOnlyHtml: `<p style="font-size:0.8125rem;color:#6b7280;margin:0;">This is a read-only preview.</p>`,
+              })}
 
               <!-- PDF Content -->
               <div style="flex:1;overflow:hidden;background:#f9fafb;">
@@ -1841,6 +2149,8 @@ export function ReportApprovalWorkflow({
       `;
 
       wireActionItems();
+      wireReviewSidebar();
+      wireReviewNav();
 
       // Add close handler
       const closeBtn = document.getElementById("report-view-close-btn");
@@ -1887,6 +2197,8 @@ export function ReportApprovalWorkflow({
 
         if (approveBtn) {
           approveBtn.onclick = async () => {
+            approveBtn.setAttribute("disabled", "true");
+            approveBtn.textContent = "Approving...";
             const ok = await handleApprovePdfReport(
               report,
               commentsInput?.value || null,
@@ -1894,6 +2206,10 @@ export function ReportApprovalWorkflow({
             if (ok) {
               const modal = document.getElementById("report-view-modal");
               if (modal) modal.remove();
+              afterApproved();
+            } else {
+              approveBtn.removeAttribute("disabled");
+              refreshApproveLabel();
             }
           };
         }
@@ -2086,28 +2402,14 @@ export function ReportApprovalWorkflow({
     modalContainer.innerHTML = `
       <div id="report-view-modal" style="position:fixed;inset:0;z-index:99999;isolation:isolate;">
         <div style="position:absolute;inset:0;background:rgba(0,0,0,0.75);"></div>
-        <div style="position:absolute;inset:2rem;background:white;border-radius:12px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);display:flex;flex-direction:column;overflow:hidden;">
+        <div style="position:absolute;inset:0.75rem;background:white;border-radius:0;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);display:flex;flex-direction:column;overflow:hidden;">
           <!-- Header -->
-          <div style="flex-shrink:0;padding:1rem;border-bottom:1px solid #e5e7eb;background:white;display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <h2 style="font-size:1.125rem;font-weight:600;margin:0;">${displayTitle}</h2>
-            </div>
-            <div style="display:flex;align-items:center;gap:0.75rem;">
-              <span style="padding:0.25rem 0.75rem;border-radius:0;font-size:0.75rem;font-weight:500;background:${report.status === "submitted" ? "#fef3c7" : report.status === "approved" ? "#d1fae5" : "#fee2e2"};color:${report.status === "submitted" ? "#92400e" : report.status === "approved" ? "#065f46" : "#991b1b"};">
-                ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}
-              </span>
-              <button id="report-view-close-btn" style="padding:0.5rem 1rem;background:#f3f4f6;border:1px solid #d1d5db;border-radius:0;cursor:pointer;font-size:0.875rem;">
-                Close
-              </button>
-            </div>
-          </div>
+            ${buildHeaderHtml()}
 
           <!-- Body: review sidebar + report preview -->
           <div style="flex:1;display:flex;overflow:hidden;">
-            <!-- Left review sidebar -->
-            <div style="width:300px;flex-shrink:0;border-right:1px solid #e5e7eb;background:white;display:flex;flex-direction:column;overflow-y:auto;padding:1rem;gap:1rem;">
-              <!-- Preview / Print toolbar (same icon-button UI as the report header) -->
-              <div style="display:flex;gap:0.5rem;">
+            ${buildReviewSidebarHtml({
+              toolbarHtml: `
                 <button id="report-preview-btn" title="Open in new tab" style="width:40px;height:40px;border-radius:0;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;color:white;background:#2563eb;">
                   ${EYE_ICON_SVG}
                 </button>
@@ -2132,39 +2434,17 @@ export function ReportApprovalWorkflow({
                 </button>
                 `
                     : ""
-                }
-              </div>
-              ${reviewHistoryHtml}
-              ${actionItemsSectionHtml}
-              ${
+                }`,
+              bodyHtml: `${reviewHistoryHtml}${actionItemsSectionHtml}${
                 canReview
-                  ? `
-              <p id="report-edit-hint" style="display:none;font-size:0.8125rem;color:#6b7280;margin:0;">Editing — use Save &amp; Approve to save your changes.</p>
-              <div style="display:flex;flex-direction:column;flex:1;min-height:0;">
-                <label style="display:block;font-size:0.875rem;font-weight:500;color:#374151;margin-bottom:0.5rem;">Review Notes</label>
-                <textarea
-                  id="review-comments-input"
-                  placeholder="Add comments about this report (required for rejection)..."
-                  style="width:100%;flex:1;min-height:120px;padding:0.5rem 0.75rem;border:1px solid #d1d5db;border-radius:0;font-size:0.875rem;resize:none;box-sizing:border-box;"
-                ></textarea>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:0.5rem;">
-                <button id="review-approve-btn" style="padding:0.625rem 1rem;background:#16a34a;border:none;border-radius:0;cursor:pointer;font-size:0.875rem;color:white;font-weight:500;">
-                  ✓ Save & Approve
-                </button>
-                <button id="review-reject-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #fca5a5;border-radius:0;cursor:pointer;font-size:0.875rem;color:#dc2626;font-weight:500;">
-                  ✕ Reject / Mark as Issue
-                </button>
-                <button id="review-archive-btn" style="padding:0.625rem 1rem;background:white;border:1px solid #d1d5db;border-radius:0;cursor:pointer;font-size:0.875rem;color:#374151;font-weight:500;">
-                  Archive
-                </button>
-              </div>
-              `
-                  : `
-              ${showEditToggle ? "" : `<p style="font-size:0.8125rem;color:#6b7280;margin:0;">This is a read-only preview.</p>`}
-              `
-              }
-            </div>
+                  ? `<p id="report-edit-hint" style="display:none;font-size:0.8125rem;color:#6b7280;margin:0;">Editing — use Save &amp; Approve to save your changes.</p>`
+                  : ""
+              }`,
+              canReview,
+              readOnlyHtml: showEditToggle
+                ? ""
+                : `<p style="font-size:0.8125rem;color:#6b7280;margin:0;">This is a read-only preview.</p>`,
+            })}
 
             <!-- Report Content -->
             <div style="flex:1;overflow:hidden;background:#f9fafb;position:relative;">
@@ -2181,6 +2461,8 @@ export function ReportApprovalWorkflow({
     `;
 
     wireReportZoom();
+    wireReviewSidebar();
+    wireReviewNav();
 
     // Whether the reviewer has swapped the preview iframe for the live,
     // editable report, and whether that report currently has an open edit
@@ -2374,9 +2656,9 @@ export function ReportApprovalWorkflow({
 
       const updateApproveBtnText = () => {
         if (approveBtn) {
-          approveBtn.textContent = hasUnsavedChanges
-            ? "✓ Save & Approve"
-            : "✓ Save & Approve";
+          // "Save &" only while there are edits that still need saving.
+          approveBtn.dataset.unsaved = String(hasUnsavedChanges);
+          refreshApproveLabel();
         }
       };
       onEditStateChange = updateApproveBtnText;
@@ -2429,6 +2711,7 @@ export function ReportApprovalWorkflow({
                 fetchReports();
                 fetchMetrics();
                 if (onUpdate) onUpdate();
+                afterApproved();
               }
             } catch (err) {
               console.error("Error approving:", err);
@@ -2975,9 +3258,12 @@ export function ReportApprovalWorkflow({
   // the same order — so moving between the two tabs doesn't mean relearning the
   // page. Approved/Sent columns only appear once a report in view has them, so
   // the Pending tab stays narrow.
+  // navList: what Prev / Next walks. Defaults to this table; the substation
+  // view passes every report on screen so review isn't stuck in one folder.
   const renderReportTable = (
     list: TechnicalReport[],
     assetsMap: Record<string, ReportLinkedAsset[]>,
+    navList: TechnicalReport[] = list,
   ) => {
     const showApproved = list.some((r) => !!r.approved_at);
     const showSent = list.some((r) => !!r.sent_at);
@@ -3091,7 +3377,7 @@ export function ReportApprovalWorkflow({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleViewReport(report)}
+                        onClick={() => handleViewReport(report, navList)}
                         leftIcon={<Eye className="h-4 w-4" />}
                         className="border-none"
                       >
@@ -3571,6 +3857,8 @@ export function ReportApprovalWorkflow({
                   const orderKeys = Object.keys(groups).sort(
                     compareLinkedAssetFolderLabels,
                   );
+                  // Every report in folder order, so Prev / Next crosses substations.
+                  const allInOrder = orderKeys.flatMap((k) => groups[k]);
                   return (
                     <>
                       {hasMoreReports && (
@@ -3625,7 +3913,7 @@ export function ReportApprovalWorkflow({
                             </svg>
                           </summary>
                           <div className="bg-white dark:bg-dark-150">
-                            {renderReportTable(groups[folderKey], assetsMap)}
+                            {renderReportTable(groups[folderKey], assetsMap, allInOrder)}
                           </div>
                         </details>
                       ))}

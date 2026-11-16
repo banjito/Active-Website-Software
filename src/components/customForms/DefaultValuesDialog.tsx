@@ -43,6 +43,15 @@ export const DefaultValuesDialog: React.FC<{
     else next[key] = val;
     onUpdate({ staticCells: next });
   };
+  /** Remove a leftover locked cell, optionally keeping its text as the default. */
+  const unlockCell = (r: number, colId: string, text: string, keepAsDefault: boolean) => {
+    const key = `row${r}_${colId}`;
+    const staticCells = { ...(section.staticCells ?? {}) };
+    delete staticCells[key];
+    const cellDefaults = { ...(section.cellDefaults ?? {}) };
+    if (keepAsDefault && !cellDefaults[key]) cellDefaults[key] = text;
+    onUpdate({ staticCells, cellDefaults });
+  };
   const setRowLabel = (r: number, val: string) => {
     const labels = [...rowLabels];
     while (labels.length <= r) labels.push("");
@@ -62,7 +71,8 @@ export const DefaultValuesDialog: React.FC<{
           </DialogTitle>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
             The table as a new report starts. Type in a cell to set its default; leave it blank for none.
-            Grey cells are worked out by the form and can't take a default.
+            Grey cells are worked out by the form and can't take a default. 🔒 cells are locked by
+            text left over from Static text; Unlock frees them.
           </p>
         </div>
 
@@ -120,6 +130,28 @@ export const DefaultValuesDialog: React.FC<{
                             title="Fixed text for this row (blank uses the column's text)"
                             className={cellInput}
                           />
+                        </td>
+                      );
+                    }
+                    // Fixed text left from when this column was Static text: it
+                    // still locks the cell. Unlocking makes it the default value.
+                    const leftover = section.staticCells?.[`row${r}_${col.id}`];
+                    if (leftover) {
+                      return (
+                        <td key={col.id} className={`${td} px-1.5 bg-amber-50 dark:bg-amber-900/20`}>
+                          <span className="flex items-center gap-1">
+                            <span className="truncate text-neutral-900 dark:text-white" title="Locked: fixed text left over from Static text">
+                              🔒 {leftover}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => unlockCell(r, col.id, leftover, b === "user" && canHaveCellDefault(f))}
+                              className="ml-auto shrink-0 text-[10px] text-brand hover:underline"
+                              title={b === "user" ? "Unlock this cell and keep the text as its default value" : "Unlock this cell"}
+                            >
+                              Unlock
+                            </button>
+                          </span>
                         </td>
                       );
                     }

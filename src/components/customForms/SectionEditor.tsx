@@ -13,7 +13,6 @@ import {
   Plus,
   Trash2,
   Eye,
-  EyeOff,
   Save,
   ChevronDown,
   ChevronLeft,
@@ -22,8 +21,22 @@ import {
   GripVertical,
   Columns,
   Table2,
+  Settings,
+  LayoutGrid,
+  AlignJustify,
+  ListPlus,
+  SlidersHorizontal,
 } from "lucide-react";
+import {
+  CARD_CLASS,
+  CardHeader,
+  SettingRow,
+  SettingsCard,
+  ToggleRow,
+} from "./SettingsLayout";
 import { DefaultValuesDialog } from "./DefaultValuesDialog";
+import { resolveLeavingStatic } from "@/lib/customForms/staticColumn";
+import { askKeepStaticAsDefaults } from "./askKeepStaticAsDefaults";
 import {
   RESULT_TYPE_LABEL,
   RESULT_TYPE_VALUE,
@@ -506,7 +519,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     savingNewComponent ||
                     updatingSavedComponent
                   }
-                  className="shrink-0 flex items-center gap-1 px-2 py-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded border border-neutral-200 dark:border-neutral-600"
+                  className="shrink-0 flex items-center gap-1 px-2 py-1 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-none border border-neutral-200 dark:border-neutral-600"
                 >
                   Save as Component
                   <ChevronDown className="w-3.5 h-3.5" />
@@ -570,8 +583,9 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
         </div>
       </div>
 
-      {/* Editor Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      {/* Editor content: scrolling cards. */}
+      <div className="flex-1 min-h-0 flex">
+      <div className="flex-1 min-w-0 overflow-y-auto p-4 space-y-4 bg-neutral-100/60 dark:bg-dark-200">
         {/* Job Details: prominent TCF callout so users know they can reference it */}
         {section.componentType === ComponentType.JOB_INFO && (
           <div className="rounded-none border border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20 p-3">
@@ -588,188 +602,153 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
           </div>
         )}
 
-        {/* Basic Settings header with Edit Formulas button */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-              Basic Settings
-            </h3>
-            {section.columns &&
-              section.columns.length > 0 &&
-              onToggleFormulaEditing && (
-                <button
-                  type="button"
-                  onClick={onToggleFormulaEditing}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded border transition-colors ${
-                    isFormulaEditing
-                      ? "bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-700"
-                      : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 border-neutral-200 dark:border-neutral-600"
-                  }`}
-                >
-                  <FileCode2 className="w-3.5 h-3.5" />
-                  {isFormulaEditing ? "Exit Formulas" : "Edit Formulas"}
-                </button>
-              )}
-          </div>
-
-          <div className="space-y-3">
-            <div>
-              <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                Section Title
-              </label>
+        {/* Basics */}
+        <SettingsCard
+          id="sec-basics"
+          title="Basics"
+          icon={<Settings className="w-4 h-4" />}
+          actions={
+            section.columns &&
+            section.columns.length > 0 &&
+            onToggleFormulaEditing && (
+              <button
+                type="button"
+                onClick={onToggleFormulaEditing}
+                className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-none border transition-colors ${
+                  isFormulaEditing
+                    ? "bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-700"
+                    : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 border-neutral-200 dark:border-neutral-600"
+                }`}
+                title="Click cells on the canvas to give them their own formula"
+              >
+                <FileCode2 className="w-3.5 h-3.5" />
+                {isFormulaEditing ? "Exit cell formulas" : "Edit cell formulas"}
+              </button>
+            )
+          }
+        >
+          <SettingRow label="Section title" htmlFor="section-title">
+            <Input
+              id="section-title"
+              value={section.title}
+              onChange={(e) => onUpdate({ title: e.target.value })}
+              placeholder="Enter section title"
+            />
+          </SettingRow>
+          <SettingRow
+            label="Reference code"
+            htmlFor="section-code"
+            help="Short name formulas use for this section."
+          >
+            <div className="flex flex-wrap items-center gap-2">
               <Input
-                value={section.title}
-                onChange={(e) => onUpdate({ title: e.target.value })}
-                placeholder="Enter section title"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                Reference code
-              </label>
-              <Input
+                id="section-code"
                 value={section.referenceCode ?? ""}
-                onChange={(e) =>
-                  onUpdate({ referenceCode: e.target.value || undefined })
-                }
+                onChange={(e) => onUpdate({ referenceCode: e.target.value || undefined })}
                 placeholder={getSectionReferenceCode(section)}
-                className="font-mono text-xs"
+                className="font-mono text-xs w-32"
               />
-              <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-                e.g. {"{"}
-                {getSectionReferenceCode(section)}.C1.R2
-                {"}"} (
+              <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                e.g. <code className="font-mono">{`{${getSectionReferenceCode(section)}.C1.R2}`}</code> ={" "}
                 {getReferenceDescription(
                   `${getSectionReferenceCode(section)}.C1.R2`,
                   allSections.length ? allSections : [section],
                 )}
-                )
+              </span>
+            </div>
+            {section.componentType === ComponentType.JOB_INFO && (
+              <p className="text-[11px] text-neutral-600 dark:text-neutral-300 mt-1 font-medium">
+                In formulas use {"{JD.TCF}"} for Temperature Correction Factor
+                (from this section’s temp/humidity).
               </p>
-              {section.componentType === ComponentType.JOB_INFO && (
-                <p className="text-[10px] text-neutral-600 dark:text-neutral-300 mt-1 font-medium">
-                  In formulas use {"{JD.TCF}"} for Temperature Correction Factor
-                  (from this section’s temp/humidity).
-                </p>
-              )}
-            </div>
+            )}
+          </SettingRow>
+        </SettingsCard>
 
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="showInPrint"
-                checked={section.showInPrint}
-                onChange={(e) => onUpdate({ showInPrint: e.target.checked })}
-                className="rounded"
-              />
-              <label
-                htmlFor="showInPrint"
-                className="text-sm text-neutral-700 dark:text-neutral-300 flex items-center gap-1"
-              >
-                {section.showInPrint ? (
-                  <Eye className="w-4 h-4" />
-                ) : (
-                  <EyeOff className="w-4 h-4" />
-                )}
-                Show in printed report
-              </label>
-            </div>
-            <ShowWhenSettings section={section} allSections={allSections} onUpdate={onUpdate} />
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="colorResults"
-                checked={sectionColorsResults(section)}
-                onChange={(e) => onUpdate({ colorResults: e.target.checked })}
-                className="rounded-none"
-              />
-              <label
-                htmlFor="colorResults"
-                className="text-sm text-neutral-700 dark:text-neutral-300"
-                title="On: PASS is green, FAIL red, LIMITED SERVICE / INVESTIGATE yellow. Off: results show as plain text (e.g. visual & mechanical inspections)."
-              >
-                Color-code results (green pass / red fail / yellow limited)
-              </label>
-            </div>
+        {/* Visibility & results */}
+        <SettingsCard id="sec-display" title="Display & results" icon={<Eye className="w-4 h-4" />}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6">
+            <ToggleRow
+              id="showInPrint"
+              label="Show in printed report"
+              help="Off: on screen only."
+              checked={section.showInPrint !== false}
+              onChange={(next) => onUpdate({ showInPrint: next })}
+            />
+            <ToggleRow
+              id="colorResults"
+              label="Color-code results"
+              help="Green pass, red fail, yellow limited. Off for plain text (e.g. inspections)."
+              checked={sectionColorsResults(section)}
+              onChange={(next) => onUpdate({ colorResults: next })}
+            />
             {!!section.columns?.length && (
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="trendResults"
-                  checked={isResultsSection(section)}
-                  onChange={(e) => onUpdate({ trendResults: e.target.checked })}
-                  className="rounded-none"
-                />
-                <label
-                  htmlFor="trendResults"
-                  className="text-sm text-neutral-700 dark:text-neutral-300"
-                >
-                  Results table (shows in Trends)
-                </label>
-              </div>
+              <ToggleRow
+                id="trendResults"
+                label="Results table"
+                help="Its readings show in the asset's Trends."
+                checked={isResultsSection(section)}
+                onChange={(next) => onUpdate({ trendResults: next })}
+              />
             )}
             {section.componentType === ComponentType.CONTACT_RESISTANCE && (
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="showDeviation"
-                  checked={section.showDeviation !== false}
-                  onChange={(e) =>
-                    onUpdate({ showDeviation: e.target.checked })
-                  }
-                  className="rounded"
-                />
-                <label
-                  htmlFor="showDeviation"
-                  className="text-sm text-neutral-700 dark:text-neutral-300"
-                >
-                  Show Phase Value Deviation columns
-                </label>
-              </div>
+              <ToggleRow
+                id="showDeviation"
+                label="Phase Value Deviation columns"
+                help="Measured / Criteria / Result beside each row."
+                checked={section.showDeviation !== false}
+                onChange={(next) => onUpdate({ showDeviation: next })}
+              />
             )}
           </div>
-        </div>
-
-        {/* Grid layout: the shapes a flat column list cannot express. */}
-        {section.columns && section.columns.length > 0 && (
-          <div className="border border-neutral-200 dark:border-neutral-700 rounded p-3">
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">
-              Grid Layout
-            </h3>
-            <TableGridEditor
-              section={section}
-              onUpdate={onUpdate}
-              allSections={allSections}
-            />
+          <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700">
+            <ShowWhenSettings section={section} allSections={allSections} onUpdate={onUpdate} />
           </div>
+        </SettingsCard>
+
+        {/* Layout: how the table is arranged and its merged headers. */}
+        {section.columns && (
+          <SettingsCard id="sec-layout" title="Layout" icon={<LayoutGrid className="w-4 h-4" />}>
+            <SettingRow
+              label="Table arrangement"
+              help="Split, combine, or place tables side by side."
+            >
+              <TableLayoutEditor section={section} onUpdate={onUpdate} />
+            </SettingRow>
+            {section.columns.length > 0 && (
+              <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700">
+                <div className="mb-2">
+                  <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                    Grid: merged headers, mixed rows, footers
+                  </p>
+                </div>
+                <TableGridEditor section={section} onUpdate={onUpdate} allSections={allSections} />
+              </div>
+            )}
+          </SettingsCard>
         )}
 
         {/* What a chart plots */}
         {section.chart && (
-          <ChartSettings section={section} allSections={allSections} onUpdate={onUpdate} />
+          <section id="sec-chart" className={`${CARD_CLASS} p-3`}>
+            <ChartSettings section={section} allSections={allSections} onUpdate={onUpdate} />
+          </section>
         )}
 
-        {/* Arrange, split and combine this component's tables */}
+        {/* Table settings (for table-based components) */}
         {section.columns && (
-          <TableLayoutEditor section={section} onUpdate={onUpdate} />
-        )}
-
-        {/* Table Settings (for table-based components) */}
-        {section.columns && (
-          <div>
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">
-              Table Settings
-            </h3>
-
-            <div className="space-y-3">
-              {/* Number of Rows - only for regular tables, not conditional tables */}
-              {section.componentType !== ComponentType.CONDITIONAL_TABLE && (
-                <div>
-                  <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                    Number of Rows
-                  </label>
-                  <div className="flex items-center gap-2">
+          <div className="space-y-4">
+            <div className="space-y-4">
+              {/* Rows */}
+              <SettingsCard id="sec-rows" title="Rows" icon={<AlignJustify className="w-4 h-4" />}>
+                {section.componentType !== ComponentType.CONDITIONAL_TABLE && (
+                  <SettingRow
+                    label="Rows on a new report"
+                    htmlFor="section-rows"
+                    help={`Between ${section.minRows || 1} and ${section.maxRows || 100}.`}
+                  >
                     <Input
+                      id="section-rows"
                       type="number"
                       value={section.rows || 1}
                       onChange={(e) => {
@@ -782,247 +761,185 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                       max={section.maxRows || 100}
                       className="w-24"
                     />
-                    <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                      ({section.minRows || 1} - {section.maxRows || 100})
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Allow Add/Remove Rows */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
+                  </SettingRow>
+                )}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6">
+                  <ToggleRow
                     id="allowAddRows"
-                    checked={section.allowAddRows}
-                    onChange={(e) =>
-                      onUpdate({ allowAddRows: e.target.checked })
-                    }
-                    className="rounded"
+                    label="Technician can add rows"
+                    checked={!!section.allowAddRows}
+                    onChange={(next) => onUpdate({ allowAddRows: next })}
                   />
-                  <label
-                    htmlFor="allowAddRows"
-                    className="text-sm text-neutral-700 dark:text-neutral-300"
-                  >
-                    Allow adding rows
-                  </label>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
+                  <ToggleRow
                     id="allowRemoveRows"
-                    checked={section.allowRemoveRows}
-                    onChange={(e) =>
-                      onUpdate({ allowRemoveRows: e.target.checked })
-                    }
-                    className="rounded"
+                    label="Technician can remove rows"
+                    checked={!!section.allowRemoveRows}
+                    onChange={(next) => onUpdate({ allowRemoveRows: next })}
                   />
-                  <label
-                    htmlFor="allowRemoveRows"
-                    className="text-sm text-neutral-700 dark:text-neutral-300"
-                  >
-                    Allow removing rows
-                  </label>
                 </div>
-              </div>
-
-              {/* Link row count with another table */}
-              {onLinkRowCountWith &&
-                section.componentType !== ComponentType.CONDITIONAL_TABLE && (
-                  <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3 mt-3">
-                    <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                      Link row count with
-                    </label>
-                    <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-1.5">
-                      When linked, adding or removing a row in one table updates
-                      the other so formulas stay in sync.
-                    </p>
-                    <select
-                      value={
-                        section.rowCountLinkGroupId
-                          ? (allSections.find(
-                              (s) =>
-                                s.id !== section.id &&
-                                s.rowCountLinkGroupId ===
-                                  section.rowCountLinkGroupId,
-                            )?.id ?? "")
-                          : ""
-                      }
-                      onChange={(e) =>
-                        onLinkRowCountWith(e.target.value || null)
-                      }
-                      className="w-full px-2 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
+                {onLinkRowCountWith &&
+                  section.componentType !== ComponentType.CONDITIONAL_TABLE && (
+                    <SettingRow
+                      label="Link row count with"
+                      htmlFor="section-row-link"
+                      help="Adding or removing a row in one table does the same in the other, so formulas stay in step."
                     >
-                      <option value="">None</option>
-                      {allSections
-                        .filter(
-                          (s) =>
-                            s.id !== section.id &&
-                            s.columns?.length &&
-                            s.componentType !== ComponentType.CONDITIONAL_TABLE,
-                        )
-                        .map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.title || s.id} ({s.rows ?? 1} rows)
-                          </option>
-                        ))}
-                    </select>
-                    {section.rowCountLinkGroupId && (
-                      <p className="text-[10px] text-green-600 dark:text-green-400 mt-1">
-                        Linked with:{" "}
+                      <select
+                        id="section-row-link"
+                        value={
+                          section.rowCountLinkGroupId
+                            ? (allSections.find(
+                                (s) =>
+                                  s.id !== section.id &&
+                                  s.rowCountLinkGroupId === section.rowCountLinkGroupId,
+                              )?.id ?? "")
+                            : ""
+                        }
+                        onChange={(e) => onLinkRowCountWith(e.target.value || null)}
+                        className="w-full max-w-md px-2 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
+                      >
+                        <option value="">Not linked</option>
                         {allSections
                           .filter(
                             (s) =>
-                              s.rowCountLinkGroupId ===
-                                section.rowCountLinkGroupId &&
-                              s.id !== section.id,
+                              s.id !== section.id &&
+                              s.columns?.length &&
+                              s.componentType !== ComponentType.CONDITIONAL_TABLE,
                           )
-                          .map((s) => s.title || s.id)
-                          .join(", ") || "other table(s)"}
-                      </p>
-                    )}
-                  </div>
-                )}
+                          .map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.title || s.id} ({s.rows ?? 1} rows)
+                            </option>
+                          ))}
+                      </select>
+                      {section.rowCountLinkGroupId && (
+                        <p className="text-[11px] text-green-700 dark:text-green-400 mt-1">
+                          Linked with:{" "}
+                          {allSections
+                            .filter(
+                              (s) =>
+                                s.rowCountLinkGroupId === section.rowCountLinkGroupId &&
+                                s.id !== section.id,
+                            )
+                            .map((s) => s.title || s.id)
+                            .join(", ") || "other table(s)"}
+                        </p>
+                      )}
+                    </SettingRow>
+                  )}
+              </SettingsCard>
 
-              {/* Fields above table (e.g. Test Voltage, Test Duration) - only for non-conditional tables */}
+              {/* Fields above the table (e.g. Test Voltage, Test Duration) */}
               {section.componentType !== ComponentType.CONDITIONAL_TABLE && (
-                <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3 mt-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                      Fields above table
-                    </label>
+                <SettingsCard
+                  id="sec-above"
+                  title="Fields above table"
+                  icon={<ListPlus className="w-4 h-4" />}
+                  description="Inputs shown above the table, e.g. Test Voltage or Test Duration."
+                  flush
+                  actions={
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => {
                         const id = `above-${Date.now()}`;
-                        const newField: FieldConfig = {
-                          id,
-                          label: "New field",
-                          type: FieldType.TEXT,
-                        };
-                        onUpdate({
-                          aboveTableFields: [
-                            ...(section.aboveTableFields || []),
-                            newField,
-                          ],
-                        });
+                        const newField: FieldConfig = { id, label: "New field", type: FieldType.TEXT };
+                        onUpdate({ aboveTableFields: [...(section.aboveTableFields || []), newField] });
                       }}
                       leftIcon={<Plus className="w-3 h-3" />}
                     >
                       Add field
                     </Button>
-                  </div>
-                  <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-2">
-                    Optional inputs shown above the table (e.g. Test Voltage,
-                    Test Duration). Choose input type for each.
-                  </p>
-                  <div className="space-y-2">
-                    {(section.aboveTableFields || []).map((f, idx) => (
-                      <div
-                        key={f.id}
-                        className="px-2 py-1.5 rounded-none border border-neutral-200 dark:border-neutral-600 space-y-1.5 bg-neutral-50/50 dark:bg-dark-100/50"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Input
-                            value={f.label}
-                            onChange={(e) => {
-                              const next = [
-                                ...(section.aboveTableFields || []),
-                              ];
-                              next[idx] = { ...f, label: e.target.value };
-                              onUpdate({ aboveTableFields: next });
-                            }}
-                            placeholder="Label (e.g. Test Voltage)"
-                            className="text-xs flex-1"
-                          />
-                          <select
-                            value={f.type}
-                            onChange={(e) => {
-                              const next = [
-                                ...(section.aboveTableFields || []),
-                              ];
-                              const newType = e.target.value as FieldType;
-                              next[idx] = {
-                                ...f,
-                                type: newType,
-                                ...(newType === FieldType.SELECT &&
-                                !f.options?.length
-                                  ? {
-                                      options: [
-                                        {
-                                          label: "Option 1",
-                                          value: "Option 1",
-                                        },
-                                      ],
-                                    }
-                                  : {}),
-                              };
-                              onUpdate({ aboveTableFields: next });
-                            }}
-                            className="px-2 py-1 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded text-neutral-900 dark:text-white"
-                          >
-                            <option value={FieldType.TEXT}>Text</option>
-                            <option value={FieldType.NUMBER}>Number</option>
-                            <option value={FieldType.DATE}>Date</option>
-                            <option value={FieldType.SELECT}>Dropdown</option>
-                            <option value={FieldType.RADIO}>Radio buttons</option>
-                          </select>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const next = (
-                                section.aboveTableFields || []
-                              ).filter((_, i) => i !== idx);
-                              onUpdate({ aboveTableFields: next });
-                            }}
-                            className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </div>
-                        {f.type === FieldType.SELECT && (
-                          <InlineOptionsEditor
-                            options={f.options || []}
-                            onChange={(opts) => {
-                              const next = [
-                                ...(section.aboveTableFields || []),
-                              ];
-                              next[idx] = { ...next[idx], options: opts };
-                              onUpdate({ aboveTableFields: next });
-                            }}
-                            onAdd={() => {
-                              const next = [
-                                ...(section.aboveTableFields || []),
-                              ];
-                              const n = (next[idx].options?.length || 0) + 1;
-                              next[idx] = {
-                                ...next[idx],
-                                options: [
-                                  ...(next[idx].options || []),
-                                  { label: `Option ${n}`, value: `Option ${n}` },
-                                ],
-                              };
-                              onUpdate({ aboveTableFields: next });
-                            }}
-                          />
-                        )}
+                  }
+                >
+                  {(section.aboveTableFields ?? []).length === 0 ? (
+                    <p className="px-3 py-3 text-xs text-neutral-500 dark:text-neutral-400">
+                      None yet.
+                    </p>
+                  ) : (
+                    <div>
+                      <div className="grid grid-cols-[minmax(10rem,1fr)_10rem_1.75rem] gap-1.5 px-3 py-1.5 bg-neutral-100 dark:bg-dark-200 border-b border-neutral-300 dark:border-neutral-600 text-[11px] font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300">
+                        <span>Label</span>
+                        <span>Type</span>
+                        <span />
                       </div>
-                    ))}
-                  </div>
-                </div>
+                      {(section.aboveTableFields || []).map((f, idx) => {
+                        const setAbove = (patch: Partial<FieldConfig>) => {
+                          const next = [...(section.aboveTableFields || [])];
+                          next[idx] = { ...next[idx], ...patch };
+                          onUpdate({ aboveTableFields: next });
+                        };
+                        return (
+                          <div key={f.id} className="border-b border-neutral-200 dark:border-neutral-700 px-3 py-1.5 space-y-1.5">
+                            <div className="grid grid-cols-[minmax(10rem,1fr)_10rem_1.75rem] gap-1.5 items-center">
+                              <input
+                                value={f.label}
+                                onChange={(e) => setAbove({ label: e.target.value })}
+                                placeholder="Label (e.g. Test Voltage)"
+                                className={`${inlineInputCls} w-full min-w-0 font-medium`}
+                              />
+                              <select
+                                value={f.type}
+                                onChange={(e) => {
+                                  const newType = e.target.value as FieldType;
+                                  setAbove({
+                                    type: newType,
+                                    ...((newType === FieldType.SELECT || newType === FieldType.RADIO) && !f.options?.length
+                                      ? { options: [{ label: "Option 1", value: "Option 1" }] }
+                                      : {}),
+                                  });
+                                }}
+                                className={`${inlineInputCls} w-full`}
+                              >
+                                <option value={FieldType.TEXT}>Text</option>
+                                <option value={FieldType.NUMBER}>Number</option>
+                                <option value={FieldType.DATE}>Date</option>
+                                <option value={FieldType.SELECT}>Dropdown</option>
+                                <option value={FieldType.RADIO}>Radio buttons</option>
+                              </select>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  onUpdate({
+                                    aboveTableFields: (section.aboveTableFields || []).filter((_, i) => i !== idx),
+                                  })
+                                }
+                                className="flex justify-center p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
+                                title="Delete field"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            {(f.type === FieldType.SELECT || f.type === FieldType.RADIO) && (
+                              <div className="pl-2 border-l-2 border-brand">
+                                <InlineOptionsEditor
+                                  options={f.options || []}
+                                  onChange={(opts) => setAbove({ options: opts })}
+                                  onAdd={() => {
+                                    const n = (f.options?.length || 0) + 1;
+                                    setAbove({
+                                      options: [...(f.options || []), { label: `Option ${n}`, value: `Option ${n}` }],
+                                    });
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </SettingsCard>
               )}
 
-
               {/* Columns */}
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                  <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                    Columns
-                  </label>
-                  <div className="flex items-center gap-1">
+              <div id="sec-columns" className={CARD_CLASS}>
+                <CardHeader
+                  title="Columns"
+                  icon={<Columns className="w-4 h-4" />}
+                  description="One line per column. ▸ opens the rest of a column's settings."
+                  actions={
+                    <>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -1056,10 +973,9 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                       }}
                       leftIcon={<Columns className="w-3 h-3" />}
                     >
-                      Even %
+                      Even widths
                     </Button>
                     <Button
-                      variant="ghost"
                       size="sm"
                       onClick={() => {
                         const newColumn: ColumnConfig = {
@@ -1084,13 +1000,8 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                             ? {
                                 v2: {
                                   ...section.v2,
-                                  header: fillHeaderGaps(
-                                    grown,
-                                    section.v2.header,
-                                  ),
-                                  body: section.v2.body
-                                    ? fillBodyGaps(grown, section.v2.body)
-                                    : undefined,
+                                  header: fillHeaderGaps(grown, section.v2.header),
+                                  body: section.v2.body ? fillBodyGaps(grown, section.v2.body) : undefined,
                                 },
                               }
                             : {}),
@@ -1098,10 +1009,11 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                       }}
                       leftIcon={<Plus className="w-3 h-3" />}
                     >
-                      Add Column
+                      Add column
                     </Button>
-                  </div>
-                </div>
+                    </>
+                  }
+                />
 
                 <DndContext
                   sensors={columnSensors}
@@ -1112,7 +1024,10 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     items={section.columns?.map((c) => c.id) || []}
                     strategy={verticalListSortingStrategy}
                   >
-                    <div className="space-y-1">
+                    {/* A table of columns: scrolls sideways rather than wrapping. */}
+                    <div className="overflow-x-auto">
+                    <div className="min-w-[56rem]">
+                      <ColumnListHeader />
                       {section.columns?.map((column, index) => (
                         <SortableColumnEditor
                           key={column.id}
@@ -1143,6 +1058,12 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                           }}
                         />
                       ))}
+                      {!section.columns?.length && (
+                        <p className="px-3 py-4 text-xs text-neutral-500 dark:text-neutral-400">
+                          No columns yet. Use Add column.
+                        </p>
+                      )}
+                    </div>
                     </div>
                   </SortableContext>
                 </DndContext>
@@ -1153,10 +1074,13 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                 (section.columns?.length &&
                   (section.settingFields?.length ||
                     section.conditionalRows?.length))) && (
-                <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3 mt-3 space-y-4">
-                  <h4 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                    Conditional table (dropdowns control visible rows)
-                  </h4>
+                <div id="sec-conditional" className={`${CARD_CLASS} pb-3 space-y-4`}>
+                  <CardHeader
+                    title="Conditional rows"
+                    icon={<SlidersHorizontal className="w-4 h-4" />}
+                    description="Dropdowns above the table choose which rows show."
+                  />
+                  <div className="px-3 space-y-4">
 
                   {/* Setting fields (dropdowns above the table) */}
                   <div>
@@ -1490,6 +1414,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                       ))}
                     </div>
                   </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -1498,8 +1423,9 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
 
         {/* Fields Settings (for grouped field components) */}
         {section.fields && (
-          <div>
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">
+          <div id="sec-fields" className={`${CARD_CLASS} p-3`}>
+            <h3 className="flex items-center gap-1.5 text-sm font-semibold text-neutral-900 dark:text-white mb-3">
+              <ListPlus className="w-4 h-4 text-neutral-400" />
               Fields
             </h3>
 
@@ -1617,9 +1543,9 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
 
         {/* Single Field Settings */}
         {section.field && (
-          <div>
+          <div id="sec-field" className={`${CARD_CLASS} p-3`}>
             <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">
-              Field Settings
+              Field
             </h3>
 
             <FieldEditor
@@ -1640,9 +1566,9 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
 
         {/* Checklist Items (for inspection components) */}
         {section.checklistItems && (
-          <div>
+          <div id="sec-checklist" className={`${CARD_CLASS} p-3`}>
             <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">
-              Checklist Items
+              Checklist items
             </h3>
 
             <div className="space-y-1.5 mb-4">
@@ -1694,6 +1620,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
           </div>
         )}
 
+      </div>
       </div>
     </DialogContent>
     </Dialog>
@@ -1844,11 +1771,30 @@ const ColumnEditor: React.FC<{
     onSectionUpdate?.({ staticCells: next });
   };
 
+  /**
+   * Save the column's new field. Leaving Static text, its per-row text is
+   * offered as default values (User entry) or cleared, so no cell stays locked.
+   */
+  const commitField = async (nextField: FieldConfig, next: string) => {
+    if (behavior === "static" && parentSection && onSectionUpdate) {
+      const leave = await resolveLeavingStatic(parentSection, column.id, field, next, askKeepStaticAsDefaults);
+      if (leave) {
+        onSectionUpdate({
+          ...leave,
+          columns: (parentSection.columns ?? []).map((c) =>
+            c.id === column.id ? { ...column, field: { ...nextField, staticValue: undefined } } : c,
+          ),
+        });
+        return;
+      }
+    }
+    onUpdate({ field: nextField });
+  };
+
   const handleBehaviorChange = (
     next: "user" | "populate" | "calculate" | "static",
   ) => {
-    onUpdate({
-      field: {
+    commitField({
         ...field,
         resultRule: undefined,
         cellBehavior: next,
@@ -1867,8 +1813,7 @@ const ColumnEditor: React.FC<{
           calculation: undefined,
           readOnly: true,
         }),
-      },
-    });
+      }, next);
   };
 
   const handlePopulateFromSelect = (value: string) => {
@@ -1917,393 +1862,442 @@ const ColumnEditor: React.FC<{
   const showFormulaRefs = behavior === "calculate" && !isResult && refOptions.length > 0;
   const showStaticRows = behavior === "static" && staticRows.length > 0;
   const showVisibleWhen = !!settingFields && settingFields.length > 0;
-  const hasSecondRow =
-    showOptions ||
-    showFormulaRefs ||
-    showStaticRows ||
-    showVisibleWhen ||
-    isResult ||
-    showEquipment;
+  // Things set in the "More" panel, counted on its button so nothing hides unseen.
+  const visibleWhenCount = Object.keys(column.visibleWhen ?? {}).length;
+  const moreCount =
+    (field.placeholder ? 1 : 0) +
+    (field.assetSource ? 1 : 0) +
+    (parentSection && pairForColumn(parentSection, column.id) ? 1 : 0) +
+    (field.equipmentPicker ? 1 : 0) +
+    visibleWhenCount;
+  const optionCount = field.options?.length ?? 0;
+  const [open, setOpen] = useState(false);
+
+  const setFormula = (formula: string) =>
+    onUpdate({
+      field: {
+        ...field,
+        calculation: { formula, dependsOn: field.calculation?.dependsOn ?? [] },
+      },
+    });
+
+  const cellCls = `${inlineInputCls} w-full min-w-0`;
+  const panelLabel = "w-28 shrink-0 text-[11px] font-medium text-neutral-500 dark:text-neutral-400";
 
   return (
-    <div className="bg-neutral-50 dark:bg-dark-100 rounded-none px-2 py-1.5 space-y-1.5">
-      {/* Row 1: the column's main settings on one line */}
-      <div className="flex flex-wrap items-center gap-2">
-        {dragHandleProps && (
-          <button
-            type="button"
-            className="cursor-grab active:cursor-grabbing p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 touch-none"
-            {...dragHandleProps}
-          >
-            <GripVertical className="w-3.5 h-3.5" />
-          </button>
-        )}
+    <div
+      className={`border-b border-neutral-200 dark:border-neutral-700 ${
+        open ? "bg-neutral-50 dark:bg-dark-100" : "bg-white dark:bg-dark-150 hover:bg-neutral-50 dark:hover:bg-dark-100"
+      }`}
+    >
+      {/* One line per column, lined up under the header. */}
+      <div className={`${COLUMN_GRID} items-center px-1 py-1`}>
+        <div className="flex justify-center">
+          {dragHandleProps && (
+            <button
+              type="button"
+              className="cursor-grab active:cursor-grabbing p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 touch-none"
+              title="Drag to reorder"
+              {...dragHandleProps}
+            >
+              <GripVertical className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
         <input
           value={column.label}
           onChange={(e) => onUpdate({ label: e.target.value })}
           placeholder="Column label"
           title="Column label"
-          className={`${inlineInputCls} flex-1 min-w-[10rem] font-medium`}
+          className={`${cellCls} font-medium`}
         />
         <input
           value={column.width || ""}
           onChange={(e) => onUpdate({ width: e.target.value || undefined })}
-          placeholder="Width"
+          placeholder="auto"
           title="Column width (e.g. 25%, 100px, auto)"
-          className={`${inlineInputCls} w-20`}
+          className={cellCls}
         />
-        {allSections.length > 0 && (
-          <select
-            value={isResult ? "result" : behavior}
-            onChange={(e) => {
-              const next = e.target.value;
-              if (next === "result") {
-                onUpdate({ field: resultRuleField(field, field.resultRule ?? DEFAULT_RESULT_RULE) });
-                return;
-              }
-              handleBehaviorChange(next as "user" | "populate" | "calculate" | "static");
-            }}
-            title="Cell value"
-            className={`${inlineInputCls} w-40`}
-          >
-            <option value="user">User entry</option>
-            <option value="populate">Populate from field</option>
-            <option value="calculate">Calculate from formula</option>
-            <option value="static">Static text</option>
-            <option value="result">Pass / Fail result</option>
-          </select>
-        )}
-        {behavior === "user" && (
-          <select
-            value={typeSelectValue(field)}
-            onChange={(e) => {
-              const updates: Partial<FieldConfig> = typeChoicePatch(field, e.target.value);
-              if (
-                updates.type === FieldType.SELECT &&
-                !updates.options &&
-                !(field.options && field.options.length)
-              ) {
-                updates.options = [{ label: "Option 1", value: "Option 1" }];
-              }
-              onUpdate({ field: { ...field, ...updates } });
-            }}
-            title="Input type"
-            className={`${inlineInputCls} w-32`}
-          >
-            <option value={FieldType.TEXT}>Text</option>
-            <option value={FieldType.NUMBER}>Number</option>
-            <option value={FieldType.DATE}>Date</option>
-            <option value={FieldType.SELECT}>Dropdown</option>
-            <option value={RESULT_TYPE_VALUE}>{RESULT_TYPE_LABEL}</option>
-            <option value={FieldType.RADIO}>Radio buttons</option>
-            <option value={FieldType.TEXTAREA}>Text Area</option>
-            <option value={FieldType.CHECKBOX}>Checkbox</option>
-          </select>
-        )}
-        {behavior === "user" && !isResult && canHaveHint(field) && (
-          <input
-            value={field.placeholder ?? ""}
-            onChange={(e) =>
-              onUpdate({ field: { ...field, placeholder: e.target.value || undefined } })
+        <select
+          value={isResult ? "result" : behavior}
+          onChange={(e) => {
+            const next = e.target.value;
+            if (next === "result") {
+              commitField(resultRuleField(field, field.resultRule ?? DEFAULT_RESULT_RULE), "result");
+              return;
             }
-            placeholder="Hint"
-            title={HINT_TITLE}
-            className={`${inlineInputCls} w-28`}
-          />
-        )}
-        {behavior === "populate" && (
-          <select
-            value={getPopulateFromValue()}
-            onChange={(e) => handlePopulateFromSelect(e.target.value)}
-            title="Copy value from (pick section, column, and row)"
-            className={`${inlineInputCls} flex-1 min-w-[12rem]`}
-          >
-            <option value="">— Copy value from… —</option>
-            {refGroups.map(([sectionId, sectionTitle]) => (
-              <optgroup key={sectionId} label={sectionTitle}>
-                {refOptions
-                  .filter((o) => o.sectionId === sectionId)
-                  .map((opt) => (
-                    <option key={opt.refToken} value={opt.refToken}>
-                      {opt.friendlyRef} — {opt.description}
-                    </option>
-                  ))}
-              </optgroup>
-            ))}
-          </select>
-        )}
-        {behavior === "calculate" && !isResult && (
-          <input
-            value={field.calculation?.formula ?? ""}
-            onChange={(e) =>
-              onUpdate({
-                field: {
-                  ...field,
-                  calculation: {
-                    formula: e.target.value,
-                    dependsOn: field.calculation?.dependsOn ?? [],
-                  },
-                },
-              })
-            }
-            placeholder="Formula, e.g. {JD.TCF} * value or {IR.C1.R2}"
-            title="Use refs like {IR.C1.R2} (table) or {JD.TCF} (Job Details temperature correction factor)"
-            className={`${inlineInputCls} flex-1 min-w-[12rem] font-mono`}
-          />
-        )}
-        {behavior === "static" && (
-          <input
-            value={field.staticValue ?? ""}
-            onChange={(e) =>
-              onUpdate({ field: { ...field, staticValue: e.target.value } })
-            }
-            placeholder="Same text for every row"
-            title="Same text for every row"
-            className={`${inlineInputCls} w-48`}
-          />
-        )}
-        {field.unit !== undefined && (
-          <input
-            value={field.unit}
-            onChange={(e) => onUpdate({ field: { ...field, unit: e.target.value } })}
-            placeholder="Unit"
-            title="Unit (e.g. kV, A, Ω)"
-            className={`${inlineInputCls} w-16`}
-          />
-        )}
-        <AssetSourceSelect
-          column
-          value={field.assetSource}
-          onChange={(assetSource) => onUpdate({ field: { ...field, assetSource } })}
-        />
-        <label className="flex items-center gap-1 text-xs text-neutral-700 dark:text-neutral-300 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={!!field.required}
-            onChange={(e) =>
-              onUpdate({ field: { ...field, required: e.target.checked } })
-            }
-            className="rounded-none"
-          />
-          Required
-        </label>
-        {parentSection && onSectionUpdate && (
-          <button
-            type="button"
-            onClick={() =>
-              onSectionUpdate(
-                pairForColumn(parentSection, column.id)
-                  ? combineAsFoundAsLeft(parentSection, column.id)
-                  : splitAsFoundAsLeft(parentSection, column.id),
-              )
-            }
-            className="h-7 px-1.5 text-[10px] border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-600 dark:text-neutral-300 hover:border-brand hover:text-brand"
-            title={
-              pairForColumn(parentSection, column.id)
-                ? "Back to one column (the As Left column and its readings are removed)"
-                : "Split into As Found and As Left columns under one heading"
-            }
-          >
-            {pairForColumn(parentSection, column.id) ? "Combine AF/AL" : "As Found / As Left"}
-          </button>
-        )}
-        <button
-          onClick={onDelete}
-          className="p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
-          title="Delete column"
+            handleBehaviorChange(next as "user" | "populate" | "calculate" | "static");
+          }}
+          title="Where the cell's value comes from"
+          className={cellCls}
         >
-          <Trash2 className="w-3 h-3" />
-        </button>
-      </div>
+          <option value="user">User entry</option>
+          <option value="populate">Copy from field</option>
+          <option value="calculate">Formula</option>
+          <option value="static">Static text</option>
+          <option value="result">Pass / Fail result</option>
+        </select>
 
-      {/* Row 2: only when the chosen cell setting needs more room */}
-      {hasSecondRow && (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pl-6">
-          {showOptions && (
-            <InlineOptionsEditor
-              colored={isResultField(field)}
-              options={field.options || []}
-              onChange={(options) => onUpdate({ field: { ...field, options } })}
-              onAdd={() => {
-                if (onAppendOption) return onAppendOption();
-                const n = (field.options || []).length + 1;
-                onUpdate({
-                  field: {
-                    ...field,
-                    options: [
-                      ...(field.options || []),
-                      { label: `Option ${n}`, value: `Option ${n}` },
-                    ],
-                  },
-                });
-              }}
-            />
+        {/* Details: what this kind of cell needs. */}
+        <div className="flex items-center gap-1 min-w-0">
+          {behavior === "user" && !isResult && (
+            <>
+              <select
+                value={typeSelectValue(field)}
+                onChange={(e) => {
+                  const updates: Partial<FieldConfig> = typeChoicePatch(field, e.target.value);
+                  if (
+                    updates.type === FieldType.SELECT &&
+                    !updates.options &&
+                    !(field.options && field.options.length)
+                  ) {
+                    updates.options = [{ label: "Option 1", value: "Option 1" }];
+                    setOpen(true);
+                  }
+                  onUpdate({ field: { ...field, ...updates } });
+                }}
+                title="Input type"
+                className={cellCls}
+              >
+                <option value={FieldType.TEXT}>Text</option>
+                <option value={FieldType.NUMBER}>Number</option>
+                <option value={FieldType.DATE}>Date</option>
+                <option value={FieldType.SELECT}>Dropdown</option>
+                <option value={RESULT_TYPE_VALUE}>{RESULT_TYPE_LABEL}</option>
+                <option value={FieldType.RADIO}>Radio buttons</option>
+                <option value={FieldType.TEXTAREA}>Text Area</option>
+                <option value={FieldType.CHECKBOX}>Checkbox</option>
+              </select>
+              {showOptions && (
+                <button
+                  type="button"
+                  onClick={() => setOpen(true)}
+                  className="h-7 shrink-0 px-1.5 text-[11px] border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-600 dark:text-neutral-300 hover:border-brand hover:text-brand whitespace-nowrap"
+                  title="Edit this dropdown's choices"
+                >
+                  {optionCount} choice{optionCount === 1 ? "" : "s"}
+                </button>
+              )}
+            </>
           )}
-
-          {showEquipment && (
-            <div className="basis-full">
-              <EquipmentPickerSettings
-                section={parentSection!}
-                columnId={column.id}
-                field={field}
-                onChange={(next) => onUpdate({ field: next })}
-              />
-            </div>
-          )}
-
-          {isResult && parentSection && (
-            <div className="basis-full">
-              <ResultRuleEditor
-                section={parentSection}
-                columnId={column.id}
-                rule={field.resultRule!}
-                onChange={(rule) => onUpdate({ field: resultRuleField(field, rule) })}
-              />
-            </div>
-          )}
-
-          {showFormulaRefs && (
+          {behavior === "populate" && (
             <select
-              className={`${inlineInputCls} w-72 font-mono`}
-              onChange={(e) => {
-                const token = e.target.value;
-                if (!token) return;
-                const current = field.calculation?.formula ?? "";
-                onUpdate({
-                  field: {
-                    ...field,
-                    calculation: {
-                      formula: current + (current ? " " : "") + token,
-                      dependsOn: field.calculation?.dependsOn ?? [],
-                    },
-                  },
-                });
-                e.target.value = "";
-              }}
+              value={getPopulateFromValue()}
+              onChange={(e) => handlePopulateFromSelect(e.target.value)}
+              title="Copy value from (pick section, column, and row)"
+              className={cellCls}
             >
-              <option value="">Insert reference…</option>
-              {refGroups.map(([sectionId, sectionTitle]) => {
-                const sec = allSections.find((s) => s.id === sectionId);
-                const code = sec ? getSectionReferenceCode(sec) : "";
-                return (
-                  <optgroup key={sectionId} label={sectionTitle}>
-                    {/* Whole columns first: for avg / min / max / sum. */}
-                    {(sec?.columns ?? []).map((c, i) => (
-                      <option key={`all-${c.id}`} value={`{${code}.C${i + 1}.all}`}>
-                        {`{${code}.C${i + 1}.all}`} — {c.label || `column ${i + 1}`}, all rows (use in avg/min/max/sum)
+              <option value="">— Copy value from… —</option>
+              {refGroups.map(([sectionId, sectionTitle]) => (
+                <optgroup key={sectionId} label={sectionTitle}>
+                  {refOptions
+                    .filter((o) => o.sectionId === sectionId)
+                    .map((opt) => (
+                      <option key={opt.refToken} value={opt.refToken}>
+                        {opt.friendlyRef} — {opt.description}
                       </option>
                     ))}
-                    {refOptions
-                      .filter((o) => o.sectionId === sectionId)
-                      .map((opt) => (
-                        <option key={opt.refToken} value={opt.friendlyRef}>
-                          {opt.friendlyRef} — {opt.description}
-                        </option>
-                      ))}
-                  </optgroup>
-                );
-              })}
-            </select>
-          )}
-
-          {showFormulaRefs && parentSection && (parentSection.columns?.length ?? 0) > 0 && (
-            <select
-              className={`${inlineInputCls} w-72`}
-              title="Write a common formula for you. It replaces what's in the formula box."
-              onChange={(e) => {
-                const [kind, idx] = e.target.value.split(":");
-                e.target.value = "";
-                if (!kind) return;
-                const ref = `${getSectionReferenceCode(parentSection)}.C${Number(idx) + 1}`;
-                onUpdate({
-                  field: {
-                    ...field,
-                    calculation: {
-                      formula: quickFormula(kind as QuickFormulaKind, ref),
-                      dependsOn: field.calculation?.dependsOn ?? [],
-                    },
-                  },
-                });
-              }}
-            >
-              <option value="">Quick formula…</option>
-              {QUICK_FORMULAS.map((q) => (
-                <optgroup key={q.kind} label={q.label}>
-                  {parentSection.columns!.map((c, i) =>
-                    c.id === column.id ? null : (
-                      <option key={c.id} value={`${q.kind}:${i}`}>
-                        {q.label} of “{c.label || `column ${i + 1}`}”
-                      </option>
-                    ),
-                  )}
                 </optgroup>
               ))}
             </select>
           )}
+          {behavior === "calculate" && !isResult && (
+            <input
+              value={field.calculation?.formula ?? ""}
+              onChange={(e) => setFormula(e.target.value)}
+              onFocus={() => setOpen(true)}
+              placeholder="Formula, e.g. {JD.TCF} * {IR.C2}"
+              title={field.calculation?.formula || "Use refs like {IR.C1.R2} (table) or {JD.TCF}. More ▸ has helpers."}
+              className={`${cellCls} font-mono`}
+            />
+          )}
+          {behavior === "static" && (
+            <input
+              value={field.staticValue ?? ""}
+              onChange={(e) => onUpdate({ field: { ...field, staticValue: e.target.value } })}
+              placeholder="Same text for every row"
+              title="Same text for every row. Per-row text: More ▸"
+              className={cellCls}
+            />
+          )}
+          {isResult && (
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="h-7 w-full text-left px-2 text-[11px] border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-600 dark:text-neutral-300 hover:border-brand hover:text-brand truncate"
+              title="Edit the pass / fail rule"
+            >
+              Pass / fail rule…
+            </button>
+          )}
+        </div>
+
+        <input
+          value={field.unit ?? ""}
+          onChange={(e) =>
+            onUpdate({
+              field: {
+                ...field,
+                unit: e.target.value === "" && field.unit === undefined ? undefined : e.target.value,
+              },
+            })
+          }
+          placeholder="—"
+          title="Unit (e.g. kV, A, Ω)"
+          className={`${cellCls} text-center`}
+        />
+        <div className="flex justify-center">
+          <input
+            type="checkbox"
+            checked={!!field.required}
+            onChange={(e) => onUpdate({ field: { ...field, required: e.target.checked } })}
+            className="rounded-none"
+            title="Required: the report can't be submitted with this blank"
+            aria-label="Required"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className={`h-7 flex items-center justify-center gap-0.5 text-[11px] border rounded-none ${
+            open
+              ? "border-brand text-brand"
+              : "border-neutral-300 dark:border-neutral-600 text-neutral-600 dark:text-neutral-300 hover:border-brand hover:text-brand"
+          }`}
+          title={open ? "Hide more settings" : "More settings for this column"}
+          aria-expanded={open}
+        >
+          {open ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+          {moreCount > 0 && <span className="font-semibold">{moreCount}</span>}
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          className="flex justify-center p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
+          title="Delete column"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* More settings, one labelled line each. */}
+      {open && (
+        <div className="ml-8 mr-2 mb-2 border-l-2 border-brand pl-3 py-1 space-y-2">
+          {isResult && parentSection && (
+            <div className="flex flex-wrap items-start gap-2">
+              <span className={panelLabel}>Pass / fail rule</span>
+              <div className="flex-1 min-w-0">
+                <ResultRuleEditor
+                  section={parentSection}
+                  columnId={column.id}
+                  rule={field.resultRule!}
+                  onChange={(rule) => onUpdate({ field: resultRuleField(field, rule) })}
+                />
+              </div>
+            </div>
+          )}
+
+          {showOptions && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={panelLabel}>Choices</span>
+              <div className="flex-1 min-w-0">
+                <InlineOptionsEditor
+                  colored={isResultField(field)}
+                  options={field.options || []}
+                  onChange={(options) => onUpdate({ field: { ...field, options } })}
+                  onAdd={() => {
+                    if (onAppendOption) return onAppendOption();
+                    const n = (field.options || []).length + 1;
+                    onUpdate({
+                      field: {
+                        ...field,
+                        options: [...(field.options || []), { label: `Option ${n}`, value: `Option ${n}` }],
+                      },
+                    });
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          {showFormulaRefs && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={panelLabel}>Formula helpers</span>
+              <select
+                className={`${inlineInputCls} w-64 font-mono`}
+                value=""
+                onChange={(e) => {
+                  const token = e.target.value;
+                  if (!token) return;
+                  const current = field.calculation?.formula ?? "";
+                  setFormula(current + (current ? " " : "") + token);
+                }}
+              >
+                <option value="">Insert reference…</option>
+                {refGroups.map(([sectionId, sectionTitle]) => {
+                  const sec = allSections.find((s) => s.id === sectionId);
+                  const code = sec ? getSectionReferenceCode(sec) : "";
+                  return (
+                    <optgroup key={sectionId} label={sectionTitle}>
+                      {/* Whole columns first: for avg / min / max / sum. */}
+                      {(sec?.columns ?? []).map((c, i) => (
+                        <option key={`all-${c.id}`} value={`{${code}.C${i + 1}.all}`}>
+                          {`{${code}.C${i + 1}.all}`} — {c.label || `column ${i + 1}`}, all rows (use in avg/min/max/sum)
+                        </option>
+                      ))}
+                      {refOptions
+                        .filter((o) => o.sectionId === sectionId)
+                        .map((opt) => (
+                          <option key={opt.refToken} value={opt.friendlyRef}>
+                            {opt.friendlyRef} — {opt.description}
+                          </option>
+                        ))}
+                    </optgroup>
+                  );
+                })}
+              </select>
+              {parentSection && (parentSection.columns?.length ?? 0) > 0 && (
+                <select
+                  className={`${inlineInputCls} w-64`}
+                  value=""
+                  title="Write a common formula for you. It replaces what's in the formula box."
+                  onChange={(e) => {
+                    const [kind, idx] = e.target.value.split(":");
+                    if (!kind) return;
+                    const ref = `${getSectionReferenceCode(parentSection)}.C${Number(idx) + 1}`;
+                    setFormula(quickFormula(kind as QuickFormulaKind, ref));
+                  }}
+                >
+                  <option value="">Quick formula…</option>
+                  {QUICK_FORMULAS.map((q) => (
+                    <optgroup key={q.kind} label={q.label}>
+                      {parentSection.columns!.map((c, i) =>
+                        c.id === column.id ? null : (
+                          <option key={c.id} value={`${q.kind}:${i}`}>
+                            {q.label} of “{c.label || `column ${i + 1}`}”
+                          </option>
+                        ),
+                      )}
+                    </optgroup>
+                  ))}
+                </select>
+              )}
+              {field.calculation?.formula && (
+                <code className="basis-full block text-[11px] font-mono text-neutral-600 dark:text-neutral-300 break-all bg-white dark:bg-dark-150 border border-neutral-200 dark:border-neutral-700 px-2 py-1">
+                  = {field.calculation.formula}
+                </code>
+              )}
+            </div>
+          )}
 
           {showStaticRows && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                Per row (overrides):
+            <div className="flex flex-wrap items-start gap-2">
+              <span className={panelLabel} title="Text for one row, instead of the column's text">
+                Per-row text
               </span>
-              {staticRows.map((r) => (
-                <label key={r.index} className="flex items-center gap-1">
-                  <span className="text-[10px] text-neutral-500 dark:text-neutral-400 max-w-[6rem] truncate">
-                    {r.label}
-                  </span>
-                  <input
-                    value={
-                      parentSection?.staticCells?.[`row${r.index}_${column.id}`] ??
-                      ""
-                    }
-                    onChange={(e) => setStaticCell(r.index, e.target.value)}
-                    placeholder="—"
-                    className={`${inlineInputCls} w-28`}
-                  />
-                </label>
-              ))}
+              <div className="flex-1 min-w-0 grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-1">
+                {staticRows.map((r) => (
+                  <label key={r.index} className="flex items-center gap-1 min-w-0">
+                    <span className="w-14 shrink-0 text-[10px] text-neutral-500 dark:text-neutral-400 truncate" title={r.label}>
+                      {r.label}
+                    </span>
+                    <input
+                      value={parentSection?.staticCells?.[`row${r.index}_${column.id}`] ?? ""}
+                      onChange={(e) => setStaticCell(r.index, e.target.value)}
+                      placeholder={field.staticValue || "—"}
+                      className={`${inlineInputCls} w-full min-w-0`}
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {behavior === "user" && !isResult && canHaveHint(field) && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={panelLabel}>Hint</span>
+              <input
+                value={field.placeholder ?? ""}
+                onChange={(e) => onUpdate({ field: { ...field, placeholder: e.target.value || undefined } })}
+                placeholder="Shown in the empty cell"
+                title={HINT_TITLE}
+                className={`${inlineInputCls} w-64`}
+              />
+            </div>
+          )}
+
+          {showEquipment && (
+            <div className="flex flex-wrap items-start gap-2">
+              <span className={panelLabel}>Test equipment</span>
+              <div className="flex-1 min-w-0">
+                <EquipmentPickerSettings
+                  section={parentSection!}
+                  columnId={column.id}
+                  field={field}
+                  onChange={(next) => onUpdate({ field: next })}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={panelLabel}>Fill from asset</span>
+            <AssetSourceSelect
+              column
+              value={field.assetSource}
+              onChange={(assetSource) => onUpdate({ field: { ...field, assetSource } })}
+            />
+          </div>
+
+          {parentSection && onSectionUpdate && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={panelLabel}>As Found / As Left</span>
+              <button
+                type="button"
+                onClick={() =>
+                  onSectionUpdate(
+                    pairForColumn(parentSection, column.id)
+                      ? combineAsFoundAsLeft(parentSection, column.id)
+                      : splitAsFoundAsLeft(parentSection, column.id),
+                  )
+                }
+                className="h-7 px-2 text-[11px] border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-600 dark:text-neutral-300 hover:border-brand hover:text-brand"
+                title={
+                  pairForColumn(parentSection, column.id)
+                    ? "Back to one column (the As Left column and its readings are removed)"
+                    : "Split into As Found and As Left columns under one heading"
+                }
+              >
+                {pairForColumn(parentSection, column.id) ? "Combine back into one column" : "Split into As Found / As Left"}
+              </button>
             </div>
           )}
 
           {showVisibleWhen &&
             settingFields!.map((sf) => {
               const current = column.visibleWhen?.[sf.id];
-              const currentList = Array.isArray(current)
-                ? current
-                : current
-                  ? [current]
-                  : [];
+              const currentList = Array.isArray(current) ? current : current ? [current] : [];
               return (
                 <div
                   key={sf.id}
-                  className="flex flex-wrap items-center gap-1.5 text-[10px]"
+                  className="flex flex-wrap items-center gap-2 text-[11px]"
                   title="Show this column only when these values are selected. Leave all unchecked to always show."
                 >
-                  <span className="text-neutral-500 dark:text-neutral-400">
-                    Show when {sf.label}:
-                  </span>
+                  <span className={panelLabel}>Show when {sf.label}</span>
                   {sf.options.map((opt) => {
                     const checked = currentList.includes(opt.value);
                     return (
-                      <label
-                        key={opt.value}
-                        className="flex items-center gap-1 cursor-pointer"
-                      >
+                      <label key={opt.value} className="flex items-center gap-1 cursor-pointer text-neutral-700 dark:text-neutral-300">
                         <input
                           type="checkbox"
                           checked={checked}
                           onChange={(e) => {
                             const nextList = e.target.checked
-                              ? [
-                                  ...currentList.filter((v) => v !== opt.value),
-                                  opt.value,
-                                ]
+                              ? [...currentList.filter((v) => v !== opt.value), opt.value]
                               : currentList.filter((v) => v !== opt.value);
                             const vw = { ...(column.visibleWhen || {}) };
                             if (nextList.length === 0) delete vw[sf.id];
-                            else
-                              vw[sf.id] =
-                                nextList.length === 1 ? nextList[0] : nextList;
+                            else vw[sf.id] = nextList.length === 1 ? nextList[0] : nextList;
                             onUpdate({ visibleWhen: vw });
                           }}
                           className="rounded-none"
@@ -2320,6 +2314,30 @@ const ColumnEditor: React.FC<{
     </div>
   );
 };
+
+/**
+ * Shared column layout for the header and every column row:
+ * drag · label · width · cell value · details · unit · required · more · delete.
+ */
+const COLUMN_GRID =
+  "grid grid-cols-[1.75rem_minmax(9rem,1.3fr)_4.5rem_9rem_minmax(12rem,2fr)_4rem_2.5rem_2.75rem_1.75rem] gap-1.5";
+
+/** The header over the column rows. */
+const ColumnListHeader: React.FC = () => (
+  <div
+    className={`${COLUMN_GRID} px-1 py-1.5 sticky top-0 z-10 bg-neutral-100 dark:bg-dark-200 border-b border-neutral-300 dark:border-neutral-600 text-[11px] font-semibold uppercase tracking-wide text-neutral-600 dark:text-neutral-300`}
+  >
+    <span />
+    <span>Column</span>
+    <span title="Column width (e.g. 25%, 100px, auto)">Width</span>
+    <span title="Where the cell's value comes from">Cell value</span>
+    <span title="Input type, formula, copied field or fixed text">Details</span>
+    <span className="text-center">Unit</span>
+    <span className="text-center" title="Required">Req.</span>
+    <span className="text-center" title="More settings">More</span>
+    <span />
+  </div>
+);
 
 /** Shared look for the small inline inputs/selects in field and column rows. */
 export const inlineInputCls =

@@ -69,6 +69,8 @@ import { isJobInfoSection, jobFillLabel } from "@/lib/customForms/jobFill";
 import { JobFillControl } from "./JobFillControl";
 import { useLookupTables } from "@/lib/customForms/lookupLibrary";
 import { resolveDeviation } from "./runtime/SectionBody";
+import { resolveLeavingStatic } from "@/lib/customForms/staticColumn";
+import { askKeepStaticAsDefaults } from "./askKeepStaticAsDefaults";
 import {
   RESULT_TYPE_LABEL,
   RESULT_TYPE_VALUE,
@@ -446,12 +448,31 @@ const LiveTable: React.FC<{
   const updateField = (i: number, patch: Partial<FieldConfig>) =>
     updateColumn(i, { field: { ...cols[i].field, ...patch } });
 
+  /**
+   * Save a column's new field. Leaving Static text, its per-row text is
+   * offered as default values (User entry) or cleared, so no cell stays locked.
+   */
+  const commitColumnField = async (i: number, nextField: FieldConfig, next: string) => {
+    const col = cols[i];
+    if ((col.field.cellBehavior ?? "user") === "static") {
+      const leave = await resolveLeavingStatic(section, col.id, col.field, next, askKeepStaticAsDefaults);
+      if (leave) {
+        onUpdate({
+          ...leave,
+          columns: cols.map((c, k) => (k === i ? { ...c, field: { ...nextField, staticValue: undefined } } : c)),
+        });
+        return;
+      }
+    }
+    updateColumn(i, { field: nextField });
+  };
+
   const setBehavior = (i: number, next: Behavior | "result") => {
     if (next === "result") {
-      updateColumn(i, { field: resultRuleField(cols[i].field, cols[i].field.resultRule ?? DEFAULT_RESULT_RULE) });
+      commitColumnField(i, resultRuleField(cols[i].field, cols[i].field.resultRule ?? DEFAULT_RESULT_RULE), "result");
       return;
     }
-    updateField(i, {
+    commitColumnField(i, { ...cols[i].field,
       resultRule: undefined,
       cellBehavior: next,
       ...(next === "user" && {
@@ -465,7 +486,7 @@ const LiveTable: React.FC<{
         calculation: undefined,
         readOnly: true,
       }),
-    });
+    }, next);
   };
 
   const setStaticCell = (row: number, colId: string, value: string) => {

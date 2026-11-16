@@ -147,7 +147,7 @@ export default function QuickBooksIntegration({
               <div>
                 <span className="font-medium">Token expires:</span>{" "}
                 <span>
-                  {new Date(integration.token_expires_at).toLocaleString()}
+                  {new Date(integration.expires_at).toLocaleString()}
                 </span>
               </div>
             </div>

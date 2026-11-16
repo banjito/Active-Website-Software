@@ -2028,11 +2028,11 @@ export const QuickBooksDashboard: React.FC = () => {
                   QuickBooks Not Connected
                 </h3>
                 <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
-                  Connect your QuickBooks account to view your accounting data.
+                  One connection is shared by the whole company. An admin can connect it in Integrations.
                 </p>
                 <Button
                   className="mt-4"
-                  onClick={() => (window.location.href = "/admin-dashboard")}
+                  onClick={() => (window.location.href = "/admin-dashboard/integrations")}
                 >
                   Go to Integrations
                 </Button>

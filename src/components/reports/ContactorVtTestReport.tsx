@@ -303,8 +303,15 @@ const PrintPairs: React.FC<{ pairs: [string, string][] }> = ({ pairs }) => {
   );
 };
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const isUuid = (v: string | undefined): v is string => !!v && UUID_RE.test(v);
+
 const ContactorVtTestReport: React.FC = () => {
-  const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
+  const params = useParams<{ id: string; reportId: string }>();
+  // A typed-in link like /jobs/:id/... must never reach the database.
+  const badLink = !isUuid(params.id) || (params.reportId !== undefined && !isUuid(params.reportId));
+  const jobId = badLink ? undefined : params.id;
+  const reportId = badLink ? undefined : params.reportId;
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -683,6 +690,20 @@ const ContactorVtTestReport: React.FC = () => {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <LoadingSpinner size="md" />
+      </div>
+    );
+  }
+
+  if (badLink) {
+    return (
+      <div className="p-6">
+        <h2 className="text-xl font-semibold mb-2 text-neutral-900 dark:text-white">
+          Open this report from a job
+        </h2>
+        <p className="text-sm text-neutral-600 dark:text-neutral-300">
+          This link is missing a real job. Go to a job, click Add report, and pick
+          &quot;7.10.2 Contactor VT Test Sheet (Multi-Unit)&quot;.
+        </p>
       </div>
     );
   }

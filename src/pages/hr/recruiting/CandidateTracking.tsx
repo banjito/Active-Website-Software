@@ -364,7 +364,7 @@ export const CandidateTracking: React.FC = () => {
       // Upload resume file if provided
       if (resumeFile) {
         const fileExt = resumeFile.name.split(".").pop() || "pdf";
-        const fileName = `manual/${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const fileName = `manual/${Date.now()}_${crypto.randomUUID()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from("resumes")
           .upload(fileName, resumeFile, {
@@ -384,7 +384,7 @@ export const CandidateTracking: React.FC = () => {
       // Upload cover letter file if provided
       if (coverLetterFile) {
         const fileExt = coverLetterFile.name.split(".").pop() || "pdf";
-        const fileName = `cover_letters/manual/${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const fileName = `cover_letters/manual/${Date.now()}_${crypto.randomUUID()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from("resumes")
           .upload(fileName, coverLetterFile, {
@@ -470,7 +470,7 @@ export const CandidateTracking: React.FC = () => {
       // Upload new resume file if provided
       if (resumeFile) {
         const fileExt = resumeFile.name.split(".").pop() || "pdf";
-        const fileName = `manual/${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const fileName = `manual/${Date.now()}_${crypto.randomUUID()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from("resumes")
           .upload(fileName, resumeFile, {
@@ -488,7 +488,7 @@ export const CandidateTracking: React.FC = () => {
       // Upload new cover letter file if provided
       if (coverLetterFile) {
         const fileExt = coverLetterFile.name.split(".").pop() || "pdf";
-        const fileName = `cover_letters/manual/${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const fileName = `cover_letters/manual/${Date.now()}_${crypto.randomUUID()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from("resumes")
           .upload(fileName, coverLetterFile, {

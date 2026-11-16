@@ -5,12 +5,16 @@ interface QuickBooksIntegration {
   realm_id: string | null;
   company_name: string | null;
   environment: 'sandbox' | 'production';
-  token_expires_at: string;
+  expires_at: string;
   created_at: string;
+  /** Who connected it. One connection is shared by the whole company. */
+  connected_by: string | null;
 }
 
-interface QuickBooksConnectionStatus {
+export interface QuickBooksConnectionStatus {
   connected: boolean;
+  /** Admins only: connecting replaces the connection for everyone */
+  can_manage?: boolean;
   integration?: QuickBooksIntegration;
 }
 
@@ -177,64 +181,6 @@ export async function getQuickBooksStatus(): Promise<QuickBooksConnectionStatus>
 }
 
 /**
- * Get a valid access token, refreshing if necessary
- */
-export async function getQuickBooksAccessToken(): Promise<string | null> {
-  try {
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    
-    if (sessionError || !session) {
-      throw new Error('Not authenticated');
-    }
-
-    // First, check if we have an active integration
-    const status = await getQuickBooksStatus();
-    if (!status.connected || !status.integration) {
-      return null;
-    }
-
-    // Check if token is expired (with 5 minute buffer)
-    const expiresAt = new Date(status.integration.token_expires_at);
-    const now = new Date();
-    const buffer = 5 * 60 * 1000; // 5 minutes in milliseconds
-
-    if (expiresAt.getTime() - now.getTime() < buffer) {
-      // Token is expired or about to expire, refresh it
-      const { data, error } = await supabase.functions.invoke('quickbooks-oauth', {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (error || !data?.access_token) {
-        throw new Error('Failed to refresh token');
-      }
-
-      return data.access_token;
-    }
-
-    // Token is still valid, get it from the database
-    const { data: integration, error: integrationError } = await supabase
-      .schema('common')
-      .from('quickbooks_integrations')
-      .select('access_token')
-      .eq('user_id', session.user.id)
-      .eq('is_active', true)
-      .single();
-
-    if (integrationError || !integration) {
-      return null;
-    }
-
-    return integration.access_token;
-  } catch (error) {
-    console.error('Error getting QuickBooks access token:', error);
-    return null;
-  }
-}
-
-/**
  * Disconnect QuickBooks integration
  */
 export async function disconnectQuickBooks(): Promise<boolean> {
@@ -290,7 +236,22 @@ export async function quickBooksApiCall(
 
     if (error) {
       console.error('[QB API] Error:', error);
-      // Preserve error structure for rate limiter to detect 429s
+      // Swap "Edge Function returned a non-2xx status code" for the server's real
+      // reason, keeping status/context so the rate limiter still spots 429s
+      let body: any = null;
+      try {
+        body = await error.context?.json?.();
+      } catch {
+        // Not JSON (or no response at all): keep the original error
+      }
+      const reason = body?.error;
+      if (reason) {
+        throw Object.assign(new Error(body?.status ? `${reason} (${body.status})` : reason), {
+          status: error.context?.status,
+          context: error.context,
+          code: body?.code,
+        });
+      }
       throw error;
     }
 

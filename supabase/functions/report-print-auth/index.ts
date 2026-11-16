@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { timingSafeEqual } from '../_shared/timingSafeEqual.ts'
 
 // Validates a short-lived, HMAC-signed "print token" and, if valid, returns a
 // session for a dedicated renderer account so a headless browser can render the
@@ -59,7 +60,7 @@ async function verifyPrintToken(
   const expected = bytesToBase64url(
     new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payloadB64))),
   )
-  if (expected !== sigB64) return null
+  if (!timingSafeEqual(expected, sigB64)) return null
 
   try {
     const payload = JSON.parse(new TextDecoder().decode(base64urlToBytes(payloadB64)))

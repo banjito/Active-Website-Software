@@ -94,6 +94,7 @@ Three questions, in order:
 | 12 Current Transformer Test MTS | Twelve CTs, maintenance |
 | Potential Transformer ATS | PTs, acceptance |
 | 13 Voltage Potential Transformer Test MTS | PTs, maintenance |
+| 7.10.2 Contactor VT Test Sheet (Multi-Unit) | Several PTs on one form, like the control PTs in motor contactor cabinets (ATS or MTS) |
 
 ## Motor starters and generators
 

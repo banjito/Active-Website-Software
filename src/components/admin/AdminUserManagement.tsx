@@ -11,11 +11,9 @@ import {
   AlertCircle,
   RefreshCw,
   KeyRound,
-  Mail,
   Camera,
   Ban,
   UserCheck,
-  Hash,
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
@@ -107,10 +105,30 @@ export default function AdminUserManagement() {
     string | null
   >(null);
   const [showDeactivated, setShowDeactivated] = useState(false);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [savingAllUserId, setSavingAllUserId] = useState<string | null>(null);
+  const [savedAllUserId, setSavedAllUserId] = useState<string | null>(null);
+  // Which avatar a file is being dragged over: "<userId>:row" or "<userId>:editor".
+  const [avatarDragKey, setAvatarDragKey] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  // A photo dropped just outside an avatar would make the browser open the
+  // image and leave the page. Swallow stray file drops while this page is open.
+  useEffect(() => {
+    if (!canEditProfileImages) return;
+    const swallow = (e: DragEvent) => {
+      if (e.dataTransfer?.types.includes("Files")) e.preventDefault();
+    };
+    window.addEventListener("dragover", swallow);
+    window.addEventListener("drop", swallow);
+    return () => {
+      window.removeEventListener("dragover", swallow);
+      window.removeEventListener("drop", swallow);
+    };
+  }, [canEditProfileImages]);
 
   async function fetchUsers() {
     try {
@@ -201,7 +219,7 @@ export default function AdminUserManagement() {
     }
   }
 
-  async function updateUserRole(userId: string, role: Role) {
+  async function updateUserRole(userId: string, role: Role): Promise<boolean> {
     console.log(
       `[updateUserRole] Attempting to update user ${userId} to role ${role}`,
     );
@@ -239,7 +257,7 @@ export default function AdminUserManagement() {
           setError(`Failed to update role for ${userId}: ${error.message}`);
         }
         setUpdateErrorUserId(userId);
-        return;
+        return false;
       }
 
       console.log("[updateUserRole] RPC call succeeded.");
@@ -253,12 +271,10 @@ export default function AdminUserManagement() {
         ),
       );
 
-      setEditingUser(null);
-      setSelectedRole(null);
-
       // Set success feedback for this user
       setUpdateSuccessUserId(userId);
       setTimeout(() => setUpdateSuccessUserId(null), 3000); // Clear after 3 seconds
+      return true;
     } catch (err: any) {
       // Catch specific error
       console.error("Error updating user role:", err);
@@ -267,6 +283,7 @@ export default function AdminUserManagement() {
       setError(
         `Failed to update role for ${userId}: ${err.message || "Unknown error"}`,
       );
+      return false;
     }
   }
 
@@ -284,6 +301,10 @@ export default function AdminUserManagement() {
     setEmailErrorUserId(null);
     setEmployeeIdErrorUserId(null);
     setEmployeeIdSuccessUserId(null);
+    setPasswordErrorUserId(null);
+    setShowPasswordForm(false);
+    setSavedAllUserId(null);
+    setError(null);
     // Ensure we set a valid Role type or null
     const validRole = Object.keys(ROLES).includes(currentRole as string)
       ? (currentRole as Role)
@@ -334,6 +355,7 @@ export default function AdminUserManagement() {
 
       setNewPassword("");
       setConfirmPassword("");
+      setShowPasswordForm(false);
       setPasswordSuccessUserId(userId);
       setTimeout(() => setPasswordSuccessUserId(null), 3000);
     } catch (err) {
@@ -367,7 +389,7 @@ export default function AdminUserManagement() {
     }
   };
 
-  const handleChangeEmail = async (userId: string) => {
+  const handleChangeEmail = async (userId: string): Promise<boolean> => {
     setError(null);
     setEmailSuccessUserId(null);
     setEmailErrorUserId(null);
@@ -378,12 +400,12 @@ export default function AdminUserManagement() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
       setError("Please enter a valid email address.");
       setEmailErrorUserId(userId);
-      return;
+      return false;
     }
     if (trimmed === current) {
       setError("That is already this user's email.");
       setEmailErrorUserId(userId);
-      return;
+      return false;
     }
 
     try {
@@ -406,6 +428,7 @@ export default function AdminUserManagement() {
       );
       setEmailSuccessUserId(userId);
       setTimeout(() => setEmailSuccessUserId(null), 3000);
+      return true;
     } catch (err) {
       let message =
         err instanceof Error ? err.message : "Could not change email";
@@ -428,12 +451,13 @@ export default function AdminUserManagement() {
 
       setError(message);
       setEmailErrorUserId(userId);
+      return false;
     } finally {
       setEmailLoadingUserId(null);
     }
   };
 
-  const handleChangeEmployeeId = async (userId: string) => {
+  const handleChangeEmployeeId = async (userId: string): Promise<boolean> => {
     setError(null);
     setEmployeeIdSuccessUserId(null);
     setEmployeeIdErrorUserId(null);
@@ -447,7 +471,7 @@ export default function AdminUserManagement() {
     if (nextValue === current) {
       setError("That is already this user's employee ID.");
       setEmployeeIdErrorUserId(userId);
-      return;
+      return false;
     }
 
     try {
@@ -486,6 +510,7 @@ export default function AdminUserManagement() {
       );
       setEmployeeIdSuccessUserId(userId);
       setTimeout(() => setEmployeeIdSuccessUserId(null), 3000);
+      return true;
     } catch (err: any) {
       console.error("Error saving employee ID:", err);
       // 23505 = unique violation, i.e. another employee already has this ID.
@@ -498,17 +523,48 @@ export default function AdminUserManagement() {
           : err?.message || "Could not save employee ID.",
       );
       setEmployeeIdErrorUserId(userId);
+      return false;
     } finally {
       setEmployeeIdLoadingUserId(null);
     }
   };
 
-  const handleSaveRole = (userId: string) => {
-    if (selectedRole) {
-      updateUserRole(userId, selectedRole);
-    } else {
-      setError(`Cannot save: No role selected for user ${userId}`);
-      setUpdateErrorUserId(userId);
+  // Which Account-tab fields differ from what's saved. Password is left out on
+  // purpose: browsers can autofill it, and it should never save by accident.
+  const getPendingChanges = (user: UserData) => {
+    const role =
+      !!selectedRole && selectedRole !== user.user_metadata?.role;
+    const email =
+      canChangeEmails &&
+      newEmail.trim().toLowerCase() !== (user.email || "").toLowerCase();
+    const employeeId =
+      canEditEmployeeIds &&
+      (newEmployeeId.trim() || null) !== (user.employee_number || null);
+    return { role, email, employeeId, any: role || email || employeeId };
+  };
+
+  // One Save button for role, email and employee ID. Stops at the first
+  // failure so the error shown matches the field that failed.
+  const handleSaveAll = async (user: UserData) => {
+    const pending = getPendingChanges(user);
+    if (!pending.any) return;
+    setSavingAllUserId(user.id);
+    setSavedAllUserId(null);
+    try {
+      if (pending.role && selectedRole) {
+        if (!(await updateUserRole(user.id, selectedRole))) return;
+      }
+      if (pending.email && !(await handleChangeEmail(user.id))) return;
+      if (pending.employeeId && !(await handleChangeEmployeeId(user.id))) {
+        return;
+      }
+      setSavedAllUserId(user.id);
+      setTimeout(
+        () => setSavedAllUserId((prev) => (prev === user.id ? null : prev)),
+        3000,
+      );
+    } finally {
+      setSavingAllUserId(null);
     }
   };
 
@@ -570,13 +626,65 @@ export default function AdminUserManagement() {
     }
   };
 
-  const handleAvatarFileSelected = async (
+  const handleAvatarFileSelected = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     const userId = avatarTargetUserIdRef.current;
-    if (!file || !userId) return;
+    avatarTargetUserIdRef.current = null;
+    if (file && userId) void uploadAvatar(userId, file);
+  };
 
+  // Drag-and-drop handlers for an avatar. `slot` keeps the row avatar and the
+  // editor avatar highlighting separately for the same user.
+  const isFileDrag = (e: React.DragEvent) =>
+    Array.from(e.dataTransfer.types).includes("Files");
+  const avatarDropProps = (userId: string, slot: "row" | "editor") => {
+    if (!canEditProfileImages) return {};
+    const key = `${userId}:${slot}`;
+    return {
+      onDragEnter: (e: React.DragEvent) => {
+        if (!isFileDrag(e)) return;
+        e.preventDefault();
+        setAvatarDragKey(key);
+      },
+      onDragOver: (e: React.DragEvent) => {
+        if (!isFileDrag(e)) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "copy";
+      },
+      onDragLeave: (e: React.DragEvent) => {
+        // Moving over a child (the image) also fires dragleave; ignore that.
+        if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+        setAvatarDragKey((prev) => (prev === key ? null : prev));
+      },
+      onDrop: (e: React.DragEvent) => {
+        e.preventDefault();
+        setAvatarDragKey(null);
+        const file = e.dataTransfer.files?.[0];
+        if (file && avatarUploadingUserId !== userId) {
+          void uploadAvatar(userId, file);
+        }
+      },
+    };
+  };
+
+  const renderAvatar = (user: UserData, imgClass: string, textClass: string) =>
+    user.user_metadata?.profileImage ? (
+      <img
+        src={user.user_metadata.profileImage}
+        alt={user.user_metadata?.name || "User"}
+        className={`${imgClass} object-cover`}
+      />
+    ) : (
+      <span className={`font-medium text-neutral-600 dark:text-white ${textClass}`}>
+        {user.user_metadata?.name?.[0]?.toUpperCase() ||
+          user.email?.[0]?.toUpperCase() ||
+          "?"}
+      </span>
+    );
+
+  const uploadAvatar = async (userId: string, file: File) => {
     if (!file.type.startsWith("image/")) {
       setError("Please select an image file.");
       setUpdateErrorUserId(userId);
@@ -676,7 +784,6 @@ export default function AdminUserManagement() {
       setUpdateErrorUserId(userId);
     } finally {
       setAvatarUploadingUserId(null);
-      avatarTargetUserIdRef.current = null;
     }
   };
 
@@ -702,6 +809,23 @@ export default function AdminUserManagement() {
       );
     })
     .sort((a, b) => firstNameKey(a).localeCompare(firstNameKey(b)));
+
+  // Errors for the open editor show inside it (next to Save), not at the top
+  // of the page where they'd be scrolled out of view.
+  const editorHasError =
+    !!editingUser &&
+    [
+      updateErrorUserId,
+      emailErrorUserId,
+      employeeIdErrorUserId,
+      passwordErrorUserId,
+    ].includes(editingUser);
+
+  const inputClass =
+    "w-full px-3 py-2 text-sm border border-neutral-300 rounded-none focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand dark:bg-dark-700 dark:border-dark-600 dark:text-white";
+  const labelClass =
+    "mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-200";
+  const hintClass = "mt-1 block text-xs text-neutral-500 dark:text-neutral-400";
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
@@ -746,7 +870,7 @@ export default function AdminUserManagement() {
         </div>
       </div>
 
-      {error && (
+      {error && !editorHasError && (
         <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-none dark:bg-red-900/20 dark:border-red-800 dark:text-red-300 flex items-center gap-2">
           <AlertCircle className="h-5 w-5" />
           <span>{error}</span>
@@ -792,20 +916,25 @@ export default function AdminUserManagement() {
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center mb-4 sm:mb-0 flex-grow min-w-0 mr-4">
-                    {/* Profile Image/Initial (display only; edit via Account tab) */}
-                    <div className="relative h-10 w-10 rounded-none bg-neutral-200 dark:bg-dark-300 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {user.user_metadata?.profileImage ? (
-                        <img
-                          src={user.user_metadata.profileImage}
-                          alt={user.user_metadata?.name || "User"}
-                          className="h-10 w-10 object-cover"
-                        />
-                      ) : (
-                        <span className="text-sm font-medium text-neutral-600 dark:text-white">
-                          {user.user_metadata?.name?.[0]?.toUpperCase() ||
-                            user.email?.[0]?.toUpperCase() ||
-                            "?"}
-                        </span>
+                    {/* Profile photo. Admins can drop an image on it to change it. */}
+                    <div
+                      {...avatarDropProps(user.id, "row")}
+                      title={
+                        canEditProfileImages
+                          ? "Drop a photo here to change it"
+                          : undefined
+                      }
+                      className={`relative h-10 w-10 rounded-none bg-neutral-200 dark:bg-dark-300 flex items-center justify-center overflow-hidden flex-shrink-0 transition-shadow ${
+                        avatarDragKey === `${user.id}:row`
+                          ? "ring-2 ring-brand ring-offset-2 dark:ring-offset-dark-150"
+                          : ""
+                      }`}
+                    >
+                      {renderAvatar(user, "h-10 w-10", "text-sm")}
+                      {avatarDragKey === `${user.id}:row` && (
+                        <div className="absolute inset-0 bg-brand/60 flex items-center justify-center">
+                          <Camera className="h-4 w-4 text-white" />
+                        </div>
                       )}
                       {avatarUploadingUserId === user.id && (
                         <div className="absolute inset-0 bg-black/50 rounded-none flex items-center justify-center">
@@ -887,9 +1016,9 @@ export default function AdminUserManagement() {
                 </div>
 
                 {editingUser === user.id && (
-                  <div className="rounded-none border border-neutral-200 dark:border-dark-300 bg-neutral-50 dark:bg-dark-100 p-4">
+                  <div className="rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-100 p-4 sm:p-5">
                     <Tabs defaultValue="account">
-                      <TabsList className="mb-4 h-auto justify-start space-x-1 bg-neutral-100 p-1 dark:bg-dark-150">
+                      <TabsList className="mb-5 h-auto justify-start space-x-1 bg-neutral-100 p-1 dark:bg-dark-150">
                         <TabsTrigger
                           value="account"
                           className="py-2 text-neutral-600 hover:text-neutral-900 dark:text-white dark:hover:text-white data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white"
@@ -904,192 +1033,236 @@ export default function AdminUserManagement() {
                         </TabsTrigger>
                       </TabsList>
 
-                      {/* Account tab: role, password, avatar, active status */}
+                      {/* Account tab: photo on the left, fields on the right,
+                          one Save for everything at the bottom. */}
                       <TabsContent value="account">
-                        <div className="space-y-6">
-                          {/* Role */}
-                          <div>
-                            <p className="mb-2 text-sm font-medium text-neutral-900 dark:text-white">
-                              Role
-                            </p>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <select
-                                value={selectedRole || ""}
-                                onChange={(e) =>
-                                  setSelectedRole(e.target.value as Role)
-                                }
-                                className="block pl-3 pr-10 py-1.5 text-sm border border-neutral-300 rounded-none shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
+                        <div className="flex flex-col gap-6 sm:flex-row">
+                          {/* Profile photo: click or drop an image */}
+                          <div className="flex flex-col items-center gap-2 sm:w-32 flex-shrink-0">
+                            {canEditProfileImages ? (
+                              <button
+                                type="button"
+                                {...avatarDropProps(user.id, "editor")}
+                                onClick={() => {
+                                  if (avatarUploadingUserId !== user.id) {
+                                    handleStartAvatarChange(user.id);
+                                  }
+                                }}
+                                aria-label="Change profile photo"
+                                aria-busy={avatarUploadingUserId === user.id}
+                                className={`group relative h-28 w-28 overflow-hidden rounded-none border-2 border-dashed flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+                                  avatarDragKey === `${user.id}:editor`
+                                    ? "border-brand bg-brand/10"
+                                    : "border-neutral-300 bg-neutral-100 hover:border-brand dark:border-dark-300 dark:bg-dark-150"
+                                }`}
                               >
-                                <option value="" disabled>
-                                  Select a role
-                                </option>
-                                {Object.keys(ROLES).map((roleKey) => (
-                                  <option key={roleKey} value={roleKey}>
-                                    {roleKey}
-                                  </option>
-                                ))}
-                              </select>
-                              <Button
-                                size="sm"
-                                onClick={() => handleSaveRole(user.id)}
-                                disabled={!selectedRole}
-                                className="bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
-                                leftIcon={<CheckCircle className="h-4 w-4" />}
-                              >
-                                Save role
-                              </Button>
-                            </div>
-                          </div>
-
-                          {/* Email */}
-                          {canChangeEmails && (
-                            <div>
-                              <p className="mb-2 text-sm font-medium text-neutral-900 dark:text-white">
-                                Email address
-                              </p>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <input
-                                  type="email"
-                                  value={newEmail}
-                                  onChange={(e) => setNewEmail(e.target.value)}
-                                  placeholder="name@company.com"
-                                  className="flex-1 min-w-[220px] px-3 py-2 border border-neutral-300 rounded-none focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
-                                />
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleChangeEmail(user.id)}
-                                  disabled={emailLoadingUserId === user.id}
-                                  className="bg-brand hover:bg-brand-dark text-white"
-                                  leftIcon={<Mail className="h-4 w-4" />}
+                                {renderAvatar(user, "h-full w-full", "text-3xl")}
+                                <span
+                                  className={`absolute inset-0 flex flex-col items-center justify-center gap-1 text-xs font-medium text-white transition-opacity ${
+                                    avatarDragKey === `${user.id}:editor`
+                                      ? "bg-brand/70 opacity-100"
+                                      : "bg-black/50 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+                                  }`}
                                 >
-                                  {emailLoadingUserId === user.id
-                                    ? "Saving..."
-                                    : "Save email"}
-                                </Button>
+                                  <Camera className="h-5 w-5" />
+                                  {avatarDragKey === `${user.id}:editor`
+                                    ? "Drop to upload"
+                                    : "Change photo"}
+                                </span>
+                                {avatarUploadingUserId === user.id && (
+                                  <span className="absolute inset-0 flex items-center justify-center bg-black/60">
+                                    <RefreshCw className="h-5 w-5 animate-spin text-white" />
+                                  </span>
+                                )}
+                              </button>
+                            ) : (
+                              <div className="relative h-28 w-28 overflow-hidden rounded-none bg-neutral-100 dark:bg-dark-150 flex items-center justify-center">
+                                {renderAvatar(user, "h-full w-full", "text-3xl")}
                               </div>
-                              <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
-                                Changes their login email immediately (no
-                                confirmation email). Reports and history stay
-                                linked — they key off the user ID, not the email.
-                              </p>
-                            </div>
-                          )}
-
-                          {/* Employee ID */}
-                          {canEditEmployeeIds && (
-                            <div>
-                              <p className="mb-2 text-sm font-medium text-neutral-900 dark:text-white">
-                                Employee ID
-                              </p>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <input
-                                  type="text"
-                                  value={newEmployeeId}
-                                  onChange={(e) =>
-                                    setNewEmployeeId(e.target.value)
-                                  }
-                                  placeholder="e.g. 1001, 0034, S0002"
-                                  className="flex-1 min-w-[220px] px-3 py-2 font-mono border border-neutral-300 rounded-none focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
-                                />
-                                <Button
-                                  size="sm"
-                                  onClick={() =>
-                                    handleChangeEmployeeId(user.id)
-                                  }
-                                  disabled={
-                                    employeeIdLoadingUserId === user.id
-                                  }
-                                  className="bg-brand hover:bg-brand-dark text-white"
-                                  leftIcon={<Hash className="h-4 w-4" />}
-                                >
-                                  {employeeIdLoadingUserId === user.id
-                                    ? "Saving..."
-                                    : "Save employee ID"}
-                                </Button>
-                              </div>
-                              <p className="mt-1.5 text-xs text-neutral-500 dark:text-neutral-400">
-                                The badge number from the company roster. Must
-                                be unique; leave blank to clear it. Same field
-                                HR edits under Employee Profiles.
-                              </p>
-                            </div>
-                          )}
-
-                          {/* Password */}
-                          {canChangePasswords && (
-                            <div>
-                              <p className="mb-2 text-sm font-medium text-neutral-900 dark:text-white">
-                                Reset password
-                              </p>
-                              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                                <input
-                                  type="password"
-                                  value={newPassword}
-                                  onChange={(e) =>
-                                    setNewPassword(e.target.value)
-                                  }
-                                  placeholder="New password"
-                                  className="w-full px-3 py-2 border border-neutral-300 rounded-none focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
-                                />
-                                <input
-                                  type="password"
-                                  value={confirmPassword}
-                                  onChange={(e) =>
-                                    setConfirmPassword(e.target.value)
-                                  }
-                                  placeholder="Confirm new password"
-                                  className="w-full px-3 py-2 border border-neutral-300 rounded-none focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-dark-700 dark:border-dark-600 dark:text-white"
-                                />
-                              </div>
-                              <div className="mt-3 flex flex-wrap items-center gap-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleChangePassword(user.id)}
-                                  disabled={passwordLoadingUserId === user.id}
-                                  className="bg-brand hover:bg-brand-dark text-white"
-                                  leftIcon={<KeyRound className="h-4 w-4" />}
-                                >
-                                  {passwordLoadingUserId === user.id
-                                    ? "Saving..."
-                                    : "Save password"}
-                                </Button>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Profile photo */}
-                          {canEditProfileImages && (
-                            <div>
-                              <p className="mb-2 text-sm font-medium text-neutral-900 dark:text-white">
-                                Profile photo
-                              </p>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleStartAvatarChange(user.id)}
-                                disabled={avatarUploadingUserId === user.id}
-                                leftIcon={
-                                  avatarUploadingUserId === user.id ? (
-                                    <RefreshCw className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Camera className="h-4 w-4" />
-                                  )
-                                }
-                              >
+                            )}
+                            {canEditProfileImages && (
+                              <p className="text-center text-xs text-neutral-500 dark:text-neutral-400">
                                 {avatarUploadingUserId === user.id
                                   ? "Uploading..."
-                                  : "Change photo"}
-                              </Button>
-                            </div>
-                          )}
-
-                          {/* Active status */}
-                          {user.id !== currentUser?.id && (
-                            <div>
-                              <p className="mb-2 text-sm font-medium text-neutral-900 dark:text-white">
-                                Account status
+                                  : "Drag a photo here or click"}
                               </p>
-                              {user.is_active ? (
+                            )}
+                          </div>
+
+                          {/* Fields */}
+                          <div className="min-w-0 flex-1 space-y-5">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                              <label className="block">
+                                <span className={labelClass}>Role</span>
+                                <select
+                                  value={selectedRole || ""}
+                                  onChange={(e) =>
+                                    setSelectedRole(e.target.value as Role)
+                                  }
+                                  className={inputClass}
+                                >
+                                  <option value="" disabled>
+                                    Select a role
+                                  </option>
+                                  {Object.keys(ROLES).map((roleKey) => (
+                                    <option key={roleKey} value={roleKey}>
+                                      {roleKey}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+
+                              {canEditEmployeeIds && (
+                                <label className="block">
+                                  <span className={labelClass}>Employee ID</span>
+                                  <input
+                                    type="text"
+                                    value={newEmployeeId}
+                                    onChange={(e) =>
+                                      setNewEmployeeId(e.target.value)
+                                    }
+                                    placeholder="e.g. 1001"
+                                    className={`${inputClass} font-mono`}
+                                  />
+                                  <span className={hintClass}>
+                                    Roster badge number. Must be unique.
+                                  </span>
+                                </label>
+                              )}
+
+                              {canChangeEmails && (
+                                <label className="block md:col-span-2">
+                                  <span className={labelClass}>
+                                    Email address
+                                  </span>
+                                  <input
+                                    type="email"
+                                    value={newEmail}
+                                    onChange={(e) => setNewEmail(e.target.value)}
+                                    placeholder="name@company.com"
+                                    autoComplete="off"
+                                    className={inputClass}
+                                  />
+                                  <span className={hintClass}>
+                                    Changes their login right away. Their
+                                    reports stay linked.
+                                  </span>
+                                </label>
+                              )}
+                            </div>
+
+                            {/* Password: hidden behind a button so it's never
+                                filled or saved by accident. */}
+                            {canChangePasswords && (
+                              <div className="border-t border-neutral-200 pt-4 dark:border-dark-300">
+                                {showPasswordForm ? (
+                                  <div className="space-y-3">
+                                    <span className={labelClass}>
+                                      New password
+                                    </span>
+                                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                      <input
+                                        type="password"
+                                        value={newPassword}
+                                        onChange={(e) =>
+                                          setNewPassword(e.target.value)
+                                        }
+                                        placeholder="New password"
+                                        autoComplete="new-password"
+                                        autoFocus
+                                        className={inputClass}
+                                      />
+                                      <input
+                                        type="password"
+                                        value={confirmPassword}
+                                        onChange={(e) =>
+                                          setConfirmPassword(e.target.value)
+                                        }
+                                        placeholder="Type it again"
+                                        autoComplete="new-password"
+                                        className={inputClass}
+                                      />
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <Button
+                                        size="sm"
+                                        onClick={() =>
+                                          handleChangePassword(user.id)
+                                        }
+                                        disabled={
+                                          passwordLoadingUserId === user.id ||
+                                          !newPassword
+                                        }
+                                        className="bg-brand hover:bg-brand-dark text-white disabled:opacity-50"
+                                        leftIcon={
+                                          <KeyRound className="h-4 w-4" />
+                                        }
+                                      >
+                                        {passwordLoadingUserId === user.id
+                                          ? "Setting..."
+                                          : "Set password"}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => {
+                                          setShowPasswordForm(false);
+                                          setNewPassword("");
+                                          setConfirmPassword("");
+                                          setPasswordErrorUserId(null);
+                                        }}
+                                        className="text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-dark-50"
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div>
+                                      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+                                        Password
+                                      </p>
+                                      <p
+                                        className={`text-xs ${
+                                          passwordSuccessUserId === user.id
+                                            ? "text-green-600 dark:text-green-400"
+                                            : "text-neutral-500 dark:text-neutral-400"
+                                        }`}
+                                      >
+                                        {passwordSuccessUserId === user.id
+                                          ? "Password updated."
+                                          : "Set a new password for them."}
+                                      </p>
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => setShowPasswordForm(true)}
+                                      leftIcon={<KeyRound className="h-4 w-4" />}
+                                    >
+                                      Reset password
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Inline error for this user */}
+                        {error && editorHasError && (
+                          <div className="mt-5 flex items-center gap-2 rounded-none border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
+                            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                            <span>{error}</span>
+                          </div>
+                        )}
+
+                        {/* Footer: account status on the left, Save on the right */}
+                        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-4 dark:border-dark-300">
+                          <div>
+                            {user.id !== currentUser?.id &&
+                              (user.is_active ? (
                                 <div className="relative inline-block">
                                   <Button
                                     size="sm"
@@ -1111,7 +1284,7 @@ export default function AdminUserManagement() {
                                       )
                                     }
                                   >
-                                    Deactivate
+                                    Deactivate user
                                   </Button>
 
                                   {confirmDeactivateUserId === user.id && (
@@ -1191,11 +1364,47 @@ export default function AdminUserManagement() {
                                     )
                                   }
                                 >
-                                  Reactivate
+                                  Reactivate user
                                 </Button>
-                              )}
-                            </div>
-                          )}
+                              ))}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {savedAllUserId === user.id && (
+                              <span className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
+                                <CheckCircle className="h-4 w-4" />
+                                Saved
+                              </span>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={handleCancelEdit}
+                              className="text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-dark-50"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => handleSaveAll(user)}
+                              disabled={
+                                !getPendingChanges(user).any ||
+                                savingAllUserId === user.id
+                              }
+                              className="bg-brand hover:bg-brand-dark text-white disabled:opacity-50"
+                              leftIcon={
+                                savingAllUserId === user.id ? (
+                                  <RefreshCw className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="h-4 w-4" />
+                                )
+                              }
+                            >
+                              {savingAllUserId === user.id
+                                ? "Saving..."
+                                : "Save changes"}
+                            </Button>
+                          </div>
                         </div>
                       </TabsContent>
 

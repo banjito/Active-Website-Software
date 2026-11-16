@@ -50,18 +50,36 @@ export interface KpiPeriods {
 }
 
 const ymd = (d: Date) => format(d, 'yyyy-MM-dd');
+const shortDay = (value: string) => format(new Date(`${value}T00:00:00`), 'MMM d');
 
-export function kpiPeriods(now = new Date()): KpiPeriods {
-  const lastSat = subDays(now, now.getDay() + 1);
+export interface KpiWeek {
+  start: string;
+  end: string;
+  /** e.g. "Last week · Nov 8 – Nov 14" */
+  label: string;
+}
+
+/** Sunday-to-Saturday weeks, newest first: this week so far, last week, then older ones. */
+export function kpiWeeks(now = new Date(), count = 13): KpiWeek[] {
+  const thisSunday = subDays(now, now.getDay());
+  return Array.from({ length: count }, (_, i) => {
+    const start = ymd(subDays(thisSunday, 7 * i));
+    const end = ymd(i === 0 ? now : addDays(subDays(thisSunday, 7 * i), 6));
+    const name = i === 0 ? 'This week' : i === 1 ? 'Last week' : 'Week';
+    return { start, end, label: `${name} · ${shortDay(start)} – ${shortDay(end)}` };
+  });
+}
+
+export const defaultKpiWeek = (now = new Date()) => kpiWeeks(now, 2)[1];
+
+export function kpiPeriods(now = new Date(), week = defaultKpiWeek(now)): KpiPeriods {
   return {
     ytdStart: ymd(startOfYear(now)),
     today: ymd(now),
-    weekStart: ymd(subDays(lastSat, 6)),
-    weekEnd: ymd(lastSat),
+    weekStart: week.start,
+    weekEnd: week.end,
   };
 }
-
-const shortDay = (value: string) => format(new Date(`${value}T00:00:00`), 'MMM d');
 
 export async function fetchKpiAccounts(): Promise<KpiAccounts> {
   const { data, error } = await supabase
@@ -126,10 +144,11 @@ async function daysToBill(now: Date): Promise<{ onTime: number; total: number; f
 /** Every KPI. Each one loads on its own, so one QuickBooks hiccup doesn't blank the rest. */
 export async function loadKpis(
   accounts: KpiAccounts,
+  chosenWeek?: KpiWeek,
   now = new Date(),
 ): Promise<{ kpis: Kpi[]; bankAccounts: QBOAccountBalance[] }> {
-  const p = kpiPeriods(now);
-  const week = `${shortDay(p.weekStart)} – ${shortDay(p.weekEnd)}`;
+  const p = kpiPeriods(now, chosenWeek);
+  const week = chosenWeek?.label ?? defaultKpiWeek(now).label;
   const ytd = `Jan 1 – ${shortDay(p.today)}`;
 
   const classId = findQBOClassId(INTERNATIONAL_CLASS).then((id) => {
@@ -177,15 +196,15 @@ export async function loadKpis(
       value: list.reduce((sum, a) => sum + a.balance, 0),
       note: 'Owed to us today',
     }), 'Today'),
-    kpi('global_income', 'Global Gross Income', 'money', plWeek, (pl) => ({ value: pl.income, note: `Last week · ${week}` }), week),
-    kpi('global_expenses', 'Global Expenses', 'money', plWeek, (pl) => ({ value: allExpenses(pl), note: `Last week · ${week}` }), week),
-    kpi('global_net', 'Global Net Profit last week', 'money', plWeek, (pl) => ({ value: pl.netIncome, note: week }), week),
+    kpi('global_income', 'Global Gross Income', 'money', plWeek, (pl) => ({ value: pl.income, note: week }), week),
+    kpi('global_expenses', 'Global Expenses', 'money', plWeek, (pl) => ({ value: allExpenses(pl), note: week }), week),
+    kpi('global_net', 'Global Net Profit', 'money', plWeek, (pl) => ({ value: pl.netIncome, note: week }), week),
     bank('operating', 'Operating Account Balance', accounts.operating),
     bank('cash_reserve', 'Cash Reserve balance', accounts.cash_reserve),
     kpi('intl_profit_ytd', 'International Profit % YTD', 'pct', intlYtd, (pl) => ({ value: profitPct(pl), note: ytd }), ytd),
-    kpi('intl_expenses', 'International Expenses', 'money', intlWeek, (pl) => ({ value: allExpenses(pl), note: `Last week · ${week}` }), week),
-    kpi('intl_billed', 'International AR Billed', 'money', intlBilled, (amount) => ({ value: amount, note: `Last week · ${week}` }), week),
-    kpi('intl_received', 'International AR Received', 'money', intlReceived, (amount) => ({ value: amount, note: `Last week · ${week}` }), week),
+    kpi('intl_expenses', 'International Expenses', 'money', intlWeek, (pl) => ({ value: allExpenses(pl), note: week }), week),
+    kpi('intl_billed', 'International AR Billed', 'money', intlBilled, (amount) => ({ value: amount, note: week }), week),
+    kpi('intl_received', 'International AR Received', 'money', intlReceived, (amount) => ({ value: amount, note: week }), week),
     kpi('days_to_bill', `Less than ${BILL_WITHIN_DAYS} Days to Bill`, 'pct', billing, (b) => ({
       value: b.total ? b.onTime / b.total : null,
       note: b.total

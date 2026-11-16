@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshCw, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
@@ -6,6 +6,7 @@ import { fmtMoney, fmtPct } from '@/app/pm-dashboard/shared';
 import type { QBOAccountBalance } from '@/services/quickbooksService';
 import {
   fetchKpiAccounts,
+  kpiWeeks,
   loadKpis,
   saveKpiAccounts,
   type Kpi,
@@ -42,19 +43,26 @@ export function OfficeKpis() {
   const [draft, setDraft] = useState<KpiAccounts>(accounts);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Weekly KPIs follow this pick. YTD, A/R, bank balances and days to bill don't.
+  const weeks = useMemo(() => kpiWeeks(), []);
+  const [weekStart, setWeekStart] = useState(weeks[1].start);
+  const latestLoad = useRef(0);
 
   const load = useCallback(async () => {
+    const loadId = ++latestLoad.current;
     setLoading(true);
     try {
       const saved = await fetchKpiAccounts().catch(() => ({ cash_reserve: null, operating: null }));
+      const result = await loadKpis(saved, weeks.find((w) => w.start === weekStart));
+      // A newer week pick may have started meanwhile; only the latest one shows
+      if (loadId !== latestLoad.current) return;
       setAccounts(saved);
-      const result = await loadKpis(saved);
       setKpis(result.kpis);
       setBankAccounts(result.bankAccounts);
     } finally {
-      setLoading(false);
+      if (loadId === latestLoad.current) setLoading(false);
     }
-  }, []);
+  }, [weeks, weekStart]);
 
   useEffect(() => {
     void load();
@@ -89,6 +97,18 @@ export function OfficeKpis() {
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Company KPIs</h2>
         </div>
         <div className="flex items-center gap-2">
+          <select
+            aria-label="Week"
+            className="rounded-none border border-neutral-300 bg-white px-2 py-1.5 text-sm text-neutral-900 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+            value={weekStart}
+            onChange={(e) => setWeekStart(e.target.value)}
+          >
+            {weeks.map((w) => (
+              <option key={w.start} value={w.start}>
+                {w.label}
+              </option>
+            ))}
+          </select>
           <Button
             variant="ghost"
             size="icon"

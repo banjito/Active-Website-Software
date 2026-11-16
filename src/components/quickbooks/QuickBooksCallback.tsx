@@ -71,7 +71,7 @@ export default function QuickBooksCallback() {
 
         // Redirect to settings or dashboard after a short delay
         setTimeout(() => {
-          navigate("/settings/integrations", { replace: true });
+          navigate("/admin-dashboard/integrations", { replace: true });
         }, 2000);
       } catch (err) {
         console.error("Unexpected error during QuickBooks callback:", err);
@@ -103,7 +103,7 @@ export default function QuickBooksCallback() {
           <p>{error}</p>
         </div>
         <button
-          onClick={() => navigate("/settings/integrations", { replace: true })}
+          onClick={() => navigate("/admin-dashboard/integrations", { replace: true })}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           Return to Settings

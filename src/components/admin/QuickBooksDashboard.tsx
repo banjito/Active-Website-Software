@@ -2032,7 +2032,7 @@ export const QuickBooksDashboard: React.FC = () => {
                 </p>
                 <Button
                   className="mt-4"
-                  onClick={() => (window.location.href = "/admin-dashboard")}
+                  onClick={() => (window.location.href = "/admin-dashboard/integrations")}
                 >
                   Go to Integrations
                 </Button>

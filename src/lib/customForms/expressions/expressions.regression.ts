@@ -9,6 +9,7 @@ import { evaluateFormula, getSectionReferenceCode } from "@/lib/customForms/form
 import { collectFormResults, compileResultRule, hasResultColumns, worstResult, type ResultRule } from "@/lib/customForms/resultRules";
 import { DEFAULT_RESULT_FIELD_OPTIONS, cleanColorKeywords, keywordColor, resultFieldColor, sectionColorsResults, typeChoicePatch } from "@/lib/customForms/resultField";
 import { seedReportLayout, usesSolidResultColors } from "@/lib/customForms/reportLayout";
+import { leaveStaticColumn } from "@/lib/customForms/staticColumn";
 import { calibrationState, equipmentWarnings, reportTestDate, effectiveDueDate, indexCalibrationRecords, isEquipmentColumn, resolveEquipmentFill, rowDueDate } from "@/lib/customForms/equipment";
 import { applyAssetSources } from "@/lib/customForms/assetFill";
 import { chartData } from "@/lib/customForms/chart";
@@ -715,6 +716,25 @@ check("Result (color-coded) fields feed the report status, defaults included", (
   assert.equal(sectionColorsResults({ componentType: "custom-table", columns: [{}], colorResults: false } as any), false);
   assert.equal(sectionColorsResults({ componentType: "visual-inspection" } as any), false);
   assert.equal(sectionColorsResults({ componentType: "visual-inspection", colorResults: true } as any), true);
+});
+check("leaving Static text never leaves locked cells behind", () => {
+  const section = { id: "s", title: "S", componentType: "custom-table", rows: 3,
+    columns: [{ id: "cell_jar", label: "Cell/Jar", field: { id: "cj", cellBehavior: "static", staticValue: "" } }, { id: "x", label: "X", field: { id: "x" } }],
+    staticCells: { "row0_cell_jar": "1", "row1_cell_jar": "2", "row0_x": "keep" },
+    cellDefaults: { "row1_cell_jar": "already" } } as any;
+  const field = section.columns[0].field;
+  assert.deepEqual(leaveStaticColumn(section, "cell_jar", field, true), {
+    staticCells: { "row0_x": "keep" },
+    cellDefaults: { "row1_cell_jar": "already", "row0_cell_jar": "1" },
+  });
+  assert.deepEqual(leaveStaticColumn(section, "cell_jar", field, false), {
+    staticCells: { "row0_x": "keep" },
+    cellDefaults: { "row1_cell_jar": "already" },
+  });
+  // A column-wide text fills every row when kept.
+  const wide = { ...section, staticCells: undefined, cellDefaults: undefined } as any;
+  assert.deepEqual(leaveStaticColumn(wide, "cell_jar", { staticValue: "N/A" }, true).cellDefaults,
+    { "row0_cell_jar": "N/A", "row1_cell_jar": "N/A", "row2_cell_jar": "N/A" });
 });
 check("form colour keywords colour matching text and override the standard colours", () => {
   const keywords = cleanColorKeywords([

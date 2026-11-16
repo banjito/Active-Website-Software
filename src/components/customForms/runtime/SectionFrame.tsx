@@ -8,7 +8,13 @@
  */
 
 import React from "react";
-import { EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import {
+  INCLUDE_KEY,
+  controllerAllows,
+  describeShowWhen,
+  isSectionShown,
+} from "@/lib/customForms/sectionVisibility";
 import type {
   CustomFormTemplate,
   SectionConfig,
@@ -112,6 +118,8 @@ interface SectionFrameProps {
   firstOnPaper?: boolean;
   pageBreakAfter?: boolean;
   documentOrientation?: "portrait" | "landscape";
+  /** Every section of the form, for "Show this table when..." rules. */
+  allSections?: readonly SectionConfig[];
 }
 
 /**
@@ -127,8 +135,43 @@ export const SectionFrame: React.FC<SectionFrameProps> = ({
   firstOnPaper = false,
   pageBreakAfter = false,
   documentOrientation,
+  allSections = [],
 }) => {
   const hiddenInPrint = section.print?.only === "screen";
+
+  // "Show this table when...": the builder always draws the section, with a
+  // note; a report hides it, leaving a screen-only bar the tech can reopen.
+  const showWhen = v1Section.showWhen;
+  const builder = chrome.mode === "edit" || chrome.mode === "preview";
+  const values = showWhen ? (chrome.conditionValues?.() ?? {}) : {};
+  const ruleText = describeShowWhen(showWhen, allSections);
+  const canSwitch = !!showWhen?.toggle && !builder && !!chrome.setSettingValue;
+  const setIncluded = (on: boolean) =>
+    chrome.setSettingValue?.(v1Section, INCLUDE_KEY, on ? "yes" : "no");
+
+  if (showWhen && !builder && !isSectionShown(v1Section, allSections, values)) {
+    const blockedByField = !controllerAllows(v1Section, allSections, values);
+    return (
+      <div
+        className={`${isFirst ? "" : "mt-6"} print:hidden border border-dashed border-neutral-300 dark:border-neutral-600 rounded-none px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500 dark:text-neutral-400 bg-white dark:bg-neutral-900`}
+      >
+        <EyeOff className="w-4 h-4 shrink-0" />
+        <span className="font-medium text-neutral-700 dark:text-neutral-300">{section.title}</span>
+        <span>Not included</span>
+        {blockedByField && ruleText && <span className="text-xs">({ruleText})</span>}
+        {canSwitch && !blockedByField && (
+          <button
+            type="button"
+            onClick={() => setIncluded(true)}
+            className="ml-auto px-2 py-0.5 text-xs font-medium text-white bg-brand hover:opacity-90 rounded-none"
+          >
+            Include
+          </button>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       className={[
@@ -156,6 +199,25 @@ export const SectionFrame: React.FC<SectionFrameProps> = ({
             <EyeOff className="w-3 h-3" />
             Hidden in print
           </span>
+        )}
+        {builder && showWhen && (
+          <span className="print:hidden inline-flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
+            <Eye className="w-3 h-3" />
+            {[ruleText, showWhen.toggle ? `Include switch (${showWhen.toggle.defaultOn === false ? "off" : "on"} by default)` : null]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+        )}
+        {canSwitch && (
+          <label className="print:hidden ml-auto inline-flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-300 cursor-pointer">
+            <input
+              type="checkbox"
+              checked
+              onChange={() => setIncluded(false)}
+              className="rounded-none"
+            />
+            Included
+          </label>
         )}
       </div>
       <SectionBody section={v1Section} chrome={chrome} />
@@ -372,6 +434,7 @@ export const DocumentBody: React.FC<DocumentBodyProps> = ({
         firstOnPaper={nested ? firstOnPaper : isFirst}
         pageBreakAfter={!nested && breaksAfter(index)}
         documentOrientation={document.settings.orientation}
+        allSections={v1Sections}
       />
     );
   };

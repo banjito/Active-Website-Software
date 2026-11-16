@@ -181,6 +181,14 @@ export interface SettingFieldConfig {
   defaultValue?: string;
 }
 
+/** When a whole section shows. Both parts must pass when both are set. */
+export interface SectionShowWhen {
+  /** Another field on the form controls this section (e.g. Battery Type is VLA). */
+  field?: { sectionId: string; fieldId: string; values: string[] };
+  /** The section has its own Include switch (optional tests). */
+  toggle?: { defaultOn?: boolean };
+}
+
 /** One row in a conditional table; visible when current setting values match visibleWhen */
 export interface ConditionalRowConfig {
   id: string;
@@ -264,6 +272,8 @@ export interface SectionConfig {
   showInPrint: boolean;
   /** Whether this table's values show in Trends. Unset: decided by the kind of section. */
   trendResults?: boolean;
+  /** Show the whole section only when these hold. See lib/customForms/sectionVisibility.ts. */
+  showWhen?: SectionShowWhen;
   /** Short code for formulas, e.g. IR (Insulation Resistance), Job (Job Details). Shown as {IR.C1.R2}. */
   referenceCode?: string;
 

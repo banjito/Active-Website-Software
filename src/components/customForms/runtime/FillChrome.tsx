@@ -94,8 +94,9 @@ export function useFillChrome(options: FillChromeOptions): SectionChrome {
         sections,
         onFieldChange,
         readOnly,
+        colorKeywords: template?.structure.settings?.colorKeywords,
       }),
-    [formData, sections, onFieldChange, readOnly],
+    [formData, sections, onFieldChange, readOnly, template?.structure.settings?.colorKeywords],
   );
 
   const renderControl = React.useCallback(

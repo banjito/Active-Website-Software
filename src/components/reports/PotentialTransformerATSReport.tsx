@@ -323,7 +323,7 @@ const TCF_DATA: { celsius: number; multiplier: number }[] = [
   { celsius: 31, multiplier: 1.664 },
   { celsius: 32, multiplier: 1.748 },
   { celsius: 33, multiplier: 1.832 },
-  { celsius: 34, multiplier: 1.872 },
+  { celsius: 34, multiplier: 1.916 },
   { celsius: 35, multiplier: 2 },
   { celsius: 36, multiplier: 2.1 },
   { celsius: 37, multiplier: 2.2 },

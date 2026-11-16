@@ -394,7 +394,7 @@ const getTCF = (celsius: number): number => {
     { temp: 31, factor: 1.664 },
     { temp: 32, factor: 1.748 },
     { temp: 33, factor: 1.832 },
-    { temp: 34, factor: 1.872 },
+    { temp: 34, factor: 1.916 },
     { temp: 35, factor: 2.0 },
     { temp: 36, factor: 2.1 },
     { temp: 37, factor: 2.2 },

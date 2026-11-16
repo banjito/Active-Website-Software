@@ -67,6 +67,7 @@ import Card, { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ReflowDialog } from "./ReflowDialog";
 import { EquipmentTypesDialog } from "./EquipmentTypesDialog";
 import { ResultOptionsDialog } from "./ResultOptionsDialog";
+import { ColorKeywordsDialog } from "./ColorKeywordsDialog";
 import { fetchEquipmentTypeList } from "@/lib/customForms/equipmentTypes";
 import { useLookupTables } from "@/lib/customForms/lookupLibrary";
 import type { ComponentVariant } from "@/lib/customForms/componentVariants";
@@ -712,6 +713,7 @@ export const FormBuilder: React.FC = () => {
   const [equipmentOptions, setEquipmentOptions] = useState<string[]>([]);
   const [equipmentDialogOpen, setEquipmentDialogOpen] = useState(false);
   const [resultOptionsOpen, setResultOptionsOpen] = useState(false);
+  const [colorKeywordsOpen, setColorKeywordsOpen] = useState(false);
   useEffect(() => {
     fetchEquipmentTypeList().then(setEquipmentOptions).catch(() => setEquipmentOptions([]));
   }, []);
@@ -1256,6 +1258,17 @@ export const FormBuilder: React.FC = () => {
                 >
                   Edit choices…
                 </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setColorKeywordsOpen(true);
+                  }}
+                  className="ml-1 text-xs text-brand hover:underline"
+                  title="Words that colour result cells on this form, e.g. NEEDS REPAIR = orange"
+                >
+                  Color keywords…
+                </button>
               </label>
             </div>
 
@@ -1559,6 +1572,24 @@ export const FormBuilder: React.FC = () => {
                 </Button>
               </div>
             )}
+            <ColorKeywordsDialog
+              open={colorKeywordsOpen}
+              onClose={() => setColorKeywordsOpen(false)}
+              value={template.structure.settings?.colorKeywords}
+              onSave={(keywords) => {
+                setTemplate((prev) => ({
+                  ...prev,
+                  structure: {
+                    ...prev.structure,
+                    settings: {
+                      ...(prev.structure.settings as any),
+                      colorKeywords: keywords.length ? keywords : undefined,
+                    },
+                  },
+                }));
+                setIsDirty(true);
+              }}
+            />
             <ResultOptionsDialog
               open={resultOptionsOpen}
               onClose={() => setResultOptionsOpen(false)}

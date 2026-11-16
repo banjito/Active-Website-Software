@@ -28,6 +28,7 @@ import {
   RESULT_TYPE_LABEL,
   RESULT_TYPE_VALUE,
   isResultField,
+  sectionColorsResults,
   suggestedOptionColor,
   typeChoicePatch,
   typeSelectValue,
@@ -46,6 +47,7 @@ import { ResultRuleEditor, DEFAULT_RESULT_RULE } from "./ResultRuleEditor";
 import { EquipmentPickerSettings } from "./EquipmentPickerSettings";
 import { AssetSourceSelect } from "./AssetSourceSelect";
 import { ChartSettings } from "./ChartSettings";
+import { ShowWhenSettings } from "./ShowWhenSettings";
 import {
   HINT_TITLE,
   canHaveHint,
@@ -670,6 +672,23 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                   <EyeOff className="w-4 h-4" />
                 )}
                 Show in printed report
+              </label>
+            </div>
+            <ShowWhenSettings section={section} allSections={allSections} onUpdate={onUpdate} />
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="colorResults"
+                checked={sectionColorsResults(section)}
+                onChange={(e) => onUpdate({ colorResults: e.target.checked })}
+                className="rounded-none"
+              />
+              <label
+                htmlFor="colorResults"
+                className="text-sm text-neutral-700 dark:text-neutral-300"
+                title="On: PASS is green, FAIL red, LIMITED SERVICE / INVESTIGATE yellow. Off: results show as plain text (e.g. visual & mechanical inspections)."
+              >
+                Color-code results (green pass / red fail / yellow limited)
               </label>
             </div>
             {!!section.columns?.length && (

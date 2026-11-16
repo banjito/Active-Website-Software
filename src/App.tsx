@@ -265,6 +265,7 @@ import MetalEnclosedBuswayReport from "./components/reports/MetalEnclosedBuswayR
 import MediumVoltageSwitchOilReport from "./components/reports/MediumVoltageSwitchOilReport";
 import MediumVoltageSwitchSF6Report from "./components/reports/MediumVoltageSwitchSF6Report";
 import PotentialTransformerATSReport from "./components/reports/PotentialTransformerATSReport";
+import ContactorVtTestReport from "./components/reports/ContactorVtTestReport";
 
 // Import Low Voltage Circuit Breaker Electronic Trip Unit ATS Report component
 import LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport from "./components/reports/LowVoltageCircuitBreakerElectronicTripATSSecondaryInjectionReport";
@@ -2670,6 +2671,16 @@ function App() {
                       <RequireAuth>
                         <Layout>
                           <PotentialTransformerATSReport />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/jobs/:id/contactor-vt-test/:reportId?"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <ContactorVtTestReport />
                         </Layout>
                       </RequireAuth>
                     }

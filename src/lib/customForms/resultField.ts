@@ -8,7 +8,20 @@
  * standard green / red / yellow.
  */
 
-import { FieldType, type FieldConfig } from '@/lib/types/customForms';
+import { ComponentType, FieldType, type FieldConfig, type SectionConfig } from '@/lib/types/customForms';
+
+/**
+ * Does this section colour its results? Set per section with the "Color-code
+ * results" switch; unset, everything is coloured except Visual Inspection
+ * components, whose results print as plain text.
+ */
+export function sectionColorsResults(
+  section: Pick<SectionConfig, 'colorResults' | 'componentType' | 'checklistItems' | 'columns'>,
+): boolean {
+  if (typeof section.colorResults === 'boolean') return section.colorResults;
+  const checklist = !!section.checklistItems?.length && !section.columns?.length;
+  return section.componentType !== ComponentType.VISUAL_INSPECTION && !checklist;
+}
 import { resultTone, type ResultTone } from './resultRules';
 
 /** The type dropdown's value for this input type (not a stored field type). */
@@ -66,12 +79,53 @@ export function typeChoicePatch(field: FieldConfig, value: string): Partial<Fiel
   return { type: value as FieldConfig['type'], colorCoded: undefined };
 }
 
+/**
+ * A form's own colour keywords (settings.colorKeywords): any result, dropdown
+ * or calculated cell whose text is exactly this word (any capitals) gets this
+ * colour. They win over the standard PASS / FAIL / LIMITED colours.
+ */
+export interface ColorKeyword {
+  label: string;
+  color: string;
+}
+
+const HEX = /^#[0-9a-f]{6}$/i;
+
+/** Keywords tidied: no blanks, no repeats, valid colours only. */
+export function cleanColorKeywords(raw: unknown): ColorKeyword[] {
+  if (!Array.isArray(raw)) return [];
+  const seen = new Set<string>();
+  const out: ColorKeyword[] = [];
+  for (const entry of raw) {
+    const label = String((entry as any)?.label ?? '').trim().replace(/\s+/g, ' ').slice(0, 40);
+    const color = String((entry as any)?.color ?? '');
+    const key = label.toUpperCase();
+    if (!label || seen.has(key) || !HEX.test(color)) continue;
+    seen.add(key);
+    out.push({ label, color: color.toLowerCase() });
+  }
+  return out;
+}
+
+/** The keyword colour for `text`, or null. */
+export function keywordColor(text: unknown, keywords: readonly ColorKeyword[] | undefined): string | null {
+  const t = String(text ?? '').trim().toUpperCase();
+  if (!t || !keywords?.length) return null;
+  return keywords.find((k) => k.label.toUpperCase() === t)?.color ?? null;
+}
+
 /** The background colour for a chosen value, or null when nothing is chosen. */
-export function resultFieldColor(field: FieldConfig, value: unknown): string | null {
+export function resultFieldColor(
+  field: FieldConfig,
+  value: unknown,
+  keywords?: readonly ColorKeyword[],
+): string | null {
   const text = String(value ?? '').trim();
   if (!text) return null;
   const option = field.options?.find((o) => String(o.value ?? o.label) === text);
   if (option?.color) return option.color;
+  const byKeyword = keywordColor(option?.label ?? text, keywords) ?? keywordColor(text, keywords);
+  if (byKeyword) return byKeyword;
   const tone = resultTone(option?.label ?? text);
   return tone ? TONE_COLOR[tone] : null;
 }

@@ -252,7 +252,7 @@ export async function runLowVoltageSwitchRegression(): Promise<void> {
     return lower.value + ((celsius - lower.key) / (upper.key - lower.key)) * (upper.value - lower.value);
   };
   for (const [fahrenheit, expectedC, expectedTCF] of [
-    [68, 20, 1], [77, 25, 1.25], [86, 30, 1.58], [93.2, 34, 1.872],
+    [68, 20, 1], [77, 25, 1.25], [86, 30, 1.58], [93.2, 34, 1.916],
     [112.28, 44.6, 3.15], [203, 95, 31.6], [-40, -40, 0.054], [248, 120, 63.2],
   ]) {
     const value = evaluate({ "lv-switch-environment": { fahrenheit }, "lv-switch-ir_row0": { poleToPoleP1P2: 100 } });

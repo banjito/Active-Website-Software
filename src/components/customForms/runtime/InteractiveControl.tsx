@@ -14,7 +14,14 @@ import { getCellValue } from "@/lib/customForms/formCellResolution";
 import { phaseDeviation } from "@/lib/customForms/deviation";
 import { blankTcfText, usesLegacyLayout, usesSolidResultColors } from "@/lib/customForms/reportLayout";
 import { resultTone, type ResultTone } from "@/lib/customForms/resultRules";
-import { TONE_COLOR, isResultField, resultFieldColor } from "@/lib/customForms/resultField";
+import {
+  TONE_COLOR,
+  isResultField,
+  keywordColor,
+  resultFieldColor,
+  sectionColorsResults,
+  type ColorKeyword,
+} from "@/lib/customForms/resultField";
 import { resultTextColor } from "@/lib/customForms/resultOptions";
 import { SignatureField } from "./SignatureField";
 import { PhotoField } from "./PhotoField";
@@ -26,6 +33,11 @@ function v1FieldOf(section: SectionConfig, fieldId: string): FieldConfig | undef
     (section.field?.id === fieldId ? section.field : undefined) ??
     section.columns?.find((c) => c.field.id === fieldId)?.field
   );
+}
+
+/** The section's "Color-code results" switch is off: results show as plain text. */
+function plainResultSection(slot: Pick<ControlSlot, "section">): boolean {
+  return !sectionColorsResults(slot.section);
 }
 
 const TONE_STYLE: Record<ResultTone, React.CSSProperties> = {
@@ -72,6 +84,8 @@ export interface InteractiveControlOptions {
   onFieldChange: (stateKey: string, fieldId: string, value: any) => void;
   /** Force every control read-only, for a saved instance shown without editing. */
   readOnly?: boolean;
+  /** The form's own colour keywords (settings.colorKeywords). */
+  colorKeywords?: ColorKeyword[];
 }
 
 /** The resolved value and read-only state for one slot. */
@@ -297,15 +311,24 @@ export function createInteractiveControlRenderer(
 
     // Calculated results (pass/fail rules, or any formula giving PASS / FAIL)
     // show as a coloured tag rather than plain text.
-    if (field.cellBehavior === "calculate" || field.resultRule) {
+    // Visual & mechanical inspections stay plain text on new reports.
+    const plainResults = plainResultSection(slot) && usesSolidResultColors(formData);
+    if ((field.cellBehavior === "calculate" || field.resultRule) && !plainResults) {
       const tone = resultTone(value);
-      if (tone) {
+      const solid = usesSolidResultColors(formData);
+      // The form's own colour keywords apply to new reports only.
+      const keyword = solid ? keywordColor(value, options.colorKeywords) : null;
+      if (tone || keyword) {
         return (
           <ResultBadge
             value={String(value)}
-            tone={tone}
-            solid={usesSolidResultColors(formData)}
-            color={resultFieldColor(v1FieldOf(slot.section, field.id) ?? field, value) ?? undefined}
+            tone={tone ?? "pass"}
+            solid={solid}
+            color={
+              keyword ??
+              resultFieldColor(v1FieldOf(slot.section, field.id) ?? field, value, options.colorKeywords) ??
+              undefined
+            }
           />
         );
       }
@@ -334,8 +357,12 @@ export function createInteractiveControlRenderer(
         // LIMITED SERVICE / INVESTIGATE: the colour fills the box, on screen and on paper.
         const builderField = v1FieldOf(slot.section, field.id) ?? field;
         const resultBg =
-          isResultField(builderField) || usesSolidResultColors(formData)
-            ? resultFieldColor(builderField, value)
+          !plainResults && (isResultField(builderField) || usesSolidResultColors(formData))
+            ? resultFieldColor(
+                builderField,
+                value,
+                usesSolidResultColors(formData) ? options.colorKeywords : undefined,
+              )
             : null;
         if (resultBg) {
           const chosenText = String(chosen?.label ?? chosen?.value ?? value);
@@ -548,11 +575,14 @@ function renderV2Control(
               {(() => {
                 // New reports: the chosen PASS / FAIL / etc. shows as a solid coloured box.
                 const tone = resultTone(option.value) ?? resultTone(option.label);
+                const keyword =
+                  keywordColor(option.label, options.colorKeywords) ??
+                  keywordColor(option.value, options.colorKeywords);
                 const chosen = String(value ?? "") === option.value;
-                if (!chosen || !tone || !usesSolidResultColors(options.formData)) {
+                if (!chosen || !(keyword || tone) || !usesSolidResultColors(options.formData) || plainResultSection(slot)) {
                   return <span>{option.label}</span>;
                 }
-                const bg = TONE_COLOR[tone];
+                const bg = keyword ?? TONE_COLOR[tone!];
                 return (
                   <span
                     className="cf-result px-1.5 font-bold rounded-none"

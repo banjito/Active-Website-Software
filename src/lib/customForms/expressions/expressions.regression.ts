@@ -7,7 +7,7 @@ import { expressionReferenceId, translateV1Expression } from "@/lib/customForms/
 import { VALID_FIXTURES } from "@/lib/customForms/__fixtures__/v1Templates";
 import { evaluateFormula, getSectionReferenceCode } from "@/lib/customForms/formCellResolution";
 import { collectFormResults, compileResultRule, hasResultColumns, worstResult, type ResultRule } from "@/lib/customForms/resultRules";
-import { DEFAULT_RESULT_FIELD_OPTIONS, resultFieldColor, typeChoicePatch } from "@/lib/customForms/resultField";
+import { DEFAULT_RESULT_FIELD_OPTIONS, cleanColorKeywords, keywordColor, resultFieldColor, sectionColorsResults, typeChoicePatch } from "@/lib/customForms/resultField";
 import { seedReportLayout, usesSolidResultColors } from "@/lib/customForms/reportLayout";
 import { calibrationState, equipmentWarnings, reportTestDate, effectiveDueDate, indexCalibrationRecords, isEquipmentColumn, resolveEquipmentFill, rowDueDate } from "@/lib/customForms/equipment";
 import { applyAssetSources } from "@/lib/customForms/assetFill";
@@ -710,6 +710,28 @@ check("Result (color-coded) fields feed the report status, defaults included", (
   assert.equal(usesSolidResultColors(seedReportLayout({})), true);
   assert.equal(usesSolidResultColors({ __reportLayout: { version: 2 } }), false);
   assert.equal(usesSolidResultColors({}), false);
+  // Colour is a per-section switch, never read from the title.
+  assert.equal(sectionColorsResults({ title: "Visual and Mechanical Inspection", componentType: "custom-table", columns: [{}] } as any), true);
+  assert.equal(sectionColorsResults({ componentType: "custom-table", columns: [{}], colorResults: false } as any), false);
+  assert.equal(sectionColorsResults({ componentType: "visual-inspection" } as any), false);
+  assert.equal(sectionColorsResults({ componentType: "visual-inspection", colorResults: true } as any), true);
+});
+check("form colour keywords colour matching text and override the standard colours", () => {
+  const keywords = cleanColorKeywords([
+    { label: " needs  repair ", color: "#F97316" },
+    { label: "NEEDS REPAIR", color: "#000000" },
+    { label: "", color: "#111111" },
+    { label: "PASS", color: "#0000ff" },
+    { label: "bad colour", color: "orange" },
+  ]);
+  assert.deepEqual(keywords, [{ label: "needs repair", color: "#f97316" }, { label: "PASS", color: "#0000ff" }]);
+  assert.equal(keywordColor("Needs Repair", keywords), "#f97316");
+  assert.equal(keywordColor("repair", keywords), null);
+  const plain = { id: "x", label: "x", type: "select", options: [{ label: "NEEDS REPAIR", value: "NEEDS REPAIR" }] } as any;
+  assert.equal(resultFieldColor(plain, "NEEDS REPAIR", keywords), "#f97316");
+  assert.equal(resultFieldColor(plain, "PASS", keywords), "#0000ff");
+  assert.equal(resultFieldColor(plain, "PASS"), "#22c55e");
+  assert.equal(resultFieldColor(plain, "NEEDS REPAIR"), null);
 });
 check("exp computes the exponential, and overflow is an error not infinity", () => {
   assert.equal(unwrap(evaluate("exp(0)", {}, {})), 1);

@@ -73,6 +73,7 @@ import {
   RESULT_TYPE_LABEL,
   RESULT_TYPE_VALUE,
   isResultField,
+  sectionColorsResults,
   suggestedOptionColor,
   typeChoicePatch,
   typeSelectValue,
@@ -895,6 +896,18 @@ const LiveTable: React.FC<{
         >
           <Plus className="w-3.5 h-3.5" />
         </button>
+        <label
+          className="ml-4 flex items-center gap-1 cursor-pointer"
+          title="On: PASS is green, FAIL red, LIMITED SERVICE / INVESTIGATE yellow. Off: results show as plain text (e.g. visual & mechanical inspections)."
+        >
+          <input
+            type="checkbox"
+            checked={sectionColorsResults(section)}
+            onChange={(e) => onUpdate({ colorResults: e.target.checked })}
+            className="rounded-none"
+          />
+          Color-code results
+        </label>
       </div>
       )}
     </div>

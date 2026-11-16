@@ -22,10 +22,12 @@ import {
 } from "@/lib/types/customForms";
 import { classifySection } from "./runtime/sectionKind";
 import { resolveRowCount } from "./runtime/layout";
+import { isSectionShown } from "./sectionVisibility";
 import { getSectionReferenceCode } from "./formCellResolution";
 import { documentFromV1 } from "./v2/fromV1";
 import { normalizeLayout } from "./layoutGroups";
 import { cleanCustomResultOptions } from "./resultOptions";
+import { cleanColorKeywords } from "./resultField";
 import { validateDocumentV2 } from "./v2/validate";
 import { compileFormExpressions } from "@/lib/customForms/expressions/form-program";
 
@@ -409,6 +411,7 @@ function validateSettings(
   const allowed = new Set([
     "includePassFail",
     "customResultOptions",
+    "colorKeywords",
     "includeJobInfo",
     "includePrintHeader",
     "pageBreakAfterSection",
@@ -530,6 +533,9 @@ export function normalizeStructure(
       ...(cleanCustomResultOptions(structure.settings?.customResultOptions).length
         ? { customResultOptions: cleanCustomResultOptions(structure.settings?.customResultOptions) }
         : {}),
+      ...(cleanColorKeywords(structure.settings?.colorKeywords).length
+        ? { colorKeywords: cleanColorKeywords(structure.settings?.colorKeywords) }
+        : {}),
       includeJobInfo: structure.settings?.includeJobInfo !== false,
       includePrintHeader: structure.settings?.includePrintHeader !== false,
       pageBreakAfterSection:
@@ -643,6 +649,8 @@ export function validateInstanceStructure(
     value === undefined || value === null || value === "";
 
   for (const section of structure.sections) {
+    // A table turned off can't be filled in, so it can't be missing anything.
+    if (!isSectionShown(section, structure.sections, runtime)) continue;
     for (const field of section.fields ?? []) {
       if (!field.required) continue;
       if (isBlank(runtime[section.id]?.[field.id])) {

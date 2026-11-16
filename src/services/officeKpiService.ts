@@ -39,7 +39,24 @@ export interface Kpi {
   value: number | null;
   note: string;
   error?: string;
+  /** Shown as a badge. Unset where it doesn't apply (bank balances, days to bill). */
+  basis?: KpiBasis;
 }
+
+export type KpiBasis = 'cash' | 'accrual';
+
+/** Receivables are accrual (counted when invoiced); everything else is cash (counted when money moves). */
+const KPI_BASIS: Record<string, KpiBasis> = {
+  amp_profit_ytd: 'cash',
+  amp_ar: 'accrual',
+  global_income: 'cash',
+  global_expenses: 'cash',
+  global_net: 'cash',
+  intl_profit_ytd: 'cash',
+  intl_expenses: 'cash',
+  intl_billed: 'accrual',
+  intl_received: 'cash',
+};
 
 export interface KpiPeriods {
   ytdStart: string;
@@ -156,10 +173,11 @@ export async function loadKpis(
     return id;
   });
   const [plYtd, plWeek, intlYtd, intlWeek, intlBilled, intlReceived, ar, banks, billing] = await Promise.allSettled([
-    getQBOProfitAndLoss(p.ytdStart, p.today),
-    getQBOProfitAndLoss(p.weekStart, p.weekEnd),
-    classId.then((id) => getQBOProfitAndLoss(p.ytdStart, p.today, id)),
-    classId.then((id) => getQBOProfitAndLoss(p.weekStart, p.weekEnd, id)),
+    // Profit and loss is cash basis, the way the office runs it. Only receivables are accrual.
+    getQBOProfitAndLoss(p.ytdStart, p.today, undefined, 'Cash'),
+    getQBOProfitAndLoss(p.weekStart, p.weekEnd, undefined, 'Cash'),
+    classId.then((id) => getQBOProfitAndLoss(p.ytdStart, p.today, id, 'Cash')),
+    classId.then((id) => getQBOProfitAndLoss(p.weekStart, p.weekEnd, id, 'Cash')),
     classId.then((id) => getQBOClassInvoiced(id, p.weekStart, p.weekEnd)),
     classId.then((id) => getQBOClassReceived(id, p.weekStart, p.weekEnd)),
     getQBOAccountsByType('Accounts Receivable'),
@@ -211,6 +229,6 @@ export async function loadKpis(
         ? `${b.onTime} of ${b.total} jobs completed ${shortDay(b.from)} – ${shortDay(b.to)}`
         : `No jobs completed ${shortDay(b.from)} – ${shortDay(b.to)}`,
     }), 'Jobs completed in the last 30 days'),
-  ];
+  ].map((k) => ({ ...k, basis: KPI_BASIS[k.id] }));
   return { kpis, bankAccounts };
 }

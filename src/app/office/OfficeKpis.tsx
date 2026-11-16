@@ -139,7 +139,25 @@ export function OfficeKpis() {
               className="flex min-h-[6.5rem] flex-col gap-1 border-b border-r border-neutral-100 p-3 dark:border-neutral-700"
               title={kpi.error}
             >
-              <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">{kpi.label ?? ' '}</span>
+              <span className="flex items-start justify-between gap-1">
+                <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">{kpi.label ??' '}</span>
+                {kpi.basis && (
+                  <span
+                    title={
+                      kpi.basis === 'cash'
+                        ? 'Cash basis: counted when money actually moves'
+                        : 'Accrual basis: counted when invoiced'
+                    }
+                    className={`shrink-0 rounded-none border px-1 text-[10px] font-semibold uppercase leading-4 ${
+                      kpi.basis === 'cash'
+                        ? 'border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-400'
+                        : 'border-sky-300 text-sky-700 dark:border-sky-700 dark:text-sky-400'
+                    }`}
+                  >
+                    {kpi.basis === 'cash' ? 'Cash' : 'Accrual'}
+                  </span>
+                )}
+              </span>
               <span
                 className={`font-mono text-lg font-semibold ${
                   kpi.value != null && kpi.value < 0

@@ -1128,14 +1128,20 @@ export interface QBOProfitAndLoss {
 }
 
 /**
- * Profit and loss totals for a date range (YYYY-MM-DD, accrual), optionally for one
- * class. Reads each section's total row from QuickBooks' ProfitAndLoss report.
+ * Profit and loss totals for a date range (YYYY-MM-DD), optionally for one class.
+ * Cash counts money when it moves; accrual counts it when invoiced or billed.
+ * Reads each section's total row from QuickBooks' ProfitAndLoss report.
  */
-export async function getQBOProfitAndLoss(start: string, end: string, classId?: string): Promise<QBOProfitAndLoss> {
+export async function getQBOProfitAndLoss(
+  start: string,
+  end: string,
+  classId?: string,
+  basis: 'Cash' | 'Accrual' = 'Accrual',
+): Promise<QBOProfitAndLoss> {
   const params = new URLSearchParams({
     start_date: start,
     end_date: end,
-    accounting_method: 'Accrual',
+    accounting_method: basis,
     minorversion: '65',
   });
   if (classId) params.set('class', classId);

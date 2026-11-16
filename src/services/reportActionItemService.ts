@@ -558,9 +558,7 @@ export function actionItemsHtml(items: ActionItem[], hasReportNumber: boolean): 
     : '';
   const empty = !hasReportNumber
     ? '<div style="font-size:0.75rem;color:#6b7280;">No report number yet, so no action items.</div>'
-    : items.length === 0
-      ? '<div style="font-size:0.75rem;color:#6b7280;">Passes, but something to do or tell the customer? Add it here.</div>'
-      : '';
+    : '';
   return `
     <div style="border:1px solid #e5e7eb;padding:0.75rem;display:flex;flex-direction:column;gap:0.5rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;">

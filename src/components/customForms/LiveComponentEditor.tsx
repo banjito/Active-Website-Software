@@ -69,6 +69,16 @@ import { isJobInfoSection, jobFillLabel } from "@/lib/customForms/jobFill";
 import { JobFillControl } from "./JobFillControl";
 import { useLookupTables } from "@/lib/customForms/lookupLibrary";
 import { resolveDeviation } from "./runtime/SectionBody";
+import {
+  RESULT_TYPE_LABEL,
+  RESULT_TYPE_VALUE,
+  isResultField,
+  sectionColorsResults,
+  suggestedOptionColor,
+  typeChoicePatch,
+  typeSelectValue,
+} from "@/lib/customForms/resultField";
+import { resultTextColor } from "@/lib/customForms/resultOptions";
 
 type Behavior = NonNullable<FieldConfig["cellBehavior"]>;
 
@@ -137,6 +147,21 @@ const MockControl: React.FC<{ field: FieldConfig }> = ({ field }) => {
     case FieldType.DATE:
       return <span className={muted}>mm/dd/yyyy</span>;
     case FieldType.SELECT:
+      if (isResultField(field)) {
+        return (
+          <span className="flex gap-0.5 truncate">
+            {(field.options ?? []).slice(0, 3).map((o) => (
+              <span
+                key={o.value}
+                className="px-1 text-[10px] font-bold rounded-none"
+                style={{ backgroundColor: o.color ?? suggestedOptionColor(o.label), color: resultTextColor(o.color ?? suggestedOptionColor(o.label)) }}
+              >
+                {o.label}
+              </span>
+            ))}
+          </span>
+        );
+      }
       return (
         <span className={muted}>
           ▾ {field.options?.[0]?.label ?? "Dropdown"}
@@ -218,12 +243,12 @@ const FieldTypeControls: React.FC<{
 }> = ({ field, onChange, jobInfo }) => (
   <>
     <select
-      value={field.type}
+      value={typeSelectValue(field)}
       onChange={(e) => {
-        const type = e.target.value as FieldType;
-        const patch: Partial<FieldConfig> = { type };
+        const patch: Partial<FieldConfig> = typeChoicePatch(field, e.target.value);
         if (
-          (type === FieldType.SELECT || type === FieldType.RADIO) &&
+          (patch.type === FieldType.SELECT || patch.type === FieldType.RADIO) &&
+          !patch.options &&
           !field.options?.length
         ) {
           patch.options = [{ label: "Option 1", value: "Option 1" }];
@@ -234,9 +259,12 @@ const FieldTypeControls: React.FC<{
       className={`${inlineInputCls} w-32`}
     >
       {FIELD_TYPES.map((t) => (
-        <option key={t.value} value={t.value}>
-          {t.label}
-        </option>
+        <React.Fragment key={t.value}>
+          <option value={t.value}>{t.label}</option>
+          {t.value === FieldType.SELECT && (
+            <option value={RESULT_TYPE_VALUE}>{RESULT_TYPE_LABEL}</option>
+          )}
+        </React.Fragment>
       ))}
     </select>
     <input
@@ -347,6 +375,7 @@ const FieldTypeControls: React.FC<{
     {(field.type === FieldType.SELECT || field.type === FieldType.RADIO) && (
       <div className="basis-full">
         <InlineOptionsEditor
+          colored={isResultField(field)}
           options={field.options || []}
           onChange={(options) => onChange({ options })}
           onAdd={() => {
@@ -867,6 +896,18 @@ const LiveTable: React.FC<{
         >
           <Plus className="w-3.5 h-3.5" />
         </button>
+        <label
+          className="ml-4 flex items-center gap-1 cursor-pointer"
+          title="On: PASS is green, FAIL red, LIMITED SERVICE / INVESTIGATE yellow. Off: results show as plain text (e.g. visual & mechanical inspections)."
+        >
+          <input
+            type="checkbox"
+            checked={sectionColorsResults(section)}
+            onChange={(e) => onUpdate({ colorResults: e.target.checked })}
+            className="rounded-none"
+          />
+          Color-code results
+        </label>
       </div>
       )}
     </div>

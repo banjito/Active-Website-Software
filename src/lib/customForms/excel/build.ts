@@ -383,7 +383,7 @@ export function draftFromBuild(
       structure: {
         sections: run.state.sections.map((section, order) => ({ ...section, order })),
         settings: {
-          includePassFail: false,
+          includePassFail: true,
           includeJobInfo: false,
           includePrintHeader: true,
           pageBreakAfterSection: false,

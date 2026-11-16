@@ -21,7 +21,19 @@ import {
   FileCode2,
   GripVertical,
   Columns,
+  Table2,
 } from "lucide-react";
+import { DefaultValuesDialog } from "./DefaultValuesDialog";
+import {
+  RESULT_TYPE_LABEL,
+  RESULT_TYPE_VALUE,
+  isResultField,
+  sectionColorsResults,
+  suggestedOptionColor,
+  typeChoicePatch,
+  typeSelectValue,
+} from "@/lib/customForms/resultField";
+import { resultTextColor } from "@/lib/customForms/resultOptions";
 import {
   applyTableChoices,
   rowsDiffer,
@@ -37,13 +49,10 @@ import { AssetSourceSelect } from "./AssetSourceSelect";
 import { ChartSettings } from "./ChartSettings";
 import { ShowWhenSettings } from "./ShowWhenSettings";
 import {
-  CellDefaultInput,
   HINT_TITLE,
-  canHaveCellDefault,
   canHaveHint,
 } from "./CellDefaultInput";
 import {
-  contactResistanceRowLabels,
   resolveRowCount,
 } from "@/lib/customForms/runtime/layout";
 import { ChecklistWidthInput } from "./ChecklistWidthInput";
@@ -395,6 +404,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
   onToggleFormulaEditing,
 }) => {
   const [savingDefault, setSavingDefault] = useState(false);
+  const [defaultsTableOpen, setDefaultsTableOpen] = useState(false);
   const [savingNewComponent, setSavingNewComponent] = useState(false);
   const [updatingSavedComponent, setUpdatingSavedComponent] = useState(false);
 
@@ -665,6 +675,22 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
               </label>
             </div>
             <ShowWhenSettings section={section} allSections={allSections} onUpdate={onUpdate} />
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="colorResults"
+                checked={sectionColorsResults(section)}
+                onChange={(e) => onUpdate({ colorResults: e.target.checked })}
+                className="rounded-none"
+              />
+              <label
+                htmlFor="colorResults"
+                className="text-sm text-neutral-700 dark:text-neutral-300"
+                title="On: PASS is green, FAIL red, LIMITED SERVICE / INVESTIGATE yellow. Off: results show as plain text (e.g. visual & mechanical inspections)."
+              >
+                Color-code results (green pass / red fail / yellow limited)
+              </label>
+            </div>
             {!!section.columns?.length && (
               <div className="flex items-center gap-2">
                 <input
@@ -997,6 +1023,21 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     Columns
                   </label>
                   <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      title="See the table as the report shows it and type each cell's starting value"
+                      onClick={() => setDefaultsTableOpen(true)}
+                      leftIcon={<Table2 className="w-3 h-3" />}
+                    >
+                      Default values table
+                    </Button>
+                    <DefaultValuesDialog
+                      open={defaultsTableOpen}
+                      onClose={() => setDefaultsTableOpen(false)}
+                      section={section}
+                      onUpdate={onUpdate}
+                    />
                     <Button
                       variant="ghost"
                       size="sm"
@@ -1659,6 +1700,24 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
   );
 };
 
+type QuickFormulaKind = "devAvg" | "devMin" | "avg";
+
+const QUICK_FORMULAS: { kind: QuickFormulaKind; label: string }[] = [
+  { kind: "devAvg", label: "% deviation from the average" },
+  { kind: "devMin", label: "% deviation from the lowest" },
+  { kind: "avg", label: "Average" },
+];
+
+/** A ready-made formula over column `ref` (e.g. "SI.C3") of this table. */
+function quickFormula(kind: QuickFormulaKind, ref: string): string {
+  const all = `{${ref}.all}`;
+  const row = `{${ref}}`;
+  if (kind === "avg") return `round(avg(${all}), 2)`;
+  const base = kind === "devAvg" ? `avg(${all})` : `min(${all})`;
+  // Blank when this row has no reading, or the reference is blank or zero.
+  return `if(isnull(${row}) or isnull(${base}) or ${base} == 0, null, round((${row} - ${base}) / ${base} * 100, 2))`;
+}
+
 /** Sortable wrapper for ColumnEditor – provides drag handle and transform */
 const SortableColumnEditor: React.FC<{
   id: string;
@@ -1785,32 +1844,6 @@ const ColumnEditor: React.FC<{
     onSectionUpdate?.({ staticCells: next });
   };
 
-  // Contact resistance keeps its first column's starting text as row labels.
-  const isRowLabelColumn =
-    parentSection?.componentType === ComponentType.CONTACT_RESISTANCE &&
-    !parentSection.conditionalRows?.length &&
-    field.id === "busSection";
-  const rowLabels =
-    isRowLabelColumn && parentSection ? contactResistanceRowLabels(parentSection) : [];
-  const cellDefaultAt = (rowIndex: number) =>
-    isRowLabelColumn
-      ? (rowLabels[rowIndex] ?? "")
-      : (parentSection?.cellDefaults?.[`row${rowIndex}_${column.id}`] ?? "");
-  const setCellDefault = (rowIndex: number, val: string) => {
-    if (isRowLabelColumn) {
-      const labels = [...rowLabels];
-      while (labels.length <= rowIndex) labels.push("");
-      labels[rowIndex] = val;
-      onSectionUpdate?.({ defaultRowLabels: labels });
-      return;
-    }
-    const key = `row${rowIndex}_${column.id}`;
-    const next = { ...(parentSection?.cellDefaults ?? {}) };
-    if (val === "") delete next[key];
-    else next[key] = val;
-    onSectionUpdate?.({ cellDefaults: next });
-  };
-
   const handleBehaviorChange = (
     next: "user" | "populate" | "calculate" | "static",
   ) => {
@@ -1883,14 +1916,11 @@ const ColumnEditor: React.FC<{
   const showEquipment = behavior === "user" && !isResult && !!parentSection;
   const showFormulaRefs = behavior === "calculate" && !isResult && refOptions.length > 0;
   const showStaticRows = behavior === "static" && staticRows.length > 0;
-  const showRowDefaults =
-    behavior === "user" && !isResult && canHaveCellDefault(field) && staticRows.length > 0;
   const showVisibleWhen = !!settingFields && settingFields.length > 0;
   const hasSecondRow =
     showOptions ||
     showFormulaRefs ||
     showStaticRows ||
-    showRowDefaults ||
     showVisibleWhen ||
     isResult ||
     showEquipment;
@@ -1945,12 +1975,12 @@ const ColumnEditor: React.FC<{
         )}
         {behavior === "user" && (
           <select
-            value={field.type}
+            value={typeSelectValue(field)}
             onChange={(e) => {
-              const newType = e.target.value as FieldType;
-              const updates: Partial<FieldConfig> = { type: newType };
+              const updates: Partial<FieldConfig> = typeChoicePatch(field, e.target.value);
               if (
-                newType === FieldType.SELECT &&
+                updates.type === FieldType.SELECT &&
+                !updates.options &&
                 !(field.options && field.options.length)
               ) {
                 updates.options = [{ label: "Option 1", value: "Option 1" }];
@@ -1964,6 +1994,7 @@ const ColumnEditor: React.FC<{
             <option value={FieldType.NUMBER}>Number</option>
             <option value={FieldType.DATE}>Date</option>
             <option value={FieldType.SELECT}>Dropdown</option>
+            <option value={RESULT_TYPE_VALUE}>{RESULT_TYPE_LABEL}</option>
             <option value={FieldType.RADIO}>Radio buttons</option>
             <option value={FieldType.TEXTAREA}>Text Area</option>
             <option value={FieldType.CHECKBOX}>Checkbox</option>
@@ -2090,6 +2121,7 @@ const ColumnEditor: React.FC<{
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pl-6">
           {showOptions && (
             <InlineOptionsEditor
+              colored={isResultField(field)}
               options={field.options || []}
               onChange={(options) => onUpdate({ field: { ...field, options } })}
               onAdd={() => {
@@ -2150,15 +2182,60 @@ const ColumnEditor: React.FC<{
               }}
             >
               <option value="">Insert reference…</option>
-              {refGroups.map(([sectionId, sectionTitle]) => (
-                <optgroup key={sectionId} label={sectionTitle}>
-                  {refOptions
-                    .filter((o) => o.sectionId === sectionId)
-                    .map((opt) => (
-                      <option key={opt.refToken} value={opt.friendlyRef}>
-                        {opt.friendlyRef} — {opt.description}
+              {refGroups.map(([sectionId, sectionTitle]) => {
+                const sec = allSections.find((s) => s.id === sectionId);
+                const code = sec ? getSectionReferenceCode(sec) : "";
+                return (
+                  <optgroup key={sectionId} label={sectionTitle}>
+                    {/* Whole columns first: for avg / min / max / sum. */}
+                    {(sec?.columns ?? []).map((c, i) => (
+                      <option key={`all-${c.id}`} value={`{${code}.C${i + 1}.all}`}>
+                        {`{${code}.C${i + 1}.all}`} — {c.label || `column ${i + 1}`}, all rows (use in avg/min/max/sum)
                       </option>
                     ))}
+                    {refOptions
+                      .filter((o) => o.sectionId === sectionId)
+                      .map((opt) => (
+                        <option key={opt.refToken} value={opt.friendlyRef}>
+                          {opt.friendlyRef} — {opt.description}
+                        </option>
+                      ))}
+                  </optgroup>
+                );
+              })}
+            </select>
+          )}
+
+          {showFormulaRefs && parentSection && (parentSection.columns?.length ?? 0) > 0 && (
+            <select
+              className={`${inlineInputCls} w-72`}
+              title="Write a common formula for you. It replaces what's in the formula box."
+              onChange={(e) => {
+                const [kind, idx] = e.target.value.split(":");
+                e.target.value = "";
+                if (!kind) return;
+                const ref = `${getSectionReferenceCode(parentSection)}.C${Number(idx) + 1}`;
+                onUpdate({
+                  field: {
+                    ...field,
+                    calculation: {
+                      formula: quickFormula(kind as QuickFormulaKind, ref),
+                      dependsOn: field.calculation?.dependsOn ?? [],
+                    },
+                  },
+                });
+              }}
+            >
+              <option value="">Quick formula…</option>
+              {QUICK_FORMULAS.map((q) => (
+                <optgroup key={q.kind} label={q.label}>
+                  {parentSection.columns!.map((c, i) =>
+                    c.id === column.id ? null : (
+                      <option key={c.id} value={`${q.kind}:${i}`}>
+                        {q.label} of “{c.label || `column ${i + 1}`}”
+                      </option>
+                    ),
+                  )}
                 </optgroup>
               ))}
             </select>
@@ -2181,27 +2258,6 @@ const ColumnEditor: React.FC<{
                     }
                     onChange={(e) => setStaticCell(r.index, e.target.value)}
                     placeholder="—"
-                    className={`${inlineInputCls} w-28`}
-                  />
-                </label>
-              ))}
-            </div>
-          )}
-
-          {showRowDefaults && (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                Default per row:
-              </span>
-              {staticRows.map((r) => (
-                <label key={r.index} className="flex items-center gap-1">
-                  <span className="text-[10px] text-neutral-500 dark:text-neutral-400 max-w-[6rem] truncate">
-                    {r.label}
-                  </span>
-                  <CellDefaultInput
-                    field={field}
-                    value={cellDefaultAt(r.index)}
-                    onChange={(next) => setCellDefault(r.index, next)}
                     className={`${inlineInputCls} w-28`}
                   />
                 </label>
@@ -2271,13 +2327,15 @@ export const inlineInputCls =
 
 /** Dropdown options laid out side by side so a field stays within two rows. */
 export const InlineOptionsEditor: React.FC<{
-  options: { label: string; value: string }[];
-  onChange: (next: { label: string; value: string }[]) => void;
+  options: { label: string; value: string; color?: string }[];
+  onChange: (next: { label: string; value: string; color?: string }[]) => void;
   onAdd: () => void;
   addDisabled?: boolean;
   /** Show arrows that move an option earlier or later in the list. */
   reorderable?: boolean;
-}> = ({ options, onChange, onAdd, addDisabled, reorderable }) => {
+  /** "Result" fields: a colour picker beside each choice. */
+  colored?: boolean;
+}> = ({ options, onChange, onAdd, addDisabled, reorderable, colored }) => {
   const move = (from: number, to: number) => {
     const next = [...options];
     next.splice(to, 0, ...next.splice(from, 1));
@@ -2312,7 +2370,30 @@ export const InlineOptionsEditor: React.FC<{
           }}
           placeholder="Option text"
           className={`${inlineInputCls} w-32`}
+          style={
+            colored
+              ? {
+                  backgroundColor: opt.color ?? suggestedOptionColor(opt.label),
+                  color: resultTextColor(opt.color ?? suggestedOptionColor(opt.label)),
+                  fontWeight: 600,
+                }
+              : undefined
+          }
         />
+        {colored && (
+          <input
+            type="color"
+            value={opt.color ?? suggestedOptionColor(opt.label)}
+            onChange={(e) => {
+              const next = [...options];
+              next[idx] = { ...next[idx], color: e.target.value };
+              onChange(next);
+            }}
+            title="Colour for this choice"
+            aria-label="Colour"
+            className="h-7 w-7 p-0 border border-neutral-300 dark:border-neutral-700 rounded-none bg-transparent cursor-pointer"
+          />
+        )}
         {reorderable && (
           <button
             type="button"
@@ -2551,12 +2632,12 @@ const FieldEditor: React.FC<{
           className={`${inlineInputCls} flex-1 min-w-[10rem] font-medium`}
         />
         <select
-          value={field.type}
+          value={typeSelectValue(field)}
           onChange={(e) => {
-            const newType = e.target.value as FieldType;
-            const updates: Partial<FieldConfig> = { type: newType };
+            const updates: Partial<FieldConfig> = typeChoicePatch(field, e.target.value);
             if (
-              newType === FieldType.SELECT &&
+              updates.type === FieldType.SELECT &&
+              !updates.options &&
               !(field.options && field.options.length)
             ) {
               updates.options = [];
@@ -2570,6 +2651,7 @@ const FieldEditor: React.FC<{
           <option value={FieldType.NUMBER}>Number</option>
           <option value={FieldType.DATE}>Date</option>
           <option value={FieldType.SELECT}>Select</option>
+          <option value={RESULT_TYPE_VALUE}>{RESULT_TYPE_LABEL}</option>
           <option value={FieldType.RADIO}>Radio buttons</option>
           <option value={FieldType.TEXTAREA}>Text Area</option>
           <option value={FieldType.CHECKBOX}>Checkbox</option>
@@ -2670,6 +2752,7 @@ const FieldEditor: React.FC<{
       {field.type === FieldType.SELECT && (
         <div className="pl-6">
           <InlineOptionsEditor
+            colored={isResultField(field)}
             options={field.options || []}
             onChange={(options) => onUpdate({ options })}
             onAdd={handleAddOption}

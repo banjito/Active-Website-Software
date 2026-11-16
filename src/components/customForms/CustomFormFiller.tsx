@@ -96,6 +96,7 @@ import {
   StatusToggleButton,
   type CustomFormStatus,
 } from "./runtime/PrintHeader";
+import { resolveResultOptions } from "@/lib/customForms/resultOptions";
 import { useReportCssIsolation } from "./runtime/useReportCssIsolation";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
@@ -903,6 +904,7 @@ export const CustomFormFiller: React.FC = () => {
                 {template.structure.settings?.includePassFail !== false && (
                   <StatusToggleButton
                     status={status}
+                    options={resolveResultOptions(template.structure.settings)}
                     onChange={(next) => {
                       setStatus(next);
                       autoStatus.setManual(true);

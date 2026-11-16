@@ -143,9 +143,17 @@ export function worstResult(values: readonly unknown[]): ReportStatus | null {
   return worst;
 }
 
-/** True when the template has at least one pass/fail result column. */
+/** A "Result (color-coded)" dropdown the technician picks by hand (resultField.ts). */
+const isPickedResult = (field: FieldConfig | undefined) =>
+  !!field?.colorCoded && field.type === 'select' && !field.resultRule;
+
+/** True when the template has at least one pass/fail result column or Result field. */
 export function hasResultColumns(structure: CustomFormStructure): boolean {
-  return structure.sections.some((s) => (s.columns ?? []).some((c) => c.field.resultRule));
+  return structure.sections.some(
+    (s) =>
+      (s.columns ?? []).some((c) => c.field.resultRule || isPickedResult(c.field)) ||
+      (s.fields ?? []).some(isPickedResult),
+  );
 }
 
 /** Every result-column value in a filled form, for the report's status box. */
@@ -156,7 +164,14 @@ export function collectFormResults(
   const sections: SectionConfig[] = structure.sections;
   const out: string[] = [];
   for (const section of sections) {
-    const resultColumns = (section.columns ?? []).filter((c) => c.field.resultRule);
+    // Result fields outside a table, picked by hand.
+    for (const field of (section.fields ?? []).filter(isPickedResult)) {
+      const value = formData[section.id]?.[field.id] ?? field.defaultValue;
+      if (value !== '' && value != null) out.push(String(value));
+    }
+    const resultColumns = (section.columns ?? []).filter(
+      (c) => c.field.resultRule || isPickedResult(c.field),
+    );
     if (!resultColumns.length) continue;
     // A table turned off (wrong battery type, test not ordered) keeps its data
     // but never decides the report's status.
@@ -164,7 +179,7 @@ export function collectFormResults(
     const rows = section.conditionalRows?.length ?? resolveRowCount(section);
     for (let r = 0; r < rows; r++) {
       for (const column of resultColumns) {
-        const value = getCellValue(
+        let value = getCellValue(
           formData,
           column.field,
           rowStateKey(section.id, r),
@@ -174,6 +189,10 @@ export function collectFormResults(
           section.cellFormulas,
           column.id,
         );
+        // A picked result left at its table default still counts.
+        if ((value === '' || value == null) && isPickedResult(column.field)) {
+          value = section.cellDefaults?.[`row${r}_${column.id}`] ?? '';
+        }
         if (value !== '' && value != null) out.push(String(value));
       }
     }

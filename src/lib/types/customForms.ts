@@ -96,7 +96,10 @@ export interface FieldConfig {
   required?: boolean;
   readOnly?: boolean;
   defaultValue?: any;
-  options?: { label: string; value: string }[]; // For select fields
+  /** For select fields. `color` is used when the field is colorCoded. */
+  options?: { label: string; value: string; color?: string }[];
+  /** "Result" input type: a dropdown whose choices are colour-coded (resultField.ts). */
+  colorCoded?: boolean;
   unit?: string;
   unitOptions?: string[]; // For fields with multiple unit options
   placeholder?: string;
@@ -272,6 +275,11 @@ export interface SectionConfig {
   showInPrint: boolean;
   /** Whether this table's values show in Trends. Unset: decided by the kind of section. */
   trendResults?: boolean;
+  /**
+   * Show PASS / FAIL / LIMITED SERVICE results as coloured boxes. Unset: on,
+   * except Visual Inspection components and checklists (sectionColorsResults in resultField.ts).
+   */
+  colorResults?: boolean;
   /** Show the whole section only when these hold. See lib/customForms/sectionVisibility.ts. */
   showWhen?: SectionShowWhen;
   /** Short code for formulas, e.g. IR (Insulation Resistance), Job (Job Details). Shown as {IR.C1.R2}. */
@@ -424,6 +432,10 @@ export interface CustomFormSettings {
   /** The equipment this template tests; the builder offers its components first. */
   equipmentType?: string;
   includePassFail: boolean;
+  /** Extra result choices beyond PASS / FAIL / LIMITED SERVICE (resultOptions.ts). */
+  customResultOptions?: { label: string; color: string }[];
+  /** Words that colour a result cell, e.g. NEEDS REPAIR = orange (resultField.ts). */
+  colorKeywords?: { label: string; color: string }[];
   includeJobInfo: boolean;
   includePrintHeader: boolean;
   pageBreakAfterSection?: boolean;

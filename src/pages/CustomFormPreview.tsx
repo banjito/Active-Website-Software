@@ -47,6 +47,7 @@ import {
   StatusToggleButton,
   type CustomFormStatus,
 } from "@/components/customForms/runtime/PrintHeader";
+import { resolveResultOptions } from "@/lib/customForms/resultOptions";
 import { useReportCssIsolation } from "@/components/customForms/runtime/useReportCssIsolation";
 
 export const CustomFormPreview: React.FC = () => {
@@ -214,6 +215,7 @@ export const CustomFormPreview: React.FC = () => {
                 {template.structure.settings?.includePassFail !== false && (
                   <StatusToggleButton
                     status={status}
+                    options={resolveResultOptions(template.structure.settings)}
                     onChange={(next) => {
                       setStatus(next);
                       autoStatus.setManual(true);

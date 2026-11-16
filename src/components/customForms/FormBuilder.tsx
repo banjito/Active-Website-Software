@@ -66,6 +66,8 @@ import Card, { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 import { ReflowDialog } from "./ReflowDialog";
 import { EquipmentTypesDialog } from "./EquipmentTypesDialog";
+import { ResultOptionsDialog } from "./ResultOptionsDialog";
+import { ColorKeywordsDialog } from "./ColorKeywordsDialog";
 import { fetchEquipmentTypeList } from "@/lib/customForms/equipmentTypes";
 import { useLookupTables } from "@/lib/customForms/lookupLibrary";
 import type { ComponentVariant } from "@/lib/customForms/componentVariants";
@@ -710,6 +712,8 @@ export const FormBuilder: React.FC = () => {
   // The equipment types list, for the template's "Equipment" picker.
   const [equipmentOptions, setEquipmentOptions] = useState<string[]>([]);
   const [equipmentDialogOpen, setEquipmentDialogOpen] = useState(false);
+  const [resultOptionsOpen, setResultOptionsOpen] = useState(false);
+  const [colorKeywordsOpen, setColorKeywordsOpen] = useState(false);
   useEffect(() => {
     fetchEquipmentTypeList().then(setEquipmentOptions).catch(() => setEquipmentOptions([]));
   }, []);
@@ -1217,6 +1221,57 @@ export const FormBuilder: React.FC = () => {
               </select>
             </div>
 
+            {/* Overall PASS / FAIL / LIMITED SERVICE box at the top of the report. */}
+            <div className="min-w-0 flex flex-col gap-1">
+              <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                Pass/Fail result
+              </label>
+              <label
+                className="h-10 px-2 flex items-center gap-2 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none text-neutral-900 dark:text-white cursor-pointer whitespace-nowrap"
+                title="Shows the green PASS / red FAIL / yellow LIMITED SERVICE box at the top of every report made from this form. Untick to leave it off."
+              >
+                <input
+                  type="checkbox"
+                  checked={template.structure.settings?.includePassFail !== false}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setTemplate((prev) => ({
+                      ...prev,
+                      structure: {
+                        ...prev.structure,
+                        settings: { ...(prev.structure.settings as any), includePassFail: checked },
+                      },
+                    }));
+                    setIsDirty(true);
+                  }}
+                  className="rounded-none accent-brand"
+                />
+                Show at top of report
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setResultOptionsOpen(true);
+                  }}
+                  className="ml-1 text-xs text-brand hover:underline"
+                  title="Add your own result choices (beyond PASS / FAIL / LIMITED SERVICE) and pick their colours"
+                >
+                  Edit choices…
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setColorKeywordsOpen(true);
+                  }}
+                  className="ml-1 text-xs text-brand hover:underline"
+                  title="Words that colour result cells on this form, e.g. NEEDS REPAIR = orange"
+                >
+                  Color keywords…
+                </button>
+              </label>
+            </div>
+
             <div
               className="relative min-w-0 flex flex-col gap-1"
               ref={netaSectionInputRef}
@@ -1517,6 +1572,42 @@ export const FormBuilder: React.FC = () => {
                 </Button>
               </div>
             )}
+            <ColorKeywordsDialog
+              open={colorKeywordsOpen}
+              onClose={() => setColorKeywordsOpen(false)}
+              value={template.structure.settings?.colorKeywords}
+              onSave={(keywords) => {
+                setTemplate((prev) => ({
+                  ...prev,
+                  structure: {
+                    ...prev.structure,
+                    settings: {
+                      ...(prev.structure.settings as any),
+                      colorKeywords: keywords.length ? keywords : undefined,
+                    },
+                  },
+                }));
+                setIsDirty(true);
+              }}
+            />
+            <ResultOptionsDialog
+              open={resultOptionsOpen}
+              onClose={() => setResultOptionsOpen(false)}
+              value={template.structure.settings?.customResultOptions}
+              onSave={(options) => {
+                setTemplate((prev) => ({
+                  ...prev,
+                  structure: {
+                    ...prev.structure,
+                    settings: {
+                      ...(prev.structure.settings as any),
+                      customResultOptions: options.length ? options : undefined,
+                    },
+                  },
+                }));
+                setIsDirty(true);
+              }}
+            />
             <EquipmentTypesDialog
               open={equipmentDialogOpen}
               onClose={() => setEquipmentDialogOpen(false)}

@@ -8,34 +8,25 @@
 
 import React from "react";
 import type { CustomFormTemplate } from "@/lib/types/customForms";
+import {
+  DEFAULT_RESULT_OPTIONS,
+  nextResult,
+  resolveResultOptions,
+  resultColor,
+  resultTextColor,
+  type ResultOption,
+} from "@/lib/customForms/resultOptions";
 
-export type CustomFormStatus = "PASS" | "FAIL" | "LIMITED SERVICE";
+/** PASS / FAIL / LIMITED SERVICE, or one of the template's own result choices. */
+export type CustomFormStatus = string;
 
 export const AMP_LOGO_URL =
   "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/AMP%20Logo-FdmXGeXuGBlr2AcoAFFlM8AqzmoyM1.png";
 
-const STATUS_COLORS: Record<
-  CustomFormStatus,
-  { border: string; background: string; text: string; className: string }
-> = {
-  PASS: {
-    border: "#16a34a",
-    background: "#22c55e",
-    text: "white",
-    className: "pass",
-  },
-  FAIL: {
-    border: "#dc2626",
-    background: "#ef4444",
-    text: "white",
-    className: "fail",
-  },
-  "LIMITED SERVICE": {
-    border: "#ca8a04",
-    background: "#eab308",
-    text: "#111827",
-    className: "limited",
-  },
+const STATUS_CLASS: Record<string, string> = {
+  PASS: "pass",
+  FAIL: "fail",
+  "LIMITED SERVICE": "limited",
 };
 
 /** Templates saved before the setting existed have no value; show the header. */
@@ -43,10 +34,17 @@ function isEnabled(value: boolean | undefined): boolean {
   return value !== false;
 }
 
-export const StatusBox: React.FC<{ status: CustomFormStatus }> = ({
-  status,
-}) => {
-  const colors = STATUS_COLORS[status] ?? STATUS_COLORS.PASS;
+export const StatusBox: React.FC<{
+  status: CustomFormStatus;
+  options?: readonly ResultOption[];
+}> = ({ status, options = DEFAULT_RESULT_OPTIONS }) => {
+  const background = resultColor(status, options);
+  const colors = {
+    border: background,
+    background,
+    text: resultTextColor(background),
+    className: STATUS_CLASS[status] ?? "custom",
+  };
   return (
     <div
       className={`pass-fail-status-box ${colors.className}`}
@@ -57,7 +55,7 @@ export const StatusBox: React.FC<{ status: CustomFormStatus }> = ({
         fontWeight: "bold",
         textAlign: "center",
         width: "fit-content",
-        borderRadius: "6px",
+        borderRadius: 0,
         border: `2px solid ${colors.border}`,
         backgroundColor: colors.background,
         color: colors.text,
@@ -109,7 +107,7 @@ export const CustomFormPrintHeader: React.FC<{
         )}
         {isEnabled(settings?.includePassFail) && (
           <div className={onScreen ? "block" : "hidden print:block"}>
-            <StatusBox status={status} />
+            <StatusBox status={status} options={resolveResultOptions(settings)} />
           </div>
         )}
       </div>
@@ -117,35 +115,36 @@ export const CustomFormPrintHeader: React.FC<{
   );
 };
 
-/** The screen-side status toggle, cycling PASS to FAIL to LIMITED SERVICE. */
-export function nextStatus(status: CustomFormStatus): CustomFormStatus {
-  if (status === "PASS") return "FAIL";
-  if (status === "FAIL") return "LIMITED SERVICE";
-  return "PASS";
+/** The screen-side status toggle, cycling through the template's choices. */
+export function nextStatus(
+  status: CustomFormStatus,
+  options: readonly ResultOption[] = DEFAULT_RESULT_OPTIONS,
+): CustomFormStatus {
+  return nextResult(status, options);
 }
 
 export const StatusToggleButton: React.FC<{
   status: CustomFormStatus;
   onChange: (next: CustomFormStatus) => void;
+  /** The template's result choices; defaults to PASS / FAIL / LIMITED SERVICE. */
+  options?: readonly ResultOption[];
   disabled?: boolean;
   /**
    * Set when the template has pass/fail result columns: the status follows
    * them ("auto") until the user clicks; `onAuto` hands it back.
    */
   autoState?: { manual: boolean; onAuto: () => void };
-}> = ({ status, onChange, disabled, autoState }) => (
+}> = ({ status, onChange, options = DEFAULT_RESULT_OPTIONS, disabled, autoState }) => (
   <span className="inline-flex items-stretch">
   <button
     type="button"
     disabled={disabled}
-    onClick={() => onChange(nextStatus(status))}
-    className={`px-4 py-2 text-sm font-medium rounded-none focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 ${
-      status === "PASS"
-        ? "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500"
-        : status === "FAIL"
-          ? "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500"
-          : "bg-yellow-500 text-black hover:bg-yellow-600 focus:ring-yellow-400"
-    }`}
+    onClick={() => onChange(nextStatus(status, options))}
+    className="px-4 py-2 text-sm font-medium rounded-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-400 hover:brightness-90 disabled:opacity-50"
+    style={{
+      backgroundColor: resultColor(status, options),
+      color: resultTextColor(resultColor(status, options)),
+    }}
     title={
       autoState && !autoState.manual
         ? "Set from the form's results. Click to choose by hand."

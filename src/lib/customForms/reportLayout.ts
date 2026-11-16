@@ -11,7 +11,16 @@ export const REPORT_LAYOUT_KEY = '__reportLayout';
 /** Mark a new report. An already marked one is returned as it is. */
 export function seedReportLayout<T extends Record<string, any>>(formData: T): T {
   if (formData[REPORT_LAYOUT_KEY]) return formData;
-  return { ...formData, [REPORT_LAYOUT_KEY]: { version: 2 } };
+  return { ...formData, [REPORT_LAYOUT_KEY]: { version: 3 } };
+}
+
+/**
+ * Version 3 (2026-11-16): every PASS / FAIL / LIMITED SERVICE / INVESTIGATE
+ * shows as a solid green / red / yellow box. Reports issued before keep the
+ * pale result tags and plain dropdown text they were issued with.
+ */
+export function usesSolidResultColors(formData: Record<string, any>): boolean {
+  return Number(formData?.[REPORT_LAYOUT_KEY]?.version ?? 0) >= 3;
 }
 
 /**

@@ -1547,6 +1547,7 @@ export default function JobDetail() {
           "two_small_dry_type_xfmr_ats_reports",
           "switchgear_panelboard_mts_reports",
           "potential_transformer_ats_reports",
+          "contactor_vt_test_reports",
           "medium_voltage_vlf_mts_reports",
           "medium_voltage_circuit_breaker_reports",
           "medium_voltage_circuit_breaker_mts_reports",
@@ -1760,6 +1761,7 @@ export default function JobDetail() {
         "switchgear-switchboard-mts23": "switchgear_switchboard_mts23_reports",
         "switchgear-panelboard-mts-report": "switchgear_panelboard_mts_reports",
         "potential-transformer-ats-report": "potential_transformer_ats_reports",
+        "contactor-vt-test": "contactor_vt_test_reports",
         "medium-voltage-cable-vlf-tan-delta-mts23":
           "medium_voltage_cable_vlf_tan_delta_mts23_reports",
         "medium-voltage-vlf-mts-report": "medium_voltage_vlf_mts_reports",
@@ -1852,6 +1854,7 @@ export default function JobDetail() {
           "Current Transformer Test Reports",
         "13-voltage-potential-transformer-test-mts-report":
           "Voltage / Potential Transformer Test Reports",
+        "contactor-vt-test": "Voltage / Potential Transformer Test Reports",
         "liquid-filled-transformer-report": "Transformer Test Reports",
         "liquid-xfmr-visual-mts-report": "Transformer Test Reports",
         "large-dry-type-xfmr-mts23": "Transformer Test Reports",
@@ -3229,6 +3232,12 @@ export default function JobDetail() {
       file_url: `report:/jobs/${id}/potential-transformer-ats-report?returnToAssets=true`,
       created_at: new Date().toISOString(),
       template_type: "ATS",
+    },
+    {
+      id: "contactor-vt-test",
+      name: "7.10.2 Contactor VT Test Sheet (Multi-Unit)",
+      file_url: `report:/jobs/${id}/contactor-vt-test?returnToAssets=true`,
+      created_at: new Date().toISOString(),
     },
     {
       id: "low-voltage-circuit-breaker-electronic-trip-unit-ats",
@@ -6170,6 +6179,7 @@ export default function JobDetail() {
       "medium-voltage-switch-sf6": "medium-voltage-switch-sf6-report",
       "medium-voltage-switch-sf6-report": "medium-voltage-switch-sf6-report",
       "potential-transformer-ats-report": "potential-transformer-ats-report",
+      "contactor-vt-test": "contactor-vt-test",
       "low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report":
         "low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report",
       "low-voltage-circuit-breaker-thermal-magnetic-ats-report":
@@ -6322,6 +6332,7 @@ export default function JobDetail() {
         "medium-voltage-switch-sf6": "medium_voltage_switch_sf6_reports",
         "medium-voltage-switch-sf6-report": "medium_voltage_switch_sf6_reports",
         "potential-transformer-ats-report": "potential_transformer_ats_reports",
+        "contactor-vt-test": "contactor_vt_test_reports",
         "low-voltage-panelboard-small-breaker-report":
           "low_voltage_panelboard_small_breaker_reports",
         "medium-voltage-circuit-breaker-report":

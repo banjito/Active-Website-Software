@@ -18,8 +18,17 @@ interface Hire {
 interface RosterWaveProps {
   /** Animate only while the parent element is hovered or holds focus. */
   whileParentHovered?: boolean;
+  /** Square color as hex. White by default, for dark card backgrounds. */
+  color?: string;
   className?: string;
 }
+
+const toRgb = (hex: string) => {
+  const v = hex.replace("#", "");
+  const full = v.length === 3 ? v.split("").map((c) => c + c).join("") : v;
+  if (!/^[0-9a-f]{6}$/i.test(full)) return "255,255,255";
+  return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16)).join(",");
+};
 
 const ease = (v: number) => v * v * (3 - 2 * v);
 
@@ -29,7 +38,11 @@ const ease = (v: number) => v * v * (3 - 2 * v);
  * positioned parent; draws one still frame for viewers who turn on reduced
  * motion.
  */
-export default function RosterWave({ whileParentHovered = false, className = "" }: RosterWaveProps) {
+export default function RosterWave({
+  whileParentHovered = false,
+  color = "#FFFFFF",
+  className = "",
+}: RosterWaveProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [running, setRunning] = useState(!whileParentHovered);
 
@@ -56,6 +69,7 @@ export default function RosterWave({ whileParentHovered = false, className = "" 
     if (!running || !canvas || !ctx) return;
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const rgb = toRgb(color);
     let width = 0;
     let height = 0;
     let cols = 0;
@@ -90,7 +104,7 @@ export default function RosterWave({ whileParentHovered = false, className = "" 
           const wave = Math.pow(0.5 + 0.5 * Math.cos(c * 0.32 + r * 0.22 - t * WAVE_SPEED), 3);
           const hire = lit.get(r * cols + c) || 0;
           const size = hire > 0.2 ? SQUARE + 1 : SQUARE;
-          ctx.fillStyle = `rgba(255,255,255,${Math.max(BASE_ALPHA + WAVE_ALPHA * wave, HIRE_ALPHA * hire)})`;
+          ctx.fillStyle = `rgba(${rgb},${Math.max(BASE_ALPHA + WAVE_ALPHA * wave, HIRE_ALPHA * hire)})`;
           ctx.fillRect(offsetX + c * CELL - size / 2, offsetY + r * CELL - size / 2, size, size);
         }
       }
@@ -137,7 +151,7 @@ export default function RosterWave({ whileParentHovered = false, className = "" 
       cancelAnimationFrame(frame);
       observer.disconnect();
     };
-  }, [running]);
+  }, [running, color]);
 
   return (
     <canvas

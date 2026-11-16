@@ -74,7 +74,7 @@ export const STANDARD_TCF_ENTRIES: LookupEntry[] = [
   { key: 31, value: 1.664 },
   { key: 32, value: 1.748 },
   { key: 33, value: 1.832 },
-  { key: 34, value: 1.872 },
+  { key: 34, value: 1.916 },
   { key: 35, value: 2.0 },
   { key: 36, value: 2.1 },
   { key: 37, value: 2.2 },

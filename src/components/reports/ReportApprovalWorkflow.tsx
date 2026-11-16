@@ -1115,6 +1115,7 @@ export function ReportApprovalWorkflow({
               "medium_voltage_switch_sf6_reports",
             "potential-transformer-ats-report":
               "potential_transformer_ats_reports",
+            "contactor-vt-test": "contactor_vt_test_reports",
             "low-voltage-panelboard-small-breaker-report":
               "low_voltage_panelboard_small_breaker_reports",
             "medium-voltage-circuit-breaker-report":

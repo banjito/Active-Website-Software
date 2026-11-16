@@ -27,6 +27,7 @@ export const REPORT_NAMES: { [key: string]: string } = {
   'medium-voltage-switch-oil-report': '7-Medium Voltage Way Switch (OIL) Report ATS 21',
   'medium-voltage-switch-sf6-report': 'Medium Voltage Way Switch (SF6)',
   'potential-transformer-ats-report': 'Potential Transformer ATS',
+  'contactor-vt-test': '7.10.2 Contactor VT Test Sheet (Multi-Unit)',
   'low-voltage-circuit-breaker-electronic-trip-ats-secondary-injection-report': '8-Low Voltage Circuit Breaker Electronic Trip Unit ATS - Secondary Injection',
   'low-voltage-circuit-breaker-electronic-trip-ats-report': '8-Low Voltage Circuit Breaker Electronic Trip Unit ATS - Primary Injection',
   'low-voltage-circuit-breaker-thermal-magnetic-ats-report': '8-Low Voltage Circuit Breaker Thermal-Magnetic ATS',

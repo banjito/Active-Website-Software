@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { BRAND_COLOR } from "@/lib/companyConfig";
-import Aurora from "@/components/ui/Aurora";
+import RosterWave from "@/components/hr/RosterWave";
 import { useAuth } from "../lib/AuthContext";
 import { jobRequisitionsService } from "@/services/hr/jobRequisitionsService";
 import { candidatesService } from "@/services/hr/candidatesService";
@@ -74,26 +74,7 @@ type TodoItem = {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Midnight today, so "upcoming" includes someone starting later the same day. */
-// Blend two hex colors (t = 0 gives a, 1 gives b). Lets the masthead
-// gradient derive its tints from whatever brand color this instance uses.
-function mixHex(a: string, b: string, t: number): string {
-  const parse = (hex: string) => {
-    const v = hex.replace("#", "");
-    const full = v.length === 3 ? v.split("").map((c) => c + c).join("") : v;
-    return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16));
-  };
-  const isHex = (hex: string) => /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex);
-  if (!isHex(a) || !isHex(b)) return t < 0.5 ? a : b;
-  const [ar, ag, ab] = parse(a);
-  const [br, bg, bb] = parse(b);
-  const ch = (x: number, y: number) =>
-    Math.round(x + (y - x) * t)
-      .toString(16)
-      .padStart(2, "0");
-  return `#${ch(ar, br)}${ch(ag, bg)}${ch(ab, bb)}`;
-}
-
-// Tracks the `dark` class on <html> so the aurora can swap modes.
+// Tracks the `dark` class on <html> so the hero animation can swap colors.
 function useIsDark(): boolean {
   const [dark, setDark] = useState(() =>
     document.documentElement.classList.contains("dark"),
@@ -475,13 +456,9 @@ export const HrDashboard: React.FC = () => {
     },
   ];
 
-  // Tan at the edges, light brand orange in the middle. Kept pale so the
-  // greeting and summary stay easy to read on top of it.
+  // Same square grid as the HR Portal card. Brand squares on the light
+  // panel, white on dark, so the light pass shows in both themes.
   const isDark = useIsDark();
-  const auroraStops = useMemo(
-    () => ["#E6CCAB", mixHex(BRAND_COLOR, "#FFFFFF", 0.55), "#E6CCAB"],
-    [],
-  );
 
   const toneBar: Record<TodoItem["tone"], string> = {
     urgent: "bg-brand",
@@ -492,19 +469,9 @@ export const HrDashboard: React.FC = () => {
   return (
     <div className={`-m-6 min-h-[calc(100vh-4rem)] ${CANVAS} ${INK}`}>
       <div className="mx-auto max-w-[1400px] px-6 pb-16 pt-8 md:px-10">
-        {/* Masthead under a slow brand-colored aurora (React Bits Aurora).
-            If WebGL is unavailable the panel just stays plain. */}
+        {/* Masthead under the HR Portal card's roster animation. */}
         <div className={`relative overflow-hidden border ${HAIRLINE} ${SURFACE}`}>
-          <div className="absolute inset-0" aria-hidden>
-            <Aurora
-              colorStops={auroraStops}
-              direction="bottom"
-              height={0.4}
-              blend={0.8}
-              speed={0.6}
-              opacity={isDark ? 0.4 : 0.55}
-            />
-          </div>
+          <RosterWave color={isDark ? "#FFFFFF" : BRAND_COLOR} />
           <div className="relative flex flex-wrap items-end justify-between gap-8 px-6 py-8 md:px-9 md:py-10">
           <div className="min-w-[300px] flex-1">
             <div className="text-[11.5px] font-bold uppercase tracking-[0.11em] text-brand">

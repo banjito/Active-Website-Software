@@ -8,6 +8,7 @@ import {
   getQBOClassReceived,
   getQBOInvoiceSummaries,
   getQBOProfitAndLoss,
+  getQuickBooksStatus,
   type QBOAccountBalance,
   type QBOProfitAndLoss,
 } from '@/services/quickbooksService';
@@ -41,6 +42,8 @@ export interface Kpi {
   error?: string;
   /** Shown as a badge. Unset where it doesn't apply (bank balances, days to bill). */
   basis?: KpiBasis;
+  /** Split by company, shown on hover (Global tiles) */
+  breakdown?: string;
 }
 
 export type KpiBasis = 'cash' | 'accrual';
@@ -124,6 +127,39 @@ export async function saveKpiAccounts(accounts: KpiAccounts): Promise<void> {
 const allExpenses = (pl: QBOProfitAndLoss) => pl.cogs + pl.expenses + pl.otherExpenses;
 const profitPct = (pl: QBOProfitAndLoss) => (pl.income ? pl.netIncome / pl.income : null);
 
+const money = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+interface GlobalPL {
+  total: QBOProfitAndLoss;
+  parts: { name: string; pl: QBOProfitAndLoss }[];
+}
+
+/** Cash-basis profit and loss for every connected QuickBooks company, added together. */
+async function globalProfitAndLoss(start: string, end: string): Promise<GlobalPL> {
+  const companies = ((await getQuickBooksStatus()).companies ?? []).filter((c) => c.realm_id);
+  if (companies.length === 0) throw new Error('QuickBooks is not connected.');
+  const parts = await Promise.all(
+    companies.map(async (c) => ({
+      name: c.company_name || `Company ${c.realm_id}`,
+      pl: await getQBOProfitAndLoss(start, end, undefined, 'Cash', c.realm_id!).catch((err) => {
+        throw new Error(`${c.company_name || 'A company'}: ${err instanceof Error ? err.message : 'could not load'}`);
+      }),
+    })),
+  );
+  const keys: (keyof QBOProfitAndLoss)[] = ['income', 'cogs', 'expenses', 'otherIncome', 'otherExpenses', 'netIncome'];
+  const total = Object.fromEntries(
+    keys.map((k) => [k, parts.reduce((sum, p) => sum + p.pl[k], 0)]),
+  ) as unknown as QBOProfitAndLoss;
+  return { total, parts };
+}
+
+/** Note and hover split for a Global tile */
+const globalRead = (g: GlobalPL, week: string, pick: (pl: QBOProfitAndLoss) => number) => ({
+  value: pick(g.total),
+  note: g.parts.length > 1 ? `${week} · ${g.parts.length} companies` : week,
+  breakdown: g.parts.map((p) => `${p.name}: ${money(pick(p.pl))}`).join('\n'),
+});
+
 const failed = (err: unknown) => (err instanceof Error ? err.message : 'QuickBooks could not be reached.');
 
 /** Jobs completed in the window that were invoiced within BILL_WITHIN_DAYS of completion. */
@@ -175,7 +211,7 @@ export async function loadKpis(
   const [plYtd, plWeek, intlYtd, intlWeek, intlBilled, intlReceived, ar, banks, billing] = await Promise.allSettled([
     // Profit and loss is cash basis, the way the office runs it. Only receivables are accrual.
     getQBOProfitAndLoss(p.ytdStart, p.today, undefined, 'Cash'),
-    getQBOProfitAndLoss(p.weekStart, p.weekEnd, undefined, 'Cash'),
+    globalProfitAndLoss(p.weekStart, p.weekEnd),
     classId.then((id) => getQBOProfitAndLoss(p.ytdStart, p.today, id, 'Cash')),
     classId.then((id) => getQBOProfitAndLoss(p.weekStart, p.weekEnd, id, 'Cash')),
     classId.then((id) => getQBOClassInvoiced(id, p.weekStart, p.weekEnd)),
@@ -190,7 +226,7 @@ export async function loadKpis(
     label: string,
     format: KpiFormat,
     result: PromiseSettledResult<T>,
-    read: (value: T) => { value: number | null; note: string },
+    read: (value: T) => { value: number | null; note: string; breakdown?: string },
     fallbackNote: string,
   ): Kpi => {
     if (result.status === 'rejected') return { id, label, format, value: null, note: fallbackNote, error: failed(result.reason) };
@@ -214,9 +250,9 @@ export async function loadKpis(
       value: list.reduce((sum, a) => sum + a.balance, 0),
       note: 'Owed to us today',
     }), 'Today'),
-    kpi('global_income', 'Global Gross Income', 'money', plWeek, (pl) => ({ value: pl.income, note: week }), week),
-    kpi('global_expenses', 'Global Expenses', 'money', plWeek, (pl) => ({ value: allExpenses(pl), note: week }), week),
-    kpi('global_net', 'Global Net Profit', 'money', plWeek, (pl) => ({ value: pl.netIncome, note: week }), week),
+    kpi('global_income', 'Global Gross Income', 'money', plWeek, (g) => globalRead(g, week, (pl) => pl.income), week),
+    kpi('global_expenses', 'Global Expenses', 'money', plWeek, (g) => globalRead(g, week, allExpenses), week),
+    kpi('global_net', 'Global Net Profit', 'money', plWeek, (g) => globalRead(g, week, (pl) => pl.netIncome), week),
     bank('operating', 'Operating Account Balance', accounts.operating),
     bank('cash_reserve', 'Cash Reserve balance', accounts.cash_reserve),
     kpi('intl_profit_ytd', 'International Profit % YTD', 'pct', intlYtd, (pl) => ({ value: profitPct(pl), note: ytd }), ytd),

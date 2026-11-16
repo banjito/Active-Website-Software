@@ -1,9 +1,10 @@
-// The company's ONE QuickBooks connection.
+// Shared QuickBooks connections, one per company (AMP, Armadillo, Scavenger).
 //
 // QuickBooks allows a single ampOS connection per company. Whoever connects last
-// owns it, and every older login stops working. So ampOS keeps one shared
-// connection (the newest active row in common.quickbooks_integrations) and every
-// employee uses it. Only admins may connect, reconnect, or disconnect it.
+// owns it, and every older login for that company stops working. So ampOS keeps
+// one shared row per company (realm_id) in common.quickbooks_integrations and
+// every employee uses them. The row marked is_primary (AMP) is the default for
+// job linking, billing and change orders. Only admins may connect or disconnect.
 
 import { encode as base64Encode, decode as base64Decode } from 'https://deno.land/std@0.168.0/encoding/base64.ts'
 import { COMPANY_SUPERUSER_EMAILS, isEmployeeEmailDomain } from './companyConfig.ts'
@@ -25,8 +26,8 @@ const RENEWING_MARKER = '1970-01-01T00:00:00+00:00'
 const RENEWING_GIVE_UP_MS = 20 * 1000
 
 export class QuickBooksReconnectError extends Error {
-  constructor() {
-    super('QuickBooks is not connected. An admin needs to connect it in Admin → Integrations.')
+  constructor(message = 'QuickBooks is not connected. An admin needs to connect it in Admin → Integrations.') {
+    super(message)
   }
 }
 
@@ -67,31 +68,49 @@ export async function decryptToken(encryptedToken: string, encryptionKey: string
 const table = (db: Db) => db.schema('common').from('quickbooks_integrations')
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-/** The shared connection, or null when nobody has connected QuickBooks. */
-export async function getCompanyConnection(db: Db): Promise<Connection | null> {
+/** Every connected company, main one first. */
+export async function listConnections(db: Db): Promise<Connection[]> {
   const { data, error } = await table(db)
     .select('*')
     .eq('is_active', true)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-  if (error) throw new Error(`Could not read the QuickBooks connection: ${error.message}`)
-  return data
+    .order('is_primary', { ascending: false })
+    .order('created_at', { ascending: true })
+  if (error) throw new Error(`Could not read the QuickBooks connections: ${error.message}`)
+  return data ?? []
 }
 
 /**
- * A working access token for the shared connection. Renews it when it is about
- * to expire, or when QuickBooks just turned down `rejected` (the stored,
- * encrypted token that was used). Only one request renews at a time.
+ * One company's connection: the one for `realmId`, or the main company when no
+ * realm is given. Null when it isn't connected. Never falls back to a different
+ * company, so AMP work can't land in another company's books.
+ */
+export async function getCompanyConnection(db: Db, realmId?: string | null): Promise<Connection | null> {
+  const rows = await listConnections(db)
+  if (realmId) return rows.find((r) => r.realm_id === realmId) ?? null
+  return rows.find((r) => r.is_primary) ?? null
+}
+
+/**
+ * A working access token for one company's connection (the main one by default).
+ * Renews it when it is about to expire, or when QuickBooks just turned down
+ * `rejected` (the stored, encrypted token that was used). Only one request
+ * renews at a time.
  */
 export async function getAccessToken(
   db: Db,
   encryptionKey: string,
   rejected?: string,
+  realmId?: string | null,
 ): Promise<{ token: string; connection: Connection }> {
   for (let attempt = 0; attempt < 20; attempt++) {
-    const row = await getCompanyConnection(db)
-    if (!row) throw new QuickBooksReconnectError()
+    const row = await getCompanyConnection(db, realmId)
+    if (!row) {
+      throw new QuickBooksReconnectError(
+        realmId
+          ? 'That QuickBooks company is not connected. An admin can connect it in Admin → Integrations.'
+          : undefined,
+      )
+    }
 
     const expiresAt = Date.parse(row.token_expires_at)
     const renewing = expiresAt <= 0
@@ -117,7 +136,7 @@ export async function getAccessToken(
     }
 
     const token = await renewClaimed(db, row, encryptionKey)
-    // null = that login is dead and was removed; try the next one, if any
+    // null = that login is dead and was removed; the next pass reports it
     if (token) return { token, connection: row }
   }
   throw new Error('QuickBooks is busy renewing its login. Try again in a moment.')

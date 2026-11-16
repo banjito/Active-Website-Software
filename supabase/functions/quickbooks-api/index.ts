@@ -56,14 +56,15 @@ serve(async (req) => {
     // One shared company connection, so only employees may use it
     if (!canUseQuickBooks(user)) return json({ error: 'Only employees can use QuickBooks.' }, 403)
 
-    let body: { endpoint?: string; method?: string; data?: unknown }
+    // realm_id picks the company; left out, it's the main company (AMP)
+    let body: { endpoint?: string; method?: string; data?: unknown; realm_id?: string }
     try {
       const raw = await req.json()
       body = raw && typeof raw === 'object' ? raw : {}
     } catch {
       return json({ error: 'Invalid or missing request body', details: 'Body must be valid JSON with an "endpoint" field' }, 400)
     }
-    const { endpoint, method = 'GET', data } = body
+    const { endpoint, method = 'GET', data, realm_id: realmId } = body
 
     if (!endpoint || typeof endpoint !== 'string' || !endpoint.trim()) {
       return json({
@@ -87,12 +88,12 @@ serve(async (req) => {
       })
     }
 
-    let { token, connection } = await getAccessToken(supabase, encryptionKey)
+    let { token, connection } = await getAccessToken(supabase, encryptionKey, undefined, realmId)
     let apiResponse = await callIntuit(connection, token)
 
     // QuickBooks turned the login down. Renew it once and retry (nothing ran on a 401).
     if (apiResponse.status === 401) {
-      ;({ token, connection } = await getAccessToken(supabase, encryptionKey, connection.access_token))
+      ;({ token, connection } = await getAccessToken(supabase, encryptionKey, connection.access_token, realmId))
       apiResponse = await callIntuit(connection, token)
     }
 

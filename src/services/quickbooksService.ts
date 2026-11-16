@@ -7,15 +7,21 @@ interface QuickBooksIntegration {
   environment: 'sandbox' | 'production';
   expires_at: string;
   created_at: string;
-  /** Who connected it. One connection is shared by the whole company. */
+  /** Who connected it. Each company's connection is shared by everyone. */
   connected_by: string | null;
+  /** The main company (AMP): job linking, billing, change orders, A/R */
+  is_primary: boolean;
 }
 
 export interface QuickBooksConnectionStatus {
+  /** True when the main company is connected */
   connected: boolean;
-  /** Admins only: connecting replaces the connection for everyone */
+  /** Admins only: connecting replaces that company's connection for everyone */
   can_manage?: boolean;
+  /** The main company */
   integration?: QuickBooksIntegration;
+  /** Every connected company, main one first */
+  companies?: QuickBooksIntegration[];
 }
 
 /**
@@ -183,16 +189,18 @@ export async function getQuickBooksStatus(): Promise<QuickBooksConnectionStatus>
 /**
  * Disconnect QuickBooks integration
  */
-export async function disconnectQuickBooks(): Promise<boolean> {
+export async function disconnectQuickBooks(realmId?: string): Promise<boolean> {
   try {
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    
+
     if (sessionError || !session) {
       throw new Error('Not authenticated');
     }
 
+    // No realmId = the main company
     const { data, error } = await supabase.functions.invoke('quickbooks-oauth', {
       method: 'DELETE',
+      body: { realm_id: realmId },
       headers: {
         Authorization: `Bearer ${session.access_token}`,
       },
@@ -209,6 +217,18 @@ export async function disconnectQuickBooks(): Promise<boolean> {
   }
 }
 
+/** Make a connected company the main one (job linking, billing, change orders, A/R). */
+export async function setMainQuickBooksCompany(realmId: string): Promise<boolean> {
+  const { data, error } = await supabase.functions.invoke('quickbooks-oauth', {
+    body: { action: 'set_primary', realm_id: realmId },
+  });
+  if (error) {
+    console.error('Error changing the main QuickBooks company:', error);
+    return false;
+  }
+  return data?.success || false;
+}
+
 /**
  * Make a QuickBooks API call via Edge Function (to avoid CORS)
  * This function uses rate limiting to prevent 429 errors
@@ -216,7 +236,9 @@ export async function disconnectQuickBooks(): Promise<boolean> {
 export async function quickBooksApiCall(
   endpoint: string,
   method: string = 'GET',
-  data?: any
+  data?: any,
+  /** Which QuickBooks company; left out, the main one (AMP) */
+  realmId?: string,
 ): Promise<any> {
   return rateLimiter.execute(async () => {
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -228,7 +250,7 @@ export async function quickBooksApiCall(
     console.log(`[QB API] Calling: ${method} ${endpoint}`);
     
     const { data: response, error } = await supabase.functions.invoke('quickbooks-api', {
-      body: { endpoint, method, data },
+      body: { endpoint, method, data, realm_id: realmId },
       headers: {
         Authorization: `Bearer ${session.access_token}`,
       },
@@ -1137,6 +1159,8 @@ export async function getQBOProfitAndLoss(
   end: string,
   classId?: string,
   basis: 'Cash' | 'Accrual' = 'Accrual',
+  /** Which QuickBooks company; left out, the main one (AMP) */
+  realmId?: string,
 ): Promise<QBOProfitAndLoss> {
   const params = new URLSearchParams({
     start_date: start,
@@ -1145,7 +1169,12 @@ export async function getQBOProfitAndLoss(
     minorversion: '65',
   });
   if (classId) params.set('class', classId);
-  const report = await quickBooksApiCall(`/v3/company/{realmId}/reports/ProfitAndLoss?${params.toString()}`);
+  const report = await quickBooksApiCall(
+    `/v3/company/{realmId}/reports/ProfitAndLoss?${params.toString()}`,
+    'GET',
+    undefined,
+    realmId,
+  );
   const totals: Record<string, number> = {};
   for (const row of report?.Rows?.Row ?? []) {
     const cols = row?.Summary?.ColData;

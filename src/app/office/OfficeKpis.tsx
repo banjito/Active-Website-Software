@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { RefreshCw, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
-import { fmtMoney, fmtPct } from '@/app/pm-dashboard/shared';
+import { fmtMoney } from '@/app/pm-dashboard/shared';
 import type { QBOAccountBalance } from '@/services/quickbooksService';
 import {
   fetchKpiAccounts,
@@ -32,7 +32,9 @@ function Dots() {
   );
 }
 
-const show = (kpi: Kpi) => (kpi.value == null ? 'n/a' : kpi.format === 'pct' ? fmtPct(kpi.value) : fmtMoney(kpi.value));
+// Percents keep two decimals (−12.75%), matching how the office reports them
+const show = (kpi: Kpi) =>
+  kpi.value == null ? 'n/a' : kpi.format === 'pct' ? `${(kpi.value * 100).toFixed(2)}%` : fmtMoney(kpi.value);
 
 export function OfficeKpis() {
   const [kpis, setKpis] = useState<Kpi[]>([]);
@@ -137,7 +139,7 @@ export function OfficeKpis() {
             <div
               key={kpi.id}
               className="flex min-h-[6.5rem] flex-col gap-1 border-b border-r border-neutral-100 p-3 dark:border-neutral-700"
-              title={kpi.error}
+              title={kpi.error ?? kpi.breakdown}
             >
               <span className="flex items-start justify-between gap-1">
                 <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">{kpi.label ??' '}</span>

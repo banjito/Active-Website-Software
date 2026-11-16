@@ -14,10 +14,13 @@ The QuickBooks integration connects an ampOS job to a QuickBooks **project**, so
 
 You are returned to ampOS with the connection active.
 
-There is **one connection for the whole company**. An admin connects once, and every employee's QuickBooks features use it. Nobody connects their own account.
+There is **one connection per QuickBooks company**, shared by everyone. An admin connects each company once, and every employee's QuickBooks features use it. Nobody connects their own account.
+
+- **Main company:** job linking, billing, change orders and A/R use it. Pick it with **Make main** in the Companies list.
+- **More companies:** click **Connect another company** and pick it when QuickBooks asks. The Office page's Global tiles add up every connected company; hover a tile to see the split.
 
 ::: warning
-QuickBooks allows only one ampOS connection per company. Connecting again replaces the current one for everyone, so only admins can connect or disconnect.
+QuickBooks allows only one ampOS connection per company. Reconnecting a company replaces its connection for everyone, so only admins can connect or disconnect.
 :::
 
 ::: note

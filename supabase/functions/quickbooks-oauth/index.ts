@@ -5,11 +5,14 @@ import {
   canUseQuickBooks,
   encryptToken,
   getCompanyConnection,
+  listConnections,
   QB_TOKEN_URL,
+  type Connection,
 } from '../_shared/quickbooksConnection.ts'
 
-// One shared QuickBooks connection for the whole company (see _shared/quickbooksConnection.ts).
-// GET: its status (any employee). POST/DELETE: connect or disconnect it (admins only).
+// Shared QuickBooks connections, one per company (see _shared/quickbooksConnection.ts).
+// GET: status of every company (any employee).
+// POST/DELETE: connect, disconnect, or pick the main company (admins only).
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -68,36 +71,46 @@ serve(async (req) => {
 
     const canManage = canManageQuickBooks(user)
 
-    // GET: status of the company connection
+    // GET: status of every connected company. `integration` is the main one.
     if (req.method === 'GET') {
-      if (!canUseQuickBooks(user)) return json({ connected: false, can_manage: false })
+      if (!canUseQuickBooks(user)) return json({ connected: false, can_manage: false, companies: [] })
 
-      const integration = await getCompanyConnection(supabase)
-      if (!integration) return json({ connected: false, can_manage: canManage })
-
-      const { data: owner } = await supabase.auth.admin.getUserById(integration.user_id)
-      const meta = owner?.user?.user_metadata ?? {}
-
-      return json({
-        connected: true,
-        can_manage: canManage,
-        integration: {
-          id: integration.id,
-          realm_id: integration.realm_id,
-          company_name: integration.company_name,
-          environment: integration.environment,
-          expires_at: integration.token_expires_at,
-          created_at: integration.created_at,
+      const describe = async (row: Connection) => {
+        const { data: owner } = await supabase.auth.admin.getUserById(row.user_id)
+        const meta = owner?.user?.user_metadata ?? {}
+        return {
+          id: row.id,
+          realm_id: row.realm_id,
+          company_name: row.company_name,
+          environment: row.environment,
+          expires_at: row.token_expires_at,
+          created_at: row.created_at,
+          is_primary: !!row.is_primary,
           connected_by: meta.name || meta.full_name || owner?.user?.email || null,
-        },
-      })
+        }
+      }
+      const companies = await Promise.all((await listConnections(supabase)).map(describe))
+      const main = companies.find((c) => c.is_primary)
+      return json({ connected: !!main, can_manage: canManage, integration: main, companies })
     }
 
     if (!canManage) return json({ error: ADMINS_ONLY }, 403)
 
-    // DELETE: disconnect for everyone
+    let body: any = {}
+    try {
+      body = await req.json()
+    } catch {
+      // No body or invalid JSON
+    }
+
+    // DELETE: disconnect one company for everyone (the main one when no realm_id is given)
     if (req.method === 'DELETE') {
-      const { error: deleteError } = await table().delete().not('id', 'is', null)
+      const target = await getCompanyConnection(supabase, body.realm_id)
+      if (!target) return json({ error: 'That QuickBooks company is not connected.' }, 404)
+
+      const { error: deleteError } = target.realm_id
+        ? await table().delete().eq('realm_id', target.realm_id)
+        : await table().delete().eq('id', target.id)
       if (deleteError) {
         return json({ error: 'Failed to disconnect QuickBooks', details: deleteError.message }, 500)
       }
@@ -105,13 +118,6 @@ serve(async (req) => {
     }
 
     if (req.method === 'POST') {
-      let body: any = {}
-      try {
-        body = await req.json()
-      } catch {
-        // No body or invalid JSON
-      }
-
       // get_oauth_url: build the sign-in link (keeps the client ID server-side)
       if (body.action === 'get_oauth_url') {
         const params = new URLSearchParams({
@@ -123,6 +129,19 @@ serve(async (req) => {
           state: 'quickbooks-oauth',
         })
         return json({ authUrl: `https://appcenter.intuit.com/connect/oauth2?${params.toString()}`, environment })
+      }
+
+      // set_primary: pick the main company (job linking, billing, change orders, A/R)
+      if (body.action === 'set_primary') {
+        const target = body.realm_id ? await getCompanyConnection(supabase, body.realm_id) : null
+        if (!target) return json({ error: 'That QuickBooks company is not connected.' }, 404)
+
+        const { error: clearError } = await table().update({ is_primary: false }).eq('is_primary', true)
+        const { error: setError } = clearError
+          ? { error: clearError }
+          : await table().update({ is_primary: true }).eq('id', target.id)
+        if (setError) return json({ error: 'Could not change the main company', details: setError.message }, 500)
+        return json({ success: true })
       }
 
       // Otherwise: exchange the sign-in code for tokens
@@ -150,13 +169,22 @@ serve(async (req) => {
       }
 
       const tokenData: TokenResponse = await tokenResponse.json()
+      const realm = realmId || tokenData.realmId
+      if (!realm) return json({ error: 'QuickBooks did not say which company was connected. Try again.' }, 400)
 
       if (!encryptionKey) {
         throw new Error('QB_ENCRYPTION_KEY not configured. Set it as a Supabase secret: supabase secrets set QB_ENCRYPTION_KEY=your_32_char_key')
       }
 
-      // This user's old rows go first (one active row per user is enforced by the table)
-      await table().delete().eq('user_id', user.id)
+      // Reconnecting a company keeps its "main" status. The very first company becomes main.
+      // Any other new company is not main until an admin says so, so AMP work never
+      // lands in another company's books by accident.
+      const existing = await listConnections(supabase)
+      const others = existing.filter((r) => r.realm_id !== realm)
+      const isPrimary = existing.some((r) => r.realm_id === realm && r.is_primary) || others.length === 0
+
+      // QuickBooks just cancelled any older login for this company
+      await table().delete().eq('realm_id', realm)
 
       const { data: integration, error: dbError } = await table()
         .insert({
@@ -164,9 +192,10 @@ serve(async (req) => {
           access_token: await encryptToken(tokenData.access_token, encryptionKey),
           refresh_token: await encryptToken(tokenData.refresh_token, encryptionKey),
           token_expires_at: new Date(Date.now() + (tokenData.expires_in * 1000)).toISOString(),
-          realm_id: realmId || tokenData.realmId || null,
+          realm_id: realm,
           environment,
           is_active: true,
+          is_primary: isPrimary,
         })
         .select()
         .single()
@@ -176,8 +205,17 @@ serve(async (req) => {
         return json({ error: 'Failed to store tokens', details: dbError.message }, 500)
       }
 
-      // QuickBooks just cancelled every older login, so remove them
-      await table().delete().neq('id', integration.id)
+      // Store the company name now, so the company list can show it
+      try {
+        const base = environment === 'production' ? 'https://quickbooks.api.intuit.com' : 'https://sandbox-quickbooks.api.intuit.com'
+        const info = await fetch(`${base}/v3/company/${realm}/companyinfo/${realm}`, {
+          headers: { 'Authorization': `Bearer ${tokenData.access_token}`, 'Accept': 'application/json' },
+        }).then((r) => (r.ok ? r.json() : null))
+        const companyName = info?.CompanyInfo?.CompanyName
+        if (companyName) await table().update({ company_name: companyName }).eq('id', integration.id)
+      } catch (err) {
+        console.error('Could not read the QuickBooks company name:', err)
+      }
 
       return json({
         success: true,
@@ -186,6 +224,7 @@ serve(async (req) => {
           id: integration.id,
           realm_id: integration.realm_id,
           environment: integration.environment,
+          is_primary: isPrimary,
         },
       })
     }

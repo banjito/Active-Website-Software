@@ -23,6 +23,7 @@ import {
   Copy,
   Settings,
   Sparkles,
+  Eye,
   EyeOff,
   FileCode2,
   Columns2,
@@ -518,6 +519,12 @@ const SortableSection: React.FC<SortableSectionProps> = ({
               <span className="hidden md:flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
                 <EyeOff className="w-3 h-3" />
                 Hidden in print
+              </span>
+            )}
+            {section.showWhen && (
+              <span className="hidden md:flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
+                <Eye className="w-3 h-3" />
+                Conditional
               </span>
             )}
           </div>

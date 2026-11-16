@@ -16,6 +16,7 @@
 import type { CustomFormStructure, FieldConfig, SectionConfig } from '@/lib/types/customForms';
 import { getCellValue } from '@/lib/customForms/formCellResolution';
 import { resolveRowCount, rowStateKey } from '@/lib/customForms/runtime/layout';
+import { isSectionShown } from '@/lib/customForms/sectionVisibility';
 
 export type ResultTest = 'atLeast' | 'atMost' | 'between' | 'withinPercent';
 
@@ -157,6 +158,9 @@ export function collectFormResults(
   for (const section of sections) {
     const resultColumns = (section.columns ?? []).filter((c) => c.field.resultRule);
     if (!resultColumns.length) continue;
+    // A table turned off (wrong battery type, test not ordered) keeps its data
+    // but never decides the report's status.
+    if (!isSectionShown(section, sections, formData)) continue;
     const rows = section.conditionalRows?.length ?? resolveRowCount(section);
     for (let r = 0; r < rows; r++) {
       for (const column of resultColumns) {

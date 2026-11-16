@@ -22,6 +22,7 @@ import {
 } from "@/lib/types/customForms";
 import { classifySection } from "./runtime/sectionKind";
 import { resolveRowCount } from "./runtime/layout";
+import { isSectionShown } from "./sectionVisibility";
 import { getSectionReferenceCode } from "./formCellResolution";
 import { documentFromV1 } from "./v2/fromV1";
 import { normalizeLayout } from "./layoutGroups";
@@ -635,6 +636,8 @@ export function validateInstanceStructure(
     value === undefined || value === null || value === "";
 
   for (const section of structure.sections) {
+    // A table turned off can't be filled in, so it can't be missing anything.
+    if (!isSectionShown(section, structure.sections, runtime)) continue;
     for (const field of section.fields ?? []) {
       if (!field.required) continue;
       if (isBlank(runtime[section.id]?.[field.id])) {

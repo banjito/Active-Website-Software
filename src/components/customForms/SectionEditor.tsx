@@ -35,6 +35,7 @@ import { ResultRuleEditor, DEFAULT_RESULT_RULE } from "./ResultRuleEditor";
 import { EquipmentPickerSettings } from "./EquipmentPickerSettings";
 import { AssetSourceSelect } from "./AssetSourceSelect";
 import { ChartSettings } from "./ChartSettings";
+import { ShowWhenSettings } from "./ShowWhenSettings";
 import {
   CellDefaultInput,
   HINT_TITLE,
@@ -663,6 +664,7 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                 Show in printed report
               </label>
             </div>
+            <ShowWhenSettings section={section} allSections={allSections} onUpdate={onUpdate} />
             {!!section.columns?.length && (
               <div className="flex items-center gap-2">
                 <input

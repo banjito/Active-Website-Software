@@ -5,8 +5,10 @@ import { compileExpressionProgram, type ExpressionProgramDefinition, type Compil
 import { EXPRESSION_ENGINE_VERSION, EXPRESSION_LIMITS, type ExpressionValue, type Result, type ValueType } from "@/lib/customForms/expressions/types";
 import { expressionReferenceId, translateV1Expression } from "@/lib/customForms/expressions/v1-adapter";
 import { VALID_FIXTURES } from "@/lib/customForms/__fixtures__/v1Templates";
-import { evaluateFormula } from "@/lib/customForms/formCellResolution";
-import { compileResultRule, worstResult, type ResultRule } from "@/lib/customForms/resultRules";
+import { evaluateFormula, getSectionReferenceCode } from "@/lib/customForms/formCellResolution";
+import { collectFormResults, compileResultRule, hasResultColumns, worstResult, type ResultRule } from "@/lib/customForms/resultRules";
+import { DEFAULT_RESULT_FIELD_OPTIONS, resultFieldColor, typeChoicePatch } from "@/lib/customForms/resultField";
+import { seedReportLayout, usesSolidResultColors } from "@/lib/customForms/reportLayout";
 import { calibrationState, equipmentWarnings, reportTestDate, effectiveDueDate, indexCalibrationRecords, isEquipmentColumn, resolveEquipmentFill, rowDueDate } from "@/lib/customForms/equipment";
 import { applyAssetSources } from "@/lib/customForms/assetFill";
 import { chartData } from "@/lib/customForms/chart";
@@ -359,6 +361,19 @@ check("captured insulation-resistance fixture retains its numeric TCF result", (
   assert.equal(unwrap(evaluate(translated.source, { [irReference]: values["sec-ir_row0"].reading, [tcfReference]: values["sec-job"].tcf }, { [irReference]: "number", [tcfReference]: "number" })), 1200);
   assert.equal(evaluateFormula(formula, values, "sec-ir", 0, sections), "1200");
 });
+check("whole-column {Code.Cn.all} feeds avg/min and skips blank rows", () => {
+  const colSections: any[] = [{ id: "si", title: "Straps Impedance", componentType: "custom-table",
+    columns: [{ id: "a", label: "Strap", field: { id: "a" } }, { id: "imp", label: "Imp", field: { id: "imp" } }] }];
+  const code = getSectionReferenceCode(colSections[0]);
+  const dev = `if(isnull({${code}.C2}) or isnull(avg({${code}.C2.all})) or avg({${code}.C2.all}) == 0, null, round(({${code}.C2} - avg({${code}.C2.all})) / avg({${code}.C2.all}) * 100, 2))`;
+  const data = { si_row0: { imp: "10" }, si_row1: { imp: "12" }, si_row2: { imp: "" }, si_row3: { imp: "14" } };
+  assert.equal(evaluateFormula(dev, data, "si", 0, colSections), "-16.67");
+  assert.equal(evaluateFormula(dev, data, "si", 1, colSections), "0");
+  assert.equal(evaluateFormula(dev, data, "si", 2, colSections), "");
+  assert.equal(evaluateFormula(dev, data, "si", 3, colSections), "16.67");
+  assert.equal(evaluateFormula(dev, {}, "si", 0, colSections), "");
+  assert.equal(evaluateFormula(`min({${code}.C2.all})`, data, "si", 0, colSections), "10");
+});
 check("case-insensitive friendly references and exact section ids agree", () => {
   assert.equal(unwrap(translateV1Expression("{ir.C2.R1} * {jd.TCF}", context)).source, unwrap(translateV1Expression("{sec-ir.C2.R1} * {sec-job.tcf}", context)).source);
 });
@@ -680,6 +695,21 @@ check("the report status is the worst result", () => {
   assert.equal(worstResult(["PASS", "LIMITED SERVICE"]), "LIMITED SERVICE");
   assert.equal(worstResult(["LIMITED SERVICE", "FAIL", "PASS"]), "FAIL");
   assert.equal(worstResult(["", "n/a"]), null);
+});
+check("Result (color-coded) fields feed the report status, defaults included", () => {
+  const result = { id: "res", label: "Result", type: "select", colorCoded: true, options: DEFAULT_RESULT_FIELD_OPTIONS } as any;
+  const structure = { settings: {}, sections: [{ id: "t", title: "T", componentType: "custom-table", order: 0, rows: 2,
+    columns: [{ id: "c-res", label: "Result", field: result }], cellDefaults: { "row1_c-res": "INVESTIGATE" } }] } as any;
+  assert.equal(hasResultColumns(structure), true);
+  assert.equal(worstResult(collectFormResults(structure, { t_row0: { res: "PASS" } })), "LIMITED SERVICE");
+  assert.equal(worstResult(collectFormResults(structure, { t_row0: { res: "FAIL" } })), "FAIL");
+  assert.equal(resultFieldColor(result, "INVESTIGATE"), "#eab308");
+  assert.equal(resultFieldColor(result, ""), null);
+  assert.deepEqual(typeChoicePatch({ id: "x", label: "x", type: "select", colorCoded: true } as any, "text"), { type: "text", colorCoded: undefined });
+  // Solid result colours reach new reports only; issued ones keep their look.
+  assert.equal(usesSolidResultColors(seedReportLayout({})), true);
+  assert.equal(usesSolidResultColors({ __reportLayout: { version: 2 } }), false);
+  assert.equal(usesSolidResultColors({}), false);
 });
 check("exp computes the exponential, and overflow is an error not infinity", () => {
   assert.equal(unwrap(evaluate("exp(0)", {}, {})), 1);

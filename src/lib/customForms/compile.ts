@@ -25,6 +25,7 @@ import { resolveRowCount } from "./runtime/layout";
 import { getSectionReferenceCode } from "./formCellResolution";
 import { documentFromV1 } from "./v2/fromV1";
 import { normalizeLayout } from "./layoutGroups";
+import { cleanCustomResultOptions } from "./resultOptions";
 import { validateDocumentV2 } from "./v2/validate";
 import { compileFormExpressions } from "@/lib/customForms/expressions/form-program";
 
@@ -163,6 +164,8 @@ function validateReference(
       return;
     }
     const rowPart = rest[1];
+    // {Code.C3.all}: the whole column, for avg/min/max/sum.
+    if (rowPart && /^all$/i.test(rowPart)) return;
     if (rowPart) {
       const rowMatch = /^R(\d+)$/i.exec(rowPart);
       if (!rowMatch) {
@@ -405,6 +408,7 @@ function validateSettings(
   }
   const allowed = new Set([
     "includePassFail",
+    "customResultOptions",
     "includeJobInfo",
     "includePrintHeader",
     "pageBreakAfterSection",
@@ -522,6 +526,10 @@ export function normalizeStructure(
     ...(layout ? { layout: structuredClone(layout) } : {}),
     settings: {
       includePassFail: structure.settings?.includePassFail !== false,
+      // Kept only when the template added some, so older payloads are unchanged.
+      ...(cleanCustomResultOptions(structure.settings?.customResultOptions).length
+        ? { customResultOptions: cleanCustomResultOptions(structure.settings?.customResultOptions) }
+        : {}),
       includeJobInfo: structure.settings?.includeJobInfo !== false,
       includePrintHeader: structure.settings?.includePrintHeader !== false,
       pageBreakAfterSection:

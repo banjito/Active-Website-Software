@@ -99,6 +99,9 @@ export function getReferenceDescription(path: string, sections: SectionConfig[])
     if (cMatch && rMatch) {
       return `${readableSection}, column ${cMatch[1]}, row ${rMatch[1]}`;
     }
+    if (cMatch && /^all$/i.test(c ?? '')) {
+      return `${readableSection}, column ${cMatch[1]}, all rows`;
+    }
     if (b === 'sameRow') {
       const field = sec?.fields?.find((f) => f.id === c) ?? (sec?.field?.id === c ? sec.field : null);
       const fieldLabel = field && 'label' in field ? (field as { label?: string }).label : c;
@@ -218,6 +221,39 @@ function resolveRef(
   return null;
 }
 
+/** {Code.C3.all}: a whole table column. Null for any other reference. */
+function resolveColumnRef(
+  parts: string[],
+  sections: SectionConfig[]
+): { sectionId: string; fieldId: string } | null {
+  if (parts.length !== 3 || !/^all$/i.test(parts[2])) return null;
+  const cMatch = parts[1].match(/^C(\d+)$/i);
+  if (!cMatch) return null;
+  const sec = sections.find((s) => sectionCodeMatches(s, parts[0]));
+  const col = sec?.columns?.[parseInt(cMatch[1], 10) - 1];
+  if (!sec || !col) return null;
+  return { sectionId: sec.id, fieldId: col.field?.id ?? col.id };
+}
+
+/** Every saved row's value for one column, in row order. */
+function columnReadings(
+  formData: Record<string, Record<string, any>>,
+  sectionId: string,
+  fieldId: string
+): { value: any; rowIndex: number }[] {
+  if (!formData || typeof formData !== 'object') return [];
+  const prefix = `${sectionId}_row`;
+  const out: { value: any; rowIndex: number }[] = [];
+  for (const key of Object.keys(formData)) {
+    if (!key.startsWith(prefix)) continue;
+    const rest = key.slice(prefix.length);
+    if (!/^\d+$/.test(rest)) continue;
+    const rowIndex = Number(rest);
+    out.push({ value: getValueAt(formData, sectionId, fieldId, rowIndex), rowIndex });
+  }
+  return out.sort((a, b) => a.rowIndex - b.rowIndex);
+}
+
 /** Parse a cell value to a number for formula use (handles "", "10", "1,000", 10, "<2200", ">100", "≤500"). */
 function parseNumericValue(val: any): number {
   if (val === undefined || val === null) return NaN;
@@ -288,6 +324,21 @@ function substituteRefsTracked(
     // {IR.C3 in MΩ}: the reading converted into MΩ from the unit it was entered in.
     const { path, unit } = splitUnitRef(rawPath);
     const parts = path.split('.').filter(Boolean);
+    // {IR.C3.all}: every filled-in reading in the column, for avg/min/max/sum.
+    const column = resolveColumnRef(parts, sections);
+    if (column) {
+      const numbers = columnReadings(formData, column.sectionId, column.fieldId).flatMap(({ value, rowIndex }) => {
+        let num = parseNumericValue(value);
+        if (unit && isFinite(num)) {
+          const resolvedCell = { sectionId: column.sectionId, fieldId: column.fieldId, rowIndex };
+          const converted = convertReading(num, refSourceUnit(formData, sections, resolvedCell, value), unit);
+          num = converted == null ? NaN : converted;
+        }
+        return isFinite(num) ? [String(num)] : [];
+      });
+      refs.push({ isCell: true, blank: numbers.length === 0 });
+      return numbers.length ? numbers.join(', ') : 'null';
+    }
     const resolved = resolveRef(parts, sections, currentRowIndex);
     if (resolved) {
       const val = getValueAt(formData, resolved.sectionId, resolved.fieldId, resolved.rowIndex);

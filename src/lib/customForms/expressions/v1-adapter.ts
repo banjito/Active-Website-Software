@@ -55,6 +55,21 @@ export function translateV1Expression(source: string, context: V1TranslationCont
     const section = matches[0];
     let sourceUnit: string | undefined;
     const columnMatch = second.match(/^C(\d+)$/i);
+    // {IR.C3.all}: every row of the column, as a list for avg/min/max/sum.
+    if (columnMatch && third !== undefined && /^all$/i.test(third)) {
+      const column = section.columns?.[Number(columnMatch[1]) - 1];
+      const rowIds = context.rowIdsBySection.get(section.id) ?? [];
+      if (!column || !rowIds.length) { reject(`Reference "${token.id}" needs an existing column and persisted row ids.`); continue; }
+      if (targetUnit) { reject(`"${token.id}": unit conversion on a whole column isn't supported in typed calculations.`); continue; }
+      const ids = rowIds.map((rowId) => {
+        const ref: StableExpressionReference = { scope: "cell", tableId: section.id, rowId, columnId: column.id };
+        const id = expressionReferenceId(ref);
+        references.set(id, ref);
+        return `{${id}}`;
+      });
+      replacements.push({ start: token.start, end: token.end, text: ids.join(", ") });
+      continue;
+    }
     let reference: StableExpressionReference;
     if (columnMatch || third !== undefined) {
       let rowIndex: number;

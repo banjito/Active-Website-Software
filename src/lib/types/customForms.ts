@@ -96,7 +96,10 @@ export interface FieldConfig {
   required?: boolean;
   readOnly?: boolean;
   defaultValue?: any;
-  options?: { label: string; value: string }[]; // For select fields
+  /** For select fields. `color` is used when the field is colorCoded. */
+  options?: { label: string; value: string; color?: string }[];
+  /** "Result" input type: a dropdown whose choices are colour-coded (resultField.ts). */
+  colorCoded?: boolean;
   unit?: string;
   unitOptions?: string[]; // For fields with multiple unit options
   placeholder?: string;
@@ -414,6 +417,8 @@ export interface CustomFormSettings {
   /** The equipment this template tests; the builder offers its components first. */
   equipmentType?: string;
   includePassFail: boolean;
+  /** Extra result choices beyond PASS / FAIL / LIMITED SERVICE (resultOptions.ts). */
+  customResultOptions?: { label: string; color: string }[];
   includeJobInfo: boolean;
   includePrintHeader: boolean;
   pageBreakAfterSection?: boolean;

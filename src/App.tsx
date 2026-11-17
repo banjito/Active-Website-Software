@@ -104,6 +104,7 @@ import FormBuilder from "./components/customForms/FormBuilder";
 import ComponentEditor from "./components/customForms/ComponentEditor";
 import CustomFormLookupTables from "./pages/CustomFormLookupTables";
 import CustomFormFiller from "./components/customForms/CustomFormFiller";
+import FormVersionCompare from "./components/customForms/FormVersionCompare";
 import CustomFormTemplates from "./pages/CustomFormTemplates";
 import CustomFormsHome from "./pages/CustomFormsHome";
 import CustomFormPreview from "./pages/CustomFormPreview";
@@ -908,6 +909,14 @@ function App() {
                     element={
                       <RequireAuth>
                         <CustomFormFiller />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/jobs/:jobId/custom-form/:templateId/:instanceId/form-version"
+                    element={
+                      <RequireAuth>
+                        <FormVersionCompare />
                       </RequireAuth>
                     }
                   />

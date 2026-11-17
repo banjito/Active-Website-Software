@@ -9,6 +9,11 @@ import React, {
 } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import {
+  FORM_VERSION_UPDATED_EVENT,
+  fetchOutdatedFormVersions,
+  type OutdatedForm,
+} from "@/lib/customForms/formVersionStatus";
+import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
@@ -901,6 +906,27 @@ export default function JobDetail() {
       window.removeEventListener(FIELD_FLAGS_CHANGED_EVENT, load);
     };
     // jobAssets is read through the key so unrelated edits don't refetch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobAssetFlagKey]);
+  // Custom form reports whose form has a newer published version, for the
+  // "Newer form" tag. Keyed on status: approved/sent ones are only told, not offered.
+  const [outdatedForms, setOutdatedForms] = useState<Record<string, OutdatedForm>>({});
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const found = await fetchOutdatedFormVersions(jobAssets as any[]);
+        if (!cancelled) setOutdatedForms(found);
+      } catch {
+        /* only a hint */
+      }
+    };
+    load();
+    window.addEventListener(FORM_VERSION_UPDATED_EVENT, load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(FORM_VERSION_UPDATED_EVENT, load);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobAssetFlagKey]);
   /**
@@ -12707,6 +12733,24 @@ export default function JobDetail() {
                                                     : "fields flagged"}
                                                 </span>
                                               )}
+                                              {outdatedForms[asset.id] &&
+                                                (outdatedForms[asset.id].locked ? (
+                                                  <span
+                                                    className="ml-2 inline-flex items-center rounded-none bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-600 whitespace-nowrap dark:bg-neutral-800 dark:text-neutral-300"
+                                                    title={`Form v${outdatedForms[asset.id].latest} is published. Approved and sent reports keep the version they were issued with (v${outdatedForms[asset.id].current}).`}
+                                                  >
+                                                    Newer form exists
+                                                  </span>
+                                                ) : (
+                                                  <Link
+                                                    to={outdatedForms[asset.id].comparePath}
+                                                    className="ml-2 inline-flex items-center rounded-none border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-xs font-semibold text-amber-800 whitespace-nowrap hover:border-brand hover:text-brand dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
+                                                    title={`Uses form v${outdatedForms[asset.id].current}. Compare with v${outdatedForms[asset.id].latest} and update.`}
+                                                  >
+                                                    Newer form v
+                                                    {outdatedForms[asset.id].latest}
+                                                  </Link>
+                                                ))}
                                             </TableCell>
                                             <TableCell className="font-medium">
                                               {getAssetParts(asset)

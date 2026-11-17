@@ -2602,6 +2602,108 @@ section("Job Details start values");
   );
 }
 
+section("Form version update (compare & update)");
+{
+  const {
+    diffFormVersions,
+    upgradeRuntimeData,
+    upgradedStatus,
+    isFormVersionLocked,
+  } = await import("@/lib/customForms/versionUpgrade");
+  const { adaptStoredData, buildStoredData, mergeRuntimeIntoState, projectStateToRuntime } =
+    await import("@/lib/customForms/instanceState");
+
+  const oldStructure: any = {
+    settings: {},
+    sections: [
+      { id: "jd", componentType: "job-info", title: "Job Details", order: 0, showInPrint: true,
+        fields: [{ id: "customer", label: "Customer", type: "text" }, { id: "oldNote", label: "Old note", type: "text" }] },
+      { id: "ir", componentType: "table", title: "Insulation Resistance", order: 1, showInPrint: true, rows: 2,
+        columns: [{ id: "c1", label: "A-B", field: { id: "c1", label: "A-B", type: "number" } }] },
+      { id: "gone", componentType: "comments", title: "Remarks", order: 2, showInPrint: true,
+        field: { id: "text", label: "Remarks", type: "textarea" } },
+    ],
+  };
+  const newStructure: any = {
+    settings: {},
+    sections: [
+      { id: "jd", componentType: "job-info", title: "Job Information", order: 0, showInPrint: true,
+        fields: [{ id: "customer", label: "Customer name", type: "text" }] },
+      { id: "ir", componentType: "table", title: "Insulation Resistance", order: 1, showInPrint: true, rows: 2,
+        columns: [
+          { id: "c1", label: "A-B", field: { id: "c1", label: "A-B", type: "number" } },
+          { id: "c2", label: "Units", field: { id: "c2", label: "Units", type: "text" } },
+        ],
+        cellDefaults: { row0_c2: "MΩ", row1_c2: "MΩ" } },
+      { id: "fresh", componentType: "table", title: "Contact Resistance", order: 2, showInPrint: true, rows: 1,
+        columns: [{ id: "r", label: "Reading", field: { id: "r", label: "Reading", type: "number" } }],
+        cellDefaults: { row0_r: "5" } },
+    ],
+  };
+  const oldData = {
+    jd: { customer: "Acme", oldNote: "checked by Sam" },
+    ir_row0: { c1: "100" },
+    ir_row1: { c1: "" },
+    gone: { text: "all good" },
+  };
+
+  const diff = diffFormVersions(oldStructure, newStructure, oldData);
+  const byId = (id: string) => diff.sections.find((c) => c.sectionId === id);
+  check("version diff: a new section is listed as added", byId("fresh")?.kind === "added");
+  check("version diff: a dropped section is listed as removed", byId("gone")?.kind === "removed");
+  check("version diff: a section rename is shown", byId("jd")?.renamedFrom === "Job Details");
+  check("version diff: a field rename is shown", byId("jd")?.renamed.some((r) => r.to === "Customer name") === true);
+  check("version diff: a new column is listed", byId("ir")?.added.includes("Units") === true);
+  check(
+    "version diff: filled values with no place on the new version are named",
+    diff.hiddenValues.length === 2 &&
+      diff.hiddenValues.some((v) => v.label === "Old note" && v.value === "checked by Sam") &&
+      diff.hiddenValues.some((v) => v.sectionTitle === "Remarks"),
+  );
+  check("version diff: an unchanged form is identical", diffFormVersions(oldStructure, oldStructure, oldData).identical);
+
+  const template: any = { id: "t", name: "Form", structure: newStructure };
+  const after = upgradeRuntimeData(oldStructure, template, oldData);
+  check("version update: every existing reading is kept", after.ir_row0.c1 === "100" && after.jd.customer === "Acme");
+  check("version update: a new column gets its starting values", after.ir_row0.c2 === "MΩ" && after.ir_row1.c2 === "MΩ");
+  check("version update: a new section gets its starting values", after.fresh_row0?.r === "5");
+  check("version update: an existing blank is not filled over", after.ir_row1.c1 === "");
+  const again = upgradeRuntimeData(oldStructure, template, { ...oldData, ir_row0: { c1: "100", c2: "kΩ" } });
+  check("version update: a value already there is never overwritten", again.ir_row0.c2 === "kΩ");
+
+  // Round trip through the saved shape: nothing the new version dropped is deleted.
+  const stored = buildStoredData(adaptStoredData({ sections: oldData }, oldStructure), { status: "PASS" });
+  const state = adaptStoredData(stored, newStructure);
+  const merged = mergeRuntimeIntoState(state, upgradeRuntimeData(oldStructure, template, projectStateToRuntime(state)), newStructure);
+  const saved = projectStateToRuntime(merged);
+  check(
+    "version update: values for dropped fields stay in the saved data",
+    saved.jd.oldNote === "checked by Sam" && saved.gone.text === "all good",
+  );
+
+  const auto = (_s: any, d: any) => (d.ir_row0?.c1 === "100" ? "PASS" : null);
+  check(
+    "version update: a result picked by hand is kept",
+    upgradedStatus({ saved: "FAIL", oldStructure, oldData, newStructure, newData: after, auto: () => "PASS" }) === "FAIL",
+  );
+  check(
+    "version update: a result that followed the readings follows them on the new version",
+    upgradedStatus({
+      saved: "PASS",
+      oldStructure,
+      oldData,
+      newStructure,
+      newData: after,
+      auto: (s: any, d: any) => (s === newStructure ? "LIMITED SERVICE" : auto(s, d)),
+    }) === "LIMITED SERVICE",
+  );
+  check(
+    "version update: approved and sent reports are locked, others are not",
+    isFormVersionLocked("approved") && isFormVersionLocked("sent") &&
+      !isFormVersionLocked("ready_for_review") && !isFormVersionLocked("in_progress"),
+  );
+}
+
 // Phase 6 conversion pilots. Each asserts internally and throws on the first
 // failure, so it counts as one check here; its own output lists the detail.
 section("Phase 6 conversion: Low Voltage Switch");

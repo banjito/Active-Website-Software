@@ -44,7 +44,10 @@ import {
 import {
   resolveRenderStructure,
   getActiveTemplateVersion,
+  getTemplateVersion,
 } from "@/lib/customForms/versioning";
+import { upgradeRuntimeData, upgradedStatus } from "@/lib/customForms/versionUpgrade";
+import { NewerFormVersionNotice } from "./runtime/NewerFormVersionNotice";
 import { resolveAllBindings } from "@/lib/customForms/v2/bindings";
 import { companyConfig } from "@/lib/companyConfig";
 import {
@@ -112,6 +115,9 @@ export const CustomFormFiller: React.FC = () => {
   // built-in reports. Its Edit button reopens it without the flag.
   const [searchParams] = useSearchParams();
   const previewOnly = searchParams.get("print") === "true";
+  // The compare screen's "after update" side: the saved report laid onto a
+  // newer form version, read-only. Never saved from here.
+  const upgradeToVersionId = previewOnly ? searchParams.get("upgradeTo") : null;
   // Custom forms skip the app Layout, so they mount reviewer field flags here.
   const fieldFlags = useReportFieldFlags(true);
   const { user } = useAuth();
@@ -412,15 +418,28 @@ export const CustomFormFiller: React.FC = () => {
           })
         : { structure: draft.structure, version: null, source: "draft" as const };
 
-      setPinnedVersion(resolved.version);
-      setRenderSource(resolved.source);
-      setTemplate({
+      // "After update" preview: render the newer version instead of the pinned one.
+      let target = null as CustomFormTemplateVersion | null;
+      if (upgradeToVersionId) {
+        if (!instanceRow) throw new Error("Only a saved report can be previewed on a newer form version.");
+        target = await getTemplateVersion(upgradeToVersionId);
+        if (!target || target.templateId !== templateRow.id) {
+          throw new Error("That form version could not be loaded for this report.");
+        }
+      }
+      const shown = target ?? resolved.version;
+      const shownStructure = target?.structure ?? resolved.structure;
+
+      setPinnedVersion(shown);
+      setRenderSource(target ? "pinned" : resolved.source);
+      const shownTemplate: CustomFormTemplate = {
         ...draft,
-        name: resolved.version?.name ?? draft.name,
-        description: resolved.version ? resolved.version.description : draft.description,
-        netaSection: resolved.version ? resolved.version.netaSection : draft.netaSection,
-        structure: resolved.structure,
-      });
+        name: shown?.name ?? draft.name,
+        description: shown ? shown.description : draft.description,
+        netaSection: shown ? shown.netaSection : draft.netaSection,
+        structure: shownStructure,
+      };
+      setTemplate(shownTemplate);
 
       if (instanceRow) {
         serverUpdatedAtRef.current = instanceRow.updated_at
@@ -432,16 +451,38 @@ export const CustomFormFiller: React.FC = () => {
           typeof instanceRow.revision === "number" ? instanceRow.revision : null,
         );
         const stored = parseStoredData(instanceRow.data);
-        const state = adaptStoredData(stored, resolved.structure);
-        stateRef.current = state;
-        setInstanceRows(state.tableRows);
-        const loaded = projectStateToRuntime(state);
-        setFormData(loaded);
-        // A saved status that disagrees with the results was chosen by hand: keep it.
-        const fromResults = computeAutoStatus(resolved.structure, loaded);
-        autoStatus.setManual(
-          !!instanceRow.status && fromResults !== null && instanceRow.status !== fromResults,
-        );
+        if (target) {
+          // Same steps as the update itself (FormVersionCompare), so this
+          // preview is exactly what the update would save.
+          const before = projectStateToRuntime(adaptStoredData(stored, resolved.structure));
+          const state = adaptStoredData(stored, target.structure);
+          const after = upgradeRuntimeData(resolved.structure, shownTemplate, projectStateToRuntime(state));
+          stateRef.current = state;
+          setInstanceRows(state.tableRows);
+          setFormData(after);
+          const nextStatus = upgradedStatus({
+            saved: instanceRow.status,
+            oldStructure: resolved.structure,
+            oldData: before,
+            newStructure: target.structure,
+            newData: after,
+            auto: computeAutoStatus,
+          });
+          if (nextStatus) setStatus(nextStatus as CustomFormStatus);
+          const fromResults = computeAutoStatus(target.structure, after);
+          autoStatus.setManual(!!nextStatus && fromResults !== null && nextStatus !== fromResults);
+        } else {
+          const state = adaptStoredData(stored, resolved.structure);
+          stateRef.current = state;
+          setInstanceRows(state.tableRows);
+          const loaded = projectStateToRuntime(state);
+          setFormData(loaded);
+          // A saved status that disagrees with the results was chosen by hand: keep it.
+          const fromResults = computeAutoStatus(resolved.structure, loaded);
+          autoStatus.setManual(
+            !!instanceRow.status && fromResults !== null && instanceRow.status !== fromResults,
+          );
+        }
       }
     } catch (e) {
       console.error("Error loading template/instance:", e);
@@ -449,7 +490,8 @@ export const CustomFormFiller: React.FC = () => {
     } finally {
       setIsLoading(false);
       // Unsaved work left in this browser (closed tab, crash, lost signal)?
-      const draft = loadLocalDraft(draftKey);
+      // Not offered on the read-only "after update" preview.
+      const draft = upgradeToVersionId ? null : loadLocalDraft(draftKey);
       if (draft && (!serverUpdatedAtRef.current || draft.savedAt > serverUpdatedAtRef.current)) {
         setPendingDraft(draft);
       } else if (draft) {
@@ -877,7 +919,16 @@ export const CustomFormFiller: React.FC = () => {
                       Template v{pinnedVersion.version}
                       {pinnedVersion.origin === "imported" && " (imported)"}
                     </span>
-                  ) : (
+                  ) : null}
+                  {pinnedVersion && existingInstanceId && !upgradeToVersionId && jobId && templateId ? (
+                    <NewerFormVersionNotice
+                      jobId={jobId}
+                      templateId={templateId}
+                      instanceId={existingInstanceId}
+                      currentVersion={renderSource === "pinned" ? pinnedVersion.version : null}
+                      hasUnsavedChanges={hasUnsavedChanges}
+                    />
+                  ) : pinnedVersion ? null : (
                     <span
                       className="text-xs text-amber-700 dark:text-amber-300"
                       title="No published version, so this form follows the editable draft. Publish the template to pin new forms to a fixed version."

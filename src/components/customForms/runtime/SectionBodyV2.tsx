@@ -38,6 +38,12 @@ import {
   rowStateKey,
 } from "@/lib/customForms/runtime/layout";
 import { DEVIATION_COLUMN_IDS } from "@/lib/customForms/deviation";
+import {
+  TEXT_STYLE_CSS,
+  columnTextStyle,
+  tableUsesTextStyle,
+  textStyleProps,
+} from "@/lib/customForms/textStyle";
 import type {
   ControlSlot,
   SectionChrome,
@@ -279,6 +285,10 @@ const TableRenderer: React.FC<TableProps> = ({
     visibleColumns.map((column, index) => [column.id, index]),
   );
 
+  // Text size and alignment set in the builder; nothing set leaves the look as it was.
+  const headerLook = textStyleProps(v1Section.headerText);
+  const usesTextStyle = tableUsesTextStyle(v1Section);
+
   const headerRows =
     table.header.length > 0 ? table.header : [implicitHeaderRow(table.columns)];
   const visibleHeaderRows = headerRows.filter((row) =>
@@ -387,6 +397,7 @@ const TableRenderer: React.FC<TableProps> = ({
 
       {chrome.renderSectionHeader?.(v1Section, info)}
 
+      {usesTextStyle && <style>{TEXT_STYLE_CSS}</style>}
       <div className="overflow-x-auto">
         {/* On screen a many-column table keeps usable columns and scrolls
             sideways rather than squeezing inputs down to a digit or two. Paper
@@ -435,12 +446,13 @@ const TableRenderer: React.FC<TableProps> = ({
                       (colSpan === 1 && isResultColumn(v1Section, visibleColumns[columnIndex]))
                         ? "cf-result-col"
                         : ""
-                    }`}
-                    style={
-                      colSpan === 1 && visibleColumns[columnIndex]?.width
+                    } ${headerLook.className}`}
+                    style={{
+                      ...headerLook.style,
+                      ...(colSpan === 1 && visibleColumns[columnIndex]?.width
                         ? { width: visibleColumns[columnIndex].width }
-                        : undefined
-                    }
+                        : {}),
+                    }}
                   >
                     <div>{cell.label}</div>
                     {/* The deviation columns aren't in the template, so formulas can't point at them. */}
@@ -715,6 +727,7 @@ const BodyCell: React.FC<{
     cell.kind === "static";
 
   const slot = cellSlot(v1Section, cell, column, columnIndex, row, readOnly);
+  const look = textStyleProps(columnTextStyle(v1Section, column?.id));
 
   return (
     <td
@@ -730,12 +743,14 @@ const BodyCell: React.FC<{
         EMPHASIS_CLASS[cell.emphasis ?? "none"],
         state.printable ? "" : "print:hidden",
         colSpan === 1 && isResultColumn(v1Section, column) ? "cf-result-col" : "",
+        look.className,
       ]
         .filter(Boolean)
         .join(" ")}
-      style={
-        colSpan === 1 && column?.width ? { width: column.width } : undefined
-      }
+      style={{
+        ...look.style,
+        ...(colSpan === 1 && column?.width ? { width: column.width } : {}),
+      }}
     >
       {cell.kind === "empty" ? null : chrome.renderControl(slot)}
     </td>

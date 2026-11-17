@@ -4,6 +4,9 @@
  * A loading and navigation shell around the shared runtime. It fills a
  * template out exactly as the job filler does, but saves nothing: no instance
  * row, no asset, no job link.
+ *
+ * The builder shows it with `draft` (the form as it is on screen, unsaved)
+ * and `onBack`, so a preview needs no save and returning keeps every edit.
  */
 
 import React, { useState, useEffect } from "react";
@@ -50,7 +53,12 @@ import {
 import { resolveResultOptions } from "@/lib/customForms/resultOptions";
 import { useReportCssIsolation } from "@/components/customForms/runtime/useReportCssIsolation";
 
-export const CustomFormPreview: React.FC = () => {
+export const CustomFormPreview: React.FC<{
+  /** The builder's unsaved form; shown instead of loading the saved one. */
+  draft?: CustomFormTemplate;
+  /** Back to the builder (with `draft`). */
+  onBack?: () => void;
+}> = ({ draft, onBack }) => {
   useReportCssIsolation();
   const { templateId } = useParams<{ templateId: string }>();
   const navigate = useNavigate();
@@ -58,9 +66,9 @@ export const CustomFormPreview: React.FC = () => {
   // Opened from the builder's Preview button: Back returns to that editor
   // rather than dropping you on the template list.
   const cameFromBuilder =
-    (location.state as { from?: string } | null)?.from === "builder";
+    !!onBack || (location.state as { from?: string } | null)?.from === "builder";
   const goBack = () =>
-    navigate(
+    onBack ? onBack() : navigate(
       cameFromBuilder && templateId
         ? `/custom-forms/builder/${templateId}`
         : "/custom-forms/templates",
@@ -74,6 +82,11 @@ export const CustomFormPreview: React.FC = () => {
   const autoStatus = useAutoStatus(template?.structure, formData, setStatus);
 
   useEffect(() => {
+    if (draft) {
+      setTemplate(draft);
+      setIsLoading(false);
+      return;
+    }
     if (!templateId) return;
     let cancelled = false;
 
@@ -107,7 +120,7 @@ export const CustomFormPreview: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [templateId]);
+  }, [templateId, draft]);
 
   // Seed the same defaults the filler seeds, so the preview starts where a
   // real form starts.
@@ -188,7 +201,11 @@ export const CustomFormPreview: React.FC = () => {
                 )}
                 <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                   <Eye className="w-3.5 h-3.5" />
-                  <span>Preview Mode - Changes are not saved</span>
+                  <span>
+                    {draft
+                      ? "Preview of your unsaved edits - nothing here is saved"
+                      : "Preview Mode - Changes are not saved"}
+                  </span>
                 </div>
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2">

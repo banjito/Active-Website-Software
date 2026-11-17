@@ -56,6 +56,9 @@ export interface FillChromeOptions {
   generatorCounts?: Record<string, Record<string, number>>;
   /** A saved report from before the current layout rules. */
   legacyLayout?: boolean;
+  /** Past values for text fields, offered while typing. */
+  suggestionListId?: (slot: ControlSlot) => string | undefined;
+  onTextCommit?: (slot: ControlSlot, value: string) => void;
 }
 
 const ADD_BUTTON =
@@ -75,6 +78,8 @@ export function useFillChrome(options: FillChromeOptions): SectionChrome {
     instanceRows,
     generatorCounts,
     legacyLayout,
+    suggestionListId,
+    onTextCommit,
   } = options;
 
   const sections = template?.structure.sections ?? [];
@@ -95,8 +100,10 @@ export function useFillChrome(options: FillChromeOptions): SectionChrome {
         onFieldChange,
         readOnly,
         colorKeywords: template?.structure.settings?.colorKeywords,
+        suggestionListId,
+        onTextCommit,
       }),
-    [formData, sections, onFieldChange, readOnly, template?.structure.settings?.colorKeywords],
+    [formData, sections, onFieldChange, readOnly, template?.structure.settings?.colorKeywords, suggestionListId, onTextCommit],
   );
 
   const renderControl = React.useCallback(

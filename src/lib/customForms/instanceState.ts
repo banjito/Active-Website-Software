@@ -50,6 +50,11 @@ export interface CustomFormInstanceStateV2 {
   repeaters: Record<string, RepeaterInstanceV2[]>;
   /** Never business data. Safe to drop. */
   uiState?: Record<string, unknown>;
+  /**
+   * Tables whose rows were added or removed on this report: their row setup,
+   * put back over the form version when the report opens (rowLayout.ts).
+   */
+  rowLayouts?: Record<string, import("./rowLayout").RowLayout>;
 }
 
 /** The flat map the renderer reads and writes. */
@@ -169,6 +174,7 @@ function normalizeState(
     tableRows,
     repeaters: { ...(state.repeaters ?? {}) },
     uiState: state.uiState,
+    ...(state.rowLayouts ? { rowLayouts: state.rowLayouts } : {}),
   };
 }
 
@@ -281,6 +287,7 @@ export function mergeRuntimeIntoState(
 
   next.repeaters = { ...state.repeaters };
   if (state.uiState) next.uiState = state.uiState;
+  if (state.rowLayouts) next.rowLayouts = state.rowLayouts;
   return next;
 }
 

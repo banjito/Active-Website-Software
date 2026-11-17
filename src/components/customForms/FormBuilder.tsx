@@ -58,6 +58,12 @@ import {
   AlertTriangle,
   ListOrdered,
   FileCode2,
+  SlidersHorizontal,
+  Palette,
+  Keyboard,
+  ListChecks,
+  Hash,
+  Sigma,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
@@ -68,6 +74,19 @@ import { ReflowDialog } from "./ReflowDialog";
 import { EquipmentTypesDialog } from "./EquipmentTypesDialog";
 import { ResultOptionsDialog } from "./ResultOptionsDialog";
 import { ColorKeywordsDialog } from "./ColorKeywordsDialog";
+import { KeyboardNavDialog } from "./KeyboardNavDialog";
+import { FillOrderDialog } from "./FillOrderDialog";
+import { CustomFormPreview } from "@/pages/CustomFormPreview";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/Dialog";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/DropdownMenu";
 import { fetchEquipmentTypeList } from "@/lib/customForms/equipmentTypes";
 import { useLookupTables } from "@/lib/customForms/lookupLibrary";
 import type { ComponentVariant } from "@/lib/customForms/componentVariants";
@@ -511,31 +530,22 @@ export const FormBuilder: React.FC = () => {
   };
 
   /**
-   * Open the full-page preview.
-   *
-   * That page loads the template from the database, and returning from it
-   * remounts this editor from the database too. So unsaved edits are saved
-   * first: otherwise the preview shows stale content and coming back throws
-   * the edits away.
+   * Preview the form as it is on screen, saved or not. It is shown in place
+   * of the editor rather than on its own page, so nothing is saved and
+   * "Back to editor" returns with every edit still here.
    */
-  const handleOpenPreview = async () => {
-    let id = template.id ?? null;
-    let dirty = isDirty;
-    // Clicked while a save is still running: wait for it, and use the id it
-    // returns. The button used to be disabled during a save, so a click right
-    // after Save did nothing and needed repeating.
-    const pending = saveInFlight.current;
-    if (pending) {
-      const savedId = await pending;
-      if (!savedId) return; // save already explained why
-      id = savedId;
-      dirty = false;
-    }
-    if (!id || dirty) {
-      id = await handleSaveTemplate({ quiet: true });
-      if (!id) return; // save already explained why
-    }
-    navigate(`/custom-forms/preview/${id}`, { state: { from: "builder" } });
+  const [previewingDraft, setPreviewingDraft] = useState(false);
+  const editorScrollRef = useRef(0);
+  const handleOpenPreview = () => {
+    setActionTooltip(null);
+    editorScrollRef.current = window.scrollY;
+    setPreviewingDraft(true);
+    window.scrollTo(0, 0);
+  };
+  const closePreview = () => {
+    setPreviewingDraft(false);
+    // Back where the editor was scrolled to.
+    requestAnimationFrame(() => window.scrollTo(0, editorScrollRef.current));
   };
 
   /**
@@ -714,6 +724,20 @@ export const FormBuilder: React.FC = () => {
   const [equipmentDialogOpen, setEquipmentDialogOpen] = useState(false);
   const [resultOptionsOpen, setResultOptionsOpen] = useState(false);
   const [colorKeywordsOpen, setColorKeywordsOpen] = useState(false);
+  const [keyboardNavOpen, setKeyboardNavOpen] = useState(false);
+  const [fillOrderOpen, setFillOrderOpen] = useState(false);
+  const [typedCalcOpen, setTypedCalcOpen] = useState(false);
+  /** Change one form-wide setting (structure.settings). */
+  const setFormSetting = (patch: Record<string, unknown>) => {
+    setTemplate((prev) => ({
+      ...prev,
+      structure: {
+        ...prev.structure,
+        settings: { ...(prev.structure.settings as any), ...patch },
+      },
+    }));
+    setIsDirty(true);
+  };
   useEffect(() => {
     fetchEquipmentTypeList().then(setEquipmentOptions).catch(() => setEquipmentOptions([]));
   }, []);
@@ -1118,7 +1142,7 @@ export const FormBuilder: React.FC = () => {
       : template.isPublished
         ? "Unpublish"
         : "Publish";
-  const previewTooltipTitle = isDirty ? "Save and preview" : "Preview";
+  const previewTooltipTitle = isDirty ? "Preview (unsaved edits included, nothing is saved)" : "Preview";
   const filteredNetaSections = netaSections.filter(
     (section) =>
       !netaSectionInput ||
@@ -1136,6 +1160,12 @@ export const FormBuilder: React.FC = () => {
       borderClass,
     });
   };
+
+  // Preview in place of the editor: this component stays mounted, so the
+  // unsaved form is kept while the preview shows it.
+  if (previewingDraft) {
+    return <CustomFormPreview draft={template} onBack={closePreview} />;
+  }
 
   return (
     // The whole page scrolls (header included), so the top bar can be scrolled past.
@@ -1219,57 +1249,6 @@ export const FormBuilder: React.FC = () => {
                 )}
                 <option value="__manage">Edit the list…</option>
               </select>
-            </div>
-
-            {/* Overall PASS / FAIL / LIMITED SERVICE box at the top of the report. */}
-            <div className="min-w-0 flex flex-col gap-1">
-              <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
-                Pass/Fail result
-              </label>
-              <label
-                className="h-10 px-2 flex items-center gap-2 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-700 rounded-none text-neutral-900 dark:text-white cursor-pointer whitespace-nowrap"
-                title="Shows the green PASS / red FAIL / yellow LIMITED SERVICE box at the top of every report made from this form. Untick to leave it off."
-              >
-                <input
-                  type="checkbox"
-                  checked={template.structure.settings?.includePassFail !== false}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setTemplate((prev) => ({
-                      ...prev,
-                      structure: {
-                        ...prev.structure,
-                        settings: { ...(prev.structure.settings as any), includePassFail: checked },
-                      },
-                    }));
-                    setIsDirty(true);
-                  }}
-                  className="rounded-none accent-brand"
-                />
-                Show at top of report
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setResultOptionsOpen(true);
-                  }}
-                  className="ml-1 text-xs text-brand hover:underline"
-                  title="Add your own result choices (beyond PASS / FAIL / LIMITED SERVICE) and pick their colours"
-                >
-                  Edit choices…
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setColorKeywordsOpen(true);
-                  }}
-                  className="ml-1 text-xs text-brand hover:underline"
-                  title="Words that colour result cells on this form, e.g. NEEDS REPAIR = orange"
-                >
-                  Color keywords…
-                </button>
-              </label>
             </div>
 
             <div
@@ -1379,6 +1358,71 @@ export const FormBuilder: React.FC = () => {
           </div>
 
           <div className="flex h-10 items-center gap-2 self-end lg:self-auto">
+            {/* Form-wide settings: the report's result box and colours, and keyboard movement. */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="h-10 px-3 flex items-center gap-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-transparent text-neutral-700 dark:text-white hover:border-brand hover:text-brand focus:outline-none focus:ring-2 focus:ring-brand/30 shrink-0"
+                  title="Form settings"
+                >
+                  <SlidersHorizontal className="w-4 h-4" />
+                  <span className="hidden md:inline">Form settings</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-72 rounded-none">
+                <DropdownMenuLabel className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                  Report result
+                </DropdownMenuLabel>
+                <DropdownMenuCheckboxItem
+                  checked={template.structure.settings?.includePassFail !== false}
+                  onCheckedChange={(checked) => setFormSetting({ includePassFail: !!checked })}
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  <span>
+                    Pass/Fail box at top of report
+                    <span className="block text-[11px] text-neutral-500 dark:text-neutral-400">
+                      Green PASS / red FAIL / yellow LIMITED SERVICE
+                    </span>
+                  </span>
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuItem onSelect={() => setResultOptionsOpen(true)} className="flex items-center gap-2">
+                  <ListChecks className="w-4 h-4" />
+                  Result choices…
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setColorKeywordsOpen(true)} className="flex items-center gap-2">
+                  <Palette className="w-4 h-4" />
+                  Color keywords…
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                  Filling in
+                </DropdownMenuLabel>
+                <DropdownMenuItem onSelect={() => setKeyboardNavOpen(true)} className="flex items-center gap-2">
+                  <Keyboard className="w-4 h-4" />
+                  Keyboard movement…
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setFillOrderOpen(true)} className="flex items-center gap-2">
+                  <Hash className="w-4 h-4" />
+                  <span className="flex-1">Fill order…</span>
+                  {!!template.structure.settings?.keyboard?.order?.length && (
+                    <span className="text-[11px] text-brand font-semibold">On</span>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+                  Calculations
+                </DropdownMenuLabel>
+                <DropdownMenuItem onSelect={() => setTypedCalcOpen(true)} className="flex items-center gap-2">
+                  <Sigma className="w-4 h-4" />
+                  <span className="flex-1">Typed calculations…</span>
+                  <span className={`text-[11px] font-semibold ${template.structure.expressions !== undefined ? "text-brand" : "text-neutral-400"}`}>
+                    {template.structure.expressions !== undefined ? "On" : "Opt-in"}
+                  </span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <span
               className="inline-flex"
               onMouseEnter={(event) =>
@@ -1469,17 +1513,9 @@ export const FormBuilder: React.FC = () => {
         >
           {/* Center - Form Canvas */}
           <div className="flex-1 min-w-0 p-4 md:p-6 lg:min-w-[min(26rem,50%)]">
-            {/* Typed calculations, publish and validation notices scroll with
-                the canvas instead of staying frozen above it. */}
+            {/* Publish and validation notices scroll with the canvas instead
+                of staying frozen above it. (Typed calculations: Form settings.) */}
             <div className="-mx-4 -mt-4 md:-mx-6 md:-mt-6 mb-4">
-            <TypedCalculationEditor
-              structure={template.structure}
-              onChange={(structure) => {
-                setTemplate((previous) => ({ ...previous, structure }));
-                setIsDirty(true);
-                setFormulaEditingSectionId(null);
-              }}
-            />
 
             {/* Unpublished changes. Forms render the published version, so a draft
                 that has moved on is invisible in the app until it is released. */}
@@ -1572,6 +1608,51 @@ export const FormBuilder: React.FC = () => {
                 </Button>
               </div>
             )}
+            <KeyboardNavDialog
+              open={keyboardNavOpen}
+              onClose={() => setKeyboardNavOpen(false)}
+              value={template.structure.settings?.keyboard}
+              onSave={(keyboard) => setFormSetting({ keyboard })}
+              onOpenFillOrder={() => setFillOrderOpen(true)}
+            />
+            <Dialog open={typedCalcOpen} onOpenChange={(o) => !o && setTypedCalcOpen(false)}>
+              <DialogContent
+                aria-describedby={undefined}
+                className="w-[min(40rem,95vw)] max-w-none max-h-[85vh] p-0 gap-0 flex flex-col overflow-hidden rounded-none"
+              >
+                <div className="px-4 py-3 pr-12 border-b border-neutral-200 dark:border-neutral-700">
+                  <DialogTitle className="text-base font-semibold text-neutral-900 dark:text-white">
+                    Typed calculations{" "}
+                    <span className="text-xs font-normal text-neutral-500 dark:text-neutral-400">
+                      {template.structure.expressions !== undefined
+                        ? `(${template.structure.expressions.engineVersion ?? "unsupported"})`
+                        : "(opt-in)"}
+                    </span>
+                  </DialogTitle>
+                </div>
+                <div className="px-4 py-3 overflow-y-auto">
+                  <TypedCalculationEditor
+                    embedded
+                    structure={template.structure}
+                    onChange={(structure) => {
+                      setTemplate((previous) => ({ ...previous, structure }));
+                      setIsDirty(true);
+                      setFormulaEditingSectionId(null);
+                    }}
+                  />
+                </div>
+                <div className="px-4 py-3 border-t border-neutral-200 dark:border-neutral-700 flex justify-end">
+                  <Button onClick={() => setTypedCalcOpen(false)}>Done</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <FillOrderDialog
+              open={fillOrderOpen}
+              onClose={() => setFillOrderOpen(false)}
+              sections={template.structure.sections}
+              value={template.structure.settings?.keyboard}
+              onSave={(keyboard) => setFormSetting({ keyboard })}
+            />
             <ColorKeywordsDialog
               open={colorKeywordsOpen}
               onClose={() => setColorKeywordsOpen(false)}
@@ -1696,7 +1777,7 @@ export const FormBuilder: React.FC = () => {
               isFormulaEditing={formulaEditingSectionId === selectedSectionId}
               onToggleFormulaEditing={() => {
                 if (template.structure.expressions !== undefined) {
-                  toast("Use the Typed calculations panel above to edit stable formulas.");
+                  toast("This form uses typed calculations: edit its formulas in Form settings → Typed calculations.");
                   return;
                 }
                 setFormulaEditingSectionId((prev) =>

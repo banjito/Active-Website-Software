@@ -88,6 +88,13 @@ import {
   fetchOpenFieldFlags,
 } from "@/services/reportFieldFlagService";
 import { openActionItemsDialog } from "./common/ActionItemsDialog";
+import {
+  applyReviewSheet,
+  attachReviewZoomKeys,
+  clearReviewSheet,
+  stepReviewZoom,
+} from "./common/reviewSheet";
+import { checkFormVersionForFileUrl } from "@/lib/customForms/formVersionStatus";
 import confirmDialog from "@/components/ui/confirmDialog";
 
 // A report's title is the stored asset name, "<report type> - <asset identifier>".
@@ -337,8 +344,6 @@ function wireReviewSidebar() {
 // PDF viewer, instead of the whole browser page. The zoom sits in a
 // screen-only rule injected into the iframe, so printing is never scaled.
 // ---------------------------------------------------------------------------
-const REPORT_ZOOM_STEPS = [0.5, 0.67, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3];
-const REPORT_ZOOM_STYLE_ID = "review-preview-zoom";
 // Kept for the session, so the next report opens at the same zoom.
 let reportPreviewZoom = 1;
 
@@ -359,121 +364,31 @@ function wireReportZoom() {
   ) as HTMLIFrameElement | null;
   if (!iframe) return;
   const label = document.getElementById("report-zoom-reset");
+  const controls = document.getElementById("report-zoom-controls");
 
-  const apply = () => {
-    if (label) label.textContent = `${Math.round(reportPreviewZoom * 100)}%`;
+  // The form version compare screen loads in this frame too. It has its own
+  // zoom and is not a report sheet, so leave it alone.
+  const showsCompare = () => {
     try {
-      const doc = iframe.contentDocument;
-      if (!doc?.head) return;
-      let style = doc.getElementById(REPORT_ZOOM_STYLE_ID) as HTMLStyleElement | null;
-      if (!style) {
-        style = doc.createElement("style");
-        style.id = REPORT_ZOOM_STYLE_ID;
-        doc.head.appendChild(style);
-      }
-      // The report is laid out on a fixed letter-size sheet (8.5in; the
-      // preview's 0.25in padding stands in for the print margins), so it
-      // wraps exactly as it prints. Zoom scales that sheet; it never reflows,
-      // and a sheet wider than the window scrolls sideways.
-      doc.documentElement.setAttribute("data-review-sheet", "");
-      // Backdrop behind the sheet follows the app theme; the sheet stays white.
-      const dark = document.documentElement.classList.contains("dark");
-      const backdrop = dark ? "#3f3f3f" : "#e5e7eb";
-      const thumb = dark ? "#6b6b6b" : "#9ca3af";
-      style.textContent = `@media screen {
-        html[data-review-sheet][data-review-sheet] {
-          zoom: ${reportPreviewZoom} !important;
-          background: ${backdrop} !important;
-          /* Some reports' print CSS sets html to 100vw. Under zoom, vw is
-             scaled too, so html ends up narrower/wider than the window and
-             the centered sheet drifts sideways. Let html size naturally. */
-          width: auto !important;
-          min-width: 0 !important;
-          max-width: none !important;
-          margin: 0 !important;
-          padding: 0 !important;
-          /* Reports set html { height: 100% } and body { overflow-x: hidden },
-             which hides the sideways scroll bar. The page itself scrolls both
-             ways so a zoomed-in sheet wider than the window can be scrolled. */
-          height: auto !important;
-          overflow: auto !important;
-          /* Some reports hide every scroll bar (::-webkit-scrollbar
-             { display: none }). Setting scrollbar-color makes Chrome/Edge
-             ignore those rules and draw a normal scroll bar again. */
-          scrollbar-width: auto !important;
-          scrollbar-color: ${thumb} ${backdrop} !important;
-        }
-        /* Safari still uses the -webkit- rules, so restyle them visibly. */
-        html[data-review-sheet]::-webkit-scrollbar {
-          display: block !important;
-          width: 12px !important;
-          height: 12px !important;
-          background: ${backdrop} !important;
-        }
-        html[data-review-sheet]::-webkit-scrollbar-thumb {
-          display: block !important;
-          background: ${thumb} !important;
-          border-radius: 0 !important;
-        }
-        html[data-review-sheet]::-webkit-scrollbar-corner {
-          background: ${backdrop} !important;
-        }
-        html[data-review-sheet] body {
-          /* Anchor absolutely-positioned items (print titles, PASS/FAIL
-             boxes) to the sheet, not the window, so zoom can't move them
-             off the page. */
-          position: relative !important;
-          width: 8.5in !important;
-          min-width: 8.5in !important;
-          max-width: none !important;
-          margin: 16px auto !important;
-          background: #ffffff !important;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.2) !important;
-          overflow: visible !important;
-        }
-        html[data-review-sheet] #report-container {
-          width: auto !important;
-          max-width: none !important;
-          margin: 0 !important;
-          overflow: visible !important;
-        }
-        /* Custom-form sections set to print landscape start their own 11in
-           page. Show them at that width (10.5in inside the 0.25in margins) as
-           a sheet of their own, extending past the portrait sheet, so they
-           wrap exactly as printed. */
-        html[data-review-sheet] .cf-page-landscape {
-          box-sizing: content-box !important;
-          width: 10.5in !important;
-          min-width: 10.5in !important;
-          max-width: none !important;
-          padding: 0.25in !important;
-          margin: 24px 0 24px -0.25in !important;
-          background: #ffffff !important;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.2) !important;
-          position: relative !important;
-        }
-        html[data-review-sheet] .cf-page-landscape::before {
-          content: "Landscape page";
-          position: absolute;
-          top: -18px;
-          left: 0;
-          font-size: 11px;
-          color: #6b7280;
-        }
-      }`;
+      return !!iframe.contentWindow?.location.pathname.endsWith("/form-version");
     } catch {
-      /* report not readable yet (still loading) */
+      return false;
     }
   };
 
+  const apply = () => {
+    if (label) label.textContent = `${Math.round(reportPreviewZoom * 100)}%`;
+    if (showsCompare()) {
+      clearReviewSheet(iframe);
+      if (controls) controls.style.display = "none";
+      return;
+    }
+    if (controls) controls.style.display = "flex";
+    applyReviewSheet(iframe, reportPreviewZoom);
+  };
+
   const step = (direction: 1 | -1) => {
-    const current = REPORT_ZOOM_STEPS.findIndex((z) => z >= reportPreviewZoom - 0.001);
-    const index = current === -1 ? REPORT_ZOOM_STEPS.length - 1 : current;
-    const next = Math.min(
-      REPORT_ZOOM_STEPS.length - 1,
-      Math.max(0, index + direction),
-    );
-    reportPreviewZoom = REPORT_ZOOM_STEPS[next];
+    reportPreviewZoom = stepReviewZoom(reportPreviewZoom, direction);
     apply();
   };
   const reset = () => {
@@ -487,36 +402,11 @@ function wireReportZoom() {
   if (zoomIn) zoomIn.onclick = () => step(1);
   if (label) label.onclick = reset;
 
-  // Inside the report, Ctrl + scroll and Ctrl +/-/0 zoom the report rather
-  // than the browser page. Re-attached each time the iframe loads (Edit and
-  // Flag swap its address).
-  const attach = () => {
+  // Re-attached each time the iframe loads (Edit and Flag swap its address).
+  iframe.addEventListener("load", () => {
     apply();
-    try {
-      const win = iframe.contentWindow;
-      if (!win) return;
-      win.addEventListener(
-        "wheel",
-        (e: WheelEvent) => {
-          if (!e.ctrlKey && !e.metaKey) return;
-          e.preventDefault();
-          step(e.deltaY < 0 ? 1 : -1);
-        },
-        { passive: false },
-      );
-      win.addEventListener("keydown", (e: KeyboardEvent) => {
-        if (!e.ctrlKey && !e.metaKey) return;
-        if (e.key === "+" || e.key === "=") step(1);
-        else if (e.key === "-") step(-1);
-        else if (e.key === "0") reset();
-        else return;
-        e.preventDefault();
-      });
-    } catch {
-      /* not same-origin; buttons still work once readable */
-    }
-  };
-  iframe.addEventListener("load", attach);
+    if (!showsCompare()) attachReviewZoomKeys(iframe, step, reset);
+  });
   apply();
 }
 
@@ -2078,6 +1968,29 @@ export function ReportApprovalWorkflow({
       }
     };
     const actionItemsSectionHtml = `<div id="review-action-items-section">${await buildActionItemsHtml()}</div>`;
+
+    // Custom form report on an older version of its form? Unfinished reports
+    // get a Compare & update button; approved and sent ones are only told.
+    let formVersion: Awaited<ReturnType<typeof checkFormVersionForFileUrl>> = null;
+    if (String(fileUrl).startsWith("custom-form:/")) {
+      try {
+        formVersion = await checkFormVersionForFileUrl(fileUrl, report.status);
+      } catch (e) {
+        console.warn("[ViewDialog] Form version check unavailable:", e);
+      }
+    }
+    const formVersionHtml = !formVersion
+      ? ""
+      : formVersion.locked
+        ? `<div id="review-form-version" style="padding:0.75rem;border:1px solid #e5e7eb;background:#f9fafb;font-size:0.8125rem;color:#374151;">
+            <div style="font-weight:600;margin-bottom:0.25rem;">&#128274; Newer form version exists</div>
+            Form v${formVersion.latest.version} is published. This report keeps v${formVersion.current}, the version it was ${report.status === "sent" ? "sent" : "approved"} with.
+          </div>`
+        : `<div id="review-form-version" style="padding:0.75rem;border:1px solid #e5e7eb;background:#fffbeb;display:flex;flex-direction:column;gap:0.5rem;">
+            <div style="font-size:0.8125rem;font-weight:600;color:#92400e;">Newer form version</div>
+            <div id="review-form-version-text" style="font-size:0.8125rem;color:#374151;">This report uses form v${formVersion.current}. v${formVersion.latest.version} is published.</div>
+            <button id="review-form-version-btn" style="padding:0.5rem 0.75rem;background:${BRAND_COLOR};border:none;border-radius:0;cursor:pointer;font-size:0.8125rem;color:white;font-weight:500;">Compare &amp; update</button>
+          </div>`;
     const wireActionItems = () => {
       const btn = document.getElementById("review-action-items-btn");
       if (!btn) return;
@@ -2435,7 +2348,7 @@ export function ReportApprovalWorkflow({
                 `
                     : ""
                 }`,
-              bodyHtml: `${reviewHistoryHtml}${actionItemsSectionHtml}${
+              bodyHtml: `${formVersionHtml}${reviewHistoryHtml}${actionItemsSectionHtml}${
                 canReview
                   ? `<p id="report-edit-hint" style="display:none;font-size:0.8125rem;color:#6b7280;margin:0;">Editing — use Save &amp; Approve to save your changes.</p>`
                   : ""
@@ -2633,6 +2546,20 @@ export function ReportApprovalWorkflow({
         hasUnsavedChanges = !!e.data.isEditing;
         onEditStateChange();
       }
+      // From the compare screen loaded in the preview frame.
+      if (e.origin === window.location.origin && e.data?.type === "formVersionUpdated") {
+        const box = document.getElementById("review-form-version");
+        if (box) {
+          box.style.background = "#d1fae5";
+          box.innerHTML = `<div style="font-size:0.8125rem;font-weight:600;color:#065f46;">Updated to form v${Number(e.data.version) || ""}</div>`;
+        }
+        const iframe = getPreviewIframe();
+        if (iframe) iframe.src = fullReportUrl;
+      }
+      if (e.origin === window.location.origin && e.data?.type === "formVersionCompareClose") {
+        const iframe = getPreviewIframe();
+        if (iframe) iframe.src = fullReportUrl;
+      }
       if (e.data?.type === "saveComplete") {
         const pa = (window as any).__pendingApprove;
         if (pa) {
@@ -2644,6 +2571,48 @@ export function ReportApprovalWorkflow({
       }
     };
     window.addEventListener("message", messageHandler);
+
+    // Compare & update: the compare screen takes the preview frame's place, so
+    // the review panel and the decision buttons stay where they are.
+    const formVersionBtn = document.getElementById("review-form-version-btn");
+    if (formVersionBtn && formVersion) {
+      const compareUrl = `${window.location.origin}${formVersion.comparePath}?embedded=true`;
+      const showingCompare = () => {
+        try {
+          return !!getPreviewIframe()?.contentWindow?.location.pathname.endsWith("/form-version");
+        } catch {
+          return false;
+        }
+      };
+      const syncCompareButton = () => {
+        formVersionBtn.textContent = showingCompare() ? "Back to report" : "Compare & update";
+        formVersionBtn.style.background = showingCompare() ? "#525252" : BRAND_COLOR;
+      };
+      getPreviewIframe()?.addEventListener("load", syncCompareButton);
+      formVersionBtn.onclick = () => {
+        const iframe = getPreviewIframe();
+        if (!iframe) return;
+        if (showingCompare()) {
+          iframe.src = fullReportUrl;
+          return;
+        }
+        if (
+          inEditMode &&
+          hasUnsavedChanges &&
+          !window.confirm("Leave edit mode? Any unsaved changes to this report will be lost.")
+        ) {
+          return;
+        }
+        inEditMode = false;
+        hasUnsavedChanges = false;
+        onEditStateChange();
+        inFlagView = false;
+        flagModeOn = false;
+        applyFlagChrome();
+        applyEditModeChrome();
+        iframe.src = compareUrl;
+      };
+    }
 
     // Add review action handlers if canReview
     if (canReview) {

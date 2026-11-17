@@ -51,6 +51,20 @@ Instances keep the structure they were created with. Editing the template afterw
 
 So if a template gains a section in March, a form filled in during February will not have it. That is intentional. The alternative is reports silently changing after a customer has received them.
 
+### Moving an unfinished report to the newer version
+
+When a newer version is published, older reports show a **Newer form version** tag: on the report's toolbar, on the job's report list, and in the review window.
+
+Click it to open **Compare & update**. The report as it is sits on the left, and the same report on the new version sits on the right, both drawn exactly as they print. The panel lists what changed. Click a change to jump to it in both reports.
+
+Every reading carries over to the matching field. New parts start the way they would on a new report. Readings the new version has no place for are listed in amber: they stay in the saved data but stop showing and printing.
+
+Click **Update to vN** to move the report. The move is logged in the report's history.
+
+::: note
+Approved and sent reports still show the tag, but cannot be updated. They keep the version they were issued with. To update one, a reviewer must reopen it first.
+:::
+
 ## If a template is unpublished
 
 Existing instances are untouched and stay readable, printable, and includable in deliverables. You just cannot create new ones.

@@ -9,7 +9,9 @@ export type ReportActivityKind =
   | 'review_comment'
   | 'fix_note'
   | 'action_item'
-  | 'field_flag';
+  | 'field_flag'
+  /** Report moved to a newer form version (from/to_status hold "v3" / "v5"). */
+  | 'form_version';
 
 export interface ReportActivity {
   id: number;

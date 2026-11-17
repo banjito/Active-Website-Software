@@ -153,6 +153,7 @@ export const SectionFrame: React.FC<SectionFrameProps> = ({
     const blockedByField = !controllerAllows(v1Section, allSections, values);
     return (
       <div
+        data-cf-section={v1Section.id}
         className={`${isFirst ? "" : "mt-6"} print:hidden border border-dashed border-neutral-300 dark:border-neutral-600 rounded-none px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500 dark:text-neutral-400 bg-white dark:bg-neutral-900`}
       >
         <EyeOff className="w-4 h-4 shrink-0" />
@@ -174,6 +175,8 @@ export const SectionFrame: React.FC<SectionFrameProps> = ({
 
   return (
     <div
+      // Lets the form version compare screen find this section (no styling).
+      data-cf-section={v1Section.id}
       className={[
         isFirst ? "" : "mt-6 print:mt-4",
         printClasses(section.print, documentOrientation),

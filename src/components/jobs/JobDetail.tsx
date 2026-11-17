@@ -69,6 +69,7 @@ import { isSuperUser, canReviewReports } from "../../lib/roles";
 import { useDemoMode } from "../../lib/DemoModeContext";
 import { useJobDetails } from "../../lib/hooks";
 import { usePreference } from "@/hooks/useUserPreferences";
+import { usePmAccess } from "@/app/pm-dashboard/shared";
 import {
   JOB_DEFAULT_TAB_FALLBACK,
   JOB_DEFAULT_TAB_PREF,
@@ -2206,6 +2207,8 @@ export default function JobDetail() {
     JOB_DEFAULT_TAB_PREF,
     null,
   );
+  // PMs and division leads get a jump to the job's schedule of values (PM Dashboard)
+  const pmAccess = usePmAccess();
   const [activeTab, setActiveTab] = useState(() =>
     resolveJobDefaultTab(savedDefaultTab, isAdmin),
   );
@@ -4922,6 +4925,8 @@ export default function JobDetail() {
     hidden?: boolean;
     disabled?: boolean;
     alert?: boolean;
+    /** Opens another page instead of switching tabs */
+    href?: string;
   };
   const allJobTabSections: {
     id: string;
@@ -4985,6 +4990,12 @@ export default function JobDetail() {
             changeOrderSummary.pendingCount > 0
               ? `Change Orders (${changeOrderSummary.pendingCount})`
               : "Change Orders",
+        },
+        {
+          key: "sov",
+          label: "Schedule of Values",
+          href: `/pm-dashboard/${id}`,
+          hidden: !pmAccess.allowed,
         },
         { key: "tm-expenses", label: "T&M Expenses", hidden: !isTMJob },
         { key: "profitability", label: "Profitability", hidden: !isAdmin },
@@ -10731,6 +10742,19 @@ export default function JobDetail() {
                 <div className="flex flex-wrap gap-1 border-b border-neutral-200 bg-neutral-50 px-5 py-1.5 max-sm:px-2 dark:border-neutral-700 dark:bg-dark-200">
                   {activeTabSection.tabs.map((tab) => {
                     const on = tab.key === activeTab;
+                    if (tab.href) {
+                      return (
+                        <Link
+                          key={tab.key}
+                          to={tab.href}
+                          title="Opens this job in the PM Dashboard"
+                          className="inline-flex h-11 items-center gap-2 rounded-none border border-transparent px-3.5 text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
+                        >
+                          {tab.label}
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </Link>
+                      );
+                    }
                     return (
                       <button
                         key={tab.key}

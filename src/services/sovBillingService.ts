@@ -17,6 +17,9 @@ export interface TestInvoice {
   docNumber: string | null;
   total: number;
   customerName: string;
+  /** The PO sent, and whether it landed in QuickBooks' P.O. field (false = put in the message instead). */
+  po: string | null;
+  poInField: boolean;
 }
 
 interface Ref {
@@ -65,6 +68,38 @@ async function serviceItem(realm: string): Promise<Ref> {
   return { value: pick.Id, name: pick.Name };
 }
 
+/** Today as YYYY-MM-DD in the user's time zone. Kelly: the invoice is dated the day we bill. */
+const today = () => {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
+type PrefField = { Name?: string; StringValue?: string; BooleanValue?: boolean; CustomField?: PrefField[] };
+
+/**
+ * The company's invoice custom field for the customer PO ("P.O. Number", "PO #"...), or null.
+ * QuickBooks has no built-in PO field on invoices; companies add one under Sales form custom fields.
+ */
+async function poField(realm: string): Promise<{ id: string; name: string } | null> {
+  const res = await quickBooksApiCall('/v3/company/{realmId}/preferences', 'GET', undefined, realm);
+  const flat: PrefField[] = [];
+  const walk = (list?: PrefField[]) => list?.forEach((f) => (f.CustomField ? walk(f.CustomField) : flat.push(f)));
+  walk(res?.Preferences?.SalesFormsPrefs?.CustomField);
+  for (const n of ['1', '2', '3']) {
+    const on = flat.find((f) => f.Name === `SalesFormsPrefs.UseSalesCustom${n}`)?.BooleanValue;
+    const name = flat.find((f) => f.Name === `SalesFormsPrefs.SalesCustomName${n}`)?.StringValue?.trim();
+    if (on && name && /\bp\.?\s?o\b|purchase\s*order/i.test(name)) return { id: n, name };
+  }
+  return null;
+}
+
+/** One PO for the field (QuickBooks allows 31 characters): all of them if they fit, else the first. */
+export const poForInvoice = (pos: string[]): string | null => {
+  const joined = pos.join(', ');
+  return joined ? (joined.length <= 31 ? joined : pos[0].slice(0, 31)) : null;
+};
+
 /** This month's retainage: held on everything to date, less what was held before. */
 export const retainageThisMonth = (app: PayApp) => round2(app.retainage - app.previousRetainage);
 
@@ -92,20 +127,30 @@ export async function createTestSovInvoice(opts: {
   customerName: string;
   jobLabel: string;
   monthLabel: string;
+  po: string | null;
 }): Promise<TestInvoice> {
-  const { company, app } = opts;
+  const { company, app, po } = opts;
   if (app.thisPeriod <= 0) throw new Error('Nothing to bill this month.');
-  const [customer, item] = await Promise.all([
+  const [customer, item, field] = await Promise.all([
     testCustomer(company.realmId, opts.customerName),
     serviceItem(company.realmId),
+    po ? poField(company.realmId).catch(() => null) : Promise.resolve(null),
   ]);
-  const memo = `Pay application #${app.applicationNumber} for ${opts.monthLabel}. ${opts.jobLabel}`;
+  // Kelly: PO goes in QuickBooks' P.O. field. If the company has none, it rides in the message so it's still on the bill.
+  const memo = [
+    `Pay application #${app.applicationNumber} for ${opts.monthLabel}. ${opts.jobLabel}`,
+    po && !field ? `PO ${po}` : null,
+  ].filter(Boolean).join(' ');
   const res = await quickBooksApiCall(
     '/v3/company/{realmId}/invoice',
     'POST',
     {
       CustomerRef: customer,
+      TxnDate: today(),
       Line: sovInvoiceLines(app, opts.retainagePct, item),
+      ...(po && field
+        ? { CustomField: [{ DefinitionId: field.id, Name: field.name, Type: 'StringType', StringValue: po }] }
+        : {}),
       CustomerMemo: { value: memo.slice(0, 1000) },
       PrivateNote: `Made by ampOS from the SOV. ${memo}`.slice(0, 4000),
     },
@@ -118,6 +163,8 @@ export async function createTestSovInvoice(opts: {
     docNumber: invoice.DocNumber ?? null,
     total: Number(invoice.TotalAmt ?? 0),
     customerName: customer.name ?? opts.customerName,
+    po,
+    poInField: !!(po && field),
   };
 }
 

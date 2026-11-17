@@ -26,13 +26,19 @@ Words this app uses in specific ways.
 
 **Opportunity.** A deal you are chasing. Becomes a job when awarded.
 
+**Pay application.** The month's bill in the AIA G702/G703 style: contract, work done to date, retainage, and the amount due. Printed from the job's SOV. See [Billing from the SOV](/docs/project-management/billing-from-the-sov).
+
 **Portal.** A work area with its own sidebar. Sales, HR, Lab, Office, Admin, and others.
 
 **Preset** *(estimating)*. Saved rates and line items so every estimate starts from the same numbers.
 
 **Resource.** A person or piece of equipment booked to a job for a window of time.
 
+**Retainage.** A percent of each bill the customer holds back until the job is finished. Set per customer.
+
 **Role.** A bundle of permissions. What you are allowed to do.
+
+**Schedule of values (SOV).** The contract broken into lines with quantities and prices. Weekly updates mark progress on it, and the monthly bill comes from it. See [Schedule of values](/docs/project-management/schedule-of-values).
 
 **Signature profile.** A saved signature block reused on customer documents. Not the same as your account profile.
 

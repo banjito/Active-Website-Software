@@ -6,6 +6,10 @@ keywords: [billing, invoice, ready to bill, quickbooks, accounting]
 
 Billing is a handoff. Operations says "this is done," accounting invoices it. The whole trick is making sure "done" is true.
 
+::: tip
+Jobs with a schedule of values bill monthly from it instead. See [Billing from the SOV](/docs/project-management/billing-from-the-sov).
+:::
+
 ## The checklist before you mark a job ready to bill
 
 Run through this every time. It takes two minutes and it saves accounting from bouncing the job back.

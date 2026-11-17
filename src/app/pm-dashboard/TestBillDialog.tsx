@@ -8,8 +8,10 @@ import {
   createTestSovInvoice,
   deleteTestBill,
   fetchInvoicePdf,
+  fetchJobPoNumbers,
   findTestCompany,
   openInvoicePdf,
+  poForInvoice,
   recordBill,
   retainageThisMonth,
   type JobBill,
@@ -40,6 +42,7 @@ const ROW = 'flex items-baseline justify-between gap-4 py-1 text-sm';
 export function TestBillDialog({ open, onOpenChange, job, lines, progress, month, bills, onBillsChanged }: Props) {
   const [company, setCompany] = useState<TestCompany | null>(null);
   const [retainagePct, setRetainagePct] = useState(0);
+  const [po, setPo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [making, setMaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,18 +63,20 @@ export function TestBillDialog({ open, onOpenChange, job, lines, progress, month
     void Promise.all([
       findTestCompany(),
       job.customer_id ? fetchSovCustomer(job.customer_id).catch(() => null) : Promise.resolve(null),
+      fetchJobPoNumbers(job.id).catch(() => [] as string[]),
     ])
-      .then(([found, customer]) => {
+      .then(([found, customer, pos]) => {
         if (!alive) return;
         setCompany(found);
         setRetainagePct(customer?.retainagePct ?? 0);
+        setPo(poForInvoice(pos));
       })
       .catch((err) => alive && setError(err instanceof Error ? err.message : 'Could not reach QuickBooks.'))
       .finally(() => alive && setLoading(false));
     return () => {
       alive = false;
     };
-  }, [open, job.customer_id]);
+  }, [open, job.id, job.customer_id]);
 
   // Free the PDF when it's replaced or the box closes
   useEffect(() => () => {
@@ -99,6 +104,7 @@ export function TestBillDialog({ open, onOpenChange, job, lines, progress, month
         customerName: job.customer_name,
         jobLabel,
         monthLabel: monthLabel(month, 'long'),
+        po,
       });
       setInvoice(made);
       try {
@@ -235,6 +241,11 @@ export function TestBillDialog({ open, onOpenChange, job, lines, progress, month
                     Invoice {invoice.docNumber ? `#${invoice.docNumber}` : invoice.id} made for {invoice.customerName}:{' '}
                     <b>{fmtMoney(invoice.total)}</b>.
                   </p>
+                  {invoice.po && !invoice.poInField && (
+                    <p className="text-amber-800 dark:text-amber-300">
+                      This QuickBooks company has no P.O. field on invoices, so PO {invoice.po} went in the message.
+                    </p>
+                  )}
                   {mismatch && (
                     <p className="text-amber-800 dark:text-amber-300">
                       QuickBooks' total is {fmtMoney(invoice.total - app.currentDue)} off from the pay app.

@@ -10,6 +10,7 @@
 import {
   Rocket,
   Briefcase,
+  ClipboardList,
   FileText,
   LayoutTemplate,
   PackageCheck,
@@ -108,6 +109,29 @@ export const docsSections: DocsSection[] = [
           { title: "Costs and profitability", slug: "jobs/costs-and-profitability" },
           { title: "Change orders", slug: "jobs/change-orders" },
           { title: "Billing a job", slug: "jobs/billing" },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "project-management",
+    title: "Project management",
+    description: "Run jobs week to week: the schedule of values, weekly updates, and billing.",
+    icon: ClipboardList,
+    groups: [
+      {
+        title: "PM dashboard",
+        items: [
+          { title: "The PM dashboard", slug: "project-management/overview" },
+          { title: "Checklist, temp hours, and Change Orders", slug: "project-management/checklist-and-more" },
+        ],
+      },
+      {
+        title: "Schedule of values",
+        items: [
+          { title: "Schedule of values", slug: "project-management/schedule-of-values" },
+          { title: "Weekly updates", slug: "project-management/weekly-updates" },
+          { title: "Billing from the SOV", slug: "project-management/billing-from-the-sov" },
         ],
       },
     ],

@@ -74,6 +74,8 @@ const NOT_RESULTS_TYPES = new Set<string>([
   ComponentType.COMMENTS,
   ComponentType.CUSTOM_TEXT,
   ComponentType.CHART,
+  ComponentType.BREAKER_SETTINGS,
+  ComponentType.COORDINATION_STUDY,
   ComponentType.SIGNATURES,
   ComponentType.PHOTOS,
   ComponentType.TEMPERATURE_CORRECTION,

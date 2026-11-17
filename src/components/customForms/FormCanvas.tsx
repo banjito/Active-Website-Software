@@ -285,7 +285,7 @@ const SectionPreview: React.FC<SectionPreviewProps> = ({
     ),
   };
 
-  if (kind === "empty") {
+  if (kind === "empty" && section.componentType !== "breaker-settings") {
     return (
       <div className="text-center text-neutral-500 dark:text-neutral-400 py-4 text-sm">
         No preview available

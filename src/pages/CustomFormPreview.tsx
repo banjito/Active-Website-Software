@@ -155,6 +155,8 @@ export const CustomFormPreview: React.FC<{
     applyMutation,
     setFormData,
     renderControlOverride,
+    // Preview only, nothing saves: let anyone try pasting breakers.
+    canEditSetup: true,
   });
 
   if (isLoading) {

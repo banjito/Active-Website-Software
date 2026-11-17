@@ -131,6 +131,13 @@ export interface SectionChrome {
   bindingValues?(): Record<string, unknown>;
   /** Every section of the form, for sections that read others (charts). */
   formSections?(): SectionConfig[];
+  /**
+   * Write one section-level value, for sections that hold their own data
+   * (Breaker Settings). Omit to make such sections read-only.
+   */
+  setSectionValue?(section: SectionConfig, key: string, value: unknown): void;
+  /** May change what the office sets up on a report (study settings): reviewers and admins. */
+  canEditSetup?: boolean;
 
   /** Stable row identities for a section, from the instance state. */
   instanceRowsFor?(sectionId: string): RowInstanceV2[] | undefined;

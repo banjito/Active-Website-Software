@@ -59,6 +59,8 @@ export interface FillChromeOptions {
   /** Past values for text fields, offered while typing. */
   suggestionListId?: (slot: ControlSlot) => string | undefined;
   onTextCommit?: (slot: ControlSlot, value: string) => void;
+  /** May change office set-up on the report (Breaker Settings study values). */
+  canEditSetup?: boolean;
 }
 
 const ADD_BUTTON =
@@ -80,6 +82,7 @@ export function useFillChrome(options: FillChromeOptions): SectionChrome {
     legacyLayout,
     suggestionListId,
     onTextCommit,
+    canEditSetup = false,
   } = options;
 
   const sections = template?.structure.sections ?? [];
@@ -141,6 +144,10 @@ export function useFillChrome(options: FillChromeOptions): SectionChrome {
       ? undefined
       : (section, settingId, value) =>
           onFieldChange(section.id, settingId, value),
+    setSectionValue: readOnly
+      ? undefined
+      : (section, key, value) => onFieldChange(section.id, key, value),
+    canEditSetup: !readOnly && canEditSetup,
 
     // Every row carries its own remove button, so the exact row can go.
     renderRowAction: (section, rowIndex) => {

@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { publishTemplateVersion } from "@/lib/customForms/versioning";
 import { reviewAsDescription } from "@/lib/customForms/excel/import";
 import type { ExcelImportDraft } from "@/lib/customForms/excel/types";
+import type { ReadFormFileResult } from "@/lib/customForms/formFile";
 
 const templates = () =>
   supabase.schema("neta_ops").from("custom_form_templates");
@@ -91,6 +92,27 @@ export async function publishTemplate(
   }
 
   return `Published version ${result.version!.version}. It will now appear in jobs.`;
+}
+
+/** Saves a form read from a form file as an unpublished draft; returns its id. */
+export async function saveFormFileDraft(
+  form: NonNullable<ReadFormFileResult["form"]>,
+  userId?: string,
+): Promise<string> {
+  const { data, error } = await templates()
+    .insert({
+      name: form.name,
+      description: form.description,
+      neta_section: form.netaSection,
+      created_by: userId,
+      structure: form.structure,
+      is_active: true,
+      is_published: false,
+    })
+    .select("id")
+    .single();
+  if (error) throw error;
+  return data.id as string;
 }
 
 /** Saves a draft built from a spreadsheet and returns its id. */

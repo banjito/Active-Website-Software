@@ -8,7 +8,7 @@
  * - Use templates to create form instances
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -33,6 +33,8 @@ import {
   ArrowUpDown,
   ChevronDown,
   PenLine,
+  Download,
+  FileUp,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
@@ -51,7 +53,10 @@ import {
   unpublishTemplate,
   publishTemplate,
   saveImportedDraft,
+  saveFormFileDraft,
 } from "@/lib/customForms/templateActions";
+import { buildFormFile, formFileName, readFormFile } from "@/lib/customForms/formFile";
+import type { CustomFormStructure } from "@/lib/types/customForms";
 import { hasRegisteredConversion } from "@/lib/customForms/conversions";
 import type { ExcelImportDraft } from "@/lib/customForms/excel/types";
 import GenerateFromFileDialog from "@/components/customForms/GenerateFromFileDialog";
@@ -83,6 +88,8 @@ interface Template {
   updated_at: string;
   is_active: boolean;
   is_published: boolean;
+  /** The editable draft (fetchActiveTemplates selects every column). */
+  structure?: CustomFormStructure;
 }
 
 export const CustomFormTemplates: React.FC = () => {
@@ -159,6 +166,49 @@ export const CustomFormTemplates: React.FC = () => {
     } finally {
       setGeneratingReport(null);
     }
+  };
+
+  const formFileInput = useRef<HTMLInputElement>(null);
+
+  /** Form file in: a new unpublished draft, opened in the builder. */
+  const handleImportFormFile = async (file: File) => {
+    const { form, error, problems } = readFormFile(await file.text());
+    if (!form) {
+      toast.error(error ?? "Couldn't read that form file.");
+      return;
+    }
+    try {
+      const id = await saveFormFileDraft(form, user?.id);
+      toast.success(
+        problems
+          ? `Imported "${form.name}" as a draft. The builder lists ${problems} thing${problems === 1 ? "" : "s"} to check.`
+          : `Imported "${form.name}" as a draft.`,
+      );
+      navigate(`/custom-forms/builder/${id}`);
+    } catch (err) {
+      console.error("Error importing form file:", err);
+      toast.error("Couldn't save the imported form.");
+    }
+  };
+
+  /** Form file out: the template's current draft as a .json download. */
+  const handleDownloadFormFile = (template: Template) => {
+    if (!template.structure) {
+      toast.error("This template has no form to download.");
+      return;
+    }
+    const file = buildFormFile({
+      name: template.name,
+      description: template.description ?? undefined,
+      netaSection: template.neta_section ?? undefined,
+      structure: template.structure,
+    });
+    const url = URL.createObjectURL(new Blob([JSON.stringify(file, null, 2)], { type: "application/json" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = formFileName(template.name);
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   /** Save a built draft and return its id, so the dialog can open it. */
@@ -370,6 +420,18 @@ export const CustomFormTemplates: React.FC = () => {
             </span>
           </span>
         </DropdownMenuItem>
+        <DropdownMenuItem
+          onSelect={() => formFileInput.current?.click()}
+          className="flex items-start gap-2"
+        >
+          <FileUp className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>
+            <span className="block font-medium">Import Form File</span>
+            <span className="block text-xs text-neutral-500 dark:text-neutral-400">
+              Add a form from a downloaded form file (.json) as a draft
+            </span>
+          </span>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -402,6 +464,17 @@ export const CustomFormTemplates: React.FC = () => {
                 Lookup tables
               </Button>
               {createMenu}
+              <input
+                ref={formFileInput}
+                type="file"
+                accept=".json,application/json"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (file) handleImportFormFile(file);
+                }}
+              />
             </div>
           </div>
 
@@ -544,6 +617,15 @@ export const CustomFormTemplates: React.FC = () => {
                           aria-label="Duplicate template"
                         >
                           <Copy className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          className={iconBtn}
+                          onClick={() => handleDownloadFormFile(template)}
+                          title="Download form file (to import elsewhere)"
+                          aria-label="Download form file"
+                        >
+                          <Download className="w-4 h-4" />
                         </button>
                         <button
                           type="button"

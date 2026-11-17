@@ -9,7 +9,8 @@ import { convertReading, resolveSourceUnit, splitUnitRef } from '@/lib/customFor
 import { evaluateNode, inferNode } from '@/lib/customForms/expressions/semantics';
 import type { ExpressionValue } from '@/lib/customForms/expressions/types';
 import type { FieldConfig, SectionConfig } from '@/lib/types/customForms';
-import { usesLegacyLayout } from '@/lib/customForms/reportLayout';
+import { usesCalculatedRefs, usesLegacyLayout } from '@/lib/customForms/reportLayout';
+import { formatDecimals } from '@/lib/customForms/decimals';
 
 /** Abbreviate section title to a short code, e.g. "Insulation Resistance" -> "IR", "Job Details" -> "Job" */
 function abbreviateTitle(title: string): string {
@@ -135,6 +136,46 @@ function getValueAt(
   return v !== undefined && v !== null ? v : '';
 }
 
+/** Cells being worked out right now, so two formulas pointing at each other stop. */
+const evaluating = new Set<string>();
+
+/**
+ * The value a formula reads for a reference. On new reports (layout version 4)
+ * a table cell worked out by a formula (column formula or per-cell formula)
+ * reads as its result as shown, decimal places included, so the page can be
+ * checked by hand. Older reports read only what was typed in, as issued.
+ */
+function refValue(
+  formData: Record<string, Record<string, any>>,
+  sections: SectionConfig[],
+  sectionId: string,
+  fieldId: string,
+  rowIndex?: number
+): any {
+  if (rowIndex == null || !usesCalculatedRefs(formData)) {
+    return getValueAt(formData, sectionId, fieldId, rowIndex);
+  }
+  const section = sections.find((s) => s.id === sectionId);
+  const column = section?.columns?.find((c) => (c.field?.id ?? c.id) === fieldId);
+  const field = column?.field;
+  const cellFormula = column ? section?.cellFormulas?.[`row${rowIndex}_${column.id}`]?.trim() : '';
+  const calculated = !!cellFormula || (field?.cellBehavior === 'calculate' && !!field.calculation?.formula);
+  if (!section || !column || !field || !calculated) {
+    return getValueAt(formData, sectionId, fieldId, rowIndex);
+  }
+  const key = `${sectionId}|${fieldId}|${rowIndex}`;
+  if (evaluating.has(key)) return '';
+  evaluating.add(key);
+  try {
+    return getCellValue(
+      formData, field, `${sectionId}_row${rowIndex}`, sectionId, rowIndex,
+      sections, section.cellFormulas, column.id
+    );
+  } finally {
+    evaluating.delete(key);
+  }
+}
+
 /** Resolve value when field has populateFrom (copy from another field) */
 export function getPopulatedValue(
   formData: Record<string, Record<string, any>>,
@@ -239,7 +280,8 @@ function resolveColumnRef(
 function columnReadings(
   formData: Record<string, Record<string, any>>,
   sectionId: string,
-  fieldId: string
+  fieldId: string,
+  sections: SectionConfig[] = []
 ): { value: any; rowIndex: number }[] {
   if (!formData || typeof formData !== 'object') return [];
   const prefix = `${sectionId}_row`;
@@ -249,7 +291,7 @@ function columnReadings(
     const rest = key.slice(prefix.length);
     if (!/^\d+$/.test(rest)) continue;
     const rowIndex = Number(rest);
-    out.push({ value: getValueAt(formData, sectionId, fieldId, rowIndex), rowIndex });
+    out.push({ value: refValue(formData, sections, sectionId, fieldId, rowIndex), rowIndex });
   }
   return out.sort((a, b) => a.rowIndex - b.rowIndex);
 }
@@ -327,7 +369,7 @@ function substituteRefsTracked(
     // {IR.C3.all}: every filled-in reading in the column, for avg/min/max/sum.
     const column = resolveColumnRef(parts, sections);
     if (column) {
-      const numbers = columnReadings(formData, column.sectionId, column.fieldId).flatMap(({ value, rowIndex }) => {
+      const numbers = columnReadings(formData, column.sectionId, column.fieldId, sections).flatMap(({ value, rowIndex }) => {
         let num = parseNumericValue(value);
         if (unit && isFinite(num)) {
           const resolvedCell = { sectionId: column.sectionId, fieldId: column.fieldId, rowIndex };
@@ -341,7 +383,7 @@ function substituteRefsTracked(
     }
     const resolved = resolveRef(parts, sections, currentRowIndex);
     if (resolved) {
-      const val = getValueAt(formData, resolved.sectionId, resolved.fieldId, resolved.rowIndex);
+      const val = refValue(formData, sections, resolved.sectionId, resolved.fieldId, resolved.rowIndex);
       let num = parseNumericValue(val);
       if (unit && isFinite(num)) {
         const converted = convertReading(num, refSourceUnit(formData, sections, resolved, val), unit);
@@ -429,7 +471,7 @@ function detectRefPrefix(
     const parts = splitUnitRef(m[1]).path.split('.').filter(Boolean);
     const resolved = resolveRef(parts, sections, currentRowIndex);
     if (resolved) {
-      const val = getValueAt(formData, resolved.sectionId, resolved.fieldId, resolved.rowIndex);
+      const val = refValue(formData, sections, resolved.sectionId, resolved.fieldId, resolved.rowIndex);
       if (val != null) {
         const pfx = String(val).trim().match(/^([<>≤≥]=?)\s*/);
         if (pfx) return pfx[1];
@@ -502,7 +544,7 @@ export function evaluateCellFormula(
       const parts = match[1].trim().split('.').filter(Boolean);
       const resolved = resolveRef(parts, sections, currentRowIndex);
       if (resolved) {
-        const val = getValueAt(formData, resolved.sectionId, resolved.fieldId, resolved.rowIndex);
+        const val = refValue(formData, sections, resolved.sectionId, resolved.fieldId, resolved.rowIndex);
         return val !== undefined && val !== null && val !== '' ? String(val) : '';
       }
     }
@@ -531,6 +573,13 @@ export function getCellValue(
 ): any {
   const userVal = formData[dataKey]?.[field.id];
   const hasUserVal = userVal !== undefined && userVal !== null && userVal !== '';
+  // A formula's result with its column's decimal places (rounded or cut off).
+  // Everything reads it this way: the cell, pass/fail, charts, other formulas.
+  const builderField =
+    (colId ? sections.find((s) => s.id === currentSectionId)?.columns?.find((c) => c.id === colId)?.field : undefined) ??
+    field;
+  const shown = (value: any) =>
+    builderField.decimals != null ? formatDecimals(value, builderField.decimals, builderField.decimalMode) : value;
 
   // Per-cell formula override takes highest priority
   if (cellFormulas && colId) {
@@ -538,7 +587,7 @@ export function getCellValue(
     const cellFormula = cellFormulas[cellKey];
     if (cellFormula && cellFormula.trim()) {
       const result = evaluateCellFormula(cellFormula, formData, currentSectionId, currentRowIndex, sections);
-      return result !== '' ? result : (hasUserVal ? userVal : field.defaultValue ?? '');
+      return result !== '' ? shown(result) : (hasUserVal ? userVal : field.defaultValue ?? '');
     }
   }
 
@@ -556,7 +605,7 @@ export function getCellValue(
       currentRowIndex,
       sections
     );
-    const out = calculated !== '' ? calculated : (hasUserVal ? userVal : field.defaultValue ?? '');
+    const out = calculated !== '' ? shown(calculated) : (hasUserVal ? userVal : field.defaultValue ?? '');
     return out !== undefined && out !== null ? out : '';
   }
 

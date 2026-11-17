@@ -11,7 +11,7 @@ export const REPORT_LAYOUT_KEY = '__reportLayout';
 /** Mark a new report. An already marked one is returned as it is. */
 export function seedReportLayout<T extends Record<string, any>>(formData: T): T {
   if (formData[REPORT_LAYOUT_KEY]) return formData;
-  return { ...formData, [REPORT_LAYOUT_KEY]: { version: 3 } };
+  return { ...formData, [REPORT_LAYOUT_KEY]: { version: 4 } };
 }
 
 /**
@@ -21,6 +21,17 @@ export function seedReportLayout<T extends Record<string, any>>(formData: T): T 
  */
 export function usesSolidResultColors(formData: Record<string, any>): boolean {
   return Number(formData?.[REPORT_LAYOUT_KEY]?.version ?? 0) >= 3;
+}
+
+/**
+ * Version 4 (2026-11-17): a formula that points at another formula column
+ * reads that column's result as shown (with its decimal places), so every
+ * number on the page can be worked out by hand from the numbers beside it.
+ * Before, such a reference read only typed-in values and so saw a blank; those
+ * reports keep their results.
+ */
+export function usesCalculatedRefs(formData: Record<string, any>): boolean {
+  return Number(formData?.[REPORT_LAYOUT_KEY]?.version ?? 0) >= 4;
 }
 
 /**

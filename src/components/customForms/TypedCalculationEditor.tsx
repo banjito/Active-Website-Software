@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/Button";
 interface Props {
   structure: CustomFormStructure;
   onChange: (structure: CustomFormStructure) => void;
+  /** Shown inside a dialog (Form settings): no fold-out heading of its own. */
+  embedded?: boolean;
 }
 
 const INPUT = "w-full rounded-none border border-neutral-300 bg-white p-2 text-sm text-neutral-900 dark:border-neutral-600 dark:bg-dark-150 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand";
 
 /** Explicit draft upgrade and stable-reference authoring; publication remains a separate action. */
-export const TypedCalculationEditor: React.FC<Props> = ({ structure, onChange }) => {
+export const TypedCalculationEditor: React.FC<Props> = ({ structure, onChange, embedded }) => {
   const [confirmed, setConfirmed] = React.useState(false);
   const [selected, setSelected] = React.useState("");
   const [errors, setErrors] = React.useState<ExpressionIssue[]>([]);
@@ -42,10 +44,8 @@ export const TypedCalculationEditor: React.FC<Props> = ({ structure, onChange })
     }
   };
 
-  return (
-    <details className="border-b border-neutral-200 bg-white px-4 py-3 text-sm dark:border-neutral-700 dark:bg-dark-150 print:hidden">
-      <summary className="cursor-pointer font-medium text-neutral-900 dark:text-white">Typed calculations {active ? `(${structure.expressions?.engineVersion ?? "unsupported"})` : "(opt-in)"}</summary>
-      <div className="mt-3 space-y-3">
+  const body = (
+      <div className={`${embedded ? "" : "mt-3 "}space-y-3 text-sm`}>
         <p className="text-xs text-neutral-600 dark:text-neutral-300">
           Fixed-row templates only. Blanks stay missing, invalid inputs show errors, and calculated values cannot be manually overridden.
           This changes the draft only. Save and publish a new version after checking the results. Existing version-pinned reports are unchanged.
@@ -79,6 +79,13 @@ export const TypedCalculationEditor: React.FC<Props> = ({ structure, onChange })
           </>}
         </>}
       </div>
+  );
+
+  if (embedded) return body;
+  return (
+    <details className="border-b border-neutral-200 bg-white px-4 py-3 text-sm dark:border-neutral-700 dark:bg-dark-150 print:hidden">
+      <summary className="cursor-pointer font-medium text-neutral-900 dark:text-white">Typed calculations {active ? `(${structure.expressions?.engineVersion ?? "unsupported"})` : "(opt-in)"}</summary>
+      {body}
     </details>
   );
 };

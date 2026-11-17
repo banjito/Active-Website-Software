@@ -11,6 +11,8 @@
 export interface LocalDraft {
   formData: Record<string, Record<string, any>>;
   status?: string;
+  /** Tables with rows added or removed (lib/customForms/rowLayout.ts). */
+  rowLayouts?: Record<string, import("./rowLayout").RowLayout>;
   /** When the draft was written (ms since epoch). */
   savedAt: number;
 }

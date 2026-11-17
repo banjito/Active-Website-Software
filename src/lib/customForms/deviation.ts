@@ -116,8 +116,33 @@ export function deviationResult(deviation: string, criteria: unknown): string {
   return parseFloat(deviation) <= parseFloat(threshold[1]) ? 'PASS' : 'FAIL';
 }
 
-/** The part of the table the readings keep; the deviation columns take the rest. */
-const READINGS_SHARE = 0.66;
+/** Starting widths of the three columns; together they take 34% of the table. */
+export const DEVIATION_DEFAULT_WIDTHS = { phaseMeasured: '10%', phaseCriteria: '10%', phaseResult: '14%' } as const;
+export type DeviationColumnId = keyof typeof DEVIATION_DEFAULT_WIDTHS;
+export const DEVIATION_COLUMN_ORDER: DeviationColumnId[] = ['phaseMeasured', 'phaseCriteria', 'phaseResult'];
+
+/**
+ * The three columns' widths, as set in the column list or the defaults, and
+ * the share of the table the readings keep. Only % widths take a share: any
+ * other width counts as its default.
+ */
+export function deviationWidths(section: SectionConfig): {
+  widths: Record<DeviationColumnId, string>;
+  readingsShare: number;
+} {
+  const own = section.deviation?.columns ?? {};
+  const widths = { ...DEVIATION_DEFAULT_WIDTHS } as Record<DeviationColumnId, string>;
+  let taken = 0;
+  for (const id of DEVIATION_COLUMN_ORDER) {
+    const set = own[id]?.width?.trim();
+    if (set) widths[id] = set;
+    const pct = /^\d+(\.\d+)?%$/.test(widths[id]) ? parseFloat(widths[id]) : parseFloat(DEVIATION_DEFAULT_WIDTHS[id]);
+    taken += pct;
+  }
+  // Never squeeze the readings below a tenth of the table.
+  const readingsShare = Math.min(0.95, Math.max(0.1, (100 - taken) / 100));
+  return { widths, readingsShare };
+}
 
 /**
  * The section as drawn, with the deviation columns after its own. Done at
@@ -136,27 +161,36 @@ export function withInlineDeviation(section: SectionConfig): SectionConfig {
     options: options.map((value) => ({ label: value, value })),
   });
   const fitted = fitColumnWidths(own.map((column) => column.width));
+  const { widths, readingsShare } = deviationWidths(section);
+  // Text size and alignment set on a deviation column in the column list.
+  const look = (id: DeviationColumnId) => {
+    const set = section.deviation?.columns?.[id];
+    return { ...(set?.fontSize ? { fontSize: set.fontSize } : {}), ...(set?.align ? { align: set.align } : {}) };
+  };
   const columns: ColumnConfig[] = [
     ...own.map((column, i) => ({
       ...column,
-      width: `${(fitted[i] ? parseFloat(fitted[i]!) : 100 / own.length) * READINGS_SHARE}%`,
+      width: `${(fitted[i] ? parseFloat(fitted[i]!) : 100 / own.length) * readingsShare}%`,
     })),
     {
       id: 'phaseMeasured',
       label: dev.headers.measured,
-      width: '10%',
+      width: widths.phaseMeasured,
+      ...look('phaseMeasured'),
       field: { id: 'phaseMeasured', label: dev.headers.measured, type: FieldType.TEXT, readOnly: true },
     },
     {
       id: 'phaseCriteria',
       label: dev.headers.criteria,
-      width: '10%',
+      width: widths.phaseCriteria,
+      ...look('phaseCriteria'),
       field: select('phaseCriteria', dev.headers.criteria, dev.phaseCriteriaOptions),
     },
     {
       id: 'phaseResult',
       label: dev.headers.results,
-      width: '14%',
+      width: widths.phaseResult,
+      ...look('phaseResult'),
       field: select('phaseResult', dev.headers.results, dev.phaseResultOptions),
     },
   ];

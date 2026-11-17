@@ -109,6 +109,10 @@ export interface FieldConfig {
     pattern?: string;
     customRule?: string;
   };
+  /** Formula columns: decimal places shown and printed (lib/customForms/decimals.ts). Unset: as calculated. */
+  decimals?: number;
+  /** 'round' (default) or 'cut' (drop the extra digits). */
+  decimalMode?: 'round' | 'cut';
   calculation?: {
     formula: string; // e.g., "tcf * value" or "{sectionId.fieldId} * 1.5"
     dependsOn: string[]; // field IDs this calculation depends on
@@ -211,6 +215,36 @@ export interface ColumnConfig {
   width?: string; // CSS width (e.g., "20%", "100px")
   /** For conditional tables: show this column only when these setting values match */
   visibleWhen?: Record<string, string | string[]>;
+  /** Text size (px) of this column's cells. Unset: the table's body text size. */
+  fontSize?: number;
+  /** Alignment of this column's cells. Unset: the table's body alignment. */
+  align?: TextAlign;
+}
+
+export type TextAlign = 'left' | 'center' | 'right';
+
+/** Per-form keyboard movement. Unset parts use DEFAULT_KEYBOARD_NAV. */
+export interface KeyboardNavSettings {
+  /**
+   * 'cells': arrows move between fields by the layout. 'order': Down/Right go to
+   * the next field in the fill order, Up/Left the previous. 'off': arrows only
+   * move the text cursor.
+   */
+  arrows?: 'cells' | 'order' | 'off';
+  /** 'edge': Left/Right leave a field only at the start/end of its text. 'always': they always move. */
+  leftRight?: 'edge' | 'always';
+  /** Enter moves across the row, down the column, through the fill order, or nowhere. */
+  enter?: 'across' | 'down' | 'order' | 'off';
+  /** The fill order: field keys, first to last (lib/customForms/fillOrder.ts). */
+  order?: string[];
+  /** Rows added while filling in: right after the last numbered row ('repeat') or after everything ('end'). */
+  addedRows?: 'repeat' | 'end';
+}
+
+/** Text size (px) and alignment for part of a table. Unset parts keep the report's own look. */
+export interface TableTextStyle {
+  fontSize?: number;
+  align?: TextAlign;
 }
 
 // ============================================================================
@@ -265,6 +299,8 @@ export interface DeviationConfig {
   extraCriteriaOptions?: string[];
   extraResultOptions?: string[];
   extraDefault?: string;
+  /** Width, text size and alignment of each in-line column, edited in the column list. */
+  columns?: Partial<Record<'phaseMeasured' | 'phaseCriteria' | 'phaseResult', { width?: string } & TableTextStyle>>;
 }
 
 export interface SectionConfig {
@@ -337,6 +373,10 @@ export interface SectionConfig {
   defaultRowLabels?: string[];
   /** For contact-resistance: wording and choices of the Value Deviation tables. */
   deviation?: DeviationConfig;
+  /** Table heading text: size and alignment. */
+  headerText?: TableTextStyle;
+  /** Table cell text: size and alignment. A column's own setting wins. */
+  bodyText?: TableTextStyle;
   /**
    * How the component's tables are arranged (pieces in rows; split/combined
    * tables). Absent = the original fixed arrangement. See tableLayout.ts.
@@ -436,6 +476,8 @@ export interface CustomFormSettings {
   customResultOptions?: { label: string; color: string }[];
   /** Words that colour a result cell, e.g. NEEDS REPAIR = orange (resultField.ts). */
   colorKeywords?: { label: string; color: string }[];
+  /** How arrow keys and Enter move between fields on this form (formNavigation.ts). */
+  keyboard?: KeyboardNavSettings;
   includeJobInfo: boolean;
   includePrintHeader: boolean;
   pageBreakAfterSection?: boolean;

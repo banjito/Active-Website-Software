@@ -273,6 +273,10 @@ const PAPER_CSS = `
     max-width: 100% !important;
     min-height: 0 !important;
     height: auto !important;
+    /* Print swaps each control for a plain-text copy that follows the cell's
+       alignment; browsers left-align controls whatever the cell says. */
+    text-align: inherit !important;
+    text-align-last: inherit !important;
   }
   /* An input beside a unit (°F, %) shares the row with it, so the unit stays
      inside the cell. */

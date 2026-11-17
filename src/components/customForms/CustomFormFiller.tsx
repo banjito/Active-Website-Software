@@ -102,6 +102,9 @@ import {
 import { resolveResultOptions } from "@/lib/customForms/resultOptions";
 import { useReportCssIsolation } from "./runtime/useReportCssIsolation";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { collectFieldHistory, historyKey, historyListId } from "@/lib/customForms/fieldHistory";
+import { handleFormKey } from "@/lib/customForms/formNavigation";
+import { applyRowLayouts, captureRowLayouts, inferRowLayouts } from "@/lib/customForms/rowLayout";
 
 export const CustomFormFiller: React.FC = () => {
   useReportCssIsolation();
@@ -150,6 +153,8 @@ export const CustomFormFiller: React.FC = () => {
   const draftKey = localDraftKey(jobId, templateId, instanceId);
   const formDataRef = useRef(formData);
   formDataRef.current = formData;
+  const templateRef = useRef<CustomFormTemplate | null>(null);
+  templateRef.current = template;
   const statusRef = useRef(status);
   statusRef.current = status;
   /** When the server copy was last written, to tell a stale browser draft from a fresh one. */
@@ -191,6 +196,9 @@ export const CustomFormFiller: React.FC = () => {
   // Durable V2 state. The renderer works on the flat projection of it, and
   // reads the row identities so a row keeps its identity across a save.
   const stateRef = useRef<CustomFormInstanceStateV2>(emptyInstanceState());
+  // The form version as published, before this report's added / removed rows.
+  // Saving compares the tables against it to keep the report's own rows.
+  const baseStructureRef = useRef<CustomFormTemplate["structure"] | null>(null);
   const [instanceRows, setInstanceRows] = useState<
     Record<string, RowInstanceV2[]>
   >({});
@@ -432,12 +440,23 @@ export const CustomFormFiller: React.FC = () => {
 
       setPinnedVersion(shown);
       setRenderSource(target ? "pinned" : resolved.source);
+      baseStructureRef.current = shownStructure;
+
+      // The report's own rows (added / removed while filling in) over the form
+      // version. On the "after update" preview only the row counts carry over,
+      // since the newer version's per-row formulas must win.
+      const stored = instanceRow ? parseStoredData(instanceRow.data) : null;
+      const rowLayouts = !instanceRow
+        ? undefined
+        : target
+          ? inferRowLayouts(shownStructure, stored)
+          : (stored?.state?.rowLayouts ?? inferRowLayouts(shownStructure, stored));
       const shownTemplate: CustomFormTemplate = {
         ...draft,
         name: shown?.name ?? draft.name,
         description: shown ? shown.description : draft.description,
         netaSection: shown ? shown.netaSection : draft.netaSection,
-        structure: shownStructure,
+        structure: applyRowLayouts(shownStructure, rowLayouts),
       };
       setTemplate(shownTemplate);
 
@@ -450,12 +469,11 @@ export const CustomFormFiller: React.FC = () => {
         setRevision(
           typeof instanceRow.revision === "number" ? instanceRow.revision : null,
         );
-        const stored = parseStoredData(instanceRow.data);
         if (target) {
           // Same steps as the update itself (FormVersionCompare), so this
           // preview is exactly what the update would save.
           const before = projectStateToRuntime(adaptStoredData(stored, resolved.structure));
-          const state = adaptStoredData(stored, target.structure);
+          const state = adaptStoredData(stored, shownTemplate.structure);
           const after = upgradeRuntimeData(resolved.structure, shownTemplate, projectStateToRuntime(state));
           stateRef.current = state;
           setInstanceRows(state.tableRows);
@@ -472,13 +490,13 @@ export const CustomFormFiller: React.FC = () => {
           const fromResults = computeAutoStatus(target.structure, after);
           autoStatus.setManual(!!nextStatus && fromResults !== null && nextStatus !== fromResults);
         } else {
-          const state = adaptStoredData(stored, resolved.structure);
+          const state = adaptStoredData(stored, shownTemplate.structure);
           stateRef.current = state;
           setInstanceRows(state.tableRows);
           const loaded = projectStateToRuntime(state);
           setFormData(loaded);
           // A saved status that disagrees with the results was chosen by hand: keep it.
-          const fromResults = computeAutoStatus(resolved.structure, loaded);
+          const fromResults = computeAutoStatus(shownTemplate.structure, loaded);
           autoStatus.setManual(
             !!instanceRow.status && fromResults !== null && instanceRow.status !== fromResults,
           );
@@ -555,6 +573,71 @@ export const CustomFormFiller: React.FC = () => {
   useLookupTables();
   // A saved report without the mark keeps printing as it was issued.
   const legacyLayout = existingInstanceId != null && usesLegacyLayout(formData);
+  /*
+   * Past values: what was typed into each text field on this job's other
+   * reports of this form (newest first), then this report's own values as
+   * opened and as each field is left. Offered while typing, like the built-in
+   * reports. A field's value counts only once it is left, so half-typed text
+   * is never offered.
+   */
+  const [pastForms, setPastForms] = useState<FormData[]>([]);
+  const [typedHere, setTypedHere] = useState<Record<string, string[]>>({});
+  useEffect(() => {
+    if (!template || previewOnly || !jobId || !templateId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .schema("neta_ops")
+        .from("custom_form_instances")
+        .select("id, data")
+        .eq("job_id", jobId)
+        .eq("template_id", templateId)
+        .order("updated_at", { ascending: false })
+        .limit(50);
+      if (cancelled || error || !data) return;
+      const forms: FormData[] = [];
+      for (const row of data as { id: string; data: unknown }[]) {
+        if (row.id === existingInstanceId) continue;
+        try {
+          forms.push(projectStateToRuntime(adaptStoredData(parseStoredData(row.data), template.structure)));
+        } catch {
+          // An unreadable report just offers nothing.
+        }
+      }
+      // This report as opened: its rows already filled in count too.
+      setPastForms([...forms, formDataRef.current]);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // existingInstanceId is left out on purpose: the first save sets it, and
+    // this report must not be read back in as a "past" report.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [template, previewOnly, jobId, templateId]);
+  const fieldHistory = React.useMemo(() => {
+    if (!template || previewOnly) return {};
+    const past = collectFieldHistory(template.structure.sections, pastForms);
+    for (const [key, values] of Object.entries(typedHere)) {
+      past[key] = [...new Set([...(past[key] ?? []), ...values])];
+    }
+    return past;
+  }, [template, previewOnly, pastForms, typedHere]);
+  const suggestionListId = React.useCallback(
+    (slot: ControlSlot) => {
+      const key = historyKey(slot.section.id, slot.field.id);
+      return fieldHistory[key]?.length ? historyListId(key) : undefined;
+    },
+    [fieldHistory],
+  );
+  const onTextCommit = React.useCallback((slot: ControlSlot, value: string) => {
+    const text = value.trim();
+    if (!text) return;
+    const key = historyKey(slot.section.id, slot.field.id);
+    setTypedHere((prev) =>
+      prev[key]?.includes(text) ? prev : { ...prev, [key]: [...(prev[key] ?? []), text] },
+    );
+  }, []);
+
   const chrome = useFillChrome({
     template,
     formData,
@@ -565,6 +648,8 @@ export const CustomFormFiller: React.FC = () => {
     bindingValues,
     instanceRows,
     legacyLayout,
+    suggestionListId,
+    onTextCommit,
   });
 
   /**
@@ -606,6 +691,10 @@ export const CustomFormFiller: React.FC = () => {
       runtime,
       template.structure,
     );
+    // Rows added or removed on this report, so it reopens with them.
+    const rowLayouts = captureRowLayouts(baseStructureRef.current, template.structure);
+    if (rowLayouts) state.rowLayouts = rowLayouts;
+    else delete state.rowLayouts;
     stateRef.current = state;
     setInstanceRows(state.tableRows);
     return buildStoredData(state, {
@@ -800,7 +889,14 @@ export const CustomFormFiller: React.FC = () => {
   useEffect(() => {
     if (!hasUnsavedChanges) return;
     const timer = window.setTimeout(() => {
-      saveLocalDraft(liveDraftKey, { formData: formDataRef.current, status: statusRef.current, savedAt: Date.now() });
+      saveLocalDraft(liveDraftKey, {
+        formData: formDataRef.current,
+        status: statusRef.current,
+        savedAt: Date.now(),
+        rowLayouts: templateRef.current
+          ? captureRowLayouts(baseStructureRef.current, templateRef.current.structure)
+          : undefined,
+      });
     }, 800);
     return () => window.clearTimeout(timer);
   }, [editCount, hasUnsavedChanges, liveDraftKey]);
@@ -836,6 +932,11 @@ export const CustomFormFiller: React.FC = () => {
   const restoreDraft = () => {
     if (!pendingDraft) return;
     setFormData(pendingDraft.formData);
+    // The draft's rows over the form version (a draft without them keeps the rows on screen).
+    if (pendingDraft.rowLayouts && baseStructureRef.current) {
+      const base = baseStructureRef.current;
+      setTemplate((t) => (t ? { ...t, structure: applyRowLayouts(base, pendingDraft.rowLayouts) } : t));
+    }
     if (pendingDraft.status) setStatus(pendingDraft.status as CustomFormStatus);
     setPendingDraft(null);
     // Restored work is unsaved work: keep it in the browser and save it as usual.
@@ -882,6 +983,13 @@ export const CustomFormFiller: React.FC = () => {
       <div
         className={`min-h-screen bg-neutral-50 dark:bg-dark-200 p-4 md:p-6 print:min-h-0 print:bg-white print:p-0 ${paper.on ? PAPER_CLASS : ""}`}
         data-ff-root=""
+        onKeyDown={(e) => {
+          // The form's own arrow / Enter movement (set per form in the builder).
+          // Stopping the event keeps the app-wide handler from moving the focus again.
+          if (handleFormKey(e.nativeEvent, e.currentTarget, template?.structure.settings?.keyboard)) {
+            e.stopPropagation();
+          }
+        }}
       >
         <div className={paper.on ? "print:max-w-none" : "mx-auto print:max-w-none"}>
           {fieldFlags.showFlags && (
@@ -1069,6 +1177,13 @@ export const CustomFormFiller: React.FC = () => {
             )}
             <EquipmentCalibrationBanner structure={template.structure} formData={formData} live={liveCalibration} />
             <DocumentBody template={template} chrome={chrome} />
+            {Object.entries(fieldHistory).map(([key, values]) => (
+              <datalist key={key} id={historyListId(key)}>
+                {values.map((value) => (
+                  <option key={value} value={value} />
+                ))}
+              </datalist>
+            ))}
           </div>
         </div>
       </div>

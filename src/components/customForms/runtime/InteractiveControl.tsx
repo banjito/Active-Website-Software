@@ -86,6 +86,10 @@ export interface InteractiveControlOptions {
   readOnly?: boolean;
   /** The form's own colour keywords (settings.colorKeywords). */
   colorKeywords?: ColorKeyword[];
+  /** The datalist of past values for a text field, if it has any (lib/customForms/fieldHistory.ts). */
+  suggestionListId?: (slot: ControlSlot) => string | undefined;
+  /** A text field was left with this value: it becomes a suggestion for the same field. */
+  onTextCommit?: (slot: ControlSlot, value: string) => void;
 }
 
 /** The resolved value and read-only state for one slot. */
@@ -123,6 +127,7 @@ export function resolveSlotValue(
         field.defaultValue ??
         "");
 
+  // Decimal places are applied by getCellValue, so every reader sees the shown value.
   return {
     value: raw !== undefined && raw !== null ? raw : "",
     readOnly:
@@ -500,7 +505,9 @@ export function createInteractiveControlRenderer(
           />
         );
 
-      default:
+      default: {
+        // Past values from this job's other reports of the form, offered while typing.
+        const listId = readOnly ? undefined : options.suggestionListId?.(slot);
         return withPrintText(
           <input
             type="text"
@@ -509,10 +516,14 @@ export function createInteractiveControlRenderer(
             onChange={(e) => change(e.target.value)}
             placeholder={readOnly ? undefined : field.placeholder}
             readOnly={readOnly}
+            list={listId}
+            autoComplete={listId ? "off" : undefined}
+            onBlur={readOnly ? undefined : (e) => options.onTextCommit?.(slot, e.target.value)}
             className={classes}
           />,
           String(value ?? ""),
         );
+      }
     }
   };
 }

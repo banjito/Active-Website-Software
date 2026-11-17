@@ -26,6 +26,7 @@ import {
   AlignJustify,
   ListPlus,
   SlidersHorizontal,
+  Type,
 } from "lucide-react";
 import {
   CARD_CLASS,
@@ -69,6 +70,14 @@ import {
   resolveRowCount,
 } from "@/lib/customForms/runtime/layout";
 import { ChecklistWidthInput } from "./ChecklistWidthInput";
+import { TextStyleControls } from "./TextStyleControls";
+import { DECIMAL_CHOICES } from "@/lib/customForms/decimals";
+import {
+  DEVIATION_COLUMN_ORDER,
+  DEVIATION_DEFAULT_WIDTHS,
+  resolveDeviation,
+  type DeviationColumnId,
+} from "@/lib/customForms/deviation";
 import { hasCombinedTemperatureField, splitTemperatureHumidity } from "@/lib/customForms/temperatureFields";
 import { JobFillControl } from "./JobFillControl";
 import {
@@ -418,6 +427,9 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
 }) => {
   const [savingDefault, setSavingDefault] = useState(false);
   const [defaultsTableOpen, setDefaultsTableOpen] = useState(false);
+  const [tableTextOpen, setTableTextOpen] = useState(false);
+  // Table-wide text settings in use, counted on the Text button.
+  const tableTextCount = [section.headerText?.fontSize, section.headerText?.align, section.bodyText?.fontSize, section.bodyText?.align].filter(Boolean).length;
   const [savingNewComponent, setSavingNewComponent] = useState(false);
   const [updatingSavedComponent, setUpdatingSavedComponent] = useState(false);
 
@@ -943,6 +955,20 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
+                      title="Text size and alignment for the table's headings and cells"
+                      onClick={() => setTableTextOpen((o) => !o)}
+                      aria-expanded={tableTextOpen}
+                      className={tableTextOpen ? "text-brand" : ""}
+                      leftIcon={<Type className="w-3 h-3" />}
+                      rightIcon={
+                        tableTextOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />
+                      }
+                    >
+                      Text{tableTextCount > 0 ? ` · ${tableTextCount}` : ""}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       title="See the table as the report shows it and type each cell's starting value"
                       onClick={() => setDefaultsTableOpen(true)}
                       leftIcon={<Table2 className="w-3 h-3" />}
@@ -1015,6 +1041,27 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                   }
                 />
 
+                {/* Text size and alignment for the whole table, behind the card's Text button. */}
+                {tableTextOpen && (
+                  <div className="mb-3 ml-1 border-l-2 border-brand pl-3 py-1 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="w-24 shrink-0 text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                        Heading text
+                      </span>
+                      <TextStyleControls value={section.headerText} onChange={(headerText) => onUpdate({ headerText })} />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="w-24 shrink-0 text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                        Cell text
+                      </span>
+                      <TextStyleControls value={section.bodyText} onChange={(bodyText) => onUpdate({ bodyText })} />
+                    </div>
+                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                      A column's own Text setting (▸ on its line) wins over Cell text.
+                    </p>
+                  </div>
+                )}
+
                 <DndContext
                   sensors={columnSensors}
                   collisionDetection={closestCenter}
@@ -1063,6 +1110,18 @@ export const SectionEditor: React.FC<SectionEditorProps> = ({
                           No columns yet. Use Add column.
                         </p>
                       )}
+                      {section.componentType === ComponentType.CONTACT_RESISTANCE &&
+                        section.showDeviation !== false &&
+                        !!section.columns?.length && (
+                          <>
+                            <div className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400 border-b border-neutral-200 dark:border-neutral-700">
+                              Phase Value Deviation (always after the columns above)
+                            </div>
+                            {DEVIATION_COLUMN_ORDER.map((id) => (
+                              <DeviationColumnRow key={id} id={id} section={section} onUpdate={onUpdate} />
+                            ))}
+                          </>
+                        )}
                     </div>
                     </div>
                   </SortableContext>
@@ -1865,6 +1924,8 @@ const ColumnEditor: React.FC<{
   // Things set in the "More" panel, counted on its button so nothing hides unseen.
   const visibleWhenCount = Object.keys(column.visibleWhen ?? {}).length;
   const moreCount =
+    (column.fontSize || column.align ? 1 : 0) +
+    (behavior === "calculate" && field.decimals != null ? 1 : 0) +
     (field.placeholder ? 1 : 0) +
     (field.assetSource ? 1 : 0) +
     (parentSection && pairForColumn(parentSection, column.id) ? 1 : 0) +
@@ -2083,6 +2144,17 @@ const ColumnEditor: React.FC<{
       {/* More settings, one labelled line each. */}
       {open && (
         <div className="ml-8 mr-2 mb-2 border-l-2 border-brand pl-3 py-1 space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={panelLabel} title="Text size and alignment of this column's cells">
+              Text
+            </span>
+            <TextStyleControls
+              value={{ fontSize: column.fontSize, align: column.align }}
+              onChange={(next) => onUpdate({ fontSize: next?.fontSize, align: next?.align })}
+              autoMeans="the table's Cell text"
+            />
+          </div>
+
           {isResult && parentSection && (
             <div className="flex flex-wrap items-start gap-2">
               <span className={panelLabel}>Pass / fail rule</span>
@@ -2187,6 +2259,52 @@ const ColumnEditor: React.FC<{
                   = {field.calculation.formula}
                 </code>
               )}
+            </div>
+          )}
+
+          {behavior === "calculate" && !isResult && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={panelLabel} title="How many digits after the decimal point are shown and printed">
+                Decimal places
+              </span>
+              <select
+                value={field.decimals ?? ""}
+                onChange={(e) =>
+                  onUpdate({
+                    field: {
+                      ...field,
+                      decimals: e.target.value === "" ? undefined : Number(e.target.value),
+                      ...(e.target.value === "" ? { decimalMode: undefined } : {}),
+                    },
+                  })
+                }
+                className={`${inlineInputCls} w-32`}
+              >
+                <option value="">As calculated</option>
+                {DECIMAL_CHOICES.map((d) => (
+                  <option key={d} value={d}>
+                    {d === 0 ? "0 (whole number)" : d}
+                  </option>
+                ))}
+              </select>
+              {field.decimals != null && (
+                <select
+                  value={field.decimalMode ?? "round"}
+                  onChange={(e) =>
+                    onUpdate({
+                      field: { ...field, decimalMode: e.target.value === "cut" ? "cut" : undefined },
+                    })
+                  }
+                  className={`${inlineInputCls} w-36`}
+                  title="Round: 12.346 → 12.35. Cut off: 12.346 → 12.34."
+                >
+                  <option value="round">Round</option>
+                  <option value="cut">Cut off (truncate)</option>
+                </select>
+              )}
+              <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                Everything uses the shown number: other formulas, pass/fail and charts (new reports).
+              </span>
             </div>
           )}
 
@@ -2309,6 +2427,173 @@ const ColumnEditor: React.FC<{
                 </div>
               );
             })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * One of the three Phase Value Deviation columns, as a line in the column
+ * list. They are added when the table is drawn, so their wording, width,
+ * choices and text live in section.deviation rather than in `columns`.
+ */
+const DEVIATION_HEADER_KEY: Record<DeviationColumnId, "measured" | "criteria" | "results"> = {
+  phaseMeasured: "measured",
+  phaseCriteria: "criteria",
+  phaseResult: "results",
+};
+
+type DeviationColumnLook = NonNullable<NonNullable<SectionConfig["deviation"]>["columns"]>[DeviationColumnId];
+
+const DeviationColumnRow: React.FC<{
+  id: DeviationColumnId;
+  section: SectionConfig;
+  onUpdate: (updates: Partial<SectionConfig>) => void;
+}> = ({ id, section, onUpdate }) => {
+  const [open, setOpen] = useState(false);
+  const dev = resolveDeviation(section);
+  const own = section.deviation ?? {};
+  const mine: NonNullable<DeviationColumnLook> = own.columns?.[id] ?? {};
+  const headerKey = DEVIATION_HEADER_KEY[id];
+  const set = (patch: Partial<NonNullable<SectionConfig["deviation"]>>) =>
+    onUpdate({ deviation: { ...own, ...patch } });
+  const setColumn = (patch: Partial<NonNullable<DeviationColumnLook>>) => {
+    const next: Record<string, unknown> = { ...mine, ...patch };
+    Object.keys(next).forEach((k) => next[k] === undefined && delete next[k]);
+    const columns = { ...(own.columns ?? {}) };
+    if (Object.keys(next).length) columns[id] = next as NonNullable<DeviationColumnLook>;
+    else delete columns[id];
+    set({ columns: Object.keys(columns).length ? columns : undefined });
+  };
+
+  const choices =
+    id === "phaseCriteria"
+      ? {
+          list: dev.phaseCriteriaOptions,
+          start: dev.phaseCriteriaDefault,
+          setList: (v: string[]) => set({ phaseCriteriaOptions: v }),
+          setStart: (v: string) => set({ phaseCriteriaDefault: v }),
+        }
+      : id === "phaseResult"
+        ? {
+            list: dev.phaseResultOptions,
+            start: dev.phaseResultDefault,
+            setList: (v: string[]) => set({ phaseResultOptions: v }),
+            setStart: (v: string) => set({ phaseResultDefault: v }),
+          }
+        : null;
+  const moreCount = mine.fontSize || mine.align ? 1 : 0;
+  const cellCls = `${inlineInputCls} w-full min-w-0`;
+  const panelLabel = "w-28 shrink-0 text-[11px] font-medium text-neutral-500 dark:text-neutral-400";
+  const fixedCls =
+    "h-7 flex items-center px-2 text-[11px] text-neutral-500 dark:text-neutral-400 border border-dashed border-neutral-300 dark:border-neutral-600 truncate";
+
+  return (
+    <div
+      className={`border-b border-neutral-200 dark:border-neutral-700 ${
+        open ? "bg-neutral-50 dark:bg-dark-100" : "bg-white dark:bg-dark-150 hover:bg-neutral-50 dark:hover:bg-dark-100"
+      }`}
+    >
+      <div className={`${COLUMN_GRID} items-center px-1 py-1`}>
+        <span />
+        <input
+          value={dev.headers[headerKey] ?? ""}
+          onChange={(e) => set({ headers: { ...(own.headers ?? {}), [headerKey]: e.target.value } })}
+          placeholder="Column label"
+          title="Column label"
+          className={`${cellCls} font-medium`}
+        />
+        <input
+          value={mine.width ?? ""}
+          onChange={(e) => setColumn({ width: e.target.value.trim() || undefined })}
+          placeholder={DEVIATION_DEFAULT_WIDTHS[id]}
+          title="Column width as a % of the table. The reading columns share the rest."
+          className={cellCls}
+        />
+        <span className={fixedCls} title="Set by the report">
+          {choices ? "Dropdown" : "Worked out"}
+        </span>
+        <div className="flex items-center gap-1 min-w-0">
+          {choices ? (
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="h-7 shrink-0 px-1.5 text-[11px] border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-600 dark:text-neutral-300 hover:border-brand hover:text-brand whitespace-nowrap"
+              title="Edit this dropdown's choices"
+            >
+              {choices.list.length} choice{choices.list.length === 1 ? "" : "s"}
+            </button>
+          ) : (
+            <span className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
+              Spread of the A, B and C readings
+            </span>
+          )}
+        </div>
+        <span />
+        <span />
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className={`h-7 flex items-center justify-center gap-0.5 text-[11px] border rounded-none ${
+            open
+              ? "border-brand text-brand"
+              : "border-neutral-300 dark:border-neutral-600 text-neutral-600 dark:text-neutral-300 hover:border-brand hover:text-brand"
+          }`}
+          title={open ? "Hide more settings" : "More settings for this column"}
+          aria-expanded={open}
+        >
+          {open ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+          {moreCount > 0 && <span className="font-semibold">{moreCount}</span>}
+        </button>
+        <button
+          type="button"
+          onClick={() => onUpdate({ showDeviation: false })}
+          className="flex justify-center p-1 text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
+          title="Hide all three Phase Value Deviation columns (turn back on under Settings)"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {open && (
+        <div className="ml-8 mr-2 mb-2 border-l-2 border-brand pl-3 py-1 space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={panelLabel} title="Text size and alignment of this column's cells">
+              Text
+            </span>
+            <TextStyleControls
+              value={{ fontSize: mine.fontSize, align: mine.align }}
+              onChange={(next) => setColumn({ fontSize: next?.fontSize, align: next?.align })}
+              autoMeans="the table's Cell text"
+            />
+          </div>
+          {choices && (
+            <>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={panelLabel}>Choices</span>
+                <div className="flex-1 min-w-0">
+                  <InlineOptionsEditor
+                    options={choices.list.map((v) => ({ label: v, value: v }))}
+                    onChange={(next) => choices.setList(next.map((o) => o.label))}
+                    onAdd={() => choices.setList([...choices.list, `Option ${choices.list.length + 1}`])}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={panelLabel}>Starting value</span>
+                <select
+                  value={choices.start}
+                  onChange={(e) => choices.setStart(e.target.value)}
+                  className={`${inlineInputCls} w-32`}
+                >
+                  {choices.list.map((o) => (
+                    <option key={o}>{o}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

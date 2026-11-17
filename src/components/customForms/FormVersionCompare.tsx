@@ -12,6 +12,7 @@
  *              the update below, so what you see is what gets saved.
  */
 
+import { applyRowLayouts, captureRowLayouts, inferRowLayouts } from "@/lib/customForms/rowLayout";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
@@ -272,9 +273,15 @@ export const FormVersionCompare: React.FC = () => {
     setApplying(true);
     try {
       // The same steps the right-hand preview ran (CustomFormFiller ?upgradeTo).
-      const state = adaptStoredData(loaded.stored, target.structure);
+      // The report's row counts carry over (added / removed rows); the old
+      // version's per-row formulas do not.
+      const targetStructure = applyRowLayouts(target.structure, inferRowLayouts(target.structure, loaded.stored));
+      const state = adaptStoredData(loaded.stored, targetStructure);
       const after = upgradeRuntimeData(loaded.currentStructure, targetTemplate, projectStateToRuntime(state));
-      const merged = mergeRuntimeIntoState(state, after, target.structure);
+      const merged = mergeRuntimeIntoState(state, after, targetStructure);
+      const rowLayouts = captureRowLayouts(target.structure, targetStructure);
+      if (rowLayouts) merged.rowLayouts = rowLayouts;
+      else delete merged.rowLayouts;
       const status = upgradedStatus({
         saved: loaded.savedStatus,
         oldStructure: loaded.currentStructure,

@@ -1,11 +1,14 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 import {
+  appKeys,
   canManageQuickBooks,
   canUseQuickBooks,
   encryptToken,
   getCompanyConnection,
+  isTestConnection,
   listConnections,
+  liveEnvironment,
   QB_TOKEN_URL,
   type Connection,
 } from '../_shared/quickbooksConnection.ts'
@@ -17,6 +20,8 @@ import {
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  // Browsers block DELETE (disconnect) unless the preflight lists it
+  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
 }
 
 const json = (body: unknown, status = 200) =>
@@ -38,18 +43,10 @@ serve(async (req) => {
   }
 
   try {
-    // QB_CLIENT_ID must be set as a Supabase secret or environment variable
-    const clientId = Deno.env.get('QB_CLIENT_ID')
-    const clientSecret = Deno.env.get('QB_CLIENT_SECRET')
-    const environment = Deno.env.get('QB_ENVIRONMENT') || 'sandbox'
     const redirectUri = Deno.env.get('QB_REDIRECT_URI')
-
-    if (!clientId) {
-      throw new Error('QuickBooks credentials not configured. Missing QB_CLIENT_ID. Set it as a Supabase secret: supabase secrets set QB_CLIENT_ID=your_client_id')
-    }
-    if (!clientSecret) {
-      throw new Error('QuickBooks credentials not configured. Missing QB_CLIENT_SECRET. Set it as a Supabase secret: supabase secrets set QB_CLIENT_SECRET=your_client_secret')
-    }
+    // Test sign-ins come back to the site they started on (localhost or ampos.io).
+    // Intuit only accepts addresses listed on the app, so a made-up origin is refused there.
+    const testCallback = (origin: unknown) => `${String(origin ?? '')}/auth/quickbooks/callback`
 
     // AES encryption key for OAuth tokens (Intuit security requirement). Only needed to store tokens.
     const encryptionKey = Deno.env.get('QB_ENCRYPTION_KEY')
@@ -120,13 +117,20 @@ serve(async (req) => {
     if (req.method === 'POST') {
       // get_oauth_url: build the sign-in link (keeps the client ID server-side)
       if (body.action === 'get_oauth_url') {
+        // sandbox: connect an Intuit test company with the test keys
+        const test = !!body.sandbox
+        if (test && liveEnvironment() !== 'production') {
+          return json({ error: 'Test companies only work while the real QuickBooks is set to production.' }, 400)
+        }
+        if (test && !body.origin) return json({ error: 'Missing origin' }, 400)
+        const { clientId, environment } = appKeys(test)
         const params = new URLSearchParams({
           client_id: clientId,
           scope: 'com.intuit.quickbooks.accounting',
-          redirect_uri: redirectUri || `${body.origin}/auth/quickbooks/callback`,
+          redirect_uri: test ? testCallback(body.origin) : redirectUri || `${body.origin}/auth/quickbooks/callback`,
           response_type: 'code',
           access_type: 'offline',
-          state: 'quickbooks-oauth',
+          state: test ? 'quickbooks-oauth-sandbox' : 'quickbooks-oauth',
         })
         return json({ authUrl: `https://appcenter.intuit.com/connect/oauth2?${params.toString()}`, environment })
       }
@@ -135,6 +139,7 @@ serve(async (req) => {
       if (body.action === 'set_primary') {
         const target = body.realm_id ? await getCompanyConnection(supabase, body.realm_id) : null
         if (!target) return json({ error: 'That QuickBooks company is not connected.' }, 404)
+        if (isTestConnection(target)) return json({ error: "A test company can't be the main one." }, 400)
 
         const { error: clearError } = await table().update({ is_primary: false }).eq('is_primary', true)
         const { error: setError } = clearError
@@ -148,6 +153,12 @@ serve(async (req) => {
       const { code, realmId } = body
       if (!code) return json({ error: 'Missing authorization code' }, 400)
 
+      const test = !!body.sandbox
+      if (test && liveEnvironment() !== 'production') {
+        return json({ error: 'Test companies only work while the real QuickBooks is set to production.' }, 400)
+      }
+      const { clientId, clientSecret, environment } = appKeys(test)
+
       const tokenResponse = await fetch(QB_TOKEN_URL, {
         method: 'POST',
         headers: {
@@ -158,7 +169,7 @@ serve(async (req) => {
         body: new URLSearchParams({
           grant_type: 'authorization_code',
           code,
-          redirect_uri: redirectUri || '',
+          redirect_uri: test ? testCallback(body.origin) : redirectUri || '',
         }),
       })
 
@@ -181,7 +192,8 @@ serve(async (req) => {
       // lands in another company's books by accident.
       const existing = await listConnections(supabase)
       const others = existing.filter((r) => r.realm_id !== realm)
-      const isPrimary = existing.some((r) => r.realm_id === realm && r.is_primary) || others.length === 0
+      // A test company is never main.
+      const isPrimary = !test && (existing.some((r) => r.realm_id === realm && r.is_primary) || others.length === 0)
 
       // QuickBooks just cancelled any older login for this company
       await table().delete().eq('realm_id', realm)

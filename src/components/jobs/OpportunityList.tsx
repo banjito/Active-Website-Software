@@ -33,6 +33,7 @@ import { sendRfqEmail } from "@/lib/rfqAcknowledgment";
 import { isSuperUser } from "../../lib/roles";
 import { useDivisions } from "@/hooks/useDivisions";
 import { jobDivisionOptions } from "@/services/divisionsService";
+import { DivisionFilterOptions } from "./DivisionFilterOptions";
 import MarkLostModal, {
   LOST_REASON_CATEGORIES,
   LostInfo,
@@ -2628,11 +2629,16 @@ export default function OpportunityList() {
                     <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
                       Division
                     </div>
-                    {renderFilterOptions(
-                      divisionFilterOptions,
-                      divisionFilters,
-                      setDivisionFilters,
-                    )}
+                    <DivisionFilterOptions
+                      selected={divisionFilters}
+                      onChange={(next) => {
+                        setDivisionFilters(next);
+                        setPage(1);
+                      }}
+                    />
+                    <div className="mt-1 px-2 text-xs text-neutral-500 dark:text-dark-400">
+                      Saved as your default here and on the calendar.
+                    </div>
                   </div>
                   <div className="mt-2">
                     <div className="mb-1 block text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">

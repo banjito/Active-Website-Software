@@ -21,6 +21,8 @@ export interface SendEmailOptions {
   replyTo?: string;
   /** Optional copied recipients, same accepted shapes as `to`. */
   cc?: string | string[];
+  /** Optional files. `content` is base64. */
+  attachments?: { filename: string; content: string }[];
 }
 
 export interface SendEmailResult {
@@ -88,6 +90,7 @@ export const sendEmail = async (
         ...(options.text ? { text: options.text } : {}),
         ...(options.replyTo ? { reply_to: options.replyTo } : {}),
         ...(ccList.length ? { cc: ccList } : {}),
+        ...(options.attachments?.length ? { attachments: options.attachments } : {}),
       }),
     });
 

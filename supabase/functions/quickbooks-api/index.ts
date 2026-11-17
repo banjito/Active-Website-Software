@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { encode as base64Encode } from 'https://deno.land/std@0.168.0/encoding/base64.ts'
 import {
   canUseQuickBooks,
   getAccessToken,
@@ -74,6 +75,9 @@ serve(async (req) => {
       }, 400)
     }
 
+    // .../invoice/{id}/pdf returns the PDF, sent back as base64
+    const wantsPdf = /\/pdf(\?|$)/.test(endpoint)
+
     const callIntuit = (connection: Connection, accessToken: string) => {
       const url = intuitUrl(connection, endpoint)
       console.log(`QuickBooks API call: ${method} ${url}`)
@@ -81,7 +85,7 @@ serve(async (req) => {
         method,
         headers: {
           'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json',
+          'Accept': wantsPdf ? 'application/pdf' : 'application/json',
           'Content-Type': 'application/json',
         },
         body: data ? JSON.stringify(data) : undefined,
@@ -95,6 +99,10 @@ serve(async (req) => {
     if (apiResponse.status === 401) {
       ;({ token, connection } = await getAccessToken(supabase, encryptionKey, connection.access_token, realmId))
       apiResponse = await callIntuit(connection, token)
+    }
+
+    if (wantsPdf && apiResponse.ok) {
+      return json({ pdf_base64: base64Encode(new Uint8Array(await apiResponse.arrayBuffer())) })
     }
 
     const responseText = await apiResponse.text()

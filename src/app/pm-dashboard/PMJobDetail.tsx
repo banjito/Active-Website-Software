@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { AlertTriangle, ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Pencil, Plus, Printer, Save, Settings, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, FlaskConical, Pencil, Plus, Printer, Save, Settings, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { useDemoMode } from '@/lib/DemoModeContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -9,6 +9,9 @@ import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { REPORT_NAMES } from '@/components/reports/reportMappings';
+import { TestBillDialog } from './TestBillDialog';
+import { JobBills } from './JobBills';
+import { fetchJobBills, type JobBill } from '@/services/sovBillingService';
 import { formatChangeOrderNumber } from '@/services/changeOrderService';
 import {
   contractTotal,
@@ -213,6 +216,17 @@ export default function PMJobDetail() {
   const [appliedGc, setAppliedGc] = useState<GeneralConditions | null>(null);
   const [gcDraft, setGcDraft] = useState({ monthly: '', months: '', start: '', fromPrice: true });
   const [setupOpen, setSetupOpen] = useState(false);
+  const [testBillOpen, setTestBillOpen] = useState(false);
+  const [bills, setBills] = useState<JobBill[]>([]);
+  const loadBills = useCallback(() => {
+    if (!jobId) return;
+    fetchJobBills(jobId)
+      .then(setBills)
+      .catch((err) => console.error('[PM job] Bills failed to load:', err));
+  }, [jobId]);
+  useEffect(() => {
+    loadBills();
+  }, [loadBills]);
   // Weekly update (item 9): defaults to last week, the one due on Monday
   const lastWeek = shiftWeekKey(weekKey(new Date()), -1);
   const [week, setWeek] = useState(lastWeek);
@@ -1457,6 +1471,28 @@ export default function PMJobDetail() {
                   Print SOV
                 </Button>
               )}
+              {lines.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<FlaskConical className="h-4 w-4" />}
+                  onClick={() => setTestBillOpen(true)}
+                  disabled={!canPrint}
+                  title={canPrint ? 'Make this month\'s invoice in the QuickBooks test company' : 'Save the SOV first'}
+                >
+                  Test bill
+                </Button>
+              )}
+              <TestBillDialog
+                open={testBillOpen}
+                onOpenChange={setTestBillOpen}
+                job={job}
+                lines={lines}
+                progress={progress}
+                month={month}
+                bills={bills}
+                onBillsChanged={loadBills}
+              />
             </div>
 
             <div className="overflow-x-auto">
@@ -1531,6 +1567,7 @@ export default function PMJobDetail() {
                 </tbody>
               </table>
             </div>
+            <JobBills bills={bills} job={job} onChanged={loadBills} />
           </div>
         )}
 

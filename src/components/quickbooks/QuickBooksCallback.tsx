@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 
+// A sign-in code works once. Dev mode runs the page's startup twice, so remember used codes.
+const usedCodes = new Set<string>();
+
 export default function QuickBooksCallback() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +35,8 @@ export default function QuickBooksCallback() {
           setLoading(false);
           return;
         }
+        if (usedCodes.has(code)) return;
+        usedCodes.add(code);
 
         // Get current session
         const {
@@ -49,7 +54,13 @@ export default function QuickBooksCallback() {
         const { data, error: exchangeError } = await supabase.functions.invoke(
           "quickbooks-oauth",
           {
-            body: { code, realmId },
+            body: {
+              code,
+              realmId,
+              // A test company sign-in must finish with the same test keys
+              sandbox: searchParams.get("state") === "quickbooks-oauth-sandbox",
+              origin: window.location.origin,
+            },
             headers: {
               Authorization: `Bearer ${session.access_token}`,
             },

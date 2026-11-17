@@ -6,13 +6,16 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { supabase } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { DivisionFilterOptions } from "./DivisionFilterOptions";
 
 interface OpportunityCalendarItem {
   id: string;
   title: string | null;
   quote_number: string;
   proposal_due_date: string | null;
+  amp_division: string | null;
   estimate_approval_status: string | null;
 }
 
@@ -104,6 +107,29 @@ export function OpportunitiesCalendarView() {
     return end;
   });
 
+  // Same saved division picks as the list view, so one default covers both.
+  // Empty = show everything (the default for everyone).
+  const { preferences, updatePreference } = useUserPreferences();
+  const savedDivisions = preferences.filters?.opportunityList?.divisionFilter;
+  const divisionFilters: string[] = (
+    Array.isArray(savedDivisions) ? savedDivisions : [savedDivisions]
+  ).filter((v): v is string => typeof v === "string" && v.length > 0);
+  const setDivisionFilters = (next: string[]) =>
+    updatePreference("filters.opportunityList.divisionFilter", next);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isFilterOpen) return;
+    const onOutside = (e: MouseEvent) => {
+      if (!filterMenuRef.current?.contains(e.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onOutside);
+    return () => document.removeEventListener("mousedown", onOutside);
+  }, [isFilterOpen]);
+
   const loadOpportunities = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -111,7 +137,7 @@ export function OpportunitiesCalendarView() {
       const { data: oppData, error: oppErr } = await supabase
         .schema("business")
         .from("opportunities")
-        .select("id, title, quote_number, proposal_due_date")
+        .select("id, title, quote_number, proposal_due_date, amp_division")
         .is("change_order_job_id", null) // Change Order quotes stay on their job
         .not("proposal_due_date", "is", null)
         .order("proposal_due_date", { ascending: true });
@@ -205,6 +231,12 @@ export function OpportunitiesCalendarView() {
   }, [loadOpportunities]);
 
   const events = opportunities
+    .filter(
+      (opp) =>
+        divisionFilters.length === 0 ||
+        (opp.amp_division != null &&
+          divisionFilters.includes(opp.amp_division)),
+    )
     .map((opp) => {
       const due = parseDate(opp.proposal_due_date);
       if (!due) return null;
@@ -521,6 +553,47 @@ export function OpportunitiesCalendarView() {
                 >
                   Today
                 </button>
+                <div className="relative" ref={filterMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsFilterOpen((prev) => !prev)}
+                    className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-none transition-colors ${
+                      divisionFilters.length > 0
+                        ? "text-brand"
+                        : "text-neutral-600 dark:text-dark-400 hover:bg-neutral-100 dark:hover:bg-dark-200"
+                    }`}
+                    aria-expanded={isFilterOpen}
+                    aria-label="Filter by division"
+                  >
+                    <Filter className="h-3.5 w-3.5" />
+                    {divisionFilters.length > 0
+                      ? `Divisions (${divisionFilters.filter((d) => d !== "field_tech").length})`
+                      : "All divisions"}
+                  </button>
+                  {isFilterOpen && (
+                    <div className="absolute right-0 z-20 mt-2 w-64 rounded-none border border-neutral-200 dark:border-dark-300 bg-white dark:bg-dark-150 p-3 shadow-lg">
+                      <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-dark-400">
+                        Division
+                      </div>
+                      <DivisionFilterOptions
+                        selected={divisionFilters}
+                        onChange={setDivisionFilters}
+                      />
+                      <div className="mt-1 px-2 text-xs text-neutral-500 dark:text-dark-400">
+                        Saved as your default here and on the list.
+                      </div>
+                      {divisionFilters.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setDivisionFilters([])}
+                          className="mt-3 w-full rounded-none border border-neutral-300 dark:border-dark-300 px-3 py-1.5 text-sm font-medium text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-100"
+                        >
+                          Show all divisions
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
               {/* Days of the week at the top */}
               <div className="grid grid-cols-7 border-b border-neutral-200 dark:border-dark-300 bg-neutral-50 dark:bg-dark-200/60">

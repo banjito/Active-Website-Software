@@ -712,6 +712,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isEngineeringPortal = /^\/engineering(\/|$)/.test(location.pathname);
   // Custom form pages (templates, builder, component editor) need the full width, so no sidebar there.
   const isFormBuilder = location.pathname.startsWith("/custom-forms/");
+  // The Office page is one full-width screen, so no sidebar there either.
+  const isOfficePage = /^\/office(\/|$)/.test(location.pathname);
 
   // If embedded mode, render children without any chrome
   if (isEmbedded) {
@@ -876,21 +878,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 }`}
               >
                 Jobs & billing
-              </Button>
-            </Link>
-            <Link
-              to="/office/vendors"
-              onClick={() => setIsMobileSidebarOpen(false)}
-            >
-              <Button
-                variant="ghost"
-                className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
-                  location.pathname === "/office/vendors"
-                    ? "bg-black/5 dark:bg-dark-50"
-                    : ""
-                }`}
-              >
-                Vendors
               </Button>
             </Link>
           </>
@@ -1071,7 +1058,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     );
   }
 
-  const sidebar = !isMeetingsPage && !isEngineeringPortal && !isFormBuilder ? (
+  const sidebar = !isMeetingsPage && !isEngineeringPortal && !isFormBuilder && !isOfficePage ? (
     <div
       ref={sidebarRef}
       className={`
@@ -1370,7 +1357,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="flex min-h-0 flex-1 min-w-0">
           {sidebar}
           <div className="flex flex-col flex-1 min-w-0">
-            {(!isEngineeringPortal || isReportPage) && !isFormBuilder && (
+            {(!isEngineeringPortal || isReportPage) && !isFormBuilder && !isOfficePage && (
             <div
               className={`flex items-center gap-2 px-3 py-2 border-b border-neutral-200 dark:border-dark-200 print:hidden ${
                 isReportPage ? "" : "lg:hidden"

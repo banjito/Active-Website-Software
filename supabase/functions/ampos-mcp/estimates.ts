@@ -14,6 +14,11 @@
 // Writes: every edit checks a revision (a fingerprint of the saved contents;
 // the app never updates estimates.updated_at) so it never overwrites a newer
 // edit, and every save leaves a note on the opportunity saying what the AI did.
+//
+// Travel: Claude sets counts (trips, miles, days, people) only. Every rate
+// stays as the company presets set it, like labor rates. Travel hours follow
+// the sheet: computeTravelTotals().laborHours, all straight time unless the
+// estimator split them by hand.
 
 import { canUseSales } from "./access.ts";
 import { APP_URL, clampLimit, cleanSearch, type Row, str } from "./lib.ts";
@@ -26,11 +31,13 @@ import {
   computeDaysOnsite,
   computeLaborRateSplit,
   computeLineItemTotals,
+  computeTravelTotals,
   createEmptyTravelGroup,
   DEFAULT_ESTIMATING_PRESETS as D,
   DEFAULT_MOBILIZATION_FACTORS,
   DEFAULT_PAYMENT_TERM_FACTORS,
   DEFAULT_TRAVEL_DATA,
+  normalizeTravelData,
   sanitizePaymentTermFactors,
   summarizeEstimateSnapshot,
   toPriceNumber,
@@ -261,7 +268,10 @@ async function libraryItems(ctx: ToolContext, ids: string[]): Promise<Row[]> {
 
 // ------------------------------------------------------------------- math
 
-/** Re-derives every calculated value. Mirrors the sheet's recalculation; travel is left as saved. */
+/**
+ * Re-derives every calculated value from the rows and data.travel_data.
+ * Mirrors the sheet's recalculation and fullEstimateData.recalculateFullEstimate.
+ */
 function recalc(data: Row): Row {
   const sovItems = (data.sovItems || []).map(rollUp);
   const sovHours = computeLineItemTotals(sovItems, []).sovLaborHours;
@@ -270,7 +280,7 @@ function recalc(data: Row): Row {
   );
   const cv = computeLineItemTotals(sovItems, nonSovItems);
   const hs = data.hoursSummary || {};
-  const travelHours = num(hs.travelHours);
+  const travelHours = computeTravelTotals(data.travel_data).laborHours;
   return {
     ...data,
     sovItems,
@@ -284,23 +294,220 @@ function recalc(data: Row): Row {
       travelHours,
       totalHours: cv.totalLaborHours + travelHours,
       ...(data.isManualLaborHours ? {} : computeLaborRateSplit(cv.totalLaborHours, num(hs.hoursPerDay))),
+      ...(data.isManualTravelLaborHours
+        ? {}
+        : { travelStraightTimeHours: travelHours, travelOvertimeHours: 0, travelDoubleTimeHours: 0 }),
     },
   };
 }
 
 /** The proposal letter's prices: ceil(FINAL x NET factor) + mobilization added on top. */
 function priceOf(data: Row, travel: unknown): Row {
-  const s = summarizeEstimateSnapshot(data, travel, positiveOr(data.materialMarkup, D.default_markup_factor));
+  const markup = positiveOr(data.materialMarkup, D.default_markup_factor);
   const f = sanitizePaymentTermFactors(data.paymentTermFactors);
-  const option = (k: "net30" | "net60" | "net90") => Math.ceil(s.finalValue * f[k]) + s.mobilizationAdded;
-  return {
-    net30: option("net30"),
-    net60: option("net60"),
-    net90: option("net90"),
+  const terms = (s: ReturnType<typeof summarizeEstimateSnapshot>) => {
+    const option = (k: "net30" | "net60" | "net90") => Math.ceil(s.finalValue * f[k]) + s.mobilizationAdded;
+    return { net30: option("net30"), net60: option("net60"), net90: option("net90") };
+  };
+  const s = summarizeEstimateSnapshot(data, travel, markup);
+  const out: Row = {
+    ...terms(s),
     mobilization: s.mobilization,
     travel_cost: Math.round(s.travelNonLabor * 100) / 100,
     ...(s.isManualPrice && kindOf(data) !== "simple" ? { note: "The price on this estimate was typed in by hand." } : {}),
   };
+  if (kindOf(data) === "simple") return out;
+  // Saturday and Sunday/Holiday prices: same math with that day's hours table
+  // (EstimateSheet getDayFinalValue). Shown but empty = the weekday price.
+  for (const day of DAYS) {
+    const k = DAY_KEYS[day];
+    if (!data[k.show]) continue;
+    const hours = data[k.hours];
+    out[day] = hours && typeof hours === "object"
+      ? terms(summarizeEstimateSnapshot({ ...data, hoursSummary: { ...(data.hoursSummary || {}), ...hours } }, travel, markup))
+      : terms(s);
+  }
+  return out;
+}
+
+// --------------------------------------------------------- travel + weekend
+
+/** Travel counts Claude may set, by section. Rates are left out on purpose. */
+const TRAVEL_FIELDS: Record<string, string[]> = {
+  perDiem: ["numDays", "numMen"],
+  lodging: ["numNights", "numMen"],
+  localMiles: ["numDays", "numVehicles", "milesPerDay"],
+  airTravel: ["numMen", "numTrips", "numFlights", "oneWayHoursInAir"],
+  rentalCar: ["numCars", "numDays"],
+};
+const TRIP_FIELDS = ["trips", "oneWayMiles", "numVehicles", "numMen"];
+const MAX_TRIP_GROUPS = 20;
+
+const isObject = (v: unknown): v is Row => !!v && typeof v === "object" && !Array.isArray(v);
+
+const count = (v: unknown, where: string): number => {
+  const n = typeof v === "string" ? Number(v) : v;
+  if (typeof n !== "number" || !Number.isFinite(n) || n < 0) throw new Error(`${where} must be a number, 0 or more.`);
+  return n;
+};
+
+/** Refuses unknown keys, so a rate can never slip in. */
+function onlyKeys(input: Row, allowed: string[], where: string) {
+  const extra = Object.keys(input).filter((k) => !allowed.includes(k));
+  if (extra.length) {
+    throw new Error(
+      `${where} can't set ${extra.join(", ")}. Allowed: ${allowed.join(", ")}. Rates come from the company presets and can't be changed here.`,
+    );
+  }
+}
+
+/** Travel from the company presets. Mirrors fullEstimateData.createFullEstimateData. */
+function presetTravel(presets: Row, men: number): Row {
+  const p = { ...D, ...presets };
+  const vehicles = num(p.default_number_of_vehicles);
+  const perMile = num(p.default_vehicle_cost_per_mile);
+  return {
+    ...DEFAULT_TRAVEL_DATA,
+    travel: [{ ...createEmptyTravelGroup(), numVehicles: vehicles, rate: perMile, numMen: men }],
+    perDiem: { numDays: 0, dailyRate: num(p.default_per_diem_rate), numMen: men },
+    lodging: { numNights: 0, numMen: men, rate: num(p.default_lodging_rate) },
+    localMiles: { numDays: 0, numVehicles: vehicles, milesPerDay: num(p.default_local_miles_per_day), rate: perMile },
+    airTravel: {
+      numMen: num(p.default_flight_number_of_men),
+      numTrips: 0,
+      numFlights: 0,
+      flightRate: num(p.default_flight_rate),
+      luggageFees: num(p.default_flight_luggage_fees),
+      oneWayHoursInAir: 0,
+    },
+    rentalCar: { numCars: num(p.default_rental_number_of_cars), numDays: 0, rate: num(p.default_rental_rate) },
+  };
+}
+
+/**
+ * Claude's travel -> saved travel_data. Fields left out keep their value.
+ * `travel` (trip groups) replaces the list; a group keeps the old group's
+ * values at the same position, and new groups copy the first group's rate.
+ */
+function travelIn(input: unknown, saved: Row): Row {
+  if (!isObject(input)) throw new Error("travel must be an object.");
+  onlyKeys(input, ["travel", ...Object.keys(TRAVEL_FIELDS)], "travel");
+  const out: Row = normalizeTravelData(saved);
+  const setCounts = (target: Row, src: Row, keys: string[], where: string) => {
+    onlyKeys(src, keys, where);
+    for (const k of keys) if (has(src, k)) target[k] = count(src[k], `${where}.${k}`);
+  };
+
+  if (has(input, "travel")) {
+    if (!Array.isArray(input.travel)) throw new Error("travel.travel must be a list of trip groups.");
+    if (input.travel.length > MAX_TRIP_GROUPS) throw new Error(`Too many trip groups (max ${MAX_TRIP_GROUPS}).`);
+    const first = out.travel[0] ?? createEmptyTravelGroup();
+    const fresh = () => ({ ...createEmptyTravelGroup(), numVehicles: first.numVehicles, numMen: first.numMen, rate: first.rate });
+    const groups = input.travel.map((g: unknown, i: number) => {
+      if (!isObject(g)) throw new Error(`travel.travel[${i}] must be an object.`);
+      const group = { ...(out.travel[i] ?? fresh()) };
+      setCounts(group, g, TRIP_FIELDS, `travel.travel[${i}]`);
+      return group;
+    });
+    // The sheet always shows at least one trip group.
+    out.travel = groups.length ? groups : [fresh()];
+  }
+  for (const [section, keys] of Object.entries(TRAVEL_FIELDS)) {
+    if (!has(input, section)) continue;
+    if (!isObject(input[section])) throw new Error(`travel.${section} must be an object.`);
+    out[section] = { ...out[section] };
+    setCounts(out[section], input[section], keys, `travel.${section}`);
+  }
+  return out;
+}
+
+/** What get_estimate shows for travel: the saved inputs (rates read-only). */
+function travelOut(travel: Row): Row {
+  const t = normalizeTravelData(travel);
+  const totals = computeTravelTotals(t);
+  return {
+    ...t,
+    computed: {
+      drive_hours: Math.round(totals.travel.hours * 100) / 100,
+      air_hours: Math.round(totals.airTravel.hours * 100) / 100,
+      vehicle_miles: Math.round(totals.travel.vehicleMiles),
+    },
+  };
+}
+
+type Day = "saturday" | "sunday";
+const DAYS: Day[] = ["saturday", "sunday"];
+const DAY_KEYS: Record<Day, { show: string; manual: string; hours: string; label: string }> = {
+  saturday: { show: "showSaturdayHours", manual: "isManualSaturdayHours", hours: "saturdayHoursSummary", label: "Saturday" },
+  sunday: { show: "showSundayHours", manual: "isManualSundayHours", hours: "sundayHoursSummary", label: "Sunday/Holiday" },
+};
+/** Claude's names -> the sheet's hours-table fields. */
+const DAY_FIELDS: Record<string, string> = {
+  straight_time: "straightTimeHours",
+  overtime: "overtimeHours",
+  double_time: "doubleTimeHours",
+  travel_straight_time: "travelStraightTimeHours",
+  travel_overtime: "travelOvertimeHours",
+  travel_double_time: "travelDoubleTimeHours",
+};
+
+/** Saturday or Sunday/Holiday hours table. Mirrors EstimateSheet handleSaturdayHoursChange / "Copy from M-F". */
+function applyDay(data: Row, day: Day, input: unknown) {
+  if (!isObject(input)) throw new Error(`${day} must be an object.`);
+  onlyKeys(input, ["show", "copy_from_weekday", ...Object.keys(DAY_FIELDS)], day);
+  const k = DAY_KEYS[day];
+  if (has(input, "show")) data[k.show] = input.show === true;
+  const given = Object.keys(DAY_FIELDS).filter((f) => has(input, f));
+  if (input.copy_from_weekday !== true && !given.length) return;
+  const hs = data.hoursSummary || {};
+  const table: Row = {};
+  for (const field of Object.values(DAY_FIELDS)) {
+    table[field] = input.copy_from_weekday === true ? num(hs[field]) : num(data[k.hours]?.[field]);
+  }
+  for (const f of given) table[DAY_FIELDS[f]] = count(input[f], `${day}.${f}`);
+  data[k.hours] = table;
+  data[k.manual] = true;
+}
+
+function dayOut(data: Row, day: Day): Row {
+  const k = DAY_KEYS[day];
+  const out: Row = { show: !!data[k.show] };
+  const hours = data[k.hours];
+  if (hours && typeof hours === "object") {
+    for (const [name, field] of Object.entries(DAY_FIELDS)) out[name] = num(hours[field]);
+  }
+  return out;
+}
+
+/**
+ * The last steps of every Advanced/Guided save: travel, recalculation,
+ * weekend hours (after recalc, so "copy from weekday" copies fresh hours).
+ */
+function finishAdvanced(input: Row, args: Row, warnings: string[]): Row {
+  let data = { ...input };
+  if (has(args, "travel")) {
+    data.travel_data = travelIn(args.travel, data.travel_data);
+    if (data.travelNonLaborOverride) {
+      warnings.push(
+        `Travel dollars on this estimate are fixed at ${dollars(num(data.travelNonLaborValue))} (set when a scope was split), so the new travel counts don't change the price. Check it in the app.`,
+      );
+    }
+    if (data.isManualTravelLaborHours) {
+      warnings.push("Travel straight/overtime/double-time hours were split by hand and were not changed. Check them in the app.");
+    }
+  }
+  data = recalc(data);
+  for (const day of DAYS) if (has(args, day)) applyDay(data, day, args[day]);
+  for (const day of DAYS) {
+    const k = DAY_KEYS[day];
+    if (data[k.show] && !isObject(data[k.hours])) {
+      warnings.push(`${k.label} is shown but has no hours yet, so its price equals Monday-Friday.`);
+    } else if (data[k.show] && has(args, "travel") && args[day]?.copy_from_weekday !== true) {
+      warnings.push(`${k.label} hours are set by hand, so their travel hours did not follow the new travel. Pass ${day}.copy_from_weekday or set them.`);
+    }
+  }
+  warnings.push(...rowWarnings(data.sovItems));
+  return data;
 }
 
 /** Fingerprint of the saved contents. Changes whenever anyone saves the estimate. */
@@ -383,8 +590,6 @@ const SIMPLE_DEFAULT_TRAVEL = ["Mileage", "Lodging", "Per Diem", "Airfare", "Ren
 function advancedData(presets: Row, job: Row): Row {
   const p = { ...D, ...presets };
   const men = positiveOr(job.men, positiveOr(p.default_number_of_men, D.default_number_of_men));
-  const vehicles = num(p.default_number_of_vehicles);
-  const perMile = num(p.default_vehicle_cost_per_mile);
   return {
     title: job.title || "",
     client: job.client || "",
@@ -414,22 +619,7 @@ function advancedData(presets: Row, job: Row): Row {
       doubleTime: positiveOr(p.double_time_rate, D.double_time_rate),
     },
     materialMarkup: positiveOr(p.default_markup_factor, D.default_markup_factor),
-    travel_data: {
-      ...DEFAULT_TRAVEL_DATA,
-      travel: [{ ...createEmptyTravelGroup(), numVehicles: vehicles, rate: perMile, numMen: men }],
-      perDiem: { numDays: 0, dailyRate: num(p.default_per_diem_rate), numMen: men },
-      lodging: { numNights: 0, numMen: men, rate: num(p.default_lodging_rate) },
-      localMiles: { numDays: 0, numVehicles: vehicles, milesPerDay: num(p.default_local_miles_per_day), rate: perMile },
-      airTravel: {
-        numMen: num(p.default_flight_number_of_men),
-        numTrips: 0,
-        numFlights: 0,
-        flightRate: num(p.default_flight_rate),
-        luggageFees: num(p.default_flight_luggage_fees),
-        oneWayHoursInAir: 0,
-      },
-      rentalCar: { numCars: num(p.default_rental_number_of_cars), numDays: 0, rate: num(p.default_rental_rate) },
-    },
+    travel_data: presetTravel(presets, men),
     paymentTermFactors: { ...DEFAULT_PAYMENT_TERM_FACTORS },
     mobilizationFactors: { ...DEFAULT_MOBILIZATION_FACTORS },
     selectedSovPriceTerm: "net30",
@@ -508,21 +698,102 @@ async function leaveNote(ctx: ToolContext, opportunityId: string, content: strin
   });
 }
 
+async function loadPresets(ctx: ToolContext): Promise<Row> {
+  const { data } = await ctx.supabase.schema("business").from("estimating_presets").select("*").limit(1);
+  return ((data ?? []) as Row[])[0] ?? {};
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  in_progress: "In progress",
+  ready_for_review: "Ready for Review",
+  approved_to_send: "Approved to send",
+  sent: "Sent",
+  no_quote: "No quote",
+};
+const statusLabel = (s: unknown) => STATUS_LABEL[String(s)] ?? "no status";
+
+/** Claude may only move an estimate between In progress and Ready for Review. Approving stays in the app. */
+function statusIn(value: unknown, current: unknown): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  const s = str(value);
+  if (s !== "in_progress" && s !== "ready_for_review") {
+    throw new Error("status can only be in_progress or ready_for_review. Approving and marking sent happen in the app.");
+  }
+  if (current === "approved_to_send" || current === "sent") {
+    throw new Error(`This estimate is already ${statusLabel(current)}. Change its status in the app.`);
+  }
+  return s;
+}
+
+const SIMPLE_ONLY = ["items", "markup", "travel_items"];
+const ADVANCED_ONLY = ["sov_rows", "non_sov_rows", "location", "travel", "saturday", "sunday"];
+
+/**
+ * Applies the edit fields in args to saved estimate data. Fields left out keep
+ * their value; row lists are replaced. Used by update_estimate, and by
+ * create_estimate when it starts from a copy.
+ */
+async function applyEdits(ctx: ToolContext, old: Row, oldTravel: Row, args: Row): Promise<{ data: Row; warnings: string[] }> {
+  const kind = kindOf(old);
+  const warnings: string[] = [];
+  if (kind === "simple") {
+    const wrong = ADVANCED_ONLY.filter((k) => has(args, k));
+    if (wrong.length) {
+      throw new Error(`This is a Simple estimate, which has no ${wrong.join(", ")}. Change items, markup or travel_items instead.`);
+    }
+    if (Array.isArray(args.items) && args.items.length > MAX_ROWS) throw new Error(`Too many items (max ${MAX_ROWS}).`);
+    const data = simpleData(
+      has(args, "title") ? str(args.title) : old.title || "",
+      Array.isArray(args.items) ? args.items : old.simpleItems ?? [],
+      has(args, "markup") ? args.markup : old.simpleMarkupMultiplier,
+      Array.isArray(args.travel_items) ? args.travel_items : old.simpleTravelItems ?? [],
+    );
+    return { data, warnings };
+  }
+  if (SIMPLE_ONLY.some((k) => has(args, k))) {
+    throw new Error(`${KIND_LABEL[kind]} estimates take sov_rows and non_sov_rows, not items, markup or travel_items.`);
+  }
+  const lib = await loadLibrary(ctx, [args.sov_rows, args.non_sov_rows]);
+  const data: Row = { ...old };
+  if (has(args, "title")) data.title = str(args.title);
+  if (has(args, "job_description")) data.jobDescription = str(args.job_description);
+  if (has(args, "notes")) data.notes = str(args.notes);
+  if (has(args, "due_date")) data.dateDue = isoDate(args.due_date) ?? "";
+  if (has(args, "location")) data.location = str(args.location);
+  const hs = { ...(old.hoursSummary || {}) };
+  if (has(args, "techs")) hs.men = positiveOr(args.techs, num(hs.men) || D.default_number_of_men);
+  if (has(args, "hours_per_day")) hs.hoursPerDay = positiveOr(args.hours_per_day, num(hs.hoursPerDay) || D.default_hours_per_day);
+  data.hoursSummary = hs;
+  if (has(args, "sov_rows")) data.sovItems = rowsIn(args.sov_rows, old.sovItems || [], lib, true);
+  if (has(args, "non_sov_rows")) data.nonSovItems = rowsIn(args.non_sov_rows, old.nonSovItems || [], lib, false);
+  // An estimate saved with no travel gets the company's travel rates before its counts are set.
+  data.travel_data = Object.keys(oldTravel).length || !has(args, "travel")
+    ? oldTravel
+    : presetTravel(await loadPresets(ctx), num(hs.men) || D.default_number_of_men);
+  const out = finishAdvanced(data, args, warnings);
+  if (out.isManualLaborHours) {
+    warnings.push("Straight/overtime/double-time hours were set by hand on this estimate and were not changed. Check them in the app.");
+  }
+  return { data: out, warnings };
+}
+
 /** What get_estimate, create and update all return. */
 async function describe(row: Row, opp: Row): Promise<Row> {
   const data = parseJson(row.data);
   const kind = kindOf(data);
   const travel = travelOf(row, data);
   const hs = data.hoursSummary || {};
+  const price = priceOf(data, travel);
   const base: Row = {
     estimate_id: row.id,
     version: row.quote_number,
     kind: KIND_LABEL[kind],
     title: data.title || undefined,
     status: row.status ?? null,
+    status_label: statusLabel(row.status),
     revision: await revisionOf(row),
     opportunity: { quote_number: opp.quote_number, title: opp.title, link: oppLink(opp.id) },
-    price: priceOf(data, travel),
+    price,
   };
   if (kind === "simple") {
     return {
@@ -552,6 +823,14 @@ async function describe(row: Row, opp: Row): Promise<Row> {
     },
     rates: data.hourlyRates,
     material_markup: num(data.materialMarkup) || undefined,
+    travel_totals: {
+      cost: price.travel_cost,
+      hours: Math.round(num(hs.travelHours) * 100) / 100,
+      ...(data.travelNonLaborOverride ? { note: "Travel dollars are a fixed amount set when a scope was split." } : {}),
+    },
+    travel: travelOut(travel),
+    saturday: dayOut(data, "saturday"),
+    sunday: dayOut(data, "sunday"),
     sov_rows: (data.sovItems || []).map(rowOut).filter((r: Row) => r.type || r.item || r.quantity || r.hours || r.material),
     non_sov_rows: (data.nonSovItems || []).map(rowOut),
   };
@@ -616,8 +895,66 @@ const SIMPLE_TRAVEL_SCHEMA = {
   additionalProperties: false,
 };
 
+const countProps = (keys: string[], notes: Record<string, string> = {}) =>
+  Object.fromEntries(
+    keys.map((k) => [k, { type: "number", minimum: 0, ...(notes[k] ? { description: notes[k] } : {}) }]),
+  );
+const travelSection = (keys: string[], description: string, notes: Record<string, string> = {}) => ({
+  type: "object",
+  description,
+  properties: countProps(keys, notes),
+  additionalProperties: false,
+});
+
+const TRAVEL_SCHEMA = {
+  type: "object",
+  description:
+    "Advanced/Guided: travel counts, same structure as get_estimate's travel. Fields left out keep their value. " +
+    "Rates (mileage, per diem, lodging, flight, rental) are company presets and can't be set here. " +
+    "Travel hours and cost are worked out with the app's math and returned.",
+  properties: {
+    travel: {
+      type: "array",
+      maxItems: MAX_TRIP_GROUPS,
+      description: "Drive trip groups. REPLACES the list: send every group to keep, in order.",
+      items: travelSection(TRIP_FIELDS, "One trip group.", {
+        trips: "Round trips.",
+        oneWayMiles: "One-way miles from the shop.",
+        numMen: "People in the vehicles (drive hours = miles / 50 mph x 2 x trips x people).",
+      }),
+    },
+    perDiem: travelSection(TRAVEL_FIELDS.perDiem, "Per diem."),
+    lodging: travelSection(TRAVEL_FIELDS.lodging, "Hotel."),
+    localMiles: travelSection(TRAVEL_FIELDS.localMiles, "Daily driving near the site."),
+    airTravel: travelSection(TRAVEL_FIELDS.airTravel, "Flights.", {
+      numTrips: "Round trips flown (counts air hours).",
+      numFlights: "Tickets per person (counts flight cost).",
+      oneWayHoursInAir: "Hours in the air one way. 2 hours of terminal time per round trip are added.",
+    }),
+    rentalCar: travelSection(TRAVEL_FIELDS.rentalCar, "Rental cars."),
+  },
+  additionalProperties: false,
+};
+
+const daySchema = (label: string) => ({
+  type: "object",
+  description:
+    `Advanced/Guided: the ${label} hours table, priced as its own NET 30/60/90 line on the proposal. ` +
+    "Fields left out keep their value. Setting hours marks the table as set by hand, like the app.",
+  properties: {
+    show: { type: "boolean", description: `Show ${label} pricing on the estimate and proposal.` },
+    copy_from_weekday: { type: "boolean", description: "Start from the Monday-Friday hours (the app's \"Copy from M-F\"), then apply any hours given." },
+    ...countProps(Object.keys(DAY_FIELDS)),
+  },
+  additionalProperties: false,
+});
+
 const SHARED_EDIT_PROPS = {
   title: { type: "string", description: "Estimate title shown on its tab." },
+  location: { type: "string", description: "Site address (Advanced/Guided). Default on create: the opportunity's jobsite, else the customer address." },
+  travel: TRAVEL_SCHEMA,
+  saturday: daySchema("Saturday"),
+  sunday: daySchema("Sunday/Holiday"),
   job_description: { type: "string" },
   notes: { type: "string", description: "Internal estimate notes (Advanced)." },
   due_date: { type: "string", description: "Customer due date, YYYY-MM-DD (Advanced)." },
@@ -637,8 +974,10 @@ export const ESTIMATE_TOOLS: Tool[] = [
     name: "get_estimate",
     title: "Read an estimate",
     description:
-      "One estimate: its rows (SOV and non-SOV, with sub-rows), crew, hours, rates and the prices the proposal " +
-      "letter would show (NET 30/60/90, same math as the app). Look up by estimate_id, or by the opportunity's " +
+      "One estimate: its rows (SOV and non-SOV, with sub-rows), crew, location, hours, travel (counts, read-only " +
+      "rates, cost and hours), Saturday and Sunday/Holiday hours, labor rates and the prices the proposal letter " +
+      "would show (NET 30/60/90, plus Saturday and Sunday lines when shown; same math as the app). " +
+      "Look up by estimate_id, or by the opportunity's " +
       "quote_number plus an optional version like v2 (default: the highest version). Returns revision, " +
       "which update_estimate needs.",
     inputSchema: {
@@ -722,16 +1061,26 @@ export const ESTIMATE_TOOLS: Tool[] = [
     title: "Create an estimate",
     description:
       "Saves a NEW estimate (next version, like v3) on an opportunity, marked In progress. Never changes " +
-      "existing estimates. kind advanced (default) takes sov_rows (+ optional non_sov_rows, techs, hours_per_day); " +
-      "kind simple takes items, markup and travel_items. Rates, markup and payment terms come from the company " +
-      "presets. Travel starts at zero; the estimator sets it in the app. Before calling: show the person the rows " +
-      "and get a yes. Prefer scope library rows (search_estimate_library) for techs and hours. Returns the prices " +
-      "and a link.",
+      "existing estimates. kind advanced (default) takes sov_rows (+ optional non_sov_rows, techs, hours_per_day, " +
+      "location, travel, saturday, sunday); kind simple takes items, markup and travel_items. Rates, markup and " +
+      "payment terms come from the company presets. Travel left out stays at zero. For a revision (\"Rev 2\"), " +
+      "pass copy_from_version: the new version starts as a full copy of that one (rows, crew, travel, location, " +
+      "weekend hours, rates) and any fields you give replace the copied ones, with row lists replaced whole. " +
+      "Before calling: show the person the rows and get a yes. Prefer scope library rows (search_estimate_library) " +
+      "for techs and hours. Returns the prices, travel cost and hours, and a link.",
     inputSchema: {
       type: "object",
       properties: {
         ...OPP_PROPS,
-        kind: { type: "string", enum: ["advanced", "simple"], description: "Default advanced." },
+        kind: { type: "string", enum: ["advanced", "simple"], description: "Default advanced. A copy keeps its source's kind." },
+        copy_from_version: {
+          type: "string",
+          description: "Start as a copy of this version on the same opportunity, like v2.",
+        },
+        copy_from_estimate_id: {
+          type: "string",
+          description: "Same as copy_from_version, by estimate id. Must be on the same opportunity.",
+        },
         ...SHARED_EDIT_PROPS,
         sov_rows: { type: "array", items: ROW_SCHEMA, description: "Advanced: the Schedule of Values rows, in order." },
         non_sov_rows: {
@@ -748,19 +1097,42 @@ export const ESTIMATE_TOOLS: Tool[] = [
     allowed: salesOnly,
     async run(args, ctx) {
       const opp = await resolveOpportunity(ctx, args);
-      const kind: Kind = args.kind === "simple" ? "simple" : "advanced";
+      let kind: Kind = args.kind === "simple" ? "simple" : "advanced";
       const title = str(args.title);
-      let data: Row;
+      let data: Row = {};
       let warnings: string[] = [];
 
-      if (kind === "simple" && (has(args, "sov_rows") || has(args, "non_sov_rows"))) {
-        throw new Error("Simple estimates take items, markup and travel_items, not rows.");
-      }
-      if (kind === "advanced" && (has(args, "items") || has(args, "markup") || has(args, "travel_items"))) {
-        throw new Error("Advanced estimates take sov_rows and non_sov_rows. Use kind simple for items.");
+      // A copy of an existing version on this opportunity, with the given fields applied on top.
+      let source: Row | undefined;
+      if (str(args.copy_from_estimate_id) || str(args.copy_from_version)) {
+        source = (await loadEstimate(
+          ctx,
+          str(args.copy_from_estimate_id)
+            ? { estimate_id: args.copy_from_estimate_id }
+            : { opportunity_id: opp.id, version: args.copy_from_version },
+        )).row;
+        if (source.opportunity_id !== opp.id) {
+          throw new Error(`That estimate is on another opportunity. Copies stay on opportunity ${opp.quote_number}.`);
+        }
       }
 
-      if (kind === "simple") {
+      if (source) {
+        const srcData = parseJson(source.data);
+        const srcKind = kindOf(srcData);
+        if (has(args, "kind") && (args.kind === "simple") !== (srcKind === "simple")) {
+          throw new Error(`${source.quote_number} is a ${KIND_LABEL[srcKind]} estimate; a copy keeps its kind.`);
+        }
+        kind = srcKind;
+        ({ data, warnings } = await applyEdits(ctx, srcData, travelOf(source, srcData), args));
+        if (kind !== "simple") {
+          if (!data.sovItems?.some((r: Row) => (r.rowType || "item") === "item" && str(r.item))) {
+            throw new Error("Add at least one named SOV row.");
+          }
+          if (data.manualPriceOverride) warnings.push(`${source.quote_number} has a price typed in by hand; the copy keeps it.`);
+        }
+      } else if (kind === "simple") {
+        const wrong = ADVANCED_ONLY.filter((k) => has(args, k));
+        if (wrong.length) throw new Error(`Simple estimates take items, markup and travel_items, not ${wrong.join(", ")}.`);
         if (!Array.isArray(args.items) || !args.items.length) throw new Error("A simple estimate needs items.");
         if (args.items.length > MAX_ROWS) throw new Error(`Too many items (max ${MAX_ROWS}).`);
         data = simpleData(
@@ -770,20 +1142,25 @@ export const ESTIMATE_TOOLS: Tool[] = [
           Array.isArray(args.travel_items) ? args.travel_items : SIMPLE_DEFAULT_TRAVEL,
         );
       } else {
-        if (!Array.isArray(args.sov_rows) || !args.sov_rows.length) throw new Error("An advanced estimate needs sov_rows.");
-        const [presetsRes, customerRes, lib] = await Promise.all([
-          ctx.supabase.schema("business").from("estimating_presets").select("*").limit(1),
+        if (SIMPLE_ONLY.some((k) => has(args, k))) {
+          throw new Error("Advanced estimates take sov_rows and non_sov_rows. Use kind simple for items.");
+        }
+        if (!Array.isArray(args.sov_rows) || !args.sov_rows.length) {
+          throw new Error("An advanced estimate needs sov_rows, or copy_from_version to start from an existing one.");
+        }
+        const [presets, customerRes, lib] = await Promise.all([
+          loadPresets(ctx),
           opp.customer_id
             ? ctx.supabase.schema("common").from("customers").select("name, company_name, address").eq("id", opp.customer_id).limit(1)
             : Promise.resolve({ data: [] as Row[] }),
           loadLibrary(ctx, [args.sov_rows, args.non_sov_rows]),
         ]);
         const customer = ((customerRes as { data: Row[] | null }).data ?? [])[0] ?? {};
-        data = advancedData(((presetsRes.data ?? []) as Row[])[0] ?? {}, {
+        data = advancedData(presets, {
           title: title || opp.title,
           client: customer.company_name || customer.name,
           jobDescription: str(args.job_description) || opp.description,
-          location: opp.jobsite_location || customer.address,
+          location: has(args, "location") ? str(args.location) : opp.jobsite_location || customer.address,
           dateDue: isoDate(args.due_date),
           notes: str(args.notes),
           men: args.techs,
@@ -799,8 +1176,7 @@ export const ESTIMATE_TOOLS: Tool[] = [
             ...given.filter((g) => !defaults.some((d) => nameKey(d.item) === nameKey(g.item))),
           ];
         }
-        data = recalc(data);
-        warnings = rowWarnings(data.sovItems);
+        data = finishAdvanced(data, args, warnings);
         if (!data.sovItems.some((r: Row) => (r.rowType || "item") === "item" && str(r.item))) {
           throw new Error("Add at least one named SOV row.");
         }
@@ -824,11 +1200,13 @@ export const ESTIMATE_TOOLS: Tool[] = [
 
       const out = await describe(created as Row, opp);
       const rowCount = kind === "simple" ? (data.simpleItems ?? []).length : data.sovItems.length;
+      const travel = kind === "simple" ? "" : `, travel ${dollars(num(out.travel_totals?.cost))}`;
       await leaveNote(
         ctx,
         opp.id,
-        `Claude (AI connector) created estimate ${version}${title ? ` "${title}"` : ""}: ${KIND_LABEL[kind]}, ` +
-          `${rowCount} rows, NET 30 ${dollars(out.price.net30)}. Review before sending.`,
+        `Claude (AI connector) created estimate ${version}${title ? ` "${title}"` : ""}` +
+          `${source ? ` as a copy of ${source.quote_number}` : ""}: ${KIND_LABEL[kind]}, ` +
+          `${rowCount} rows${travel}, NET 30 ${dollars(out.price.net30)}. Review before sending.`,
       );
       return { saved: true, ...out, ...(warnings.length ? { warnings } : {}) };
     },
@@ -840,13 +1218,20 @@ export const ESTIMATE_TOOLS: Tool[] = [
       "Changes an existing estimate. Read it with get_estimate first and pass its revision; the save is refused " +
       "if anyone saved the estimate since. sov_rows / non_sov_rows (Advanced and Guided) and items / " +
       "travel_items (Simple) REPLACE the whole list: send every row to keep, in order. Rows matched by name keep " +
-      "their other settings. Fields you leave out stay as they are. Rates, markup, travel and payment terms are " +
-      "not changed here. Before calling: show the person what will change and get a yes.",
+      "their other settings. Fields you leave out stay as they are, including inside travel, saturday and " +
+      "sunday. Rates, markup and payment terms are not changed here. status moves the estimate between " +
+      "in_progress and ready_for_review only; approving and sending stay in the app. Before calling: show the " +
+      "person what will change and get a yes. Returns the new prices, travel cost and hours.",
     inputSchema: {
       type: "object",
       properties: {
         estimate_id: { type: "string" },
         revision: { type: "string", description: "revision from get_estimate, exactly as returned." },
+        status: {
+          type: "string",
+          enum: ["in_progress", "ready_for_review"],
+          description: "In progress or Ready for Review. Can't change an estimate already Approved to send or Sent.",
+        },
         ...SHARED_EDIT_PROPS,
         sov_rows: { type: "array", items: ROW_SCHEMA, description: "Advanced/Guided: the full new SOV list." },
         non_sov_rows: { type: "array", items: ROW_SCHEMA, description: "Advanced/Guided: the full new non-SOV list." },
@@ -865,54 +1250,30 @@ export const ESTIMATE_TOOLS: Tool[] = [
       const before = await describe(row, opp);
       const old = parseJson(row.data);
       const kind = kindOf(old);
-      const warnings: string[] = [];
-      let data: Row;
+      const status = statusIn(args.status, row.status);
+      const editsContent = Object.keys(args).some((k) => has(args, k) && !["estimate_id", "revision", "status"].includes(k));
+      if (!editsContent && status === undefined) throw new Error("Nothing to change.");
 
-      if (kind === "simple") {
-        if (has(args, "sov_rows") || has(args, "non_sov_rows")) {
-          throw new Error("This is a Simple estimate: change items, markup or travel_items instead of rows.");
-        }
-        if (Array.isArray(args.items) && args.items.length > MAX_ROWS) throw new Error(`Too many items (max ${MAX_ROWS}).`);
-        data = simpleData(
-          has(args, "title") ? str(args.title) : old.title || "",
-          Array.isArray(args.items) ? args.items : old.simpleItems ?? [],
-          has(args, "markup") ? args.markup : old.simpleMarkupMultiplier,
-          Array.isArray(args.travel_items) ? args.travel_items : old.simpleTravelItems ?? [],
-        );
-      } else {
-        if (has(args, "items") || has(args, "markup") || has(args, "travel_items")) {
-          throw new Error(`This is an ${KIND_LABEL[kind]} estimate: change sov_rows or non_sov_rows instead.`);
-        }
-        const lib = await loadLibrary(ctx, [args.sov_rows, args.non_sov_rows]);
-        data = { ...old };
-        if (has(args, "title")) data.title = str(args.title);
-        if (has(args, "job_description")) data.jobDescription = str(args.job_description);
-        if (has(args, "notes")) data.notes = str(args.notes);
-        if (has(args, "due_date")) data.dateDue = isoDate(args.due_date) ?? "";
-        const hs = { ...(old.hoursSummary || {}) };
-        if (has(args, "techs")) hs.men = positiveOr(args.techs, num(hs.men) || D.default_number_of_men);
-        if (has(args, "hours_per_day")) hs.hoursPerDay = positiveOr(args.hours_per_day, num(hs.hoursPerDay) || D.default_hours_per_day);
-        data.hoursSummary = hs;
-        if (has(args, "sov_rows")) data.sovItems = rowsIn(args.sov_rows, old.sovItems || [], lib, true);
-        if (has(args, "non_sov_rows")) data.nonSovItems = rowsIn(args.non_sov_rows, old.nonSovItems || [], lib, false);
-        data = recalc(data);
-        warnings.push(...rowWarnings(data.sovItems));
-        if (data.isManualLaborHours) {
-          warnings.push("Straight/overtime/double-time hours were set by hand on this estimate and were not changed. Check them in the app.");
+      const warnings: string[] = [];
+      const patch: Row = { updated_at: new Date().toISOString() };
+      let data: Row | undefined;
+      // A status-only change touches the status alone, like the app's status dropdown.
+      if (editsContent) {
+        const edited = await applyEdits(ctx, old, travelOf(row, old), args);
+        data = edited.data;
+        warnings.push(...edited.warnings);
+        patch.data = JSON.stringify(data);
+        patch.travel_data = JSON.stringify(data.travel_data ?? {});
+        if (row.status === "sent" || row.status === "approved_to_send") {
+          warnings.push(`This estimate was already marked ${statusLabel(row.status)}.`);
         }
       }
-      if (row.status === "sent" || row.status === "approved_to_send") {
-        warnings.push(`This estimate was already marked ${row.status === "sent" ? "Sent" : "Approved to send"}.`);
-      }
+      if (status !== undefined) patch.status = status;
 
       const { data: saved, error } = await ctx.supabase
         .schema("business")
         .from("estimates")
-        .update({
-          data: JSON.stringify(data),
-          travel_data: JSON.stringify(data.travel_data ?? parseJson(row.travel_data)),
-          updated_at: new Date().toISOString(),
-        })
+        .update(patch)
         .eq("id", row.id)
         .eq("updated_at", row.updated_at)
         .select("id, opportunity_id, quote_number, status, data, travel_data, created_at, updated_at");
@@ -920,14 +1281,20 @@ export const ESTIMATE_TOOLS: Tool[] = [
       if (!saved?.length) throw new Error("Someone saved this estimate at the same moment. Read it again, then retry.");
 
       const after = await describe(saved[0] as Row, opp);
-      const rowsBefore = kind === "simple" ? (before.items ?? []).length : (old.sovItems ?? []).length;
-      const rowsAfter = kind === "simple" ? (data.simpleItems ?? []).length : (data.sovItems ?? []).length;
-      await leaveNote(
-        ctx,
-        opp.id,
-        `Claude (AI connector) edited estimate ${row.quote_number}: rows ${rowsBefore} -> ${rowsAfter}, ` +
-          `NET 30 ${dollars(before.price.net30)} -> ${dollars(after.price.net30)}.`,
-      );
+      const changes: string[] = [];
+      if (data) {
+        const rowsBefore = kind === "simple" ? (before.items ?? []).length : (old.sovItems ?? []).length;
+        const rowsAfter = kind === "simple" ? (data.simpleItems ?? []).length : (data.sovItems ?? []).length;
+        changes.push(`rows ${rowsBefore} -> ${rowsAfter}`);
+        const travelBefore = num(before.travel_totals?.cost);
+        const travelAfter = num(after.travel_totals?.cost);
+        if (kind !== "simple" && travelBefore !== travelAfter) {
+          changes.push(`travel ${dollars(travelBefore)} -> ${dollars(travelAfter)}`);
+        }
+        changes.push(`NET 30 ${dollars(before.price.net30)} -> ${dollars(after.price.net30)}`);
+      }
+      if (status !== undefined) changes.push(`status ${statusLabel(before.status)} -> ${statusLabel(status)}`);
+      await leaveNote(ctx, opp.id, `Claude (AI connector) edited estimate ${row.quote_number}: ${changes.join(", ")}.`);
       return {
         saved: true,
         net30_before: before.price.net30,

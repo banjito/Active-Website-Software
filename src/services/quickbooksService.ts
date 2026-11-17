@@ -131,7 +131,7 @@ const rateLimiter = new QuickBooksRateLimiter();
 /**
  * Get the OAuth URL from server (keeps client ID secret)
  */
-export async function getQuickBooksOAuthUrl(): Promise<string | null> {
+export async function getQuickBooksOAuthUrl(sandbox = false): Promise<string | null> {
   try {
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
@@ -140,7 +140,8 @@ export async function getQuickBooksOAuthUrl(): Promise<string | null> {
     }
 
     const { data, error } = await supabase.functions.invoke('quickbooks-oauth', {
-      body: { action: 'get_oauth_url', origin: window.location.origin },
+      // sandbox: an Intuit test company, signed in with the separate test keys
+      body: { action: 'get_oauth_url', origin: window.location.origin, sandbox },
       headers: {
         Authorization: `Bearer ${session.access_token}`,
       },

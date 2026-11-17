@@ -18,6 +18,31 @@ export type Connection = Record<string, any>
 
 export const QB_TOKEN_URL = 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer'
 
+/** 'production' for the real books. */
+export const liveEnvironment = () => Deno.env.get('QB_ENVIRONMENT') || 'sandbox'
+
+/**
+ * Intuit app keys. Real companies use QB_CLIENT_*. Intuit test companies use the
+ * separate QB_SANDBOX_CLIENT_* keys, so billing can be tried without the real books.
+ */
+export function appKeys(test = false): { clientId: string; clientSecret: string; environment: string } {
+  const prefix = test ? 'QB_SANDBOX_' : 'QB_'
+  const clientId = Deno.env.get(`${prefix}CLIENT_ID`)
+  const clientSecret = Deno.env.get(`${prefix}CLIENT_SECRET`)
+  if (!clientId || !clientSecret) {
+    throw new Error(
+      test
+        ? 'Test QuickBooks keys are missing. Add QB_SANDBOX_CLIENT_ID and QB_SANDBOX_CLIENT_SECRET as Supabase secrets.'
+        : 'QuickBooks credentials not configured. Set QB_CLIENT_ID and QB_CLIENT_SECRET as Supabase secrets.',
+    )
+  }
+  return { clientId, clientSecret, environment: test ? 'sandbox' : liveEnvironment() }
+}
+
+/** A test company: a sandbox row while the real ones are live. Never true when live is sandbox too. */
+export const isTestConnection = (row: Connection) =>
+  row.environment === 'sandbox' && liveEnvironment() === 'production'
+
 const ADMIN_ROLES = ['Admin', 'Super Admin']
 const REFRESH_EARLY_MS = 5 * 60 * 1000
 // While one request renews the login, token_expires_at holds this marker so other
@@ -144,9 +169,7 @@ export async function getAccessToken(
 
 async function renewClaimed(db: Db, row: Connection, encryptionKey: string): Promise<string | null> {
   try {
-    const clientId = Deno.env.get('QB_CLIENT_ID')
-    const clientSecret = Deno.env.get('QB_CLIENT_SECRET')
-    if (!clientId || !clientSecret) throw new Error('QuickBooks credentials not configured')
+    const { clientId, clientSecret } = appKeys(isTestConnection(row))
 
     const refreshToken = await decryptToken(row.refresh_token, encryptionKey)
     const response = await fetch(QB_TOKEN_URL, {

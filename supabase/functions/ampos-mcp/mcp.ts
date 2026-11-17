@@ -30,7 +30,8 @@ const INSTRUCTIONS =
   "one row per equipment type with a quantity, and put assumptions and sheet references in " +
   "row notes. Never invent hours when the library has the item. Show the person the rows and " +
   "totals and get a yes before saving. Quote prices from get_estimate (NET 30/60/90), never " +
-  "from your own math.";
+  "from your own math. To revise an estimate, create_estimate with copy_from_version so travel, " +
+  "crew and weekend hours carry over; you set travel counts, never rates.";
 
 type JsonRpcId = string | number | null;
 type JsonRpcMessage = {

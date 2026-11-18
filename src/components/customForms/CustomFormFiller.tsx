@@ -71,7 +71,7 @@ import {
   type FormData,
 } from "@/lib/customForms/runtime";
 import { DocumentBody } from "./runtime/SectionFrame";
-import { useLookupTables } from "@/lib/customForms/lookupLibrary";
+import { canEditLookupTables, useLookupTables } from "@/lib/customForms/lookupLibrary";
 import { computeAutoStatus, useAutoStatus } from "./runtime/useAutoStatus";
 import { EquipmentCalibrationBanner, useEquipmentControlOverride, useLiveEquipmentCalibration } from "./runtime/EquipmentControl";
 import {
@@ -650,6 +650,8 @@ export const CustomFormFiller: React.FC = () => {
     legacyLayout,
     suggestionListId,
     onTextCommit,
+    // Study settings on a Breaker Settings report: same people who may edit lookup tables.
+    canEditSetup: canEditLookupTables(user),
   });
 
   /**

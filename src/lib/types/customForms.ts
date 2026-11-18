@@ -31,6 +31,10 @@ export const ComponentType = {
   CUSTOM_TEXT: 'custom-text',
   /** A chart of another table's columns (see lib/customForms/chart.ts). */
   CHART: 'chart',
+  /** Coordination study the settings come from: No./ID., Rev., Date (as on the LV breaker ATS 25 report). */
+  COORDINATION_STUDY: 'coordination-study',
+  /** Breakers and study settings pasted per report; As-Left checked (lib/customForms/breakerSettings.ts). */
+  BREAKER_SETTINGS: 'breaker-settings',
   SIGNATURES: 'signatures',
   PHOTOS: 'photos',
   FUSE_DATA: 'fuse-data',

@@ -12,7 +12,7 @@
  */
 
 import React from "react";
-import type { SectionConfig } from "@/lib/types/customForms";
+import { ComponentType, type SectionConfig } from "@/lib/types/customForms";
 import {
   classifySection,
   resolveRowCount,
@@ -27,6 +27,7 @@ import {
 } from "@/lib/customForms/v2/conditions";
 import { SectionBodyV2 } from "./SectionBodyV2";
 import { ChartSection } from "./ChartSection";
+import { BreakerSettingsSection } from "./BreakerSettingsSection";
 import { LegacyValueDeviation } from "./LegacyValueDeviation";
 import {
   pieceFlex,
@@ -118,6 +119,10 @@ export const SectionBody: React.FC<SectionBodyProps> = ({
 
   // A chart reads another table on the form rather than holding its own.
   if (section.chart) return <ChartSection section={section} chrome={chrome} />;
+  // Holds its own breakers per report rather than columns or fields.
+  if (section.componentType === ComponentType.BREAKER_SETTINGS) {
+    return <BreakerSettingsSection section={section} chrome={chrome} />;
+  }
   if (kind === "empty") return null;
 
   // A custom table layout: pieces in rows (side by side, wrapping when narrow).

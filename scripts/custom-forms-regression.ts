@@ -26,6 +26,8 @@ import {
 } from "@/lib/customForms/checklistChoices";
 import { expressionCheckCount } from "@/lib/customForms/expressions/expressions.regression";
 import { excelCheckCount, excelFailureCount } from "@/lib/customForms/excel/excel.regression";
+import { breakerCheckCount } from "@/lib/customForms/breakerSettings.regression";
+import { formFileCheckCount } from "@/lib/customForms/formFile.regression";
 import {
   EXCEL_LIMITS,
   ExcelGenerationError,
@@ -2718,9 +2720,9 @@ try {
   console.log(`  FAIL  Low Voltage Switch conversion\n        ${(error as Error).message}`);
 }
 
-const total = checks + expressionCheckCount + renderCheckCount + conversionChecks + excelCheckCount;
+const total = checks + expressionCheckCount + renderCheckCount + conversionChecks + excelCheckCount + breakerCheckCount + formFileCheckCount;
 const failed = failures + renderFailureCount + conversionFailures + excelFailureCount;
 console.log(
-  `\n${total - failed}/${total} checks passed (${expressionCheckCount} expression, ${checks} V1/V2, ${renderCheckCount} render, ${excelCheckCount} Excel import, ${conversionChecks} conversion)${failed ? `, ${failed} FAILED` : ""}`,
+  `\n${total - failed}/${total} checks passed (${expressionCheckCount} expression, ${checks} V1/V2, ${renderCheckCount} render, ${excelCheckCount} Excel import, ${conversionChecks} conversion, ${breakerCheckCount} breaker settings, ${formFileCheckCount} form file)${failed ? `, ${failed} FAILED` : ""}`,
 );
 process.exit(failed > 0 ? 1 : 0);

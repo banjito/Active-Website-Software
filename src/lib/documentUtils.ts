@@ -354,7 +354,7 @@ export async function setCurrentOneLineDrawing(drawingId: string): Promise<boole
 export async function getFileUrl(bucket: StorageBucket, filePath: string, expiresIn = 3600) {
   try {
     // For public buckets, use getPublicUrl
-    if (bucket === 'job-documents' || bucket === 'one-line-drawings' || bucket === 'user-uploads') {
+    if (bucket === 'one-line-drawings' || bucket === 'user-uploads') {
       const { data: { publicUrl } } = supabase.storage
         .from(bucket)
         .getPublicUrl(filePath);

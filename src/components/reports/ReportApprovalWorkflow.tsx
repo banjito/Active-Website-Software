@@ -1,3 +1,4 @@
+import { openFileUrl, resolveFileUrl } from "@/lib/jobFiles";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import {
@@ -1667,7 +1668,7 @@ export function ReportApprovalWorkflow({
     ) {
       try {
         // Fetch the PDF file as a blob to ensure it downloads rather than opens
-        const response = await fetch(fileUrl);
+        const response = await fetch(await resolveFileUrl(fileUrl));
         if (!response.ok) {
           throw new Error("Failed to fetch PDF file");
         }
@@ -2078,7 +2079,7 @@ export function ReportApprovalWorkflow({
       const previewBtn = document.getElementById("report-preview-btn");
       if (previewBtn) {
         previewBtn.onclick = () =>
-          window.open(fileUrl, "_blank", "noopener,noreferrer");
+          openFileUrl(fileUrl);
       }
       const printBtn = document.getElementById("report-print-btn");
       if (printBtn) {
@@ -2095,7 +2096,7 @@ export function ReportApprovalWorkflow({
           } catch {
             /* fall back to opening the PDF in a new tab to print */
           }
-          window.open(fileUrl, "_blank", "noopener,noreferrer");
+          openFileUrl(fileUrl);
         };
       }
 

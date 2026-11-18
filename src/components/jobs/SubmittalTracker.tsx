@@ -139,9 +139,9 @@ export const SubmittalTracker: React.FC<SubmittalTrackerProps> = ({
 
   // Determine the submittal window in hours
   const getWindowHours = (): number => {
-    if (submittalWindowHours) return submittalWindowHours;
-    if (submittalJobType === "data_center") return 72; // Default 72 hours for data center
-    return 168; // Default 7 days (168 hours) for standard
+    // Max 7 days, 2 for data centers, even on jobs saved with longer windows
+    const max = submittalJobType === "data_center" ? 48 : 168;
+    return submittalWindowHours ? Math.min(submittalWindowHours, max) : max;
   };
 
   // Listen for asset status changes to refresh the tracker

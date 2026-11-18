@@ -1,3 +1,4 @@
+import { resolveFileUrl } from "@/lib/jobFiles";
 import React, { useState, useRef, useEffect } from "react";
 import { PDFDocument } from "pdf-lib";
 import { Button } from "@/components/ui/Button";
@@ -50,7 +51,7 @@ export function PDFSignatureFieldEditor({
 
   const loadPDF = async () => {
     try {
-      const response = await fetch(fileUrl);
+      const response = await fetch(await resolveFileUrl(fileUrl));
       const arrayBuffer = await response.arrayBuffer();
       const pdf = await PDFDocument.load(arrayBuffer);
       setPdfDoc(pdf);

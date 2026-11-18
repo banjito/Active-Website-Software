@@ -1,3 +1,4 @@
+import { copyJobFileShareLink, openFileUrl, resolveFileUrl } from "@/lib/jobFiles";
 import React, {
   useEffect,
   useState,
@@ -61,6 +62,7 @@ import {
   Archive,
   ArchiveRestore,
   SquareCheck,
+  Link2,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { supabase, isConnectionError } from "../../lib/supabase";
@@ -7913,7 +7915,7 @@ export default function JobDetail() {
 
         try {
           // Fetch the PDF file as a blob to ensure it downloads rather than opens
-          const response = await fetch(asset.file_url);
+          const response = await fetch(await resolveFileUrl(asset.file_url));
           if (!response.ok) {
             throw new Error(`Failed to fetch PDF: ${response.statusText}`);
           }
@@ -10519,7 +10521,7 @@ export default function JobDetail() {
                             | "standard"
                             | "data_center";
                           const defaultHours =
-                            newType === "data_center" ? 72 : 168;
+                            newType === "data_center" ? 48 : 168;
                           setEditFormData((prev) =>
                             prev
                               ? {
@@ -10534,7 +10536,7 @@ export default function JobDetail() {
                       >
                         <option value="standard">Standard (7 days)</option>
                         <option value="data_center">
-                          Data Center (48-72 hours)
+                          Data Center (1-2 days)
                         </option>
                       </select>
                       <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
@@ -10568,16 +10570,22 @@ export default function JobDetail() {
                       >
                         {editFormData?.submittal_job_type === "data_center" ? (
                           <>
+                            <option value="24">24 hours (1 day)</option>
                             <option value="48">48 hours (2 days)</option>
-                            <option value="72">72 hours (3 days)</option>
                           </>
                         ) : (
                           <>
                             <option value="168">168 hours (7 days)</option>
                             <option value="120">120 hours (5 days)</option>
-                            <option value="240">240 hours (10 days)</option>
                           </>
                         )}
+                        {/* Older jobs saved before the 7-day max (or 2 for data centers) */}
+                        {editFormData?.submittal_window_hours &&
+                          ![24, 48, 120, 168].includes(editFormData.submittal_window_hours) && (
+                            <option value={editFormData.submittal_window_hours}>
+                              {editFormData.submittal_window_hours} hours (over the max)
+                            </option>
+                          )}
                       </select>
                       <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                         Time allowed between report approval and sending
@@ -11418,7 +11426,7 @@ export default function JobDetail() {
                                       variant="outline"
                                       size="sm"
                                       onClick={() =>
-                                        window.open(doc.file_url, "_blank")
+                                        openFileUrl(doc.file_url)
                                       }
                                       title="Download"
                                       aria-label="Download document"
@@ -14649,11 +14657,26 @@ export default function JobDetail() {
                   size="sm"
                   onClick={() =>
                     selectedMiscDocument &&
-                    window.open(selectedMiscDocument.file_url, "_blank")
+                    openFileUrl(selectedMiscDocument.file_url)
                   }
                   leftIcon={<Download className="h-4 w-4" />}
                 >
                   Download
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    selectedMiscDocument &&
+                    void copyJobFileShareLink(selectedMiscDocument.file_url, {
+                      jobId: selectedMiscDocument.job_id,
+                      name: selectedMiscDocument.name,
+                    })
+                  }
+                  leftIcon={<Link2 className="h-4 w-4" />}
+                  title="Link for someone outside ampOS. Works for 7 days."
+                >
+                  Share link
                 </Button>
                 <Button
                   variant="outline"
@@ -14697,7 +14720,7 @@ export default function JobDetail() {
                         variant="outline"
                         className="mt-4"
                         onClick={() =>
-                          window.open(selectedMiscDocument.file_url, "_blank")
+                          openFileUrl(selectedMiscDocument.file_url)
                         }
                         leftIcon={<Download className="h-4 w-4" />}
                       >

@@ -188,7 +188,11 @@ export default function ChecklistStepEditor({ open, onOpenChange, steps, onSaved
                   </td>
                   <td className="px-2 py-2">
                     <div className="flex items-center gap-2">
-                      {step.due_anchor && (
+                      {step.key === 'reports_sent' && step.due_anchor === 'end' ? (
+                        <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                          Job's report window (7 days max, 2 for data centers)
+                        </span>
+                      ) : step.due_anchor && (
                         <>
                           <input
                             aria-label="Days"

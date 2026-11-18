@@ -78,7 +78,7 @@ VALUES
   ('quickbooks_linked',   'Job in QuickBooks',        'Setup',    50, 'contract', 5,  'quickbooks_linked'),
   ('site_visit',          'Initial site visit',       'Field',    60, 'start',    -7, NULL),
   ('mobilization_billed', 'Mobilization billed',      'Field',    70, 'start',    0,  NULL),
-  ('reports_sent',        'Reports sent to customer', 'Closeout', 80, 'end',      10, NULL),
+  ('reports_sent',        'Reports sent to customer', 'Closeout', 80, 'end',      7,  NULL),
   ('final_invoice',       'Final invoice sent',       'Closeout', 90, NULL,       0,  'job_billed')
 ON CONFLICT (key) DO NOTHING;
 

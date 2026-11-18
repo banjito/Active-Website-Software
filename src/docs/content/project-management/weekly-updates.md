@@ -17,9 +17,9 @@ Open the job and pick the **Weekly update** tab. It opens on the week that's due
 
 Each week shows a status: **Not started**, **Draft**, **Due Monday**, or **Approved**. Last week is due Monday. If it isn't approved, the job gets an "SOV not updated" flag on the dashboard.
 
-## Reports fill in a guess
+## Counts filled in from reports
 
-If a line counts sent reports (set on the [schedule of values](/docs/project-management/schedule-of-values)), ampOS fills in a guess from the reports sent that week. Your numbers always win. Type over the guess and yours is used.
+If a line is tied to a report type (set on the [schedule of values](/docs/project-management/schedule-of-values)), ampOS fills in how many got done by counting the reports sent that week. That count can be off. Type the real number, and ampOS uses yours. Approved weeks become the bill, so make it right.
 
 ## Billing ahead
 

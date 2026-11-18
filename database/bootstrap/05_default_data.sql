@@ -14,6 +14,6 @@ VALUES
   ('sov_created',         'SOV created',              'Setup',    55, NULL,       0,  'sov_created'),
   ('mobilization_billed', 'Mobilization billed',      'Setup',    57, 'contract', 0,  NULL),
   ('site_visit',          'Initial site visit',       'Field',    60, 'start',    -7, NULL),
-  ('reports_sent',        'Reports sent to customer', 'Closeout', 80, 'end',      10, NULL),
+  ('reports_sent',        'Reports sent to customer', 'Closeout', 80, 'end',      7,  NULL),
   ('final_invoice',       'Final invoice sent',       'Closeout', 90, NULL,       0,  'job_billed')
 ON CONFLICT (key) DO NOTHING;

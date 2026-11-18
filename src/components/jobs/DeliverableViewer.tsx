@@ -1,3 +1,4 @@
+import { resolveFileUrl } from "@/lib/jobFiles";
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -386,7 +387,7 @@ export default function DeliverableViewer() {
           }
 
           // Fetch PDF file
-          const response = await fetch(pdfUrl);
+          const response = await fetch(await resolveFileUrl(pdfUrl));
           if (!response.ok) {
             throw new Error(`Failed to fetch PDF: ${response.statusText}`);
           }
@@ -510,7 +511,7 @@ export default function DeliverableViewer() {
       // Convert image URL to base64 data URI
       const imageToBase64 = async (url: string): Promise<string> => {
         try {
-          const response = await fetch(url);
+          const response = await fetch(await resolveFileUrl(url));
           const blob = await response.blob();
           return new Promise((resolve) => {
             const reader = new FileReader();

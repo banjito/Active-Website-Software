@@ -127,6 +127,7 @@ const PublicChangeOrderSigning = React.lazy(
   () => import("./pages/changeOrders/PublicChangeOrderSigning"),
 );
 const OAuthConsent = React.lazy(() => import("./components/auth/OAuthConsent"));
+const JobFileRedirect = React.lazy(() => import("./app/files/JobFileRedirect"));
 import { CandidateTracking } from "./pages/hr/recruiting/CandidateTracking";
 import { TalentPool } from "./pages/hr/recruiting/TalentPool";
 import { InterviewScheduling } from "./pages/hr/recruiting/InterviewScheduling";
@@ -683,6 +684,17 @@ function App() {
                       <RequireAuth>
                         <React.Suspense fallback={null}>
                           <OAuthConsent />
+                        </React.Suspense>
+                      </RequireAuth>
+                    }
+                  />
+                  {/* ampOS address of a private job file: log in, then open it. */}
+                  <Route
+                    path="/files/job/*"
+                    element={
+                      <RequireAuth>
+                        <React.Suspense fallback={null}>
+                          <JobFileRedirect />
                         </React.Suspense>
                       </RequireAuth>
                     }

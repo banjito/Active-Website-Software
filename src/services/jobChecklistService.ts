@@ -49,6 +49,20 @@ export interface ChecklistJobFacts {
   project_manager_id: string | null;
   /** The job's SOV has been saved (original contract lines) */
   has_sov: boolean;
+  /** "data_center" jobs get reports out in 2 days, others in 7 */
+  submittal_job_type?: string | null;
+  /** The job's report window in hours, set on the job */
+  submittal_window_hours?: number | null;
+}
+
+const REPORTS_STEP_KEY = 'reports_sent';
+export const REPORT_WINDOW_RULE = "within the job's report window after job end (7 days max, 2 for data centers)";
+
+/** Days after the job ends to get reports out: the job's window, never over 7 (2 for data centers) */
+export function reportDueDays(facts: Pick<ChecklistJobFacts, 'submittal_job_type' | 'submittal_window_hours'>): number {
+  const max = facts.submittal_job_type === 'data_center' ? 2 : 7;
+  const hours = facts.submittal_window_hours;
+  return hours && hours > 0 ? Math.min(Math.ceil(hours / 24), max) : max;
 }
 
 export const AUTO_RULE_LABELS: Record<AutoRule, string> = {
@@ -71,7 +85,7 @@ const STEP_COLUMNS =
   'id, key, name, phase, sort_order, due_anchor, due_offset_days, auto_rule, archived_at';
 const ITEM_COLUMNS = 'id, job_id, step_id, state, done_at, done_by, done_by_name, note';
 const FACT_COLUMNS =
-  'id, status, fireteam_lead, quickbooks_project_id, start_date, due_date, completed_date, project_manager_id';
+  'id, status, fireteam_lead, quickbooks_project_id, start_date, due_date, completed_date, project_manager_id, submittal_job_type, submittal_window_hours';
 
 // Keeps .in() lists short enough for the URL
 const ID_CHUNK = 150;
@@ -281,7 +295,9 @@ export function summarizeJobChecklist(
     const item = byStep.get(step.id);
     const auto = step.auto_rule && facts ? autoDetail(step.auto_rule, facts) : undefined;
     const anchor = step.due_anchor && facts ? anchorDate(step.due_anchor, facts, contractDoneAt) : null;
-    const due = anchor ? addDays(anchor, step.due_offset_days) : null;
+    // Reports follow the job's own window, not a fixed number of days
+    const offset = step.key === REPORTS_STEP_KEY && facts ? reportDueDays(facts) : step.due_offset_days;
+    const due = anchor ? addDays(anchor, offset) : null;
 
     let display: StepDisplay;
     if (item?.state === 'done') display = 'done';
@@ -299,8 +315,9 @@ export function summarizeJobChecklist(
 }
 
 /** "5 days after contract signed", "On job start", "No due date" */
-export function describeDueRule(step: Pick<ChecklistStep, 'due_anchor' | 'due_offset_days'>): string {
+export function describeDueRule(step: Pick<ChecklistStep, 'due_anchor' | 'due_offset_days'> & { key?: string | null }): string {
   if (!step.due_anchor) return 'No due date';
+  if (step.key === REPORTS_STEP_KEY && step.due_anchor === 'end') return REPORT_WINDOW_RULE;
   const label = DUE_ANCHOR_LABELS[step.due_anchor];
   const n = step.due_offset_days;
   if (n === 0) return `On ${label}`;

@@ -1,3 +1,4 @@
+import { resolveFileUrl } from "@/lib/jobFiles";
 import React, { useState, useRef, useEffect } from "react";
 import { Save, Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -30,7 +31,7 @@ export function PDFEditor({
     setIsSaving(true);
     try {
       // Get the current iframe content
-      const response = await fetch(currentUrl);
+      const response = await fetch(await resolveFileUrl(currentUrl));
       if (!response.ok) {
         throw new Error(
           `Failed to fetch PDF: ${response.status} ${response.statusText}`,

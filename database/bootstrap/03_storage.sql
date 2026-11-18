@@ -8,7 +8,7 @@ INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES ('employee-documents', 'employee-documents', true, NULL, NULL) ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES ('equipment-certificates', 'equipment-certificates', true, NULL, NULL) ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES ('help-center-documents', 'help-center-documents', true, NULL, NULL) ON CONFLICT (id) DO NOTHING;
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES ('job-documents', 'job-documents', true, 52428800, '{application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png,image/gif,text/plain}') ON CONFLICT (id) DO NOTHING;
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES ('job-documents', 'job-documents', false, 52428800, '{application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png,image/gif,text/plain}') ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES ('one-line-drawings', 'one-line-drawings', true, 104857600, '{application/pdf,image/jpeg,image/png,image/gif,image/tiff,image/bmp,application/vnd.ms-visio,application/x-autocad,image/vnd.dwg,image/vnd.dxf}') ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES ('resumes', 'resumes', true, NULL, NULL) ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) VALUES ('subcontractor-agreements', 'subcontractor-agreements', true, 10485760, '{application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document}') ON CONFLICT (id) DO NOTHING;
@@ -16,15 +16,11 @@ INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 
 -- ── Policies on storage.objects ──
 
-CREATE POLICY "Allow all operations for authenticated users" ON storage.objects FOR ALL TO public USING ((auth.role() = 'authenticated'::text)) WITH CHECK ((auth.role() = 'authenticated'::text));
-
-CREATE POLICY "Allow authenticated uploads to job-documents" ON storage.objects FOR INSERT TO authenticated WITH CHECK ((bucket_id = 'job-documents'::text));
+CREATE POLICY "Allow all operations for authenticated users" ON storage.objects FOR ALL TO public USING (((auth.role() = 'authenticated'::text) AND (bucket_id <> 'job-documents'::text))) WITH CHECK (((auth.role() = 'authenticated'::text) AND (bucket_id <> 'job-documents'::text)));
 
 CREATE POLICY "Allow authenticated users full access" ON storage.objects FOR ALL TO public USING (((bucket_id = 'user-uploads'::text) AND (auth.role() = 'authenticated'::text))) WITH CHECK (((bucket_id = 'user-uploads'::text) AND (auth.role() = 'authenticated'::text)));
 
 CREATE POLICY "Allow public read access" ON storage.objects FOR SELECT TO public USING ((bucket_id = 'user-uploads'::text));
-
-CREATE POLICY "Allow public read from job-documents" ON storage.objects FOR SELECT TO public USING ((bucket_id = 'job-documents'::text));
 
 CREATE POLICY "Assets are publicly accessible" ON storage.objects FOR SELECT TO public USING ((bucket_id = 'assets'::text));
 
@@ -34,7 +30,7 @@ CREATE POLICY "Authenticated users can delete employee documents" ON storage.obj
 
 CREATE POLICY "Authenticated users can delete help center documents" ON storage.objects FOR DELETE TO authenticated USING ((bucket_id = 'help-center-documents'::text));
 
-CREATE POLICY "Authenticated users can delete job documents" ON storage.objects FOR DELETE TO authenticated USING ((bucket_id = 'job-documents'::text));
+CREATE POLICY "Uploader, PMs and admins delete job files" ON storage.objects FOR DELETE TO authenticated USING (((bucket_id = 'job-documents'::text) AND common.is_employee_user() AND ((owner_id = (auth.uid())::text) OR common.is_pm_or_admin())));
 
 CREATE POLICY "Authenticated users can delete subcontractor agreements" ON storage.objects FOR DELETE TO authenticated USING ((bucket_id = 'subcontractor-agreements'::text));
 
@@ -44,7 +40,7 @@ CREATE POLICY "Authenticated users can update employee documents" ON storage.obj
 
 CREATE POLICY "Authenticated users can update help center documents" ON storage.objects FOR UPDATE TO authenticated USING ((bucket_id = 'help-center-documents'::text)) WITH CHECK ((bucket_id = 'help-center-documents'::text));
 
-CREATE POLICY "Authenticated users can update job documents" ON storage.objects FOR UPDATE TO authenticated USING ((bucket_id = 'job-documents'::text));
+CREATE POLICY "Staff update job files" ON storage.objects FOR UPDATE TO authenticated USING (((bucket_id = 'job-documents'::text) AND common.is_employee_user())) WITH CHECK (((bucket_id = 'job-documents'::text) AND common.is_employee_user()));
 
 CREATE POLICY "Authenticated users can update subcontractor agreements" ON storage.objects FOR UPDATE TO authenticated USING ((bucket_id = 'subcontractor-agreements'::text));
 
@@ -54,7 +50,7 @@ CREATE POLICY "Authenticated users can upload employee documents" ON storage.obj
 
 CREATE POLICY "Authenticated users can upload help center documents" ON storage.objects FOR INSERT TO authenticated WITH CHECK (((bucket_id = 'help-center-documents'::text) AND ((storage.foldername(name))[1] IS NOT NULL)));
 
-CREATE POLICY "Authenticated users can upload job documents" ON storage.objects FOR INSERT TO authenticated WITH CHECK ((bucket_id = 'job-documents'::text));
+CREATE POLICY "Staff upload job files" ON storage.objects FOR INSERT TO authenticated WITH CHECK (((bucket_id = 'job-documents'::text) AND common.is_employee_user()));
 
 CREATE POLICY "Authenticated users can upload subcontractor agreements" ON storage.objects FOR INSERT TO authenticated WITH CHECK ((bucket_id = 'subcontractor-agreements'::text));
 
@@ -64,7 +60,7 @@ CREATE POLICY "Authenticated users can view employee documents" ON storage.objec
 
 CREATE POLICY "Authenticated users can view help center documents" ON storage.objects FOR SELECT TO authenticated USING ((bucket_id = 'help-center-documents'::text));
 
-CREATE POLICY "Authenticated users can view job documents" ON storage.objects FOR SELECT TO authenticated USING ((bucket_id = 'job-documents'::text));
+CREATE POLICY "Staff read job files" ON storage.objects FOR SELECT TO authenticated USING (((bucket_id = 'job-documents'::text) AND common.is_employee_user()));
 
 CREATE POLICY "Authenticated users can view subcontractor agreements" ON storage.objects FOR SELECT TO authenticated USING ((bucket_id = 'subcontractor-agreements'::text));
 

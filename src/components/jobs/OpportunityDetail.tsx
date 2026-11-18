@@ -1,3 +1,4 @@
+import { openFileUrl } from "@/lib/jobFiles";
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { computeTravelTotals } from "../../lib/travelExpenses";
@@ -6558,7 +6559,7 @@ export default function OpportunityDetail() {
                       size="sm"
                       onClick={() =>
                         previewFile &&
-                        window.open(previewFile.file_url, "_blank")
+                        openFileUrl(previewFile.file_url)
                       }
                       className="text-brand border-brand hover:bg-brand hover:text-white" leftIcon={<ExternalLink className="h-4 w-4" />}>
                       Open in New Tab
@@ -6615,7 +6616,7 @@ export default function OpportunityDetail() {
                           <Button
                             onClick={() =>
                               previewFile &&
-                              window.open(previewFile.file_url, "_blank")
+                              openFileUrl(previewFile.file_url)
                             }
                             className="bg-brand hover:bg-brand/90 text-white" leftIcon={<Download className="h-4 w-4" />}>
                             Download File

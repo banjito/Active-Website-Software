@@ -29,6 +29,16 @@ const REGION_COLORS = [
   'bg-pink-600',
 ];
 
+// Labels for the active job statuses (ACTIVE_JOB_STATUSES), in filter order
+const STATUS_LABELS: Record<string, string> = {
+  ready_to_bill: 'Ready to bill',
+  progress_billing: 'Progress billing',
+  in_progress: 'In progress',
+  pending: 'Pending',
+  on_hold: 'On hold',
+};
+const statusLabel = (s: string) => STATUS_LABELS[s] ?? s.replace(/_/g, ' ');
+
 const TH = 'px-3 py-2 text-xs font-medium whitespace-nowrap text-neutral-500 dark:text-neutral-400';
 const TD = 'px-3 py-2 align-middle';
 const NUM = `${TD} text-right tabular-nums whitespace-nowrap`;
@@ -72,6 +82,7 @@ export default function OfficeHome() {
   const query = searchParams.get('q') ?? '';
   const customerId = searchParams.get('customer');
   const region = searchParams.get('region') ?? '';
+  const status = searchParams.get('status') ?? '';
   const setParam = (key: string, value: string | null) =>
     setSearchParams(
       (prev) => {
@@ -128,6 +139,15 @@ export default function OfficeHome() {
         .sort((a, b) => (regionIndex.get(a) ?? 99) - (regionIndex.get(b) ?? 99)),
     [rows, regionIndex],
   );
+  const statusOrder = Object.keys(STATUS_LABELS);
+  const statusesInUse = useMemo(
+    () =>
+      [...new Set(rows.map((r) => r.job.status).filter(Boolean))].sort(
+        (a, b) => (statusOrder.indexOf(a) + 1 || 99) - (statusOrder.indexOf(b) + 1 || 99),
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rows],
+  );
 
   const q = query.trim().toLowerCase();
   const matchesQuery = (r: OfficeJobRow) =>
@@ -141,6 +161,7 @@ export default function OfficeHome() {
       (r) =>
         (!customerId || r.job.customer_id === customerId) &&
         (!region || r.job.division === region) &&
+        (!status || r.job.status === status) &&
         matchesQuery(r),
     );
     const value = (r: OfficeJobRow): unknown => {
@@ -155,7 +176,7 @@ export default function OfficeHome() {
     };
     return [...list].sort((a, b) => compareSortValues(value(a), value(b), sortDirection));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, customerId, region, q, sortField, sortDirection, divisions]);
+  }, [rows, customerId, region, status, q, sortField, sortDirection, divisions]);
 
   // Search dropdown: customers and vendor POs that match
   const customerMatches = useMemo(() => {
@@ -171,13 +192,16 @@ export default function OfficeHome() {
   }, [rows, q]);
 
   const pickedCustomer = customerId ? rows.find((r) => r.job.customer_id === customerId)?.job.customer_name ?? 'Customer' : null;
-  const scopeLabel = pickedCustomer
+  const baseScopeLabel = pickedCustomer
     ? maskCustomerName(pickedCustomer)
     : region
       ? regionLabel(region)
       : q
         ? `Matching "${query.trim()}"`
-        : 'All active jobs';
+        : status
+          ? 'All locations'
+          : 'All active jobs';
+  const scopeLabel = status ? `${baseScopeLabel} · ${statusLabel(status)}` : baseScopeLabel;
 
   const onSort = (field: SortField, direction: SortDirection) => {
     setSortField(field);
@@ -304,6 +328,19 @@ export default function OfficeHome() {
             </option>
           ))}
         </select>
+        <select
+          aria-label="Status"
+          value={status}
+          onChange={(e) => setParam('status', e.target.value || null)}
+          className="rounded-none border border-neutral-300 bg-white px-2 py-2 text-sm text-neutral-900 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100"
+        >
+          <option value="">All statuses</option>
+          {statusesInUse.map((s) => (
+            <option key={s} value={s}>
+              {statusLabel(s)}
+            </option>
+          ))}
+        </select>
       </div>
 
       {isAdmin && <OfficeKpis />}
@@ -320,7 +357,7 @@ export default function OfficeHome() {
 
       <div className="flex flex-wrap items-center gap-3 pt-4">
         <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{scopeLabel}</h2>
-        {(customerId || region || q) && (
+        {(customerId || region || status || q) && (
           <Button
             variant="ghost"
             size="sm"
@@ -402,6 +439,15 @@ export default function OfficeHome() {
                     <span className="inline-flex items-center gap-2">
                       <span aria-hidden="true" className={`h-2.5 w-2.5 rounded-none ${regionColor(r.job.division)}`} />
                       {regionLabel(r.job.division)}
+                    </span>
+                    <span
+                      className={`block text-xs ${
+                        r.job.status === 'ready_to_bill'
+                          ? 'font-medium text-brand'
+                          : 'text-neutral-500 dark:text-neutral-400'
+                      }`}
+                    >
+                      {statusLabel(r.job.status)}
                     </span>
                   </td>
                   <td className={NUM}>{fmtMoney(r.original)}</td>

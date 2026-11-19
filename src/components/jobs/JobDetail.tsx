@@ -149,6 +149,7 @@ import {
   DialogTitle,
 } from "../ui/Dialog";
 import { toast } from "@/components/ui/toast";
+import { ConfirmPopover } from "@/components/ui/ConfirmPopover";
 import { ReportApprovalWorkflow } from "../reports/ReportApprovalWorkflow";
 import { EvaluationResultBadge } from "../reports/EvaluationResultBadge";
 import { clearJobEndUserCache } from "../reports/useReportUserAutofill";
@@ -1200,11 +1201,22 @@ export default function JobDetail() {
       .trim();
   };
 
-  const openSubstationSelector = (type: "cover" | "summary" | "both") => {
+  // Which reports a new cover letter covers: the Reports tab it was started
+  // from. Approved = the new batch (then Mark All Sent). Sent = already sent.
+  const [coverSourceStatus, setCoverSourceStatus] = useState<
+    "approved" | "sent"
+  >("approved");
+
+  const openSubstationSelector = (
+    type: "cover" | "summary" | "both",
+    sourceStatus: "approved" | "sent" = "approved",
+  ) => {
     setPendingDocType(type);
-    // Collect all unique substations from jobAssets
+    setCoverSourceStatus(sourceStatus);
+    // Collect unique substations from the reports this letter can cover
     const substations = new Set<string>();
     jobAssets.forEach((asset) => {
+      if (asset.status !== sourceStatus) return;
       const sub = assetSubstations[asset.id];
       if (typeof sub === "string" && sub.trim()) {
         substations.add(sub.trim());
@@ -1536,7 +1548,7 @@ export default function JobDetail() {
       maskJobTitle((jd?.title || job?.title || "").trim()) ||
       "[Project/Outage Title]";
 
-    // Work performed: only **approved** report assets (user selection / substation filter), never **sent**.
+    // Work performed: only report assets on the tab the letter was started from (coverSourceStatus: approved or sent), after the substation filter.
     // Earliest test/start date → latest "Date Added" (job_assets.created_at). Skips invalid placeholders.
     let workPerformedText = "Work Performed [Dates]";
     try {
@@ -1549,7 +1561,7 @@ export default function JobDetail() {
             (a) =>
               a.file_url &&
               a.file_url.startsWith("report:") &&
-              a.status === "approved",
+              a.status === coverSourceStatus,
           );
           if (filterSubstations && filterSubstations.size > 0) {
             reportAssets = reportAssets.filter((asset) => {
@@ -1905,18 +1917,12 @@ export default function JobDetail() {
         labelToItems.set(label, arr);
       };
 
-      // Build TOC from report assets that are approved or sent only
+      // Build TOC from the same reports the letter covers: the Reports tab it
+      // was started from (approved = new batch, sent = already sent).
       let reportAssets = (jobAssets || []).filter((a) => {
         const isReport = a.file_url && a.file_url.startsWith("report:");
         if (!isReport) return false;
-        const st = (a as any).status;
-        const ts = reportTimestampsByAsset[a.id] || {};
-        const isApprovedOrSent =
-          st === "approved" ||
-          st === "sent" ||
-          !!ts.approved_at ||
-          !!ts.sent_at;
-        return isApprovedOrSent;
+        return (a as any).status === coverSourceStatus;
       });
       // Filter by selected substations if provided
       if (filterSubstations && filterSubstations.size > 0) {
@@ -4964,13 +4970,17 @@ export default function JobDetail() {
       tabs: [{ key: "equipment-assets", label: "Assets" }],
     },
     {
+      id: "deliverables",
+      label: "Deliverables",
+      tabs: [{ key: "deliverables", label: "Deliverables" }],
+    },
+    {
       id: "tracking",
       label: "Tracking",
       tabs: [
         { key: "project-tracker", label: "Project Tracker" },
         { key: "tracking", label: "Tracking" },
         { key: "delays", label: "Delays" },
-        { key: "deliverables", label: "Deliverables" },
         { key: "checklist", label: "Checklist" },
       ],
     },
@@ -8359,6 +8369,9 @@ export default function JobDetail() {
                         !asset.file_url.startsWith("report:/") &&
                         asset.file_url.toLowerCase().endsWith(".pdf");
                       if (!isReport && !isPdfReport) return false;
+                      // Only the tab it was started from (never drafts or
+                      // in-progress reports).
+                      if (asset.status !== coverSourceStatus) return false;
 
                       // If substations were selected, filter by substation
                       if (selectedSubstations.size > 0) {
@@ -9400,9 +9413,8 @@ export default function JobDetail() {
       };
     }, [jobId]);
 
-    const handleDeleteDocument = async (docId: string, docName: string) => {
-      if (!confirm(`Delete "${docName}"? This cannot be undone.`)) return;
-
+    // Confirmed by the ConfirmPopover on the Delete button.
+    const handleDeleteDocument = async (docId: string) => {
       try {
         const { error } = await supabase
           .schema("neta_ops")
@@ -9414,9 +9426,13 @@ export default function JobDetail() {
 
         // Remove from local state
         setItems((prev) => prev.filter((item) => item.id !== docId));
-        alert("Document deleted successfully");
+        toast({ title: "Document deleted", variant: "success" });
       } catch (e: any) {
-        alert(`Failed to delete document: ${e?.message || "Unknown error"}`);
+        toast({
+          title: "Couldn't delete document",
+          description: e?.message || "Unknown error",
+          variant: "destructive",
+        });
       }
     };
 
@@ -9574,22 +9590,24 @@ export default function JobDetail() {
               >
                 Print
               </Button>
-              <Button
-                onClick={() =>
-                  handleDeleteDocument(
-                    d.id,
-                    d.name ||
-                      (d.doc_type === "cover"
-                        ? "Cover Letter"
-                        : "Executive Summary"),
-                  )
-                }
-                variant="secondary"
-                size="sm"
-                className="bg-red-600 hover:bg-red-700 text-white"
+              <ConfirmPopover
+                message={`Delete "${
+                  d.name ||
+                  (d.doc_type === "cover" ? "Cover Letter" : "Executive Summary")
+                }"? This can't be undone.`}
+                confirmLabel="Delete"
+                destructive
+                align="end"
+                onConfirm={() => handleDeleteDocument(d.id)}
               >
-                Delete
-              </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Delete
+                </Button>
+              </ConfirmPopover>
             </div>
           </li>
         ))}
@@ -9897,6 +9915,7 @@ export default function JobDetail() {
                 onClick={() => {
                   const substations = new Set<string>();
                   jobAssets.forEach((asset) => {
+                    if (asset.status !== coverSourceStatus) return;
                     const sub = assetSubstations[asset.id];
                     if (typeof sub === "string" && sub.trim()) {
                       substations.add(sub.trim());
@@ -9925,6 +9944,7 @@ export default function JobDetail() {
               {(() => {
                 const substations = new Set<string>();
                 jobAssets.forEach((asset) => {
+                  if (asset.status !== coverSourceStatus) return;
                   const sub = assetSubstations[asset.id];
                   if (typeof sub === "string" && sub.trim()) {
                     substations.add(sub.trim());
@@ -12051,12 +12071,22 @@ export default function JobDetail() {
                           </button>
                         </div>
 
-                        {/* Print Controls - Only show on Approved tab */}
-                        {assetStatusFilter === "approved" && (
+                        {/* Cover letter + print controls: Approved and Sent tabs.
+                            The letter covers the tab's reports; print / mark
+                            sent buttons stay Approved-only. */}
+                        {(assetStatusFilter === "approved" ||
+                          assetStatusFilter === "sent") && (
                           <div className="mt-4 space-y-2">
                             <div className="flex items-center gap-2 flex-wrap">
                               <Button
-                                onClick={() => openSubstationSelector("both")}
+                                onClick={() =>
+                                  openSubstationSelector(
+                                    "both",
+                                    assetStatusFilter === "sent"
+                                      ? "sent"
+                                      : "approved",
+                                  )
+                                }
                                 disabled={isPrinting}
                                 variant="secondary"
                               >
@@ -12069,8 +12099,9 @@ export default function JobDetail() {
                                 View Cover Letters
                               </Button>
 
-                              {/* Report Print Buttons - Only show when there are approved reports */}
-                              {jobAssets.filter(
+                              {/* Report Print Buttons - Approved tab, when there are approved reports */}
+                              {assetStatusFilter === "approved" &&
+                                jobAssets.filter(
                                 (asset) =>
                                   asset.status === "approved" &&
                                   asset.file_url?.startsWith("report:"),
@@ -12161,43 +12192,6 @@ export default function JobDetail() {
                             )}
                           </div>
                         )}
-
-                        {/* Publish-to-portal control on the Sent tab (backfill already-sent reports) */}
-                        {assetStatusFilter === "sent" &&
-                          jobAssets.filter(
-                            (asset) =>
-                              asset.file_url?.startsWith("report:") &&
-                              String(asset.status || "").toLowerCase() ===
-                                "sent",
-                          ).length > 0 && (
-                            <div className="mt-4 space-y-2">
-                              <Button
-                                onClick={handlePublishReportsToPortal}
-                                disabled={isPublishingPortal || isPrinting}
-                                variant="secondary"
-                                title="Render and upload these reports so the customer can view them in the portal"
-                                className="bg-transparent"
-                              >
-                                {isPublishingPortal ? (
-                                  "Publishing…"
-                                ) : (
-                                  <span className="inline-flex items-center gap-1.5">
-                                    Republish on
-                                    <img
-                                      src="/ampOSACCESS-logo.svg"
-                                      alt="ampOS ACCESS"
-                                      className="h-6 translate-y-[2px] w-auto dark:invert"
-                                    />
-                                  </span>
-                                )}
-                              </Button>
-                              {isPublishingPortal && (
-                                <p className="text-sm text-neutral-600 dark:text-white">
-                                  {portalPublishStatus || "Publishing…"}
-                                </p>
-                              )}
-                            </div>
-                          )}
 
                         {/* Batch controls for the current selection.
                             Floated over the page rather than placed in the header: ticking

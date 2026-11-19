@@ -1,9 +1,16 @@
 import { resolveFileUrl } from "@/lib/jobFiles";
 import React, { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { BRAND_COLOR } from "@/lib/companyConfig";
+import { ArrowLeft, Send } from "lucide-react";
+import { toast } from "@/components/ui/toast";
+import {
+  confirmMarkSent,
+  markDeliverableSent,
+  publishDeliverableToAccess,
+} from "@/lib/deliverableAccess";
 
 // Declare PDF.js types
 declare global {
@@ -38,6 +45,7 @@ export default function DeliverableViewer() {
     jobId: string;
     deliverableId: string;
   }>();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -109,6 +117,28 @@ export default function DeliverableViewer() {
     }
 
     return `/jobs/${jobId}/${slug}/${reportId}?print=true&embedded=true`;
+  };
+
+  // Same as Mark as Sent on the Deliverables tab: mark sent, then publish to
+  // ampOS ACCESS in the background (a toast reports the result).
+  const [submitting, setSubmitting] = useState(false);
+  const markSent = async () => {
+    if (!deliverable || !deliverableId || submitting) return;
+    if (!(await confirmMarkSent())) return;
+    setSubmitting(true);
+    try {
+      await markDeliverableSent(deliverableId);
+      setDeliverable({ ...deliverable, status: "delivered" });
+      void publishDeliverableToAccess(deliverableId);
+    } catch (e) {
+      toast({
+        title: "Couldn't mark as sent",
+        description: e instanceof Error ? e.message : String(e),
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const loadDeliverable = async () => {
@@ -1597,15 +1627,39 @@ export default function DeliverableViewer() {
       {/* Header */}
       <div className="bg-white dark:bg-dark-150 border-b border-neutral-200 dark:border-neutral-700 p-4 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(`/jobs/${jobId}?tab=deliverables`)}
+              className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-dark-200 rounded-none font-medium flex items-center gap-2"
+              title="Back to the job's Deliverables tab"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
+            <div>
             <h1 className="text-xl font-bold text-neutral-900 dark:text-white">
               {deliverable.name}
             </h1>
             <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
-              Status: {deliverable.status} • {reports.length} report(s)
+              Status:{" "}
+              {deliverable.status === "delivered"
+                ? "Sent"
+                : deliverable.status.replace("_", " ")}{" "}
+              • {reports.length} report(s)
             </p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
+            {deliverable.status !== "delivered" && (
+              <button
+                onClick={markSent}
+                disabled={submitting}
+                className="px-4 py-2 border border-brand text-brand hover:bg-brand hover:text-white disabled:opacity-60 rounded-none font-medium flex items-center gap-2"
+              >
+                <Send className="w-5 h-5" />
+                {submitting ? "Marking…" : "Mark as Sent"}
+              </button>
+            )}
             {generating ? (
               <div className="flex items-center gap-3 px-4 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-none">
                 <LoadingSpinner size="xs" />

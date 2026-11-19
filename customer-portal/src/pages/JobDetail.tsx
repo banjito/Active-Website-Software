@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { ReportRow } from '@/components/ReportRow';
 import { PacketCoverRow } from '@/components/PacketCoverRow';
-import { dateSearchText, formatDate } from '@/lib/utils';
+import { cn, dateSearchText, formatDate } from '@/lib/utils';
 
 export function JobDetail() {
   const { jobId } = useParams<{ jobId: string }>();
@@ -31,6 +31,15 @@ export function JobDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  // Packets whose cover letter dropdown is open (reports shown as branches).
+  const [openPackets, setOpenPackets] = useState<Set<string>>(new Set());
+  const togglePacket = (id: string) =>
+    setOpenPackets((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   // The input stays on `query` (instant); the heavy list filter runs off the
   // deferred value so typing never blocks on re-rendering hundreds of rows.
   const deferredQuery = useDeferredValue(query);
@@ -241,11 +250,51 @@ export function JobDetail() {
                   {packet.packet_pdf_path && (
                     <PacketCoverRow packet={packet} kind="full" />
                   )}
-                  {packet.cover_pdf_path && <PacketCoverRow packet={packet} />}
                   {items.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      The reports in this packet aren’t available yet.
-                    </p>
+                    <>
+                      {packet.cover_pdf_path && <PacketCoverRow packet={packet} />}
+                      <p className="text-sm text-muted-foreground">
+                        The reports in this packet aren’t available yet.
+                      </p>
+                    </>
+                  ) : packet.cover_pdf_path ? (
+                    // Cover letter is a dropdown; its reports hang under it as
+                    // tree branches.
+                    <div>
+                      <PacketCoverRow
+                        packet={packet}
+                        expanded={openPackets.has(packet.id)}
+                        onToggle={() => togglePacket(packet.id)}
+                        childCount={items.length}
+                      />
+                      {openPackets.has(packet.id) && (
+                        <div className="ml-6">
+                          {items.map((r, idx) => {
+                            const last = idx === items.length - 1;
+                            return (
+                              <div
+                                key={r.asset_id}
+                                className="enter relative pl-6 pt-2"
+                                style={{ animationDelay: `${Math.min(idx, 12) * 35}ms` }}
+                              >
+                                <span
+                                  aria-hidden
+                                  className={cn(
+                                    'absolute left-0 top-0 w-px bg-border',
+                                    last ? 'h-[calc(50%+4px)]' : 'h-full',
+                                  )}
+                                />
+                                <span
+                                  aria-hidden
+                                  className="absolute left-0 top-[calc(50%+4px)] h-px w-6 bg-border"
+                                />
+                                <ReportRow report={r} />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <div className="space-y-2">
                       {items.map((r) => (

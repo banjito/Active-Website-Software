@@ -23,25 +23,27 @@ All of it comes out as one combined PDF, ready to send.
 | Status | Means |
 |---|---|
 | **Draft** | Being assembled. Fully editable. |
-| **In review** | Submitted for approval. |
-| **Approved** | Signed off, ready to send. |
-| **Rejected** | Sent back, with a reason attached. |
-| **Delivered** | The customer has it. |
+| **Sent** | The customer has it. It shows in ampOS ACCESS. |
+
+Older deliverables may still show **In review**, **Approved** or **Rejected** from before the review step was removed. Mark them as sent the same way.
 
 ## The flow
 
-1. Reports are written and **approved**. Unapproved reports cannot go in a package.
+1. Reports are written and **approved**. Unapproved reports cannot go in a package. Start the cover letter from the job's **Reports** tab with **Generate Cover + Executive Summary**: on the **Approved** filter it covers the new batch of approved reports, on the **Sent** filter it covers reports already sent.
 2. Someone creates a deliverable on the job and writes the cover letter.
 3. Reports are selected into it.
 4. An executive summary is added, if the job warrants one.
 5. The combined PDF is generated.
-6. It goes to review.
-7. Approved, then delivered.
-8. The job moves to **ready to bill**.
+6. Click **Mark as Sent** (on the deliverable, or at the top of its View page). ampOS publishes the cover letter, approved reports and full packet PDF to ampOS ACCESS. It does not email the customer, so tell them it's there.
+7. The job moves to **ready to bill**.
+
+The gear icon on each deliverable has **Details**, **Republish to ampOS ACCESS** and **Unsend** (after it's sent), and **Delete** (before it's sent).
+
+**Unsend** takes the packet out of ampOS ACCESS and puts it back to Draft. The reports inside stay visible in the customer's report list, because approved reports always show there.
 
 ## Document locking
 
-When a deliverable is approved or sent, its cover letter **locks**. ampOS records who locked it and when.
+When a deliverable is sent, its cover letter **locks**. ampOS records who locked it and when.
 
 This is deliberate. The customer has a specific version of that document; letting it be quietly edited afterwards means your copy and their copy stop matching, and neither of you can tell.
 

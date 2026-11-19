@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, Eye, Files, Mail } from "lucide-react";
+import { ChevronRight, Download, Eye, Files, Mail } from "lucide-react";
 import {
   getPacketCoverDownloadUrl,
   getPacketFullDownloadUrl,
@@ -7,6 +7,7 @@ import {
 } from "@/services/portalData";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
 
 type Action = "view" | "download";
 
@@ -30,13 +31,22 @@ const KINDS = {
 /**
  * A packet-level row at the top of a Report Packet: the cover letter, or the
  * single merged "full packet" PDF. Styled like ReportRow.
+ *
+ * Pass `onToggle` to make the row a dropdown: a chevron on the left opens the
+ * packet's reports as branches underneath it (the parent renders them).
  */
 export function PacketCoverRow({
   packet,
   kind = "cover",
+  expanded = false,
+  onToggle,
+  childCount,
 }: {
   packet: Deliverable;
   kind?: keyof typeof KINDS;
+  expanded?: boolean;
+  onToggle?: () => void;
+  childCount?: number;
 }) {
   const [busy, setBusy] = useState<Action | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -60,18 +70,44 @@ export function PacketCoverRow({
     }
   }
 
+  const subtitle =
+    childCount !== undefined
+      ? `${k.subtitle} · ${childCount} report${childCount === 1 ? "" : "s"}`
+      : k.subtitle;
+  const body = (
+    <>
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-accent text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+        <k.Icon className="h-[18px] w-[18px]" />
+      </div>
+      <div className="min-w-0">
+        <div className="truncate font-medium">{k.title}</div>
+        <div className="text-xs text-muted-foreground">{subtitle}</div>
+      </div>
+    </>
+  );
+
   return (
     <div className="group border bg-card p-3 shadow-soft transition-all duration-300 ease-spring hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lift">
       <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-accent text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-            <k.Icon className="h-[18px] w-[18px]" />
-          </div>
-          <div className="min-w-0">
-            <div className="truncate font-medium">{k.title}</div>
-            <div className="text-xs text-muted-foreground">{k.subtitle}</div>
-          </div>
-        </div>
+        {onToggle ? (
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-expanded={expanded}
+            title={expanded ? "Hide reports" : "Show reports"}
+            className="flex min-w-0 flex-1 items-center gap-3 text-left"
+          >
+            <ChevronRight
+              className={cn(
+                "h-6 w-6 shrink-0 p-1 text-muted-foreground transition-transform duration-200",
+                expanded && "rotate-90",
+              )}
+            />
+            {body}
+          </button>
+        ) : (
+          <div className="flex min-w-0 items-center gap-3">{body}</div>
+        )}
         <div className="flex shrink-0 items-center gap-1">
           <Button
             size="icon"

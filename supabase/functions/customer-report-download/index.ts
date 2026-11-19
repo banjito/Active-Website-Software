@@ -57,6 +57,9 @@ serve(async (req) => {
     if (userError || !user) return json({ error: 'Invalid or expired token' }, 401)
 
     let path: string | null = null
+    // For the ACCESS view log (common.access_report_views).
+    let viewKind: 'report' | 'cover' | 'packet' = 'report'
+    let viewJobId: string | null = null
 
     if (deliverableId) {
       // Packet cover letter: customer_deliverables() is SECURITY DEFINER and
@@ -68,6 +71,7 @@ serve(async (req) => {
 
       const match = (rows as Array<{
         id: string
+        job_id?: string | null
         cover_pdf_path: string | null
         packet_pdf_path?: string | null
       }> | null)?.find((r) => r.id === deliverableId)
@@ -75,6 +79,8 @@ serve(async (req) => {
 
       // kind 'packet' = the single merged PDF; default = the cover letter.
       const wantsPacket = String(body?.kind || '') === 'packet'
+      viewKind = wantsPacket ? 'packet' : 'cover'
+      viewJobId = match.job_id ?? null
       path = wantsPacket ? (match.packet_pdf_path ?? null) : match.cover_pdf_path
       if (!path) {
         return json(
@@ -95,10 +101,14 @@ serve(async (req) => {
         .rpc('customer_report_assets')
       if (rpcError) return json({ error: rpcError.message }, 400)
 
-      const match = (rows as Array<{ asset_id: string; published_pdf_path: string | null }> | null)
-        ?.find((r) => r.asset_id === assetId)
+      const match = (rows as Array<{
+        asset_id: string
+        job_id?: string | null
+        published_pdf_path: string | null
+      }> | null)?.find((r) => r.asset_id === assetId)
       if (!match) return json({ error: 'Not authorized for this report' }, 403)
 
+      viewJobId = match.job_id ?? null
       path = match.published_pdf_path
       if (!path) {
         return json(
@@ -116,6 +126,37 @@ serve(async (req) => {
       .createSignedUrl(path, SIGNED_URL_TTL_SECONDS)
     if (signError || !signed?.signedUrl) {
       return json({ error: signError?.message ?? 'Could not create download link' }, 500)
+    }
+
+    // Log the open so staff see "Viewed in ACCESS" on Deliverables. Customer
+    // accounts only (staff previews don't count). Never blocks the download.
+    try {
+      const { data: cu } = await adminClient
+        .schema('common')
+        .from('customer_users')
+        .select('customer_id')
+        .eq('auth_user_id', user.id)
+        .maybeSingle()
+      if (cu) {
+        const meta = (user.user_metadata ?? {}) as Record<string, unknown>
+        const name = String(meta.full_name || meta.name || '').trim() || null
+        const { error: logErr } = await adminClient
+          .schema('common')
+          .from('access_report_views')
+          .insert({
+            auth_user_id: user.id,
+            customer_id: cu.customer_id,
+            viewer_email: user.email ?? null,
+            viewer_name: name,
+            job_id: viewJobId,
+            asset_id: deliverableId ? null : assetId,
+            deliverable_id: deliverableId || null,
+            kind: viewKind,
+          })
+        if (logErr) console.warn('ACCESS view log failed:', logErr.message)
+      }
+    } catch (e) {
+      console.warn('ACCESS view log failed:', e instanceof Error ? e.message : e)
     }
 
     return json({ url: signed.signedUrl })

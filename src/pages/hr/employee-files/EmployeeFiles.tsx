@@ -12,7 +12,7 @@ import {
   History
 } from 'lucide-react';
 import { useAuth } from '../../../lib/AuthContext';
-import { usePermissions } from '@/hooks/usePermissions';
+import { useCan } from '@/lib/permissions';
 import { useManagerReportIds } from '../../../lib/hooks/useManagerReportIds';
 import { toast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
@@ -34,8 +34,9 @@ interface User {
 
 export const EmployeeFiles: React.FC = () => {
   const { user } = useAuth();
-  const { getUserRole } = usePermissions();
-  const isHrFullAccess = getUserRole() === 'Admin' || getUserRole() === 'Super Admin';
+  const { can } = useCan();
+  // Everyone's files: HR and Super Admins (hr.view_all). Managers still see their people.
+  const isHrFullAccess = can('hr.view_all');
   const { reportIds, loading: reportIdsLoading, refetch: refetchReportIds } = useManagerReportIds(user?.id);
   const [users, setUsers] = useState<User[]>([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');

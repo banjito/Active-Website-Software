@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
+import { useCan } from "@/lib/permissions";
 import { useManagerReportIds } from "@/lib/hooks/useManagerReportIds";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { EditProfilePopup } from "./EditProfilePopup";
@@ -894,8 +895,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const canEditAnyProfile = isAdminViewer || isHrViewer;
   const canEditThisProfile = viewingOwnProfile || canEditAnyProfile;
   const canEditEeData = viewingOwnProfile || isAdminViewer || isHrViewer;
+  // Roles scope item 6: other people's HR records need hr.view_all (HR + Super Admins).
+  const { can: canDo } = useCan();
   const canViewSensitiveSection =
-    viewingOwnProfile || isManagerViewingReport || isAdminViewer || isHrViewer;
+    viewingOwnProfile || isManagerViewingReport || canDo("hr.view_all");
   const profileIdToFetch =
     isOpen && canViewSensitiveSection
       ? userId || (profileUser?.id ?? user?.id)

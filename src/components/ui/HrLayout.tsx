@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../lib/AuthContext";
 import { supabase } from "../../lib/supabase";
 import { Link, useLocation, useNavigate, Navigate } from "react-router-dom";
-import { usePermissions } from "@/hooks/usePermissions";
+import { useCan, type PermissionKey } from "@/lib/permissions";
+import { LoadingSpinner } from "./LoadingSpinner";
 import {
   FileText,
   Users,
@@ -195,9 +196,10 @@ const NavSection: React.FC<{
 
 export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
   const { user, refreshUser } = useAuth();
-  const { checkPortalAccess, getUserRole } = usePermissions();
-  const userRole = getUserRole();
-  const isHrFullAccess = userRole === "Admin" || userRole === "Super Admin";
+  const { can, loading: permissionsLoading } = useCan();
+  // Roles scope item 6: the full HR portal (everyone's records) needs hr.view_all,
+  // which is HR and Super Admins. Admins no longer get it by role name.
+  const isHrFullAccess = can("hr.view_all");
   const location = useLocation();
   const navigate = useNavigate();
   // Below laptop width the side menu slides in from the left instead of
@@ -336,10 +338,36 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
     "/hr/handbook",
     "/hr/retirement-calculator",
   ];
-  const isPathAllowedForLimited = HR_LIMITED_ALLOWED_PATHS.some(
-    (p) => location.pathname === p || location.pathname.startsWith(p + "/"),
-  );
-  if (!isHrFullAccess && !isPathAllowedForLimited) {
+  // Pages a single HR permission opens without the full portal (Roles scope item 6).
+  const HR_PATH_PERMISSIONS: [string, PermissionKey][] = [
+    ["/hr/recruiting", "hr.talent_pool"],
+    ["/hr/offers", "hr.talent_pool"],
+    ["/hr/onboarding", "hr.send_documents"],
+    ["/hr/announcements", "hr.send_documents"],
+    ["/hr/integrations/payroll", "hr.payroll"],
+    ["/hr/data/compensation-history", "hr.payroll"],
+  ];
+  const underPath = (path: string, prefix: string) =>
+    path === prefix || path.startsWith(prefix + "/");
+  const isLimitedPath = (path: string) =>
+    HR_LIMITED_ALLOWED_PATHS.some((p) => underPath(path, p));
+  const canOpenPath = (path: string) =>
+    isLimitedPath(path) ||
+    isHrFullAccess ||
+    HR_PATH_PERMISSIONS.some(([prefix, key]) => underPath(path, prefix) && can(key));
+  const isPathAllowedForLimited = isLimitedPath(location.pathname);
+  // The section menu is for anyone with an HR permission beyond their own things.
+  const showSections =
+    isHrFullAccess || HR_PATH_PERMISSIONS.some(([, key]) => can(key));
+
+  if (!isPathAllowedForLimited && permissionsLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+  if (!canOpenPath(location.pathname)) {
     return <Navigate to="/hr/employee-files" replace />;
   }
 
@@ -676,9 +704,13 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
     },
   ];
 
+  const visibleSections = menuSections
+    .map((s) => ({ ...s, items: s.items.filter((i) => canOpenPath(i.path)) }))
+    .filter((s) => s.items.length > 0);
+
   // Flat list of every page the current user can reach, for the sidebar search
-  const standaloneNavItems: { path: string; label: string; section?: string }[] =
-    isHrFullAccess
+  const standaloneNavItems: { path: string; label: string; section?: string }[] = (
+    showSections
       ? [
           { path: "/hr/dashboard", label: "HR Dashboard" },
           { path: "/hr/handbook", label: "Employee Handbook" },
@@ -697,11 +729,12 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
           { path: "/hr/data/org-chart", label: "Org Chart" },
           { path: "/hr/self-service/manager-portal", label: "Manager Portal" },
           { path: "/hr/time-attendance/timesheets", label: "Timesheets" },
-        ];
+        ]
+  ).filter((i) => canOpenPath(i.path));
   const searchableNavItems = [
     ...standaloneNavItems,
-    ...(isHrFullAccess
-      ? menuSections.flatMap((s) =>
+    ...(showSections
+      ? visibleSections.flatMap((s) =>
           s.items.map((i) => ({
             path: i.path,
             label: i.label,
@@ -763,7 +796,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
 
   const sectionsByGroup = NAV_GROUP_ORDER.map((group) => ({
     group,
-    sections: menuSections.filter((section) => section.group === group),
+    sections: visibleSections.filter((section) => section.group === group),
   })).filter((entry) => entry.sections.length > 0);
 
   const anyExpanded = menuSections.some((s) => expandedSections[s.key]);
@@ -919,7 +952,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                       "/hr/compliance/document-acknowledgment",
                     )}
                   />
-                  {isHrFullAccess && (
+                  {canOpenPath("/hr/announcements") && (
                     <NavLinkRow
                       to="/hr/announcements"
                       icon={<Megaphone className="h-3.5 w-3.5" />}
@@ -947,7 +980,7 @@ export const HrLayout: React.FC<HrLayoutProps> = ({ children }) => {
                   />
                 </div>
 
-                {isHrFullAccess ? (
+                {showSections ? (
                   <>
                     {sectionsByGroup.map(({ group, sections }, groupIndex) => (
                       <div key={group}>

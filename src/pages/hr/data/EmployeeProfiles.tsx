@@ -38,7 +38,7 @@ import {
 } from "@/lib/employeeIdImport";
 import { useAuth } from "../../../lib/AuthContext";
 import { isSuperUser } from "@/lib/roles";
-import { usePermissions } from "@/hooks/usePermissions";
+import { useCan } from "@/lib/permissions";
 import { toast } from "../../../components/ui/toast";
 import { supabase } from "../../../lib/supabase";
 import { ProfileView } from "../../../components/profile/ProfileView";
@@ -76,9 +76,9 @@ type SortOption =
 
 export const EmployeeProfiles: React.FC = () => {
   const { user } = useAuth();
-  const { getUserRole } = usePermissions();
-  const isHrFullAccess =
-    getUserRole() === "Admin" || getUserRole() === "Super Admin";
+  const { can } = useCan();
+  // Everyone's details: HR and Super Admins (hr.view_all), Roles scope item 6.
+  const isHrFullAccess = can("hr.view_all");
 
   const [profiles, setProfiles] = useState<EmployeeProfile[]>([]);
   const [loading, setLoading] = useState(true);

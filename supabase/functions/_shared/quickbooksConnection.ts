@@ -7,7 +7,8 @@
 // job linking, billing and change orders. Only admins may connect or disconnect.
 
 import { encode as base64Encode, decode as base64Decode } from 'https://deno.land/std@0.168.0/encoding/base64.ts'
-import { COMPANY_SUPERUSER_EMAILS, isEmployeeEmailDomain } from './companyConfig.ts'
+import { isEmployeeEmailDomain } from './companyConfig.ts'
+import { isSuperAdminByRoleName } from './superAdmin.ts'
 
 // deno-lint-ignore no-explicit-any
 type Db = any
@@ -56,8 +57,7 @@ export class QuickBooksReconnectError extends Error {
   }
 }
 
-const isSuperUser = (user: AuthUser) =>
-  !!user.email && COMPANY_SUPERUSER_EMAILS.includes(user.email.toLowerCase())
+const isSuperUser = (user: AuthUser) => isSuperAdminByRoleName(user)
 
 /** Employees use the shared connection. Customer portal logins never do. */
 export const canUseQuickBooks = (user: AuthUser) =>

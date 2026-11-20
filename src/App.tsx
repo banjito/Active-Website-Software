@@ -78,7 +78,7 @@ import AdminUserManagement from "./components/admin/AdminUserManagement";
 import SystemHealthMonitoring from "./components/admin/SystemHealthMonitoring";
 import { SystemLogsCard } from "./components/admin/SystemLogsCard";
 import { DataBackupControls } from "./components/admin/DataBackupControls";
-import RoleManagement from "./components/admin/RoleManagement";
+import RolesAndPermissions from "./components/admin/roles/RolesAndPermissions";
 import NotificationDevControls from "./components/admin/NotificationDevControls";
 import CalibrationReportRecipients from "./components/admin/CalibrationReportRecipients";
 import InProgressDashboard from "./components/admin/InProgressDashboard";
@@ -757,7 +757,7 @@ function App() {
                     />
                     <Route
                       path="role-management"
-                      element={<RoleManagement />}
+                      element={<RolesAndPermissions />}
                     />
                     <Route
                       path="notification-controls"

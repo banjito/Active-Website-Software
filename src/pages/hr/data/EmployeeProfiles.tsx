@@ -299,7 +299,7 @@ export const EmployeeProfiles: React.FC = () => {
         ) as typeof combinedProfiles;
       }
 
-      // Filter out hidden profiles unless superuser (see SUPERUSER_EMAILS in roles.ts)
+      // Filter out hidden profiles unless Super Admin (isSuperUser in roles.ts)
       if (!isSuperUser(user?.email)) {
         combinedProfiles = combinedProfiles.filter(
           (profile) => !profile.hidden,

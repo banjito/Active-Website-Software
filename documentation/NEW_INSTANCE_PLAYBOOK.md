@@ -12,7 +12,7 @@ Rough time budget: ~1 day the first time, half a day once practiced.
 
 - [ ] Company name (short + full legal name)
 - [ ] Email domain(s) their staff will log in with (e.g. `@acme.com`)
-- [ ] Two superuser emails (their owner/admin people)
+- [ ] Two Super Admin people (their owner/admin). Super Admin is a role since Nov 2026: run `database/migrations/permissions_01_list.sql` to `permissions_04_super_admin.sql` (change the three emails in 04 to theirs), so at least two people hold it.
 - [ ] Phone, mailing address, ship-to address (appear on POs/proposals)
 - [ ] Accounting email (vendor invoices) and purchase-orders email
 - [ ] Logo files: full logo + small square mark (SVG or PNG)
@@ -67,7 +67,6 @@ Then set the function secrets (Dashboard → Edge Functions → Secrets, or
 - `COMPANY_FULL_NAME` — e.g. `Acme Testing Services`
 - `COMPANY_ADMIN_EMAIL` — their admin notification inbox
 - `COMPANY_OPS_EMAIL` — their ops inbox (default email sender + reports)
-- `COMPANY_SUPERUSER_EMAILS` — comma-separated, same two as the DB step
 - `COMPANY_EMPLOYEE_DOMAINS` — e.g. `@acme.com`
 - `COMPANY_BRAND_COLOR` — hex, used in notification emails
 - `ACCOUNTING_NOTIFICATION_EMAIL` — their accounting inbox
@@ -113,7 +112,7 @@ New Netlify site from this repo, build command `npm run build`, publish
 - `VITE_COMPANY_ACCOUNTING_EMAIL`, `VITE_COMPANY_PO_EMAIL`,
   `VITE_COMPANY_SUPPORT_EMAIL`
 - `VITE_COMPANY_WEBSITE`, `VITE_COMPANY_PRODUCT_URL`
-- `VITE_COMPANY_EMAIL_DOMAINS` (comma-separated), `VITE_COMPANY_SUPERUSER_EMAILS`
+- `VITE_COMPANY_EMAIL_DOMAINS` (comma-separated)
 - `VITE_COMPANY_SIGNER_NAME`, `VITE_COMPANY_SIGNER_TITLE`
 - `VITE_COMPANY_BRAND_COLOR`, `VITE_COMPANY_BRAND_COLOR_DARK`
 - `VITE_COMPANY_LOGO`, `VITE_COMPANY_FAVICON` (paths under `public/`)

@@ -1,4 +1,4 @@
-import { companyConfig } from './companyConfig';
+import { isSuperAdminEmail } from './superAdmin';
 
 export type Role =
   | 'NETA Technician'
@@ -84,15 +84,9 @@ export interface RolePermissions {
   priority?: number; // Added priority for conflict resolution in permission inheritance
 }
 
-// Superuser emails that always have full admin access regardless of assigned role.
-const SUPERUSER_EMAILS: string[] = companyConfig.superuserEmails.map((e) =>
-  e.toLowerCase()
-);
-
-export const isSuperUser = (email: string | undefined | null): boolean => {
-  if (!email) return false;
-  return SUPERUSER_EMAILS.includes(email.toLowerCase());
-};
+// Super Admin is a role (Roles scope item 5), no longer a hardcoded email list.
+// Pass the signed-in person's email; true when their role is Super Admin.
+export const isSuperUser = (email: string | undefined | null): boolean => isSuperAdminEmail(email);
 
 // Roles allowed to log customer interactions (Log Interaction page + header button).
 export const INTERACTION_LOGGING_ROLES: Role[] = [

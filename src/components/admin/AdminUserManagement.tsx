@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
-import UserPermissionsPanel from "./UserPermissionsPanel";
+import PersonAccessPanel from "./roles/PersonAccessPanel";
 
 interface UserData {
   id: string;
@@ -1410,8 +1410,9 @@ export default function AdminUserManagement() {
 
                       {/* Permissions tab */}
                       <TabsContent value="permissions">
-                        <UserPermissionsPanel
-                          user={user}
+                        <PersonAccessPanel
+                          userId={user.id}
+                          todayRole={user.user_metadata?.role}
                           currentUserId={currentUser?.id}
                         />
                       </TabsContent>

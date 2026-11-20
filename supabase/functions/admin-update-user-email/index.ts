@@ -1,14 +1,12 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
-import { COMPANY_SUPERUSER_EMAILS } from '../_shared/companyConfig.ts'
+import { isSuperAdmin } from '../_shared/superAdmin.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Keep this list in sync with src/lib/roles.ts and common.is_superuser_email.
-const SUPERUSER_EMAILS = COMPANY_SUPERUSER_EMAILS
 
 // Basic RFC-ish email sanity check. The Auth API does its own validation too;
 // this just gives a friendlier early error.
@@ -93,11 +91,9 @@ serve(async (req) => {
 
     // Authorization: super admins may change anyone's email; anyone else may
     // only change their OWN email (self-service on the profile page).
-    const isSuperAdmin = SUPERUSER_EMAILS.includes(
-      (caller.email || '').toLowerCase(),
-    )
     const isSelf = caller.id === userId
-    if (!isSuperAdmin && !isSelf) {
+    const callerIsSuperAdmin = isSelf ? false : await isSuperAdmin(supabase, caller.email)
+    if (!callerIsSuperAdmin && !isSelf) {
       return new Response(
         JSON.stringify({
           error: 'Access denied. You can only change your own email.',

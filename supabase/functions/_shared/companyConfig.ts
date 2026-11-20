@@ -76,14 +76,6 @@ export const COMPANY_PO_REPORT_EMAILS = env(
   .map((e) => e.trim().toLowerCase())
   .filter(Boolean);
 
-/** Emails allowed to use the admin password-reset function. */
-export const COMPANY_SUPERUSER_EMAILS = env(
-  "COMPANY_SUPERUSER_EMAILS",
-  "jack.lyons@ampqes.com"
-)
-  .split(",")
-  .map((e) => e.trim().toLowerCase())
-  .filter(Boolean);
 
 /**
  * Domains whose accounts count as employees in server-side checks

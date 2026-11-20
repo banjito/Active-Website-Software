@@ -75,11 +75,6 @@ export const companyConfig = {
     "@cedsi.com",
     "@armadillosafe.com",
   ]),
-  /** Emails that always get full admin access. */
-  superuserEmails: list(env.VITE_COMPANY_SUPERUSER_EMAILS, [
-    "john.chambers@ampqes.com",
-    "jack.lyons@ampqes.com",
-  ]),
 
   /** Default proposal signer. */
   signerName: str(env.VITE_COMPANY_SIGNER_NAME, "Brian Rodgers"),

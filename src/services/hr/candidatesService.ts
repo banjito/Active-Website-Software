@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { signResumeUrl } from '@/lib/resumeFiles';
 import { eeoComplianceService } from './eeoComplianceService';
 
 /**
@@ -298,7 +299,9 @@ export const candidatesService = {
 
     if (candidate.resume_url) {
       try {
-        const response = await fetch(candidate.resume_url);
+        const link = await signResumeUrl(candidate.resume_url);
+        if (!link) throw new Error('Could not open the resume file');
+        const response = await fetch(link);
         const blob = await response.blob();
         const fileName = `resume_${candidate.first_name}_${candidate.last_name}`.replace(/\s+/g, '_');
         const ext = candidate.resume_url.split('.').pop()?.split('?')[0] || 'pdf';
@@ -336,7 +339,9 @@ export const candidatesService = {
 
     if (candidate.cover_letter_url) {
       try {
-        const response = await fetch(candidate.cover_letter_url);
+        const link = await signResumeUrl(candidate.cover_letter_url);
+        if (!link) throw new Error('Could not open the cover letter file');
+        const response = await fetch(link);
         const blob = await response.blob();
         const ext = candidate.cover_letter_url.split('.').pop()?.split('?')[0] || 'pdf';
         const file = new File([blob], `cover_letter.${ext}`, { type: blob.type });

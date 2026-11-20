@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSignedResumeUrl } from "@/lib/resumeFiles";
 import Card, {
   CardContent,
   CardDescription,
@@ -145,6 +146,9 @@ export const CandidateTracking: React.FC = () => {
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
     null,
   );
+  // The resumes folder is private: stored addresses get a fresh signed link.
+  const resumeLink = useSignedResumeUrl(selectedCandidate?.resume_url);
+  const coverLetterLink = useSignedResumeUrl(selectedCandidate?.cover_letter_url);
   const [candidateInterviews, setCandidateInterviews] = useState<Interview[]>(
     [],
   );
@@ -2062,27 +2066,37 @@ export const CandidateTracking: React.FC = () => {
                   </button>
                   {expandedSections.resume && (
                     <div className="border-t border-neutral-200 dark:border-neutral-700 p-4">
-                      <div className="mb-3">
-                        <a
-                          href={selectedCandidate.resume_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-brand hover:text-brand/80 underline"
-                        >
-                          <FileText className="h-4 w-4" />
-                          Open Resume in New Tab
-                        </a>
-                      </div>
-                      <div
-                        className="border border-neutral-200 dark:border-neutral-700 rounded-none overflow-hidden"
-                        style={{ height: "600px" }}
-                      >
-                        <iframe
-                          src={selectedCandidate.resume_url}
-                          className="w-full h-full"
-                          title="Resume Preview"
-                        />
-                      </div>
+                      {resumeLink ? (
+                        <>
+                          <div className="mb-3">
+                            <a
+                              href={resumeLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 text-brand hover:text-brand/80 underline"
+                            >
+                              <FileText className="h-4 w-4" />
+                              Open Resume in New Tab
+                            </a>
+                          </div>
+                          <div
+                            className="border border-neutral-200 dark:border-neutral-700 rounded-none overflow-hidden"
+                            style={{ height: "600px" }}
+                          >
+                            <iframe
+                              src={resumeLink}
+                              className="w-full h-full"
+                              title="Resume Preview"
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                          {resumeLink === undefined
+                            ? "Loading resume..."
+                            : "Couldn't open the resume. You may not have access, or it was deleted."}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -2419,10 +2433,10 @@ export const CandidateTracking: React.FC = () => {
                   </button>
                   {expandedSections.coverLetter && (
                     <div className="border-t border-neutral-200 dark:border-neutral-700 p-4 space-y-4">
-                      {selectedCandidate.cover_letter_url && (
+                      {selectedCandidate.cover_letter_url && coverLetterLink && (
                         <div>
                           <a
-                            href={selectedCandidate.cover_letter_url}
+                            href={coverLetterLink}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 text-brand hover:text-brand/80 underline"

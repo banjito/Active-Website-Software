@@ -141,12 +141,20 @@ serve(async (req) => {
     const position = candidate.position_applied || 'Unspecified position'
     const appUrl = (Deno.env.get('APP_URL') || Deno.env.get('SITE_URL') || '').replace(/\/$/, '')
     const candidatesLink = appUrl ? `${appUrl}/hr/recruiting/candidate-tracking` : ''
+    // The resumes folder is private: link to the applicant in ampOS (login + Talent Pool).
+    const applicantLink = appUrl
+      ? `${appUrl}/hr/recruiting/candidate-tracking?candidateId=${encodeURIComponent(candidate.id)}`
+      : ''
 
     const row = (label: string, value: string, last = false) => {
       const border = last ? '' : 'border-bottom:1px solid #eee;'
       return `<tr><td style="padding:12px;${border}font-weight:bold;background:#f8f9fa;width:140px">${label}</td><td style="padding:12px;${border}">${value}</td></tr>`
     }
-    const resumeCell = candidate.resume_url ? `<a href="${escape(candidate.resume_url)}">View resume</a>` : 'Not attached'
+    const resumeCell = !candidate.resume_url
+      ? 'Not attached'
+      : applicantLink
+        ? `<a href="${escape(applicantLink)}">View resume in ampOS</a>`
+        : 'Attached (open in ampOS)'
 
     const htmlBody = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
@@ -188,7 +196,9 @@ serve(async (req) => {
       `Phone: ${candidate.phone || 'N/A'}`,
       `Location: ${candidate.location || 'N/A'}`,
       `Expected Pay: ${candidate.expected_compensation || 'N/A'}`,
-      candidate.resume_url ? `Resume: ${candidate.resume_url}` : 'Resume: Not attached',
+      candidate.resume_url
+        ? `Resume: ${applicantLink || 'attached (open in ampOS)'}`
+        : 'Resume: Not attached',
       candidatesLink ? `\nReview Applicant: ${candidatesLink}` : '',
       '',
       `Automated notification from ${COMPANY_FULL_NAME}`

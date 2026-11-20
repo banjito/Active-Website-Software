@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 // Must be imported before createClient() runs: it snapshots the auth params in
 // the URL before detectSessionInUrl strips them. See authUrlSnapshot.ts.
 import './authUrlSnapshot';
+import { viewAsFetch } from './viewAs';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -24,7 +25,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     storageKey: 'supabase.auth.token',
     flowType: 'pkce'
-  }
+  },
+  // Read-only in a "View as" tab; a plain fetch otherwise (see viewAs.ts).
+  global: { fetch: viewAsFetch }
 });
 
 console.log('Supabase client initialized, use direct schema selection in service calls');

@@ -1,5 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { getViewAs } from "@/lib/viewAs";
 
 /**
  * Who is Super Admin, for the signed-in person (Roles scope item 5).
@@ -48,5 +49,7 @@ supabase.auth.onAuthStateChange((_event, session) => prime(session?.user ?? null
 export function isSuperAdminEmail(email: string | null | undefined): boolean {
   if (!email || !current) return false;
   if (email.toLowerCase() !== current.email) return false;
+  const viewAs = getViewAs();
+  if (viewAs) return viewAs.roleKey === "super_admin";
   return current.fromRole ?? current.fromToday;
 }

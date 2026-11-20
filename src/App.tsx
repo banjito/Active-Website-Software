@@ -20,6 +20,7 @@ import {
 import SitesListPage from "./components/sites/SitesListPage";
 import SiteDetailPage from "./components/sites/SiteDetailPage";
 import AppToaster from "./components/ui/AppToaster";
+import ViewAsBar from "./components/admin/roles/ViewAsBar";
 import CustomerList from "./components/customers/CustomerList";
 import ContactList from "./components/customers/ContactList";
 import JobList from "./components/jobs/JobList";
@@ -649,6 +650,7 @@ function App() {
             <DivisionProvider>
               <ConnectionStatusOverlay />
               <AppToaster />
+              <ViewAsBar />
               <Router>
                 <ScrollToTop />
                 <Routes>

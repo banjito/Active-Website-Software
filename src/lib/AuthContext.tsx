@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { User } from "@supabase/supabase-js";
+import { getViewAs } from "./viewAs";
 import {
   supabase,
   isOffline,
@@ -46,6 +47,16 @@ function sameUser(a: User | null, b: User | null): boolean {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUserState] = useState<User | null>(null);
+
+  // "View as" tab: screens see the previewed role's name (viewAs.ts).
+  const shownUser = useMemo(() => {
+    const viewAs = getViewAs();
+    if (!user || !viewAs) return user;
+    return {
+      ...user,
+      user_metadata: { ...user.user_metadata, role: viewAs.legacyRole },
+    } as User;
+  }, [user]);
 
   /**
    * Sets the user, but keeps the *existing* object when nothing about the user
@@ -631,7 +642,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, setUser, loading, signOut, refreshUser, softRefresh }}
+      value={{ user: shownUser, setUser, loading, signOut, refreshUser, softRefresh }}
     >
       {children}
     </AuthContext.Provider>

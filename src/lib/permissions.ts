@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
+import { getViewAs } from "@/lib/viewAs";
 
 /**
  * Roles & Permissions item 1: the one list of permissions.
@@ -82,6 +83,16 @@ let inflight: { userId: string; promise: Promise<Set<PermissionKey>> } | null = 
 function loadPermissions(userId: string): Promise<Set<PermissionKey>> {
   if (cache?.userId === userId) return Promise.resolve(cache.keys);
   if (inflight?.userId === userId) return inflight.promise;
+
+  // "View as" tab: the previewed role's ticks, not yours.
+  const viewAs = getViewAs();
+  if (viewAs) {
+    const keys = new Set(
+      viewAs.permissions.filter((k): k is PermissionKey => KNOWN.has(k)),
+    );
+    cache = { userId, keys };
+    return Promise.resolve(keys);
+  }
 
   const promise = (async () => {
     const { data, error } = await supabase.schema("common").rpc("my_permissions");

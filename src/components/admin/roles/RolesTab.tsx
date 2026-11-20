@@ -1,10 +1,11 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
-import { Check, Copy, Lock, Trash2 } from "lucide-react";
+import { Check, Copy, Eye, Lock, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
 import { confirmDialog } from "@/components/ui/confirmDialog";
+import { startViewAs } from "@/lib/viewAs";
 import {
   Catalog,
   SUPER_ADMIN,
@@ -17,6 +18,8 @@ import {
 
 const MAKE_SUPER = "admin.make_super_admin";
 const keyOf = (role: string, perm: string) => `${role}\u0000${perm}`;
+/** New roles with no old role name: what their people have today. */
+const TODAY_ROLE_FALLBACK: Record<string, string> = { lead_tech: "NETA Technician" };
 
 interface Props {
   catalog: Catalog;
@@ -83,6 +86,29 @@ export default function RolesTab({ catalog, peopleCounts, isSuper, reloadCatalog
   const affected = [...pendingRoles].reduce((n, r) => n + (peopleCounts.get(r) ?? 0), 0);
   const roleLabel = (k: string) => roles.find((r) => r.key === k)?.label ?? k;
   const countOn = (r: string) => permissions.filter((p) => isOn(r, p.key)).length;
+
+  /** The old role name screens not yet on permissions will read for this role. */
+  const todayRoleFor = (key: string): string => {
+    let r = roles.find((x) => x.key === key);
+    for (let hops = 0; r && hops < 10; hops++) {
+      if (r.legacy_names[0]) return r.legacy_names[0];
+      if (TODAY_ROLE_FALLBACK[r.key]) return TODAY_ROLE_FALLBACK[r.key];
+      const parent: string | null = r.copied_from;
+      r = parent ? roles.find((x) => x.key === parent) : undefined;
+    }
+    return roles.find((x) => x.key === key)?.label ?? key;
+  };
+
+  const viewAsRole = () => {
+    const opened = startViewAs({
+      roleKey: role.key,
+      label: role.label,
+      legacyRole: todayRoleFor(role.key),
+      permissions: permissions.filter((p) => isOn(role.key, p.key)).map((p) => p.key),
+      unsaved: pendingRoles.has(role.key),
+    });
+    if (!opened) toast.error("Your browser blocked the new tab. Allow pop-ups for ampOS, then try again.");
+  };
 
   const save = async () => {
     const changes = [...pending].map(([k, on]) => {
@@ -307,6 +333,15 @@ export default function RolesTab({ catalog, peopleCounts, isSuper, reloadCatalog
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  leftIcon={<Eye className="h-4 w-4" />}
+                  title="Open ampOS as this role in a new tab. Read-only; unsaved ticks included."
+                  onClick={viewAsRole}
+                >
+                  View as
+                </Button>
                 {role.key !== SUPER_ADMIN && copyName === null && (
                   <Button
                     size="sm"

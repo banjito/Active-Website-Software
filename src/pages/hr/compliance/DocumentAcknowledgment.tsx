@@ -40,6 +40,7 @@ import {
   ESignSubmission,
 } from "../../../services/hr/onboardingService";
 import { useAuth } from "../../../lib/AuthContext";
+import { useCan } from "@/lib/permissions";
 import { supabase } from "../../../lib/supabase";
 import { toast } from "../../../components/ui/toast";
 import { SignatureFieldPosition } from "../../../components/pdf/PDFSignatureFieldPlacer";
@@ -89,9 +90,9 @@ const getAssignment = (form: ESignForm): DocAssignment => {
 
 export const DocumentAcknowledgment: React.FC = () => {
   const { user } = useAuth();
-  const userRole = user?.user_metadata?.role as string | undefined;
-  const isManager =
-    userRole === "Admin" || userRole === "Super Admin" || userRole === "HR Rep";
+  const { can } = useCan();
+  // Matches the database rule (permissions_07): only these people see everyone's signatures.
+  const isManager = can("hr.send_documents");
   const [forms, setForms] = useState<ESignForm[]>([]);
   const [submissionsByForm, setSubmissionsByForm] = useState<
     Record<string, ESignSubmission[]>

@@ -24,7 +24,7 @@ import DiagramWorkspace, {
 import { Button } from "@/components/ui/Button";
 import { confirmDialog } from "@/components/ui/confirmDialog";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { usePermissions } from "@/hooks/usePermissions";
+import { useCan } from "@/lib/permissions";
 import { useAuth } from "@/lib/AuthContext";
 import {
   archivableAssets,
@@ -125,13 +125,10 @@ export default function SiteDiagramPage() {
 
   const { user } = useAuth();
   const userId = user?.id ?? null;
-  const { getUserRole, isAdmin } = usePermissions();
+  const { can: canDo } = useCan();
   // The same people who can edit assets.
   const canEdit =
-    isAdmin ||
-    ["Admin", "Super Admin", "Office Admin", "Manager", "NETA Technician"].includes(
-      getUserRole() as string,
-    );
+    canDo("reports.fill") || canDo("jobs.documents");
 
   const [siteName, setSiteName] = useState("");
   const [siteAssets, setSiteAssets] = useState<EquipmentAssetWithCounts[]>([]);

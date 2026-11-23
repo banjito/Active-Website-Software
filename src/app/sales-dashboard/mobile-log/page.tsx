@@ -320,7 +320,7 @@ export default function MobileLogInteraction() {
     !!selectedCustomer && !!contactId && !!context.trim() && !saving;
 
   // Restrict the page to roles allowed to log interactions.
-  if (!canLogInteractions(user?.user_metadata?.role, user?.email)) {
+  if (!canLogInteractions()) {
     return (
       <div className="min-h-screen bg-neutral-50 dark:bg-dark-100 flex flex-col items-center justify-center px-4 text-center">
         <Feather className="h-10 w-10 text-neutral-400 mb-4" />

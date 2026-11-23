@@ -5,7 +5,6 @@ import { EmailDigestPreferences } from "../settings/EmailDigestPreferences";
 import { JobDefaultTabPreference } from "../settings/JobDefaultTabPreference";
 import { ReportReturnPositionPreference } from "../settings/ReportReturnPositionPreference";
 import { UpdateSoundPreference } from "../settings/UpdateSoundPreference";
-import { isSuperUser } from "@/lib/roles";
 
 export interface SettingsSubmenuUser {
   id?: string;
@@ -85,12 +84,7 @@ export const SettingsSubmenu: React.FC<SettingsSubmenuProps> = ({
         </div>
 
         {currentUser?.id && (
-          <JobDefaultTabPreference
-            isAdmin={
-              (currentUser.user_metadata?.role ?? currentUser.role) ===
-                "Admin" || isSuperUser(currentUser.email)
-            }
-          />
+          <JobDefaultTabPreference />
         )}
 
         {currentUser?.id && <ReportReturnPositionPreference />}

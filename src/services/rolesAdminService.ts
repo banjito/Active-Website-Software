@@ -3,7 +3,8 @@ import { supabase } from "@/lib/supabase";
 /**
  * Data for the Roles & permissions screen (Roles scope item 3).
  * Reads tables from permissions_01_list.sql; saves go through the checked
- * functions in permissions_03_screen.sql. Nothing here changes today's access.
+ * functions in permissions_03_screen.sql. Every screen reads these roles
+ * (switch-over, permissions_16_switch_over.sql).
  */
 
 export interface PermissionRow {
@@ -137,12 +138,6 @@ export async function loadAccounts(): Promise<Account[]> {
   });
 }
 
-/** The old role, which areas not switched over yet still go by. */
-export async function setTodayRole(userId: string, role: string | null): Promise<void> {
-  const { error } = await common().rpc("admin_update_user_role", { user_id: userId, new_role: role });
-  if (error) throw error;
-}
-
 /** Switch an account on or off. */
 export async function setAccountActive(userId: string, active: boolean): Promise<void> {
   const { error } = await common().rpc("admin_set_user_active", { target_user_id: userId, active });
@@ -159,7 +154,7 @@ export async function loadHistory(limit = 200): Promise<AccessChange[]> {
   return (data ?? []) as AccessChange[];
 }
 
-/** role null = clear the pick so the new role follows today's role again. */
+/** role null = no role. */
 export async function setPeopleRole(userIds: string[], role: string | null): Promise<void> {
   const { error } = await common().rpc("set_people_role", { p_user_ids: userIds, p_role: role });
   if (error) throw error;
@@ -200,7 +195,7 @@ export async function loadPersonExtras(userId: string): Promise<Map<string, bool
   return new Map(((data ?? []) as { permission_key: string; granted: boolean }[]).map((r) => [r.permission_key, r.granted]));
 }
 
-/** One person's picked new role, or null when it still follows today's role. */
+/** One person's role, or null for none. */
 export async function loadPickedRole(userId: string): Promise<string | null> {
   const { data, error } = await common().from("user_roles").select("role_key").eq("user_id", userId).maybeSingle();
   if (error) throw error;
@@ -215,14 +210,6 @@ export async function setPersonExtra(userId: string, permission: string, granted
     p_granted: granted,
   });
   if (error) throw error;
-}
-
-/** Today's role name -> new role key, the same mapping the database uses. */
-export function roleFromToday(roles: RoleRow[], todayRole: string | null | undefined): string | null {
-  if (!todayRole) return null;
-  // Super Admin only comes from a pick, never from the old role name (permissions_12).
-  const hit = roles.find((r) => r.key !== SUPER_ADMIN && r.legacy_names.includes(todayRole));
-  return hit?.key ?? null;
 }
 
 /** Areas in list order, each with its permissions. */

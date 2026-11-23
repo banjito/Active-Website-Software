@@ -20,7 +20,7 @@ import {
 import type { Tool } from "./tools.ts";
 
 const READ_ONLY = { readOnlyHint: true, destructiveHint: false, openWorldHint: false };
-const salesOnly = (ctx: { user: Parameters<typeof canUseSales>[0] }) => canUseSales(ctx.user);
+const salesOnly = (ctx: Parameters<typeof canUseSales>[0]) => canUseSales(ctx);
 
 const OPEN_SALES_STATUSES = ["awareness", "quote", "decision", "decision - forecasted win"];
 

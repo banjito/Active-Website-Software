@@ -9,17 +9,12 @@ import {
   PersonRow,
   SUPER_ADMIN,
   plainError,
-  roleFromToday,
   setPeopleRole,
-  setTodayRole,
 } from "@/services/rolesAdminService";
-import { ROLES } from "@/lib/roles";
 import PersonDialog from "./PersonDialog";
 
-type SortField = "name" | "today" | "new";
+type SortField = "name" | "role";
 
-// Select value meaning "no pick: follow today's role".
-const FOLLOW = "__follow__";
 const NONE = "__none__";
 
 interface Props {
@@ -34,9 +29,6 @@ interface Props {
   canUsers: boolean;
   onChanged: () => void;
 }
-
-/** Old role names someone can be given. Super Admin only comes from a new-role pick. */
-const TODAY_ROLES = Object.keys(ROLES).filter((r) => r !== "Super Admin");
 
 /** Snapshot of one person's pick, for undo. */
 type Before = { id: string; picked: boolean; role: string | null };
@@ -60,12 +52,6 @@ export default function PeopleTab({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkRole, setBulkRole] = useState<string>("");
   const [saving, setSaving] = useState(false);
-
-  // Only old names that still match a role here
-  const todayRoles = useMemo(
-    () => TODAY_ROLES.filter((name) => catalog.roles.some((r) => r.legacy_names.includes(name))),
-    [catalog.roles],
-  );
 
   const roleLabel = useMemo(() => new Map(catalog.roles.map((r) => [r.key, r.label])), [catalog.roles]);
 
@@ -96,16 +82,12 @@ export default function PeopleTab({
         p.name.toLowerCase().includes(q) ||
         p.email.toLowerCase().includes(q) ||
         (p.employee_number ?? "").toLowerCase().includes(q) ||
-        (p.today_role ?? "").toLowerCase().includes(q)
+        (roleLabel.get(p.new_role ?? "") ?? "").toLowerCase().includes(q)
       );
     });
     if (!sortField) return list;
     const val = (p: PersonRow) =>
-      sortField === "name"
-        ? p.name
-        : sortField === "today"
-          ? p.today_role ?? ""
-          : roleLabel.get(p.new_role ?? "") ?? "";
+      sortField === "name" ? p.name : roleLabel.get(p.new_role ?? "") ?? "";
     return [...list].sort((a, b) => compareSortValues(val(a), val(b), sortDir));
   }, [pool, query, roleFilter, sortField, sortDir, roleLabel]);
 
@@ -128,14 +110,14 @@ export default function PeopleTab({
       return next;
     });
 
-  /** Apply locally: role key to pick, or null to follow today's role. */
+  /** Apply locally: role key, or null for no role. */
   const applyLocal = (ids: Set<string>, role: string | null) =>
     setPeople((prev) =>
       (prev ?? []).map((p) =>
         ids.has(p.id)
           ? {
               ...p,
-              new_role: role ?? roleFromToday(catalog.roles, p.today_role),
+              new_role: role,
               new_role_picked: role !== null,
             }
           : p,
@@ -146,12 +128,12 @@ export default function PeopleTab({
     // Group by what each person had, so undo is one call per group.
     const groups = new Map<string, string[]>();
     for (const b of before) {
-      const k = b.picked ? b.role ?? FOLLOW : FOLLOW;
+      const k = b.role ?? NONE;
       groups.set(k, [...(groups.get(k) ?? []), b.id]);
     }
     try {
       for (const [k, ids] of groups) {
-        const role = k === FOLLOW ? null : k;
+        const role = k === NONE ? null : k;
         await setPeopleRole(ids, role);
         applyLocal(new Set(ids), role);
       }
@@ -172,7 +154,7 @@ export default function PeopleTab({
       await setPeopleRole([...ids], role);
       onChanged();
       const who = targets.length === 1 ? targets[0].name : `${targets.length} people`;
-      const what = role ? `moved to ${roleLabel.get(role)}` : "back to following today's role";
+      const what = role ? `moved to ${roleLabel.get(role)}` : "set to no role";
       toast(
         (t) => (
           <span className="flex items-center gap-3 text-sm">
@@ -211,63 +193,9 @@ export default function PeopleTab({
   const patchPerson = (id: string, patch: Partial<PersonRow>) =>
     setPeople((prev) => (prev ?? []).map((p) => (p.id === id ? { ...p, ...patch } : p)));
 
-  /** Local copy of a role-today change; a new role with no pick follows it. */
-  const applyToday = (id: string, role: string | null) =>
-    setPeople((prev) =>
-      (prev ?? []).map((p) =>
-        p.id === id
-          ? {
-              ...p,
-              today_role: role,
-              new_role: p.new_role_picked ? p.new_role : roleFromToday(catalog.roles, role),
-            }
-          : p,
-      ),
-    );
-
-  const changeToday = async (person: PersonRow, role: string | null, undo = false) => {
-    const before = person.today_role;
-    setSaving(true);
-    applyToday(person.id, role);
-    try {
-      await setTodayRole(person.id, role);
-      if (undo) {
-        toast.success("Undone");
-        return;
-      }
-      toast(
-        (t) => (
-          <span className="flex items-center gap-3 text-sm">
-            <span>
-              {person.name}&apos;s role today is {role ?? "none"}. They should sign out and back in.
-            </span>
-            {before !== "Super Admin" && (
-              <button
-                type="button"
-                className="font-semibold text-brand underline-offset-2 hover:underline"
-                onClick={() => {
-                  toast.dismiss(t.id);
-                  void changeToday({ ...person, today_role: role }, before, true);
-                }}
-              >
-                Undo
-              </button>
-            )}
-          </span>
-        ),
-        { duration: 8000 },
-      );
-    } catch (err) {
-      applyToday(person.id, before);
-      toast.error(plainError(err));
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const openPerson = people.find((p) => p.id === openId) ?? null;
   const selectedPeople = people.filter((p) => selected.has(p.id));
-  const columns = canRoles ? 5 : 3;
+  const columns = canRoles ? 4 : 3;
 
   const chip = (key: string | null, label: string, n: number) => {
     const on = roleFilter === key;
@@ -296,7 +224,7 @@ export default function PeopleTab({
     <div className="space-y-4">
       <p className="max-w-3xl text-sm text-neutral-600 dark:text-neutral-300">
         {canRoles
-          ? "Role today covers the areas that haven't switched over. New role covers the ones that have; until you pick one, it follows role today. Tick several people to move their new role together."
+          ? "Pick each person's role. It counts after they reload ampOS. Tick several people to move them together."
           : "Edit someone to change their photo, employee ID or account."}
       </p>
 
@@ -332,7 +260,7 @@ export default function PeopleTab({
       )}
 
       <div className="overflow-x-auto rounded-none border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-dark-150">
-        <table className={`w-full text-sm ${canRoles ? "min-w-[860px]" : "min-w-[520px]"}`}>
+        <table className={`w-full text-sm ${canRoles ? "min-w-[720px]" : "min-w-[520px]"}`}>
           <thead className="bg-neutral-50 dark:bg-dark-200">
             <tr>
               {canRoles && (
@@ -352,15 +280,9 @@ export default function PeopleTab({
                   onSort={(f, d) => { setSortField(f); setSortDir(d); }} />
               </th>
               <th className={TH}>
-                <SortHeader label="Role today" field="today" sortField={sortField} sortDirection={sortDir}
+                <SortHeader label="Role" field="role" sortField={sortField} sortDirection={sortDir}
                   onSort={(f, d) => { setSortField(f); setSortDir(d); }} />
               </th>
-              {canRoles && (
-                <th className={TH}>
-                  <SortHeader label="New role" field="new" sortField={sortField} sortDirection={sortDir}
-                    onSort={(f, d) => { setSortField(f); setSortDir(d); }} />
-                </th>
-              )}
               <th className={`${TH} w-20`}>
                 <span className="sr-only">Edit</span>
               </th>
@@ -422,50 +344,17 @@ export default function PeopleTab({
                       </div>
                     </div>
                   </td>
-                  <td className="px-3 py-2 text-neutral-700 dark:text-neutral-300">
+                  <td className="px-3 py-2">
                     {canRoles ? (
                       <select
-                        value={p.today_role ?? ""}
-                        disabled={!!lock || saving || p.today_role === "Super Admin"}
-                        title={lock ?? undefined}
-                        aria-label={`Role today for ${p.name}`}
-                        onChange={(e) => void changeToday(p, e.target.value || null)}
-                        className="form-input w-44 rounded-none py-1 text-sm"
-                      >
-                        {!p.today_role && <option value="">None</option>}
-                        {p.today_role && !todayRoles.includes(p.today_role) && (
-                          <option value={p.today_role}>{p.today_role}</option>
-                        )}
-                        {todayRoles.map((r) => (
-                          <option key={r} value={r}>
-                            {r}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      p.today_role ?? <span className="text-neutral-500 dark:text-neutral-400">None</span>
-                    )}
-                  </td>
-                  {canRoles && (
-                  <td className="px-3 py-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <select
-                        value={p.new_role_picked ? p.new_role ?? FOLLOW : FOLLOW}
+                        value={p.new_role ?? ""}
                         disabled={!!lock || saving}
                         title={lock ?? undefined}
-                        aria-label={`New role for ${p.name}`}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          void change([p], v === FOLLOW ? null : v);
-                        }}
+                        aria-label={`Role for ${p.name}`}
+                        onChange={(e) => void change([p], e.target.value || null)}
                         className="form-input w-48 rounded-none py-1 text-sm"
                       >
-                        <option value={FOLLOW}>
-                          {(() => {
-                            const mapped = roleFromToday(catalog.roles, p.today_role);
-                            return mapped ? `Same as today (${roleLabel.get(mapped)})` : "Same as today (no role)";
-                          })()}
-                        </option>
+                        <option value="">No role</option>
                         {catalog.roles
                           .filter((r) => isSuper || r.key !== SUPER_ADMIN || p.new_role === SUPER_ADMIN)
                           .map((r) => (
@@ -474,14 +363,12 @@ export default function PeopleTab({
                             </option>
                           ))}
                       </select>
-                      {p.new_role_picked && (
-                        <span className="rounded-none bg-brand/10 px-1.5 py-0.5 text-xs font-medium text-brand">
-                          Picked
-                        </span>
-                      )}
-                    </div>
+                    ) : (
+                      <span className="text-neutral-700 dark:text-neutral-300">
+                        {roleLabel.get(p.new_role ?? "") ?? "No role"}
+                      </span>
+                    )}
                   </td>
-                  )}
                   <td className="px-3 py-2 text-right">
                     <Button
                       size="sm"
@@ -543,14 +430,6 @@ export default function PeopleTab({
               onClick={() => void change(selectedPeople, bulkRole)}
             >
               Move
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={saving}
-              onClick={() => void change(selectedPeople, null)}
-            >
-              Same as today
             </Button>
             <Button
               size="sm"

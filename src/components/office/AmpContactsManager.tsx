@@ -30,7 +30,7 @@ import {
   fetchLinkableProfiles,
 } from '@/services/ampContactsService';
 import type { AmpContact, LinkableProfile } from '@/services/ampContactsService';
-import { usePermissions } from '@/hooks/usePermissions';
+import { useCan } from '@/lib/permissions';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { toast } from 'react-hot-toast';
 import { companyConfig } from "@/lib/companyConfig";
@@ -75,9 +75,9 @@ export default function AmpContactsManager() {
   // Accounts to pin to, and what each contact currently resolves to (pin or auto-match).
   const [profiles, setProfiles] = useState<LinkableProfile[]>([]);
   const [resolvedProfileIds, setResolvedProfileIds] = useState<Record<string, string>>({});
-  const { getUserRole } = usePermissions();
-  const role = getUserRole();
-  const canEdit = role === 'Office Admin' || role === 'HR Rep' || role === 'Admin' || role === 'Super Admin';
+  const { can: canDo } = useCan();
+  // "Company settings". Keep in step with common.can_manage_amp_contacts().
+  const canEdit = canDo('admin.company_settings');
 
   const load = async () => {
     setLoading(true);

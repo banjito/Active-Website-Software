@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
   Plus,
@@ -30,7 +31,6 @@ import { withPgTimeoutRetry } from "../../lib/retryPgTimeout";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { SortHeader, compareSortValues } from "@/components/ui/SortHeader";
 import { sendRfqEmail } from "@/lib/rfqAcknowledgment";
-import { isSuperUser } from "../../lib/roles";
 import { useDivisions } from "@/hooks/useDivisions";
 import { jobDivisionOptions } from "@/services/divisionsService";
 import { DivisionFilterOptions } from "./DivisionFilterOptions";
@@ -344,6 +344,7 @@ const OPPORTUNITY_MODAL_PANEL_CLASS =
 
 export default function OpportunityList() {
   const { user, loading: authLoading, softRefresh } = useAuth();
+  const { can: canDo } = useCan();
   // Divisions a job can land in, from common.divisions.
   const divisionFilterOptions = jobDivisionOptions(useDivisions()).map(
     (d) => ({ value: d.id, label: d.label }),
@@ -2862,9 +2863,8 @@ export default function OpportunityList() {
                       </div>
                     </div>
                   </button>
-                  {/* Only show T&M / Emergency options to Admin role or superusers */}
-                  {(user?.user_metadata?.role === "Admin" ||
-                    isSuperUser(user?.email)) && (
+                  {/* T&M / Emergency make a job: needs "Create jobs" */}
+                  {canDo("jobs.create") && (
                     <>
                       <div className="border-t border-neutral-200 dark:border-dark-300 my-1" />
                       <button

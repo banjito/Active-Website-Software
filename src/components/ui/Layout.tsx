@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../lib/AuthContext";
 import { useDivision } from "../../App";
@@ -30,7 +31,6 @@ import {
 import { Button } from "./Button";
 import { AssignDivisionLeadPopover } from "./AssignDivisionLeadPopover";
 import { NewDivisionPopover } from "./NewDivisionPopover";
-import { isSuperUser } from "@/lib/roles";
 import {
   canOpenPmDashboard,
   managesActiveJobs,
@@ -94,6 +94,7 @@ function isReportFormPath(pathname: string): boolean {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, signOut } = useAuth();
+  const { can: canDo } = useCan();
   const { division, setDivision } = useDivision();
   const location = useLocation();
   const navigate = useNavigate();
@@ -729,10 +730,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   // Render the appropriate menu items
   const renderMenuItems = () => {
-    // Check if user is Office Admin or if we're in the Office Administration Portal
-    const isOfficeAdmin = user?.user_metadata?.role === "Office Admin";
+    // The Office Administration Portal has its own menu
     const isOfficePortal = location.pathname.startsWith("/office");
-    const hideJobsAndScheduling = isOfficeAdmin || isOfficePortal;
+    const hideJobsAndScheduling = isOfficePortal;
     // Global Portal: Jobs link goes to /all-jobs when here or when user was on Global Portal (useGlobalJobs)
     const isGlobalPortal = location.pathname === "/all-jobs" || useGlobalJobs;
 
@@ -746,10 +746,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       path: divisionPath(d.id),
     }));
     const showCitySwitcher = fieldTechCities.some((c) => c.id === division);
-    const canAssignDivisionLead =
-      user?.user_metadata?.role === "Admin" ||
-      user?.user_metadata?.role === "Super Admin" ||
-      isSuperUser(user?.email);
+    const canAssignDivisionLead = canDo("admin.company_settings"); // saved in company settings
 
     // Switching city keeps you on the same page when that page exists per
     // division (e.g. /field-tech/scheduling -> /north_alabama/scheduling).
@@ -866,7 +863,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         )}
 
         {/* Office Admin menu items */}
-        {(isOfficeAdmin || isOfficePortal) && (
+        {isOfficePortal && (
           <>
             <Link to="/office" onClick={() => setIsMobileSidebarOpen(false)}>
               <Button

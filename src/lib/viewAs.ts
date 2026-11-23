@@ -18,7 +18,7 @@
 export interface ViewAs {
   roleKey: string;
   label: string;
-  /** Role name the old checks read (user_metadata.role). */
+  /** Role name screens show (user_metadata.role). */
   legacyRole: string;
   /** Permission keys switched on for the preview (includes unsaved ticks). */
   permissions: string[];

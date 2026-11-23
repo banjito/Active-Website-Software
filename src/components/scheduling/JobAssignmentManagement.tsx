@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { useDemoMode } from "@/lib/DemoModeContext";
@@ -54,6 +55,7 @@ export function JobAssignmentManagement({
   division,
 }: JobAssignmentManagementProps) {
   const { user } = useAuth();
+  const { can: canDo } = useCan();
   const { maskJobTitle } = useDemoMode();
 
   // Helper functions to always derive name from email (firstname.lastname format)
@@ -443,9 +445,7 @@ export function JobAssignmentManagement({
   };
 
   // Check if user can edit assignments
-  const canEditAssignments =
-    user?.user_metadata?.role === "Admin" ||
-    user?.user_metadata?.role === "Scheduler";
+  const canEditAssignments = canDo("schedule.edit");
 
   return (
     <div className="space-y-6">

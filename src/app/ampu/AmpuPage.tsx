@@ -22,6 +22,7 @@
  * owner.
  */
 
+import { useCan } from "@/lib/permissions";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Link,
@@ -43,7 +44,6 @@ import {
 } from "../../components/ui";
 import { BRAND_COLOR, companyConfig } from "@/lib/companyConfig";
 import { useAuth } from "@/lib/AuthContext";
-import { isSuperUser } from "@/lib/roles";
 import {
   archiveCourse,
   fetchCatalog,
@@ -352,12 +352,10 @@ export default function AmpuPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  /* Admins and super users may publish and withdraw units. RLS enforces the
+  /* People with "Company settings" may publish and withdraw units. RLS enforces the
      same rule server-side, so hiding the controls is a courtesy, not the gate. */
-  const canManage =
-    user?.user_metadata?.role === "Admin" ||
-    user?.user_metadata?.role === "Super Admin" ||
-    isSuperUser(user?.email);
+  const { can: canDo } = useCan();
+  const canManage = canDo("admin.company_settings");
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [source, setSource] = useState<CatalogSource>("database");

@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, {
   useState,
   useEffect,
@@ -1208,13 +1209,8 @@ async function getOrCreateDefaultLevel(): Promise<string> {
 
 export const OrgChart: React.FC = () => {
   const { user } = useAuth();
-  const userRole = user?.user_metadata?.role || "";
-  const canEdit = [
-    "Admin",
-    "Super Admin",
-    "HR Representative",
-    "HR Rep",
-  ].includes(userRole);
+  const { can: canDo } = useCan();
+  const canEdit = canDo("admin.manage_users") || canDo("hr.view_all");
 
   const [people, setPeople] = useState<OrgPerson[]>([]);
   const [allEmployees, setAllEmployees] = useState<OrgPerson[]>([]);

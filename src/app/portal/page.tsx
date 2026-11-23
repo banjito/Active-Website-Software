@@ -197,7 +197,7 @@ export default function PortalLanding({
     queueHidden: [] as string[],
   });
   const { setDivision } = useDivision();
-  const { isAdmin, checkPortalAccess, getUserRole } = usePermissions();
+  const { checkPortalAccess } = usePermissions();
   const [portalAnnouncements, setPortalAnnouncements] = useState<
     {
       id: string;
@@ -1520,7 +1520,7 @@ export default function PortalLanding({
             announcementState={userAnnouncementState}
             onOpenDocument={openAckModal}
             savedTab={portalPreferences.queueTab}
-            canCustomize={isAdmin || getUserRole() === "Operations Manager"}
+            canCustomize
             hiddenDisplays={portalPreferences.queueHidden ?? []}
             onHiddenDisplaysChange={(next) =>
               setPortalPreferences((prev) => ({ ...prev, queueHidden: next }))

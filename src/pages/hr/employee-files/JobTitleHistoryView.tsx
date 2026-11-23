@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useState, useEffect } from "react";
 import Card, {
   CardContent,
@@ -14,7 +15,6 @@ import { toast } from "../../../components/ui/toast";
 import { supabase } from "../../../lib/supabase";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
-const HR_ADMIN_ROLES = ["Admin", "Super Admin", "HR", "HR Rep"];
 
 interface JobTitleHistoryViewProps {
   profileId: string;
@@ -47,8 +47,8 @@ export const JobTitleHistoryView: React.FC<JobTitleHistoryViewProps> = ({
   employeeName,
 }) => {
   const { user } = useAuth();
-  const role = (user?.user_metadata?.role as string) || "";
-  const canEdit = HR_ADMIN_ROLES.includes(role);
+  const { can: canDo } = useCan();
+  const canEdit = canDo("hr.view_all"); // same as the database rule
   const [currentTitle, setCurrentTitle] = useState<string | null>(null);
   const [history, setHistory] = useState<JobTitleEntry[]>([]);
   const [loading, setLoading] = useState(true);

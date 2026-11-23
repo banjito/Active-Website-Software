@@ -8,6 +8,7 @@
  * Editing reuses the section editor modal; the page shows a live preview.
  */
 
+import { useCan } from "@/lib/permissions";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
@@ -157,9 +158,9 @@ const listBtnCls = (active: boolean) =>
 export const ComponentEditor: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isAdmin =
-    (user?.user_metadata?.role as string) === "Admin" ||
-    (user?.user_metadata?.role as string) === "Super Admin";
+  const { can: canDo } = useCan();
+  // "Build custom report forms"
+  const isAdmin = canDo("reports.custom_forms");
 
   const [overrides, setOverrides] = useState<
     Record<string, Partial<SectionConfig>>

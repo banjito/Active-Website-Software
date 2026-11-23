@@ -889,14 +889,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const viewingOwnProfile = !userId || userId === user?.id;
   const isManagerViewingReport =
     !!userId && userId !== user?.id && reportIds.includes(userId);
-  const viewerRole = user?.user_metadata?.role;
-  const isAdminViewer = viewerRole === "Admin" || viewerRole === "Super Admin";
-  const isHrViewer = viewerRole === "HR" || viewerRole === "HR Rep";
+  // Roles scope item 6: other people's HR records need hr.view_all (HR + Super Admins).
+  const { can: canDo } = useCan();
+  // Editing someone else's profile: "Invite and remove people" or "See everyone's HR files"
+  const isAdminViewer = canDo("admin.manage_users");
+  const isHrViewer = canDo("hr.view_all");
   const canEditAnyProfile = isAdminViewer || isHrViewer;
   const canEditThisProfile = viewingOwnProfile || canEditAnyProfile;
   const canEditEeData = viewingOwnProfile || isAdminViewer || isHrViewer;
-  // Roles scope item 6: other people's HR records need hr.view_all (HR + Super Admins).
-  const { can: canDo } = useCan();
   const canViewSensitiveSection =
     viewingOwnProfile || isManagerViewingReport || canDo("hr.view_all");
   const profileIdToFetch =

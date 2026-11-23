@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, Check, ChevronLeft, ChevronRight, RefreshCw, X } from 'lucide-react';
@@ -13,7 +14,6 @@ import {
   denyTimeWeek,
   getMyTimeReviews,
   sendTimeWeekToQuickBooks,
-  PAYROLL_ROLES,
   TIME_STATUS_LABEL,
   TIME_STATUS_STYLE,
   type TimeReviewRow,
@@ -61,11 +61,12 @@ interface Person {
  */
 export default function CrewBoard({ jobs }: { jobs: PmJob[] }) {
   const { user } = useAuth();
+  const { can: canDo } = useCan();
   const { maskJobTitle } = useDemoMode();
   // Same rule as HR Timesheets: managers only look until TimeStAMP goes live, because
   // approving sends hours to QuickBooks Time and would double them while crews still
   // clock in on Workforce. When Timesheets.tsx opens Approve to managers, change this too.
-  const canApprove = PAYROLL_ROLES.includes(user?.user_metadata?.role || '');
+  const canApprove = canDo('schedule.approve_time');
 
   const [weekStart, setWeekStart] = useState(thisWeekStart);
   const [rows, setRows] = useState<CrewRow[]>([]);

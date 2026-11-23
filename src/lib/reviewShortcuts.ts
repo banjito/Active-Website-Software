@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { isSuperUser } from '@/lib/roles';
+import { canNow } from '@/lib/permissionStore';
 import type { User } from '@supabase/supabase-js';
 
 /**
@@ -59,7 +59,7 @@ export function extractErrorMessage(err: unknown): string {
 }
 
 export function canAccessReportApprovals(user: User | null | undefined): boolean {
-  return user?.user_metadata?.role === 'Admin' || isSuperUser(user?.email);
+  return !!user && canNow('reports.review');
 }
 
 /**

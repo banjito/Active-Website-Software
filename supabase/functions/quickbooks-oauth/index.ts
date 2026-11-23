@@ -66,7 +66,7 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
     if (userError || !user) return json({ error: 'Invalid or expired token' }, 401)
 
-    const canManage = canManageQuickBooks(user)
+    const canManage = await canManageQuickBooks(supabase, user)
 
     // GET: status of every connected company. `integration` is the main one.
     if (req.method === 'GET') {

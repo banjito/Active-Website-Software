@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { HeartHandshake, RefreshCw } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
@@ -5,7 +6,6 @@ import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { toast } from "@/components/ui/toast";
-import { isSuperUser } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 import { PrayerEditDialog } from "@/components/prayerWall/PrayerEditDialog";
 import { PrayerRequestCard } from "@/components/prayerWall/PrayerRequestCard";
@@ -38,9 +38,9 @@ const EMPTY_COPY: Record<PrayerFilter, string> = {
 
 export default function PrayerWall() {
   const { user } = useAuth();
-  // Must match common.prayer_wall_is_admin.
-  const role = user?.user_metadata?.role;
-  const isAdmin = role === "Admin" || role === "Super Admin" || isSuperUser(user?.email);
+  // "Company settings". Must match common.prayer_wall_is_admin.
+  const { can: canDo } = useCan();
+  const isAdmin = canDo("admin.company_settings");
 
   const [filter, setFilter] = useState<PrayerFilter>("active");
   const [items, setItems] = useState<PrayerRequest[]>([]);

@@ -9,6 +9,7 @@
 import { encode as base64Encode, decode as base64Decode } from 'https://deno.land/std@0.168.0/encoding/base64.ts'
 import { isEmployeeEmailDomain } from './companyConfig.ts'
 import { isSuperAdminByRoleName } from './superAdmin.ts'
+import { userCan } from './permissions.ts'
 
 // deno-lint-ignore no-explicit-any
 type Db = any
@@ -44,7 +45,6 @@ export function appKeys(test = false): { clientId: string; clientSecret: string;
 export const isTestConnection = (row: Connection) =>
   row.environment === 'sandbox' && liveEnvironment() === 'production'
 
-const ADMIN_ROLES = ['Admin', 'Super Admin']
 const REFRESH_EARLY_MS = 5 * 60 * 1000
 // While one request renews the login, token_expires_at holds this marker so other
 // requests wait for it instead of renewing with the same key at the same moment.
@@ -63,9 +63,9 @@ const isSuperUser = (user: AuthUser) => isSuperAdminByRoleName(user)
 export const canUseQuickBooks = (user: AuthUser) =>
   isSuperUser(user) || isEmployeeEmailDomain(user.email ?? '')
 
-/** Connecting replaces the connection for everyone, so only admins may do it. */
-export const canManageQuickBooks = (user: AuthUser) =>
-  canUseQuickBooks(user) && (isSuperUser(user) || ADMIN_ROLES.includes(String(user.user_metadata?.role ?? '')))
+/** Connecting replaces the connection for everyone: "Connect outside services" only. */
+export const canManageQuickBooks = async (client: Db, user: AuthUser): Promise<boolean> =>
+  canUseQuickBooks(user) && (await userCan(client, user.id, 'admin.integrations'))
 
 // AES-256-GCM encryption for OAuth tokens (Intuit security requirement)
 async function getEncryptionKey(keyString: string): Promise<CryptoKey> {

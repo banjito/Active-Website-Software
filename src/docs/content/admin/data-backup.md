@@ -1,6 +1,6 @@
 ---
 title: Data backup
-description: Exports, what is protected, and what to do before a risky change.
+description: What is backed up, what isn't, and what to do before a risky change.
 keywords: [backup, export, restore, recovery, data, snapshot]
 ---
 
@@ -8,7 +8,7 @@ Backups exist so a mistake is recoverable. Not interesting until the day it is t
 
 ## Where it is
 
-**Admin → Data backup.**
+Backups run at the hosting platform, outside ampOS. There is no backup page in the app.
 
 ## What is protected
 
@@ -33,7 +33,7 @@ These are why the app puts friction in front of destructive actions, and why the
 
 ## Exporting
 
-Run an export from this page when you need data outside the app: an audit, a customer requesting their records, a migration.
+Export from the screen that holds the data (job lists, reports, the estimating library) when you need it outside the app: an audit, a customer requesting their records, a migration.
 
 Treat an export as sensitive. It contains customer information, job costs, and possibly employee data.
 
@@ -50,7 +50,7 @@ It takes a few minutes and turns an irreversible afternoon into a recoverable on
 
 ## Restoring
 
-Restoring is a hosting-level operation, not something done from this page. If you need it, contact whoever administers your hosting.
+Restoring is a hosting-level operation, not something done in ampOS. If you need it, contact whoever administers your hosting.
 
 Restores are all-or-nothing at the database level. You cannot restore one job. This is exactly why deleting things is discouraged everywhere else in these docs.
 

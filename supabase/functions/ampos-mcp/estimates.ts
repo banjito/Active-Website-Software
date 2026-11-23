@@ -46,7 +46,7 @@ import {
 const READ_ONLY = { readOnlyHint: true, destructiveHint: false, openWorldHint: false };
 const CREATES = { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false };
 const EDITS = { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false };
-const salesOnly = (ctx: ToolContext) => canUseSales(ctx.user);
+const salesOnly = (ctx: ToolContext) => canUseSales(ctx);
 
 const MAX_ROWS = 500;
 

@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
@@ -10,6 +11,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 export default function TechnicianProfilesPage() {
   const params = useParams();
   const { user } = useAuth();
+  const { can: canDo } = useCan();
   const { division, setDivision } = useDivision();
   const navigate = useNavigate();
   const [portalType, setPortalType] = useState<PortalType>('neta');
@@ -34,9 +36,7 @@ export default function TechnicianProfilesPage() {
   }, [division]);
 
   // Check access permissions
-  const canAccessProfiles = user?.user_metadata?.role === 'Admin' || 
-                           user?.user_metadata?.role?.includes('Scheduler') || 
-                           user?.user_metadata?.role?.includes('Manager');
+  const canAccessProfiles = canDo("schedule.edit");
 
   useEffect(() => {
     if (!user || !canAccessProfiles) {

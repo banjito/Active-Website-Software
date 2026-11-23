@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Plus,
@@ -34,7 +35,6 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { SortHeader, compareSortValues } from "@/components/ui/SortHeader";
 import { TableTopScrollbar } from "@/components/ui/TableTopScrollbar";
 import { withPgTimeoutRetry } from "../../lib/retryPgTimeout";
-import { isSuperUser } from "../../lib/roles";
 import { formatStatusLabel } from "@/utils/formatters";
 import { getDivisions, useDivisions } from "@/hooks/useDivisions";
 import {
@@ -221,6 +221,7 @@ const initialFormData: JobFormData = {
 
 export default function JobList() {
   const { user, loading: authLoading } = useAuth();
+  const { can: canDo } = useCan();
   const allDivisions = useDivisions();
   const fieldTechIds = fieldTechDivisionIds(allDivisions);
   const divisionOptions = jobDivisionOptions(allDivisions);
@@ -1659,12 +1660,11 @@ export default function JobList() {
         <div className="flex items-center gap-3">
           <JobNotifications />
 
-          {/* T&M button for Field Tech divisions - Admin role or superusers */}
+          {/* T&M button for Field Tech divisions: needs "Create jobs" */}
           {(division === "field_tech" ||
             division === "field-tech" ||
             fieldTechIds.includes(division || "")) &&
-            (user?.user_metadata?.role === "Admin" ||
-              isSuperUser(user?.email)) && (
+            canDo("jobs.create") && (
               <button
                 type="button"
                 onClick={() => {

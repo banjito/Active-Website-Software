@@ -1,3 +1,4 @@
+import { canNow } from '@/lib/permissionStore';
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -295,15 +296,13 @@ export async function updateEmployeeDocument(
 
 /**
  * Check if the current user can delete a given document.
- * Allowed: Admin, Super Admin, or the user who uploaded the document.
+ * Allowed: the uploader, or HR ("See everyone's HR files", same as the database rule).
  */
 export async function canDeleteEmployeeDocument(doc: EmployeeDocument): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
   if (doc.uploaded_by === user.id) return true;
-  const role = user.user_metadata?.role as string | undefined;
-  if (role === 'Admin' || role === 'Super Admin') return true;
-  return false;
+  return canNow('hr.view_all');
 }
 
 /**
@@ -312,12 +311,10 @@ export async function canDeleteEmployeeDocument(doc: EmployeeDocument): Promise<
 export function canDeleteEmployeeDocumentSync(
   doc: EmployeeDocument,
   userId: string | undefined,
-  userRole: string | undefined
 ): boolean {
   if (!userId) return false;
   if (doc.uploaded_by === userId) return true;
-  if (userRole === 'Admin' || userRole === 'Super Admin') return true;
-  return false;
+  return canNow('hr.view_all');
 }
 
 /**
@@ -340,12 +337,10 @@ export async function deleteEmployeeDocument(documentId: string): Promise<boolea
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
-    const role = user.user_metadata?.role as string | undefined;
     const isUploader = document.uploaded_by === user.id;
-    const isAdmin = role === 'Admin' || role === 'Super Admin';
 
-    if (!isUploader && !isAdmin) {
-      throw new Error('You do not have permission to delete this document. Only admins or the person who uploaded it can delete.');
+    if (!isUploader && !canNow('hr.view_all')) {
+      throw new Error('You do not have permission to delete this document. Only HR or the person who uploaded it can delete.');
     }
 
     // Delete the file from storage

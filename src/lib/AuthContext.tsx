@@ -1,6 +1,12 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { User } from "@supabase/supabase-js";
 import { getViewAs } from "./viewAs";
+import {
+  loadPermissionsFor,
+  permissionsReady,
+  permissionsVersion,
+  subscribePermissions,
+} from "./permissionStore";
 import {
   supabase,
   isOffline,
@@ -669,6 +675,12 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   const [printAuthFailed, setPrintAuthFailed] = useState(false);
   const printAttempted = useRef(false);
 
+  // Screens ask permissions synchronously (canNow), so load them before showing one.
+  useSyncExternalStore(subscribePermissions, permissionsVersion, permissionsVersion);
+  useEffect(() => {
+    if (user?.id) void loadPermissionsFor(user.id);
+  }, [user?.id]);
+
   useEffect(() => {
     if (loading || user || !printToken || printAttempted.current) return;
     printAttempted.current = true;
@@ -718,6 +730,16 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (!permissionsReady(user.id)) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg text-neutral-600">
+          <LoadingSpinner size="md" />
+        </div>
+      </div>
+    );
   }
 
   // Skip the profile-setup redirect on print-token sessions (the renderer

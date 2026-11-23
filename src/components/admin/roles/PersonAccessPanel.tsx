@@ -12,17 +12,12 @@ import {
   loadPersonExtras,
   loadPickedRole,
   plainError,
-  roleFromToday,
   setPeopleRole,
   setPersonExtra,
 } from "@/services/rolesAdminService";
 
-const FOLLOW = "__follow__";
-
 interface Props {
   userId: string;
-  /** Today's role name from user_metadata.role */
-  todayRole: string | null | undefined;
   currentUserId: string | null | undefined;
   /** New role picked or cleared here, so the list can follow. */
   onRoleChanged?: (role: string | null) => void;
@@ -34,7 +29,7 @@ interface Props {
  * People & roles → a person → Permissions (Roles scope item 3).
  * Their new role, plus switches to add or take away single permissions for them.
  */
-export default function PersonAccessPanel({ userId, todayRole, currentUserId, onRoleChanged, onChanged }: Props) {
+export default function PersonAccessPanel({ userId, currentUserId, onRoleChanged, onChanged }: Props) {
   const { can } = useCan();
   const isSuper = can("admin.make_super_admin");
   const [catalog, setCatalog] = useState<Catalog | null>(null);
@@ -76,8 +71,7 @@ export default function PersonAccessPanel({ userId, todayRole, currentUserId, on
     );
   }
 
-  const mapped = roleFromToday(catalog.roles, todayRole);
-  const roleKey = picked ?? mapped;
+  const roleKey = picked;
   const roleLabel = (k: string | null) => catalog.roles.find((r) => r.key === k)?.label ?? "no role";
   const isPersonSuper = roleKey === SUPER_ADMIN;
   const self = userId === currentUserId;
@@ -91,14 +85,14 @@ export default function PersonAccessPanel({ userId, todayRole, currentUserId, on
   const total = catalog.permissions.filter((p) => isOn(p.key)).length;
 
   const changeRole = async (value: string) => {
-    const next = value === FOLLOW ? null : value;
+    const next = value || null;
     setBusy("role");
     try {
       await setPeopleRole([userId], next);
       setPicked(next);
       onRoleChanged?.(next);
       onChanged?.();
-      toast.success(next ? `New role: ${roleLabel(next)}` : "New role follows today's role again");
+      toast.success(next ? `Role: ${roleLabel(next)}` : "Role removed");
     } catch (err) {
       toast.error(plainError(err));
     } finally {
@@ -151,27 +145,21 @@ export default function PersonAccessPanel({ userId, todayRole, currentUserId, on
       <div className="rounded-none border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-700 dark:bg-dark-200">
         <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
           <div>
-            <div className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-              Role today
-            </div>
-            <div className="mt-1 text-sm font-medium text-neutral-900 dark:text-white">{todayRole || "None"}</div>
-          </div>
-          <div>
             <label
               htmlFor={`new-role-${userId}`}
               className="block text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400"
             >
-              New role
+              Role
             </label>
             <select
               id={`new-role-${userId}`}
-              value={picked ?? FOLLOW}
+              value={picked ?? ""}
               disabled={locked || busy !== null}
               title={locked ? lockText : undefined}
               onChange={(e) => void changeRole(e.target.value)}
               className="form-input mt-1 w-56 rounded-none py-1 text-sm"
             >
-              <option value={FOLLOW}>Same as today ({roleLabel(mapped)})</option>
+              <option value="">No role</option>
               {catalog.roles
                 .filter((r) => isSuper || r.key !== SUPER_ADMIN || picked === SUPER_ADMIN)
                 .map((r) => (
@@ -189,7 +177,7 @@ export default function PersonAccessPanel({ userId, todayRole, currentUserId, on
         <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
           {locked
             ? lockText
-            : "The new role is live in HR and on People & roles. Other areas still go by the role today. Switch something on or off below to make an exception for this person."}
+            : "Changes count after they reload ampOS. Switch something on or off below to make an exception for this person."}
         </p>
       </div>
 

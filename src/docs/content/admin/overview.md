@@ -6,6 +6,8 @@ keywords: [admin, dashboard, settings, configure, system]
 
 The admin dashboard is where ampOS is configured: who has accounts, what they can do, which notifications fire, and how the instance is branded.
 
+You see the pages your role's permissions open. The dashboard itself shows up for anyone who can open at least one of them.
+
 Most of it is safe to click around in. A few parts are not, and they are flagged below.
 
 ## What lives here
@@ -16,8 +18,6 @@ Most of it is safe to click around in. A few parts are not, and they are flagged
 | **Notification controls** | Which automated emails fire, and to whom |
 | **System health** | Whether everything is responding |
 | **System logs** | What happened, when |
-| **Data backup** | Exports and recovery |
-| **Encryption** | Encryption settings |
 | **Integrations** | QuickBooks and other outside connections |
 | **Site theme** | Logo, brand color, company details |
 | **In progress** | A live view of work moving through the system |
@@ -36,7 +36,6 @@ Most of it is safe to click around in. A few parts are not, and they are flagged
 | **Someone's role** | Instantly changes what they can see and do. A too-narrow role blocks someone mid-job. |
 | **A role's permissions** | Affects everyone holding that role, not just the person you had in mind. |
 | **Turning off a notification** | People stop being told about work waiting on them, and nobody notices for weeks. |
-| **Encryption settings** | Consequences reach existing data. |
 
 ::: danger
 Do not deactivate your own account, and do not remove the Admin role from the only remaining administrator. There is no way back in from the interface.

@@ -1,3 +1,4 @@
+import { canOpenAdminPortal, useCan } from "@/lib/permissions";
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -256,8 +257,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   >({ ready_for_review: [], issue: [], approved: [] });
   const rtDebounceRef = useRef<number | null>(null);
 
-  const canApproveReports = canAccessReportApprovals(user);
-  const canSeeAdminPortal = canAccessReportApprovals(user);
+  const { can: canDo } = useCan();
+  const canApproveReports = canDo("reports.review");
+  const canSeeAdminPortal = canOpenAdminPortal(canDo);
   // Total calibration items in the dropdown lists (used only to decide whether
   // to show the bell at all — not the unread badge number).
   const calibrationNotificationCount =
@@ -1245,7 +1247,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 )}
               </div>
             )}
-            {canLogInteractions(user?.user_metadata?.role, user?.email) && (
+            {canLogInteractions() && (
               <div className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center">
                 <QuickLogInteraction
                   triggerProps={tooltipHandlers("Log Interaction")}

@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../lib/AuthContext";
-import { usePermissions } from "../hooks/usePermissions";
+import { useCan } from "@/lib/permissions";
 import {
   getEstimatingPresets,
   updateEstimatingPresets,
@@ -190,7 +190,8 @@ FactorInput.displayName = "FactorInput";
 
 export default function EstimatingPresetsPage() {
   const { user } = useAuth();
-  const { isAdmin } = usePermissions();
+  const { can: canDo } = useCan();
+  const isAdmin = canDo("estimates.manage_library");
   const [activeTab, setActiveTab] = useState<
     "presets" | "library" | "equipment" | "proposal"
   >("presets");
@@ -410,7 +411,7 @@ export default function EstimatingPresetsPage() {
                 label: "Test Equipment",
                 icon: Wrench,
               },
-              // Proposal letter template editing is restricted to admin/super users
+              // Proposal letter template: "Edit the scope library"
               ...(isAdmin
                 ? [
                     {

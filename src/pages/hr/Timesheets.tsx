@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useCallback, useEffect, useState } from "react";
 import { Check, ChevronDown, ChevronLeft, ChevronRight, RotateCcw, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -16,7 +17,6 @@ import {
   sendTimeWeekToQuickBooks,
   TimeReviewRow,
   TimeWeekDetail,
-  PAYROLL_ROLES,
   TIME_STATUS_LABEL as STATUS_LABEL,
   TIME_STATUS_STYLE as STATUS_STYLE,
 } from "@/services/timeReviewService";
@@ -49,7 +49,8 @@ const jobName = (job: any) => (job ? `${job.customer_name ? `${job.customer_name
 
 const Timesheets: React.FC = () => {
   const { user } = useAuth();
-  const isPayroll = PAYROLL_ROLES.includes(user?.user_metadata?.role || "");
+  const { can: canDo } = useCan();
+  const isPayroll = canDo("schedule.approve_time");
 
   const [weekStart, setWeekStart] = useState(lastWeekStart);
   const [rows, setRows] = useState<TimeReviewRow[]>([]);

@@ -131,19 +131,6 @@ export default function PeopleAndRoles() {
 
   return (
     <div className="space-y-5">
-      {canRoles && (
-        <div className="flex items-start gap-3 rounded-none border border-brand/40 bg-brand/5 p-4">
-          <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand" />
-          <p className="text-sm text-neutral-700 dark:text-neutral-200">
-            <span className="font-semibold text-neutral-900 dark:text-white">
-              New roles are live in HR and on this page.
-            </span>{" "}
-            They count there after the person reloads. Everywhere else still goes by &quot;Role today&quot;
-            until that area switches over.
-          </p>
-        </div>
-      )}
-
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="people">People ({activeCount})</TabsTrigger>

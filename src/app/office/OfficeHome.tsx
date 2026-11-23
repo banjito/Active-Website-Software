@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { AlertTriangle, Search, X } from 'lucide-react';
@@ -94,10 +95,10 @@ export default function OfficeHome() {
       { replace: true },
     );
 
-  const isOfficeAdmin = user?.user_metadata?.role === 'Office Admin';
-  // Company KPIs (profit, bank balances) are for Admins only
-  const isAdmin = ['Admin', 'Super Admin'].includes(user?.user_metadata?.role ?? '');
-  const allowed = access.fullAccess || isOfficeAdmin;
+  const { can: canDo } = useCan();
+  // Company KPIs (profit, bank balances): "See company-wide money"
+  const isAdmin = canDo('billing.company_money');
+  const allowed = access.fullAccess;
 
   useEffect(() => {
     if (access.loading || !allowed) return;

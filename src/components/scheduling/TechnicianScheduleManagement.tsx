@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { schedulingService } from "@/lib/services/schedulingService";
@@ -49,6 +50,7 @@ export function TechnicianScheduleManagement({
   division,
 }: TechnicianScheduleManagementProps) {
   const { user } = useAuth();
+  const { can: canDo } = useCan();
 
   // States for technicians and selected technician
   const [technicians, setTechnicians] = useState<AvailableTechnician[]>([]);
@@ -486,8 +488,7 @@ export function TechnicianScheduleManagement({
                               } leftIcon={<XCircle className="h-4 w-4" />}>
                               Cancel
                             </Button>
-                            {user?.user_metadata?.role === "Admin" ||
-                              (user?.user_metadata?.role === "Scheduler" && (
+                            {(canDo("schedule.edit") && (
                                 <>
                                   <Button
                                     variant="outline"

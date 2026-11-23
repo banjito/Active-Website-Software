@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
@@ -184,6 +185,7 @@ const formatPausedTime = (pausedMs: number) => {
 
 const FeaturesFixesPage: React.FC = () => {
   const { user } = useAuth();
+  const { can: canDo } = useCan();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [updatesByIssue, setUpdatesByIssue] = useState<
     Record<string, IssueUpdate[]>
@@ -552,8 +554,7 @@ const FeaturesFixesPage: React.FC = () => {
     }
   };
 
-  const isAdmin =
-    (user?.user_metadata?.role || "") === "Admin" || isSuperUser(user?.email);
+  const isAdmin = canDo("admin.company_settings");
   /** Stats column (excluded-from-stats) + workflow actions on Features & Fixes */
   const hasIssueOpsAccess = isSuperUser(user?.email);
 

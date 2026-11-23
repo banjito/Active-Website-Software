@@ -126,7 +126,12 @@ Deno.serve(async (req) => {
     return json({ jsonrpc: "2.0", id: null, error: { code: -32700, message: "Parse error" } }, 400);
   }
 
-  const reply = await handleMcp(body, { supabase, user: data.user });
+  // Same permissions the app checks. None if this fails: tools fail closed.
+  const { data: keys, error: permError } = await supabase.schema("common").rpc("my_permissions");
+  if (permError) console.log("ampos-mcp: could not load permissions", { message: permError.message });
+  const permissions = new Set<string>((keys ?? []) as string[]);
+
+  const reply = await handleMcp(body, { supabase, user: data.user, permissions });
   // Notifications get no reply body.
   if (reply === null) return new Response(null, { status: 202, headers: CORS });
   return json(reply);

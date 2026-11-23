@@ -13,7 +13,7 @@
 
 import React from 'react';
 import { supabase } from '@/lib/supabase';
-import { canReviewReports } from '@/lib/roles';
+import { canNow } from '@/lib/permissionStore';
 import {
   allLookupTables,
   lookupRegistryState,
@@ -31,13 +31,12 @@ export {
 } from '@/lib/customForms/lookupRegistry';
 
 /**
- * Who may change lookup tables: admins, and anyone allowed to review reports
- * (the same authority as approving them). Everyone else can read and use them.
- * The database enforces the same rule (restrict_custom_form_lookup_tables_editing.sql).
+ * Who may change lookup tables: "Build custom report forms". Everyone else can
+ * read and use them. The database checks the same permission
+ * (neta_ops.can_edit_custom_form_lookup_tables, permissions_16_switch_over.sql).
  */
 export function canEditLookupTables(user: { email?: string | null; user_metadata?: any } | null | undefined): boolean {
-  const role = (user?.user_metadata?.role as string) || '';
-  return role === 'Admin' || role === 'Super Admin' || canReviewReports(role, user?.email);
+  return !!user && canNow('reports.custom_forms');
 }
 
 export const MISSING_LOOKUP_TABLE_MESSAGE =

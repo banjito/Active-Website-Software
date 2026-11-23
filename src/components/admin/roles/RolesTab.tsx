@@ -18,8 +18,6 @@ import {
 
 const MAKE_SUPER = "admin.make_super_admin";
 const keyOf = (role: string, perm: string) => `${role}\u0000${perm}`;
-/** New roles with no old role name: what their people have today. */
-const TODAY_ROLE_FALLBACK: Record<string, string> = { lead_tech: "NETA Technician" };
 
 interface Props {
   catalog: Catalog;
@@ -87,23 +85,11 @@ export default function RolesTab({ catalog, peopleCounts, isSuper, reloadCatalog
   const roleLabel = (k: string) => roles.find((r) => r.key === k)?.label ?? k;
   const countOn = (r: string) => permissions.filter((p) => isOn(r, p.key)).length;
 
-  /** The old role name screens not yet on permissions will read for this role. */
-  const todayRoleFor = (key: string): string => {
-    let r = roles.find((x) => x.key === key);
-    for (let hops = 0; r && hops < 10; hops++) {
-      if (r.legacy_names[0]) return r.legacy_names[0];
-      if (TODAY_ROLE_FALLBACK[r.key]) return TODAY_ROLE_FALLBACK[r.key];
-      const parent: string | null = r.copied_from;
-      r = parent ? roles.find((x) => x.key === parent) : undefined;
-    }
-    return roles.find((x) => x.key === key)?.label ?? key;
-  };
-
   const viewAsRole = () => {
     const opened = startViewAs({
       roleKey: role.key,
       label: role.label,
-      legacyRole: todayRoleFor(role.key),
+      legacyRole: role.label,
       permissions: permissions.filter((p) => isOn(role.key, p.key)).map((p) => p.key),
       unsaved: pendingRoles.has(role.key),
     });

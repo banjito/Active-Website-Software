@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { equipmentService } from "@/lib/services/equipmentService";
@@ -61,6 +62,7 @@ export function EquipmentTracking({
   division,
 }: EquipmentTrackingProps) {
   const { user } = useAuth();
+  const { can: canDo } = useCan();
 
   // States
   const [equipment, setEquipment] = useState<ExtendedEquipment[]>([]);
@@ -354,9 +356,7 @@ export function EquipmentTracking({
   };
 
   // Check if user can edit equipment
-  const canEditEquipment =
-    user?.user_metadata?.role === "Admin" ||
-    user?.user_metadata?.role === "Scheduler";
+  const canEditEquipment = canDo("schedule.equipment");
 
   // Render equipment cards
   const renderEquipmentCards = () => {

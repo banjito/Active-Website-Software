@@ -1,13 +1,13 @@
 import { supabase } from "@/lib/supabase";
-import { isSuperUser } from "@/lib/roles";
+import { canNow } from "@/lib/permissionStore";
 import type { DivisionLeads } from "@/services/divisionLeadsService";
 
 /**
  * Who gets the PM Dashboard ("My Jobs" in the Field Tech menu).
  *
  * Two kinds of PM:
- *   - Full access: the roles below, super users, and division leads. They can see any
- *     location. Mirrors common.is_pm_or_admin().
+ *   - Full access: the "See the SOV and hours" permission, and division leads. They can
+ *     see any location. Mirrors common.is_pm_or_admin().
  *   - A job's own PM (neta_ops.jobs.project_manager_id). They see only their jobs.
  *     Mirrors common.is_job_pm().
  *
@@ -23,27 +23,16 @@ export const ACTIVE_JOB_STATUSES = [
   "on_hold",
 ];
 
-/** Roles with full PM Dashboard access. Keep in step with common.is_pm_or_admin(). */
-export const PM_DASHBOARD_ROLES = [
-  "Admin",
-  "Super Admin",
-  "Operations Manager",
-  "Project Manager",
-];
 
 type PmUser =
   | { id?: string; email?: string | null; user_metadata?: { role?: string } }
   | null
   | undefined;
 
-/** Full access: the roles above, super users, or anyone named as a division lead. */
+/** Full access: "See the SOV and hours", or anyone named as a division lead. */
 export function canOpenPmDashboard(user: PmUser, leads: DivisionLeads): boolean {
   if (!user) return false;
-  return (
-    isSuperUser(user.email) ||
-    PM_DASHBOARD_ROLES.includes(user.user_metadata?.role ?? "") ||
-    Object.values(leads).some((lead) => lead?.id === user.id)
-  );
+  return canNow("billing.view_sov") || Object.values(leads).some((lead) => lead?.id === user.id);
 }
 
 // One lookup per person per page load. The sidebar re-mounts on every route, so without

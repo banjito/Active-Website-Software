@@ -1,25 +1,21 @@
 import React from "react";
 import { Briefcase } from "lucide-react";
 import { usePreference } from "@/hooks/useUserPreferences";
+import { useCan } from "@/lib/permissions";
 import {
   JOB_DEFAULT_TAB_OPTIONS,
   JOB_DEFAULT_TAB_PREF,
   resolveJobDefaultTab,
 } from "@/lib/jobDefaultTab";
 
-interface JobDefaultTabPreferenceProps {
-  isAdmin: boolean;
-}
-
-export const JobDefaultTabPreference: React.FC<
-  JobDefaultTabPreferenceProps
-> = ({ isAdmin }) => {
+export const JobDefaultTabPreference: React.FC = () => {
+  const { can } = useCan();
   const [savedTab, setSavedTab] = usePreference<string | null>(
     JOB_DEFAULT_TAB_PREF,
     null,
   );
   const options = JOB_DEFAULT_TAB_OPTIONS.filter(
-    (option) => isAdmin || !option.adminOnly,
+    (option) => !option.needs || can(option.needs),
   );
 
   return (
@@ -38,7 +34,7 @@ export const JobDefaultTabPreference: React.FC<
       </p>
       <select
         id="job-default-tab"
-        value={resolveJobDefaultTab(savedTab, isAdmin)}
+        value={resolveJobDefaultTab(savedTab, can)}
         onChange={(e) => setSavedTab(e.target.value, true)}
         className="w-full rounded-none border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-100 px-2 py-1.5 text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand"
       >

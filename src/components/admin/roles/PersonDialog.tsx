@@ -54,7 +54,6 @@ export default function PersonDialog({
                 <TabsContent value="permissions" className="pt-4">
                   <PersonAccessPanel
                     userId={person.id}
-                    todayRole={person.today_role}
                     currentUserId={currentUserId}
                     onRoleChanged={(role) => onRolePicked(person.id, role)}
                     onChanged={onChanged}

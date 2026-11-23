@@ -82,7 +82,7 @@ export const useReportFieldFlags = (enabled: boolean): FieldFlagsController => {
   // tables, so flags never show there.
   const active = enabled && params.get("print") !== "true";
   const wantsFlagMode = params.get("flag") === "true";
-  const canReview = canReviewReports(user?.user_metadata?.role, user?.email);
+  const canReview = canReviewReports();
 
   const [asset, setAsset] = useState<FlaggableReportAsset | null>(null);
   const [allFlags, setAllFlags] = useState<FieldFlag[]>([]);

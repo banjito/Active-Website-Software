@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useState, useEffect } from "react";
 import Card, {
   CardContent,
@@ -14,7 +15,6 @@ import { toast } from "../../../components/ui/toast";
 import { supabase } from "../../../lib/supabase";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
-const HR_ADMIN_ROLES = ["Admin", "Super Admin", "HR", "HR Rep"];
 const PAY_TYPES = [
   { value: "salary", label: "Salary" },
   { value: "hourly", label: "Hourly" },
@@ -80,8 +80,8 @@ export const CompensationView: React.FC<CompensationViewProps> = ({
   employeeName,
 }) => {
   const { user } = useAuth();
-  const role = (user?.user_metadata?.role as string) || "";
-  const canEdit = HR_ADMIN_ROLES.includes(role);
+  const { can: canDo } = useCan();
+  const canEdit = canDo("hr.view_all") || canDo("hr.payroll"); // same as the database rule
   const [current, setCurrent] = useState<{
     current_compensation_amount: number | null;
     current_pay_type: string | null;

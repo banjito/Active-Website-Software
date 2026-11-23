@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useEffect, useRef, useState } from 'react';
 import { ExternalLink, Paperclip, Printer, Send, X } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
@@ -49,7 +50,9 @@ function fillTemplate(template: string, values: Record<string, string>): string 
 
 export function SendBillDialog({ open, onOpenChange, bill, job, onSent }: Props) {
   const { user } = useAuth();
-  const isAdmin = ['Admin', 'Super Admin'].includes(user?.user_metadata?.role ?? '');
+  const { can: canDo } = useCan();
+  // Standard bill message: "Send invoices"
+  const isAdmin = canDo('billing.send_invoice');
   const fileInput = useRef<HTMLInputElement>(null);
 
   const [to, setTo] = useState('');

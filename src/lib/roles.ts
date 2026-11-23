@@ -1,4 +1,5 @@
 import { isSuperAdminEmail } from './superAdmin';
+import { canNow } from './permissionStore';
 
 export type Role =
   | 'NETA Technician'
@@ -88,23 +89,8 @@ export interface RolePermissions {
 // Pass the signed-in person's email; true when their role is Super Admin.
 export const isSuperUser = (email: string | undefined | null): boolean => isSuperAdminEmail(email);
 
-// Roles allowed to log customer interactions (Log Interaction page + header button).
-export const INTERACTION_LOGGING_ROLES: Role[] = [
-  'Sales Representative',
-  'Scav',
-  'Admin',
-  'Operations Manager',
-  'Super Admin',
-];
-
-// Whether a user may log interactions. Superusers always qualify.
-export const canLogInteractions = (
-  role: string | undefined | null,
-  email?: string | null,
-): boolean => {
-  if (isSuperUser(email)) return true;
-  return !!role && INTERACTION_LOGGING_ROLES.includes(role);
-};
+// Log Interaction page + header button: the "Log customer interactions" permission.
+export const canLogInteractions = (): boolean => canNow('sales.log_interactions');
 
 export const ROLES: Record<Role, RolePermissions> = {
   'NETA Technician': {
@@ -440,18 +426,11 @@ export const hasActionPermission = (
 };
 
 // --- Report approval permissions (single source of truth) ---
-// All report-approval authorization across the app derives from these helpers,
-// which read from the canonical `reports:approve` permission in ROLES above.
+// All report-approval checks across the app use these, which read the
+// "Review reports" permission (Admin → People & roles → Roles).
 
-// Whether a user may approve OR reject reports. Superusers always qualify.
-export const canApproveReports = (
-  role: string | undefined | null,
-  email?: string | null,
-): boolean => {
-  if (isSuperUser(email)) return true;
-  if (!role) return false;
-  return hasActionPermission(role, 'reports', 'approve', 'all');
-};
+// Whether the signed-in person may approve OR reject reports.
+export const canApproveReports = (): boolean => canNow('reports.review');
 
 // Reviewing (approve or reject) requires the same authority as approving.
 export const canReviewReports = canApproveReports;
@@ -459,15 +438,8 @@ export const canReviewReports = canApproveReports;
 // Whether a user may reach the report approval workspace at all.
 export const canAccessReportApproval = canApproveReports;
 
-// Whether a user may export reports. Approvers plus anyone who can view all reports.
-export const canExportReports = (
-  role: string | undefined | null,
-  email?: string | null,
-): boolean => {
-  if (canApproveReports(role, email)) return true;
-  if (!role) return false;
-  return hasActionPermission(role, 'reports', 'view', 'all');
-};
+// Whether the signed-in person may export reports: "Export and print reports".
+export const canExportReports = (): boolean => canNow('reports.export');
 
 // Tailwind badge classes per role, for consistent role display across the app.
 // Falls back to the neutral palette for unknown/custom roles (never gray/zinc).
@@ -721,11 +693,7 @@ export const updateRole = (
     });
 }; 
 /**
- * Who can add, edit, or delete schedule assignments.
- * Must match the database rule common.is_admin_or_scheduler()
- * (role "Admin" or "Super Admin", or any role containing "Scheduler").
+ * Who can add, edit, or delete schedule assignments: "Edit the schedule".
+ * The database rule common.is_admin_or_scheduler() checks the same permission.
  */
-export const canEditSchedule = (user: any): boolean => {
-  const role = String(user?.user_metadata?.role || '');
-  return role === 'Admin' || role === 'Super Admin' || /scheduler/i.test(role);
-};
+export const canEditSchedule = (): boolean => canNow('schedule.edit');

@@ -59,7 +59,7 @@ export const TechnicianListedView: React.FC<Props> = ({
   const { user } = useAuth();
   // Same rule the database uses for editing schedules (Admin or Scheduler).
   // Everyone else gets a read-only grid.
-  const canEdit = canEditSchedule(user);
+  const canEdit = canEditSchedule();
   const canAdd = canEdit && allowAdd;
   // People removed from this division's schedule (shared for everyone).
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
@@ -815,12 +815,9 @@ export const TechnicianListedView: React.FC<Props> = ({
               {!canEdit && (
                 <span
                   className="text-xs text-neutral-500 dark:text-neutral-400"
-                  title="Only Admins, Super Admins, and Schedulers can change the schedule."
+                  title='Changing the schedule needs the "Edit the schedule" permission.'
                 >
                   View only
-                  {user?.user_metadata?.role
-                    ? ` (your role: ${user.user_metadata.role})`
-                    : ""}
                 </span>
               )}
               {selectedTechIds.length > 0 && (

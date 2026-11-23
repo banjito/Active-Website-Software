@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
-import { isSuperUser } from "@/lib/roles";
-import { useCan, type PermissionKey } from "@/lib/permissions";
+import { ADMIN_PAGE_PERMISSIONS, canOpenAdminPortal, useCan, type PermissionKey } from "@/lib/permissions";
 import {
   ShieldCheck,
   Settings,
@@ -39,17 +38,13 @@ const subPathTitles: Record<string, string> = {
   "notification-controls": "Notification Dev Controls",
   "system-health": "System Health",
   "system-logs": "System Logs",
-  "data-backup": "Data Backup",
-  encryption: "Encryption Settings",
   integrations: "Integrations",
   quickbooks: "QuickBooks Dashboard",
   "site-theme": "Website Theme",
 };
 
-/** Pages that need a permission beyond reaching the dashboard: any one listed (Roles item 7). */
-const PAGE_PERMISSIONS: Record<string, PermissionKey[]> = {
-  "/admin-dashboard/people": ["admin.manage_users", "admin.manage_roles"],
-};
+/** The permission(s) that open each page: any one listed. Kept in lib/permissions.ts. */
+const PAGE_PERMISSIONS: Record<string, PermissionKey[]> = ADMIN_PAGE_PERMISSIONS;
 
 type AdminCard = {
   title: string;
@@ -165,18 +160,6 @@ const CATEGORIES: CategorySection[] = [
         description: "What changed, who did it, and when",
         icon: FileText,
         path: "/admin-dashboard/system-logs",
-      },
-      {
-        title: "Data Backup",
-        description: "Back up and restore data",
-        icon: Database,
-        path: "/admin-dashboard/data-backup",
-      },
-      {
-        title: "Encryption Settings",
-        description: "Keys and data protection",
-        icon: LockKeyhole,
-        path: "/admin-dashboard/encryption",
       },
     ],
   },
@@ -702,11 +685,9 @@ export const AdminDashboardLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const hasAdminAccess =
-    user?.user_metadata?.role === "Admin" || isSuperUser(user?.email);
-
-  // Some pages need their own permission (the database checks it too)
+  // Opens for anyone who can open one of its pages (the database checks each page too)
   const { can, loading: permissionsLoading } = useCan();
+  const hasAdminAccess = canOpenAdminPortal(can);
   const pagePermission =
     PAGE_PERMISSIONS[location.pathname.replace(/\/+$/, "")];
   const pageBlocked =
@@ -720,10 +701,10 @@ export const AdminDashboardLayout: React.FC = () => {
   const pageTitle = subPathTitles[subPath];
 
   React.useEffect(() => {
-    if (user && !hasAdminAccess) {
+    if (user && !permissionsLoading && !hasAdminAccess) {
       navigate("/portal");
     }
-  }, [user, hasAdminAccess, navigate]);
+  }, [user, permissionsLoading, hasAdminAccess, navigate]);
 
   React.useEffect(() => {
     if (pageBlocked) navigate("/admin-dashboard", { replace: true });

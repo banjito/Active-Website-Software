@@ -1,7 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { useAuth } from "@/lib/AuthContext";
-import { getViewAs } from "@/lib/viewAs";
+import {
+  canNow,
+  loadPermissionsFor,
+  permissionsReady,
+  permissionsVersion,
+  subscribePermissions,
+} from "@/lib/permissionStore";
 
 /**
  * Roles & Permissions item 1: the one list of permissions.
@@ -12,6 +17,7 @@ import { getViewAs } from "@/lib/viewAs";
  *
  * The database check is common.can('key'). This file's useCan() reads the
  * same answer, loaded once per session via common.my_permissions().
+ * Every screen asks these, never the old role name (switch-over, Nov 23).
  */
 export const PERMISSION_KEYS = [
   // Sales
@@ -74,80 +80,56 @@ export const PERMISSION_KEYS = [
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[number];
 
-const KNOWN = new Set<string>(PERMISSION_KEYS);
-
-// One load per signed-in user per session. A role change shows after a reload.
-let cache: { userId: string; keys: Set<PermissionKey> } | null = null;
-let inflight: { userId: string; promise: Promise<Set<PermissionKey>> } | null = null;
-
-function loadPermissions(userId: string): Promise<Set<PermissionKey>> {
-  if (cache?.userId === userId) return Promise.resolve(cache.keys);
-  if (inflight?.userId === userId) return inflight.promise;
-
-  // "View as" tab: the previewed role's ticks, not yours.
-  const viewAs = getViewAs();
-  if (viewAs) {
-    const keys = new Set(
-      viewAs.permissions.filter((k): k is PermissionKey => KNOWN.has(k)),
-    );
-    cache = { userId, keys };
-    return Promise.resolve(keys);
-  }
-
-  const promise = (async () => {
-    const { data, error } = await supabase.schema("common").rpc("my_permissions");
-    if (error) throw error;
-    const keys = new Set(
-      ((data ?? []) as string[]).filter((k): k is PermissionKey => KNOWN.has(k)),
-    );
-    cache = { userId, keys };
-    return keys;
-  })();
-
-  inflight = { userId, promise };
-  promise.then(
-    () => { if (inflight?.promise === promise) inflight = null; },
-    () => { if (inflight?.promise === promise) inflight = null; },
-  );
-  return promise;
-}
-
-/** Forget the loaded set, e.g. right after changing someone's own role. */
-export function clearPermissionCache(): void {
-  cache = null;
-  inflight = null;
-}
+// The loader and cache live in permissionStore.ts (no React), so plain functions
+// (roles.ts, services) can ask too: canNow("reports.review").
+export { canNow, clearPermissionCache } from "@/lib/permissionStore";
 
 /**
  * const { can, loading } = useCan();
  * if (can("billing.edit_sov")) ...
  *
  * Fails closed: while loading, signed out, or on error, can() is false.
- * This hides buttons only. The database must also check common.can() (item 7).
+ * RequireAuth waits for permissions, so inside the app they're already loaded.
+ * This hides buttons only. The database checks common.can() too.
  */
 export function useCan(): { can: (key: PermissionKey) => boolean; loading: boolean } {
   const { user } = useAuth();
   const userId = user?.id ?? null;
-  const [keys, setKeys] = useState<Set<PermissionKey> | null>(() =>
-    userId && cache?.userId === userId ? cache.keys : null,
-  );
+  const version = useSyncExternalStore(subscribePermissions, permissionsVersion, permissionsVersion);
 
   useEffect(() => {
-    if (!userId) {
-      setKeys(new Set());
-      return;
-    }
-    if (cache?.userId !== userId) setKeys(null);
-    let live = true;
-    loadPermissions(userId)
-      .then((k) => { if (live) setKeys(k); })
-      .catch((err) => {
-        console.warn("Could not load permissions", err);
-        if (live) setKeys(new Set());
-      });
-    return () => { live = false; };
+    if (userId) void loadPermissionsFor(userId);
   }, [userId]);
 
-  const can = useCallback((key: PermissionKey) => !!keys?.has(key), [keys]);
-  return { can, loading: keys === null };
+  const ready = permissionsReady(userId);
+  // version: a new answer from the database makes a new can(), so screens refresh
+  const can = useCallback((key: PermissionKey) => ready && canNow(key), [ready, version]);
+  return { can, loading: !ready };
+}
+
+/**
+ * Admin dashboard pages and the permissions that open each one (any one listed).
+ * The dashboard itself opens for anyone who can open at least one page.
+ */
+export const ADMIN_PAGE_PERMISSIONS: Record<string, PermissionKey[]> = {
+  "/admin-dashboard/people": ["admin.manage_users", "admin.manage_roles"],
+  "/admin-dashboard/in-progress": ["jobs.view_money"],
+  "/admin-dashboard/report-time": ["admin.view_logs"],
+  "/admin-dashboard/quickbooks": ["admin.integrations"],
+  "/custom-forms/templates": ["reports.custom_forms"],
+  "/admin-dashboard/system-health": ["admin.view_logs"],
+  "/admin-dashboard/system-logs": ["admin.view_logs"],
+  "/admin-dashboard/integrations": ["admin.integrations"],
+  "/admin-dashboard/notification-controls": ["admin.company_settings"],
+  "/admin-dashboard/calibration-recipients": ["admin.company_settings"],
+  "/admin-dashboard/site-theme": ["admin.company_settings"],
+};
+
+export const ADMIN_PORTAL_KEYS: PermissionKey[] = [
+  ...new Set(Object.values(ADMIN_PAGE_PERMISSIONS).flat()),
+];
+
+/** Can open the Admin dashboard (at least one of its pages). */
+export function canOpenAdminPortal(can: (key: PermissionKey) => boolean = canNow): boolean {
+  return ADMIN_PORTAL_KEYS.some(can);
 }

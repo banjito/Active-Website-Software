@@ -1,16 +1,13 @@
-import { useAuth } from "@/lib/AuthContext";
-import { canApproveReports } from "@/lib/roles";
+import { useCan } from "@/lib/permissions";
 
 /**
- * Approvers keep write access to the job information block after a report is
- * approved or sent. Everything below that block stays locked for everyone.
+ * "Edit locked job info on reports": keeps write access to the job information
+ * block after a report is approved or sent. Everything below that block stays
+ * locked for everyone.
  */
 export function useCanEditLockedJobInfo(): boolean {
-  const { user } = useAuth();
-  return canApproveReports(
-    (user?.user_metadata?.role as string) || "",
-    user?.email,
-  );
+  const { can } = useCan();
+  return can("jobs.edit_locked_info");
 }
 
 /** Marks a field the lock enforcement should leave alone. */

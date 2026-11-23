@@ -77,7 +77,6 @@ import AdminDashboardLayout, {
 } from "./app/admin-dashboard/page";
 import SystemHealthMonitoring from "./components/admin/SystemHealthMonitoring";
 import { SystemLogsCard } from "./components/admin/SystemLogsCard";
-import { DataBackupControls } from "./components/admin/DataBackupControls";
 import PeopleAndRoles from "./components/admin/roles/PeopleAndRoles";
 import NotificationDevControls from "./components/admin/NotificationDevControls";
 import CalibrationReportRecipients from "./components/admin/CalibrationReportRecipients";
@@ -98,7 +97,6 @@ import PipelineCalendarPage from "./app/(dashboard)/sales/pipeline-calendar/page
 import EngineeringPage from "./app/engineering/page";
 import EngineeringDashboard from "./app/engineering/dashboard/page";
 import EngineeringJobRoute from "./app/engineering/jobs/[id]/page";
-import { EncryptionSettings } from "./components/admin/EncryptionSettings";
 import FeaturesFixesPage from "./app/features-fixes/page";
 import FormBuilder from "./components/customForms/FormBuilder";
 import ComponentEditor from "./components/customForms/ComponentEditor";
@@ -782,11 +780,6 @@ function App() {
                     />
                     <Route path="system-logs" element={<SystemLogsCard />} />
                     <Route path="report-time" element={<ReportTimeCard />} />
-                    <Route path="data-backup" element={<DataBackupControls />} />
-                    <Route
-                      path="encryption"
-                      element={<EncryptionSettings />}
-                    />
                     <Route
                       path="integrations"
                       element={<IntegrationsSettings />}

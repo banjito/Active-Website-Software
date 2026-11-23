@@ -1,7 +1,7 @@
+import { useCan } from "@/lib/permissions";
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
-import { isSuperUser } from "@/lib/roles";
 import { useDemoMode } from "@/lib/DemoModeContext";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -120,8 +120,9 @@ const AfterActionReports: React.FC<AfterActionReportsProps> = ({
 }) => {
   const { user } = useAuth();
   const { maskCustomerName } = useDemoMode();
-  const isAdmin =
-    user?.user_metadata?.role === "Admin" || isSuperUser(user?.email);
+  const { can: canDo } = useCan();
+  // "Create jobs": the people who run the job (close-out report, deleting reports)
+  const isAdmin = canDo("jobs.create");
 
   const [reports, setReports] = useState<AfterActionReport[]>([]);
   const [loading, setLoading] = useState(true);

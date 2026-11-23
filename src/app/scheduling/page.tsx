@@ -41,7 +41,7 @@ export default function SchedulingPage() {
   const [showAssignmentDialog, setShowAssignmentDialog] = useState(false);
   // Bumped after an edit/delete so both views reload their assignments.
   const [refreshKey, setRefreshKey] = useState(0);
-  const canEdit = canEditSchedule(user);
+  const canEdit = canEditSchedule();
   const allDivisions = useDivisions();
 
   // The URL says "field-tech", but the sidebar knows Field Tech (All) as

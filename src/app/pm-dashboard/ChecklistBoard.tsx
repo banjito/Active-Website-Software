@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Pencil } from 'lucide-react';
 import { useDemoMode } from '@/lib/DemoModeContext';
-import { usePermissions } from '@/hooks/usePermissions';
+import { useCan } from '@/lib/permissions';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ChecklistBox, ChecklistProgress } from '@/components/jobs/JobChecklist';
@@ -27,7 +27,9 @@ const SETUP_PHASES = new Set(['Sales', 'Setup']);
 /** Project checklist across the PM Dashboard's jobs: one row per job, one box per step. */
 export default function ChecklistBoard({ jobs }: { jobs: PmJob[] }) {
   const navigate = useNavigate();
-  const { isAdmin } = usePermissions();
+  const { can: canDo } = useCan();
+  // Editing the steps: "Edit the SOV" (same as the database rule)
+  const isAdmin = canDo('billing.edit_sov');
   const { maskJobTitle, maskCustomerName } = useDemoMode();
   const [steps, setSteps] = useState<ChecklistStep[]>([]);
   const [items, setItems] = useState<ChecklistItem[]>([]);

@@ -611,18 +611,15 @@ export function ReportApprovalWorkflow({
     fetchMetrics();
     loadOpenFlags();
     if (user) {
-      const role = (user.user_metadata?.role as string) || "";
-      const email = user.email;
-      setUserRole(role);
+      setUserRole((user.user_metadata?.role as string) || "");
 
-      // Permissions derive from the single source of truth in roles.ts.
-      // Pass role + email so superusers qualify even without a role set.
-      const approver = canApproveReports(role, email);
+      // "Review reports" and "Export and print reports" (roles.ts)
+      const approver = canApproveReports();
       setUserPermissions({
         canView: true, // All authenticated users can view
         canReview: approver,
         canApprove: approver,
-        canExport: canExportReports(role, email),
+        canExport: canExportReports(),
       });
     }
   }, [activeTab, filters, jobId, user]);
@@ -3420,9 +3417,6 @@ export function ReportApprovalWorkflow({
     );
   };
 
-  const isManager =
-    user?.user_metadata?.role === "Manager" ||
-    user?.user_metadata?.role === "Admin";
 
   // Generate PDF report
   const generatePDF = (report: TechnicalReport) => {

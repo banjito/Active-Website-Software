@@ -185,7 +185,7 @@ export function TechnicianCalendar({
   const [qaJobOpen, setQaJobOpen] = useState<boolean>(false);
 
   // Job colors, shared by everyone (saved in the database)
-  const canEditCalendar = canEditSchedule(user);
+  const canEditCalendar = canEditSchedule();
   const { jobColors, setJobColor } = useScheduleJobColors(canEditCalendar);
 
   // Update form color when job is selected

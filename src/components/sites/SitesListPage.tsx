@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/Table";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { toast } from "react-hot-toast";
-import { usePermissions } from "@/hooks/usePermissions";
+import { useCan } from "@/lib/permissions";
 import {
   deleteSite,
   fetchSites,
@@ -59,13 +59,9 @@ export default function SitesListPage() {
   const { division } = useParams<{ division?: string }>();
   const basePath = division ? `/${division}` : "";
 
-  const { getUserRole, isAdmin } = usePermissions();
-  const role = getUserRole();
+  const { can: canDo } = useCan();
   const canEdit =
-    isAdmin ||
-    ["Admin", "Super Admin", "Office Admin", "Manager", "NETA Technician"].includes(
-      role as string,
-    );
+    canDo("reports.fill") || canDo("jobs.documents");
 
   const load = async () => {
     setLoading(true);

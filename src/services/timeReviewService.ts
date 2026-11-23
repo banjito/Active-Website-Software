@@ -6,9 +6,6 @@ import { supabase } from '@/lib/supabase';
  * ever return what the signed-in person is allowed to look at.
  */
 
-// Same list the database uses for "sees everyone's time" (common.time_is_payroll_admin)
-export const PAYROLL_ROLES = ['Admin', 'Super Admin', 'HR', 'HR Rep', 'HR Representative'];
-
 export const TIME_STATUS_LABEL: Record<string, string> = {
   open: 'Not submitted',
   submitted: 'Submitted',

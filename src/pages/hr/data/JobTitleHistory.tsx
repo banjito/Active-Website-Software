@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useState, useEffect, useCallback } from "react";
 import Card, {
   CardContent,
@@ -30,12 +31,11 @@ interface JobTitleHistoryEntry {
   created_at: string;
 }
 
-const HR_ADMIN_ROLES = ["Admin", "Super Admin", "HR", "HR Rep"];
 
 export const JobTitleHistory: React.FC = () => {
   const { user } = useAuth();
-  const role = (user?.user_metadata?.role as string) || "";
-  const canEditTitle = HR_ADMIN_ROLES.includes(role);
+  const { can: canDo } = useCan();
+  const canEditTitle = canDo("hr.view_all"); // same as the database rule
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
   const [selectedEmployee, setSelectedEmployee] =

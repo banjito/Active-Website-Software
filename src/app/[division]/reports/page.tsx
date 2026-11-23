@@ -59,10 +59,7 @@ export default function ReportsPage() {
   }, [division]);
 
   // Check access permissions (single source of truth in roles.ts)
-  const canAccessReports = canAccessReportApproval(
-    user?.user_metadata?.role,
-    user?.email,
-  );
+  const canAccessReports = canAccessReportApproval();
 
   useEffect(() => {
     if (!user || !canAccessReports) {

@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -200,11 +201,8 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   const [employeeNumber, setEmployeeNumber] = useState("");
   // Hire date. Same rule as employee ID: only admins can change it.
   const [hireDate, setHireDate] = useState("");
-  const viewerRole = user?.user_metadata?.role || "";
-  const canEditEmployeeNumber =
-    viewerRole === "Admin" ||
-    viewerRole === "Super Admin" ||
-    isSuperUser(user?.email);
+  const { can: canDo } = useCan();
+  const canEditEmployeeNumber = canDo("admin.manage_users");
   const [department, setDepartment] = useState(
     currentUser?.department || user?.user_metadata?.department || "",
   );

@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { userCan } from '../_shared/permissions.ts'
 
 // Connection to QuickBooks Time (the time-clock side of QuickBooks, formerly TSheets).
 // Payroll reads hours from QuickBooks Time, not from the TimeActivity records the
@@ -16,8 +17,9 @@ const corsHeaders = {
 
 const QB_TIME_BASE_URL = 'https://rest.tsheets.com/api/v1'
 
-// The access token can read and write everyone's time, so only these roles may use it
-const ALLOWED_ROLES = ['Admin', 'Super Admin']
+// The access token can read and write everyone's time, so only payroll may use it:
+// the "Approve timesheets" permission, same as common.time_is_payroll_admin().
+const PAYROLL_PERMISSION = 'schedule.approve_time'
 
 // The only calls the app may pass through. Anything else is refused.
 const ALLOWED_CALLS: Record<string, string[]> = {
@@ -353,8 +355,6 @@ async function syncPeople(supabase: any, accessToken: string) {
   }
 }
 
-// Same list the database uses for "payroll admin"
-const PAYROLL_ROLES = ['Admin', 'Super Admin', 'HR', 'HR Rep', 'HR Representative']
 
 async function qbTimeWrite(accessToken: string, endpoint: string, method: string, data?: unknown): Promise<any> {
   const response = await fetch(`${QB_TIME_BASE_URL}${endpoint}`, {
@@ -381,7 +381,7 @@ async function sendWeek(
   profileId: string,
   weekStart: string,
   callerId: string,
-  callerRole: string
+  isPayroll: boolean
 ) {
   const db = supabase.schema('common')
   const end = new Date(`${weekStart}T00:00:00Z`)
@@ -396,7 +396,7 @@ async function sendWeek(
     .maybeSingle()
   if (weekError) throw weekError
   if (!week || week.status !== 'approved') throw new Error('That week is not approved')
-  if (!PAYROLL_ROLES.includes(callerRole) && week.decided_by !== callerId) {
+  if (!isPayroll && week.decided_by !== callerId) {
     throw new Error('Only the approver or payroll can send this week')
   }
 
@@ -506,9 +506,9 @@ async function unsendWeek(
   accessToken: string,
   profileId: string,
   weekStart: string,
-  callerRole: string
+  isPayroll: boolean
 ) {
-  if (!PAYROLL_ROLES.includes(callerRole)) {
+  if (!isPayroll) {
     throw new Error('Only payroll can pull a week back from QuickBooks Time')
   }
   const db = supabase.schema('common')
@@ -597,7 +597,7 @@ serve(async (req) => {
       return jsonResponse({ error: 'Invalid or expired token' }, 401)
     }
 
-    const role = user.user_metadata?.role ?? ''
+    const isPayroll = await userCan(supabase, user.id, PAYROLL_PERMISSION)
 
     let body: {
       action?: string
@@ -623,8 +623,8 @@ serve(async (req) => {
       }
       try {
         const result = body.action === 'send_week'
-          ? await sendWeek(supabase, accessToken, body.profile_id, body.week_start, user.id, role)
-          : await unsendWeek(supabase, accessToken, body.profile_id, body.week_start, role)
+          ? await sendWeek(supabase, accessToken, body.profile_id, body.week_start, user.id, isPayroll)
+          : await unsendWeek(supabase, accessToken, body.profile_id, body.week_start, isPayroll)
         console.log(`QuickBooks Time ${body.action}:`, result)
         return jsonResponse(result)
       } catch (error) {
@@ -634,9 +634,9 @@ serve(async (req) => {
       }
     }
 
-    if (!ALLOWED_ROLES.includes(role)) {
+    if (!isPayroll) {
       return jsonResponse(
-        { error: 'Not allowed', details: 'Only admins can use the QuickBooks Time connection' },
+        { error: 'Not allowed', details: 'Only people who approve timesheets can use the QuickBooks Time connection' },
         403
       )
     }

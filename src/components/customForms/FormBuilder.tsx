@@ -9,6 +9,7 @@
  * - Save templates
  */
 
+import { useCan } from "@/lib/permissions";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
@@ -172,9 +173,9 @@ export const FormBuilder: React.FC = () => {
   const { templateId } = useParams<{ templateId?: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isAdmin =
-    (user?.user_metadata?.role as string) === "Admin" ||
-    (user?.user_metadata?.role as string) === "Super Admin";
+  const { can: canDo } = useCan();
+  // "Build custom report forms"
+  const isAdmin = canDo("reports.custom_forms");
 
   // Admin-saved component default overrides (merged when adding a section)
   const [componentDefaultOverrides, setComponentDefaultOverrides] = useState<

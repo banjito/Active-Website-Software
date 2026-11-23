@@ -453,7 +453,6 @@ export const DocumentStorage: React.FC<DocumentStorageProps> = ({
     }
   };
 
-  const userRole = user?.user_metadata?.role as string | undefined;
 
   const handleDeleteDocument = async (documentId: string) => {
     if (
@@ -897,11 +896,7 @@ export const DocumentStorage: React.FC<DocumentStorageProps> = ({
                             <Archive className="h-4 w-4" />
                           )}
                         </Button>
-                        {canDeleteEmployeeDocumentSync(
-                          doc,
-                          user?.id,
-                          userRole,
-                        ) && (
+                        {canDeleteEmployeeDocumentSync(doc, user?.id) && (
                           <Button
                             variant="ghost"
                             size="sm"

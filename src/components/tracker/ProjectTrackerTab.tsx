@@ -33,7 +33,7 @@ import {
 import { toast } from "react-hot-toast";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
-import { usePermissions } from "@/hooks/usePermissions";
+import { useCan } from "@/lib/permissions";
 import { usePersistentState } from "@/hooks/usePersistentState";
 import { compareAlphanumericLabels } from "@/utils/sortUtils";
 import { fetchAssetsForSite } from "@/services/equipmentAssetsService";
@@ -121,16 +121,13 @@ const BLANK = "—";
  */
 export function ProjectTrackerTab({ jobId, onOpenReport }: ProjectTrackerTabProps) {
   const { user } = useAuth();
-  const { getUserRole, isAdmin } = usePermissions();
+  const { can: canDo } = useCan();
   const userId = user?.id;
   // Same role list the Assets tab uses. Bulk date tools arguably want a narrower set
   // (a tech shifting 47 items by accident is worse than a tech having to ask), but
   // splitting that is a permissions decision, not a guess to make here.
   const canEdit =
-    isAdmin ||
-    ["Admin", "Super Admin", "Office Admin", "Manager", "NETA Technician"].includes(
-      getUserRole() as string,
-    );
+    canDo("reports.fill") || canDo("jobs.documents");
 
   const [rows, setRows] = useState<ScheduledTestRow[]>([]);
   /**

@@ -67,7 +67,7 @@ import {
 import { createPortal } from "react-dom";
 import { supabase, isConnectionError } from "../../lib/supabase";
 import { useAuth } from "../../lib/AuthContext";
-import { isSuperUser, canReviewReports } from "../../lib/roles";
+import { useCan } from "@/lib/permissions";
 import { useDemoMode } from "../../lib/DemoModeContext";
 import { useJobDetails } from "../../lib/hooks";
 import { usePreference } from "@/hooks/useUserPreferences";
@@ -836,15 +836,14 @@ export default function JobDetail() {
   const jobAssetsCacheKey = user?.id && id ? `${user.id}:${id}` : null;
   const cachedJobAssets = readJobAssetsCache(jobAssetsCacheKey);
 
-  // Cache admin status to prevent unmounting ReportApprovalWorkflow during auth flickers
-  const isAdminRef = useRef<boolean>(false);
-  if (user?.user_metadata?.role === "Admin" || isSuperUser(user?.email)) {
-    isAdminRef.current = true;
-  }
-  const isAdmin =
-    isAdminRef.current ||
-    user?.user_metadata?.role === "Admin" ||
-    isSuperUser(user?.email);
+  const { can } = useCan();
+  // Keep review access once seen, so a sign-in flicker can't unmount ReportApprovalWorkflow
+  const canReviewRef = useRef<boolean>(false);
+  if (can("reports.review")) canReviewRef.current = true;
+  const canReview = canReviewRef.current;
+  const canSeeMoney = can("jobs.view_money"); // Profitability tab
+  const canManageJob = can("jobs.create"); // delete the job, manage delays
+  const canPublishReports = can("reports.publish"); // sent dates on Tracking
 
   const [job, setJob] = useState<Job | null>(null);
   usePageTitle(
@@ -2217,7 +2216,7 @@ export default function JobDetail() {
   // PMs and division leads get a jump to the job's schedule of values (PM Dashboard)
   const pmAccess = usePmAccess();
   const [activeTab, setActiveTab] = useState(() =>
-    resolveJobDefaultTab(savedDefaultTab, isAdmin),
+    resolveJobDefaultTab(savedDefaultTab, can),
   );
   // Preferences may still be loading on first render; apply once they arrive,
   // unless the user already picked a tab.
@@ -2228,10 +2227,10 @@ export default function JobDetail() {
     if (new URLSearchParams(location.search).get("tab")) return;
     setActiveTab((current) =>
       current === JOB_DEFAULT_TAB_FALLBACK
-        ? resolveJobDefaultTab(savedDefaultTab, isAdmin)
+        ? resolveJobDefaultTab(savedDefaultTab, can)
         : current,
     );
-  }, [defaultTabLoading, savedDefaultTab, isAdmin, location.search]);
+  }, [defaultTabLoading, savedDefaultTab, can, location.search]);
 
   // Coming back from a report: land on the Reports list, not the default tab, and
   // scroll to the row that was opened.
@@ -3603,7 +3602,7 @@ export default function JobDetail() {
     const filterParam = params.get("filter");
 
     // Report Approvals tab is admin-only; fall back to filtered Reports list
-    if (tabParam === "reports" && !isAdmin && id) {
+    if (tabParam === "reports" && !canReview && id) {
       setActiveTab("assets");
       setAssetStatusFilter("ready_for_review");
       navigate(`/jobs/${id}?tab=assets&filter=ready_for_review`, {
@@ -3658,7 +3657,7 @@ export default function JobDetail() {
           | "issue",
       );
     }
-  }, [location.search, isAdmin, id, navigate]);
+  }, [location.search, canReview, id, navigate]);
 
   // Fetch custom form templates for Add Asset dropdown
   useEffect(() => {
@@ -5006,7 +5005,7 @@ export default function JobDetail() {
         {
           key: "reports",
           label: "Approvals",
-          disabled: !isAdmin,
+          disabled: !canReview,
           alert: openReportFlagCount > 0,
         },
         { key: "report-audit", label: "Audit" },
@@ -5059,7 +5058,7 @@ export default function JobDetail() {
           hidden: !pmAccess.allowed,
         },
         { key: "tm-expenses", label: "T&M Expenses", hidden: !isTMJob },
-        { key: "profitability", label: "Profitability", hidden: !isAdmin },
+        { key: "profitability", label: "Profitability", hidden: !canSeeMoney },
       ],
     },
     {
@@ -5161,7 +5160,7 @@ export default function JobDetail() {
   };
 
   const handleDeleteJob = async () => {
-    if (!id || !isAdmin) return;
+    if (!id || !canManageJob) return;
 
     try {
       const { error: deleteError } = await supabase
@@ -7820,10 +7819,7 @@ export default function JobDetail() {
    * Moving a report between jobs rewrites where it lives, so it is held to the same bar
    * as approving one: report reviewers only.
    */
-  const canMoveReports = canReviewReports(
-    user?.user_metadata?.role,
-    user?.email,
-  );
+  const canMoveReports = canReview;
 
   /** The selected reports, named the way the Reports tab names them. */
   const selectedAssetsForMove = React.useMemo(
@@ -9004,7 +9000,7 @@ export default function JobDetail() {
   // unmatched falls through to the manual search below. Attempted once per job
   // (see qbAutoMatchAttemptedRef) so unlinking a wrong match doesn't re-link it.
   useEffect(() => {
-    if (activeTab !== "profitability" || !isAdmin) return;
+    if (activeTab !== "profitability" || !canSeeMoney) return;
     if (!job || !id || !qbConnected) return;
     if (job.quickbooks_project_id) return;
     if (!job.job_number) return;
@@ -9027,7 +9023,7 @@ export default function JobDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     activeTab,
-    isAdmin,
+    canSeeMoney,
     job?.id,
     job?.quickbooks_project_id,
     job?.job_number,
@@ -10611,7 +10607,7 @@ export default function JobDetail() {
                   * Required fields
                 </p>
                 <div className="flex gap-2">
-                  {isAdmin && (
+                  {canManageJob && (
                     <Button
                       type="button"
                       variant="outline"
@@ -13370,7 +13366,7 @@ export default function JobDetail() {
 
                 {activeTab === "reports" &&
                   job &&
-                  (isAdmin ? (
+                  (canReview ? (
                     <div className="space-y-6">
                       <CardContent>
                         <ReportApprovalWorkflow
@@ -13646,7 +13642,7 @@ export default function JobDetail() {
 
                 {activeTab === "delays" && job && (
                   <div className="p-4">
-                    <JobDelays jobId={job.id} isAdmin={isAdmin} />
+                    <JobDelays jobId={job.id} isAdmin={canManageJob} />
                   </div>
                 )}
 
@@ -13670,7 +13666,7 @@ export default function JobDetail() {
                     submittalWindowHours={job.submittal_window_hours}
                     assets={jobAssets}
                     dynamicAssetNames={dynamicAssetNames}
-                    isAdmin={isAdmin}
+                    isAdmin={canPublishReports}
                     onUpdateSentDate={handleUpdateAssetSentDate}
                   />
                 )}
@@ -13689,7 +13685,7 @@ export default function JobDetail() {
                   <TMExpenses jobId={job.id} jobNumber={job.job_number} />
                 )}
 
-                {activeTab === "profitability" && job && isAdmin && (
+                {activeTab === "profitability" && job && canSeeMoney && (
                   <div>
                     {!job.quickbooks_project_id ? (
                       <div className="space-y-4 p-2">

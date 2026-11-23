@@ -30,7 +30,8 @@ import {
 } from "@/lib/interfaces/equipment";
 import { EquipmentCategory } from "@/lib/types/equipment";
 import { PortalType } from "@/lib/types/scheduling";
-import { usePortalAccess, useUser } from "@/lib/hooks";
+import { useUser } from "@/lib/hooks";
+import { useCan } from "@/lib/permissions";
 import { VehicleTracking } from "@/components/equipment/VehicleTracking";
 
 // Temporary component stubs to fix module import errors
@@ -86,7 +87,10 @@ export default function EquipmentManagement({
   division,
   portal,
 }: EquipmentManagementProps) {
-  const { canEdit, canView } = usePortalAccess("equipment");
+  const { can: canDo } = useCan();
+  // "Manage field equipment"
+  const canEdit = canDo("schedule.equipment");
+  const canView = canEdit;
   const [activeTab, setActiveTab] = useState("equipment");
   const [equipment, setEquipment] = useState<ExtendedEquipment[]>([]);
   const [filteredEquipment, setFilteredEquipment] = useState<
@@ -105,7 +109,7 @@ export default function EquipmentManagement({
   });
 
   const user = useUser();
-  const canManageEquipment = user?.role === "admin" || user?.role === "manager";
+  const canManageEquipment = canEdit;
 
   const {
     register,

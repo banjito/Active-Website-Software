@@ -14,7 +14,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { useAssetDiagramPlacements } from "@/hooks/useAssetDiagramPlacements";
 import { useSubstationFolders } from "@/hooks/useSubstationFolders";
 import { AddFolderButton } from "@/components/folders/FolderControls";
-import { usePermissions } from "@/hooks/usePermissions";
+import { useCan } from "@/lib/permissions";
 import { fetchSite } from "@/services/sitesService";
 import {
   deleteEquipmentAsset,
@@ -50,13 +50,9 @@ export default function SiteDetailPage() {
   const basePath = division ? `/${division}` : "";
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { getUserRole, isAdmin } = usePermissions();
-  const role = getUserRole();
+  const { can: canDo } = useCan();
   const canEdit =
-    isAdmin ||
-    ["Admin", "Super Admin", "Office Admin", "Manager", "NETA Technician"].includes(
-      role as string,
-    );
+    canDo("reports.fill") || canDo("jobs.documents");
 
   const closeDiagramSettings = useCallback(() => setDiagramSettingsOpen(false), []);
 

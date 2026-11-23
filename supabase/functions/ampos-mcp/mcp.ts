@@ -9,6 +9,8 @@ export interface ToolContext {
   /** Supabase client signed in as the person using Claude. */
   supabase: SupabaseClient;
   user: User;
+  /** The person's permission keys (common.my_permissions). */
+  permissions: Set<string>;
 }
 
 const SUPPORTED_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];

@@ -1,3 +1,4 @@
+import { useCan } from "@/lib/permissions";
 import React, { useState, useEffect, useCallback } from "react";
 import Card, {
   CardContent,
@@ -60,12 +61,11 @@ function formatCompensation(
   return `$${Number(amount).toLocaleString("en-US", { minimumFractionDigits: 2 })} ${freqLabel}`;
 }
 
-const HR_ADMIN_ROLES = ["Admin", "Super Admin", "HR", "HR Rep"];
 
 export const CompensationHistory: React.FC = () => {
   const { user } = useAuth();
-  const role = (user?.user_metadata?.role as string) || "";
-  const canEditCompensation = HR_ADMIN_ROLES.includes(role);
+  const { can: canDo } = useCan();
+  const canEditCompensation = canDo("hr.view_all") || canDo("hr.payroll"); // same as the database rule
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
   const [selectedEmployee, setSelectedEmployee] =

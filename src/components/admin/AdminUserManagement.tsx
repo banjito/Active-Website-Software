@@ -18,6 +18,7 @@ import {
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import PersonAccessPanel from "./roles/PersonAccessPanel";
+import { useCan } from "@/lib/permissions";
 
 interface UserData {
   id: string;
@@ -82,12 +83,12 @@ export default function AdminUserManagement() {
   // Email is a login credential, so changing another user's email is limited to
   // super admins (matches password reset). The edge function re-enforces this.
   const canChangeEmails = isSuperUser(currentUser?.email);
-  // Admin and up may change other users' profile images. The server RPC
-  // (admin_update_user_metadata) enforces this independently.
-  const currentRole = currentUser?.user_metadata?.role as string | undefined;
-  const canEditProfileImages =
-    ["Admin", "Super Admin"].includes(currentRole ?? "") ||
-    isSuperUser(currentUser?.email);
+  // "Invite and remove people" edits profiles and switches accounts on or off;
+  // "Change roles and permissions" changes roles. The database functions
+  // enforce both independently (permissions_14).
+  const { can } = useCan();
+  const canEditProfileImages = can("admin.manage_users");
+  const canChangeRoles = can("admin.manage_roles");
   // Employee IDs are roster data, not a login credential, so any admin may set
   // them (same bar as profile photos). HR can also edit them from HR > Employee
   // Profiles; both write common.profiles.employee_number.
@@ -1025,12 +1026,14 @@ export default function AdminUserManagement() {
                         >
                           Account
                         </TabsTrigger>
-                        <TabsTrigger
-                          value="permissions"
-                          className="py-2 text-neutral-600 hover:text-neutral-900 dark:text-white dark:hover:text-white data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white"
-                        >
-                          Permissions
-                        </TabsTrigger>
+                        {canChangeRoles && (
+                          <TabsTrigger
+                            value="permissions"
+                            className="py-2 text-neutral-600 hover:text-neutral-900 dark:text-white dark:hover:text-white data-[state=active]:text-neutral-900 dark:data-[state=active]:text-white"
+                          >
+                            Permissions
+                          </TabsTrigger>
+                        )}
                       </TabsList>
 
                       {/* Account tab: photo on the left, fields on the right,
@@ -1099,12 +1102,20 @@ export default function AdminUserManagement() {
                                   onChange={(e) =>
                                     setSelectedRole(e.target.value as Role)
                                   }
+                                  disabled={!canChangeRoles}
                                   className={inputClass}
                                 >
                                   <option value="" disabled>
                                     Select a role
                                   </option>
-                                  {Object.keys(ROLES).map((roleKey) => (
+                                  {/* Super Admin is only given on Roles & permissions */}
+                                  {Object.keys(ROLES)
+                                    .filter(
+                                      (roleKey) =>
+                                        roleKey !== "Super Admin" ||
+                                        selectedRole === "Super Admin",
+                                    )
+                                    .map((roleKey) => (
                                     <option key={roleKey} value={roleKey}>
                                       {roleKey}
                                     </option>

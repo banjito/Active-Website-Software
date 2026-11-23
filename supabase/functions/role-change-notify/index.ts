@@ -46,6 +46,16 @@ serve(async (req) => {
     const caller = auth?.user
     if (authError || !caller) return json({ error: 'Not signed in' }, 401)
 
+    // People whose own changes send no email (Supabase secret, comma separated).
+    // History still records everything they change.
+    const quiet = (Deno.env.get('ROLE_CHANGE_QUIET_FOR') ?? '')
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean)
+    if (quiet.includes((caller.email ?? '').toLowerCase())) {
+      return json({ sent: 0, reason: 'quiet for this person' })
+    }
+
     const body = await req.json().catch(() => ({}))
     const ids: string[] = Array.isArray(body?.user_ids)
       ? body.user_ids.filter((x: unknown) => typeof x === 'string' && UUID.test(x)).slice(0, 500)

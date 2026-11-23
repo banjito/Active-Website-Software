@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { isSuperUser } from "@/lib/roles";
+import { useCan, type PermissionKey } from "@/lib/permissions";
 import {
   ShieldCheck,
   Settings,
@@ -44,6 +45,12 @@ const subPathTitles: Record<string, string> = {
   integrations: "Integrations",
   quickbooks: "QuickBooks Dashboard",
   "site-theme": "Website Theme",
+};
+
+/** Pages that need a permission beyond reaching the dashboard (Roles item 7). */
+const PAGE_PERMISSIONS: Record<string, PermissionKey> = {
+  "/admin-dashboard/user-management": "admin.manage_users",
+  "/admin-dashboard/role-management": "admin.manage_roles",
 };
 
 type AdminCard = {
@@ -362,6 +369,13 @@ const ACTIVITY_META: Record<
 
 export const AdminDashboardIndex: React.FC = () => {
   const navigate = useNavigate();
+  const { can } = useCan();
+  const visibleCategories = CATEGORIES.map((section) => ({
+    ...section,
+    cards: section.cards.filter(
+      (card) => !PAGE_PERMISSIONS[card.path] || can(PAGE_PERMISSIONS[card.path]),
+    ),
+  })).filter((section) => section.cards.length > 0);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     activeUsers: null,
@@ -593,7 +607,7 @@ export const AdminDashboardIndex: React.FC = () => {
       {/* Tools (2/3) + activity feed (1/3) */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="space-y-8 lg:col-span-2">
-          {CATEGORIES.map((section) => (
+          {visibleCategories.map((section) => (
             <div key={section.label} className="space-y-3">
               <SectionHeader title={section.label} />
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -699,6 +713,13 @@ export const AdminDashboardLayout: React.FC = () => {
   const hasAdminAccess =
     user?.user_metadata?.role === "Admin" || isSuperUser(user?.email);
 
+  // Some pages need their own permission (the database checks it too)
+  const { can, loading: permissionsLoading } = useCan();
+  const pagePermission =
+    PAGE_PERMISSIONS[location.pathname.replace(/\/+$/, "")];
+  const pageBlocked =
+    !!pagePermission && !permissionsLoading && !can(pagePermission);
+
   const isIndex =
     location.pathname === "/admin-dashboard" ||
     location.pathname === "/admin-dashboard/";
@@ -712,7 +733,15 @@ export const AdminDashboardLayout: React.FC = () => {
     }
   }, [user, hasAdminAccess, navigate]);
 
-  if (!user || !hasAdminAccess) {
+  React.useEffect(() => {
+    if (pageBlocked) navigate("/admin-dashboard", { replace: true });
+  }, [pageBlocked, navigate]);
+
+  if (
+    !user ||
+    !hasAdminAccess ||
+    (pagePermission && (permissionsLoading || pageBlocked))
+  ) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <LoadingSpinner size="md" />

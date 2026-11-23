@@ -8,6 +8,7 @@ import { useCan } from "@/lib/permissions";
 import {
   Catalog,
   PersonRow,
+  loadAccounts,
   loadCatalog,
   loadPeople,
   plainError,
@@ -20,16 +21,22 @@ type TabKey = "people" | "roles" | "history";
 const TABS: TabKey[] = ["people", "roles", "history"];
 
 /**
- * Admin → Roles & permissions (Roles scope item 3).
- * People: pick each person's new role. Roles: tick what each role can do.
- * History: every change, who and when.
+ * Admin → People & roles: accounts and roles on one page.
+ * People: each person's roles, and Edit for their account and permissions.
+ * Roles: tick what each role can do. History: every change, who and when.
+ *
+ * "Invite and remove people" opens accounts; "Change roles and permissions" opens
+ * the role columns, Roles and History. The database checks both.
  */
-export default function RolesAndPermissions() {
+export default function PeopleAndRoles() {
   const { user } = useAuth();
-  const { can } = useCan();
+  const { can, loading: permissionsLoading } = useCan();
   const isSuper = can("admin.make_super_admin");
+  const canRoles = can("admin.manage_roles");
+  const canUsers = can("admin.manage_users");
   const [params, setParams] = useSearchParams();
-  const tab: TabKey = TABS.includes(params.get("tab") as TabKey) ? (params.get("tab") as TabKey) : "people";
+  const wanted = params.get("tab") as TabKey;
+  const tab: TabKey = canRoles && TABS.includes(wanted) ? wanted : "people";
 
   const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [people, setPeople] = useState<PersonRow[] | null>(null);
@@ -46,16 +53,43 @@ export default function RolesAndPermissions() {
 
   const reloadPeople = useCallback(async () => {
     try {
-      setPeople(await loadPeople());
+      // Photos and employee IDs are extra when the roles list is there too
+      const accounts = canUsers
+        ? await loadAccounts().catch((err) => {
+            if (!canRoles) throw err;
+            console.warn("Could not load account details", err);
+            return [];
+          })
+        : [];
+      if (!canRoles) {
+        setPeople(
+          accounts.map((a) => ({
+            ...a,
+            new_role: null,
+            new_role_picked: false,
+            last_sign_in_at: null,
+          })),
+        );
+        return;
+      }
+      const byId = new Map(accounts.map((a) => [a.id, a]));
+      setPeople(
+        (await loadPeople()).map((p) => ({
+          ...p,
+          photo: byId.get(p.id)?.photo ?? null,
+          employee_number: byId.get(p.id)?.employee_number ?? null,
+        })),
+      );
     } catch (err) {
       setError(plainError(err));
     }
-  }, []);
+  }, [canRoles, canUsers]);
 
   useEffect(() => {
+    if (permissionsLoading) return;
     void reloadCatalog();
     void reloadPeople();
-  }, [reloadCatalog, reloadPeople]);
+  }, [permissionsLoading, reloadCatalog, reloadPeople]);
 
   const changed = useCallback(() => setHistoryVersion((v) => v + 1), []);
 
@@ -97,20 +131,24 @@ export default function RolesAndPermissions() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-start gap-3 rounded-none border border-brand/40 bg-brand/5 p-4">
-        <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand" />
-        <p className="text-sm text-neutral-700 dark:text-neutral-200">
-          <span className="font-semibold text-neutral-900 dark:text-white">Not switched on yet.</span>{" "}
-          What you set here is saved, but everyone keeps today&apos;s access until ampOS switches over, one
-          area at a time. Sort people and roles now so switch-over day is quiet.
-        </p>
-      </div>
+      {canRoles && (
+        <div className="flex items-start gap-3 rounded-none border border-brand/40 bg-brand/5 p-4">
+          <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand" />
+          <p className="text-sm text-neutral-700 dark:text-neutral-200">
+            <span className="font-semibold text-neutral-900 dark:text-white">
+              New roles are live in HR and on this page.
+            </span>{" "}
+            They count there after the person reloads. Everywhere else still goes by &quot;Role today&quot;
+            until that area switches over.
+          </p>
+        </div>
+      )}
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="people">People ({activeCount})</TabsTrigger>
-          <TabsTrigger value="roles">Roles ({catalog.roles.length})</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+          {canRoles && <TabsTrigger value="roles">Roles ({catalog.roles.length})</TabsTrigger>}
+          {canRoles && <TabsTrigger value="history">History</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="people" className="pt-4">
@@ -120,10 +158,13 @@ export default function RolesAndPermissions() {
             setPeople={setPeople}
             currentUserId={user?.id ?? null}
             isSuper={isSuper}
+            canRoles={canRoles}
+            canUsers={canUsers}
             onChanged={changed}
           />
         </TabsContent>
 
+        {canRoles && (
         <TabsContent value="roles" className="pt-4">
           <RolesTab
             catalog={catalog}
@@ -134,10 +175,13 @@ export default function RolesAndPermissions() {
             onRoleDeleted={reloadPeople}
           />
         </TabsContent>
+        )}
 
+        {canRoles && (
         <TabsContent value="history" className="pt-4">
           <HistoryTab key={historyVersion} catalog={catalog} people={people} />
         </TabsContent>
+        )}
       </Tabs>
     </div>
   );

@@ -54,6 +54,6 @@ A person cannot approve their own report. That is enforced by the system, not by
 
 ## Changing someone's access
 
-Administrators do this from **Admin → User management**. You can change someone's role, division, and portal access there, and deactivate accounts for people who leave.
+Administrators do this from **Admin → People & roles**. You can change someone's role, division, and portal access there, and deactivate accounts for people who leave.
 
 Deactivating is better than deleting. A deleted account takes its history with it; a deactivated one keeps the record of who wrote and approved what.

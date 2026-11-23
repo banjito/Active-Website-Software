@@ -8,7 +8,7 @@ ampOS has no public sign-up. An administrator adds an email address before anyon
 
 ## Adding a user
 
-1. Go to **Admin → User management**.
+1. Go to **Admin → People & roles**.
 2. Click **Add user**.
 3. Enter their **work email**. It must be on your company's approved domain list. A personal address will be rejected even with the right password.
 4. Assign a **role**. See [Roles and permissions](/docs/admin/roles-and-permissions).
@@ -39,7 +39,7 @@ Changing a role mid-shift can block someone in the middle of a job. If you are n
 
 ## Employee IDs
 
-Open the user, stay on the **Account** tab, and set their **Employee ID**. This is the badge number from the company roster (`1001`, `0034`, `S0002`), not their login.
+On **People & roles**, click **Edit** on the person, stay on the **Account** tab, and set their **Employee ID**. This is the badge number from the company roster (`1001`, `0034`, `S0002`), not their login.
 
 - It must be unique. If another employee already has that number, the save is rejected and nothing changes.
 - Leave the box blank and save to clear it.

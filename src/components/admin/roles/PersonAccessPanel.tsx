@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import { Switch } from "@/components/ui/Switch";
@@ -25,13 +24,17 @@ interface Props {
   /** Today's role name from user_metadata.role */
   todayRole: string | null | undefined;
   currentUserId: string | null | undefined;
+  /** New role picked or cleared here, so the list can follow. */
+  onRoleChanged?: (role: string | null) => void;
+  /** Anything changed, so History can refresh. */
+  onChanged?: () => void;
 }
 
 /**
- * User Management → a person → Permissions (Roles scope item 3).
+ * People & roles → a person → Permissions (Roles scope item 3).
  * Their new role, plus switches to add or take away single permissions for them.
  */
-export default function PersonAccessPanel({ userId, todayRole, currentUserId }: Props) {
+export default function PersonAccessPanel({ userId, todayRole, currentUserId, onRoleChanged, onChanged }: Props) {
   const { can } = useCan();
   const isSuper = can("admin.make_super_admin");
   const [catalog, setCatalog] = useState<Catalog | null>(null);
@@ -93,6 +96,8 @@ export default function PersonAccessPanel({ userId, todayRole, currentUserId }: 
     try {
       await setPeopleRole([userId], next);
       setPicked(next);
+      onRoleChanged?.(next);
+      onChanged?.();
       toast.success(next ? `New role: ${roleLabel(next)}` : "New role follows today's role again");
     } catch (err) {
       toast.error(plainError(err));
@@ -110,6 +115,7 @@ export default function PersonAccessPanel({ userId, todayRole, currentUserId }: 
     setBusy(perm);
     try {
       await setPersonExtra(userId, perm, granted);
+      onChanged?.();
       setExtras((prev) => {
         const next = new Map(prev);
         if (granted === null) next.delete(perm);
@@ -127,6 +133,7 @@ export default function PersonAccessPanel({ userId, todayRole, currentUserId }: 
     setBusy(perm);
     try {
       await setPersonExtra(userId, perm, null);
+      onChanged?.();
       setExtras((prev) => {
         const next = new Map(prev);
         next.delete(perm);
@@ -182,10 +189,7 @@ export default function PersonAccessPanel({ userId, todayRole, currentUserId }: 
         <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-400">
           {locked
             ? lockText
-            : "Not switched on yet: today's access stays until switch-over. Switch something on or off below to make an exception for this person only."}{" "}
-          <Link to="/admin-dashboard/role-management" className="text-brand hover:underline">
-            Open Roles &amp; permissions
-          </Link>
+            : "The new role is live in HR and on People & roles. Other areas still go by the role today. Switch something on or off below to make an exception for this person."}
         </p>
       </div>
 

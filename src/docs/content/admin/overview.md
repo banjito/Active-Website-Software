@@ -12,9 +12,7 @@ Most of it is safe to click around in. A few parts are not, and they are flagged
 
 | Section | Controls |
 |---|---|
-| **User management** | Who has an account, their role and division |
-| **Role management** | What each role is allowed to do |
-| **Permissions** | Individual grants on top of a role |
+| **People & roles** | Who has an account, each person's role, what each role can do, and per-person exceptions |
 | **Notification controls** | Which automated emails fire, and to whom |
 | **System health** | Whether everything is responding |
 | **System logs** | What happened, when |

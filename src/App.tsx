@@ -75,11 +75,10 @@ import ReportsPage from "./app/[division]/reports/page";
 import AdminDashboardLayout, {
   AdminDashboardIndex,
 } from "./app/admin-dashboard/page";
-import AdminUserManagement from "./components/admin/AdminUserManagement";
 import SystemHealthMonitoring from "./components/admin/SystemHealthMonitoring";
 import { SystemLogsCard } from "./components/admin/SystemLogsCard";
 import { DataBackupControls } from "./components/admin/DataBackupControls";
-import RolesAndPermissions from "./components/admin/roles/RolesAndPermissions";
+import PeopleAndRoles from "./components/admin/roles/PeopleAndRoles";
 import NotificationDevControls from "./components/admin/NotificationDevControls";
 import CalibrationReportRecipients from "./components/admin/CalibrationReportRecipients";
 import InProgressDashboard from "./components/admin/InProgressDashboard";
@@ -464,6 +463,12 @@ function ArmadilloRedirect() {
 }
 
 // Redirect Meetings to Runway until the internal page is ready
+/** Sends an old address to its new page, keeping ?tab= and the like. */
+function RedirectKeepingQuery({ to }: { to: string }) {
+  const { search } = useLocation();
+  return <Navigate to={to + search} replace />;
+}
+
 function RunwayRedirect() {
   useEffect(() => {
     window.open("https://app.runwayos.io/", "_blank", "noopener,noreferrer");
@@ -753,13 +758,15 @@ function App() {
                       path="in-progress"
                       element={<InProgressDashboard />}
                     />
+                    <Route path="people" element={<PeopleAndRoles />} />
+                    {/* Old addresses, now one page */}
                     <Route
                       path="user-management"
-                      element={<AdminUserManagement />}
+                      element={<Navigate to="/admin-dashboard/people" replace />}
                     />
                     <Route
                       path="role-management"
-                      element={<RolesAndPermissions />}
+                      element={<RedirectKeepingQuery to="/admin-dashboard/people" />}
                     />
                     <Route
                       path="notification-controls"

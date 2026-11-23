@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
-import { Search, X } from "lucide-react";
+import { Pencil, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { SortHeader, SortDirection, compareSortValues } from "@/components/ui/SortHeader";
 import {
@@ -11,7 +11,10 @@ import {
   plainError,
   roleFromToday,
   setPeopleRole,
+  setTodayRole,
 } from "@/services/rolesAdminService";
+import { ROLES } from "@/lib/roles";
+import PersonDialog from "./PersonDialog";
 
 type SortField = "name" | "today" | "new";
 
@@ -25,13 +28,30 @@ interface Props {
   setPeople: React.Dispatch<React.SetStateAction<PersonRow[] | null>>;
   currentUserId: string | null;
   isSuper: boolean;
+  /** "Change roles and permissions": the role columns and bulk moves. */
+  canRoles: boolean;
+  /** "Invite and remove people": account details. */
+  canUsers: boolean;
   onChanged: () => void;
 }
+
+/** Old role names someone can be given. Super Admin only comes from a new-role pick. */
+const TODAY_ROLES = Object.keys(ROLES).filter((r) => r !== "Super Admin");
 
 /** Snapshot of one person's pick, for undo. */
 type Before = { id: string; picked: boolean; role: string | null };
 
-export default function PeopleTab({ catalog, people, setPeople, currentUserId, isSuper, onChanged }: Props) {
+export default function PeopleTab({
+  catalog,
+  people,
+  setPeople,
+  currentUserId,
+  isSuper,
+  canRoles,
+  canUsers,
+  onChanged,
+}: Props) {
+  const [openId, setOpenId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string | null>(null); // role key, NONE, or null = all
   const [showInactive, setShowInactive] = useState(false);
@@ -40,6 +60,12 @@ export default function PeopleTab({ catalog, people, setPeople, currentUserId, i
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkRole, setBulkRole] = useState<string>("");
   const [saving, setSaving] = useState(false);
+
+  // Only old names that still match a role here
+  const todayRoles = useMemo(
+    () => TODAY_ROLES.filter((name) => catalog.roles.some((r) => r.legacy_names.includes(name))),
+    [catalog.roles],
+  );
 
   const roleLabel = useMemo(() => new Map(catalog.roles.map((r) => [r.key, r.label])), [catalog.roles]);
 
@@ -69,6 +95,7 @@ export default function PeopleTab({ catalog, people, setPeople, currentUserId, i
       return (
         p.name.toLowerCase().includes(q) ||
         p.email.toLowerCase().includes(q) ||
+        (p.employee_number ?? "").toLowerCase().includes(q) ||
         (p.today_role ?? "").toLowerCase().includes(q)
       );
     });
@@ -82,7 +109,7 @@ export default function PeopleTab({ catalog, people, setPeople, currentUserId, i
     return [...list].sort((a, b) => compareSortValues(val(a), val(b), sortDir));
   }, [pool, query, roleFilter, sortField, sortDir, roleLabel]);
 
-  const selectable = rows.filter((p) => !locked(p));
+  const selectable = canRoles ? rows.filter((p) => !locked(p)) : [];
   const allSelected = selectable.length > 0 && selectable.every((p) => selected.has(p.id));
 
   const toggle = (id: string) =>
@@ -181,7 +208,66 @@ export default function PeopleTab({ catalog, people, setPeople, currentUserId, i
     }
   };
 
+  const patchPerson = (id: string, patch: Partial<PersonRow>) =>
+    setPeople((prev) => (prev ?? []).map((p) => (p.id === id ? { ...p, ...patch } : p)));
+
+  /** Local copy of a role-today change; a new role with no pick follows it. */
+  const applyToday = (id: string, role: string | null) =>
+    setPeople((prev) =>
+      (prev ?? []).map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              today_role: role,
+              new_role: p.new_role_picked ? p.new_role : roleFromToday(catalog.roles, role),
+            }
+          : p,
+      ),
+    );
+
+  const changeToday = async (person: PersonRow, role: string | null, undo = false) => {
+    const before = person.today_role;
+    setSaving(true);
+    applyToday(person.id, role);
+    try {
+      await setTodayRole(person.id, role);
+      if (undo) {
+        toast.success("Undone");
+        return;
+      }
+      toast(
+        (t) => (
+          <span className="flex items-center gap-3 text-sm">
+            <span>
+              {person.name}&apos;s role today is {role ?? "none"}. They should sign out and back in.
+            </span>
+            {before !== "Super Admin" && (
+              <button
+                type="button"
+                className="font-semibold text-brand underline-offset-2 hover:underline"
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  void changeToday({ ...person, today_role: role }, before, true);
+                }}
+              >
+                Undo
+              </button>
+            )}
+          </span>
+        ),
+        { duration: 8000 },
+      );
+    } catch (err) {
+      applyToday(person.id, before);
+      toast.error(plainError(err));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openPerson = people.find((p) => p.id === openId) ?? null;
   const selectedPeople = people.filter((p) => selected.has(p.id));
+  const columns = canRoles ? 5 : 3;
 
   const chip = (key: string | null, label: string, n: number) => {
     const on = roleFilter === key;
@@ -209,8 +295,9 @@ export default function PeopleTab({ catalog, people, setPeople, currentUserId, i
   return (
     <div className="space-y-4">
       <p className="max-w-3xl text-sm text-neutral-600 dark:text-neutral-300">
-        Pick each person&apos;s new role. Until you pick one, it follows their role today. Tick several people
-        to move them together.
+        {canRoles
+          ? "Role today covers the areas that haven't switched over. New role covers the ones that have; until you pick one, it follows role today. Tick several people to move their new role together."
+          : "Edit someone to change their photo, employee ID or account."}
       </p>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -220,7 +307,7 @@ export default function PeopleTab({ catalog, people, setPeople, currentUserId, i
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search name, email or role"
+            placeholder="Search name, email, role or ID"
             aria-label="Search people"
             className="form-input w-full rounded-none pl-8"
           />
@@ -236,26 +323,30 @@ export default function PeopleTab({ catalog, people, setPeople, currentUserId, i
         </label>
       </div>
 
-      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by new role">
-        {chip(null, "Everyone", pool.length)}
-        {catalog.roles.map((r) => chip(r.key, r.label, counts.get(r.key) ?? 0))}
-        {chip(NONE, "No role", counts.get(NONE) ?? 0)}
-      </div>
+      {canRoles && (
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by new role">
+          {chip(null, "Everyone", pool.length)}
+          {catalog.roles.map((r) => chip(r.key, r.label, counts.get(r.key) ?? 0))}
+          {chip(NONE, "No role", counts.get(NONE) ?? 0)}
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-none border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-dark-150">
-        <table className="w-full min-w-[640px] text-sm">
+        <table className={`w-full text-sm ${canRoles ? "min-w-[860px]" : "min-w-[520px]"}`}>
           <thead className="bg-neutral-50 dark:bg-dark-200">
             <tr>
-              <th className={`${TH} w-10`}>
-                <input
-                  type="checkbox"
-                  checked={allSelected}
-                  onChange={toggleAll}
-                  disabled={selectable.length === 0}
-                  aria-label="Select everyone shown"
-                  className="rounded-none"
-                />
-              </th>
+              {canRoles && (
+                <th className={`${TH} w-10`}>
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={toggleAll}
+                    disabled={selectable.length === 0}
+                    aria-label="Select everyone shown"
+                    className="rounded-none"
+                  />
+                </th>
+              )}
               <th className={TH}>
                 <SortHeader label="Name" field="name" sortField={sortField} sortDirection={sortDir}
                   onSort={(f, d) => { setSortField(f); setSortDir(d); }} />
@@ -264,16 +355,21 @@ export default function PeopleTab({ catalog, people, setPeople, currentUserId, i
                 <SortHeader label="Role today" field="today" sortField={sortField} sortDirection={sortDir}
                   onSort={(f, d) => { setSortField(f); setSortDir(d); }} />
               </th>
-              <th className={TH}>
-                <SortHeader label="New role" field="new" sortField={sortField} sortDirection={sortDir}
-                  onSort={(f, d) => { setSortField(f); setSortDir(d); }} />
+              {canRoles && (
+                <th className={TH}>
+                  <SortHeader label="New role" field="new" sortField={sortField} sortDirection={sortDir}
+                    onSort={(f, d) => { setSortField(f); setSortDir(d); }} />
+                </th>
+              )}
+              <th className={`${TH} w-20`}>
+                <span className="sr-only">Edit</span>
               </th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-3 py-10 text-center text-neutral-500 dark:text-neutral-400">
+                <td colSpan={columns} className="px-3 py-10 text-center text-neutral-500 dark:text-neutral-400">
                   Nobody matches.
                 </td>
               </tr>
@@ -288,31 +384,69 @@ export default function PeopleTab({ catalog, people, setPeople, currentUserId, i
                     isSel ? "bg-brand/5" : ""
                   } ${p.is_active ? "" : "opacity-60"}`}
                 >
+                  {canRoles && (
+                    <td className="px-3 py-2">
+                      <input
+                        type="checkbox"
+                        checked={isSel}
+                        onChange={() => toggle(p.id)}
+                        disabled={!!lock}
+                        aria-label={`Select ${p.name}`}
+                        className="rounded-none"
+                      />
+                    </td>
+                  )}
                   <td className="px-3 py-2">
-                    <input
-                      type="checkbox"
-                      checked={isSel}
-                      onChange={() => toggle(p.id)}
-                      disabled={!!lock}
-                      aria-label={`Select ${p.name}`}
-                      className="rounded-none"
-                    />
-                  </td>
-                  <td className="px-3 py-2">
-                    <div className="font-medium text-neutral-900 dark:text-white">
-                      {p.name}
-                      {p.id === currentUserId && (
-                        <span className="ml-1.5 text-xs font-normal text-neutral-500">(you)</span>
-                      )}
-                      {!p.is_active && (
-                        <span className="ml-1.5 text-xs font-normal text-neutral-500">switched off</span>
-                      )}
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-none bg-neutral-100 text-sm font-medium text-neutral-600 dark:bg-dark-100 dark:text-white">
+                        {p.photo ? (
+                          <img src={p.photo} alt="" loading="lazy" className="h-full w-full object-cover" />
+                        ) : (
+                          p.name[0]?.toUpperCase() ?? "?"
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-medium text-neutral-900 dark:text-white">
+                          {p.name}
+                          {p.id === currentUserId && (
+                            <span className="ml-1.5 text-xs font-normal text-neutral-500 dark:text-neutral-400">(you)</span>
+                          )}
+                          {!p.is_active && (
+                            <span className="ml-1.5 text-xs font-normal text-neutral-500 dark:text-neutral-400">switched off</span>
+                          )}
+                        </div>
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                          {p.email}
+                          {p.employee_number && <span className="ml-2 font-mono">#{p.employee_number}</span>}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-xs text-neutral-500 dark:text-neutral-400">{p.email}</div>
                   </td>
                   <td className="px-3 py-2 text-neutral-700 dark:text-neutral-300">
-                    {p.today_role ?? <span className="text-neutral-400">None</span>}
+                    {canRoles ? (
+                      <select
+                        value={p.today_role ?? ""}
+                        disabled={!!lock || saving || p.today_role === "Super Admin"}
+                        title={lock ?? undefined}
+                        aria-label={`Role today for ${p.name}`}
+                        onChange={(e) => void changeToday(p, e.target.value || null)}
+                        className="form-input w-44 rounded-none py-1 text-sm"
+                      >
+                        {!p.today_role && <option value="">None</option>}
+                        {p.today_role && !todayRoles.includes(p.today_role) && (
+                          <option value={p.today_role}>{p.today_role}</option>
+                        )}
+                        {todayRoles.map((r) => (
+                          <option key={r} value={r}>
+                            {r}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      p.today_role ?? <span className="text-neutral-500 dark:text-neutral-400">None</span>
+                    )}
                   </td>
+                  {canRoles && (
                   <td className="px-3 py-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <select
@@ -347,12 +481,35 @@ export default function PeopleTab({ catalog, people, setPeople, currentUserId, i
                       )}
                     </div>
                   </td>
+                  )}
+                  <td className="px-3 py-2 text-right">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setOpenId(p.id)}
+                      aria-label={`Edit ${p.name}`}
+                      leftIcon={<Pencil className="h-4 w-4" />}
+                    >
+                      Edit
+                    </Button>
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
+
+      <PersonDialog
+        person={openPerson}
+        onClose={() => setOpenId(null)}
+        canUsers={canUsers}
+        canRoles={canRoles}
+        currentUserId={currentUserId}
+        onPatch={patchPerson}
+        onRolePicked={(id, role) => applyLocal(new Set([id]), role)}
+        onChanged={onChanged}
+      />
 
       {selectedPeople.length > 0 &&
         createPortal(

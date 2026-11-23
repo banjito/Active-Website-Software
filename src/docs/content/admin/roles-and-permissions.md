@@ -68,7 +68,7 @@ Direct grants are invisible in the role list. A person with mysterious extra acc
 
 ## Changing a role
 
-**Admin → Role management**. Pick the role, adjust its permissions.
+**Admin → People & roles → Roles**. Pick the role, adjust its permissions.
 
 This affects **everyone** holding that role, immediately. Before you widen a role to solve one person's problem, check how many people hold it.
 

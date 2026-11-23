@@ -35,8 +35,7 @@ import { format, formatDistanceToNow } from "date-fns";
 const subPathTitles: Record<string, string> = {
   "in-progress": "In Progress Dashboard",
   "report-time": "Report time",
-  "user-management": "User Management",
-  "role-management": "Roles & permissions",
+  people: "People & roles",
   "notification-controls": "Notification Dev Controls",
   "system-health": "System Health",
   "system-logs": "System Logs",
@@ -47,10 +46,9 @@ const subPathTitles: Record<string, string> = {
   "site-theme": "Website Theme",
 };
 
-/** Pages that need a permission beyond reaching the dashboard (Roles item 7). */
-const PAGE_PERMISSIONS: Record<string, PermissionKey> = {
-  "/admin-dashboard/user-management": "admin.manage_users",
-  "/admin-dashboard/role-management": "admin.manage_roles",
+/** Pages that need a permission beyond reaching the dashboard: any one listed (Roles item 7). */
+const PAGE_PERMISSIONS: Record<string, PermissionKey[]> = {
+  "/admin-dashboard/people": ["admin.manage_users", "admin.manage_roles"],
 };
 
 type AdminCard = {
@@ -115,16 +113,10 @@ const CATEGORIES: CategorySection[] = [
     tone: "indigo",
     cards: [
       {
-        title: "User Management",
-        description: "Add, edit, and deactivate accounts",
+        title: "People & roles",
+        description: "Accounts, everyone's role, and what each role can do",
         icon: Users,
-        path: "/admin-dashboard/user-management",
-      },
-      {
-        title: "Roles & permissions",
-        description: "Pick each person's role and what each role can do",
-        icon: ShieldCheck,
-        path: "/admin-dashboard/role-management",
+        path: "/admin-dashboard/people",
       },
     ],
   },
@@ -373,7 +365,7 @@ export const AdminDashboardIndex: React.FC = () => {
   const visibleCategories = CATEGORIES.map((section) => ({
     ...section,
     cards: section.cards.filter(
-      (card) => !PAGE_PERMISSIONS[card.path] || can(PAGE_PERMISSIONS[card.path]),
+      (card) => !PAGE_PERMISSIONS[card.path] || PAGE_PERMISSIONS[card.path].some(can),
     ),
   })).filter((section) => section.cards.length > 0);
   const [loading, setLoading] = useState(true);
@@ -524,7 +516,7 @@ export const AdminDashboardIndex: React.FC = () => {
 
   // Live status shown on the matching tile.
   const tileMeta: Record<string, React.ReactNode> = {
-    "/admin-dashboard/user-management":
+    "/admin-dashboard/people":
       stats.activeUsers !== null ? `${fmt(stats.activeUsers)} active` : null,
     "/admin-dashboard/quickbooks":
       stats.qbConnected === null ? null : (
@@ -718,7 +710,7 @@ export const AdminDashboardLayout: React.FC = () => {
   const pagePermission =
     PAGE_PERMISSIONS[location.pathname.replace(/\/+$/, "")];
   const pageBlocked =
-    !!pagePermission && !permissionsLoading && !can(pagePermission);
+    !!pagePermission && !permissionsLoading && !pagePermission.some(can);
 
   const isIndex =
     location.pathname === "/admin-dashboard" ||

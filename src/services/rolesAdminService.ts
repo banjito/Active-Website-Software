@@ -32,6 +32,9 @@ export interface PersonRow {
   new_role_picked: boolean;
   is_active: boolean;
   last_sign_in_at: string | null;
+  /** From the account list; missing when the viewer can't see accounts. */
+  photo?: string | null;
+  employee_number?: string | null;
 }
 
 export interface AccessChange {
@@ -94,6 +97,56 @@ export async function loadPeople(): Promise<PersonRow[]> {
   const { data, error } = await common().rpc("roles_people");
   if (error) throw error;
   return (data ?? []) as PersonRow[];
+}
+
+export interface Account {
+  id: string;
+  email: string;
+  name: string;
+  today_role: string | null;
+  is_active: boolean;
+  photo: string | null;
+  employee_number: string | null;
+}
+
+/** Account details (photo, employee ID). Needs "Invite and remove people". */
+export async function loadAccounts(): Promise<Account[]> {
+  const { data, error } = await common().rpc("admin_get_users");
+  if (error) throw error;
+  // Employee IDs live on profiles. Missing ones shouldn't hide the list.
+  const { data: profiles, error: profilesError } = await common()
+    .from("profiles")
+    .select("id, full_name, employee_number");
+  if (profilesError) console.warn("Could not load employee IDs", profilesError);
+  const byId = new Map(
+    ((profiles ?? []) as { id: string; full_name: string | null; employee_number: string | null }[]).map(
+      (p) => [p.id, p],
+    ),
+  );
+  return ((data ?? []) as any[]).map((u) => {
+    const meta = u.raw_user_meta_data ?? {};
+    return {
+      id: u.id,
+      email: u.email ?? "",
+      name: byId.get(u.id)?.full_name || meta.name || (u.email ?? "").split("@")[0] || "Unnamed",
+      today_role: meta.role || null,
+      is_active: u.is_active !== false,
+      photo: meta.profileImage || null,
+      employee_number: byId.get(u.id)?.employee_number ?? null,
+    };
+  });
+}
+
+/** The old role, which areas not switched over yet still go by. */
+export async function setTodayRole(userId: string, role: string | null): Promise<void> {
+  const { error } = await common().rpc("admin_update_user_role", { user_id: userId, new_role: role });
+  if (error) throw error;
+}
+
+/** Switch an account on or off. */
+export async function setAccountActive(userId: string, active: boolean): Promise<void> {
+  const { error } = await common().rpc("admin_set_user_active", { target_user_id: userId, active });
+  if (error) throw error;
 }
 
 export async function loadHistory(limit = 200): Promise<AccessChange[]> {
@@ -167,7 +220,8 @@ export async function setPersonExtra(userId: string, permission: string, granted
 /** Today's role name -> new role key, the same mapping the database uses. */
 export function roleFromToday(roles: RoleRow[], todayRole: string | null | undefined): string | null {
   if (!todayRole) return null;
-  const hit = roles.find((r) => r.legacy_names.includes(todayRole));
+  // Super Admin only comes from a pick, never from the old role name (permissions_12).
+  const hit = roles.find((r) => r.key !== SUPER_ADMIN && r.legacy_names.includes(todayRole));
   return hit?.key ?? null;
 }
 

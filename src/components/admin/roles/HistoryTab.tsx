@@ -28,7 +28,9 @@ export default function HistoryTab({ catalog, people }: Props) {
   const permLabel = useMemo(() => new Map(catalog.permissions.map((p) => [p.key, p.label])), [catalog.permissions]);
 
   const who = (id: string | null) => (id ? personName.get(id) || "Someone" : "ampOS setup");
-  const role = (k: string | null | undefined) => (k && roleLabel.get(k)) || k || "no role";
+  // A deleted role isn't in the list any more, so make its key readable
+  const role = (k: string | null | undefined) =>
+    k ? roleLabel.get(k) || k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "no role";
   const perm = (k: string | null) => `"${(k && permLabel.get(k)) || k}"`;
 
   const describe = (c: AccessChange): string => {

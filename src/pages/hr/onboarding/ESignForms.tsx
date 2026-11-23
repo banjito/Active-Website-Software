@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { viewerIconButtonClass } from "@/components/ui/FileViewerDialog";
 import Card, {
   CardContent,
   CardDescription,
@@ -1667,39 +1668,48 @@ export const ESignForms: React.FC = () => {
         open={isDocumentViewerOpen}
         onOpenChange={handleDocumentViewerClose}
       >
-        <DialogContent className="w-[75vw] max-w-none h-[95vh] max-h-[95vh] flex flex-col p-0 gap-0">
-          <DialogHeader className="px-4 pt-4 pb-2 flex-shrink-0">
-            <DialogTitle className="text-base">
-              {selectedDocument?.name || "Document Viewer"}
+        <DialogContent className="w-[98vw] max-w-[98vw] sm:max-w-[98vw] h-[96vh] max-h-[96vh] flex flex-col p-0 gap-0 [&>button]:hidden">
+          {/* Slim header: title, icon-only actions, one close button */}
+          <div className="flex shrink-0 items-center gap-3 border-b border-neutral-200 py-2 pl-4 pr-2 dark:border-neutral-800">
+            <DialogTitle className="min-w-0 flex-1 truncate text-base font-semibold">
+              {selectedDocument?.name || "Document"}
             </DialogTitle>
-          </DialogHeader>
+            <div className="flex shrink-0 items-center gap-1">
+              {selectedDocument?.file_url && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handleDocumentOpenInNewTab(selectedDocument)}
+                    title="Open in new tab"
+                    aria-label="Open in new tab"
+                    className={viewerIconButtonClass}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDocumentDownload(selectedDocument)}
+                    title="Download"
+                    aria-label="Download"
+                    className={viewerIconButtonClass}
+                  >
+                    <Download className="h-4 w-4" />
+                  </button>
+                </>
+              )}
+              <button
+                type="button"
+                onClick={() => handleDocumentViewerClose()}
+                title="Close"
+                aria-label="Close"
+                className={viewerIconButtonClass}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
           {selectedDocument && selectedDocument.file_url && (
             <div className="flex-1 min-h-0 flex flex-col">
-              {/* Toolbar */}
-              <div className="flex items-center justify-between px-4 py-2 border-b bg-neutral-50 dark:bg-neutral-800 flex-shrink-0">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-neutral-500" />
-                  <span className="text-sm font-medium">
-                    {selectedDocument.name}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDocumentOpenInNewTab(selectedDocument)}
-                    className="flex items-center gap-1" leftIcon={<ExternalLink className="h-4 w-4" />}>
-                    Open in New Tab
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDocumentDownload(selectedDocument)}
-                    className="flex items-center gap-1" leftIcon={<Download className="h-4 w-4" />}>
-                    Download
-                  </Button>
-                </div>
-              </div>
 
               {/* Document Content */}
               <div className="flex-1 relative bg-neutral-100 dark:bg-neutral-900 overflow-hidden m-0">

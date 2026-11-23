@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import FileViewerDialog from "@/components/ui/FileViewerDialog";
 import {
   Upload,
   FileImage,
@@ -465,56 +466,19 @@ export default function OneLineDrawings({ jobId }: OneLineDrawingsProps) {
 
       {/* Preview Dialog */}
       {previewDrawing && (
-        <Dialog
-          open={!!previewDrawing}
-          onOpenChange={() => setPreviewDrawing(null)}
-        >
-          <DialogContent className="sm:max-w-4xl max-h-[90vh]">
-            <DialogHeader>
-              <DialogTitle>{previewDrawing.name}</DialogTitle>
-              <DialogDescription>
-                Version {previewDrawing.version} •{" "}
-                {formatFileSize(previewDrawing.file_size)}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="max-h-[70vh] overflow-auto">
-              {previewDrawing.file_type?.startsWith("image/") ? (
-                <img
-                  src={previewDrawing.file_url}
-                  alt={previewDrawing.name}
-                  className="w-full h-auto rounded-none border border-neutral-200 dark:border-neutral-700"
-                />
-              ) : previewDrawing.file_type === "application/pdf" ? (
-                <iframe
-                  src={previewDrawing.file_url}
-                  className="w-full h-96 border border-neutral-200 dark:border-neutral-700 rounded-none"
-                  title={previewDrawing.name}
-                />
-              ) : (
-                <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
-                  <FileImage className="h-16 w-16 mx-auto mb-4 text-neutral-300 dark:text-neutral-600" />
-                  <p>Preview not available for this file type</p>
-                  <Button
-                    onClick={() => handleDownload(previewDrawing)}
-                    variant="outline"
-                    className="mt-4" leftIcon={<Download className="h-4 w-4" />}>
-                    Download to View
-                  </Button>
-                </div>
-              )}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setPreviewDrawing(null)}>
-                Close
-              </Button>
-              <Button
-                onClick={() => handleDownload(previewDrawing)}
-                className="bg-brand hover:bg-brand-dark text-white" leftIcon={<Download className="h-4 w-4" />}>
-                Download
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <FileViewerDialog
+          open
+          onOpenChange={(o) => !o && setPreviewDrawing(null)}
+          title={previewDrawing.name}
+          subtitle={`Version ${previewDrawing.version} • ${formatFileSize(previewDrawing.file_size)}`}
+          url={previewDrawing.file_url}
+          fileName={previewDrawing.name}
+          fileType={previewDrawing.file_type}
+          onDownload={() => handleDownload(previewDrawing)}
+          actions={[
+            { icon: Download, label: "Download", onClick: () => handleDownload(previewDrawing) },
+          ]}
+        />
       )}
     </>
   );

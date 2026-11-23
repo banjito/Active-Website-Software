@@ -579,7 +579,7 @@ export const ESignRecordkeeping: React.FC = () => {
         open={!!selectedRow}
         onOpenChange={(open) => !open && setSelectedRow(null)}
       >
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="w-[96vw] max-w-[96vw] sm:max-w-6xl max-h-[96vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {selectedRow?.formName || "E-Sign details"}
@@ -609,11 +609,11 @@ export const ESignRecordkeeping: React.FC = () => {
                   Document
                 </h3>
                 {detail.documentUrl ? (
-                  <div className="border rounded-none overflow-hidden bg-muted/30 min-h-[320px]">
+                  <div className="border border-neutral-200 dark:border-neutral-800 rounded-none overflow-hidden bg-muted/30 min-h-[320px]">
                     <iframe
                       src={detail.documentUrl}
                       title={detail.documentName}
-                      className="w-full h-[420px] border-0"
+                      className="block w-full h-[70vh] border-0"
                     />
                   </div>
                 ) : detail.documentHtml ? (

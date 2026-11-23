@@ -150,6 +150,15 @@ import {
 } from "../ui/Dialog";
 import { toast } from "@/components/ui/toast";
 import { ConfirmPopover } from "@/components/ui/ConfirmPopover";
+import AddJobDocumentsDialog from "./AddJobDocumentsDialog";
+import type { OpportunityDocument } from "./OpportunityDocuments";
+import {
+  ALL_DOCUMENT_TAGS,
+  JOB_DOCUMENT_TAGS,
+  documentTagLabel,
+} from "@/lib/documentTags";
+import AddActionDialog from "./AddActionDialog";
+import FileViewerDialog from "@/components/ui/FileViewerDialog";
 import { ReportApprovalWorkflow } from "../reports/ReportApprovalWorkflow";
 import { EvaluationResultBadge } from "../reports/EvaluationResultBadge";
 import { clearJobEndUserCache } from "../reports/useReportUserAutofill";
@@ -576,19 +585,9 @@ interface MiscellaneousDocument {
   updated_at: string;
 }
 
-// Tags for the single Documents card on the job overview. Stored as plain
-// text, so adding one here needs no database change.
-const JOB_DOCUMENT_CATEGORIES = [
-  { value: "drawing", label: "Drawing" },
-  { value: "spec", label: "Spec" },
-  { value: "contract", label: "Contract" },
-  { value: "agreement", label: "Agreement" },
-  { value: "invoice", label: "Invoice" },
-  { value: "misc", label: "Miscellaneous" },
-];
-
-const jobDocumentCategoryLabel = (value: string) =>
-  JOB_DOCUMENT_CATEGORIES.find((c) => c.value === value)?.label ?? value;
+// Tags for the job's Documents card (shared list in src/lib/documentTags.ts)
+const JOB_DOCUMENT_CATEGORIES = JOB_DOCUMENT_TAGS;
+const jobDocumentCategoryLabel = documentTagLabel;
 
 const reportRoutes = {
   "Panelboard Report": "panelboard-report",
@@ -2996,7 +2995,57 @@ export default function JobDetail() {
     category: "misc",
   });
   const [contractFile, setContractFile] = useState<File | null>(null);
-  const [miscFile, setMiscFile] = useState<File | null>(null);
+  // Documents from the quote(s) this job came from (shown read-only on the card)
+  const [quoteDocuments, setQuoteDocuments] = useState<
+    (OpportunityDocument & { quote_number: string | number | null })[]
+  >([]);
+  // Add Document window: the tag, plus any files dropped on the card first
+  const [addDoc, setAddDoc] = useState<{ category: string; files: File[] } | null>(null);
+  // The always-there drop area on the Documents card
+  const [dropDocTag, setDropDocTag] = useState("misc");
+  const [docsDragging, setDocsDragging] = useState(false);
+  const docsFileInputRef = useRef<HTMLInputElement>(null);
+  // Quote documents: from every quote won into this job, including change order quotes
+  useEffect(() => {
+    if (!job?.id) return;
+    let cancelled = false;
+    (async () => {
+      const { data: opps } = await supabase
+        .schema("business")
+        .from("opportunities")
+        .select("id, quote_number")
+        .or(`job_id.eq.${job.id},change_order_job_id.eq.${job.id}`);
+      const list = (opps ?? []) as { id: string; quote_number: string | number | null }[];
+      if (list.length === 0) {
+        if (!cancelled) setQuoteDocuments([]);
+        return;
+      }
+      const { data, error } = await supabase
+        .schema("business")
+        .from("opportunity_documents")
+        .select("*")
+        .in("opportunity_id", list.map((o) => o.id));
+      if (error) console.error("Error loading quote documents:", error);
+      if (cancelled) return;
+      const quoteNumber = new Map(list.map((o) => [o.id, o.quote_number]));
+      setQuoteDocuments(
+        ((data ?? []) as OpportunityDocument[]).map((d) => ({
+          ...d,
+          quote_number: quoteNumber.get(d.opportunity_id) ?? null,
+        })),
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [job?.id]);
+
+  // Picking a tag filter makes it the drop area's tag too
+  useEffect(() => {
+    // Only job tags; a quote-only tag filter (like Bid Docs) leaves it alone
+    if (JOB_DOCUMENT_TAGS.some((t) => t.value === documentCategoryFilter))
+      setDropDocTag(documentCategoryFilter);
+  }, [documentCategoryFilter]);
   const [isContractUploading, setIsContractUploading] = useState(false);
   const [isMiscUploading, setIsMiscUploading] = useState(false);
 
@@ -6928,93 +6977,6 @@ export default function JobDetail() {
     }
   };
 
-  const handleMiscUpload = async () => {
-    if (!miscFile || !user?.id || !id) return;
-
-    setIsMiscUploading(true);
-    try {
-      // Upload file to Supabase Storage
-      const fileExt = miscFile.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `miscellaneous/${id}/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("job-documents")
-        .upload(filePath, miscFile);
-
-      if (uploadError) {
-        console.error("Storage upload error:", uploadError);
-        throw new Error(
-          `Storage error: ${uploadError.message || "Failed to upload file"}`,
-        );
-      }
-
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("job-documents").getPublicUrl(filePath);
-
-      // Save document record
-      const documentData = {
-        job_id: id,
-        user_id: user.id,
-        name: miscForm.name || miscFile.name,
-        description: miscForm.description || null,
-        file_url: publicUrl,
-        file_path: filePath,
-        file_type: miscFile.type,
-        file_size: miscFile.size,
-        category: miscForm.category,
-      };
-
-      const { error: insertError } = await supabase
-        .schema("neta_ops")
-        .from("miscellaneous_documents")
-        .insert(documentData);
-
-      if (insertError) {
-        console.error("Database insert error:", insertError);
-        // Check if table doesn't exist
-        if ((insertError as any).code === "42P01") {
-          throw new Error(
-            "The miscellaneous_documents table does not exist. Please create it in the database first.",
-          );
-        }
-        throw new Error(
-          `Database error: ${insertError.message || "Failed to save document record"}`,
-        );
-      }
-
-      // Reset form and refresh documents
-      setMiscForm({
-        name: "",
-        description: "",
-        category: "misc",
-      });
-      setMiscFile(null);
-      setShowMiscUpload(false);
-      await fetchMiscellaneousDocuments();
-
-      toast({
-        title: "Success",
-        description: "Document uploaded successfully!",
-        variant: "success",
-      });
-    } catch (error: any) {
-      console.error("Error uploading document:", error);
-      const errorMessage =
-        error?.message ||
-        "Failed to upload document. Please check the console for details.";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setIsMiscUploading(false);
-    }
-  };
-
   const handleMiscView = (document: MiscellaneousDocument) => {
     setSelectedMiscDocument(document);
     setShowMiscViewer(true);
@@ -7026,17 +6988,6 @@ export default function JobDetail() {
       name: document.name,
       description: document.description || "",
       category: document.category || "misc",
-    });
-    setShowMiscUpload(true);
-  };
-
-  // New uploads open tagged with whatever filter is showing
-  const openDocumentUpload = () => {
-    setMiscForm({
-      name: "",
-      description: "",
-      category:
-        documentCategoryFilter === "all" ? "misc" : documentCategoryFilter,
     });
     setShowMiscUpload(true);
   };
@@ -7054,7 +7005,19 @@ export default function JobDetail() {
       category: "drawing",
       isLegacyDrawing: true,
     })),
-  ].sort((a, b) => b.doc.created_at.localeCompare(a.doc.created_at));
+    // From the quote: view and download here; change them on the quote
+    ...quoteDocuments.map((d) => ({
+      doc: {
+        ...(d as unknown as MiscellaneousDocument),
+        job_id: id ?? "",
+      } as MiscellaneousDocument,
+      category: d.category || "misc",
+      isLegacyDrawing: false,
+      fromQuote: d.quote_number ?? "",
+    })),
+  ]
+    .map((d) => ({ fromQuote: null as string | number | null, ...d }))
+    .sort((a, b) => b.doc.created_at.localeCompare(a.doc.created_at));
   const visibleJobDocuments =
     documentCategoryFilter === "all"
       ? jobDocuments
@@ -7062,10 +7025,36 @@ export default function JobDetail() {
 
   const handleMiscDialogChange = (open: boolean) => {
     setShowMiscUpload(open);
-    // Clear the edit prefill so the next upload starts blank
+    // Clear the edit prefill so the next edit starts clean
     if (!open && editingMiscDocument) {
       setEditingMiscDocument(null);
       setMiscForm({ name: "", description: "", category: "misc" });
+    }
+  };
+
+  // Change a document's tag straight from its row (shows at once, undone if the save fails)
+  const changeDocumentTag = async (documentId: string, category: string) => {
+    const before = miscellaneousDocuments;
+    setMiscellaneousDocuments((docs) =>
+      docs.map((d) => (d.id === documentId ? { ...d, category } : d)),
+    );
+    // Fixed value on one id, so safe to retry
+    const { error, status } = await withWriteRetry(
+      () =>
+        supabase
+          .schema("neta_ops")
+          .from("miscellaneous_documents")
+          .update({ category })
+          .eq("id", documentId),
+      { label: "miscellaneous_documents.category" },
+    );
+    if (error) {
+      setMiscellaneousDocuments(before);
+      toast({
+        title: "Tag not changed",
+        description: describeSupabaseError(error, status),
+        variant: "destructive",
+      });
     }
   };
 
@@ -11133,6 +11122,277 @@ export default function JobDetail() {
                       }}
                     />
 
+                    {/* Documents: one tagged list instead of a card per type.
+                        Files can be dropped anywhere on the card, any time. */}
+                    <div
+                      className="relative"
+                      onDragOver={(e) => {
+                        if (!e.dataTransfer.types.includes("Files")) return;
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = "copy";
+                        if (!docsDragging) setDocsDragging(true);
+                      }}
+                      onDragLeave={(e) => {
+                        if (!e.currentTarget.contains(e.relatedTarget as Node | null))
+                          setDocsDragging(false);
+                      }}
+                      onDrop={(e) => {
+                        if (!e.dataTransfer.types.includes("Files")) return;
+                        e.preventDefault();
+                        setDocsDragging(false);
+                        const files = Array.from(e.dataTransfer.files);
+                        if (files.length)
+                          setAddDoc({ category: dropDocTag, files });
+                      }}
+                    >
+                    {docsDragging && (
+                      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center border-2 border-dashed border-brand bg-brand/10 backdrop-blur-[1px]">
+                        <div className="flex items-center gap-2 bg-white px-4 py-2 text-sm font-semibold text-neutral-900 shadow-sm dark:bg-dark-150 dark:text-white">
+                          <Upload className="h-4 w-4 text-brand" aria-hidden="true" />
+                          Drop to add as {jobDocumentCategoryLabel(dropDocTag)}
+                        </div>
+                      </div>
+                    )}
+                    <Card>
+                      <CardHeader>
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <CardTitle className="flex items-center space-x-2">
+                            <FileText className="h-5 w-5 text-brand" />
+                            <span>Documents</span>
+                          </CardTitle>
+                        </div>
+                        {jobDocuments.length > 0 && (
+                          <div className="flex flex-wrap gap-2 pt-3">
+                            {[
+                              { value: "all", label: "All" },
+                              ...ALL_DOCUMENT_TAGS,
+                            ]
+                              // Only tags in use, plus whichever is selected
+                              .filter(
+                                (c) =>
+                                  c.value === "all" ||
+                                  c.value === documentCategoryFilter ||
+                                  jobDocuments.some(
+                                    (d) => d.category === c.value,
+                                  ),
+                              )
+                              .map((c) => {
+                                const count =
+                                  c.value === "all"
+                                    ? jobDocuments.length
+                                    : jobDocuments.filter(
+                                        (d) => d.category === c.value,
+                                      ).length;
+                                const active =
+                                  documentCategoryFilter === c.value;
+                                return (
+                                  <button
+                                    key={c.value}
+                                    type="button"
+                                    onClick={() =>
+                                      setDocumentCategoryFilter(c.value)
+                                    }
+                                    className={`px-2.5 py-1 text-xs font-medium border rounded-none transition-colors ${
+                                      active
+                                        ? "bg-brand border-brand text-white"
+                                        : "border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                                    }`}
+                                  >
+                                    {c.label} ({count})
+                                  </button>
+                                );
+                              })}
+                          </div>
+                        )}
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Always-there drop area: drag files in or click to choose */}
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => docsFileInputRef.current?.click()}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              docsFileInputRef.current?.click();
+                            }
+                          }}
+                          className={`flex flex-wrap items-center justify-between gap-3 border-2 border-dashed border-neutral-300 dark:border-neutral-600 hover:border-neutral-400 dark:hover:border-neutral-500 rounded-none px-4 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+                            visibleJobDocuments.length === 0 ? "py-8" : "py-3"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-300">
+                            <Upload className="h-5 w-5 text-brand shrink-0" aria-hidden="true" />
+                            <span>
+                              {visibleJobDocuments.length === 0 && "No documents yet. "}
+                              Drag files here or{" "}
+                              <span className="font-semibold text-neutral-900 dark:text-white underline underline-offset-2">
+                                choose files
+                              </span>
+                            </span>
+                          </div>
+                          <label
+                            className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-300"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Tag as
+                            <select
+                              value={dropDocTag}
+                              onChange={(e) => setDropDocTag(e.target.value)}
+                              onKeyDown={(e) => e.stopPropagation()}
+                              className="p-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
+                            >
+                              {JOB_DOCUMENT_CATEGORIES.map((c) => (
+                                <option key={c.value} value={c.value}>
+                                  {c.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <input
+                            ref={docsFileInputRef}
+                            type="file"
+                            multiple
+                            className="hidden"
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files ?? []);
+                              e.target.value = "";
+                              if (files.length)
+                                setAddDoc({ category: dropDocTag, files });
+                            }}
+                          />
+                        </div>
+
+                        {visibleJobDocuments.length > 0 && (
+                          <div className="space-y-4">
+                            {visibleJobDocuments.map(
+                              ({ doc, category, isLegacyDrawing, fromQuote }) => (
+                                <div
+                                  key={`${isLegacyDrawing ? "drawing" : fromQuote !== null ? "quote" : "doc"}-${doc.id}`}
+                                  className="border border-neutral-200 dark:border-neutral-700 rounded-none p-4"
+                                >
+                                  <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center space-x-3">
+                                        <FileText className="h-5 w-5 text-brand shrink-0" />
+                                        <div className="min-w-0">
+                                          <h4 className="font-medium text-neutral-900 dark:text-white break-all">
+                                            {doc.name}
+                                          </h4>
+                                          <div className="flex items-center space-x-4 text-sm text-neutral-500 dark:text-white flex-wrap gap-y-1">
+                                            {/* Click the tag to change it. Older drawings live in another table, so theirs stays fixed. */}
+                                            {isLegacyDrawing || fromQuote !== null ? (
+                                              <span className="inline-flex items-center border border-neutral-200 bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+                                                {jobDocumentCategoryLabel(category)}
+                                              </span>
+                                            ) : (
+                                              <span className="relative inline-flex items-center">
+                                                <select
+                                                  value={category}
+                                                  onChange={(e) =>
+                                                    void changeDocumentTag(doc.id, e.target.value)
+                                                  }
+                                                  aria-label={`Tag for ${doc.name}`}
+                                                  title="Change tag"
+                                                  className="cursor-pointer appearance-none rounded-none border border-neutral-200 bg-neutral-100 py-0.5 pl-2 pr-6 text-xs font-medium text-neutral-700 transition-colors hover:border-brand hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                                                >
+                                                  {JOB_DOCUMENT_CATEGORIES.map((c) => (
+                                                    <option key={c.value} value={c.value}>
+                                                      {c.label}
+                                                    </option>
+                                                  ))}
+                                                </select>
+                                                <ChevronDown
+                                                  className="pointer-events-none absolute right-1.5 h-3 w-3 text-neutral-500 dark:text-neutral-400"
+                                                  aria-hidden="true"
+                                                />
+                                              </span>
+                                            )}
+                                            <span>
+                                              {format(
+                                                new Date(doc.created_at),
+                                                "MMM d, yyyy",
+                                              )}
+                                            </span>
+                                            {!!doc.file_size && (
+                                              <span>
+                                                {doc.file_size >= 1024 * 1024
+                                                  ? `${(doc.file_size / (1024 * 1024)).toFixed(1)} MB`
+                                                  : `${Math.max(1, Math.round(doc.file_size / 1024))} KB`}
+                                              </span>
+                                            )}
+                                            {fromQuote !== null && (
+                                              <span
+                                                className="text-neutral-500 dark:text-neutral-400"
+                                                title="Added on the quote. Edit or delete it there."
+                                              >
+                                                From quote{fromQuote !== "" ? ` #${fromQuote}` : ""}
+                                              </span>
+                                            )}
+                                          </div>
+                                          {doc.description && (
+                                            <p className="text-sm text-neutral-600 dark:text-white mt-1">
+                                              {doc.description}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    {/* Icon-only actions; the label shows on hover */}
+                                    <div className="flex items-center gap-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleMiscView(doc)}
+                                        title="View"
+                                        aria-label={`View ${doc.name}`}
+                                        className="p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
+                                      >
+                                        <Eye className="h-4 w-4" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => openFileUrl(doc.file_url)}
+                                        title="Download"
+                                        aria-label={`Download ${doc.name}`}
+                                        className="p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </button>
+                                      {/* Older drawings sit in their own table, so they stay view-only like before */}
+                                      {!isLegacyDrawing && fromQuote === null && (
+                                        <>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleMiscEdit(doc)}
+                                            title="Edit name, tag and description"
+                                            aria-label={`Edit ${doc.name}`}
+                                            className="p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
+                                          >
+                                            <Pencil className="h-4 w-4" />
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleMiscDelete(doc.id)}
+                                            title="Delete"
+                                            aria-label={`Delete ${doc.name}`}
+                                            className="p-2 text-neutral-500 transition-colors hover:bg-red-50 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:text-neutral-400 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                                          >
+                                            <Trash2 className="h-4 w-4" />
+                                          </button>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ),
+                            )}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                    </div>
+
                     {/* Contracts Section */}
                     <Card>
                       <CardHeader>
@@ -11320,169 +11580,6 @@ export default function JobDetail() {
                                 </div>
                               );
                             })}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    {/* Documents: one tagged list instead of a card per type */}
-                    <Card>
-                      <CardHeader>
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <CardTitle className="flex items-center space-x-2">
-                            <FileText className="h-5 w-5 text-brand" />
-                            <span>Documents</span>
-                          </CardTitle>
-                          <Button
-                            onClick={openDocumentUpload}
-                            leftIcon={<Upload className="h-4 w-4" />}
-                          >
-                            Upload Document
-                          </Button>
-                        </div>
-                        {jobDocuments.length > 0 && (
-                          <div className="flex flex-wrap gap-2 pt-3">
-                            {[
-                              { value: "all", label: "All" },
-                              ...JOB_DOCUMENT_CATEGORIES,
-                            ]
-                              // Only tags in use, plus whichever is selected
-                              .filter(
-                                (c) =>
-                                  c.value === "all" ||
-                                  c.value === documentCategoryFilter ||
-                                  jobDocuments.some(
-                                    (d) => d.category === c.value,
-                                  ),
-                              )
-                              .map((c) => {
-                                const count =
-                                  c.value === "all"
-                                    ? jobDocuments.length
-                                    : jobDocuments.filter(
-                                        (d) => d.category === c.value,
-                                      ).length;
-                                const active =
-                                  documentCategoryFilter === c.value;
-                                return (
-                                  <button
-                                    key={c.value}
-                                    type="button"
-                                    onClick={() =>
-                                      setDocumentCategoryFilter(c.value)
-                                    }
-                                    className={`px-2.5 py-1 text-xs font-medium border rounded-none transition-colors ${
-                                      active
-                                        ? "bg-brand border-brand text-white"
-                                        : "border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                    }`}
-                                  >
-                                    {c.label} ({count})
-                                  </button>
-                                );
-                              })}
-                          </div>
-                        )}
-                      </CardHeader>
-                      <CardContent>
-                        {visibleJobDocuments.length === 0 ? (
-                          <div className="text-center py-6 text-neutral-500 dark:text-white">
-                            <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                            <p className="text-sm">No documents uploaded yet</p>
-                          </div>
-                        ) : (
-                          <div className="border border-neutral-200 dark:border-neutral-700 divide-y divide-neutral-200 dark:divide-neutral-700">
-                            {visibleJobDocuments.map(
-                              ({ doc, category, isLegacyDrawing }) => (
-                                <div
-                                  key={`${isLegacyDrawing ? "drawing" : "doc"}-${doc.id}`}
-                                  className="flex items-center justify-between gap-3 px-3 py-2"
-                                >
-                                  <div className="flex items-center gap-3 min-w-0">
-                                    <FileText className="h-4 w-4 text-brand shrink-0" />
-                                    <div className="min-w-0">
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="font-medium text-sm text-neutral-900 dark:text-white break-all">
-                                          {doc.name}
-                                        </span>
-                                        <Badge className="bg-neutral-100 text-neutral-700 dark:bg-dark-150 dark:text-neutral-200">
-                                          {jobDocumentCategoryLabel(category)}
-                                        </Badge>
-                                      </div>
-                                      <div className="flex items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400 min-w-0">
-                                        <span className="shrink-0">
-                                          {format(
-                                            new Date(doc.created_at),
-                                            "MMM d, yyyy",
-                                          )}
-                                        </span>
-                                        {!!doc.file_size && (
-                                          <span className="shrink-0">
-                                            {Math.round(doc.file_size / 1024)}{" "}
-                                            KB
-                                          </span>
-                                        )}
-                                        {doc.description && (
-                                          <span
-                                            className="truncate"
-                                            title={doc.description}
-                                          >
-                                            {doc.description}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-1 shrink-0">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handleMiscView(doc)}
-                                      leftIcon={<Eye className="h-4 w-4" />}
-                                    >
-                                      View
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        openFileUrl(doc.file_url)
-                                      }
-                                      title="Download"
-                                      aria-label="Download document"
-                                    >
-                                      <Download className="h-4 w-4" />
-                                    </Button>
-                                    {/* Older drawings sit in their own table, so they stay view-only like before */}
-                                    {!isLegacyDrawing && (
-                                      <>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => handleMiscEdit(doc)}
-                                          title="Edit name, tag and description"
-                                          aria-label="Edit document"
-                                        >
-                                          <Pencil className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() =>
-                                            handleMiscDelete(doc.id)
-                                          }
-                                          title="Delete"
-                                          aria-label="Delete document"
-                                          className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                                        >
-                                          <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              ),
-                            )}
                           </div>
                         )}
                       </CardContent>
@@ -14162,365 +14259,81 @@ export default function JobDetail() {
         </DialogContent>
       </Dialog>
 
-      {/* Add Action Dialog */}
-      <Dialog open={showContractUpload} onOpenChange={setShowContractUpload}>
-        <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col overflow-hidden">
-          <DialogHeader className="shrink-0">
-            <DialogTitle>Add Action</DialogTitle>
-            <DialogDescription>
-              Add a contract, agreement, invoice, or other action for this job.
-            </DialogDescription>
-          </DialogHeader>
+      {/* Add Action: what it is, amount with a live before/after, drop-in attachment */}
+      <AddActionDialog
+        open={showContractUpload}
+        onOpenChange={setShowContractUpload}
+        form={contractForm}
+        setForm={setContractForm}
+        file={contractFile}
+        setFile={setContractFile}
+        saving={isContractUploading}
+        onSave={handleContractUpload}
+        totalContractValue={totalContractValue}
+        remainingBalance={remainingBalance}
+      />
 
-          <div className="min-h-0 flex-1 overflow-y-auto pr-1 -mr-1">
-            <div className="grid gap-4 py-4">
-              <div className="space-y-2">
-                <label htmlFor="contract-name" className="text-sm font-medium">
-                  Action Name
-                </label>
-                <Input
-                  id="contract-name"
-                  value={contractForm.name}
-                  onChange={(e) =>
-                    setContractForm((prev) => ({
-                      ...prev,
-                      name: e.target.value,
-                    }))
-                  }
-                  placeholder="e.g. Main Contract, PO #12345"
-                />
-              </div>
+      {/* Billing action attachment viewer: big preview, icon-only actions, one close button */}
+      <FileViewerDialog
+        open={showContractViewer}
+        onOpenChange={setShowContractViewer}
+        title={selectedContract?.name ?? ""}
+        subtitle={
+          selectedContract
+            ? `${selectedContract.type.replace("_", " ")} • ${selectedContract.status}`
+            : undefined
+        }
+        url={selectedContract?.file_url || null}
+        fileName={selectedContract?.file_path}
+        onDownload={() =>
+          selectedContract?.file_url && openFileUrl(selectedContract.file_url)
+        }
+        actions={
+          selectedContract?.file_url
+            ? [
+                {
+                  icon: ExternalLink,
+                  label: "Open in new tab",
+                  onClick: () => openFileUrl(selectedContract.file_url),
+                },
+                {
+                  icon: Download,
+                  label: "Download",
+                  onClick: () => openFileUrl(selectedContract.file_url),
+                },
+              ]
+            : []
+        }
+      />
 
-              <div className="space-y-2">
-                <label htmlFor="contract-type" className="text-sm font-medium">
-                  Action Type
-                </label>
-                <select
-                  id="contract-type"
-                  value={contractForm.type}
-                  onChange={(e) =>
-                    setContractForm((prev) => ({
-                      ...prev,
-                      type: e.target.value as Contract["type"],
-                    }))
-                  }
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
-                >
-                  <option value="main">Main Contract</option>
-                  <option value="subcontract">Subcontract</option>
-                  <option value="amendment">Amendment</option>
-                  <option value="purchase_order">Purchase Order</option>
-                  <option value="invoice">Invoice</option>
-                  <option value="discount">Discount</option>
-                </select>
-              </div>
+      {/* Add Document: drop or choose files for the picked tag */}
+      {id && user?.id && (
+        <AddJobDocumentsDialog
+          category={addDoc?.category ?? null}
+          categoryLabel={addDoc ? jobDocumentCategoryLabel(addDoc.category) : ""}
+          initialFiles={addDoc?.files}
+          pathPrefix={`miscellaneous/${id}`}
+          saveRow={async (row) => {
+            const { error } = await supabase
+              .schema("neta_ops")
+              .from("miscellaneous_documents")
+              .insert({ ...row, job_id: id, user_id: user.id, description: null });
+            if (error) throw error;
+          }}
+          onClose={() => setAddDoc(null)}
+          onUploaded={() => void fetchMiscellaneousDocuments()}
+        />
+      )}
 
-              <div className="space-y-2">
-                <label htmlFor="contract-value" className="text-sm font-medium">
-                  Action Value ($)
-                </label>
-                <Input
-                  id="contract-value"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={contractForm.value}
-                  onChange={(e) =>
-                    setContractForm((prev) => ({
-                      ...prev,
-                      value: e.target.value,
-                    }))
-                  }
-                  placeholder="0.00"
-                />
-                <p className="text-xs text-neutral-500">
-                  Optional. Leave blank if you only have a PO number or
-                  reference.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Value Operation</label>
-                <div className="flex flex-col gap-2">
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="value-operation"
-                      value="add_to_total"
-                      checked={contractForm.value_operation === "add_to_total"}
-                      onChange={(e) =>
-                        setContractForm((prev) => ({
-                          ...prev,
-                          value_operation: e.target
-                            .value as ContractValueOperation,
-                        }))
-                      }
-                      className="w-4 h-4 text-brand focus:ring-brand"
-                    />
-                    <span className="text-sm">Add to total contract value</span>
-                  </label>
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="value-operation"
-                      value="subtract_from_total"
-                      checked={
-                        contractForm.value_operation === "subtract_from_total"
-                      }
-                      onChange={(e) =>
-                        setContractForm((prev) => ({
-                          ...prev,
-                          value_operation: e.target
-                            .value as ContractValueOperation,
-                        }))
-                      }
-                      className="w-4 h-4 text-brand focus:ring-brand"
-                    />
-                    <span className="text-sm">
-                      Subtract from contract value
-                    </span>
-                  </label>
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="value-operation"
-                      value="subtract_from_remaining"
-                      checked={
-                        contractForm.value_operation ===
-                        "subtract_from_remaining"
-                      }
-                      onChange={(e) =>
-                        setContractForm((prev) => ({
-                          ...prev,
-                          value_operation: e.target
-                            .value as ContractValueOperation,
-                        }))
-                      }
-                      className="w-4 h-4 text-brand focus:ring-brand"
-                    />
-                    <span className="text-sm">
-                      Subtract from remaining balance (e.g. invoices)
-                    </span>
-                  </label>
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="value-operation"
-                      value="add_to_remaining"
-                      checked={
-                        contractForm.value_operation === "add_to_remaining"
-                      }
-                      onChange={(e) =>
-                        setContractForm((prev) => ({
-                          ...prev,
-                          value_operation: e.target
-                            .value as ContractValueOperation,
-                        }))
-                      }
-                      className="w-4 h-4 text-brand focus:ring-brand"
-                    />
-                    <span className="text-sm">
-                      Add to remaining balance (book corrections only)
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="contract-start"
-                    className="text-sm font-medium"
-                  >
-                    Start Date
-                  </label>
-                  <Input
-                    id="contract-start"
-                    type="date"
-                    value={contractForm.start_date}
-                    onChange={(e) =>
-                      setContractForm((prev) => ({
-                        ...prev,
-                        start_date: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="contract-end" className="text-sm font-medium">
-                    End Date
-                  </label>
-                  <Input
-                    id="contract-end"
-                    type="date"
-                    value={contractForm.end_date}
-                    onChange={(e) =>
-                      setContractForm((prev) => ({
-                        ...prev,
-                        end_date: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="contract-description"
-                  className="text-sm font-medium"
-                >
-                  Description
-                </label>
-                <textarea
-                  id="contract-description"
-                  value={contractForm.description}
-                  onChange={(e) =>
-                    setContractForm((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  placeholder="Brief description (optional)"
-                  className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none bg-white dark:bg-dark-150 text-neutral-900 dark:text-white resize-none"
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="contract-file" className="text-sm font-medium">
-                  Attachment (optional)
-                </label>
-                <Input
-                  id="contract-file"
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  onChange={(e) => setContractFile(e.target.files?.[0] || null)}
-                />
-                {contractFile && (
-                  <p className="text-xs text-neutral-500">
-                    {contractFile.name} ({Math.round(contractFile.size / 1024)}{" "}
-                    KB)
-                  </p>
-                )}
-                <p className="text-xs text-neutral-500">
-                  Attach a file if you have one; not required (e.g. PO number
-                  only).
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter className="shrink-0">
-            <Button
-              variant="outline"
-              onClick={() => setShowContractUpload(false)}
-              disabled={isContractUploading}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleContractUpload}
-              disabled={
-                isContractUploading ||
-                !contractForm.name.trim() ||
-                (!!contractForm.value.trim() &&
-                  (isNaN(parseFloat(contractForm.value)) ||
-                    parseFloat(contractForm.value) <= 0))
-              }
-            >
-              {isContractUploading ? "Adding..." : "Add Action"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Action / Contract Viewer Dialog */}
-      <Dialog open={showContractViewer} onOpenChange={() => {}}>
-        <DialogContent className="sm:max-w-[90vw] sm:max-h-[90vh] max-w-none w-full h-full [&>button]:hidden">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <DialogTitle>{selectedContract?.name}</DialogTitle>
-                <DialogDescription>
-                  {selectedContract?.type.replace("_", " ")} •{" "}
-                  {selectedContract?.status}
-                </DialogDescription>
-              </div>
-              <div className="flex items-center space-x-2">
-                {selectedContract?.file_url && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        selectedContract &&
-                        window.open(selectedContract.file_url!, "_blank")
-                      }
-                      leftIcon={<Eye className="h-4 w-4" />}
-                    >
-                      Open in New Tab
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (selectedContract?.file_url) {
-                          const link = document.createElement("a");
-                          link.href = selectedContract.file_url;
-                          link.download = selectedContract.name;
-                          link.click();
-                        }
-                      }}
-                      leftIcon={<Download className="h-4 w-4" />}
-                    >
-                      Download
-                    </Button>
-                  </>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowContractViewer(false)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </DialogHeader>
-
-          <div className="flex-1 overflow-hidden">
-            {selectedContract?.file_url && (
-              <div className="w-full h-full bg-neutral-100 dark:bg-dark-150 rounded-none">
-                <iframe
-                  src={selectedContract.file_url}
-                  className="w-full h-full rounded-none border-0"
-                  title={selectedContract.name}
-                  style={{ minHeight: "70vh" }}
-                />
-              </div>
-            )}
-            {selectedContract && !selectedContract.file_url && (
-              <div className="flex items-center justify-center p-8 text-neutral-500 dark:text-neutral-400">
-                No attachment for this action.
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Miscellaneous Document Upload Dialog */}
+      {/* Edit a document's name, tag or description */}
       <Dialog open={showMiscUpload} onOpenChange={handleMiscDialogChange}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>
-              {editingMiscDocument
-                ? "Edit Document"
-                : "Upload Document"}
+              Edit Document
             </DialogTitle>
             <DialogDescription>
-              {editingMiscDocument
-                ? "Change the name, tag or description of this document."
-                : "Upload a document for this job and tag it."}
+              Change the name, tag or description of this document.
             </DialogDescription>
           </DialogHeader>
 
@@ -14580,25 +14393,6 @@ export default function JobDetail() {
                 rows={3}
               />
             </div>
-
-            {!editingMiscDocument && (
-              <div className="space-y-2">
-                <label htmlFor="misc-file" className="text-sm font-medium">
-                  Document File
-                </label>
-                <Input
-                  id="misc-file"
-                  type="file"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg,.dwg,.svg"
-                  onChange={(e) => setMiscFile(e.target.files?.[0] || null)}
-                />
-                {miscFile && (
-                  <p className="text-xs text-neutral-500">
-                    {miscFile.name} ({Math.round(miscFile.size / 1024)} KB)
-                  </p>
-                )}
-              </div>
-            )}
           </div>
 
           <DialogFooter>
@@ -14609,125 +14403,52 @@ export default function JobDetail() {
             >
               Cancel
             </Button>
-            {editingMiscDocument ? (
-              <Button
-                onClick={handleMiscSaveEdit}
-                disabled={isMiscUploading || !miscForm.name.trim()}
-              >
-                {isMiscUploading ? "Saving..." : "Save Changes"}
-              </Button>
-            ) : (
-              <Button
-                onClick={handleMiscUpload}
-                disabled={
-                  isMiscUploading || !miscFile || !miscForm.name.trim()
-                }
-              >
-                {isMiscUploading ? "Uploading..." : "Upload Document"}
-              </Button>
-            )}
+            <Button
+              onClick={handleMiscSaveEdit}
+              disabled={isMiscUploading || !miscForm.name.trim()}
+            >
+              {isMiscUploading ? "Saving..." : "Save Changes"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Miscellaneous Document Viewer Dialog */}
-      <Dialog open={showMiscViewer} onOpenChange={setShowMiscViewer}>
-        <DialogContent className="sm:max-w-[90vw] sm:h-[90vh] max-w-none w-full flex flex-col">
-          <DialogHeader className="flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <div>
-                <DialogTitle>{selectedMiscDocument?.name}</DialogTitle>
-                <DialogDescription>
-                  {selectedMiscDocument &&
-                    format(
-                      new Date(selectedMiscDocument.created_at),
-                      "MMM d, yyyy",
-                    )}
-                </DialogDescription>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    selectedMiscDocument &&
-                    openFileUrl(selectedMiscDocument.file_url)
-                  }
-                  leftIcon={<Download className="h-4 w-4" />}
-                >
-                  Download
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    selectedMiscDocument &&
+      {/* Job document viewer: big preview, icon-only actions, one close button */}
+      <FileViewerDialog
+        open={showMiscViewer}
+        onOpenChange={setShowMiscViewer}
+        title={selectedMiscDocument?.name ?? ""}
+        subtitle={
+          selectedMiscDocument
+            ? format(new Date(selectedMiscDocument.created_at), "MMM d, yyyy")
+            : undefined
+        }
+        url={selectedMiscDocument?.file_url}
+        fileName={selectedMiscDocument?.file_path}
+        onDownload={() =>
+          selectedMiscDocument && openFileUrl(selectedMiscDocument.file_url)
+        }
+        actions={
+          selectedMiscDocument
+            ? [
+                {
+                  icon: Download,
+                  label: "Download",
+                  onClick: () => openFileUrl(selectedMiscDocument.file_url),
+                },
+                {
+                  icon: Link2,
+                  label: "Copy share link (works for 7 days, outside ampOS)",
+                  onClick: () =>
                     void copyJobFileShareLink(selectedMiscDocument.file_url, {
                       jobId: selectedMiscDocument.job_id,
                       name: selectedMiscDocument.name,
-                    })
-                  }
-                  leftIcon={<Link2 className="h-4 w-4" />}
-                  title="Link for someone outside ampOS. Works for 7 days."
-                >
-                  Share link
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowMiscViewer(false)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </DialogHeader>
-
-          <div className="flex-1 min-h-0 overflow-hidden">
-            {selectedMiscDocument && (
-              <div className="w-full h-full bg-neutral-100 dark:bg-dark-150 rounded-none">
-                {selectedMiscDocument.file_url
-                  .toLowerCase()
-                  .endsWith(".pdf") ? (
-                  <iframe
-                    src={selectedMiscDocument.file_url}
-                    className="w-full h-full rounded-none border-0"
-                    title={selectedMiscDocument.name}
-                    style={{ minHeight: "100%" }}
-                  />
-                ) : selectedMiscDocument.file_url
-                    .toLowerCase()
-                    .match(/\.(jpg|jpeg|png|gif|svg)$/i) ? (
-                  <img
-                    src={selectedMiscDocument.file_url}
-                    alt={selectedMiscDocument.name}
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center">
-                      <FileText className="h-16 w-16 mx-auto mb-4 text-neutral-400" />
-                      <p className="text-neutral-600 dark:text-neutral-400">
-                        Preview not available
-                      </p>
-                      <Button
-                        variant="outline"
-                        className="mt-4"
-                        onClick={() =>
-                          openFileUrl(selectedMiscDocument.file_url)
-                        }
-                        leftIcon={<Download className="h-4 w-4" />}
-                      >
-                        Download to View
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+                    }),
+                },
+              ]
+            : []
+        }
+      />
 
       {/* Asset Comments Dialog */}
       <AssetCommentsDialog

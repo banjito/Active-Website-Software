@@ -1,4 +1,13 @@
 import { openFileUrl } from "@/lib/jobFiles";
+import FileViewerDialog from "@/components/ui/FileViewerDialog";
+import OpportunityDocuments from "./OpportunityDocuments";
+import OpportunityPagePreview, {
+  DOCUMENTS_STAGES,
+  OPPORTUNITY_TYPES,
+  OpportunityPreviewTitle,
+  previewSelectClass,
+} from "./OpportunityPagePreview";
+import { isSuperUser } from "@/lib/roles";
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { computeTravelTotals } from "../../lib/travelExpenses";
@@ -1102,6 +1111,23 @@ export default function OpportunityDetail() {
   const [showSubcontractorDialog, setShowSubcontractorDialog] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  // Trial page layout: Super Admins only, remembered in this browser
+  const [previewOn, setPreviewOn] = useState<boolean>(() => {
+    try {
+      return window.localStorage.getItem("ampos.opportunityPreview") === "1";
+    } catch {
+      return false;
+    }
+  });
+  const togglePreview = () => {
+    const next = !previewOn;
+    setPreviewOn(next);
+    try {
+      window.localStorage.setItem("ampos.opportunityPreview", next ? "1" : "0");
+    } catch {
+      /* not remembered, still works this visit */
+    }
+  };
   const [previewFile, setPreviewFile] = useState<SubcontractorAgreement | null>(
     null,
   );
@@ -3814,6 +3840,600 @@ export default function OpportunityDetail() {
 
   const isEmbed = new URLSearchParams(location.search).get("embed") === "true";
 
+  // Estimates and letter proposals: one copy, used by the page and the trial layout
+  const estimatesBlock = (
+                <div className="bg-white dark:bg-dark-150 p-4 rounded-none">
+                  {/* Two groups: estimates (pricing) and letter proposals
+                      (what the customer sees). Create = solid, view = outline. */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="border border-neutral-200 dark:border-dark-300 rounded-none p-4 flex flex-col">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-brand/10 text-brand rounded-none">
+                          <Calculator className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-neutral-900 dark:text-dark-900">
+                            Estimates
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                        <button
+                          onClick={() => {
+                            setActiveEstimateId(null);
+                            setShowEstimate("new");
+                            setEstimateOpenSignal((s) => s + 1);
+                          }}
+                          className="flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 px-3 py-2 rounded-none font-medium transition-colors"
+                        >
+                          <FilePlus2 className="h-4 w-4 shrink-0" />
+                          <span>New Advanced Estimate</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowEstimate(false);
+                            setShowSimpleEstimate(true);
+                          }}
+                          className="flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 px-3 py-2 rounded-none font-medium transition-colors"
+                        >
+                          <Zap className="h-4 w-4 shrink-0" />
+                          <span>New Simple Estimate</span>
+                        </button>
+                        {/* Local only until the Review step is built. */}
+                        {import.meta.env.DEV && (
+                          <button
+                            onClick={() => {
+                              setShowEstimate(false);
+                              setShowFullEstimate(true);
+                            }}
+                            className="sm:col-span-2 flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 rounded-none px-3 py-2 text-sm font-medium transition-colors"
+                          >
+                            <FilePlus2 className="h-4 w-4 shrink-0" />
+                            <span>New Full Estimate</span>
+                          </button>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowEstimate("view");
+                          setEstimateOpenSignal((s) => s + 1);
+                        }}
+                        className={`mt-auto flex items-center justify-center gap-2 px-3 py-2 rounded-none font-medium transition-colors border ${
+                          showEstimate === "view"
+                            ? "border-brand bg-brand/10 text-brand"
+                            : "border-neutral-300 dark:border-dark-300 text-neutral-700 dark:text-dark-900 hover:border-brand hover:text-brand"
+                        }`}
+                      >
+                        <Eye className="h-4 w-4 shrink-0" />
+                        <span>View Saved Estimates</span>
+                      </button>
+                    </div>
+
+                    <div className="border border-neutral-200 dark:border-dark-300 rounded-none p-4 flex flex-col">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-brand/10 text-brand rounded-none">
+                          <Mail className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-neutral-900 dark:text-dark-900">
+                            Letter Proposals
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                        <button
+                          onClick={() => {
+                            setShowEstimate("letter");
+                          }}
+                          className="flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 px-3 py-2 rounded-none font-medium transition-colors"
+                        >
+                          <FileText className="h-4 w-4 shrink-0" />
+                          <span>New Letter</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowEstimate("combined-letter");
+                          }}
+                          title="One letter covering several estimates"
+                          className="flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 px-3 py-2 rounded-none font-medium transition-colors"
+                        >
+                          <Layers className="h-4 w-4 shrink-0" />
+                          <span>New Combined Letter</span>
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowEstimate("letters");
+                        }}
+                        className={`mt-auto flex items-center justify-center gap-2 px-3 py-2 rounded-none font-medium transition-colors border ${
+                          showEstimate === "letters"
+                            ? "border-brand bg-brand/10 text-brand"
+                            : "border-neutral-300 dark:border-dark-300 text-neutral-700 dark:text-dark-900 hover:border-brand hover:text-brand"
+                        }`}
+                      >
+                        <Eye className="h-4 w-4 shrink-0" />
+                        <span>View Saved Letters</span>
+                      </button>
+                    </div>
+                  </div>
+                  {/* New Simple Estimate: line items + markup + travel. Once
+                      saved it opens in the estimates view, where the letter
+                      proposal can be generated. */}
+                  <Dialog
+                    open={showSimpleEstimate}
+                    onClose={() => setShowSimpleEstimate(false)}
+                    className="fixed inset-0 z-50 overflow-y-auto"
+                  >
+                    <div className="flex items-center justify-center min-h-screen p-4">
+                      <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+                      <div className="relative bg-white dark:bg-dark-150 rounded-none w-full max-w-4xl p-6 shadow-xl">
+                        <Dialog.Title className="text-lg font-semibold text-neutral-900 dark:text-dark-900 mb-4">
+                          New Simple Estimate
+                        </Dialog.Title>
+                        {showSimpleEstimate && (
+                          <SimpleEstimateEditor
+                            opportunityId={id || ""}
+                            onCancel={() => setShowSimpleEstimate(false)}
+                            onSaved={(row) => {
+                              setShowSimpleEstimate(false);
+                              setActiveEstimateId(row.id);
+                              setShowEstimate("view");
+                              setEstimateOpenSignal((s) => s + 1);
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </Dialog>
+                  {/* New Full Estimate: only the builder's own Close button closes
+                      this, so a stray click can't lose work. */}
+                  <Dialog
+                    open={showFullEstimate}
+                    onClose={() => {}}
+                    className="fixed inset-0 z-50 overflow-y-auto"
+                  >
+                    <div className="flex items-center justify-center min-h-screen">
+                      <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
+                      <div className="relative bg-white dark:bg-dark-150 rounded-none w-[98%] h-[95vh] overflow-y-auto mx-auto p-6 shadow-xl my-4">
+                        <Dialog.Title className="sr-only">
+                          New Full Estimate
+                        </Dialog.Title>
+                        {showFullEstimate && (
+                          <FullEstimateBuilder
+                            opportunityId={id || ""}
+                            onClose={(row) => {
+                              setShowFullEstimate(false);
+                              if (!row) return;
+                              setActiveEstimateId(row.id);
+                              setShowEstimate("view");
+                              setEstimateOpenSignal((s) => s + 1);
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </Dialog>
+                  {/* Show EstimateSheet only if an action is selected */}
+                  {showEstimate !== false && (
+                    <EstimateSheet
+                      opportunityId={id || ""}
+                      mode={showEstimate}
+                      openSignal={estimateOpenSignal}
+                      preferredEstimateId={activeEstimateId}
+                      onActiveEstimateChange={setActiveEstimateId}
+                    />
+                  )}
+                </div>
+  );
+
+  // ── Trial layout (Super Admins) ─────────────────────────────────────────
+  const canPreview = !isEmbed && isSuperUser(user?.email);
+  const showPreview = canPreview && previewOn && !isEditing;
+
+  const previewContact = contacts.find(
+    (c) => c.id === (opportunity as any).contact_id,
+  );
+  const previewLetterId = (opportunity as any).selected_letter_proposal || "";
+  const previewLetter =
+    (previewLetterId
+      ? letterProposals.find((lp) => lp.id === previewLetterId)
+      : undefined) ||
+    letterProposals[0] ||
+    null;
+  const previewLetterLabel = previewLetter
+    ? previewLetter.title ||
+      `Letter ${previewLetter.letter_number || previewLetter.id?.slice(0, 8)}`
+    : null;
+  const previewQuoted =
+    showPreview && previewLetter
+      ? parseMoneyValue(previewLetter.net_30_price) ||
+        extractNet30FromLetterHtml(previewLetter.html)
+      : null;
+  const previewQuotedAmount = Number((opportunity as any).quoted_amount) || 0;
+  // Same rule as the current page: no type set, so infer it from the quoted amount
+  const previewType: string =
+    (opportunity as any).opportunity_type ||
+    (previewQuotedAmount > 0
+      ? previewQuotedAmount >= 100000
+        ? "large_acceptance"
+        : "small_acceptance"
+      : "");
+  const previewTypeLabel = OPPORTUNITY_TYPES.find(
+    (t) => t.value === previewType,
+  )?.label;
+  const previewStage: string = (opportunity as any).documents_stage || "";
+
+  const renderPreview = () => {
+    const opp = opportunity as any;
+    const hasProbability =
+      opportunity.probability !== null &&
+      opportunity.probability !== undefined &&
+      String(opportunity.probability) !== "";
+    const probability = Number(opportunity.probability);
+
+    const due = opportunity.proposal_due_date;
+    let daysLeft: number | null = null;
+    if (due) {
+      const [y, m, d] = due.slice(0, 10).split("-").map(Number);
+      const dueDay = new Date(y, m - 1, d);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (!isNaN(dueDay.getTime()))
+        daysLeft = Math.round((dueDay.getTime() - today.getTime()) / 86400000);
+    }
+    // Once it's sent or closed, a countdown is just noise
+    const stillDue =
+      !["awarded", "lost", "no quote"].includes(opportunity.status) &&
+      !["sent", "no_quote", "no quote"].includes(estimateApprovalStatus ?? "");
+    const dueNote =
+      daysLeft === null || !stillDue
+        ? undefined
+        : daysLeft < 0
+          ? `${-daysLeft} ${daysLeft === -1 ? "day" : "days"} late`
+          : daysLeft === 0
+            ? "Due today"
+            : `${daysLeft} ${daysLeft === 1 ? "day" : "days"} left`;
+
+    const start = opp.estimated_start_date;
+    const finish = opp.estimated_end_date;
+
+    return (
+      <OpportunityPagePreview
+        stats={[
+          {
+            label: "Quoted (NET 30)",
+            value: previewQuoted ? formatMoney(previewQuoted) : "None yet",
+            note: previewLetter
+              ? previewQuoted
+                ? `From ${previewLetterId ? "" : "latest "}${previewLetterLabel}${letterProposals.length > 1 ? " (click to change)" : ""}`
+                : "No NET 30 amount found in the letter"
+              : "No letter proposal generated",
+            onClick:
+              letterProposals.length > 0
+                ? () => setLetterPickerOpen(true)
+                : undefined,
+            title:
+              letterProposals.length > 0
+                ? "Choose which letter proposal this amount comes from"
+                : undefined,
+          },
+          {
+            label: "Probability",
+            value: hasProbability ? `${opportunity.probability}%` : "Not set",
+            note:
+              hasProbability && previewQuoted && !isNaN(probability)
+                ? `Weighted ${formatMoney((previewQuoted * probability) / 100)}`
+                : undefined,
+          },
+          {
+            label: "Proposal due",
+            value: due ? formatDateSafe(due) : "Not set",
+            note: dueNote,
+            tone:
+              !stillDue || daysLeft === null
+                ? undefined
+                : daysLeft < 0
+                  ? "late"
+                  : daysLeft <= 14
+                    ? "warn"
+                    : undefined,
+          },
+          {
+            label: "Total man hours",
+            value: opp.total_man_hours ? String(opp.total_man_hours) : "Not set",
+          },
+          {
+            label: "Period of performance",
+            value: opp.period_of_performance || "Not set",
+            small: !!opp.period_of_performance,
+            title: opp.period_of_performance || undefined,
+            note:
+              start || finish
+                ? `${start ? formatDateSafe(start) : "?"} to ${finish ? formatDateSafe(finish) : "?"}`
+                : undefined,
+          },
+        ]}
+        status={opportunity.status}
+        onStatusChange={(s) => void handleStatusChange(s)}
+        lostNote={
+          opportunity.status === "lost" && opportunity.lost_reason_category ? (
+            <p className="text-sm text-neutral-700 dark:text-neutral-200">
+              <span className="font-semibold">
+                {lostReasonLabel(opportunity.lost_reason_category)}:
+              </span>{" "}
+              {opportunity.lost_reason}
+            </p>
+          ) : undefined
+        }
+        changeOrderLabel={
+          changeOrderJobId
+            ? changeOrderInfo?.status
+              ? CHANGE_ORDER_STATUS_LABEL[changeOrderInfo.status]
+              : "Change Order"
+            : null
+        }
+        approval={estimateApprovalStatus}
+        approvalSaving={isSavingEstimateStatus}
+        onApprovalChange={(v) => void handleEstimateApprovalStatusChange(v)}
+        approvalHint={
+          latestEstimateId ? undefined : (
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              No estimate yet.{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveEstimateId(null);
+                  setShowEstimate("new");
+                }}
+                className="font-medium text-brand hover:underline"
+              >
+                Open Estimate
+              </button>{" "}
+              to build a full quote.
+            </p>
+          )
+        }
+        details={[
+          {
+            label: "Customer",
+            value: customer?.company_name || customer?.name || "Not specified",
+          },
+          {
+            label: "Contact",
+            value: previewContact ? (
+              <>
+                {previewContact.name}
+                {previewContact.email && (
+                  <span className="block break-all text-xs font-normal text-neutral-500 dark:text-neutral-400">
+                    {previewContact.email}
+                  </span>
+                )}
+              </>
+            ) : (
+              "No contact linked"
+            ),
+          },
+          {
+            label: "AMP Division",
+            value: opportunity.amp_division ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedDivision(opportunity.amp_division || "");
+                  setShowDivisionAnalytics(true);
+                }}
+                className="text-brand hover:underline"
+              >
+                {formatDivisionName(opportunity.amp_division)}
+              </button>
+            ) : (
+              "Not specified"
+            ),
+          },
+          {
+            label: "Type",
+            value: (
+              <select
+                value={previewType}
+                onChange={(e) => void handleOpportunityTypeChange(e.target.value)}
+                aria-label="Opportunity type"
+                className={`${previewSelectClass} max-w-[190px]`}
+              >
+                {!previewTypeLabel && (
+                  <option value={previewType} disabled>
+                    Not specified
+                  </option>
+                )}
+                {OPPORTUNITY_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            ),
+          },
+          {
+            label: "Documents stage",
+            value: (
+              <select
+                value={previewStage}
+                onChange={(e) => void handleDocumentsStageChange(e.target.value)}
+                aria-label="Documents stage"
+                className={`${previewSelectClass} max-w-[190px]`}
+              >
+                <option value="">Not specified</option>
+                {previewStage && !DOCUMENTS_STAGES.includes(previewStage) && (
+                  <option value={previewStage}>{previewStage}</option>
+                )}
+                {DOCUMENTS_STAGES.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            ),
+          },
+          {
+            label: "Letter proposal",
+            value: previewLetter
+              ? `${previewLetterLabel}${previewLetterId || previewLetter.title ? "" : " (latest)"}`
+              : "Not specified",
+          },
+          { label: "Jobsite", value: opp.jobsite_location || "Not specified" },
+        ]}
+        dates={[
+          {
+            label: "Created",
+            value: opportunity.opportunity_created_date
+              ? formatDateSafe(opportunity.opportunity_created_date)
+              : "Not specified",
+            state: opportunity.opportunity_created_date ? "done" : "todo",
+          },
+          {
+            label: "RFQ acknowledgment",
+            value: opportunity.rfq_ack_sent_at
+              ? formatDateSafe(opportunity.rfq_ack_sent_at)
+              : "Not sent",
+            state: opportunity.rfq_ack_sent_at ? "done" : "todo",
+            extra: (
+              <div className="mt-1 space-y-1">
+                {opportunity.rfq_ack_sent_at && (
+                  <p className="break-words text-xs text-neutral-500 dark:text-neutral-400">
+                    Sent to {opportunity.rfq_ack_sent_to || "customer"}
+                    {opportunity.rfq_ack_promised_date
+                      ? `. Told to expect it by ${formatDateSafe(opportunity.rfq_ack_promised_date)}`
+                      : ""}
+                  </p>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSendRfqAck}
+                  disabled={sendingRfqAck}
+                >
+                  {sendingRfqAck
+                    ? "Sending..."
+                    : opportunity.rfq_ack_sent_at
+                      ? "Resend"
+                      : "Send acknowledgment"}
+                </Button>
+              </div>
+            ),
+          },
+          {
+            label: "Proposal due",
+            value: due
+              ? `${formatDateSafe(due)}${dueNote ? ` · ${dueNote}` : ""}`
+              : "Not set",
+            state: !due ? "todo" : stillDue ? "next" : "done",
+          },
+          {
+            label: "Letter proposal",
+            value: opportunity.letter_proposal_date
+              ? formatDateSafe(opportunity.letter_proposal_date)
+              : "Not generated yet",
+            state: opportunity.letter_proposal_date ? "done" : "todo",
+          },
+          {
+            label: "Awarded",
+            value: opportunity.awarded_date
+              ? formatDateSafe(opportunity.awarded_date)
+              : "Not yet",
+            state: opportunity.awarded_date ? "done" : "todo",
+          },
+          {
+            label: "Start",
+            value: start ? formatDateSafe(start) : "Not specified",
+            state: "todo",
+          },
+          {
+            label: "End",
+            value: finish ? formatDateSafe(finish) : "Not specified",
+            state: "todo",
+          },
+        ]}
+        people={[
+          { label: "Created by", value: opportunityCreator || "Not specified" },
+          {
+            label: "Quote prepared by",
+            value: quotePreparedBy || opp.prepared_by || "Not specified",
+          },
+          { label: "Reviewed by", value: opp.reviewed_by || "Not specified" },
+        ]}
+        inBidTotal={!opportunity.exclude_from_quoted_total}
+        onToggleBidTotal={() =>
+          void handleToggleExcludeFromTotal(
+            !opportunity.exclude_from_quoted_total,
+          )
+        }
+        job={
+          <>
+            {opportunity.job_id ? (
+              <p>
+                Converted to a job.{" "}
+                <Link
+                  to={`/jobs/${opportunity.job_id}`}
+                  className="font-medium text-brand hover:underline"
+                >
+                  View Job
+                </Link>
+              </p>
+            ) : changeOrderJobId ? (
+              <p>
+                Change order quote.{" "}
+                <Link
+                  to={`/jobs/${changeOrderJobId}`}
+                  className="font-medium text-brand hover:underline"
+                >
+                  View Job
+                </Link>
+              </p>
+            ) : (
+              <p>
+                Not a job yet. Use Manage Opportunity, then Convert to Job. The
+                documents here will show on the job.
+              </p>
+            )}
+            {jobId && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowJobDialog(true)}
+              >
+                View Associated Job
+              </Button>
+            )}
+          </>
+        }
+        notesOnFile={opportunity.notes}
+        estimates={estimatesBlock}
+        documents={
+          user?.id ? (
+            <OpportunityDocuments
+              opportunityId={opportunity.id}
+              userId={user.id}
+            />
+          ) : null
+        }
+        rfis={
+          id ? (
+            <OpportunityRfis
+              opportunityId={id}
+              title={opportunity.title}
+              customerName={
+                opportunity.customers?.company_name ||
+                opportunity.customers?.name
+              }
+              quoteNumber={opportunity.quote_number}
+              proposalDueDate={opportunity.proposal_due_date}
+            />
+          ) : null
+        }
+        notes={id ? <OpportunityNotes opportunityId={id} /> : null}
+      />
+    );
+  };
+
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-dark-background">
       {changeOrderJobId && (
@@ -4012,13 +4632,47 @@ export default function OpportunityDetail() {
               </p>
             </div>
           )}
-          <div className="flex justify-between items-center p-4 border-b border-neutral-300 dark:border-dark-300">
-            <div className="flex items-center">
-              <h2 className="text-xl font-semibold text-neutral-800 dark:text-dark-800">
-                {opportunity.quote_number}: {opportunity.title}
-              </h2>
-            </div>
+          <div
+            className={`flex justify-between border-b border-neutral-300 dark:border-dark-300 ${
+              showPreview ? "flex-wrap items-start gap-4 p-5" : "items-center p-4"
+            }`}
+          >
+            {showPreview ? (
+              <OpportunityPreviewTitle
+                quoteNumber={opportunity.quote_number}
+                title={opportunity.title}
+                customerLine={[
+                  customer?.company_name || customer?.name,
+                  previewContact?.name,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+                description={opportunity.description}
+                badges={[
+                  opportunity.amp_division
+                    ? formatDivisionName(opportunity.amp_division)
+                    : "",
+                  previewTypeLabel ?? "",
+                  previewStage,
+                ].filter(Boolean)}
+              />
+            ) : (
+              <div className="flex items-center">
+                <h2 className="text-xl font-semibold text-neutral-800 dark:text-dark-800">
+                  {opportunity.quote_number}: {opportunity.title}
+                </h2>
+              </div>
+            )}
             <div className="flex items-center space-x-2">
+              {canPreview && !isEditing && (
+                <Button
+                  variant="outline"
+                  onClick={togglePreview}
+                  title="Only Super Admins see this. Remembered in this browser."
+                >
+                  {showPreview ? "Back to current layout" : "Try new layout"}
+                </Button>
+              )}
               {mergedIds.length > 0 && !!groupLockJobId && (
                 <Link
                   to={`/jobs/${groupLockJobId}`}
@@ -5102,6 +5756,8 @@ export default function OpportunityDetail() {
                 </div>
               </form>
             </div>
+          ) : showPreview ? (
+            renderPreview()
           ) : (
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -5829,135 +6485,6 @@ export default function OpportunityDetail() {
                       </p>
                     </div>
 
-                    {/* Documents Section */}
-                    <div className="mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                      <div className="flex justify-between items-center mb-3">
-                        <p className="text-sm text-neutral-500 dark:text-dark-400">
-                          Documents
-                        </p>
-                        <div className="flex gap-2">
-                          <input
-                            type="file"
-                            id="subcontractor-file"
-                            className="hidden"
-                            accept=".pdf,.doc,.docx"
-                            onChange={handleFileUpload}
-                            disabled={uploadingFile}
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              document
-                                .getElementById("subcontractor-file")
-                                ?.click()
-                            }
-                            disabled={uploadingFile}
-                            className="text-brand border-brand hover:bg-brand hover:text-white" leftIcon={<Upload className="h-4 w-4" />}>
-                            {uploadingFile ? "Uploading..." : "Upload"}
-                          </Button>
-                        </div>
-                      </div>
-
-                      {subcontractorAgreements.length > 0 ? (
-                        <div className="space-y-2">
-                          {subcontractorAgreements.map((agreement) => (
-                            <div
-                              key={agreement.id}
-                              className="flex items-center justify-between p-2 bg-neutral-50 dark:bg-dark-150 rounded-none"
-                            >
-                              <div className="flex items-center gap-2">
-                                <FileText className="h-4 w-4 text-neutral-500" />
-                                <div className="flex-1">
-                                  <button
-                                    onClick={() => handlePreviewFile(agreement)}
-                                    className="text-sm font-medium text-brand hover:text-brand/90 hover:underline text-left"
-                                  >
-                                    {agreement.name}
-                                  </button>
-                                  <p className="text-xs text-neutral-500 dark:text-white">
-                                    {formatDateSafe(agreement.upload_date)} •
-                                    <span
-                                      className={`ml-1 px-2 py-0.5 rounded-none text-xs ${
-                                        agreement.status === "signed"
-                                          ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                                          : agreement.status === "pending"
-                                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
-                                            : agreement.status === "expired"
-                                              ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-                                              : "bg-neutral-100 text-neutral-800 dark:bg-neutral-900/20 dark:text-white"
-                                      }`}
-                                    >
-                                      {agreement.status}
-                                    </span>
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <select
-                                  value={agreement.status}
-                                  onChange={(e) =>
-                                    handleUpdateAgreementStatus(
-                                      agreement.id,
-                                      e.target
-                                        .value as SubcontractorAgreement["status"],
-                                    )
-                                  }
-                                  className="text-xs p-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 text-neutral-900 dark:text-white"
-                                >
-                                  <option value="pending">Pending</option>
-                                  <option value="signed">Signed</option>
-                                  <option value="expired">Expired</option>
-                                  <option value="cancelled">Cancelled</option>
-                                </select>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handlePreviewFile(agreement)}
-                                  className="p-1 h-6 w-6 text-blue-500 hover:bg-blue-500 hover:text-white"
-                                  title="Preview"
-                                >
-                                  <Eye className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    const link = document.createElement("a");
-                                    link.href = agreement.file_url;
-                                    link.download = agreement.name;
-                                    link.target = "_blank";
-                                    document.body.appendChild(link);
-                                    link.click();
-                                    document.body.removeChild(link);
-                                  }}
-                                  className="p-1 h-6 w-6 text-brand hover:bg-brand hover:text-white"
-                                  title="Download"
-                                >
-                                  <Download className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleDeleteAgreement(agreement.id)
-                                  }
-                                  className="p-1 h-6 w-6 text-red-500 hover:bg-red-500 hover:text-white"
-                                  title="Delete"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-neutral-500 dark:text-white italic">
-                          No documents uploaded yet.
-                        </p>
-                      )}
-                    </div>
-
                     {jobId && (
                       <div className="mt-6">
                         <Button
@@ -5986,190 +6513,16 @@ export default function OpportunityDetail() {
                 )}
               </div>
 
+              {/* Documents: drawings, specs and bid docs; they also show on the job once won */}
+              {opportunity?.id && user?.id && (
+                <div className="mt-8">
+                  <OpportunityDocuments opportunityId={opportunity.id} userId={user.id} />
+                </div>
+              )}
+
               {/* Add Estimate Sheet section */}
               <div className="mt-8">
-                <div className="bg-white dark:bg-dark-150 p-4 rounded-none">
-                  {/* Two groups: estimates (pricing) and letter proposals
-                      (what the customer sees). Create = solid, view = outline. */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div className="border border-neutral-200 dark:border-dark-300 rounded-none p-4 flex flex-col">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-brand/10 text-brand rounded-none">
-                          <Calculator className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-neutral-900 dark:text-dark-900">
-                            Estimates
-                          </div>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
-                        <button
-                          onClick={() => {
-                            setActiveEstimateId(null);
-                            setShowEstimate("new");
-                            setEstimateOpenSignal((s) => s + 1);
-                          }}
-                          className="flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 px-3 py-2 rounded-none font-medium transition-colors"
-                        >
-                          <FilePlus2 className="h-4 w-4 shrink-0" />
-                          <span>New Advanced Estimate</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShowEstimate(false);
-                            setShowSimpleEstimate(true);
-                          }}
-                          className="flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 px-3 py-2 rounded-none font-medium transition-colors"
-                        >
-                          <Zap className="h-4 w-4 shrink-0" />
-                          <span>New Simple Estimate</span>
-                        </button>
-                        {/* Local only until the Review step is built. */}
-                        {import.meta.env.DEV && (
-                          <button
-                            onClick={() => {
-                              setShowEstimate(false);
-                              setShowFullEstimate(true);
-                            }}
-                            className="sm:col-span-2 flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 rounded-none px-3 py-2 text-sm font-medium transition-colors"
-                          >
-                            <FilePlus2 className="h-4 w-4 shrink-0" />
-                            <span>New Full Estimate</span>
-                          </button>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => {
-                          setShowEstimate("view");
-                          setEstimateOpenSignal((s) => s + 1);
-                        }}
-                        className={`mt-auto flex items-center justify-center gap-2 px-3 py-2 rounded-none font-medium transition-colors border ${
-                          showEstimate === "view"
-                            ? "border-brand bg-brand/10 text-brand"
-                            : "border-neutral-300 dark:border-dark-300 text-neutral-700 dark:text-dark-900 hover:border-brand hover:text-brand"
-                        }`}
-                      >
-                        <Eye className="h-4 w-4 shrink-0" />
-                        <span>View Saved Estimates</span>
-                      </button>
-                    </div>
-
-                    <div className="border border-neutral-200 dark:border-dark-300 rounded-none p-4 flex flex-col">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-brand/10 text-brand rounded-none">
-                          <Mail className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-neutral-900 dark:text-dark-900">
-                            Letter Proposals
-                          </div>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
-                        <button
-                          onClick={() => {
-                            setShowEstimate("letter");
-                          }}
-                          className="flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 px-3 py-2 rounded-none font-medium transition-colors"
-                        >
-                          <FileText className="h-4 w-4 shrink-0" />
-                          <span>New Letter</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShowEstimate("combined-letter");
-                          }}
-                          title="One letter covering several estimates"
-                          className="flex items-center justify-center gap-2 bg-brand text-white hover:bg-brand/90 px-3 py-2 rounded-none font-medium transition-colors"
-                        >
-                          <Layers className="h-4 w-4 shrink-0" />
-                          <span>New Combined Letter</span>
-                        </button>
-                      </div>
-                      <button
-                        onClick={() => {
-                          setShowEstimate("letters");
-                        }}
-                        className={`mt-auto flex items-center justify-center gap-2 px-3 py-2 rounded-none font-medium transition-colors border ${
-                          showEstimate === "letters"
-                            ? "border-brand bg-brand/10 text-brand"
-                            : "border-neutral-300 dark:border-dark-300 text-neutral-700 dark:text-dark-900 hover:border-brand hover:text-brand"
-                        }`}
-                      >
-                        <Eye className="h-4 w-4 shrink-0" />
-                        <span>View Saved Letters</span>
-                      </button>
-                    </div>
-                  </div>
-                  {/* New Simple Estimate: line items + markup + travel. Once
-                      saved it opens in the estimates view, where the letter
-                      proposal can be generated. */}
-                  <Dialog
-                    open={showSimpleEstimate}
-                    onClose={() => setShowSimpleEstimate(false)}
-                    className="fixed inset-0 z-50 overflow-y-auto"
-                  >
-                    <div className="flex items-center justify-center min-h-screen p-4">
-                      <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-                      <div className="relative bg-white dark:bg-dark-150 rounded-none w-full max-w-4xl p-6 shadow-xl">
-                        <Dialog.Title className="text-lg font-semibold text-neutral-900 dark:text-dark-900 mb-4">
-                          New Simple Estimate
-                        </Dialog.Title>
-                        {showSimpleEstimate && (
-                          <SimpleEstimateEditor
-                            opportunityId={id || ""}
-                            onCancel={() => setShowSimpleEstimate(false)}
-                            onSaved={(row) => {
-                              setShowSimpleEstimate(false);
-                              setActiveEstimateId(row.id);
-                              setShowEstimate("view");
-                              setEstimateOpenSignal((s) => s + 1);
-                            }}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </Dialog>
-                  {/* New Full Estimate: only the builder's own Close button closes
-                      this, so a stray click can't lose work. */}
-                  <Dialog
-                    open={showFullEstimate}
-                    onClose={() => {}}
-                    className="fixed inset-0 z-50 overflow-y-auto"
-                  >
-                    <div className="flex items-center justify-center min-h-screen">
-                      <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-                      <div className="relative bg-white dark:bg-dark-150 rounded-none w-[98%] h-[95vh] overflow-y-auto mx-auto p-6 shadow-xl my-4">
-                        <Dialog.Title className="sr-only">
-                          New Full Estimate
-                        </Dialog.Title>
-                        {showFullEstimate && (
-                          <FullEstimateBuilder
-                            opportunityId={id || ""}
-                            onClose={(row) => {
-                              setShowFullEstimate(false);
-                              if (!row) return;
-                              setActiveEstimateId(row.id);
-                              setShowEstimate("view");
-                              setEstimateOpenSignal((s) => s + 1);
-                            }}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </Dialog>
-                  {/* Show EstimateSheet only if an action is selected */}
-                  {showEstimate !== false && (
-                    <EstimateSheet
-                      opportunityId={id || ""}
-                      mode={showEstimate}
-                      openSignal={estimateOpenSignal}
-                      preferredEstimateId={activeEstimateId}
-                      onActiveEstimateChange={setActiveEstimateId}
-                    />
-                  )}
-                </div>
+                {estimatesBlock}
               </div>
 
               {/* RFIs: estimating questions for the customer, sent and returned as Excel */}
@@ -6517,66 +6870,29 @@ export default function OpportunityDetail() {
           )}
 
           {/* File Preview Modal */}
-          <Dialog
+          {/* File viewer: big preview, icon-only actions, one close button */}
+          <FileViewerDialog
             open={showPreviewModal}
-            onClose={() => setShowPreviewModal(false)}
-            className="fixed inset-0 z-50 overflow-y-auto"
+            onOpenChange={setShowPreviewModal}
+            title={previewFile?.name ?? ""}
+            subtitle={
+              previewFile
+                ? `${formatDateSafe(previewFile.upload_date)} • ${previewFile.status}`
+                : undefined
+            }
+            actions={
+              previewFile
+                ? [
+                    {
+                      icon: ExternalLink,
+                      label: "Open in new tab",
+                      onClick: () => openFileUrl(previewFile.file_url),
+                    },
+                  ]
+                : []
+            }
           >
-            <div className="flex items-center justify-center min-h-screen px-4">
-              <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-
-              <div className="relative bg-white dark:bg-dark-150 rounded-none max-w-4xl w-full mx-auto shadow-xl max-h-[90vh] flex flex-col">
-                {/* Modal Header */}
-                <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700">
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-neutral-500" />
-                    <div>
-                      <Dialog.Title className="text-lg font-semibold text-neutral-900 dark:text-white">
-                        {previewFile?.name}
-                      </Dialog.Title>
-                      <p className="text-sm text-neutral-500 dark:text-white">
-                        {previewFile && formatDateSafe(previewFile.upload_date)}{" "}
-                        •
-                        <span
-                          className={`ml-1 px-2 py-0.5 rounded-none text-xs ${
-                            previewFile?.status === "signed"
-                              ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                              : previewFile?.status === "pending"
-                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
-                                : previewFile?.status === "expired"
-                                  ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-                                  : "bg-neutral-100 text-neutral-800 dark:bg-neutral-900/20 dark:text-white"
-                          }`}
-                        >
-                          {previewFile?.status}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        previewFile &&
-                        openFileUrl(previewFile.file_url)
-                      }
-                      className="text-brand border-brand hover:bg-brand hover:text-white" leftIcon={<ExternalLink className="h-4 w-4" />}>
-                      Open in New Tab
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowPreviewModal(false)}
-                      className="text-neutral-500 hover:text-neutral-700"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Modal Content */}
-                <div className="flex-1 p-4 overflow-hidden">
+            <div className="h-full overflow-auto p-2">
                   {previewFile && (
                     <div className="h-full">
                       {getFileExtension(previewFile.name) === "pdf" ? (
@@ -6625,10 +6941,8 @@ export default function OpportunityDetail() {
                       )}
                     </div>
                   )}
-                </div>
-              </div>
             </div>
-          </Dialog>
+          </FileViewerDialog>
 
           {/* Delete Opportunity Confirmation Dialog */}
           <Dialog

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { viewerIconButtonClass } from "@/components/ui/FileViewerDialog";
 import { createPortal } from "react-dom";
 import { useParams, useSearchParams } from "react-router-dom";
 import {
@@ -5209,65 +5210,63 @@ export default function FieldEquipmentList() {
             className={`fixed inset-0 flex items-center justify-center ${isFullscreen ? "p-0" : "p-4"}`}
           >
             <Dialog.Panel
-              className={`${isFullscreen ? "w-full h-full rounded-none" : "mx-auto max-w-[95vw] w-full max-h-[95vh] rounded-none bg-white dark:bg-dark-150 shadow-xl flex flex-col"}`}
+              className={`${isFullscreen ? "w-full h-full rounded-none" : "mx-auto max-w-[98vw] w-full h-[96vh] max-h-[96vh] rounded-none bg-white dark:bg-dark-150 shadow-xl flex flex-col"}`}
             >
-              <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-dark-200 flex-shrink-0">
-                <Dialog.Title className="text-lg font-semibold text-neutral-900 dark:text-white">
+              {/* Slim header: icon-only actions, no borders, one close button */}
+              <div className="flex items-center justify-between gap-3 border-b border-neutral-200 py-2 pl-4 pr-2 dark:border-dark-200 flex-shrink-0">
+                <Dialog.Title className="truncate text-base font-semibold text-neutral-900 dark:text-white">
                   Calibration Certificate
                 </Dialog.Title>
-                <div className="flex items-center gap-2">
-                  {/* Zoom Controls */}
-                  <div className="flex items-center gap-1 border border-neutral-300 dark:border-neutral-600 rounded-none">
-                    <button
-                      onClick={() =>
-                        setPdfZoom((prev) => Math.max(50, prev - 25))
-                      }
-                      className="p-1.5 hover:bg-neutral-100 dark:hover:bg-dark-100 text-neutral-700 dark:text-neutral-300"
-                      title="Zoom Out"
-                    >
-                      <ZoomOut className="h-4 w-4" />
-                    </button>
-                    <span className="px-2 text-sm text-neutral-700 dark:text-neutral-300 min-w-[3rem] text-center">
-                      {pdfZoom}%
-                    </span>
-                    <button
-                      onClick={() =>
-                        setPdfZoom((prev) => Math.min(200, prev + 25))
-                      }
-                      className="p-1.5 hover:bg-neutral-100 dark:hover:bg-dark-100 text-neutral-700 dark:text-neutral-300"
-                      title="Zoom In"
-                    >
-                      <ZoomIn className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => setPdfZoom(100)}
-                      className="px-2 py-1 text-xs hover:bg-neutral-100 dark:hover:bg-dark-100 text-neutral-700 dark:text-neutral-300 border-l border-neutral-300 dark:border-neutral-600"
-                      title="Reset Zoom"
-                    >
-                      Reset
-                    </button>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                <div className="flex shrink-0 items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setPdfZoom((prev) => Math.max(50, prev - 25))}
+                    className={viewerIconButtonClass}
+                    title="Zoom out"
+                    aria-label="Zoom out"
+                  >
+                    <ZoomOut className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPdfZoom(100)}
+                    className="min-w-[3.25rem] px-1 py-2 text-center text-xs tabular-nums text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white"
+                    title="Reset zoom"
+                    aria-label={`Zoom ${pdfZoom}%, click to reset`}
+                  >
+                    {pdfZoom}%
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPdfZoom((prev) => Math.min(200, prev + 25))}
+                    className={viewerIconButtonClass}
+                    title="Zoom in"
+                    aria-label="Zoom in"
+                  >
+                    <ZoomIn className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setIsFullscreen(!isFullscreen)}
-                    title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+                    className={viewerIconButtonClass}
+                    title={isFullscreen ? "Exit full screen" : "Full screen"}
+                    aria-label={isFullscreen ? "Exit full screen" : "Full screen"}
                   >
                     <Maximize2 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => {
-                      if (viewingCertificate) {
-                        window.open(viewingCertificate, "_blank");
-                      }
-                    }} leftIcon={<Eye className="h-4 w-4" />}>
-                    Open in New Tab
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                      if (viewingCertificate) window.open(viewingCertificate, "_blank");
+                    }}
+                    className={viewerIconButtonClass}
+                    title="Open in new tab"
+                    aria-label="Open in new tab"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => {
                       if (viewingCertificate) {
                         const link = document.createElement("a");
@@ -5275,23 +5274,29 @@ export default function FieldEquipmentList() {
                         link.download = "calibration_certificate.pdf";
                         link.click();
                       }
-                    }} leftIcon={<Download className="h-4 w-4" />}>
-                    Download
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
+                    }}
+                    className={viewerIconButtonClass}
+                    title="Download"
+                    aria-label="Download"
+                  >
+                    <Download className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => {
                       setViewingCertificate(null);
                       setPdfZoom(100);
                       setIsFullscreen(false);
                     }}
+                    className={viewerIconButtonClass}
+                    title="Close"
+                    aria-label="Close"
                   >
                     <X className="h-4 w-4" />
-                  </Button>
+                  </button>
                 </div>
               </div>
-              <div className="flex-1 overflow-auto p-4 bg-neutral-100 dark:bg-dark-200">
+              <div className="flex-1 overflow-auto p-2 bg-neutral-100 dark:bg-dark-200">
                 {viewingCertificate && (
                   <div className="flex justify-center items-start min-h-full">
                     <iframe

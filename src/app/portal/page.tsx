@@ -1889,8 +1889,8 @@ export default function PortalLanding({
           if (!open) closeAckModal();
         }}
       >
-        <DialogContent className="w-[95vw] max-w-7xl h-[92vh] max-h-[92vh] flex flex-col overflow-hidden p-6">
-          <DialogHeader>
+        <DialogContent className="w-[98vw] max-w-[98vw] sm:max-w-[98vw] h-[96vh] max-h-[96vh] flex flex-col gap-3 overflow-hidden p-4">
+          <DialogHeader className="pr-8">
             <DialogTitle>
               View & Acknowledge: {ackModalTitle || "Document"}
             </DialogTitle>
@@ -1898,12 +1898,13 @@ export default function PortalLanding({
               Review the document below, then sign at the bottom to acknowledge.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-4 flex-1 min-h-0 overflow-hidden [@media(max-height:800px)]:gap-2">
-            {/* The document takes whatever height is left and shrinks on short
-                screens, so the signature box and buttons below never get cut
-                off. The PDF viewer scrolls inside it. */}
+          {/* Wide screens: signature beside the document, so the document gets the full height */}
+          <div className="flex flex-col gap-4 flex-1 min-h-0 overflow-hidden lg:flex-row [@media(max-height:800px)]:gap-2">
+            {/* The document takes whatever room is left and shrinks on short
+                screens, so the signature box and buttons never get cut off.
+                The PDF viewer scrolls inside it. */}
             {ackModalDocUrl && (
-              <div className="relative border rounded-none overflow-hidden flex-1 min-h-0 bg-neutral-100 dark:bg-neutral-900">
+              <div className="relative border border-neutral-200 dark:border-neutral-800 rounded-none overflow-hidden flex-1 min-h-0 bg-neutral-100 dark:bg-neutral-900">
                 <iframe
                   title="Document"
                   src={ackModalDocUrl}
@@ -1925,7 +1926,7 @@ export default function PortalLanding({
               </p>
             )}
             {!ackResolvingForm && ackFormId && (
-              <div className="space-y-2 shrink-0">
+              <div className="space-y-2 shrink-0 lg:w-[380px] lg:self-end">
                 <label className="text-sm font-medium">Your signature</label>
                 <div className="border rounded-none bg-white dark:bg-dark-150 p-2">
                   <div className="relative">

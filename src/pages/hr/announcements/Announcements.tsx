@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import FileViewerDialog from "@/components/ui/FileViewerDialog";
 import { supabase } from "../../../lib/supabase";
 import { useAuth } from "../../../lib/AuthContext";
 import { Dialog } from "@headlessui/react";
@@ -1606,63 +1607,33 @@ export function Announcements() {
         </div>
       </Dialog>
 
-      {/* Document Viewer Modal */}
-      <Dialog
+      {/* Document viewer: big preview, icon-only actions, one close button */}
+      <FileViewerDialog
         open={documentViewerOpen}
-        onClose={() => {
-          setDocumentViewerOpen(false);
-          setDocumentViewerUrl(null);
-          setDocumentViewerTitle("");
+        onOpenChange={(o) => {
+          if (!o) {
+            setDocumentViewerOpen(false);
+            setDocumentViewerUrl(null);
+            setDocumentViewerTitle("");
+          }
         }}
-        className="relative z-50"
-      >
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="w-full max-w-5xl rounded-none bg-white dark:bg-neutral-900 shadow-xl max-h-[90vh] flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b border-neutral-200 dark:border-neutral-700">
-              <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white flex items-center gap-2">
-                <FileText className="h-5 w-5 text-brand" />
-                {documentViewerTitle || "Document"}
-              </Dialog.Title>
-              <button
-                onClick={() => {
-                  setDocumentViewerOpen(false);
-                  setDocumentViewerUrl(null);
-                  setDocumentViewerTitle("");
-                }}
-                className="text-neutral-400 hover:text-neutral-500 dark:hover:text-neutral-300"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="flex-1 min-h-0 overflow-hidden">
-              {documentViewerUrl ? (
-                <iframe
-                  title="Document Viewer"
-                  src={documentViewerUrl}
-                  className="w-full h-[80vh] border-0"
-                />
-              ) : (
-                <div className="flex items-center justify-center h-64 text-neutral-500 dark:text-neutral-400">
-                  No document available.
-                </div>
-              )}
-            </div>
-            <div className="flex justify-end p-4 border-t border-neutral-200 dark:border-neutral-700">
-              <button
-                onClick={() => {
-                  setDocumentViewerOpen(false);
-                  setDocumentViewerUrl(null);
-                  setDocumentViewerTitle("");
-                }}
-                className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-200"
-              >
-                Close
-              </button>
-            </div>
-          </Dialog.Panel>
-        </div>
-      </Dialog>
+        title={documentViewerTitle || "Document"}
+        url={documentViewerUrl}
+        fileName={documentViewerUrl}
+        fileType="application/pdf"
+        onDownload={() => documentViewerUrl && window.open(documentViewerUrl, "_blank", "noopener")}
+        actions={
+          documentViewerUrl
+            ? [
+                {
+                  icon: ExternalLink,
+                  label: "Open in new tab",
+                  onClick: () => window.open(documentViewerUrl, "_blank", "noopener"),
+                },
+              ]
+            : []
+        }
+      />
     </div>
   );
 }

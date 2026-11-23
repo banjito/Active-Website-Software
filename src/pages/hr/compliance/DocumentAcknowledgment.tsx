@@ -19,7 +19,6 @@ import {
   FileCheck,
   Search,
   Download,
-  Eye,
   Loader2,
   FileText,
   CheckCircle,
@@ -41,6 +40,7 @@ import {
 } from "../../../services/hr/onboardingService";
 import { useAuth } from "../../../lib/AuthContext";
 import { useCan } from "@/lib/permissions";
+import { viewerIconButtonClass } from "@/components/ui/FileViewerDialog";
 import { supabase } from "../../../lib/supabase";
 import { toast } from "../../../components/ui/toast";
 import { SignatureFieldPosition } from "../../../components/pdf/PDFSignatureFieldPlacer";
@@ -1110,62 +1110,66 @@ export const DocumentAcknowledgment: React.FC = () => {
                       className="flex items-center gap-2"
                       onClick={(e) => e.stopPropagation()}
                     >
+                      {/* Icon-only actions, no borders; the label shows on hover */}
                       {effectiveTab === "active" && (
                         <>
                           {getAttachmentUrl(form) && (
-                            <Button
-                              variant="outline"
-                              size="sm"
+                            <button
+                              type="button"
                               onClick={() => openSignModal(form)}
-                              className="text-brand border-brand hover:bg-brand/10" leftIcon={<PenTool className="h-4 w-4" />}>
-                              Acknowledge
-                            </Button>
+                              title="Acknowledge (read and sign)"
+                              aria-label={`Acknowledge ${form.name}`}
+                              className="p-2 text-brand transition-colors hover:bg-brand/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                            >
+                              <PenTool className="h-4 w-4" />
+                            </button>
                           )}
                           {isManager && (
                             <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
+                              <button
+                                type="button"
                                 onClick={() => openAssignModal(form)}
                                 title="Assign to employees"
+                                aria-label={`Assign ${form.name}`}
+                                className={viewerIconButtonClass}
                               >
-                                <Users className="h-4 w-4 text-neutral-500" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
+                                <Users className="h-4 w-4" />
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => handleArchiveDocument(form.id)}
                                 title="Archive document"
+                                aria-label={`Archive ${form.name}`}
+                                className={viewerIconButtonClass}
                               >
-                                <Archive className="h-4 w-4 text-neutral-500" />
-                              </Button>
+                                <Archive className="h-4 w-4" />
+                              </button>
                             </>
                           )}
                         </>
                       )}
                       {effectiveTab === "archived" && isManager && (
                         <>
-                          <Button
-                            variant="outline"
-                            size="sm"
+                          <button
+                            type="button"
                             onClick={() => handleRestoreDocument(form.id)}
-                            title="Restore document" leftIcon={<RotateCcw className="h-4 w-4" />}>
-                            Restore
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
+                            title="Restore document"
+                            aria-label={`Restore ${form.name}`}
+                            className={viewerIconButtonClass}
+                          >
+                            <RotateCcw className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => handleDeleteDocument(form.id)}
                             title="Permanently delete"
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            aria-label={`Permanently delete ${form.name}`}
+                            className="p-2 text-neutral-500 transition-colors hover:bg-red-50 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:text-neutral-400 dark:hover:bg-red-950/40 dark:hover:text-red-400"
                           >
                             <Trash2 className="h-4 w-4" />
-                          </Button>
+                          </button>
                         </>
                       )}
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
                     </div>
                   </div>
                 </CardHeader>
@@ -1574,22 +1578,25 @@ export const DocumentAcknowledgment: React.FC = () => {
           }}
         >
           <DialogContent
-            className={`max-w-4xl max-h-[90vh] flex flex-col overflow-hidden ${
-              getAttachmentUrl(formToSign) ? "h-[90vh]" : ""
+            className={`flex flex-col gap-3 overflow-hidden p-4 ${
+              getAttachmentUrl(formToSign)
+                ? "h-[96vh] max-h-[96vh] w-[98vw] max-w-[98vw] sm:max-w-[98vw]"
+                : "max-w-4xl max-h-[90vh]"
             }`}
           >
-            <DialogHeader>
+            <DialogHeader className="pr-8">
               <DialogTitle>Sign to acknowledge: {formToSign.name}</DialogTitle>
               <DialogDescription>
                 Review the document below, then sign at the bottom.
               </DialogDescription>
             </DialogHeader>
-            <div className="flex flex-col gap-4 flex-1 min-h-0 overflow-hidden [@media(max-height:800px)]:gap-2">
+            {/* Wide screens: signature beside the document, so the document gets the full height */}
+            <div className="flex flex-col gap-4 flex-1 min-h-0 overflow-hidden lg:flex-row [@media(max-height:800px)]:gap-2">
               {/* The document takes whatever height is left and shrinks on
                   short screens, so the signature box and buttons below never
                   get cut off. The PDF viewer scrolls inside it. */}
               {getAttachmentUrl(formToSign) && (
-                <div className="relative border rounded-none overflow-hidden flex-1 min-h-0 bg-neutral-100 dark:bg-neutral-900">
+                <div className="relative border border-neutral-200 dark:border-neutral-800 rounded-none overflow-hidden flex-1 min-h-0 bg-neutral-100 dark:bg-neutral-900">
                   <iframe
                     title="Document"
                     src={getAttachmentUrl(formToSign)!}
@@ -1597,7 +1604,7 @@ export const DocumentAcknowledgment: React.FC = () => {
                   />
                 </div>
               )}
-              <div className="space-y-2 shrink-0">
+              <div className="space-y-2 shrink-0 lg:w-[380px] lg:self-end">
                 <label className="text-sm font-medium">Your signature</label>
                 <div className="border rounded-none bg-white dark:bg-dark-150 p-2">
                   <canvas

@@ -2,11 +2,10 @@ import type { ReactNode } from "react";
 import { confirmDialog } from "@/components/ui/confirmDialog";
 
 /**
- * Trial layout for the opportunity page, behind a Super Admin toggle.
+ * The opportunity page's layout (Nov 2026).
  *
- * Layout only: OpportunityDetail passes in the real data, the real save
- * handlers, and the real estimates / documents / RFIs / notes blocks. To drop
- * the trial, delete this file and the "preview" lines in OpportunityDetail.
+ * Layout only: OpportunityDetail passes in the data, the save handlers, and the
+ * estimates / documents / RFIs / notes blocks.
  */
 
 export const OPPORTUNITY_TYPES: { value: string; label: string }[] = [
@@ -57,12 +56,12 @@ const card =
 const label =
   "text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400";
 const muted = "text-neutral-500 dark:text-neutral-400";
-export const previewSelectClass =
+export const layoutSelectClass =
   "rounded-none border border-neutral-300 bg-white px-2 py-1 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-brand disabled:opacity-60 dark:border-neutral-600 dark:bg-dark-100 dark:text-white";
 
 // ── Title (sits beside the page's own action buttons) ─────────────────────
 
-export function OpportunityPreviewTitle({
+export function OpportunityTitle({
   quoteNumber,
   title,
   customerLine,
@@ -146,7 +145,7 @@ function SideCard({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function Rows({ rows }: { rows: PreviewRow[] }) {
+function Rows({ rows }: { rows: LayoutRow[] }) {
   return (
     <dl className="divide-y divide-neutral-100 dark:divide-neutral-700/60">
       {rows.map((r) => (
@@ -163,12 +162,12 @@ function Rows({ rows }: { rows: PreviewRow[] }) {
 
 // ── Page body ─────────────────────────────────────────────────────────────
 
-export interface PreviewRow {
+export interface LayoutRow {
   label: string;
   value: ReactNode;
 }
 
-export interface PreviewStat {
+export interface LayoutStat {
   label: string;
   value: ReactNode;
   note?: ReactNode;
@@ -179,7 +178,7 @@ export interface PreviewStat {
   title?: string;
 }
 
-export interface PreviewDate {
+export interface LayoutDate {
   label: string;
   value: ReactNode;
   state: "done" | "next" | "todo";
@@ -187,7 +186,7 @@ export interface PreviewDate {
 }
 
 interface Props {
-  stats: PreviewStat[];
+  stats: LayoutStat[];
   status: string;
   onStatusChange: (status: string) => void;
   /** Why it was lost, when it was. */
@@ -198,9 +197,9 @@ interface Props {
   approvalSaving: boolean;
   onApprovalChange: (approval: string) => void;
   approvalHint?: ReactNode;
-  details: PreviewRow[];
-  dates: PreviewDate[];
-  people: PreviewRow[];
+  details: LayoutRow[];
+  dates: LayoutDate[];
+  people: LayoutRow[];
   inBidTotal: boolean;
   onToggleBidTotal: () => void;
   job: ReactNode;
@@ -211,7 +210,7 @@ interface Props {
   notes: ReactNode;
 }
 
-export default function OpportunityPagePreview(p: Props) {
+export default function OpportunityPageLayout(p: Props) {
   const isLost = p.status === "lost";
   const isNoQuote = p.status === "no quote";
   const stage = p.status.startsWith("decision")
@@ -291,7 +290,7 @@ export default function OpportunityPagePreview(p: Props) {
                   value={p.status}
                   onChange={(e) => p.onStatusChange(e.target.value)}
                   aria-label="Sales stage"
-                  className={previewSelectClass}
+                  className={layoutSelectClass}
                 >
                   {!STATUSES.some((s) => s.value === p.status) && (
                     <option value={p.status}>{p.status}</option>
@@ -332,7 +331,7 @@ export default function OpportunityPagePreview(p: Props) {
                 onChange={(e) => p.onApprovalChange(e.target.value)}
                 disabled={p.approvalSaving}
                 aria-label="Estimate approval"
-                className={previewSelectClass}
+                className={layoutSelectClass}
               >
                 {approvalValue !== "no_quote" && approvalStep < 0 && (
                   <option value={approvalValue}>{approvalValue.replace(/_/g, " ")}</option>

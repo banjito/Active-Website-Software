@@ -1,13 +1,12 @@
 import { openFileUrl } from "@/lib/jobFiles";
 import FileViewerDialog from "@/components/ui/FileViewerDialog";
 import OpportunityDocuments from "./OpportunityDocuments";
-import OpportunityPagePreview, {
+import OpportunityPageLayout, {
   DOCUMENTS_STAGES,
   OPPORTUNITY_TYPES,
-  OpportunityPreviewTitle,
-  previewSelectClass,
-} from "./OpportunityPagePreview";
-import { isSuperUser } from "@/lib/roles";
+  OpportunityTitle,
+  layoutSelectClass,
+} from "./OpportunityPageLayout";
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { computeTravelTotals } from "../../lib/travelExpenses";
@@ -802,15 +801,9 @@ export default function OpportunityDetail() {
   const [isSavingLetterSelection, setIsSavingLetterSelection] = useState(false);
   const [isConvertingToJob, setIsConvertingToJob] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
-  const [isStatusEditing, setIsStatusEditing] = useState(false);
   // "inline" = status badge dropdown, "edit" = edit form
   const [lostPrompt, setLostPrompt] = useState<null | "inline" | "edit">(null);
   const [pendingLost, setPendingLost] = useState<LostInfo | null>(null);
-  const [isEstimateApprovalEditing, setIsEstimateApprovalEditing] =
-    useState(false);
-  const [isDocumentsStageEditing, setIsDocumentsStageEditing] = useState(false);
-  const [isOpportunityTypeEditing, setIsOpportunityTypeEditing] =
-    useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState<string | null>(
     null,
   );
@@ -1111,23 +1104,6 @@ export default function OpportunityDetail() {
   const [showSubcontractorDialog, setShowSubcontractorDialog] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  // Trial page layout: Super Admins only, remembered in this browser
-  const [previewOn, setPreviewOn] = useState<boolean>(() => {
-    try {
-      return window.localStorage.getItem("ampos.opportunityPreview") === "1";
-    } catch {
-      return false;
-    }
-  });
-  const togglePreview = () => {
-    const next = !previewOn;
-    setPreviewOn(next);
-    try {
-      window.localStorage.setItem("ampos.opportunityPreview", next ? "1" : "0");
-    } catch {
-      /* not remembered, still works this visit */
-    }
-  };
   const [previewFile, setPreviewFile] = useState<SubcontractorAgreement | null>(
     null,
   );
@@ -1652,7 +1628,6 @@ export default function OpportunityDetail() {
           );
         }
       }
-      setIsEstimateApprovalEditing(false);
       window.dispatchEvent(
         new CustomEvent("estimateSaved", {
           detail: { opportunityId: id, estimateId: changedEstimateId },
@@ -2877,74 +2852,6 @@ export default function OpportunityDetail() {
     });
   }
 
-  function getStatusColor(status: string) {
-    switch (status.toLowerCase()) {
-      case "awareness":
-        return "bg-neutral-100 text-neutral-800 dark:bg-dark-150 dark:text-neutral-100";
-      case "interest":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100";
-      case "quote":
-        return "bg-indigo-100 text-indigo-800 dark:bg-indigo-800 dark:text-indigo-100";
-      case "decision":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100";
-      case "decision - forecasted win":
-        return "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100";
-      case "decision - forecast lose":
-        return "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100";
-      case "awarded":
-        return "bg-green-500 text-white dark:bg-green-600";
-      case "lost":
-        return "bg-red-500 text-white dark:bg-red-600";
-      case "no quote":
-        return "bg-neutral-500 text-white dark:bg-neutral-600";
-      default:
-        return "bg-neutral-100 text-neutral-800 dark:bg-dark-150 dark:text-neutral-100";
-    }
-  }
-
-  function formatStatus(status: string) {
-    return status.charAt(0).toUpperCase() + status.slice(1).replace("_", " ");
-  }
-
-  function getEstimateApprovalColor(status: string | null) {
-    if (!status)
-      return "bg-neutral-100 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400";
-    switch (status) {
-      case "sent":
-        return "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100";
-      case "approved_to_send":
-        return "bg-pink-100 text-pink-800 dark:bg-pink-800 dark:text-pink-100";
-      case "ready_for_review":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100";
-      case "in_progress":
-        return "bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100";
-      case "no_quote":
-      case "no quote":
-        return "bg-neutral-100 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400";
-      default:
-        return "bg-neutral-100 text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400";
-    }
-  }
-
-  function formatEstimateApprovalStatus(status: string | null) {
-    if (!status) return "Not Started";
-    switch (status) {
-      case "sent":
-        return "Sent";
-      case "approved_to_send":
-        return "Approved to Send";
-      case "ready_for_review":
-        return "Ready for Review";
-      case "in_progress":
-        return "In Progress";
-      case "no_quote":
-      case "no quote":
-        return "No Quote";
-      default:
-        return status.replace(/_/g, " ");
-    }
-  }
-
   const handleConvertToJob = async () => {
     if (!opportunity?.id || !user || isConvertingToJob) return;
 
@@ -3160,7 +3067,6 @@ export default function OpportunityDetail() {
 
     // Lost needs a reason first; the modal calls back with it
     if (newStatus === "lost" && opportunity.status !== "lost" && !lost) {
-      setIsStatusEditing(false);
       setLostPrompt("inline");
       return;
     }
@@ -3180,7 +3086,6 @@ export default function OpportunityDetail() {
         prev ? { ...prev, status: newStatus as any, ...extra } : null,
       );
 
-      setIsStatusEditing(false);
     } catch (error) {
       console.error("Error updating opportunity status:", error);
       alert(
@@ -3212,7 +3117,6 @@ export default function OpportunityDetail() {
           : null,
       );
 
-      setIsDocumentsStageEditing(false);
     } catch (error) {
       console.error("Error updating documents stage:", error);
       alert(
@@ -3244,7 +3148,6 @@ export default function OpportunityDetail() {
           : null,
       );
 
-      setIsOpportunityTypeEditing(false);
     } catch (error) {
       console.error("Error updating opportunity type:", error);
       alert(
@@ -3840,7 +3743,7 @@ export default function OpportunityDetail() {
 
   const isEmbed = new URLSearchParams(location.search).get("embed") === "true";
 
-  // Estimates and letter proposals: one copy, used by the page and the trial layout
+  // Estimates and letter proposals
   const estimatesBlock = (
                 <div className="bg-white dark:bg-dark-150 p-4 rounded-none">
                   {/* Two groups: estimates (pricing) and letter proposals
@@ -4026,44 +3929,40 @@ export default function OpportunityDetail() {
                 </div>
   );
 
-  // ── Trial layout (Super Admins) ─────────────────────────────────────────
-  const canPreview = !isEmbed && isSuperUser(user?.email);
-  const showPreview = canPreview && previewOn && !isEditing;
-
-  const previewContact = contacts.find(
+  const oppContact = contacts.find(
     (c) => c.id === (opportunity as any).contact_id,
   );
-  const previewLetterId = (opportunity as any).selected_letter_proposal || "";
-  const previewLetter =
-    (previewLetterId
-      ? letterProposals.find((lp) => lp.id === previewLetterId)
+  const quoteLetterId = (opportunity as any).selected_letter_proposal || "";
+  const quoteLetter =
+    (quoteLetterId
+      ? letterProposals.find((lp) => lp.id === quoteLetterId)
       : undefined) ||
     letterProposals[0] ||
     null;
-  const previewLetterLabel = previewLetter
-    ? previewLetter.title ||
-      `Letter ${previewLetter.letter_number || previewLetter.id?.slice(0, 8)}`
+  const quoteLetterLabel = quoteLetter
+    ? quoteLetter.title ||
+      `Letter ${quoteLetter.letter_number || quoteLetter.id?.slice(0, 8)}`
     : null;
-  const previewQuoted =
-    showPreview && previewLetter
-      ? parseMoneyValue(previewLetter.net_30_price) ||
-        extractNet30FromLetterHtml(previewLetter.html)
+  const quotedNet30 =
+    quoteLetter
+      ? parseMoneyValue(quoteLetter.net_30_price) ||
+        extractNet30FromLetterHtml(quoteLetter.html)
       : null;
-  const previewQuotedAmount = Number((opportunity as any).quoted_amount) || 0;
-  // Same rule as the current page: no type set, so infer it from the quoted amount
-  const previewType: string =
+  const savedQuotedAmount = Number((opportunity as any).quoted_amount) || 0;
+  // No type set: infer it from the quoted amount
+  const oppType: string =
     (opportunity as any).opportunity_type ||
-    (previewQuotedAmount > 0
-      ? previewQuotedAmount >= 100000
+    (savedQuotedAmount > 0
+      ? savedQuotedAmount >= 100000
         ? "large_acceptance"
         : "small_acceptance"
       : "");
-  const previewTypeLabel = OPPORTUNITY_TYPES.find(
-    (t) => t.value === previewType,
+  const oppTypeLabel = OPPORTUNITY_TYPES.find(
+    (t) => t.value === oppType,
   )?.label;
-  const previewStage: string = (opportunity as any).documents_stage || "";
+  const docsStage: string = (opportunity as any).documents_stage || "";
 
-  const renderPreview = () => {
+  const renderDetails = () => {
     const opp = opportunity as any;
     const hasProbability =
       opportunity.probability !== null &&
@@ -4098,14 +3997,14 @@ export default function OpportunityDetail() {
     const finish = opp.estimated_end_date;
 
     return (
-      <OpportunityPagePreview
+      <OpportunityPageLayout
         stats={[
           {
             label: "Quoted (NET 30)",
-            value: previewQuoted ? formatMoney(previewQuoted) : "None yet",
-            note: previewLetter
-              ? previewQuoted
-                ? `From ${previewLetterId ? "" : "latest "}${previewLetterLabel}${letterProposals.length > 1 ? " (click to change)" : ""}`
+            value: quotedNet30 ? formatMoney(quotedNet30) : "None yet",
+            note: quoteLetter
+              ? quotedNet30
+                ? `From ${quoteLetterId ? "" : "latest "}${quoteLetterLabel}${letterProposals.length > 1 ? " (click to change)" : ""}`
                 : "No NET 30 amount found in the letter"
               : "No letter proposal generated",
             onClick:
@@ -4121,8 +4020,8 @@ export default function OpportunityDetail() {
             label: "Probability",
             value: hasProbability ? `${opportunity.probability}%` : "Not set",
             note:
-              hasProbability && previewQuoted && !isNaN(probability)
-                ? `Weighted ${formatMoney((previewQuoted * probability) / 100)}`
+              hasProbability && quotedNet30 && !isNaN(probability)
+                ? `Weighted ${formatMoney((quotedNet30 * probability) / 100)}`
                 : undefined,
           },
           {
@@ -4200,12 +4099,12 @@ export default function OpportunityDetail() {
           },
           {
             label: "Contact",
-            value: previewContact ? (
+            value: oppContact ? (
               <>
-                {previewContact.name}
-                {previewContact.email && (
+                {oppContact.name}
+                {oppContact.email && (
                   <span className="block break-all text-xs font-normal text-neutral-500 dark:text-neutral-400">
-                    {previewContact.email}
+                    {oppContact.email}
                   </span>
                 )}
               </>
@@ -4234,13 +4133,13 @@ export default function OpportunityDetail() {
             label: "Type",
             value: (
               <select
-                value={previewType}
+                value={oppType}
                 onChange={(e) => void handleOpportunityTypeChange(e.target.value)}
                 aria-label="Opportunity type"
-                className={`${previewSelectClass} max-w-[190px]`}
+                className={`${layoutSelectClass} max-w-[190px]`}
               >
-                {!previewTypeLabel && (
-                  <option value={previewType} disabled>
+                {!oppTypeLabel && (
+                  <option value={oppType} disabled>
                     Not specified
                   </option>
                 )}
@@ -4256,14 +4155,14 @@ export default function OpportunityDetail() {
             label: "Documents stage",
             value: (
               <select
-                value={previewStage}
+                value={docsStage}
                 onChange={(e) => void handleDocumentsStageChange(e.target.value)}
                 aria-label="Documents stage"
-                className={`${previewSelectClass} max-w-[190px]`}
+                className={`${layoutSelectClass} max-w-[190px]`}
               >
                 <option value="">Not specified</option>
-                {previewStage && !DOCUMENTS_STAGES.includes(previewStage) && (
-                  <option value={previewStage}>{previewStage}</option>
+                {docsStage && !DOCUMENTS_STAGES.includes(docsStage) && (
+                  <option value={docsStage}>{docsStage}</option>
                 )}
                 {DOCUMENTS_STAGES.map((d) => (
                   <option key={d} value={d}>
@@ -4275,8 +4174,8 @@ export default function OpportunityDetail() {
           },
           {
             label: "Letter proposal",
-            value: previewLetter
-              ? `${previewLetterLabel}${previewLetterId || previewLetter.title ? "" : " (latest)"}`
+            value: quoteLetter
+              ? `${quoteLetterLabel}${quoteLetterId || quoteLetter.title ? "" : " (latest)"}`
               : "Not specified",
           },
           { label: "Jobsite", value: opp.jobsite_location || "Not specified" },
@@ -4634,16 +4533,16 @@ export default function OpportunityDetail() {
           )}
           <div
             className={`flex justify-between border-b border-neutral-300 dark:border-dark-300 ${
-              showPreview ? "flex-wrap items-start gap-4 p-5" : "items-center p-4"
+              isEditing ? "items-center p-4" : "flex-wrap items-start gap-4 p-5"
             }`}
           >
-            {showPreview ? (
-              <OpportunityPreviewTitle
+            {!isEditing ? (
+              <OpportunityTitle
                 quoteNumber={opportunity.quote_number}
                 title={opportunity.title}
                 customerLine={[
                   customer?.company_name || customer?.name,
-                  previewContact?.name,
+                  oppContact?.name,
                 ]
                   .filter(Boolean)
                   .join(" · ")}
@@ -4652,8 +4551,8 @@ export default function OpportunityDetail() {
                   opportunity.amp_division
                     ? formatDivisionName(opportunity.amp_division)
                     : "",
-                  previewTypeLabel ?? "",
-                  previewStage,
+                  oppTypeLabel ?? "",
+                  docsStage,
                 ].filter(Boolean)}
               />
             ) : (
@@ -4664,15 +4563,6 @@ export default function OpportunityDetail() {
               </div>
             )}
             <div className="flex items-center space-x-2">
-              {canPreview && !isEditing && (
-                <Button
-                  variant="outline"
-                  onClick={togglePreview}
-                  title="Only Super Admins see this. Remembered in this browser."
-                >
-                  {showPreview ? "Back to current layout" : "Try new layout"}
-                </Button>
-              )}
               {mergedIds.length > 0 && !!groupLockJobId && (
                 <Link
                   to={`/jobs/${groupLockJobId}`}
@@ -5756,795 +5646,8 @@ export default function OpportunityDetail() {
                 </div>
               </form>
             </div>
-          ) : showPreview ? (
-            renderPreview()
           ) : (
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-lg font-medium text-neutral-900 dark:text-dark-900 mb-3">
-                    Opportunity Details
-                  </h3>
-                  <div className="bg-white dark:bg-dark-150 shadow-sm rounded-none border border-neutral-200 dark:border-dark-300 p-4">
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Quote Number
-                      </p>
-                      <p className="text-neutral-900 dark:text-dark-900">
-                        {opportunity.quote_number}
-                      </p>
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Customer
-                      </p>
-                      <p className="text-neutral-900 dark:text-dark-900">
-                        {customer?.company_name || customer?.name}
-                      </p>
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Contact
-                      </p>
-                      <p className="text-neutral-900 dark:text-dark-900">
-                        {(() => {
-                          const c = contacts.find(
-                            (c) => c.id === (opportunity as any).contact_id,
-                          );
-                          return c ? (
-                            <span>
-                              {c.name} {c.email ? `• ${c.email}` : ""}
-                            </span>
-                          ) : (
-                            "No contact linked"
-                          );
-                        })()}
-                      </p>
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Title
-                      </p>
-                      <p className="text-neutral-900 dark:text-dark-900">
-                        {opportunity.title}
-                      </p>
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Description
-                      </p>
-                      <p className="text-neutral-900 dark:text-dark-900 whitespace-pre-line">
-                        {opportunity.description || "No description"}
-                      </p>
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Estimate Approval
-                      </p>
-                      <p className="text-xs text-neutral-400 dark:text-dark-500 mt-0.5 mb-1">
-                        In Progress = working on the estimate. No Quote = not
-                        submitting a quote for this opportunity.
-                      </p>
-                      {latestEstimateId && !isEstimateApprovalEditing ? (
-                        <button
-                          onClick={() => setIsEstimateApprovalEditing(true)}
-                          className="mt-1"
-                        >
-                          <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-none ${getEstimateApprovalColor(estimateApprovalStatus)}`}
-                          >
-                            {formatEstimateApprovalStatus(
-                              estimateApprovalStatus,
-                            )}
-                            <ChevronDown className="ml-1 h-3 w-3" />
-                          </span>
-                        </button>
-                      ) : (
-                        <div className="relative mt-1">
-                          <select
-                            value={
-                              estimateApprovalStatus === "no quote"
-                                ? "no_quote"
-                                : (estimateApprovalStatus ?? "")
-                            }
-                            onChange={(e) =>
-                              handleEstimateApprovalStatusChange(e.target.value)
-                            }
-                            disabled={isSavingEstimateStatus}
-                            className="block w-full pl-3 pr-10 py-1 text-xs rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 border border-neutral-200 dark:border-neutral-600 dark:bg-dark-150 dark:text-white"
-                            autoFocus={latestEstimateId != null}
-                            onBlur={() =>
-                              latestEstimateId &&
-                              !isSavingEstimateStatus &&
-                              setIsEstimateApprovalEditing(false)
-                            }
-                          >
-                            <option value="">Not Started</option>
-                            <option
-                              value="in_progress"
-                              title="Working on the estimate"
-                            >
-                              In Progress — working on estimate
-                            </option>
-                            <option value="ready_for_review">
-                              Ready for Review
-                            </option>
-                            <option value="approved_to_send">
-                              Approved to Send
-                            </option>
-                            <option value="sent">Sent</option>
-                            <option
-                              value="no_quote"
-                              title="Not submitting a quote for this opportunity"
-                            >
-                              No Quote — not submitting
-                            </option>
-                          </select>
-                          <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-neutral-500" />
-                          {isSavingEstimateStatus && (
-                            <span className="text-xs text-neutral-500 dark:text-dark-400 ml-2">
-                              Saving...
-                            </span>
-                          )}
-                        </div>
-                      )}
-                      {!latestEstimateId && (
-                        <p className="text-neutral-500 dark:text-dark-500 text-xs mt-1.5">
-                          Set status above or{" "}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActiveEstimateId(null);
-                              setShowEstimate("new");
-                            }}
-                            className="text-brand hover:underline font-medium"
-                          >
-                            Open Estimate
-                          </button>{" "}
-                          to build a full quote.
-                        </p>
-                      )}
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Status
-                      </p>
-                      {changeOrderJobId ? (
-                        <p className="mt-1 text-sm text-neutral-900 dark:text-white">
-                          {changeOrderInfo?.status
-                            ? CHANGE_ORDER_STATUS_LABEL[changeOrderInfo.status]
-                            : "Change Order"}
-                          <span className="block text-xs text-neutral-500 dark:text-neutral-400">
-                            Set on the job's Change Orders card.
-                          </span>
-                        </p>
-                      ) : isStatusEditing ? (
-                        <div className="relative mt-1">
-                          <select
-                            value={opportunity.status}
-                            onChange={(e) => handleStatusChange(e.target.value)}
-                            className="block w-full pl-3 pr-10 py-1 text-xs rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 border border-neutral-200"
-                            autoFocus
-                            onBlur={() => setIsStatusEditing(false)}
-                          >
-                            <option value="awareness">Awareness</option>
-                            <option value="interest">Interest</option>
-                            <option value="quote">Quote</option>
-                            <option value="decision">Decision</option>
-                            <option value="decision - forecasted win">
-                              Decision - Forecasted Win
-                            </option>
-                            <option value="decision - forecast lose">
-                              Decision - Forecast Lose
-                            </option>
-                            <option value="awarded">Awarded</option>
-                            <option value="lost">Lost</option>
-                            <option value="no quote">No Quote</option>
-                          </select>
-                          <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-neutral-500" />
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setIsStatusEditing(true)}
-                          className="mt-1"
-                        >
-                          <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-none ${getStatusColor(opportunity.status)}`}
-                          >
-                            {formatStatus(opportunity.status)}
-                            <ChevronDown className="ml-1 h-3 w-3" />
-                          </span>
-                        </button>
-                      )}
-                      {opportunity.status === "lost" &&
-                        opportunity.lost_reason_category && (
-                          <p className="text-xs text-neutral-700 dark:text-neutral-200 mt-1">
-                            <span className="font-semibold">
-                              {lostReasonLabel(opportunity.lost_reason_category)}:
-                            </span>{" "}
-                            {opportunity.lost_reason}
-                          </p>
-                        )}
-                      {opportunity.status !== "awarded" &&
-                        opportunity.status !== "lost" &&
-                        !opportunity.job_id &&
-                        !changeOrderJobId && (
-                          <p className="text-xs text-neutral-500 dark:text-white mt-1">
-                            Change status above or use "Convert to Job" button
-                            to create a job
-                          </p>
-                        )}
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Accepted Letter Proposal
-                      </p>
-                      <p className="text-sm text-neutral-900 dark:text-dark-900">
-                        {(() => {
-                          const selectedId =
-                            (opportunity as any).selected_letter_proposal || "";
-                          let sel = selectedId
-                            ? letterProposals.find((lp) => lp.id === selectedId)
-                            : undefined;
-                          if (!sel && letterProposals.length > 0)
-                            sel = letterProposals[0];
-                          return sel
-                            ? sel.title ||
-                                `Letter ${sel.letter_number || sel.id?.slice(0, 8)}${selectedId ? "" : " (latest)"}`
-                            : "Not specified";
-                        })()}
-                      </p>
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        AMP Division
-                      </p>
-                      <p className="text-neutral-900 dark:text-dark-900">
-                        {opportunity.amp_division ? (
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              if (opportunity.amp_division) {
-                                setSelectedDivision(opportunity.amp_division);
-                                setShowDivisionAnalytics(true);
-                              }
-                            }}
-                            className="text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90"
-                          >
-                            {formatDivisionName(opportunity.amp_division)}
-                          </button>
-                        ) : (
-                          "Not specified"
-                        )}
-                      </p>
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Opportunity Type
-                      </p>
-                      {isOpportunityTypeEditing ? (
-                        <div className="relative mt-1">
-                          <select
-                            value={(() => {
-                              let type = (opportunity as any).opportunity_type;
-                              // If no type is set, infer from quoted amount
-                              if (!type) {
-                                const quotedAmount = (opportunity as any)
-                                  .quoted_amount;
-                                if (quotedAmount && Number(quotedAmount) > 0) {
-                                  type =
-                                    Number(quotedAmount) >= 100000
-                                      ? "large_acceptance"
-                                      : "small_acceptance";
-                                }
-                              }
-                              return type || "other";
-                            })()}
-                            onChange={(e) =>
-                              handleOpportunityTypeChange(e.target.value)
-                            }
-                            className="block w-full pl-3 pr-10 py-1 text-sm rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 border border-neutral-200 dark:border-neutral-600 dark:bg-dark-150 dark:text-white"
-                            autoFocus
-                            onBlur={() => setIsOpportunityTypeEditing(false)}
-                          >
-                            <option value="large_acceptance">
-                              Large Acceptance Project
-                            </option>
-                            <option value="small_acceptance">
-                              Small Acceptance Project
-                            </option>
-                            <option value="maintenance">
-                              Maintenance Project
-                            </option>
-                            <option value="engineering">Engineering</option>
-                            <option value="time_materials">
-                              Time & Materials (T&M)
-                            </option>
-                            <option value="other">Other</option>
-                          </select>
-                          <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-neutral-500" />
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setIsOpportunityTypeEditing(true)}
-                          className="mt-1 text-left"
-                        >
-                          <span className="text-neutral-900 dark:text-dark-900 hover:text-brand dark:hover:text-brand">
-                            {(() => {
-                              let type = (opportunity as any).opportunity_type;
-
-                              // If no type is set, infer from quoted amount
-                              if (!type) {
-                                const quotedAmount = (opportunity as any)
-                                  .quoted_amount;
-                                if (quotedAmount && Number(quotedAmount) > 0) {
-                                  type =
-                                    Number(quotedAmount) >= 100000
-                                      ? "large_acceptance"
-                                      : "small_acceptance";
-                                }
-                              }
-
-                              switch (type) {
-                                case "large_acceptance":
-                                  return "Large Acceptance Project";
-                                case "small_acceptance":
-                                  return "Small Acceptance Project";
-                                case "maintenance":
-                                  return "Maintenance Project";
-                                case "engineering":
-                                  return "Engineering";
-                                case "time_materials":
-                                  return "Time & Materials (T&M)";
-                                case "other":
-                                  return "Other";
-                                default:
-                                  return "Not specified";
-                              }
-                            })()}
-                            <ChevronDown className="ml-1 h-3 w-3 inline" />
-                          </span>
-                        </button>
-                      )}
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Documents Stage
-                      </p>
-                      {isDocumentsStageEditing ? (
-                        <div className="relative mt-1">
-                          <select
-                            value={(opportunity as any).documents_stage || ""}
-                            onChange={(e) =>
-                              handleDocumentsStageChange(e.target.value)
-                            }
-                            className="block w-full pl-3 pr-10 py-1 text-sm rounded-none appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 border border-neutral-200 dark:border-neutral-600 dark:bg-dark-150 dark:text-white"
-                            autoFocus
-                            onBlur={() => setIsDocumentsStageEditing(false)}
-                          >
-                            <option value="">Not specified</option>
-                            <option value="Budgetary">Budgetary</option>
-                            <option value="Not available">Not available</option>
-                            <option value="Design Development">
-                              Design Development
-                            </option>
-                            <option value="Issue for Proposal">
-                              Issue for Proposal
-                            </option>
-                            <option value="Issue for Construction">
-                              Issue for Construction
-                            </option>
-                            <option value="Post Construction">
-                              Post Construction
-                            </option>
-                            <option value="30%">30%</option>
-                            <option value="60%">60%</option>
-                            <option value="90%">90%</option>
-                            <option value="95%">95%</option>
-                          </select>
-                          <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none text-neutral-500" />
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setIsDocumentsStageEditing(true)}
-                          className="mt-1 text-left"
-                        >
-                          <span className="text-neutral-900 dark:text-dark-900 hover:text-brand dark:hover:text-brand">
-                            {(opportunity as any).documents_stage ||
-                              "Not specified"}
-                            <ChevronDown className="ml-1 h-3 w-3 inline" />
-                          </span>
-                        </button>
-                      )}
-                    </div>
-                    {(() => {
-                      // Only show job status if job_id exists and job is not deleted
-                      if (opportunity.job_id) {
-                        return (
-                          <div className="mb-4">
-                            <p className="text-sm text-neutral-500 dark:text-dark-400">
-                              Job Status
-                            </p>
-                            <div className="flex items-center gap-2">
-                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-none bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                Converted to Job
-                              </span>
-                              <Link
-                                to={`/jobs/${opportunity.job_id}`}
-                                className="text-brand hover:text-brand/90 dark:text-brand dark:hover:text-brand/90 text-sm"
-                              >
-                                View Job #{opportunity.job_id}
-                              </Link>
-                            </div>
-                          </div>
-                        );
-                      }
-                      return null;
-                    })()}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-medium text-neutral-900 dark:text-dark-900 mb-3">
-                    Financial & Timeline
-                  </h3>
-                  <div className="bg-white dark:bg-dark-150 shadow-sm rounded-none border border-neutral-200 dark:border-dark-300 p-4">
-                    {/* Expected Value removed from details view */}
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Probability
-                      </p>
-                      <p className="text-neutral-900 dark:text-dark-900">
-                        {opportunity.probability !== null &&
-                        opportunity.probability !== undefined
-                          ? `${opportunity.probability}%`
-                          : "Not specified"}
-                      </p>
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Quoted Amount (NET 30)
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          letterProposals.length > 0 &&
-                          setLetterPickerOpen(true)
-                        }
-                        disabled={letterProposals.length === 0}
-                        title={
-                          letterProposals.length > 0
-                            ? "Click to choose which letter proposal this amount is pulled from"
-                            : undefined
-                        }
-                        className={`group flex w-full items-center gap-1 rounded-none px-1 -mx-1 text-left text-neutral-900 dark:text-dark-900 ${
-                          letterProposals.length > 0
-                            ? "cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-200"
-                            : "cursor-default"
-                        }`}
-                      >
-                        <span className="flex-1">
-                        {(() => {
-                          const selectedId =
-                            (opportunity as any).selected_letter_proposal || "";
-                          const selectedLetter = selectedId
-                            ? letterProposals.find(
-                                (letter) => letter.id === selectedId,
-                              )
-                            : null;
-
-                          // If a specific letter is selected, use it
-                          const sourceLetter =
-                            selectedLetter ||
-                            (letterProposals.length > 0
-                              ? letterProposals[0]
-                              : null);
-
-                          if (!sourceLetter) {
-                            return (
-                              <span className="text-neutral-400 dark:text-neutral-500 italic">
-                                No letter proposal generated
-                              </span>
-                            );
-                          }
-
-                          const letterAmount =
-                            parseMoneyValue(sourceLetter.net_30_price) ||
-                            extractNet30FromLetterHtml(sourceLetter.html);
-
-                          const letterLabel =
-                            sourceLetter.title ||
-                            `Letter ${sourceLetter.letter_number || sourceLetter.id?.slice(0, 8)}`;
-
-                          const isSelected = !!selectedLetter;
-
-                          if (!letterAmount) {
-                            return (
-                              <span className="text-amber-600 dark:text-amber-400">
-                                No NET 30 amount found in{" "}
-                                {isSelected ? "selected" : "latest"} letter
-                                proposal
-                              </span>
-                            );
-                          }
-
-                          return (
-                            <>
-                              <span className="text-lg font-semibold">
-                                {formatMoney(letterAmount)}
-                              </span>
-                              <span className="ml-2 text-xs text-neutral-400 dark:text-neutral-500">
-                                from {isSelected ? "" : "latest "}
-                                {letterLabel}
-                                {letterProposals.length > 1
-                                  ? " (click to change)"
-                                  : ""}
-                              </span>
-                            </>
-                          );
-                        })()}
-                        </span>
-                        {letterProposals.length > 0 && (
-                          <ChevronDown className="h-4 w-4 flex-shrink-0 text-neutral-400 opacity-0 transition-opacity group-hover:opacity-100" />
-                        )}
-                      </button>
-                    </div>
-                    <div className="mb-4 flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-sm text-neutral-500 dark:text-dark-400">
-                          Include in weekly bid total
-                        </p>
-                        <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                          Turn off to exclude this quote from the Sales
-                          Dashboard total (e.g. same project quoted to another
-                          customer).
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={!opportunity.exclude_from_quoted_total}
-                        onClick={() =>
-                          handleToggleExcludeFromTotal(
-                            !opportunity.exclude_from_quoted_total,
-                          )
-                        }
-                        className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-none transition-colors focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 dark:focus:ring-offset-dark-150 ${
-                          opportunity.exclude_from_quoted_total
-                            ? "bg-neutral-300 dark:bg-neutral-600"
-                            : "bg-brand"
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-none bg-white transition-transform ${
-                            opportunity.exclude_from_quoted_total
-                              ? "translate-x-1"
-                              : "translate-x-6"
-                          }`}
-                        />
-                      </button>
-                    </div>
-                    <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div>
-                        <p className="text-sm text-neutral-500 dark:text-dark-400">
-                          Opportunity Created Date
-                        </p>
-                        <p className="text-neutral-900 dark:text-dark-900">
-                          {opportunity.opportunity_created_date
-                            ? formatDateSafe(
-                                opportunity.opportunity_created_date,
-                              )
-                            : "Not specified"}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-sm text-neutral-500 dark:text-dark-400">
-                          Opportunity Created By
-                        </p>
-                        <p className="text-neutral-900 dark:text-dark-900">
-                          {opportunityCreator || "Not specified"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Letter Proposal Date
-                      </p>
-                      <p className="text-neutral-900 dark:text-dark-900">
-                        {opportunity.letter_proposal_date
-                          ? formatDateSafe(opportunity.letter_proposal_date)
-                          : "Not generated yet"}
-                      </p>
-                    </div>
-                    {opportunity.proposal_due_date && (
-                      <div className="mb-4">
-                        <p className="text-sm text-neutral-500 dark:text-dark-400">
-                          Proposal Due Date
-                        </p>
-                        <p className="text-neutral-900 dark:text-dark-900">
-                          {formatDateSafe(opportunity.proposal_due_date)}
-                        </p>
-                      </div>
-                    )}
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        RFQ Acknowledgment
-                      </p>
-                      <p className="text-neutral-900 dark:text-dark-900">
-                        {opportunity.rfq_ack_sent_at
-                          ? `Sent ${formatDateSafe(opportunity.rfq_ack_sent_at)} to ${opportunity.rfq_ack_sent_to || "customer"}`
-                          : "Not sent"}
-                      </p>
-                      {opportunity.rfq_ack_sent_at &&
-                        opportunity.rfq_ack_promised_date && (
-                          <p className="text-sm text-neutral-500 dark:text-dark-400">
-                            Customer told to expect the proposal by{" "}
-                            {formatDateSafe(opportunity.rfq_ack_promised_date)}
-                          </p>
-                        )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="mt-2"
-                        onClick={handleSendRfqAck}
-                        disabled={sendingRfqAck}
-                      >
-                        {sendingRfqAck
-                          ? "Sending..."
-                          : opportunity.rfq_ack_sent_at
-                            ? "Resend"
-                            : "Send acknowledgment"}
-                      </Button>
-                    </div>
-                    {opportunity.awarded_date && (
-                      <div className="mb-4">
-                        <p className="text-sm text-neutral-500 dark:text-dark-400">
-                          Awarded Date
-                        </p>
-                        <p className="text-neutral-900 dark:text-dark-900">
-                          {formatDateSafe(opportunity.awarded_date)}
-                        </p>
-                      </div>
-                    )}
-                    <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div>
-                        <p className="text-sm text-neutral-500 dark:text-dark-400">
-                          Start Date
-                        </p>
-                        <p className="text-neutral-900 dark:text-dark-900">
-                          {(opportunity as any).estimated_start_date
-                            ? formatDateSafe(
-                                (opportunity as any).estimated_start_date,
-                              )
-                            : "Not specified"}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-sm text-neutral-500 dark:text-dark-400">
-                          End Date
-                        </p>
-                        <p className="text-neutral-900 dark:text-dark-900">
-                          {(opportunity as any).estimated_end_date
-                            ? formatDateSafe(
-                                (opportunity as any).estimated_end_date,
-                              )
-                            : "Not specified"}
-                        </p>
-                      </div>
-                    </div>
-                    {/* Removed duplicate Proposal Due Date block (already shown above) */}
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Reviewed By
-                      </p>
-                      <p className="text-neutral-900 dark:text-dark-900">
-                        {(opportunity as any).reviewed_by || "Not specified"}
-                      </p>
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Quote Prepared By
-                      </p>
-                      <p className="text-neutral-900 dark:text-dark-900">
-                        {quotePreparedBy ||
-                          (opportunity as any).prepared_by ||
-                          "Not specified"}
-                      </p>
-                    </div>
-
-                    {/* Job Information Fields */}
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Jobsite Location
-                      </p>
-                      <p className="text-neutral-900 dark:text-dark-900">
-                        {(opportunity as any).jobsite_location ||
-                          "Not specified"}
-                      </p>
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Period of Performance
-                      </p>
-                      <p className="text-neutral-900 dark:text-dark-900">
-                        {(opportunity as any).period_of_performance ||
-                          "Not specified"}
-                      </p>
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-neutral-500 dark:text-dark-400">
-                        Total Man Hours
-                      </p>
-                      <p className="text-neutral-900 dark:text-dark-900">
-                        {(opportunity as any).total_man_hours
-                          ? `${(opportunity as any).total_man_hours} hours`
-                          : "Not specified"}
-                      </p>
-                    </div>
-
-                    {jobId && (
-                      <div className="mt-6">
-                        <Button
-                          variant="outline"
-                          className="bg-brand text-white hover:bg-brand/90"
-                          onClick={() => setShowJobDialog(true)}
-                        >
-                          View Associated Job
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {opportunity.notes && (
-                  <div className="col-span-1 md:col-span-2">
-                    <h3 className="text-lg font-medium text-neutral-900 dark:text-dark-900 mb-3">
-                      Notes
-                    </h3>
-                    <div className="bg-white dark:bg-dark-150 p-4 rounded-none">
-                      <p className="text-neutral-900 dark:text-dark-900 whitespace-pre-line">
-                        {opportunity.notes}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Documents: drawings, specs and bid docs; they also show on the job once won */}
-              {opportunity?.id && user?.id && (
-                <div className="mt-8">
-                  <OpportunityDocuments opportunityId={opportunity.id} userId={user.id} />
-                </div>
-              )}
-
-              {/* Add Estimate Sheet section */}
-              <div className="mt-8">
-                {estimatesBlock}
-              </div>
-
-              {/* RFIs: estimating questions for the customer, sent and returned as Excel */}
-              {id && opportunity && (
-                <div className="mt-8">
-                  <OpportunityRfis
-                    opportunityId={id}
-                    title={opportunity.title}
-                    customerName={opportunity.customers?.company_name || opportunity.customers?.name}
-                    quoteNumber={opportunity.quote_number}
-                    proposalDueDate={opportunity.proposal_due_date}
-                  />
-                </div>
-              )}
-
-              {/* Opportunity notes (chat-style): who left the note and when */}
-              {id && (
-                <div className="mt-8">
-                  <OpportunityNotes opportunityId={id} />
-                </div>
-              )}
-            </div>
+            renderDetails()
           )}
 
           {/* Convert to Job Confirmation Dialog */}

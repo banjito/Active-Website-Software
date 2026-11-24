@@ -284,6 +284,11 @@ interface ReportData {
     insulationResistanceUnit: string;
     contactResistanceUnit: string;
 
+    dielectricPhaseA: string;
+    dielectricPhaseB: string;
+    dielectricPhaseC: string;
+    dielectricWithstandUnit: string;
+
     megohmmeter: string;
     megohmSerial: string;
     megAmpId: string;
@@ -1229,15 +1234,18 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
             R("insulationResistanceUnit") ||
             "MΩ",
           contactResistanceUnit: "μΩ", // Default value
-          dielectricWithstandUnit: "mA", // Default value
+          dielectricWithstandUnit: R("dielectricWithstandUnit") || "mA",
 
           cableRating: "", // Not used in this report
           testVoltage:
             J("insulation_resistance")?.testVoltage || R("testVoltage1") || "",
 
-          dielectricPhaseA: "", // Not used in this report
-          dielectricPhaseB: "", // Not used in this report
-          dielectricPhaseC: "", // Not used in this report
+          // The A-G / B-G / C-G boxes on the Dielectric Withstand table.
+          // These were never saved and always loaded blank, so readings
+          // vanished on reopen.
+          dielectricPhaseA: R("dielectricPhaseA") || "",
+          dielectricPhaseB: R("dielectricPhaseB") || "",
+          dielectricPhaseC: R("dielectricPhaseC") || "",
         };
 
         console.log(
@@ -1320,6 +1328,10 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
         dielectricTestVoltage: formData.dielectricTestVoltage,
         dielectricTestDuration: formData.dielectricTestDuration,
         dielectricResult: formData.dielectricResult,
+        dielectricPhaseA: formData.dielectricPhaseA,
+        dielectricPhaseB: formData.dielectricPhaseB,
+        dielectricPhaseC: formData.dielectricPhaseC,
+        dielectricWithstandUnit: formData.dielectricWithstandUnit,
         contactResistanceUnit: formData.contactResistanceUnit,
 
         megohmmeter: formData.megohmmeter,

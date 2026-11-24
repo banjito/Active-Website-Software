@@ -9961,9 +9961,23 @@ export default function JobDetail() {
                   compareAlphanumericLabels,
                 );
                 if (sortedSubs.length === 0) {
+                  // The letter only covers this tab's reports, so a report
+                  // still in Ready for Review has nothing to offer here even
+                  // with a substation filled in. Say which case it is.
+                  const tabName =
+                    coverSourceStatus === "sent" ? "Sent" : "Approved";
+                  const hasTabReports = jobAssets.some(
+                    (asset) => asset.status === coverSourceStatus,
+                  );
                   return (
                     <p className="text-neutral-500 dark:text-neutral-400">
-                      No substations found for this job.
+                      {hasTabReports
+                        ? `None of the reports on the ${tabName} tab have a substation filled in.`
+                        : `No reports on the ${tabName} tab yet. The cover letter only covers ${tabName.toLowerCase()} reports, so ${
+                            coverSourceStatus === "sent"
+                              ? "send"
+                              : "approve"
+                          } this job's reports first.`}
                     </p>
                   );
                 }

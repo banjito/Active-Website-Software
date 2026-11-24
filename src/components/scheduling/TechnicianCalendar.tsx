@@ -790,14 +790,9 @@ export function TechnicianCalendar({
     return n || email || "Unknown";
   };
 
-  // Filter out lab technicians - only show NETA and admin technicians
-  const isNotLabTech = (tech: any) => {
-    const portalType = tech.portal_type || tech.division;
-    return portalType !== "lab";
-  };
 
   const baseTechOpts: SelectOption[] = technicians
-    .filter((tech) => isAmpEmail(tech.email) && isNotLabTech(tech))
+    .filter((tech) => isAmpEmail(tech.email))
     .map((tech) => ({
       value: tech.user_id,
       label: formatDisplayName(tech.full_name || undefined, tech.email),
@@ -808,7 +803,7 @@ export function TechnicianCalendar({
   const eventTechMap = new Map<string, string>();
   const allowedIds = new Set<string>([
     ...technicians
-      .filter((t) => isAmpEmail(t.email) && isNotLabTech(t))
+      .filter((t) => isAmpEmail(t.email))
       .map((t) => String(t.user_id)),
     ...users.filter((u) => isAmpEmail(u.email)).map((u) => String(u.id)),
   ]);

@@ -11,7 +11,6 @@ A role is a bundle of permissions. Getting roles right is the highest-leverage a
 | Role | Typically does |
 |---|---|
 | **NETA Technician** | Writes and submits test reports, uploads photos |
-| **Lab Technician** | Calibration, procedures, certificates |
 | **Engineer** | Designs, drawings, standards, engineering documentation |
 | **Sales Representative** | Opportunities, estimates, customers, territories |
 | **Office Admin** | Deliverables, vendors, purchase orders, billing handoff |
@@ -28,7 +27,7 @@ Admins can also edit a built-in role's portals and permissions. Edited roles sho
 
 Every permission is a **resource** plus an **action**.
 
-**Resources** are the things in the system: `jobs`, `reports`, `customers`, `opportunities`, `users`, `roles`, `documents`, `equipment`, `lab`, `engineering`, `hr`, `office`, `sales`, `settings`, `system`, and others.
+**Resources** are the things in the system: `jobs`, `reports`, `customers`, `opportunities`, `users`, `roles`, `documents`, `equipment`, `engineering`, `hr`, `office`, `sales`, `settings`, `system`, and others.
 
 **Actions** are what can be done to them: `view`, `create`, `edit`, `delete`, `approve`, `assign`, `import`, `export`, `share`, `revoke`, `manage`, `configure`.
 
@@ -40,7 +39,7 @@ Read a permission out loud as a sentence: "jobs, edit" becomes "can edit jobs." 
 
 ## Portals
 
-Separately from resource permissions, a role grants access to **portals**: sales, neta, lab, hr, office, engineering, scavenger, meetings, field tech, and admin.
+Separately from resource permissions, a role grants access to **portals**: sales, neta, hr, office, engineering, scavenger, meetings, field tech, and admin.
 
 Portal access controls what appears on the portal page. A missing portal is almost always this, not a bug.
 

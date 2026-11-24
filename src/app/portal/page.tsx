@@ -915,7 +915,6 @@ export default function PortalLanding({
     const portalMap: Record<string, Portal> = {
       "Sales Portal": "sales",
       "NETA Portal": "neta",
-      "Lab Portal": "lab",
       "Office Admins Portal": "office",
       "Engineering Portal": "engineering",
       "Field Technician Portal": "field_tech",
@@ -928,7 +927,6 @@ export default function PortalLanding({
     const portalUrls: Record<string, string> = {
       "Sales Portal": "/sales-dashboard",
       "NETA Portal": "/neta",
-      "Lab Portal": "/lab",
       "Office Admins Portal": "/office",
       "Engineering Portal": "/engineering", // Updated to use the new engineering page
       "Field Technician Portal": "/field-tech/dashboard",
@@ -952,8 +950,6 @@ export default function PortalLanding({
       setDivision("engineering");
     } else if (portalName === "Sales Portal") {
       setDivision("sales");
-    } else if (portalName === "Lab Portal") {
-      setDivision("lab");
     } else if (portalType) {
       setDivision(portalType);
     }
@@ -984,8 +980,6 @@ export default function PortalLanding({
         georgia: "neta",
         virginia: "neta",
         international: "neta",
-        calibration: "lab",
-        armadillo: "lab",
         scavenger: "scavenger",
         office_admin: "office",
         sales: "sales",
@@ -1011,12 +1005,6 @@ export default function PortalLanding({
       // Verify the division was set
       const savedDivision = localStorage.getItem("selectedDivision");
       console.log("Verified division in localStorage:", savedDivision);
-
-      // Calibration division should route to external AMP Cal site
-      if (division === "calibration") {
-        window.location.href = "https://ampcalos.io";
-        return;
-      }
 
       const targetPath = `/${division}/dashboard`;
       console.log("Navigating to:", targetPath);
@@ -1176,9 +1164,6 @@ export default function PortalLanding({
         break;
       case "AMPu":
         navigate("/ampu");
-        break;
-      case "Calibration Division":
-        handleDivisionClick("calibration");
         break;
       case "Admin Portal":
         handleOtherPortalClick("/admin-dashboard");

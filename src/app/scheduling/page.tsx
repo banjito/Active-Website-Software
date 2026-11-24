@@ -63,9 +63,7 @@ export default function SchedulingPage() {
   useEffect(() => {
     if (scheduleDivision) {
       // Every field tech division (including ones added from the sidebar) is neta.
-      if (["calibration", "armadillo"].includes(scheduleDivision)) {
-        setPortalType("lab");
-      } else if (scheduleDivision === "scavenger") {
+      if (scheduleDivision === "scavenger") {
         setPortalType("scavenger");
       } else {
         setPortalType("neta");

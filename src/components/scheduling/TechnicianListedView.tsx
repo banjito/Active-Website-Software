@@ -447,24 +447,14 @@ export const TechnicianListedView: React.FC<Props> = ({
   // Build display technician list: union of availability list and any technicians with assignments
   const isAmp = (email?: string) => !!email && employeeEmailRegex.test(email);
 
-  // Filter out lab technicians - only show NETA and admin technicians
-  const isNotLabTech = (tech: any) => {
-    const portalType = tech.portal_type || tech.division;
-    return portalType !== "lab";
-  };
 
   const displayTechs = useMemo(() => {
     const map = new Map<string, AvailableTechnician>();
     technicians
-      .filter((t) => isAmp(t.email) && isNotLabTech(t))
+      .filter((t) => isAmp(t.email))
       .forEach((t) => map.set(t.user_id, t));
     assignments.forEach((a) => {
-      const assignmentPortalType = a.portal_type || a.division;
-      if (
-        !map.has(a.user_id) &&
-        isAmp(a.user?.email || "") &&
-        assignmentPortalType !== "lab"
-      ) {
+      if (!map.has(a.user_id) && isAmp(a.user?.email || "")) {
         map.set(a.user_id, {
           user_id: a.user_id,
           full_name:

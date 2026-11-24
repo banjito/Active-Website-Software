@@ -10,7 +10,6 @@ import Card, {
   CardDescription,
 } from "@/components/ui/Card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import { QualityMetrics } from "@/components/lab/QualityMetrics";
 import { PortalType } from "@/lib/types/scheduling";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ReportApprovalWorkflow } from "@/components/reports/ReportApprovalWorkflow";
@@ -24,7 +23,7 @@ export default function ReportsPage() {
   const { division, setDivision } = useDivision();
   const navigate = useNavigate();
   const [portalType, setPortalType] = useState<PortalType>("neta");
-  const [activeTab, setActiveTab] = useState("quality");
+  const [activeTab, setActiveTab] = useState("approval");
   const [openReportFlagCount, setOpenReportFlagCount] = useState(0);
 
   useEffect(() => {
@@ -39,7 +38,7 @@ export default function ReportsPage() {
     const tab = urlParams.get("tab");
     if (
       tab &&
-      ["quality", "performance", "scheduling", "approval"].includes(tab)
+      ["performance", "scheduling", "approval"].includes(tab)
     ) {
       setActiveTab(tab);
     }
@@ -48,9 +47,7 @@ export default function ReportsPage() {
   useEffect(() => {
     if (division) {
       // Every field tech division (including ones added from the sidebar) is neta.
-      if (["calibration", "armadillo"].includes(division)) {
-        setPortalType("lab");
-      } else if (division === "scavenger") {
+      if (division === "scavenger") {
         setPortalType("scavenger");
       } else {
         setPortalType("neta");
@@ -131,7 +128,6 @@ export default function ReportsPage() {
     >
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="mb-4">
-          <TabsTrigger value="quality">Quality Metrics</TabsTrigger>
           <TabsTrigger value="performance">Performance Reports</TabsTrigger>
           <TabsTrigger value="scheduling">Scheduling Reports</TabsTrigger>
           <TabsTrigger value="approval">
@@ -149,20 +145,6 @@ export default function ReportsPage() {
             </span>
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="quality">
-          <Card>
-            <CardHeader>
-              <CardTitle>Quality Metrics</CardTitle>
-              <CardDescription>
-                Generate quality assurance reports and metrics
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <QualityMetrics division={division} />
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="performance">
           <Card>

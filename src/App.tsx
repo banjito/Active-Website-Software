@@ -126,6 +126,7 @@ const PublicChangeOrderSigning = React.lazy(
 );
 const OAuthConsent = React.lazy(() => import("./components/auth/OAuthConsent"));
 const JobFileRedirect = React.lazy(() => import("./app/files/JobFileRedirect"));
+const SafetyQuestionSetEditor = React.lazy(() => import("./app/safety/QuestionSetEditor"));
 import { CandidateTracking } from "./pages/hr/recruiting/CandidateTracking";
 import { TalentPool } from "./pages/hr/recruiting/TalentPool";
 import { InterviewScheduling } from "./pages/hr/recruiting/InterviewScheduling";
@@ -209,15 +210,7 @@ const ArticlesPage = lazy(() => import("./pages/articles/Articles"));
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
-// Import Lab Portal components
-import { EquipmentCalibration } from "./components/lab/EquipmentCalibration";
-import { TestingProcedures } from "./components/lab/TestingProcedures";
-import { CertificateGenerator } from "./components/lab/CertificateGenerator";
-import { QualityMetrics } from "./components/lab/QualityMetrics";
-import { LabDashboard } from "./components/lab/LabDashboard";
-
 // Import division-specific dashboards
-import CalibrationDashboard from "./app/dashboards/CalibrationDashboard";
 import FieldTechDashboard from "./app/dashboards/FieldTechDashboard";
 
 // Import Maintenance Management
@@ -780,6 +773,14 @@ function App() {
                     <Route path="system-logs" element={<SystemLogsCard />} />
                     <Route path="report-time" element={<ReportTimeCard />} />
                     <Route
+                      path="safety-questions"
+                      element={
+                        <React.Suspense fallback={<LoadingSpinner size="md" />}>
+                          <SafetyQuestionSetEditor />
+                        </React.Suspense>
+                      }
+                    />
+                    <Route
                       path="integrations"
                       element={<IntegrationsSettings />}
                     />
@@ -1063,57 +1064,6 @@ function App() {
                     }
                   />
 
-                  {/* === Lab Portal Routes === */}
-                  <Route
-                    path="/lab"
-                    element={
-                      <RequireAuth>
-                        <Layout>
-                          <LabDashboard />
-                        </Layout>
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/lab/equipment"
-                    element={
-                      <RequireAuth>
-                        <Layout>
-                          <EquipmentCalibration />
-                        </Layout>
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/lab/procedures"
-                    element={
-                      <RequireAuth>
-                        <Layout>
-                          <TestingProcedures />
-                        </Layout>
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/lab/certificates"
-                    element={
-                      <RequireAuth>
-                        <Layout>
-                          <CertificateGenerator />
-                        </Layout>
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/lab/quality-metrics"
-                    element={
-                      <RequireAuth>
-                        <Layout>
-                          <QualityMetrics />
-                        </Layout>
-                      </RequireAuth>
-                    }
-                  />
 
                   {/* === Engineering Portal Routes === */}
                   <Route
@@ -2165,16 +2115,6 @@ function App() {
                       <RequireAuth>
                         <Layout>
                           <EngineeringDashboard />
-                        </Layout>
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/calibration/dashboard"
-                    element={
-                      <RequireAuth>
-                        <Layout>
-                          <CalibrationDashboard />
                         </Layout>
                       </RequireAuth>
                     }

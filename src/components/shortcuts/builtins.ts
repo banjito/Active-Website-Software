@@ -8,7 +8,6 @@ export type BuiltinPortalKey =
   | "meetings"
   | "field_tech"
   | "engineering"
-  | "lab"
   | "admin"
   | "office"
   | "hr"
@@ -17,8 +16,6 @@ export type BuiltinPortalKey =
   | "georgia"
   | "virginia"
   | "international"
-  | "calibration"
-  | "armadillo"
   | "scavenger";
 
 interface BuiltinOption {
@@ -80,17 +77,6 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
     options: [
       { label: "Jobs", path: "/engineering/jobs" },
       { label: "Report Builder", path: "/engineering/report-builder" },
-    ],
-  },
-  {
-    key: "lab",
-    label: "Lab",
-    options: [
-      { label: "Dashboard", path: "/lab" },
-      { label: "Equipment", path: "/lab/equipment" },
-      { label: "Procedures", path: "/lab/procedures" },
-      { label: "Certificates", path: "/lab/certificates" },
-      { label: "Quality Metrics", path: "/lab/quality-metrics" },
     ],
   },
   {
@@ -196,7 +182,6 @@ export const BUILTIN_PORTALS: BuiltinPortal[] = [
       "georgia",
       "virginia",
       "international",
-      "armadillo",
       "scavenger",
     ] as BuiltinPortalKey[]
   ).map((key) =>

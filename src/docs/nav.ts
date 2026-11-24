@@ -16,7 +16,7 @@ import {
   PackageCheck,
   TrendingUp,
   Users,
-  FlaskConical,
+  PencilRuler,
   Building2,
   ShieldCheck,
   Plug,
@@ -316,24 +316,14 @@ export const docsSections: DocsSection[] = [
     ],
   },
   {
-    slug: "lab",
-    title: "Lab and engineering",
-    description: "Calibration, testing procedures, certificates, and design work.",
-    icon: FlaskConical,
+    slug: "engineering",
+    title: "Engineering",
+    description: "Design work, drawings, and standards.",
+    icon: PencilRuler,
     groups: [
       {
-        title: "Lab",
-        items: [
-          { title: "Lab overview", slug: "lab/overview" },
-          { title: "Equipment calibration", slug: "lab/equipment-calibration" },
-          { title: "Testing procedures", slug: "lab/testing-procedures" },
-          { title: "Certificates", slug: "lab/certificates" },
-          { title: "Quality metrics", slug: "lab/quality-metrics" },
-        ],
-      },
-      {
         title: "Engineering",
-        items: [{ title: "Engineering portal", slug: "lab/engineering-portal" }],
+        items: [{ title: "Engineering portal", slug: "engineering/engineering-portal" }],
       },
     ],
   },

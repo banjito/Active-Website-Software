@@ -25,8 +25,6 @@ const divisionDisplayMap: Record<string, string> = {
   'georgia': 'Atlanta',
   'virginia': 'Virginia',
   'international': 'International',
-  'calibration': 'Calibration',
-  'armadillo': 'Armadillo',
   'scavenger': 'Scavenger'
 };
 

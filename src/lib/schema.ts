@@ -31,13 +31,6 @@ export const SCHEMAS = {
   EQUIPMENT_ASSIGNMENTS: 'neta_ops.equipment_assignments',
   MAINTENANCE_ALERTS: 'neta_ops.maintenance_alerts',
   VEHICLES: 'neta_ops.vehicles',
-  
-  // lab schema tables
-  LAB_EQUIPMENT: 'lab.equipment',
-  LAB_CALIBRATIONS: 'lab.calibrations',
-  LAB_PROCEDURES: 'lab.procedures',
-  LAB_CERTIFICATES: 'lab.certificates',
-  LAB_QUALITY_METRICS: 'lab.quality_metrics'
 }
 
 // Function to help with migration from old schema
@@ -64,11 +57,6 @@ export function getTable(tableName: string): string {
     case 'equipment_assignments': return SCHEMAS.EQUIPMENT_ASSIGNMENTS;
     case 'maintenance_alerts': return SCHEMAS.MAINTENANCE_ALERTS;
     case 'vehicles': return SCHEMAS.VEHICLES;
-    case 'lab_equipment': return SCHEMAS.LAB_EQUIPMENT;
-    case 'lab_calibrations': return SCHEMAS.LAB_CALIBRATIONS;
-    case 'lab_procedures': return SCHEMAS.LAB_PROCEDURES;
-    case 'lab_certificates': return SCHEMAS.LAB_CERTIFICATES;
-    case 'lab_quality_metrics': return SCHEMAS.LAB_QUALITY_METRICS;
     default: return tableName; // For any tables not in our mapping, return as is
   }
 } 

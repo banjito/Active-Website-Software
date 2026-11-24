@@ -24,8 +24,6 @@ const ENTITY_TYPES = [
 // Non-field-tech divisions. The field tech cities come from common.divisions
 // so ones added from the sidebar appear here too.
 const OTHER_DIVISIONS = [
-  { id: "calibration", label: "Calibration" },
-  { id: "armadillo", label: "Armadillo" },
   { id: "scavenger", label: "Scavenger" },
   { id: "sales", label: "Sales" },
   { id: "engineering", label: "Engineering" },

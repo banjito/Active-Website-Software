@@ -45,7 +45,7 @@ You will not touch every step. A field tech lives in steps 4 and 5. An office ad
 ampOS was built for electrical testing specifically, not adapted to it.
 
 - **Real test reports.** Over 60 report forms that match ATS and MTS standards, with pass/fail limits, temperature correction, and print layouts that hold up when a customer's engineer reads them.
-- **Divisions.** Field Tech, Lab, Calibration, Engineering, and regional divisions each get their own dashboard and their own view of the work.
+- **Divisions.** Field Tech, Engineering, and regional divisions each get their own dashboard and their own view of the work.
 - **Offline-tolerant field work.** Reports save as you type so a dropped connection in a substation does not cost you an afternoon.
 - **Built-in review.** Nothing reaches a customer without someone approving it.
 

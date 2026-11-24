@@ -35,7 +35,7 @@ COMMENT ON COLUMN common.divisions.id IS
 COMMENT ON COLUMN common.divisions.label IS
   'What users see in the division switcher, e.g. north_alabama displays as "Decatur".';
 COMMENT ON COLUMN common.divisions.is_field_tech IS
-  'True for the cities in the Field Technician Portal switcher; false for standalone portals (engineering, calibration, lab, hr).';
+  'True for the cities in the Field Technician Portal switcher; false for standalone portals (engineering, scavenger, hr).';
 COMMENT ON COLUMN common.divisions.active IS
   'Set false to retire a division instead of deleting it. Deleting one that still has jobs is blocked by the foreign key, which is the point.';
 
@@ -77,10 +77,7 @@ ON CONFLICT (id) DO NOTHING;
 -- Field Tech switcher, but the foreign key still needs them to exist.
 INSERT INTO common.divisions (id, label, sort_order, is_field_tech) VALUES
   ('engineering', 'Engineering',         100, false),
-  ('calibration', 'Calibration Division',110, false),
-  ('armadillo',   'Armadillo Division',  120, false),
   ('scavenger',   'Scavenger Division',  130, false),
-  ('lab',         'Lab',                 140, false),
   ('hr',          'HR',                  150, false)
 ON CONFLICT (id) DO NOTHING;
 

@@ -94,7 +94,6 @@ interface DivisionDashboardProps {
   divisionName: string;
   showTechnicians?: boolean;
   showEquipment?: boolean;
-  showCalibrations?: boolean;
   showDocumentation?: boolean;
   customMetrics?: any[];
   metricsComponent?: React.ReactNode;
@@ -105,7 +104,6 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
   divisionName,
   showTechnicians = false,
   showEquipment = false,
-  showCalibrations = false,
   showDocumentation = false,
   customMetrics = [],
   metricsComponent,
@@ -133,7 +131,6 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
   // Sample data for tabs that might not exist yet
   const technicians = useMemo(() => [], []);
   const equipment = useMemo(() => [], []);
-  const calibrations = useMemo(() => [], []);
 
   // Scroll to top when the component mounts or division changes
   useLayoutEffect(() => {
@@ -518,9 +515,7 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
   }
 
   // Check if the division is one with special metrics
-  const hasCustomMetricsComponent = ["calibration", "scavenger"].includes(
-    division,
-  );
+  const hasCustomMetricsComponent = ["scavenger"].includes(division);
 
   // Add formatDate helper function
   const formatDate = (dateString: string | null) => {
@@ -749,19 +744,6 @@ export const DivisionDashboard: React.FC<DivisionDashboardProps> = ({
               </TabsTrigger>
             )}
 
-            {showCalibrations && (
-              <TabsTrigger
-                className="data-[state=active]:border-b-2 data-[state=active]:border-brand data-[state=active]:text-brand data-[state=active]:shadow-none rounded-none bg-transparent flex-1 h-12 sm:h-16 text-sm sm:text-base min-w-0"
-                value="calibrations"
-              >
-                <div className="flex flex-col items-center justify-center px-2">
-                  <span className="truncate">Calibrations</span>
-                  <span className="text-xs text-muted-foreground mt-1">
-                    {calibrations.length} calibrations
-                  </span>
-                </div>
-              </TabsTrigger>
-            )}
           </TabsList>
 
           <TabsContent value="jobs" className="p-3 sm:p-6">

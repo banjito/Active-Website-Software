@@ -18,8 +18,6 @@ const DIVISION_DISPLAY_MAP: Record<string, string> = {
   georgia: 'Atlanta',
   virginia: 'Virginia',
   international: 'International',
-  calibration: 'Calibration Division',
-  armadillo: 'Armadillo Division',
   scavenger: 'Scavenger Division',
   engineering: 'Engineering',
   field_tech: 'Field Technician Portal',

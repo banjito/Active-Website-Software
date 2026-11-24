@@ -17,7 +17,7 @@ export const DivisionProvider: React.FC<{ children: ReactNode }> = ({ children }
     
     if (pathSegments.length > 0) {
       const possibleDivision = pathSegments[0];
-      if (['neta', 'lab', 'scavs'].includes(possibleDivision)) {
+      if (['neta', 'scavs'].includes(possibleDivision)) {
         setDivision(possibleDivision);
       }
     }

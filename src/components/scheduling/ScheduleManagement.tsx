@@ -380,15 +380,9 @@ export function ScheduleManagement({
     setShowExceptionForm(true);
   };
 
-  // Filter out lab technicians - only show NETA and admin technicians
-  const isNotLabTech = (tech: any) => {
-    const portalType = tech.portal_type || tech.division;
-    return portalType !== "lab";
-  };
 
   // Prepare options for the technician select
   const technicianOptions: SelectOption[] = technicians
-    .filter((tech) => isNotLabTech(tech))
     .map((tech) => ({
       value: tech.user_id,
       label: formatDisplayName(tech.full_name, tech.email),

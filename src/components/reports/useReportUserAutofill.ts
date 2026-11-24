@@ -49,7 +49,7 @@ export function useJobEndUser(jobId: string | undefined | null): string {
         .select("end_user")
         .eq("id", jobId)
         .maybeSingle();
-      // A job in lab_ops, or an older database without the column, simply has
+      // An older database without the column simply has
       // no User to offer -- leave the field blank rather than guessing.
       if (error) return;
       const endUser = ((data as any)?.end_user || "").trim();

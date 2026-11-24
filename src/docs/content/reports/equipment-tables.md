@@ -21,11 +21,11 @@ For each instrument:
 
 ## Pulling from the equipment catalog
 
-Rather than typing serial numbers from memory, ampOS can pull from your company's lab equipment records. Pick the instrument from the list and its serial and calibration dates fill in.
+Rather than typing serial numbers from memory, ampOS can pull from your company's field equipment records. Pick the instrument from the list and its serial and calibration dates fill in.
 
 That is better for three reasons: no typos, calibration dates are always current, and an instrument that has gone out of calibration is visible before you use it on a job.
 
-Lab equipment records are managed under **Lab → Equipment calibration**. See [Equipment calibration](/docs/lab/equipment-calibration).
+Field equipment records, including calibration dates, are managed on the **Field Equipment** page. See [Field equipment](/docs/operations/field-equipment).
 
 ## Equipment on the job
 

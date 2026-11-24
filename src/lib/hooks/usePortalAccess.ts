@@ -59,17 +59,6 @@ export function usePortalAccess(portalType: Portal | string): PortalAccessContro
     };
   }
   
-  // Lab-specific permissions
-  if (portalType === 'lab') {
-    return {
-      canView: hasAccess || hasSpecificPermission('lab_view'),
-      canEdit: isAdmin || hasSpecificPermission('lab_manage'),
-      canDelete: isAdmin || hasSpecificPermission('lab_manage'),
-      canCreate: isAdmin || hasSpecificPermission('lab_manage'),
-      isAdmin
-    };
-  }
-  
   // NETA-specific permissions
   if (portalType === 'neta') {
     return {

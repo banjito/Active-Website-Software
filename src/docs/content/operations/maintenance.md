@@ -56,7 +56,7 @@ See [Scheduling](/docs/jobs/scheduling).
 
 ## Instrument calibration
 
-Calibration is maintenance, but it is managed through the lab because the dates feed directly into test reports. See [Equipment calibration](/docs/lab/equipment-calibration).
+Calibration is maintenance, but it is kept on the Field Equipment page because the dates feed directly into test reports. See [Field equipment](/docs/operations/field-equipment).
 
 ::: warning
 Do not let an instrument's calibration lapse quietly. Unlike a late oil change, an expired calibration retroactively undermines every reading taken with it, and it is printed on the report that goes to the customer.

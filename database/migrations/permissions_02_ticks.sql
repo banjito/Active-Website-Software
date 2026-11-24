@@ -26,7 +26,7 @@ FROM (VALUES
   ('estimates.send_proposal',  '{admin,sales,ops_manager}'::text[]),
   ('estimates.rfis',           '{admin,project_manager,sales,ops_manager}'::text[]),
 
-  ('jobs.view_assigned',       '{admin,project_manager,lead_tech,neta_tech,subcontractor,office_admin,engineer,lab_tech,ops_manager}'::text[]),
+  ('jobs.view_assigned',       '{admin,project_manager,lead_tech,neta_tech,subcontractor,office_admin,engineer,ops_manager}'::text[]),
   ('jobs.view_all',            '{admin,project_manager,office_admin,sales,engineer,ops_manager}'::text[]),
   ('jobs.create',              '{admin,project_manager,office_admin,ops_manager}'::text[]),
   ('jobs.edit_locked_info',    '{admin,project_manager,ops_manager}'::text[]),
@@ -34,7 +34,7 @@ FROM (VALUES
   ('jobs.documents',           '{admin,project_manager,lead_tech,office_admin,ops_manager}'::text[]),
   ('jobs.change_orders',       '{admin,project_manager,ops_manager}'::text[]),
 
-  ('reports.fill',             '{admin,project_manager,lead_tech,neta_tech,subcontractor,engineer,lab_tech,ops_manager}'::text[]),
+  ('reports.fill',             '{admin,project_manager,lead_tech,neta_tech,subcontractor,engineer,ops_manager}'::text[]),
   ('reports.review',           '{admin,project_manager,lead_tech,engineer,ops_manager}'::text[]),
   ('reports.export',           '{admin,project_manager,lead_tech,office_admin,engineer,ops_manager}'::text[]),
   ('reports.publish',          '{admin,project_manager,ops_manager}'::text[]),
@@ -48,12 +48,12 @@ FROM (VALUES
   ('billing.lien_waivers',     '{admin,project_manager,office_admin}'::text[]),
   ('billing.company_money',    '{admin}'::text[]),
 
-  ('schedule.view',            '{admin,hr,project_manager,lead_tech,neta_tech,office_admin,sales,engineer,lab_tech,scav,ops_manager}'::text[]),
+  ('schedule.view',            '{admin,hr,project_manager,lead_tech,neta_tech,office_admin,sales,engineer,scav,ops_manager}'::text[]),
   ('schedule.edit',            '{admin,project_manager,ops_manager}'::text[]),
   ('schedule.equipment',       '{admin,project_manager,lead_tech,ops_manager}'::text[]),
   ('schedule.approve_time',    '{admin,hr}'::text[]),
 
-  ('hr.view_own',              '{admin,hr,project_manager,lead_tech,neta_tech,office_admin,sales,engineer,lab_tech,scav,ops_manager}'::text[]),
+  ('hr.view_own',              '{admin,hr,project_manager,lead_tech,neta_tech,office_admin,sales,engineer,scav,ops_manager}'::text[]),
   ('hr.view_all',              '{hr}'::text[]),
   ('hr.payroll',               '{hr}'::text[]),
   ('hr.send_documents',        '{admin,hr}'::text[]),
@@ -66,7 +66,6 @@ FROM (VALUES
   ('admin.company_settings',   '{admin}'::text[]),
   ('admin.view_logs',          '{admin}'::text[]),
 
-  ('portal.lab',               '{admin,lab_tech}'::text[]),
   ('portal.engineering',       '{admin,engineer}'::text[]),
   ('portal.meetings',          '{admin,ops_manager}'::text[]),
   ('portal.scav',              '{admin,scav}'::text[])

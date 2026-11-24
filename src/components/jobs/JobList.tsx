@@ -57,13 +57,6 @@ interface TMFormData {
   division: string;
 }
 
-// Helper function to determine if the division is lab-related
-const isLabDivision = (div: string | null | undefined): boolean => {
-  if (!div) return false;
-  const lowerDiv = div.toLowerCase();
-  return ["calibration", "armadillo", "lab"].includes(lowerDiv);
-};
-
 interface Job {
   id: string;
   customer_id: string | null;
@@ -863,12 +856,9 @@ export default function JobList() {
     }, 30000);
 
     try {
-      const currentSchema = isLabDivision(division) ? "lab_ops" : "neta_ops";
-      const currentTable = isLabDivision(division) ? "lab_jobs" : "jobs";
-
       let jobQuery = supabase
-        .schema(currentSchema)
-        .from(currentTable)
+        .schema("neta_ops")
+        .from("jobs")
         .select("*")
         .is("deleted_at", null) // Only fetch non-deleted jobs
         .order("created_at", { ascending: false });
@@ -1434,13 +1424,9 @@ export default function JobList() {
     let payloadToLog: any = null; // For logging
 
     try {
-      const currentSchema = isLabDivision(division) ? "lab_ops" : "neta_ops";
-      const currentTable = isLabDivision(division) ? "lab_jobs" : "jobs";
+      const currentSchema = "neta_ops";
+      const currentTable = "jobs";
       const activeDivision = division;
-
-      console.log(
-        `Saving job to schema: ${currentSchema}, table: ${currentTable} for division: ${activeDivision}`,
-      );
 
       let finalBudget: number | undefined;
       if (formData.budget) {
@@ -1450,72 +1436,37 @@ export default function JobList() {
         }
       }
 
-      if (
-        activeDivision?.toLowerCase() === "calibration" ||
-        activeDivision?.toLowerCase() === "armadillo"
-      ) {
-        finalBudget = undefined;
-      }
-
       let result;
 
-      if (currentSchema === "lab_ops") {
-        const labJobData: Database["lab_ops"]["Tables"]["lab_jobs"]["Insert"] =
-          {
-            title: formData.title,
-            customer_id: formData.customer_id || null,
-            description: formData.description || undefined,
-            status: formData.status || "pending",
-            priority: formData.priority || "medium",
-            start_date: formData.start_date || null,
-            due_date: formData.due_date || null,
-            notes: formData.notes || undefined,
-            job_number: formData.job_number || null,
-            user_id: user.id,
-            division: activeDivision,
-            budget: finalBudget === undefined ? null : finalBudget,
-            portal_type: "lab",
-          };
-        payloadToLog = labJobData;
-
-        result = await supabase
-          .schema("lab_ops")
-          .from("lab_jobs")
-          .insert(labJobData)
-          .select("id")
-          .single();
-      } else {
-        // neta_ops
-        if (!formData.customer_id) {
-          console.error("Customer ID is required for neta_ops jobs.");
-          alert("Customer ID is required.");
-          return;
-        }
-
-        const netaJobData: Database["neta_ops"]["Tables"]["jobs"]["Insert"] = {
-          title: formData.title,
-          customer_id: formData.customer_id, // Must be string
-          description: formData.description || undefined,
-          status: formData.status || "pending",
-          priority: formData.priority || "medium",
-          start_date: formData.start_date || undefined,
-          due_date: formData.due_date || undefined,
-          notes: formData.notes || undefined,
-          job_number: formData.job_number || undefined,
-          user_id: user.id,
-          division: activeDivision || undefined,
-          budget: finalBudget,
-          // amount_paid is intentionally removed as it's not in the Insert type
-        };
-        payloadToLog = netaJobData;
-
-        result = await supabase
-          .schema("neta_ops")
-          .from("jobs")
-          .insert(netaJobData)
-          .select("id")
-          .single();
+      if (!formData.customer_id) {
+        console.error("Customer ID is required for neta_ops jobs.");
+        alert("Customer ID is required.");
+        return;
       }
+
+      const netaJobData: Database["neta_ops"]["Tables"]["jobs"]["Insert"] = {
+        title: formData.title,
+        customer_id: formData.customer_id, // Must be string
+        description: formData.description || undefined,
+        status: formData.status || "pending",
+        priority: formData.priority || "medium",
+        start_date: formData.start_date || undefined,
+        due_date: formData.due_date || undefined,
+        notes: formData.notes || undefined,
+        job_number: formData.job_number || undefined,
+        user_id: user.id,
+        division: activeDivision || undefined,
+        budget: finalBudget,
+        // amount_paid is intentionally removed as it's not in the Insert type
+      };
+      payloadToLog = netaJobData;
+
+      result = await supabase
+        .schema("neta_ops")
+        .from("jobs")
+        .insert(netaJobData)
+        .select("id")
+        .single();
 
       if (result.error) {
         console.error(
@@ -1592,9 +1543,6 @@ export default function JobList() {
       engineering: "Engineering",
       scavenger: "Scavenger",
       Decatur: "Decatur",
-      calibration: "Calibration Lab",
-      armadillo: "Armadillo Lab",
-      lab: "Lab Portal",
     };
 
     return (
@@ -1699,9 +1647,7 @@ export default function JobList() {
               </button>
             )}
 
-          {(division?.toLowerCase() === "calibration" ||
-            division?.toLowerCase() === "armadillo" ||
-            division?.toLowerCase() === "scavenger") && (
+          {division?.toLowerCase() === "scavenger" && (
             <button
               type="button"
               onClick={() => setIsOpen(true)}
@@ -2531,11 +2477,7 @@ export default function JobList() {
                   </div>
                 </div>
 
-                {/* Quoted Amount field visibility: always hidden if division is calibration or armadillo */}
-                {!(
-                  division?.toLowerCase() === "calibration" ||
-                  division?.toLowerCase() === "armadillo"
-                ) && (
+                {(
                   <div className="sm:col-span-1">
                     <label
                       htmlFor="budget"

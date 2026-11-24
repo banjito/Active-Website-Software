@@ -74,10 +74,12 @@ export const PERMISSION_KEYS = [
   "admin.company_settings",
   "admin.view_logs",
   // Other portals
-  "portal.lab",
   "portal.engineering",
   "portal.meetings",
   "portal.scav",
+  // Safety (database/migrations/safety_01_questions.sql)
+  "safety.manage_questions",
+  "safety.approve_questions",
 ] as const;
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[number];
@@ -133,6 +135,7 @@ export const ADMIN_PAGE_PERMISSIONS: Record<string, PermissionKey[]> = {
   "/admin-dashboard/notification-controls": ["admin.company_settings"],
   "/admin-dashboard/calibration-recipients": ["admin.company_settings"],
   "/admin-dashboard/site-theme": ["admin.company_settings"],
+  "/admin-dashboard/safety-questions": ["safety.manage_questions", "safety.approve_questions"],
 };
 
 export const ADMIN_PORTAL_KEYS: PermissionKey[] = [

@@ -178,8 +178,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       "international",
       "engineering",
       "field-tech",
-      "calibration",
-      "armadillo",
       "scavenger",
       ...fieldTechDivisions.map((d) => d.id),
     ].includes(pathSegments[0]) &&
@@ -614,8 +612,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       georgia: "Atlanta",
       virginia: "Virginia",
       international: "International",
-      calibration: "Calibration Division",
-      armadillo: "Armadillo Division",
       scavenger: "Scavenger Division",
       engineering: "Engineering Portal",
       field_tech: "Field Technician Portal",

@@ -63,5 +63,4 @@ See [Job files and documents](/docs/jobs/files-and-documents).
 
 ## Related
 
-- [Lab overview](/docs/lab/overview)
 - [Assets](/docs/jobs/assets): counting equipment off the one-line

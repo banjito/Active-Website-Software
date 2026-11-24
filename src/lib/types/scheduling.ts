@@ -27,7 +27,7 @@ interface Job {
 /**
  * Portal types for technician scheduling
  */
-export type PortalType = 'neta' | 'lab' | 'scavenger';
+export type PortalType = 'neta' | 'scavenger';
 
 /**
  * Assignment status types

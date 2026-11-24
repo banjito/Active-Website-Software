@@ -383,7 +383,6 @@ export const EditProfilePopup: React.FC<EditProfilePopupProps> = ({
   const availableRoles = [
     "Admin",
     "NETA Technician",
-    "Lab Technician",
     "Sales Representative",
     "Office Admin",
     "HR Representative",

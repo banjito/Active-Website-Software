@@ -34,6 +34,7 @@ import { format, formatDistanceToNow } from "date-fns";
 const subPathTitles: Record<string, string> = {
   "in-progress": "In Progress Dashboard",
   "report-time": "Report time",
+  "safety-questions": "Safety questions",
   people: "People & roles",
   "notification-controls": "Notification Dev Controls",
   "system-health": "System Health",
@@ -130,6 +131,12 @@ const CATEGORIES: CategorySection[] = [
         description: "How long reports take to fill out",
         icon: Timer,
         path: "/admin-dashboard/report-time",
+      },
+      {
+        title: "Safety questions",
+        description: "The steps every Daily JSA walks through",
+        icon: ShieldCheck,
+        path: "/admin-dashboard/safety-questions",
       },
       {
         title: "QuickBooks Dashboard",

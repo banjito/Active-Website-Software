@@ -52,7 +52,7 @@ Read [Test values and pass/fail](/docs/reports/test-values) for how limits and c
 
 Which instruments you used and their calibration dates.
 
-This is the section technicians skip and auditors check. A test result from an out-of-calibration meter is not a test result. ampOS can pull your company's lab equipment records here so you are picking from a list rather than typing serial numbers from memory. See [Equipment calibration](/docs/lab/equipment-calibration).
+This is the section technicians skip and auditors check. A test result from an out-of-calibration meter is not a test result. ampOS can pull your company's field equipment records here so you are picking from a list rather than typing serial numbers from memory. See [Field equipment](/docs/operations/field-equipment).
 
 ## 6. Comments
 

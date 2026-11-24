@@ -25,9 +25,7 @@ export default function TechnicianProfilesPage() {
   useEffect(() => {
     if (division) {
       // Every field tech division (including ones added from the sidebar) is neta.
-      if (['calibration', 'armadillo'].includes(division)) {
-        setPortalType('lab');
-      } else if (division === 'scavenger') {
+      if (division === 'scavenger') {
         setPortalType('scavenger');
       } else {
         setPortalType('neta');

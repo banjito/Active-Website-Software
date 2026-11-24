@@ -5830,70 +5830,6 @@ $$;
 
 
 --
--- Name: get_asset_id_by_report_id(uuid); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.get_asset_id_by_report_id(p_report_id uuid) RETURNS text
-    LANGUAGE plpgsql SECURITY DEFINER
-    AS $$
-DECLARE
-    result_asset_id TEXT;
-BEGIN
-    SELECT asset_id INTO result_asset_id
-    FROM lab_ops.lab_assets
-    WHERE report_id = p_report_id
-    AND deleted_at IS NULL
-    LIMIT 1;
-    
-    RETURN result_asset_id;
-END;
-$$;
-
-
---
--- Name: get_common_locations(); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.get_common_locations() RETURNS TABLE(location text, usage_count bigint)
-    LANGUAGE plpgsql SECURITY DEFINER
-    AS $$
-BEGIN
-    RETURN QUERY
-    WITH all_locations AS (
-        -- Get locations from lab_ops.lab_jobs (main table for your setup)
-        SELECT lj.location
-        FROM lab_ops.lab_jobs lj
-        WHERE lj.location IS NOT NULL AND lj.location != ''
-        AND EXISTS (SELECT 1 FROM information_schema.tables t WHERE t.table_schema = 'lab_ops' AND t.table_name = 'lab_jobs')
-        
-        UNION ALL
-        
-        -- Get locations from neta_ops.jobs if it exists
-        SELECT nj.location
-        FROM neta_ops.jobs nj
-        WHERE nj.location IS NOT NULL AND nj.location != ''
-        AND EXISTS (SELECT 1 FROM information_schema.tables t WHERE t.table_schema = 'neta_ops' AND t.table_name = 'jobs')
-        
-        UNION ALL
-        
-        -- Get locations from public.jobs if it exists
-        SELECT pj.location
-        FROM public.jobs pj
-        WHERE pj.location IS NOT NULL AND pj.location != ''
-        AND EXISTS (SELECT 1 FROM information_schema.tables t WHERE t.table_schema = 'public' AND t.table_name = 'jobs')
-    )
-    SELECT 
-        al.location,
-        COUNT(*) as usage_count
-    FROM all_locations al
-    GROUP BY al.location
-    ORDER BY usage_count DESC, al.location ASC
-    LIMIT 50;
-END;
-$$;
-
-
---
 -- Name: get_max_job_number(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -6796,50 +6732,6 @@ CREATE TABLE common.ampu_progress (
 --
 
 COMMENT ON TABLE common.ampu_progress IS 'AMPu learner progress, one row per (user, lesson). RLS scopes it to the owner; common.ampu_leaderboard() serves cross-user aggregates.';
-
-
---
--- Name: android_lab_customers; Type: VIEW; Schema: common; Owner: -
---
-
-CREATE VIEW common.android_lab_customers AS
- SELECT id,
-    name,
-    company_name,
-    email,
-    NULL::text AS phone,
-    NULL::text AS address,
-    NULL::text AS city,
-    NULL::text AS state,
-    NULL::text AS zip_code,
-    username,
-    user_id,
-    created_at,
-    updated_at
-   FROM lab_ops.lab_customers;
-
-
---
--- Name: android_lab_jobs; Type: VIEW; Schema: common; Owner: -
---
-
-CREATE VIEW common.android_lab_jobs AS
- SELECT id,
-    job_number,
-    title,
-    status,
-    division,
-    customer_id,
-    description,
-    start_date,
-    due_date,
-    budget,
-    priority,
-    notes,
-    user_id,
-    created_at,
-    updated_at
-   FROM lab_ops.lab_jobs;
 
 
 --
@@ -14843,50 +14735,6 @@ CREATE TABLE public.after_action_reports (
     CONSTRAINT after_action_reports_report_type_check CHECK ((report_type = ANY (ARRAY['technician_progress'::text, 'admin_closeout'::text]))),
     CONSTRAINT after_action_reports_status_check CHECK ((status = ANY (ARRAY['draft'::text, 'submitted'::text, 'approved'::text, 'rejected'::text])))
 );
-
-
---
--- Name: android_lab_customers; Type: VIEW; Schema: public; Owner: -
---
-
-CREATE VIEW public.android_lab_customers AS
- SELECT id,
-    name,
-    company_name,
-    email,
-    NULL::text AS phone,
-    NULL::text AS address,
-    NULL::text AS city,
-    NULL::text AS state,
-    NULL::text AS zip_code,
-    username,
-    user_id,
-    created_at,
-    updated_at
-   FROM lab_ops.lab_customers;
-
-
---
--- Name: android_lab_jobs; Type: VIEW; Schema: public; Owner: -
---
-
-CREATE VIEW public.android_lab_jobs AS
- SELECT id,
-    job_number,
-    title,
-    status,
-    division,
-    customer_id,
-    description,
-    start_date,
-    due_date,
-    budget,
-    priority,
-    notes,
-    user_id,
-    created_at,
-    updated_at
-   FROM lab_ops.lab_jobs;
 
 
 --
@@ -35259,21 +35107,6 @@ GRANT ALL ON FUNCTION neta_ops.soft_delete_report(table_name text, report_id uui
 
 
 --
--- Name: FUNCTION get_asset_id_by_report_id(p_report_id uuid); Type: ACL; Schema: public; Owner: -
---
-
-GRANT ALL ON FUNCTION public.get_asset_id_by_report_id(p_report_id uuid) TO authenticated;
-GRANT ALL ON FUNCTION public.get_asset_id_by_report_id(p_report_id uuid) TO anon;
-
-
---
--- Name: FUNCTION get_common_locations(); Type: ACL; Schema: public; Owner: -
---
-
-GRANT ALL ON FUNCTION public.get_common_locations() TO authenticated;
-
-
---
 -- Name: FUNCTION get_max_job_number(); Type: ACL; Schema: public; Owner: -
 --
 
@@ -35410,22 +35243,6 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.ampu_lessons TO authenticated;
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE common.ampu_progress TO authenticated;
-
-
---
--- Name: TABLE android_lab_customers; Type: ACL; Schema: common; Owner: -
---
-
-GRANT SELECT ON TABLE common.android_lab_customers TO anon;
-GRANT SELECT ON TABLE common.android_lab_customers TO authenticated;
-
-
---
--- Name: TABLE android_lab_jobs; Type: ACL; Schema: common; Owner: -
---
-
-GRANT SELECT ON TABLE common.android_lab_jobs TO anon;
-GRANT SELECT ON TABLE common.android_lab_jobs TO authenticated;
 
 
 --
@@ -37596,22 +37413,6 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE neta_ops.
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.admin_notifications TO authenticated;
-
-
---
--- Name: TABLE android_lab_customers; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT ON TABLE public.android_lab_customers TO anon;
-GRANT SELECT ON TABLE public.android_lab_customers TO authenticated;
-
-
---
--- Name: TABLE android_lab_jobs; Type: ACL; Schema: public; Owner: -
---
-
-GRANT SELECT ON TABLE public.android_lab_jobs TO anon;
-GRANT SELECT ON TABLE public.android_lab_jobs TO authenticated;
 
 
 --

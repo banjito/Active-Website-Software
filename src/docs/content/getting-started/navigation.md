@@ -8,7 +8,7 @@ ampOS is big. This page is a map.
 
 ## The portal
 
-The portal at `/portal` is home. It shows a tile for every area you have access to: Jobs, Sales, HR, Lab, Office, Admin, and one tile per division.
+The portal at `/portal` is home. It shows a tile for every area you have access to: Jobs, Sales, HR, Office, Admin, and one tile per division.
 
 Click the logo in the top-left corner of any page to come back here.
 

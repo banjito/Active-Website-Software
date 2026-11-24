@@ -168,106 +168,6 @@ export function useJobDetails(jobId: string | undefined) {
           });
         }
 
-        // If not found in neta_ops, try lab_ops.lab_jobs as fallback
-        if (netaJobError || !jobData) {
-          console.log(
-            "Job not found in neta_ops.jobs, trying lab_ops.lab_jobs",
-            {
-              netaJobError: netaJobError?.message,
-              hasJobData: !!jobData,
-              errorCode: netaJobError?.code,
-            },
-          );
-          const { data: labJobData, error: labJobError } = await supabase
-            .schema("lab_ops")
-            .from("lab_jobs")
-            .select(
-              `
-              id,
-              title,
-              job_number,
-              description,
-              status,
-              start_date,
-              due_date,
-              budget,
-              priority,
-              customer_id,
-              division,
-              deleted_at
-            `,
-            )
-            .eq("id", jobId)
-            .maybeSingle();
-
-          // Check if lab job is deleted
-          if (labJobData && labJobData.deleted_at) {
-            throw new Error(
-              "This job has been deleted and is no longer accessible.",
-            );
-          }
-
-          if (labJobError) {
-            console.error(
-              `useJobDetails: Error fetching job data from lab_ops.lab_jobs:`,
-              {
-                error: labJobError,
-                code: labJobError.code,
-                message: labJobError.message,
-              },
-            );
-            // If lab_ops table doesn't exist, that's okay - just use neta_ops error
-            if (
-              labJobError.code === "PGRST116" ||
-              labJobError.message?.includes("404") ||
-              labJobError.message?.includes("not found")
-            ) {
-              // Lab table doesn't exist, use the original neta_ops error
-              if (netaJobError) {
-                // Check for RLS/permission errors
-                if (
-                  netaJobError.code === "42501" ||
-                  netaJobError.message?.includes("permission denied") ||
-                  netaJobError.message?.includes("row-level security")
-                ) {
-                  throw new Error(
-                    `Permission denied: Unable to access job ${jobId}. Please check your authentication and permissions.`,
-                  );
-                }
-                if (
-                  netaJobError.code === "PGRST116" ||
-                  netaJobError.message?.includes("404")
-                ) {
-                  throw new Error(`Job ${jobId} not found in database`);
-                }
-                throw new Error(
-                  `Error loading job: ${netaJobError.message || "Unknown error"}`,
-                );
-              }
-              throw new Error(`Job ${jobId} not found in database`);
-            }
-            throw labJobError;
-          }
-
-          if (labJobData) {
-            jobData = labJobData;
-          } else if (!jobData) {
-            // Neither schema has the job - but check if it was an RLS error
-            if (netaJobError) {
-              if (
-                netaJobError.code === "42501" ||
-                netaJobError.message?.includes("permission denied") ||
-                netaJobError.message?.includes("row-level security")
-              ) {
-                throw new Error(
-                  `Permission denied: Unable to access job ${jobId}. Please check your authentication and permissions.`,
-                );
-              }
-            }
-            throw new Error(`Job ${jobId} not found in database`);
-          }
-        }
-
         if (!jobData) {
           // Check if the original error was a permission issue
           if (netaJobError) {
@@ -280,8 +180,16 @@ export function useJobDetails(jobId: string | undefined) {
                 `Permission denied: Unable to access job ${jobId}. Please check your authentication and permissions.`,
               );
             }
+            if (
+              netaJobError.code !== "PGRST116" &&
+              !netaJobError.message?.includes("404")
+            ) {
+              throw new Error(
+                `Error loading job: ${netaJobError.message || "Unknown error"}`,
+              );
+            }
           }
-          throw new Error("No job data found");
+          throw new Error(`Job ${jobId} not found in database`);
         }
 
         console.log(`useJobDetails: Job data fetched:`, jobData);

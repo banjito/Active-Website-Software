@@ -44,7 +44,7 @@ A job can have several deliverables, for example one per building or one per pha
 
 ## Division
 
-A part of the company with its own dashboard and its own slice of the work. Field Tech, Lab, Calibration, Engineering, and regional divisions like North Alabama or Tennessee.
+A part of the company with its own dashboard and its own slice of the work. Field Tech, Engineering, and regional divisions like North Alabama or Tennessee.
 
 Your division controls what you see by default. It does not usually restrict what you *can* see; that is roles.
 

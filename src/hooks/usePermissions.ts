@@ -7,7 +7,6 @@ const PORTAL_PERMISSIONS: Record<Portal, PermissionKey[]> = {
   sales: ['sales.view_pipeline'],
   neta: ['jobs.view_assigned', 'jobs.view_all'],
   field_tech: ['jobs.view_assigned', 'jobs.view_all'],
-  lab: ['portal.lab'],
   office: ['billing.view_sov'],
   engineering: ['portal.engineering'],
   scavenger: ['portal.scav'],

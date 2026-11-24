@@ -114,7 +114,6 @@ INSERT INTO common.permissions (key, area, label, description, sort_order) VALUE
   ('admin.company_settings',    'Admin', 'Company settings', 'Change company settings and divisions.', 840),
   ('admin.view_logs',           'Admin', 'See audit logs', 'See who changed what, and when.', 850),
 
-  ('portal.lab',                'Other portals', 'Open the Lab portal', 'The Lab portal.', 900),
   ('portal.engineering',        'Other portals', 'Open the Engineering portal', 'The Engineering portal.', 910),
   ('portal.meetings',           'Other portals', 'Open the Meetings portal', 'The Meetings portal.', 920),
   ('portal.scav',               'Other portals', 'Open the Scav portal', 'The Scav portal.', 930);
@@ -132,7 +131,6 @@ INSERT INTO common.roles (key, label, is_system, legacy_names, sort_order) VALUE
   ('office_admin',    'Office Admin',    true, '{"Office Admin"}', 80),
   ('sales',           'Sales',           true, '{"Sales Representative"}', 90),
   ('engineer',        'Engineer',        true, '{"Engineer"}', 100),
-  ('lab_tech',        'Lab Tech',        true, '{"Lab Technician"}', 110),
   ('scav',            'Scav',            true, '{"Scav"}', 120),
   ('ops_manager',     'Ops Manager',     true, '{"Operations Manager"}', 130);
 

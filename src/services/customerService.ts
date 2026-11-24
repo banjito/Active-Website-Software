@@ -54,7 +54,6 @@ export interface Customer {
 export const DIVISION_OPTIONS = [
   { value: 'field_tech', label: 'Field' },
   { value: 'scavenger', label: 'Scavenger' },
-  { value: 'armadillo', label: 'Armadillo' },
   { value: 'engineering', label: 'Engineering' },
 ] as const;
 

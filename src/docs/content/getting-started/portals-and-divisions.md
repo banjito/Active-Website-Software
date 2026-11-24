@@ -1,7 +1,7 @@
 ---
 title: Portals and divisions
 description: Why the app looks different for different people, and how to switch views.
-keywords: [division, portal, field tech, lab, calibration, dashboard]
+keywords: [division, portal, field tech, dashboard]
 ---
 
 Two things decide what you see in ampOS: which **portal** you are in, and which **division** you belong to.
@@ -15,7 +15,6 @@ A portal is a work area. Each one has its own sidebar and its own set of pages.
 | **Jobs** | Every job, across every division |
 | **Sales** | Opportunities, estimates, customers, contacts, territories, goals |
 | **Field Tech** | The field crew's dashboard, jobs, scheduling, field equipment |
-| **Lab** | Calibration, testing procedures, certificates, quality metrics |
 | **Engineering** | Designs, drawings, standards, engineering documentation |
 | **Office** | Vendors, purchase orders, resources |
 | **HR** | Hiring, onboarding, employee records, time off, reviews |
@@ -28,10 +27,7 @@ You only see portals your role gives you. If a portal is missing from your porta
 A division is a part of the company. ampOS ships with:
 
 - Field Tech
-- Lab
-- Calibration
 - Engineering
-- Armadillo
 - Scavenger
 - Regional divisions: North Alabama, Tennessee, Georgia, International
 

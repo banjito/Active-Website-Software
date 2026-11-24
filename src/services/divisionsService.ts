@@ -42,8 +42,7 @@ const UNDEFINED_TABLE = "42P01";
 
 /**
  * Standalone portals whose jobs live in neta_ops.jobs, so a job can be moved
- * into them. Calibration, armadillo and lab keep theirs in lab_ops.lab_jobs and
- * hr has none, so they are never offered on a neta_ops job.
+ * into them. hr has none, so it is never offered on a neta_ops job.
  */
 const STANDALONE_JOB_DIVISION_IDS = ["engineering", "scavenger"];
 

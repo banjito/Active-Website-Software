@@ -39,47 +39,6 @@ export const GLOBAL_DEFAULT_FILES: DefaultJobFile[] = [
 
 // Division-specific files
 export const DIVISION_DEFAULT_FILES: Record<string, DefaultJobFile[]> = {
-  calibration: [
-    {
-      name: 'Calibration Certificate Template',
-      description: 'Template for calibration certificates',
-      file_url: 'template://calibration-certificate',
-      template_type: 'calibration_certificate',
-      status: 'pending'
-    },
-    {
-      name: 'Measurement Uncertainty Analysis',
-      description: 'Uncertainty analysis worksheet',
-      file_url: 'template://uncertainty-analysis',
-      template_type: 'uncertainty_analysis',
-      status: 'pending'
-    },
-    {
-      name: 'Calibration Data Sheet',
-      description: 'Data recording sheet for calibrations',
-      file_url: 'template://calibration-data-sheet',
-      template_type: 'calibration_data',
-      status: 'pending'
-    }
-  ],
-  
-  armadillo: [
-    {
-      name: 'Armadillo Testing Procedures',
-      description: 'Specialized testing procedures for Armadillo division',
-      file_url: 'template://armadillo-testing',
-      template_type: 'armadillo_testing',
-      status: 'pending'
-    },
-    {
-      name: 'Quality Control Checklist',
-      description: 'QC checklist for Armadillo operations',
-      file_url: 'template://armadillo-qc',
-      template_type: 'quality_control',
-      status: 'pending'
-    }
-  ],
-  
   scavenger: [
     {
       name: 'Scavenger Operations Manual',

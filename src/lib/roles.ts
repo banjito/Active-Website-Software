@@ -3,7 +3,6 @@ import { canNow } from './permissionStore';
 
 export type Role =
   | 'NETA Technician'
-  | 'Lab Technician'
   | 'Scav'
   | 'HR Rep'
   | 'Office Admin'
@@ -16,7 +15,6 @@ export type Role =
 export type Portal = 
   | 'sales'
   | 'neta'
-  | 'lab'
   | 'hr'
   | 'office'
   | 'engineering'
@@ -52,7 +50,6 @@ export type PermissionResource =
   | 'system'
   | 'equipment'
   | 'technicians'
-  | 'lab'
   | 'engineering'
   | 'hr'
   | 'office'
@@ -105,18 +102,6 @@ export const ROLES: Record<Role, RolePermissions> = {
       { resource: 'jobs', action: 'edit', scope: 'own' },
       { resource: 'reports', action: 'create', scope: 'own' },
       { resource: 'reports', action: 'view', scope: 'own' }
-    ]
-  },
-  'Lab Technician': {
-    portals: ['lab', 'hr'],
-    canManageUsers: false,
-    canManageContent: false,
-    canViewAllData: false,
-    isSystemRole: true,
-    permissions: [
-      { resource: 'reports', action: 'create', scope: 'own' },
-      { resource: 'reports', action: 'view', scope: 'own' },
-      { resource: 'reports', action: 'edit', scope: 'own' }
     ]
   },
   'Scav': {
@@ -215,7 +200,7 @@ export const ROLES: Record<Role, RolePermissions> = {
     ]
   },
   'Admin': {
-    portals: ['sales', 'neta', 'lab', 'hr', 'office', 'engineering', 'scavenger', 'meetings', 'admin', 'field_tech'],
+    portals: ['sales', 'neta', 'hr', 'office', 'engineering', 'scavenger', 'meetings', 'admin', 'field_tech'],
     canManageUsers: true,
     canManageContent: true,
     canViewAllData: true,
@@ -453,7 +438,6 @@ export const getRoleBadgeClasses = (role: string | undefined | null): string => 
     case 'Operations Manager':
       return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
     case 'NETA Technician':
-    case 'Lab Technician':
       return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
     case 'Sales Representative':
       return 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300';

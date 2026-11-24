@@ -50,13 +50,11 @@ Vehicles are tracked alongside the gear:
 
 ## Calibration
 
-Instruments carry calibration dates, managed through the lab. Those dates feed the test equipment section on reports, so a technician picks a calibrated instrument from a list.
+Instruments carry calibration dates, kept on this page. Those dates feed the test equipment section on reports, so a technician picks a calibrated instrument from a list.
 
 ::: warning
 Equipment past its calibration date should be taken out of service, not quietly used. A reading from an out-of-calibration instrument is not a reading you can defend, and the expired date is printed on the report you send.
 :::
-
-See [Equipment calibration](/docs/lab/equipment-calibration).
 
 ## Reporting a problem
 

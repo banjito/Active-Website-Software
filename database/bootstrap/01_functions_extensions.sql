@@ -73,25 +73,6 @@ END;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION extensions.assign_lab_customer_role(user_id uuid)
- RETURNS boolean
- LANGUAGE plpgsql
- SECURITY DEFINER
-AS $function$
-BEGIN
-  -- Update the user's metadata to include the Lab Customer role
-  UPDATE auth.users
-  SET raw_user_meta_data = 
-    COALESCE(raw_user_meta_data, '{}'::jsonb) || 
-    jsonb_build_object('role', 'Lab Customer')
-  WHERE id = user_id;
-  
-  -- Return true if the update was successful
-  RETURN FOUND;
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION extensions.award_ppe_testing_xp(p_user_id uuid, p_task_type text, p_report_id uuid, p_report_type text, p_job_id uuid)
  RETURNS boolean
  LANGUAGE plpgsql
@@ -284,75 +265,6 @@ BEGIN
   -- like sending emails if user preferences indicate that
   
   RETURN v_notification_id;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION extensions.create_lab_job_with_customer_check(job_data jsonb)
- RETURNS json
- LANGUAGE plpgsql
- SECURITY DEFINER
-AS $function$
-DECLARE
-    customer_id_value UUID;
-    customer_exists BOOLEAN;
-    job_result RECORD;
-    result_json JSON;
-BEGIN
-    -- Extract customer_id from the job_data
-    customer_id_value := (job_data->>'customer_id')::UUID;
-    
-    -- Check if customer exists in lab_customers
-    SELECT EXISTS(
-        SELECT 1 FROM lab_ops.lab_customers 
-        WHERE id = customer_id_value
-    ) INTO customer_exists;
-    
-    -- If customer doesn't exist, try to find in common.customers and copy
-    IF NOT customer_exists THEN
-        INSERT INTO lab_ops.lab_customers (id, name, company_name, address, phone, email, status, created_at, updated_at)
-        SELECT id, name, company_name, address, phone, email, 
-               COALESCE(status, 'active'), created_at, updated_at
-        FROM common.customers 
-        WHERE id = customer_id_value
-        ON CONFLICT (id) DO NOTHING;
-        
-        -- If still no customer found, create a minimal one
-        INSERT INTO lab_ops.lab_customers (id, name, company_name, status)
-        VALUES (customer_id_value, 'Auto-created Customer', 'Unknown Company', 'active')
-        ON CONFLICT (id) DO NOTHING;
-    END IF;
-    
-    -- Now create the job
-    INSERT INTO lab_ops.lab_jobs (
-        customer_id, title, description, status, start_date, due_date, 
-        budget, notes, priority, division
-    ) VALUES (
-        customer_id_value,
-        job_data->>'title',
-        job_data->>'description',
-        COALESCE(job_data->>'status', 'pending'),
-        (job_data->>'start_date')::DATE,
-        (job_data->>'due_date')::DATE,
-        (job_data->>'budget')::DECIMAL,
-        job_data->>'notes',
-        COALESCE(job_data->>'priority', 'medium'),
-        job_data->>'division'
-    ) RETURNING * INTO job_result;
-    
-    -- Convert the result to JSON
-    result_json := to_json(job_result);
-    
-    RETURN result_json;
-    
-EXCEPTION
-    WHEN OTHERS THEN
-        -- Return error information
-        RETURN json_build_object(
-            'error', TRUE,
-            'code', SQLSTATE,
-            'message', SQLERRM
-        );
 END;
 $function$
 ;
@@ -813,21 +725,6 @@ END;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION extensions.is_lab_customer(user_id uuid)
- RETURNS boolean
- LANGUAGE plpgsql
- SECURITY DEFINER
-AS $function$
-BEGIN
-  RETURN EXISTS(
-    SELECT 1 FROM auth.users 
-    WHERE id = user_id 
-    AND raw_user_meta_data->>'role' = 'Lab Customer'
-  );
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION extensions.job_status_changed_notification()
  RETURNS trigger
  LANGUAGE plpgsql
@@ -1100,47 +997,6 @@ BEGIN
     WHERE schemaname = schema
     AND tablename = tablename;
     RETURN exists;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION extensions.test_ready_to_bill_data(job_id uuid)
- RETURNS text
- LANGUAGE plpgsql
- SECURITY DEFINER
-AS $function$
-DECLARE
-  job_data RECORD;
-BEGIN
-  -- Get job details
-  SELECT 
-    j.id,
-    j.job_number,
-    j.title,
-    j.division,
-    j.due_date,
-    j.budget,
-    j.user_id,
-    j.notes,
-    j.customer_id,
-    c.name as customer_name,
-    c.company_name,
-    c.email as customer_email
-  INTO job_data
-  FROM lab_ops.lab_jobs j
-  LEFT JOIN common.customers c ON j.customer_id = c.id
-  WHERE j.id = job_id;
-
-  IF job_data IS NULL THEN
-    RETURN 'Job not found';
-  END IF;
-
-  -- Return formatted job data
-  RETURN 'Job: ' || job_data.job_number || 
-         ' | Title: ' || COALESCE(job_data.title, 'No title') ||
-         ' | Customer: ' || COALESCE(job_data.customer_name, job_data.company_name, 'Unknown') ||
-         ' | Division: ' || COALESCE(job_data.division, 'Unknown') ||
-         ' | Status: ready-to-bill';
 END;
 $function$
 ;

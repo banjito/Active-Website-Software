@@ -18,7 +18,7 @@ Words this app uses in specific ways.
 
 **Deliverable.** The package the customer receives: cover letter, executive summary, and approved reports as one PDF.
 
-**Division.** A part of the company with its own dashboard. Field Tech, Lab, Calibration, Engineering, and regional divisions. Sets your default filters, not your permissions.
+**Division.** A part of the company with its own dashboard. Field Tech, Engineering, and regional divisions. Sets your default filters, not your permissions.
 
 **Instance** *(custom forms)*. One filled-out copy of a custom form template.
 
@@ -28,7 +28,7 @@ Words this app uses in specific ways.
 
 **Pay application.** The month's bill in the AIA G702/G703 style: contract, work done to date, retainage, and the amount due. Printed from the job's SOV. See [Billing from the SOV](/docs/project-management/billing-from-the-sov).
 
-**Portal.** A work area with its own sidebar. Sales, HR, Lab, Office, Admin, and others.
+**Portal.** A work area with its own sidebar. Sales, HR, Office, Admin, and others.
 
 **Preset** *(estimating)*. Saved rates and line items so every estimate starts from the same numbers.
 
@@ -114,7 +114,7 @@ See [Review and approval](/docs/reports/review-and-approval).
 
 ## Roles
 
-`NETA Technician` · `Lab Technician` · `Engineer` · `Sales Representative` · `Office Admin` · `HR Rep` · `Operations Manager` · `Scav` · `Admin`
+`NETA Technician` · `Engineer` · `Sales Representative` · `Office Admin` · `HR Rep` · `Operations Manager` · `Scav` · `Admin`
 
 Plus custom roles. See [Roles and permissions](/docs/admin/roles-and-permissions).
 

@@ -67,7 +67,8 @@ import {
 import { createPortal } from "react-dom";
 import { supabase, isConnectionError } from "../../lib/supabase";
 import { useAuth } from "../../lib/AuthContext";
-import { useCan } from "@/lib/permissions";
+import { useCan, useIsSubcontractor } from "@/lib/permissions";
+import JobSubcontractorsCard from "./JobSubcontractorsCard";
 import { useDemoMode } from "../../lib/DemoModeContext";
 import { useJobDetails } from "../../lib/hooks";
 import { usePreference } from "@/hooks/useUserPreferences";
@@ -589,6 +590,9 @@ interface MiscellaneousDocument {
 const JOB_DOCUMENT_CATEGORIES = JOB_DOCUMENT_TAGS;
 const jobDocumentCategoryLabel = documentTagLabel;
 
+/** Tabs an invited subcontractor sees (Roles scope item 8): Reports and Pictures. */
+const SUBCONTRACTOR_TABS = new Set(["assets", "pictures"]);
+
 const reportRoutes = {
   "Panelboard Report": "panelboard-report",
   "LV Switch Multi Device Test": "low-voltage-switch-multi-device-test",
@@ -844,6 +848,8 @@ export default function JobDetail() {
   const canSeeMoney = can("jobs.view_money"); // Profitability tab
   const canManageJob = can("jobs.create"); // delete the job, manage delays
   const canPublishReports = can("reports.publish"); // sent dates on Tracking
+  const isSubcontractor = useIsSubcontractor(); // outside sub: Reports and Pictures only
+  const canInviteSubs = can("jobs.invite_subcontractors");
 
   const [job, setJob] = useState<Job | null>(null);
   usePageTitle(
@@ -2216,7 +2222,7 @@ export default function JobDetail() {
   // PMs and division leads get a jump to the job's schedule of values (PM Dashboard)
   const pmAccess = usePmAccess();
   const [activeTab, setActiveTab] = useState(() =>
-    resolveJobDefaultTab(savedDefaultTab, can),
+    (isSubcontractor ? "assets" : resolveJobDefaultTab(savedDefaultTab, can)),
   );
   // Preferences may still be loading on first render; apply once they arrive,
   // unless the user already picked a tab.
@@ -2227,10 +2233,15 @@ export default function JobDetail() {
     if (new URLSearchParams(location.search).get("tab")) return;
     setActiveTab((current) =>
       current === JOB_DEFAULT_TAB_FALLBACK
-        ? resolveJobDefaultTab(savedDefaultTab, can)
+        ? (isSubcontractor ? "assets" : resolveJobDefaultTab(savedDefaultTab, can))
         : current,
     );
   }, [defaultTabLoading, savedDefaultTab, can, location.search]);
+
+  // Subcontractors never land on a staff tab, even from a ?tab= link
+  useEffect(() => {
+    if (isSubcontractor && !SUBCONTRACTOR_TABS.has(activeTab)) setActiveTab("assets");
+  }, [isSubcontractor, activeTab]);
 
   // Coming back from a report: land on the Reports list, not the default tab, and
   // scroll to the row that was opened.
@@ -5067,10 +5078,14 @@ export default function JobDetail() {
       tabs: [{ key: "notes", label: "Notes" }],
     },
   ];
-  const jobTabSections = allJobTabSections.map((section) => ({
-    ...section,
-    tabs: section.tabs.filter((tab) => !tab.hidden),
-  }));
+  const jobTabSections = allJobTabSections
+    .map((section) => ({
+      ...section,
+      tabs: section.tabs.filter(
+        (tab) => !tab.hidden && (!isSubcontractor || SUBCONTRACTOR_TABS.has(tab.key)),
+      ),
+    }))
+    .filter((section) => section.tabs.length > 0);
   const activeTabSection =
     jobTabSections.find((section) =>
       section.tabs.some((tab) => tab.key === activeTab),
@@ -10036,6 +10051,7 @@ export default function JobDetail() {
             </div>
             <div className="flex gap-2 items-center">
               {/* Shortcut toggle */}
+              {!isSubcontractor && (
               <Button
                 variant="outline"
                 onClick={toggleShortcut}
@@ -10058,6 +10074,9 @@ export default function JobDetail() {
               >
                 {isShortcut ? "In Shortcuts" : "Add to Shortcuts"}
               </Button>
+              )}
+
+              {!isSubcontractor && (<>
 
               {/* Edit job */}
               <Button
@@ -10071,12 +10090,14 @@ export default function JobDetail() {
               >
                 Edit Job
               </Button>
+
+              </>)}
             </div>
           </div>
         )}
         <div className="flex gap-2 items-center">
           {/* Job notifications (bell icon) */}
-          {!isEmbed && id && <JobNotifications jobId={id} />}
+          {!isEmbed && !isSubcontractor && id && <JobNotifications jobId={id} />}
         </div>
       </div>
 
@@ -11580,6 +11601,9 @@ export default function JobDetail() {
                         )}
                       </CardContent>
                     </Card>
+
+                    {/* Outside subcontractors on this job (Roles scope item 8) */}
+                    {canInviteSubs && job && <JobSubcontractorsCard jobId={job.id} />}
 
                     {/* RFIs answered during estimating; hidden when the job has none */}
                     {job && <JobRfis jobId={job.id} />}

@@ -197,6 +197,7 @@ const DiagramDefaultsPage = lazy(() => import("./components/diagrams/DiagramDefa
 // Text lives in common.standard_sections, never in the bundle.
 const StandardsPage = lazy(() => import("./app/standards/StandardsPage"));
 const PMJobDetail = lazy(() => import("./app/pm-dashboard/PMJobDetail"));
+const MyJobsPage = lazy(() => import("./app/my-jobs/page"));
 const SovPrintPage = lazy(() => import("./app/pm-dashboard/SovPrintPage"));
 
 // Articles for ampqes.com/articles: anyone writes, publishers publish.
@@ -2467,6 +2468,19 @@ function App() {
                       <RequireAuth>
                         <Layout>
                           <UnifiedJobsPage />
+                        </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  {/* Invited subcontractors' home (Roles scope item 8) */}
+                  <Route
+                    path="/my-jobs"
+                    element={
+                      <RequireAuth>
+                        <Layout>
+                          <Suspense fallback={<div className="flex min-h-[40vh] items-center justify-center"><LoadingSpinner size="md" /></div>}>
+                            <MyJobsPage />
+                          </Suspense>
                         </Layout>
                       </RequireAuth>
                     }

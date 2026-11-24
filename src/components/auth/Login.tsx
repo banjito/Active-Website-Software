@@ -66,7 +66,7 @@ const getFriendlyAuthMessage = (error: unknown, fallback: string) => {
   return error.message;
 };
 
-type Mode = "signin" | "signup" | "reset";
+type Mode = "signin" | "signup" | "reset" | "link";
 type Notice = { tone: "error" | "success" | "warning"; text: string } | null;
 
 const COPY: Record<Mode, { title: string; subtitle: string; submit: string }> =
@@ -85,6 +85,11 @@ const COPY: Record<Mode, { title: string; subtitle: string; submit: string }> =
       title: "Reset your password",
       subtitle: "Enter your email and we'll send you a reset link.",
       submit: "Send reset link",
+    },
+    link: {
+      title: "Email me a sign-in link",
+      subtitle: "For subcontractors invited to a job. No password needed.",
+      submit: "Send sign-in link",
     },
   };
 
@@ -383,13 +388,44 @@ export default function Login() {
     }
   };
 
+  // Subcontractors (Roles scope item 8). Same answer whether or not the email is
+  // invited, so the form can't be used to find out who is.
+  const handleSignInLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setNotice(null);
+    if (!email.trim()) {
+      setNotice({ tone: "error", text: "Enter your email first." });
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.functions.invoke("subcontractor-sign-in-link", {
+        body: { email: email.trim() },
+      });
+      if (error) throw error;
+      setNotice({
+        tone: "success",
+        text: "If that email is invited to a job, a sign-in link is on its way. Check your inbox.",
+      });
+    } catch (error) {
+      setNotice({
+        tone: "error",
+        text: getFriendlyAuthMessage(error, "Could not send the link. Try again in a minute."),
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const copy = COPY[mode];
   const onSubmit =
     mode === "signin"
       ? handleSignIn
       : mode === "signup"
         ? handleSignUp
-        : handleForgotPassword;
+        : mode === "link"
+          ? handleSignInLink
+          : handleForgotPassword;
 
   // Live checks shown under the fields while creating an account.
   const passwordOk = password.length >= MIN_PASSWORD_LENGTH;
@@ -526,7 +562,7 @@ export default function Login() {
                   </div>
 
                   {/* Password */}
-                  {mode !== "reset" && (
+                  {mode !== "reset" && mode !== "link" && (
                     <div>
                       <div className="mb-1.5 flex items-center justify-between">
                         <label
@@ -624,17 +660,30 @@ export default function Login() {
                 Use a different email
               </button>
             ) : mode === "signin" ? (
-              <>
-                New here?{" "}
-                <button
-                  type="button"
-                  onClick={() => switchMode("signup")}
-                  disabled={loading}
-                  className={linkClass}
-                >
-                  Create an account
-                </button>
-              </>
+              <div className="space-y-2">
+                <div>
+                  New here?{" "}
+                  <button
+                    type="button"
+                    onClick={() => switchMode("signup")}
+                    disabled={loading}
+                    className={linkClass}
+                  >
+                    Create an account
+                  </button>
+                </div>
+                <div>
+                  Subcontractor?{" "}
+                  <button
+                    type="button"
+                    onClick={() => switchMode("link")}
+                    disabled={loading}
+                    className={linkClass}
+                  >
+                    Email me a sign-in link
+                  </button>
+                </div>
+              </div>
             ) : mode === "signup" ? (
               <>
                 Already have an account?{" "}

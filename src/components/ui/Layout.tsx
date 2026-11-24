@@ -1,4 +1,4 @@
-import { useCan } from "@/lib/permissions";
+import { useCan, useIsSubcontractor } from "@/lib/permissions";
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../lib/AuthContext";
 import { useDivision } from "../../App";
@@ -95,6 +95,7 @@ function isReportFormPath(pathname: string): boolean {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, signOut } = useAuth();
   const { can: canDo } = useCan();
+  const isSubcontractor = useIsSubcontractor();
   const { division, setDivision } = useDivision();
   const location = useLocation();
   const navigate = useNavigate();
@@ -730,6 +731,23 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   // Render the appropriate menu items
   const renderMenuItems = () => {
+    // Invited subcontractors: their jobs, nothing else (Roles scope item 8)
+    if (isSubcontractor) {
+      return (
+        <Link to="/my-jobs" onClick={() => setIsMobileSidebarOpen(false)}>
+          <Button
+            variant="ghost"
+            leftIcon={<Briefcase className="h-4 w-4" />}
+            className={`w-full justify-start pl-3 my-0.5 rounded-none text-left font-medium text-black dark:text-dark-900 !transition-all !duration-200 ease-out hover:bg-black/5 dark:hover:bg-dark-50 hover:translate-x-1 !justify-start !outline-none !ring-0 !ring-offset-0 ${
+              location.pathname.startsWith("/my-jobs") ? "bg-black/5 dark:bg-dark-50" : ""
+            }`}
+          >
+            My jobs
+          </Button>
+        </Link>
+      );
+    }
+
     // The Office Administration Portal has its own menu
     const isOfficePortal = location.pathname.startsWith("/office");
     const hideJobsAndScheduling = isOfficePortal;

@@ -11,6 +11,13 @@ import type { EmailOtpType, Session } from "@supabase/supabase-js";
 const SDK_WAIT_MS = 4000;
 const POLL_INTERVAL_MS = 250;
 
+/** Where to go after a sign-in link, if it says (?next=/jobs/...). Only paths inside ampOS. */
+function safeNext(): string | null {
+  if (typeof window === "undefined") return null;
+  const next = new URLSearchParams(window.location.search).get("next");
+  return next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+}
+
 /** Link types that land on the password form instead of profile setup. */
 const PASSWORD_TYPES = new Set(["recovery", "invite"]);
 
@@ -88,6 +95,16 @@ export default function AuthCallback() {
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
   const started = useRef(false);
+  // Whether the page is still open. A ref, not a flag inside the effect below:
+  // React StrictMode (localhost) runs effects, cleans up, and runs them again, and
+  // a flag set by that fake cleanup left this page stuck on "Verifying" forever.
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     // One-time tokens can only be redeemed once, so this must never run twice
@@ -95,10 +112,11 @@ export default function AuthCallback() {
     if (started.current) return;
     started.current = true;
 
-    let cancelled = false;
+    const cancelled = () => !mounted.current;
+    const next = safeNext();
 
     const fail = (message: string, underlying?: unknown) => {
-      if (cancelled) return;
+      if (cancelled()) return;
       console.error("Auth callback failed:", message, underlying);
       setError(message);
       if (underlying instanceof Error) setDetail(underlying.message);
@@ -106,12 +124,12 @@ export default function AuthCallback() {
     };
 
     const succeed = (needsPassword: boolean) => {
-      if (cancelled) return;
+      if (cancelled()) return;
       setSuccess(true);
       setLoading(false);
       setTimeout(() => {
-        if (cancelled) return;
-        navigate(needsPassword ? "/reset-password" : "/profile-setup", {
+        if (cancelled()) return;
+        navigate(needsPassword ? "/reset-password" : next ?? "/profile-setup", {
           replace: true,
         });
       }, 1200);
@@ -161,7 +179,7 @@ export default function AuthCallback() {
         //    in the URL. Wait for it rather than racing it - redeeming the code
         //    twice fails.
         const session = await waitForSession(SDK_WAIT_MS);
-        if (cancelled) return;
+        if (cancelled()) return;
         if (session) {
           succeed(needsPassword);
           return;
@@ -171,7 +189,7 @@ export default function AuthCallback() {
         if (params.code) {
           const { data, error: exchangeError } =
             await supabase.auth.exchangeCodeForSession(params.code);
-          if (cancelled) return;
+          if (cancelled()) return;
 
           if (!exchangeError && data.session) {
             succeed(needsPassword);
@@ -181,7 +199,7 @@ export default function AuthCallback() {
           // The client may have consumed the code first and still be finishing,
           // which surfaces here as a spurious error - give it a last chance.
           const late = await waitForSession(SDK_WAIT_MS);
-          if (cancelled) return;
+          if (cancelled()) return;
           if (late) {
             succeed(needsPassword);
             return;
@@ -203,7 +221,7 @@ export default function AuthCallback() {
             access_token: params.accessToken,
             refresh_token: params.refreshToken || "",
           });
-          if (cancelled) return;
+          if (cancelled()) return;
 
           if (sessionError || !data.session) {
             fail(
@@ -226,10 +244,6 @@ export default function AuthCallback() {
     };
 
     void handleAuthCallback();
-
-    return () => {
-      cancelled = true;
-    };
   }, [navigate]);
 
   if (loading) {

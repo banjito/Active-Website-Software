@@ -2,6 +2,7 @@ import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import {
   canNow,
+  isSubcontractorNow,
   loadPermissionsFor,
   permissionsReady,
   permissionsVersion,
@@ -106,6 +107,14 @@ export function useCan(): { can: (key: PermissionKey) => boolean; loading: boole
   // version: a new answer from the database makes a new can(), so screens refresh
   const can = useCallback((key: PermissionKey) => ready && canNow(key), [ready, version]);
   return { can, loading: !ready };
+}
+
+/** An invited outside subcontractor: the app shows them only their jobs and reports. */
+export function useIsSubcontractor(): boolean {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  useSyncExternalStore(subscribePermissions, permissionsVersion, permissionsVersion);
+  return permissionsReady(userId) && isSubcontractorNow();
 }
 
 /**

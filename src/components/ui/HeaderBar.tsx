@@ -1,4 +1,4 @@
-import { canOpenAdminPortal, useCan } from "@/lib/permissions";
+import { canOpenAdminPortal, useCan, useIsSubcontractor } from "@/lib/permissions";
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -258,6 +258,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const rtDebounceRef = useRef<number | null>(null);
 
   const { can: canDo } = useCan();
+  const isSubcontractor = useIsSubcontractor();
   const canApproveReports = canDo("reports.review");
   const canSeeAdminPortal = canOpenAdminPortal(canDo);
   // Total calibration items in the dropdown lists (used only to decide whether
@@ -1021,6 +1022,31 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
     onMouseMove: (e: React.MouseEvent) => showTooltip(e, text),
     onMouseLeave: hideTooltip,
   });
+
+  // Invited subcontractors (Roles scope item 8): logo to their jobs, and sign out.
+  if (isSubcontractor) {
+    return (
+      <div className={`bg-white dark:bg-dark-150 p-4 max-sm:p-2 border-none ${className ?? ""}`}>
+        <div className="flex items-center justify-between gap-3 w-full min-w-0">
+          <Link to="/my-jobs" className="shrink-0" aria-label="My jobs">
+            <img src={iconUrl} alt="AMP Logo" className="h-12 max-sm:h-7" />
+          </Link>
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="truncate text-sm text-neutral-600 dark:text-neutral-300">
+              {user?.user_metadata?.name || user?.email}
+            </span>
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              className="rounded-none border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-800 hover:border-brand hover:text-brand dark:border-neutral-600 dark:text-neutral-100"
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo, useRef, useState,
 import { User } from "@supabase/supabase-js";
 import { getViewAs } from "./viewAs";
 import {
+  isSubcontractorNow,
   loadPermissionsFor,
   permissionsReady,
   permissionsVersion,
@@ -663,6 +664,9 @@ export function useAuth() {
   return context;
 }
 
+/** Pages an invited subcontractor may open: their job list, a job and its reports. */
+const SUBCONTRACTOR_PATHS = /^\/(my-jobs\/?$|jobs\/[^/]+|profile-setup|reset-password)/;
+
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const location = useLocation();
@@ -740,6 +744,11 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     );
+  }
+
+  // Invited subcontractors (Roles scope item 8) only get their jobs and reports
+  if (isSubcontractorNow() && !SUBCONTRACTOR_PATHS.test(location.pathname)) {
+    return <Navigate to="/my-jobs" replace />;
   }
 
   // Skip the profile-setup redirect on print-token sessions (the renderer

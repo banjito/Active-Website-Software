@@ -19,7 +19,7 @@ const STORE_PREFIX = "ampos.permissions.";
 const TIMEOUT_MS = 6000;
 const RETRY_AFTER_MS = 30_000;
 
-let current: { userId: string; keys: Set<string>; fresh: boolean } | null = null;
+let current: { userId: string; keys: Set<string>; role: string | null; fresh: boolean } | null = null;
 let inflight: { userId: string; promise: Promise<void> } | null = null;
 let lastFailure = 0;
 let version = 0;
@@ -30,18 +30,23 @@ function changed(): void {
   listeners.forEach((fn) => fn());
 }
 
-function readStored(userId: string): Set<string> | null {
+function readStored(userId: string): { keys: Set<string>; role: string | null } | null {
   try {
     const raw = window.localStorage.getItem(STORE_PREFIX + userId);
-    return raw ? new Set(JSON.parse(raw) as string[]) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as string[] | { keys: string[]; role: string | null };
+    // Older copies are a bare list of keys
+    return Array.isArray(parsed)
+      ? { keys: new Set(parsed), role: null }
+      : { keys: new Set(parsed.keys), role: parsed.role ?? null };
   } catch {
     return null;
   }
 }
 
-function writeStored(userId: string, keys: Set<string>): void {
+function writeStored(userId: string, keys: Set<string>, role: string | null): void {
   try {
-    window.localStorage.setItem(STORE_PREFIX + userId, JSON.stringify([...keys]));
+    window.localStorage.setItem(STORE_PREFIX + userId, JSON.stringify({ keys: [...keys], role }));
   } catch {
     // Storage blocked: the next visit just waits for the database.
   }
@@ -54,32 +59,34 @@ export function loadPermissionsFor(userId: string): Promise<void> {
 
   const viewAs = getViewAs();
   if (viewAs) {
-    current = { userId, keys: new Set(viewAs.permissions), fresh: true };
+    current = { userId, keys: new Set(viewAs.permissions), role: viewAs.roleKey, fresh: true };
     changed();
     return Promise.resolve();
   }
 
   if (current?.userId !== userId) {
     const stored = readStored(userId);
-    current = stored ? { userId, keys: stored, fresh: false } : null;
+    current = stored ? { userId, keys: stored.keys, role: stored.role, fresh: false } : null;
     changed();
   }
   // Offline or failing: don't ask again on every screen.
   if (current?.userId === userId && Date.now() - lastFailure < RETRY_AFTER_MS) return Promise.resolve();
 
-  const request = supabase
-    .schema("common")
-    .rpc("my_permissions")
-    .then(({ data, error }) => {
-      if (error) throw error;
-      const keys = new Set((data ?? []) as string[]);
-      // Still the same person signed in?
-      if (inflight?.userId === userId || current?.userId === userId) {
-        current = { userId, keys, fresh: true };
-        writeStored(userId, keys);
-        changed();
-      }
-    });
+  const request = Promise.all([
+    supabase.schema("common").rpc("my_permissions"),
+    supabase.schema("common").rpc("my_role_key"),
+  ]).then(([perms, roleRes]) => {
+    if (perms.error) throw perms.error;
+    if (roleRes.error) throw roleRes.error;
+    const keys = new Set((perms.data ?? []) as string[]);
+    const role = (roleRes.data as string | null) ?? null;
+    // Still the same person signed in?
+    if (inflight?.userId === userId || current?.userId === userId) {
+      current = { userId, keys, role, fresh: true };
+      writeStored(userId, keys, role);
+      changed();
+    }
+  });
   request.catch((err) => {
     lastFailure = Date.now();
     console.warn("Could not load permissions", err);
@@ -91,7 +98,7 @@ export function loadPermissionsFor(userId: string): Promise<void> {
     .then(() => {
       // No answer at all: nothing is allowed until one arrives.
       if (current?.userId !== userId) {
-        current = { userId, keys: new Set(), fresh: false };
+        current = { userId, keys: new Set(), role: null, fresh: false };
         changed();
       }
     })
@@ -110,6 +117,16 @@ export function permissionsReady(userId: string | null | undefined): boolean {
 /** The signed-in person has this permission. False until permissions load. */
 export function canNow(key: PermissionKey): boolean {
   return !!current?.keys.has(key);
+}
+
+/** The signed-in person's role key (e.g. "subcontractor"), or null. */
+export function roleKeyNow(): string | null {
+  return current?.role ?? null;
+}
+
+/** An invited outside subcontractor (Roles scope item 8): sees only their jobs. */
+export function isSubcontractorNow(): boolean {
+  return current?.role === "subcontractor";
 }
 
 export function subscribePermissions(fn: () => void): () => void {

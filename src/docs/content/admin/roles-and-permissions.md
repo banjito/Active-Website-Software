@@ -84,6 +84,18 @@ Cost and margin data is permission-gated. Field crews typically cannot see quote
 
 Decide this deliberately. There are good arguments for showing crews the numbers and good arguments against, but it should be a decision, not an accident of which role someone got assigned.
 
+## Subcontractors
+
+People outside the company can be invited to a job to fill in test reports. Admins and Project Managers have the **Invite subcontractors** permission.
+
+1. Open the job. On **Overview**, under **Contract Value & Billing**, find **Subcontractors** and click **Invite**.
+2. Enter their name, email and company. They get an email with a sign-in link. No password.
+3. Later visits: on the login page they choose **Email me a sign-in link**.
+
+An invited subcontractor sees only the jobs they're invited to: the job, its customer name and site, and every report on it. They can start reports, edit their own and add photos. They never see documents, drawings, money, contacts, HR, the schedule or other jobs, and they can't delete anything.
+
+Access lasts until someone removes it. Click the **X** next to their name. Removed from their last job, they see nothing until invited again.
+
 ## The audit trail
 
 Role changes and permission checks are logged: who changed what, when, and for whom. When someone asks how a person got access to something, the answer exists in the logs.

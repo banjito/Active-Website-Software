@@ -23,7 +23,6 @@ import {
   useLocation,
 } from "react-router-dom";
 import { useDivision } from "../../App";
-import { JobNotifications } from "./JobNotifications";
 import { JobActionItems } from "./JobActionItems";
 import {
   ACTION_ITEMS_CHANGED_EVENT,
@@ -1606,8 +1605,6 @@ export default function JobList() {
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          <JobNotifications />
-
           {/* T&M button for Field Tech divisions: needs "Create jobs" */}
           {(division === "field_tech" ||
             division === "field-tech" ||

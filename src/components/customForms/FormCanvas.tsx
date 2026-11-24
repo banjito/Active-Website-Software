@@ -1076,7 +1076,7 @@ export const FormCanvas: React.FC<FormCanvasProps> = ({
   };
 
   return (
-    <div ref={setNodeRef} className={`w-full mx-auto ${picked.length > 0 ? "pb-44 md:pb-24" : ""}`}>
+    <div ref={setNodeRef} className={`corners-sharp w-full mx-auto ${picked.length > 0 ? "pb-44 md:pb-24" : ""}`}>
       {/* Rest on a cell or field for a second to see its formula reference. */}
       <FormulaRefHover sections={ordered}>
       {reorderable && ordered.length > 1 && (

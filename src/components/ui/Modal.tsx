@@ -33,7 +33,7 @@ export function Modal({
     md: "max-w-lg",
     lg: "max-w-2xl",
     xl: "max-w-4xl",
-    full: "max-w-full w-full h-full m-0 rounded-none",
+    full: "max-w-full w-full h-full m-0 rounded-[0px]",
   };
 
   return createPortal(

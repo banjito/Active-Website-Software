@@ -38,6 +38,12 @@ Pick something with enough contrast to read as text on white **and** on the dark
 The brand color is used for interactive elements. Choosing a red or amber that reads as "error" or "warning" makes normal buttons look alarming. Test it on a page with real content before committing.
 :::
 
+## Corners
+
+Pick **Sharp** or **Rounded**. It changes buttons, cards, inputs, and popups for everyone, on their next page load.
+
+Reports, printed pages, and PDFs always stay sharp.
+
 ## Company details
 
 The company details set here print on generated documents (proposals, purchase orders, deliverables, certificates):
@@ -58,6 +64,7 @@ Get these right. They go out on every customer-facing document, and a wrong addr
 | Documentation | Logo |
 | Browser tab | Icon |
 | Buttons, links, active nav | Brand color |
+| Buttons, cards, inputs, popups | Corners |
 | Deliverable covers | Logo, colors, company details |
 | Proposals | Logo, company details, footer address |
 | Purchase orders | Logo, company details, PO email |

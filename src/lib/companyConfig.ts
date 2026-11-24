@@ -29,6 +29,9 @@ const list = (value: unknown, fallback: string[]): string[] =>
     ? value.split(",").map((s) => s.trim()).filter(Boolean)
     : fallback;
 
+/** Corner style for the whole app. Printed pages and PDFs are always sharp. */
+export type CornerStyle = "sharp" | "rounded";
+
 export const companyConfig = {
   /** Short product/company display name (page titles, UI). */
   name: str(env.VITE_COMPANY_NAME, "AMP"),
@@ -83,6 +86,11 @@ export const companyConfig = {
   /** Brand color (hex) and its darker hover companion. */
   brandColor: str(env.VITE_COMPANY_BRAND_COLOR, "#f26722"),
   brandColorDark: str(env.VITE_COMPANY_BRAND_COLOR_DARK, "#e55611"),
+
+  /** Starting corner style; admins can change it on the Website Theme page. */
+  corners: (env.VITE_COMPANY_CORNERS === "rounded"
+    ? "rounded"
+    : "sharp") as CornerStyle,
 
   /** Logo/favicon paths (files live in /public; swap files per instance). */
   logoPath: str(env.VITE_COMPANY_LOGO, "/ampOS_full_logo.svg"),
@@ -207,6 +215,13 @@ export const applyBrandColorValues = (brand: string, dark: string): void => {
 /** Apply the env/default brand colors. Call once at app boot (main.tsx). */
 export const applyBrandColors = (): void =>
   applyBrandColorValues(BRAND_COLOR, BRAND_COLOR_DARK);
+
+/** Set the app's corner style. The CSS lives at the end of index.css. */
+export const applyCornerStyle = (
+  corners: CornerStyle = companyConfig.corners
+): void => {
+  document.documentElement.dataset.corners = corners;
+};
 
 /** Darken a hex color by the given factor (0–1); used to derive the hover shade. */
 export const darkenHex = (hex: string, factor = 0.12): string => {

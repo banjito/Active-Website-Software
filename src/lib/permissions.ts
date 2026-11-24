@@ -77,7 +77,9 @@ export const PERMISSION_KEYS = [
   "portal.engineering",
   "portal.meetings",
   "portal.scav",
-  // Safety (database/migrations/safety_01_questions.sql)
+  // Safety (database/migrations/safety_01_questions.sql, safety_02_job_jha.sql)
+  "safety.edit_jha",
+  "safety.manage_hazards",
   "safety.manage_questions",
   "safety.approve_questions",
 ] as const;
@@ -136,6 +138,7 @@ export const ADMIN_PAGE_PERMISSIONS: Record<string, PermissionKey[]> = {
   "/admin-dashboard/calibration-recipients": ["admin.company_settings"],
   "/admin-dashboard/site-theme": ["admin.company_settings"],
   "/admin-dashboard/safety-questions": ["safety.manage_questions", "safety.approve_questions"],
+  "/admin-dashboard/hazard-lists": ["safety.manage_hazards", "safety.approve_questions"],
 };
 
 export const ADMIN_PORTAL_KEYS: PermissionKey[] = [

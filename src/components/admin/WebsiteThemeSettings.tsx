@@ -8,7 +8,7 @@ import Card, {
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { toast } from "@/components/ui/toast";
-import { darkenHex } from "@/lib/companyConfig";
+import { companyConfig, CornerStyle, darkenHex } from "@/lib/companyConfig";
 import {
   SiteTheme,
   defaultTheme,
@@ -21,6 +21,11 @@ import {
 
 const HEX_RE = /^#[0-9a-f]{6}$/i;
 const MAX_LOGO_BYTES = 1024 * 1024; // 1 MB
+
+const CORNER_OPTIONS: { value: CornerStyle; label: string; radius: number }[] = [
+  { value: "sharp", label: "Sharp", radius: 0 },
+  { value: "rounded", label: "Rounded", radius: 6 },
+];
 
 const DEFAULT_LOGO = "/ampOS_full_logo.svg";
 const DEFAULT_ICON = "/AMP-vector-filled.svg";
@@ -106,6 +111,7 @@ const WebsiteThemeSettings: React.FC = () => {
   const [logoUrl, setLogoUrl] = useState<string | undefined>(undefined);
   const [iconUrl, setIconUrl] = useState<string | undefined>(undefined);
   const [hideLogo, setHideLogo] = useState(false);
+  const [corners, setCorners] = useState<CornerStyle>(companyConfig.corners);
   const [suggested, setSuggested] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -124,6 +130,7 @@ const WebsiteThemeSettings: React.FC = () => {
           setLogoUrl(theme.logoUrl);
           setIconUrl(theme.iconUrl);
           setHideLogo(theme.hideLogo ?? false);
+          setCorners(theme.corners ?? companyConfig.corners);
         }
       })
       .catch((err) => {
@@ -147,9 +154,10 @@ const WebsiteThemeSettings: React.FC = () => {
         logoUrl,
         iconUrl,
         hideLogo,
+        corners,
       });
     }
-  }, [brand, dark, logoUrl, iconUrl, hideLogo]);
+  }, [brand, dark, logoUrl, iconUrl, hideLogo, corners]);
 
   // On leaving the page, restore whatever is actually saved. Uses a ref so
   // the restore runs only on unmount (not on every savedTheme change, which
@@ -219,6 +227,7 @@ const WebsiteThemeSettings: React.FC = () => {
         ...(logoUrl ? { logoUrl } : {}),
         ...(iconUrl ? { iconUrl } : {}),
         ...(hideLogo ? { hideLogo } : {}),
+        corners,
       };
       await saveSiteTheme(theme);
       setSavedTheme(theme);
@@ -249,11 +258,12 @@ const WebsiteThemeSettings: React.FC = () => {
       setLogoUrl(undefined);
       setIconUrl(undefined);
       setHideLogo(false);
+      setCorners(companyConfig.corners);
       setSuggested([]);
       applySiteTheme(null);
       toast({
         title: "Theme reset",
-        description: "Back to the default brand color and logos.",
+        description: "Back to the default brand color, logos, and corners.",
       });
     } catch (err) {
       console.error("Failed to reset site theme:", err);
@@ -272,7 +282,8 @@ const WebsiteThemeSettings: React.FC = () => {
     dark !== (savedTheme?.brandColorDark ?? defaultTheme.brandColorDark) ||
     logoUrl !== savedTheme?.logoUrl ||
     iconUrl !== savedTheme?.iconUrl ||
-    hideLogo !== (savedTheme?.hideLogo ?? false);
+    hideLogo !== (savedTheme?.hideLogo ?? false) ||
+    corners !== (savedTheme?.corners ?? companyConfig.corners);
 
   const colorField = (
     label: string,
@@ -451,6 +462,47 @@ const WebsiteThemeSettings: React.FC = () => {
                       Derive automatically from brand color
                     </label>
                   </div>
+                </div>
+              </div>
+
+              {/* Corners. The sample squares use fixed corners so each option
+                  shows its own look no matter which one is active. */}
+              <div>
+                <p
+                  id="theme-corners"
+                  className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1"
+                >
+                  Corners
+                </p>
+                <p className="text-xs text-neutral-500 mb-2">
+                  Buttons, cards, inputs, and popups. Reports, printed pages,
+                  and PDFs always stay sharp.
+                </p>
+                <div
+                  className="flex gap-3"
+                  role="radiogroup"
+                  aria-labelledby="theme-corners"
+                >
+                  {CORNER_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={corners === option.value}
+                      onClick={() => setCorners(option.value)}
+                      className={`flex items-center gap-3 rounded-none border px-4 py-2 text-sm ${
+                        corners === option.value
+                          ? "border-brand bg-brand/10 font-medium text-neutral-900 dark:text-white"
+                          : "border-neutral-300 text-neutral-600 hover:border-neutral-400 dark:border-neutral-600 dark:text-neutral-300"
+                      }`}
+                    >
+                      <span
+                        className="h-6 w-6 border-2 border-current"
+                        style={{ borderRadius: option.radius }}
+                      />
+                      {option.label}
+                    </button>
+                  ))}
                 </div>
               </div>
 

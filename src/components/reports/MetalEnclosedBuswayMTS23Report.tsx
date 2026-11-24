@@ -684,29 +684,17 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
     };
 
     const tcf = Number(formData.tcf);
-    if (!tcf || Number.isNaN(tcf)) {
-      // Clear corrected values when TCF is invalid
-      const cleared: Record<string, string> = {} as any;
-      keys.forEach((k) => {
-        cleared[k] = "";
-      });
-      const changed = keys.some(
-        (k) =>
-          (formData.correctedInsulationResistance[k] || "") !==
-          (cleared[k] || ""),
-      );
-      if (changed) {
-        setFormData((prev) => ({
-          ...prev,
-          correctedInsulationResistance: cleared,
-        }));
-      }
-      return;
-    }
+    const tcfValid = !!tcf && !Number.isNaN(tcf);
 
     const computed: Record<string, string> = {} as any;
     keys.forEach((k) => {
-      const base = parseReading((formData.insulationResistance as any)[k]);
+      const raw = String((formData.insulationResistance as any)[k] ?? "").trim();
+      // Text like "N/A" (no digits) is copied straight across
+      if (raw && !/\d/.test(raw)) {
+        computed[k] = raw;
+        return;
+      }
+      const base = tcfValid ? parseReading(raw) : null;
       computed[k] = base === null ? "" : (base * tcf).toFixed(2);
     });
 

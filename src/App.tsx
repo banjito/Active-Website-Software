@@ -127,6 +127,7 @@ const PublicChangeOrderSigning = React.lazy(
 const OAuthConsent = React.lazy(() => import("./components/auth/OAuthConsent"));
 const JobFileRedirect = React.lazy(() => import("./app/files/JobFileRedirect"));
 const SafetyQuestionSetEditor = React.lazy(() => import("./app/safety/QuestionSetEditor"));
+const SafetyWorkTypeEditor = React.lazy(() => import("./app/safety/WorkTypeEditor"));
 import { CandidateTracking } from "./pages/hr/recruiting/CandidateTracking";
 import { TalentPool } from "./pages/hr/recruiting/TalentPool";
 import { InterviewScheduling } from "./pages/hr/recruiting/InterviewScheduling";
@@ -777,6 +778,14 @@ function App() {
                       element={
                         <React.Suspense fallback={<LoadingSpinner size="md" />}>
                           <SafetyQuestionSetEditor />
+                        </React.Suspense>
+                      }
+                    />
+                    <Route
+                      path="hazard-lists"
+                      element={
+                        <React.Suspense fallback={<LoadingSpinner size="md" />}>
+                          <SafetyWorkTypeEditor />
                         </React.Suspense>
                       }
                     />

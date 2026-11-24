@@ -74,7 +74,8 @@ BEGIN
     OR NEW.edition IS DISTINCT FROM OLD.edition
     OR NEW.version IS DISTINCT FROM OLD.version
     OR NEW.notes IS DISTINCT FROM OLD.notes
-    OR NEW.approved_by IS DISTINCT FROM OLD.approved_by
+    -- Going to null is fine: that's the approver's account being deleted (their name stays)
+    OR (NEW.approved_by IS DISTINCT FROM OLD.approved_by AND NEW.approved_by IS NOT NULL)
     OR NEW.approved_at IS DISTINCT FROM OLD.approved_at
     OR NOT (NEW.status = OLD.status OR (OLD.status = 'in_use' AND NEW.status = 'retired'))
   ) THEN

@@ -5,7 +5,7 @@
  * in use; approved versions are frozen, so a change always means a new version.
  * Data: src/lib/safetyQuestions.ts, database/migrations/safety_01_questions.sql.
  */
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { format } from "date-fns";
 import { AlertTriangle, Check, CheckCircle2, Copy, Info, Plus, ShieldCheck, Trash2, X } from "lucide-react";
@@ -14,6 +14,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { toast } from "@/components/ui/toast";
 import { confirmDialog } from "@/components/ui/confirmDialog";
 import { useCan } from "@/lib/permissions";
+import { AutoTextarea, CARD, GHOST, GHOST_BASE, MUTED } from "./safetyUi";
 import {
   approveQuestionSet,
   deleteDraft,
@@ -51,15 +52,6 @@ const POWER_GROUPS: { when: CheckWhen; label: string }[] = [
   { when: "always", label: "Every time" },
 ];
 
-const CARD = "border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-dark-150";
-const MUTED = "text-neutral-500 dark:text-neutral-400";
-/** Looks like plain text until you point at it or click in. */
-const GHOST_BASE =
-  "-mx-1.5 rounded-none border border-transparent bg-transparent px-1.5 py-0.5 " +
-  "placeholder:text-neutral-400 hover:border-neutral-300 focus:border-brand focus:bg-white focus:outline-none focus:ring-0 " +
-  "dark:placeholder:text-neutral-500 dark:hover:border-neutral-600 dark:focus:bg-dark-100";
-const GHOST = `${GHOST_BASE} w-[calc(100%+0.75rem)]`;
-
 const day = (iso: string | null) => (iso ? format(new Date(iso), "MMM d, yyyy") : "");
 
 function toEdit(set: SafetyQuestionSet): EditState {
@@ -85,15 +77,8 @@ function fromEdit(edit: EditState): Pick<SafetyQuestionSet, "edition" | "steps" 
   };
 }
 
-function AutoTextarea({ className = "", ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  const ref = useRef<HTMLTextAreaElement>(null);
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
-  }, [props.value]);
-  return <textarea ref={ref} rows={1} {...props} className={`${GHOST} resize-none overflow-hidden ${className}`} />;
+function GhostTextarea({ className = "", ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <AutoTextarea {...props} className={`${GHOST} ${className}`} />;
 }
 
 export default function QuestionSetEditor() {
@@ -383,7 +368,7 @@ export default function QuestionSetEditor() {
 
                   {/* What the lead says */}
                   {editable ? (
-                    <AutoTextarea
+                    <GhostTextarea
                       aria-label={`Step ${i + 1}: what the person in charge says`}
                       className="text-sm text-neutral-800 dark:text-neutral-200"
                       value={step.prompt}
@@ -399,7 +384,7 @@ export default function QuestionSetEditor() {
                     <div className={`flex items-start gap-1.5 text-xs ${MUTED}`}>
                       <Info className="mt-1 h-3.5 w-3.5 flex-shrink-0" />
                       {editable ? (
-                        <AutoTextarea
+                        <GhostTextarea
                           aria-label={`Step ${i + 1} help`}
                           className={`text-xs ${MUTED}`}
                           value={step.help}
@@ -561,7 +546,7 @@ export default function QuestionSetEditor() {
             <div>
               <div className={`text-xs ${MUTED}`}>What changed</div>
               {editable ? (
-                <AutoTextarea
+                <GhostTextarea
                   aria-label="What changed in this version"
                   className="text-neutral-800 dark:text-neutral-200"
                   value={edit.notes}

@@ -115,6 +115,7 @@ New Netlify site from this repo, build command `npm run build`, publish
 - `VITE_COMPANY_EMAIL_DOMAINS` (comma-separated)
 - `VITE_COMPANY_SIGNER_NAME`, `VITE_COMPANY_SIGNER_TITLE`
 - `VITE_COMPANY_BRAND_COLOR`, `VITE_COMPANY_BRAND_COLOR_DARK`
+- `VITE_COMPANY_CORNERS` (`sharp` or `rounded`; default `sharp`)
 - `VITE_COMPANY_LOGO`, `VITE_COMPANY_FAVICON` (paths under `public/`)
 - `VITE_COMPANY_SHOW_HR_HANDBOOK=false` (handbook text is AMP's)
 - `VITE_COMPANY_OFFLINE_RELEASE_BASE` (only if they get the offline app)
@@ -149,7 +150,8 @@ the `CUSTOMER_PORTAL_URL` function secret matches.
 ## 7. Branding polish (in the app)
 
 Log in as their admin → Admin Dashboard → **Website Theme**: upload their
-logos, pick brand color (suggestions appear from the logo), Save.
+logos, pick brand color (suggestions appear from the logo), pick sharp or rounded
+corners, Save.
 
 ## 8. Smoke test (30 minutes)
 

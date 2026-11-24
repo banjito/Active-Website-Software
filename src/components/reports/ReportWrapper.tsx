@@ -2261,7 +2261,7 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
     <div
       id="report-container"
       data-report-locked={isReportLocked ? "true" : undefined}
-      className={`w-full ${wide ? "max-w-7xl" : "max-w-4xl"} mx-auto p-6 pb-20 ${isPrintMode ? "print-mode" : ""} ${isReportLocked ? "report-locked" : ""} overflow-x-auto screen-min-height`}
+      className={`w-full ${wide ? "max-w-7xl" : "max-w-4xl"} mx-auto p-6 pb-20 ${isPrintMode ? "print-mode" : ""} ${isReportLocked ? "report-locked" : ""} overflow-x-auto screen-min-height corners-sharp`}
     >
       {/* Locked banner is shown once by Layout.tsx for all report pages */}
       {/* Warns the technician when auto-save stops reaching the server, which

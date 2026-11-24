@@ -133,7 +133,7 @@ export const MetricsChart: React.FC<MetricsChartProps> = ({
               contentStyle={{
                 backgroundColor: "#ffffff",
                 border: "1px solid #e5e7eb",
-                borderRadius: "6px",
+                borderRadius: "var(--corner, 0px)",
                 fontSize: "12px",
               }}
             />

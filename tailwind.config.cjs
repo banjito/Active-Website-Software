@@ -146,9 +146,14 @@ module.exports = {
         bitcount: ['"Bitcount Grid Single"', 'ui-monospace', 'monospace']
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        // Corners follow the Website Theme page (sharp or rounded). --corner is
+        // only set in rounded mode (end of src/index.css), so `rounded-none`
+        // means "the theme's corners". For always-sharp use `rounded-[0px]`.
+        none: "var(--corner, 0px)",
+        DEFAULT: "var(--corner, 0px)",
+        sm: "var(--corner, 0px)",
+        md: "var(--corner, 0px)",
+        lg: "var(--corner, 0px)",
         'xl': '1rem',
         '2xl': '1.5rem',
         '3xl': '2rem',

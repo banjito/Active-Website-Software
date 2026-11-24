@@ -368,7 +368,7 @@
         right: -2px;
         bottom: -2px;
         border: 2px solid var(--brand);
-        border-radius: 6px;
+        border-radius: var(--corner, 0px);
         pointer-events: none;
         z-index: 1;
     }
@@ -434,7 +434,7 @@
     .form-input-mobile {
         font-size: 16px; /* Prevents zoom on iOS */
         padding: 12px 16px;
-        border-radius: 8px;
+        border-radius: var(--corner, 0px);
     }
 
     /* Standard form input classes */
@@ -508,7 +508,7 @@
     .table-mobile-wrapper {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        border-radius: 8px;
+        border-radius: var(--corner, 0px);
         border: 1px solid #e5e7eb;
     }
 
@@ -924,5 +924,81 @@
 @media (min-width: 768px) {
   .hr-warm h1:is(.text-3xl, .text-2xl) {
     font-size: 2.375rem;
+  }
+}
+
+/* Rounded corners (Website Theme page).
+   Tailwind's rounded-none/rounded/-sm/-md/-lg all read --corner, which is only
+   set here, so sharp mode, print, PDFs, and the offline app stay at 0.
+   .print-emulated is the report review preview showing print styles on screen.
+   Wrap anything that must stay sharp in .corners-sharp. */
+@media screen {
+  :root[data-corners="rounded"]:not(.print-emulated) {
+    --corner: 6px;
+  }
+
+  /* Reports are documents: sharp, except their buttons. */
+  :root[data-corners="rounded"] .corners-sharp {
+    --corner: 0px;
+  }
+  :root[data-corners="rounded"]:not(.print-emulated) .corners-sharp button {
+    --corner: 6px;
+  }
+
+  /* Boxes and filled buttons written without a rounded class. No specificity,
+     so any rounded-* class on the element still wins. */
+  :where(
+      :root[data-corners="rounded"]
+        :is(.border, button:is([class^="bg-"], [class*=" bg-"])):not(
+          td, th, tr, table, .border-b, [class*="border-b-"], [class*="border-l-0"], [class*="border-r-0"]
+        )
+    ) {
+    border-radius: var(--corner, 0px);
+  }
+
+  /* Table parts and the fields inside cells stay square. */
+  :root[data-corners="rounded"] :is(thead, tbody, tr, td, th),
+  :root[data-corners="rounded"] td :is(input, select, textarea) {
+    border-radius: 0;
+  }
+
+  /* Underline tabs and edge-to-edge bars stay square. */
+  :root[data-corners="rounded"]
+    .rounded-none[class*="border-b-2"]:not(.border, .animate-spin),
+  :root[data-corners="rounded"]
+    .fixed.rounded-none:is(.inset-0, .inset-x-0, .inset-y-0) {
+    border-radius: 0;
+  }
+
+  /* Joined buttons: round only the outer ends. */
+  :root[data-corners="rounded"] .border.-ml-px {
+    border-radius: 0;
+  }
+  :root[data-corners="rounded"] .border.-ml-px:first-child {
+    border-top-left-radius: var(--corner, 0px);
+    border-bottom-left-radius: var(--corner, 0px);
+  }
+  :root[data-corners="rounded"] .border.-ml-px:last-child {
+    border-top-right-radius: var(--corner, 0px);
+    border-bottom-right-radius: var(--corner, 0px);
+  }
+
+  /* Stacked boxes: keep a colored top or bottom strip inside the corners. */
+  :root[data-corners="rounded"]
+    div.rounded-none.border:is(.flex-col, :not(.flex, .grid, .inline-flex))
+    > div:first-child:not([class*="rounded"]) {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+  }
+  :root[data-corners="rounded"]
+    div.rounded-none.border:is(.flex-col, :not(.flex, .grid, .inline-flex))
+    > div:last-child:not([class*="rounded"]) {
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+  }
+
+  /* Loading spinners are circles in rounded mode. */
+  :root[data-corners="rounded"] .animate-spin.rounded-none {
+    border-radius: 9999px;
   }
 }

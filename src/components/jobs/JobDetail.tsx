@@ -52,9 +52,6 @@ import {
   Check,
   ArrowDownWideNarrow,
   LifeBuoy,
-  FileUp,
-  CloudUpload,
-  Layers,
   ArrowRightLeft,
   FolderPlus,
   ChevronsDownUp,
@@ -187,7 +184,9 @@ const ProcedureDrawer = lazy(() =>
   })),
 );
 
-import { JobNotifications } from "./JobNotifications";
+const JobSafety = lazy(() => import("./JobSafety"));
+
+import AddReportMenu from "./AddReportMenu";
 import { AssetCommentsDialog } from "@/components/ui/AssetCommentsDialog";
 import { SubmittalTracker } from "./SubmittalTracker";
 import JobNotes from "./JobNotes";
@@ -1036,10 +1035,6 @@ export default function JobDetail() {
     | "issue"
     | "archived"
   >(reportsListKey && `${reportsListKey}:status`, "all");
-  const [reportSearchQuery, setReportSearchQuery] = useState("");
-  const [reportTemplateType, setReportTemplateType] = useState<"ATS" | "MTS">(
-    "ATS",
-  );
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [newAssetName, setNewAssetName] = useState("");
   const [customFormTemplates, setCustomFormTemplates] = useState<
@@ -2969,7 +2964,7 @@ export default function JobDetail() {
       setIsSavingTracking(false);
     }
   };
-  const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const addReportButtonRef = useRef<HTMLButtonElement>(null);
 
   // Contract and Drawing Management State
   const [contracts, setContracts] = useState<Contract[]>([]);
@@ -3584,28 +3579,6 @@ export default function JobDetail() {
   const [isPublishingPortal, setIsPublishingPortal] = useState(false);
   const [portalPublishStatus, setPortalPublishStatus] = useState("");
 
-  // Handle clicking outside the dropdown
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    }
-
-    // Add event listener only if dropdown is open
-    if (isDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    // Clean up
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isDropdownOpen]);
-
   // Check for tab query parameter and update the active tab
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -3638,6 +3611,7 @@ export default function JobDetail() {
         "report-audit",
         "action-items",
         "after-action",
+        "safety",
         "profitability",
       ].includes(tabParam)
     ) {
@@ -4269,43 +4243,6 @@ export default function JobDetail() {
     assetSortField,
     assetSortDirection,
   ]);
-
-  // Filter report templates based on search (retired templates never show)
-  const selectableReportTemplates = defaultAssets.filter(
-    (asset) => !deprecatedReportTemplateIds.has(asset.id),
-  );
-  const filteredReportTemplates =
-    reportSearchQuery.trim() === ""
-      ? selectableReportTemplates
-      : selectableReportTemplates.filter((asset) =>
-          asset.name.toLowerCase().includes(reportSearchQuery.toLowerCase()),
-        );
-
-  // Reports matching the ATS/MTS toggle in the Add Asset dropdown
-  const toggledReportTemplates = filteredReportTemplates.filter(
-    (asset) => asset.template_type === reportTemplateType,
-  );
-
-  // Reports without an ATS/MTS designation stay visible under either toggle
-  const untypedReportTemplates = filteredReportTemplates.filter(
-    (asset) => !asset.template_type,
-  );
-
-  const filteredCustomFormTemplates =
-    reportSearchQuery.trim() === ""
-      ? customFormTemplates
-      : customFormTemplates.filter((t) =>
-          `${t.name} ${t.neta_section || ""}`
-            .toLowerCase()
-            .includes(reportSearchQuery.toLowerCase()),
-        );
-
-  const filteredInternalFormTemplates =
-    reportSearchQuery.trim() === ""
-      ? INTERNAL_FORM_TEMPLATES
-      : INTERNAL_FORM_TEMPLATES.filter((t) =>
-          t.name.toLowerCase().includes(reportSearchQuery.toLowerCase()),
-        );
 
   const reportAuditRows = useMemo(() => {
     return jobAssets
@@ -5052,6 +4989,11 @@ export default function JobDetail() {
       ],
     },
     {
+      id: "safety",
+      label: "Safety",
+      tabs: [{ key: "safety", label: "Safety" }],
+    },
+    {
       id: "financials",
       label: "Financials",
       tabs: [
@@ -5207,6 +5149,46 @@ export default function JobDetail() {
     } finally {
       setShowDeleteJobConfirm(false);
     }
+  };
+
+  // Shown at both the top and bottom of Edit Job Details.
+  const renderEditJobActions = () => {
+    const iconClass =
+      "inline-flex h-9 w-9 items-center justify-center rounded-none transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand touch:min-h-[40px] touch:min-w-[40px]";
+    return (
+      <div className="flex shrink-0 items-center gap-2">
+        {canManageJob && (
+          <button
+            type="button"
+            onClick={() => setShowDeleteJobConfirm(true)}
+            aria-label="Delete job"
+            title="Delete job"
+            className={`${iconClass} text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20`}
+          >
+            <Trash2 className="h-5 w-5 shrink-0" />
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => {
+            setIsEditing(false);
+            setEditFormData(null);
+          }}
+          className="h-9 rounded-none px-2 text-sm font-medium text-neutral-600 transition hover:text-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand touch:min-h-[40px] dark:text-neutral-400 dark:hover:text-white"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleEditSubmit}
+          aria-label="Save changes"
+          title="Save changes"
+          className={`${iconClass} text-brand hover:bg-brand/10`}
+        >
+          <Save className="h-5 w-5 shrink-0" />
+        </button>
+      </div>
+    );
   };
 
   // Handle file change for asset upload
@@ -6390,6 +6372,31 @@ export default function JobDetail() {
 
     return `/jobs/${jobIdSegment}/${mappedReportName}`;
   };
+
+  // Sits below getReportEditPath because it calls it while rendering.
+  // What the Add Report menu offers (retired templates never show). Memoized on
+  // open so the menu isn't rebuilt on every render of this page.
+  const addReportTemplates = useMemo(
+    () =>
+      isDropdownOpen
+        ? defaultAssets
+            .filter((asset) => !deprecatedReportTemplateIds.has(asset.id))
+            .map((asset) => ({
+              id: asset.id,
+              name: asset.name,
+              fileUrl: asset.file_url,
+              path: getReportEditPath(asset),
+              type: asset.template_type,
+            }))
+        : [],
+    // defaultAssets only changes with the job id
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isDropdownOpen, id],
+  );
+  const jobAssetUrls = useMemo(
+    () => jobAssets.map((asset) => asset.file_url || ""),
+    [jobAssets],
+  );
 
   // Helper: derive current identifier and substation for a report asset to compute display name and grouping
   useEffect(() => {
@@ -10052,53 +10059,53 @@ export default function JobDetail() {
             <div className="flex gap-2 items-center">
               {/* Shortcut toggle */}
               {!isSubcontractor && (
-              <Button
-                variant="outline"
+              <button
+                type="button"
                 onClick={toggleShortcut}
                 disabled={shortcutBusy}
-                className={`h-9 ${
+                aria-pressed={isShortcut}
+                aria-label={
                   isShortcut
-                    ? "border-yellow-400 text-yellow-600 dark:text-yellow-400"
-                    : ""
-                }`}
+                    ? "Remove from My Shortcuts"
+                    : "Add to My Shortcuts"
+                }
                 title={
                   isShortcut
                     ? "Remove from My Shortcuts"
                     : "Add to My Shortcuts"
                 }
-                leftIcon={
-                  <Bookmark
-                    className={`h-5 w-5 shrink-0 ${isShortcut ? "fill-current" : "fill-none"}`}
-                  />
-                }
+                className={`inline-flex h-9 w-9 items-center justify-center rounded-none transition touch:min-h-[40px] touch:min-w-[40px] disabled:cursor-not-allowed disabled:opacity-40 hover:bg-neutral-100 dark:hover:bg-dark-200 ${
+                  isShortcut
+                    ? "text-yellow-600 dark:text-yellow-400"
+                    : "text-neutral-600 hover:text-neutral-900 dark:text-dark-500 dark:hover:text-dark-900"
+                }`}
               >
-                {isShortcut ? "In Shortcuts" : "Add to Shortcuts"}
-              </Button>
+                <Bookmark
+                  className={`h-5 w-5 shrink-0 ${isShortcut ? "fill-current" : "fill-none"}`}
+                />
+              </button>
               )}
 
               {!isSubcontractor && (<>
 
               {/* Edit job */}
-              <Button
-                variant="outline"
+              <button
+                type="button"
                 onClick={() => {
                   setIsEditing(true);
                   setEditFormData(job);
                 }}
-                leftIcon={<Pencil className="h-5 w-5 shrink-0" />}
-                className="h-9"
+                aria-label="Edit job"
+                title="Edit job"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-none transition touch:min-h-[40px] touch:min-w-[40px] disabled:cursor-not-allowed disabled:opacity-40 hover:bg-neutral-100 dark:hover:bg-dark-200 text-neutral-600 hover:text-neutral-900 dark:text-dark-500 dark:hover:text-dark-900"
               >
-                Edit Job
-              </Button>
+                <Pencil className="h-5 w-5 shrink-0" />
+              </button>
 
               </>)}
             </div>
           </div>
         )}
-        <div className="flex gap-2 items-center">
-          {/* Job notifications (bell icon) */}
-          {!isEmbed && !isSubcontractor && id && <JobNotifications jobId={id} />}
-        </div>
       </div>
 
       <Card className="shadow-lg">
@@ -10106,15 +10113,16 @@ export default function JobDetail() {
           <div>
             {/* Edit Form Header */}
             <CardHeader className="border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-brand/10 rounded-none">
-                  <Edit3 className="h-5 w-5 text-brand" />
-                </div>
-                <div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="p-2 bg-brand/10 rounded-none">
+                    <Edit3 className="h-5 w-5 text-brand" />
+                  </div>
                   <CardTitle className="text-xl text-neutral-900 dark:text-white">
                     Edit Job Details
                   </CardTitle>
                 </div>
+                {renderEditJobActions()}
               </div>
             </CardHeader>
 
@@ -10627,39 +10635,7 @@ export default function JobDetail() {
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   * Required fields
                 </p>
-                <div className="flex gap-2">
-                  {canManageJob && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowDeleteJobConfirm(true)}
-                      className="px-4 py-2 text-sm border-red-300 dark:border-red-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      leftIcon={<Trash2 className="h-4 w-4 mr-1.5" />}
-                    >
-                      Delete Job
-                    </Button>
-                  )}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setIsEditing(false);
-                      setEditFormData(null);
-                    }}
-                    className="px-4 py-2 text-sm border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-dark-100"
-                    leftIcon={<X className="h-4 w-4 mr-1.5" />}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    onClick={handleEditSubmit}
-                    className="px-4 py-2 text-sm bg-brand hover:bg-brand/90 text-white"
-                    leftIcon={<Save className="h-4 w-4 mr-1.5" />}
-                  >
-                    Save Changes
-                  </Button>
-                </div>
+                {renderEditJobActions()}
               </div>
             </CardFooter>
           </div>
@@ -11643,11 +11619,10 @@ export default function JobDetail() {
                             </div>
                           )}
                           {/* order-last keeps Add Report visually after the search box */}
-                          <div
-                            className="relative shrink-0 order-last ml-1"
-                            ref={dropdownRef}
-                          >
+                          <div className="shrink-0 order-last ml-1">
                         <Button
+                          ref={addReportButtonRef}
+                          aria-expanded={isDropdownOpen}
                           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                           leftIcon={<Plus className="h-5 w-5 shrink-0" />}
                           className="h-10 whitespace-nowrap"
@@ -11656,232 +11631,23 @@ export default function JobDetail() {
                         </Button>
 
                         {isDropdownOpen && (
-                          <div className="absolute right-0 top-10 w-[32rem] max-w-[calc(100vw-2rem)] rounded-none shadow-lg bg-white dark:bg-dark-150 ring-1 ring-black ring-opacity-5 z-10">
-                            <div
-                              className="py-1"
-                              role="menu"
-                              aria-orientation="vertical"
-                            >
-                              <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white">
-                                Upload Document
-                              </div>
-                              <button
-                                className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                onClick={() => {
-                                  // Single upload path: the former "Upload PDF
-                                  // Report" dialog, which also captures a name
-                                  // and substation.
-                                  setShowPdfReportUploadDialog(true);
-                                  setIsDropdownOpen(false);
-                                }}
-                              >
-                                <div className="flex items-center">
-                                  <FileUp className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                  Upload File
-                                </div>
-                              </button>
-
-                              <button
-                                className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                onClick={() => {
-                                  handleImportReport();
-                                  setIsDropdownOpen(false);
-                                }}
-                              >
-                                <div className="flex items-center">
-                                  <CloudUpload className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                  Upload Offline Report
-                                </div>
-                              </button>
-
-                              <button
-                                className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                onClick={() => {
-                                  handleBatchImportReport();
-                                  setIsDropdownOpen(false);
-                                }}
-                              >
-                                <div className="flex items-center">
-                                  <Layers className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                  Batch Upload Offline Reports
-                                </div>
-                              </button>
-
-                              <div className="border-t border-neutral-100 dark:border-neutral-700 my-1"></div>
-
-                              <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white">
-                                Create Report
-                              </div>
-
-                              <div className="px-4 py-2">
-                                <Input
-                                  placeholder="Search reports..."
-                                  value={reportSearchQuery}
-                                  onChange={(e) =>
-                                    setReportSearchQuery(e.target.value)
-                                  }
-                                  className="w-full mb-2"
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                                <div
-                                  className="grid grid-cols-2 gap-0 border border-neutral-200 dark:border-dark-300"
-                                  role="group"
-                                  aria-label="Report specification"
-                                >
-                                  {(["ATS", "MTS"] as const).map((type) => (
-                                    <button
-                                      key={type}
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setReportTemplateType(type);
-                                      }}
-                                      aria-pressed={reportTemplateType === type}
-                                      className={`px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
-                                        reportTemplateType === type
-                                          ? "bg-brand text-white"
-                                          : "bg-white text-neutral-700 hover:bg-neutral-100 dark:bg-dark-150 dark:text-white dark:hover:bg-dark-100"
-                                      }`}
-                                    >
-                                      {type}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-
-                              <div className="max-h-60 overflow-y-auto">
-                                {toggledReportTemplates.length === 0 &&
-                                untypedReportTemplates.length === 0 &&
-                                filteredCustomFormTemplates.length === 0 &&
-                                filteredInternalFormTemplates.length === 0 ? (
-                                  <div className="px-4 py-2 text-sm text-neutral-500">
-                                    No matching reports found
-                                  </div>
-                                ) : (
-                                  <>
-                                    {/* Reports for the selected specification (ATS or MTS) */}
-                                    {toggledReportTemplates.length > 0 ? (
-                                      <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
-                                        {reportTemplateType} Reports
-                                      </div>
-                                    ) : (
-                                      <div className="px-4 py-2 text-sm text-neutral-500">
-                                        No {reportTemplateType} reports match
-                                      </div>
-                                    )}
-                                    {toggledReportTemplates.map((asset) => (
-                                      <Link
-                                        key={asset.id}
-                                        to={getReportEditPath(asset)}
-                                        className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                        onClick={() => setIsDropdownOpen(false)}
-                                      >
-                                        <div className="flex items-center">
-                                          <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                          <span className="truncate">
-                                            {asset.id ===
-                                            "low-voltage-cable-test-12sets"
-                                              ? "3-Low Voltage Cable Test ATS"
-                                              : asset.name}
-                                          </span>
-                                        </div>
-                                      </Link>
-                                    ))}
-
-                                    {/* Other Reports (if any without specific template_type) */}
-                                    {untypedReportTemplates.length > 0 && (
-                                      <>
-                                        <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
-                                          Other Reports
-                                        </div>
-                                        {untypedReportTemplates.map((asset) => (
-                                          <Link
-                                            key={asset.id}
-                                            to={getReportEditPath(asset)}
-                                            className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                            onClick={() =>
-                                              setIsDropdownOpen(false)
-                                            }
-                                          >
-                                            <div className="flex items-center">
-                                              <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                              <span className="truncate">
-                                                {asset.id ===
-                                                "low-voltage-cable-test-12sets"
-                                                  ? "3-Low Voltage Cable Test ATS"
-                                                  : asset.name}
-                                              </span>
-                                            </div>
-                                          </Link>
-                                        ))}
-                                      </>
-                                    )}
-
-                                    {/* Custom Forms */}
-                                    {filteredCustomFormTemplates.length >
-                                      0 && (
-                                      <>
-                                        <div className="border-t border-neutral-100 dark:border-neutral-700 my-1" />
-                                        <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
-                                          Custom Forms
-                                        </div>
-                                        {filteredCustomFormTemplates.map((t) => (
-                                          <Link
-                                            key={t.id}
-                                            to={`/jobs/${id}/custom-form/${t.id}/new`}
-                                            className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                            onClick={() =>
-                                              setIsDropdownOpen(false)
-                                            }
-                                          >
-                                            <div className="flex items-center">
-                                              <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                              <span className="truncate">
-                                                {t.name}
-                                              </span>
-                                              {t.neta_section && (
-                                                <span className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">
-                                                  ({t.neta_section})
-                                                </span>
-                                              )}
-                                            </div>
-                                          </Link>
-                                        ))}
-                                      </>
-                                    )}
-
-                                    {/* Internal Forms */}
-                                    {filteredInternalFormTemplates.length >
-                                      0 && (
-                                      <>
-                                        <div className="border-t border-neutral-100 dark:border-neutral-700 my-1" />
-                                        <div className="px-3 py-2 text-xs font-semibold text-neutral-500 dark:text-white bg-neutral-50 dark:bg-dark-150">
-                                          Internal Forms
-                                        </div>
-                                        {filteredInternalFormTemplates.map((t) => (
-                                          <Link
-                                            key={t.slug}
-                                            to={`/jobs/${id}/${t.slug}`}
-                                            className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                                            onClick={() =>
-                                              setIsDropdownOpen(false)
-                                            }
-                                          >
-                                            <div className="flex items-center">
-                                              <FileText className="h-5 w-5 min-w-[20px] mr-2 flex-shrink-0" />
-                                              <span className="truncate">
-                                                {t.name}
-                                              </span>
-                                            </div>
-                                          </Link>
-                                        ))}
-                                      </>
-                                    )}
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </div>
+                          <AddReportMenu
+                            jobId={id || ""}
+                            anchorRef={addReportButtonRef}
+                            templates={addReportTemplates}
+                            customForms={customFormTemplates}
+                            internalForms={INTERNAL_FORM_TEMPLATES}
+                            jobAssetUrls={jobAssetUrls}
+                            onClose={() => setIsDropdownOpen(false)}
+                            // Single upload path: the former "Upload PDF
+                            // Report" dialog, which also captures a name
+                            // and substation.
+                            onUploadFile={() =>
+                              setShowPdfReportUploadDialog(true)
+                            }
+                            onUploadOffline={handleImportReport}
+                            onBatchUploadOffline={handleBatchImportReport}
+                          />
                         )}
                           </div>
                           <button
@@ -13682,6 +13448,12 @@ export default function JobDetail() {
 
                 {activeTab === "pictures" && job && (
                   <JobPictures jobId={job.id} />
+                )}
+
+                {activeTab === "safety" && job && (
+                  <Suspense fallback={<LoadingSpinner size="md" />}>
+                    <JobSafety key={job.id} jobId={job.id} />
+                  </Suspense>
                 )}
 
                 {activeTab === "tracking" && job && (

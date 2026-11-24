@@ -5210,7 +5210,7 @@ export default function FieldEquipmentList() {
             className={`fixed inset-0 flex items-center justify-center ${isFullscreen ? "p-0" : "p-4"}`}
           >
             <Dialog.Panel
-              className={`${isFullscreen ? "w-full h-full rounded-none" : "mx-auto max-w-[98vw] w-full h-[96vh] max-h-[96vh] rounded-none bg-white dark:bg-dark-150 shadow-xl flex flex-col"}`}
+              className={`${isFullscreen ? "w-full h-full rounded-[0px]" : "mx-auto max-w-[98vw] w-full h-[96vh] max-h-[96vh] rounded-none bg-white dark:bg-dark-150 shadow-xl flex flex-col"}`}
             >
               {/* Slim header: icon-only actions, no borders, one close button */}
               <div className="flex items-center justify-between gap-3 border-b border-neutral-200 py-2 pl-4 pr-2 dark:border-dark-200 flex-shrink-0">

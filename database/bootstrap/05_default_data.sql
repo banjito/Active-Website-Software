@@ -109,3 +109,58 @@ VALUES (1, '2027', 'draft', $json$[
 'First draft, written by ampOS in our own words. Section numbers came from OSHA and training sites, not the book. The safety lead checks every one before approving.',
 'ampOS')
 ON CONFLICT (version) DO NOTHING;
+
+-- Starter hazard lists (source: database/migrations/safety_02_job_jha.sql).
+-- All wait for the instance's safety lead to approve them.
+INSERT INTO neta_ops.safety_work_types (key, name, sort_order, draft_hazards)
+VALUES
+  ('switchgear_acceptance', 'Switchgear acceptance', 10, $json$[
+    {"key": "backfeed", "hazard": "Gear energized, or backfed from a second source", "controls": "Check the one-line for every source. Lock and tag each one. Test dead before touching."},
+    {"key": "our_test_voltage", "hazard": "Test voltage from our own gear", "controls": "Barricade the test area, far ends included. One person watches. Discharge and ground after each test."},
+    {"key": "stored_energy", "hazard": "Charged springs and moving mechanisms", "controls": "Discharge springs and remove control power before reaching in. Keep hands clear."},
+    {"key": "racking", "hazard": "Racking and lifting breakers", "controls": "Use the lift cart and two people. Keep the door closed while racking where the gear allows."},
+    {"key": "control_circuits", "hazard": "Live control power, and CT or VT circuits", "controls": "Treat as live until tested. Short CT secondaries before opening them. Open VT secondaries."},
+    {"key": "covers", "hazard": "Heavy covers, sharp edges and pinch points", "controls": "Two people on large covers. Wear cut-resistant gloves. Set covers where nobody trips on them."},
+    {"key": "other_trades", "hazard": "Other trades in the area", "controls": "Barricade and post signs. Agree with the site lead who may enter and when."}
+  ]$json$::jsonb),
+  ('breaker_testing', 'Breaker testing', 20, $json$[
+    {"key": "backfeed", "hazard": "Line or load side still energized", "controls": "Check the one-line for every source. Lock and tag. Test dead on both sides before touching."},
+    {"key": "unexpected_operation", "hazard": "Breaker trips or closes by itself", "controls": "Remove control power and discharge springs before reaching in. Call out before each operation."},
+    {"key": "high_current", "hazard": "High current and hot leads from primary injection", "controls": "Size and tighten leads for the current. Hands off during injection. Let leads cool."},
+    {"key": "our_test_voltage", "hazard": "Insulation and withstand test voltage", "controls": "Barricade the test area. One person watches. Discharge and ground after each test."},
+    {"key": "vacuum_xray", "hazard": "X-rays from vacuum bottles during a high voltage withstand test", "controls": "Stay at or below the maker's test voltage. Keep panels on and people at the maker's distance."},
+    {"key": "racking", "hazard": "Racking and lifting", "controls": "Use the lift cart and two people. Check the path and the floor first."}
+  ]$json$::jsonb),
+  ('transformer_testing', 'Transformer testing', 30, $json$[
+    {"key": "backfeed", "hazard": "Energized or backfed windings", "controls": "Lock and tag both the high and low sides. Test dead and ground before connecting."},
+    {"key": "induced_voltage", "hazard": "High voltage on windings we aren't testing", "controls": "Treat every winding as live during ratio tests. Clear everyone from all the bushings. Connect the way the test set's manual shows."},
+    {"key": "stored_winding", "hazard": "Energy stored in the winding after a resistance test", "controls": "Wait for the test set to show it's discharged before lifting a lead."},
+    {"key": "stored_charge", "hazard": "Charge left after insulation tests", "controls": "Discharge and ground. Wait the full time before touching."},
+    {"key": "heights", "hazard": "Working on top of the tank", "controls": "Use fall protection or a lift. Keep three points of contact on ladders."},
+    {"key": "oil", "hazard": "Oil on skin and floors, hot oil, and fire", "controls": "Wear oil-resistant gloves and eye protection. Keep absorbent close. No ignition sources near oil."},
+    {"key": "tank_entry", "hazard": "Nitrogen or low oxygen in the tank", "controls": "Never put your head or body inside without a confined space plan and an air check."}
+  ]$json$::jsonb),
+  ('mv_cable_vlf', 'MV cable VLF testing', 40, $json$[
+    {"key": "far_end", "hazard": "Test voltage at the far end", "controls": "Barricade both ends and post a person at the far end. Radio check first."},
+    {"key": "stored_charge", "hazard": "Charge left in the cable after the test", "controls": "Discharge and ground. Wait the full time before touching."},
+    {"key": "induced_voltage", "hazard": "Voltage induced from nearby cables", "controls": "Ground before touching. Keep grounds on when not testing."},
+    {"key": "wrong_cable", "hazard": "Working on the wrong cable", "controls": "Prove which cable it is at both ends. Test dead at the work spot."},
+    {"key": "backfeed", "hazard": "Cable energized from the other end", "controls": "Lock and tag both ends. Test dead and ground at both ends."},
+    {"key": "vaults", "hazard": "Manholes and vaults", "controls": "Check the air. Follow the site's confined space plan. Keep an attendant up top."}
+  ]$json$::jsonb),
+  ('relay_testing', 'Relay testing', 50, $json$[
+    {"key": "unexpected_trip", "hazard": "Tripping or closing in-service equipment", "controls": "Isolate trip and close outputs first. Two people check the isolation. Tell the control room."},
+    {"key": "vt_backfeed", "hazard": "Injected voltage stepping up through a VT to the high side", "controls": "Open the VT secondary test switch or pull its fuses before injecting voltage."},
+    {"key": "open_ct", "hazard": "High voltage from an open CT secondary", "controls": "Short the CT at the test switch before opening the circuit. Check the short."},
+    {"key": "control_power", "hazard": "Live control and trip circuits", "controls": "Treat as live. Use insulated tools. Know where to open control power."},
+    {"key": "nearby_live", "hazard": "Live gear in the next cubicle", "controls": "Read the labels. Mark or barricade the panels we aren't working in."},
+    {"key": "restore", "hazard": "Leaving it isolated or wired wrong", "controls": "Log every switch, wire and fuse moved. A second person checks they're back."}
+  ]$json$::jsonb),
+  ('infrared', 'Infrared', 60, $json$[
+    {"key": "live_covers", "hazard": "Open covers on live gear", "controls": "Use IR windows where they exist. Otherwise read the label first. Covers come off only under the site's energized work rules."},
+    {"key": "arc_flash", "hazard": "Arc flash while moving covers", "controls": "Only a qualified person dressed for the label moves covers. Everyone else stays outside the arc flash boundary."},
+    {"key": "dropped_parts", "hazard": "Screws, tools or covers falling into live gear", "controls": "Empty pockets and take off jewelry. Two people on large covers. Account for every screw."},
+    {"key": "camera_focus", "hazard": "Tripping or leaning in while looking at the camera", "controls": "Stop walking before looking at the screen. A second person watches your distance."},
+    {"key": "alone", "hazard": "Working alone near live gear", "controls": "Bring a second person who knows the emergency plan."}
+  ]$json$::jsonb)
+ON CONFLICT (key) DO NOTHING;

@@ -3,6 +3,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { ADMIN_PAGE_PERMISSIONS, canOpenAdminPortal, useCan, type PermissionKey } from "@/lib/permissions";
 import {
+  AlertTriangle,
   ShieldCheck,
   Settings,
   Users,
@@ -35,6 +36,7 @@ const subPathTitles: Record<string, string> = {
   "in-progress": "In Progress Dashboard",
   "report-time": "Report time",
   "safety-questions": "Safety questions",
+  "hazard-lists": "Hazard lists",
   people: "People & roles",
   "notification-controls": "Notification Dev Controls",
   "system-health": "System Health",
@@ -137,6 +139,12 @@ const CATEGORIES: CategorySection[] = [
         description: "The steps every Daily JSA walks through",
         icon: ShieldCheck,
         path: "/admin-dashboard/safety-questions",
+      },
+      {
+        title: "Hazard lists",
+        description: "Starter hazards and controls for each kind of work",
+        icon: AlertTriangle,
+        path: "/admin-dashboard/hazard-lists",
       },
       {
         title: "QuickBooks Dashboard",

@@ -48,7 +48,7 @@ The user is a non-technical solo founder building this app. Follow these rules i
 ### Styling Requirements
 - **MANDATORY**: All reports must include comprehensive print CSS (see STYLING_GUIDE.mdc)
 - Brand color: use `bg-brand` / `var(--brand)` / `BRAND_COLOR`. Never hardcode `#f26722`.
-- **Square corners everywhere.** Use `rounded-none`. Never `rounded`, `rounded-md/lg/xl/2xl`, or `rounded-full` — including status dots, pills, badges, inputs, and cards. In non-Tailwind contexts (`@react-pdf/renderer`, inline styles) set `borderRadius: 0`.
+- **Theme corners.** Use `rounded-none`: it follows the Website Theme page (sharp by default, rounded for companies that pick it). Use `rounded-[0px]` only for things that must always be sharp, like full-screen popups. Never `rounded`, `rounded-md/lg/xl/2xl`, or `rounded-full` — including status dots, pills, badges, inputs, and cards. In non-Tailwind contexts (`@react-pdf/renderer`, inline styles) set `borderRadius: 0` for PDFs and `borderRadius: "var(--corner, 0px)"` for on-screen inline styles.
 - `Button` icon + text: use the `leftIcon`/`rightIcon` props, never put the icon as a child next to text (children get wrapped in one `<span>`, so the icon stacks above the text when the button is squeezed). This applies ONLY to our own `@/components/ui/Button`. A `react-bootstrap` `Button` (imported from `react-bootstrap/Button`) has no `leftIcon` prop — there, keep the icon as a child. Check the import before adding `leftIcon`.
 - Follow predefined component classes: `.form-input`, `.btn-primary`, `.card`, etc.
 

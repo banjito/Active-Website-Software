@@ -3,7 +3,10 @@ import { supabase } from "@/lib/supabase";
 import {
   BRAND_COLOR,
   BRAND_COLOR_DARK,
+  CornerStyle,
   applyBrandColorValues,
+  applyCornerStyle,
+  companyConfig,
 } from "@/lib/companyConfig";
 
 /**
@@ -20,6 +23,8 @@ export interface SiteTheme {
   iconUrl?: string;
   /** Hide the full logo everywhere it appears (login, portal, overlays). */
   hideLogo?: boolean;
+  /** Sharp or rounded corners. Themes saved before this existed have none. */
+  corners?: CornerStyle;
 }
 
 const SETTINGS_KEY = "site_theme";
@@ -41,13 +46,20 @@ const isValidTheme = (t: unknown): t is SiteTheme => {
   if (theme.iconUrl !== undefined && !isValidUrl(theme.iconUrl)) return false;
   if (theme.hideLogo !== undefined && typeof theme.hideLogo !== "boolean")
     return false;
+  if (
+    theme.corners !== undefined &&
+    theme.corners !== "sharp" &&
+    theme.corners !== "rounded"
+  )
+    return false;
   return true;
 };
 
-/** The env/default colors (what "Reset to default" restores). */
+/** The env/default look (what "Reset to default" restores). */
 export const defaultTheme: SiteTheme = {
   brandColor: BRAND_COLOR,
   brandColorDark: BRAND_COLOR_DARK,
+  corners: companyConfig.corners,
 };
 
 // ── Current theme + subscriptions (so mounted components update live) ───────
@@ -63,6 +75,7 @@ export function applySiteTheme(theme: SiteTheme | null): void {
   currentTheme = theme;
   const active = theme ?? defaultTheme;
   applyBrandColorValues(active.brandColor, active.brandColorDark);
+  applyCornerStyle(active.corners);
   notify();
 }
 

@@ -3044,7 +3044,7 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
                 onChange={handleInputChange}
                 readOnly={!isEditing}
                 rows={4}
-                className={`block w-full p-2 text-center rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                className={`block w-full p-2 text-left rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             {formData.comments?.trim() && (

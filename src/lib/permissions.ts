@@ -39,6 +39,7 @@ export const PERMISSION_KEYS = [
   "jobs.view_money",
   "jobs.documents",
   "jobs.change_orders",
+  "jobs.invite_subcontractors",
   // Reports
   "reports.fill",
   "reports.review",

@@ -28,6 +28,67 @@ import {
   reportSaveSucceeded,
 } from "./common/autoSaveStatus";
 
+const IR_LABELS = [
+  "A-B",
+  "B-C",
+  "C-A",
+  "A-N",
+  "B-N",
+  "C-N",
+  "A-G",
+  "B-G",
+  "C-G",
+  "N-G",
+];
+const IR_KEYS = [
+  "aToB",
+  "bToC",
+  "cToA",
+  "aToN",
+  "bToN",
+  "cToN",
+  "aToG",
+  "bToG",
+  "cToG",
+  "nToG",
+];
+
+// A second, third, etc. busway on the same report. Busway 1 stays in the
+// original insulationResistance fields so old reports load.
+interface ExtraBusway {
+  label: string;
+  insulationResistance: { [key: string]: string };
+}
+
+const emptyIrReadings = (): { [key: string]: string } =>
+  Object.fromEntries(IR_KEYS.map((k) => [k, ""]));
+
+const normalizeExtraBusways = (raw: any): ExtraBusway[] =>
+  Array.isArray(raw)
+    ? raw.map((b: any) => ({
+        label: b?.label || "",
+        insulationResistance: {
+          ...emptyIrReadings(),
+          ...(b?.insulationResistance || {}),
+        },
+      }))
+    : [];
+
+// Measured reading x TCF, keeping a leading ">" (e.g. ">2000").
+// Text with no digits (e.g. "N/A") is copied over unchanged.
+const correctIrReading = (raw: string | undefined, tcf: number): string => {
+  const measured = (raw || "").trim();
+  if (!measured) return "";
+  if (!/\d/.test(measured)) return measured;
+  if (!tcf || Number.isNaN(tcf)) return "";
+  const n = parseFloat(
+    measured.replace(/,/g, "").replace(/[^0-9eE+\-.]/g, ""),
+  );
+  if (Number.isNaN(n)) return "";
+  const value = (n * tcf).toFixed(2);
+  return measured.startsWith(">") ? ">" + value : value;
+};
+
 // Add dropdown option constants
 const INSPECTION_OPTIONS = [
   "Select One",
@@ -138,6 +199,10 @@ interface FormData {
     [key: string]: string;
   };
 
+  // Busway 1 name (blank shows "Busway" / "Busway 1") + busways 2, 3, ...
+  buswayLabel: string;
+  extraBusways: ExtraBusway[];
+
   // Test Equipment
   megohmmeter: string;
   megohmSerial: string;
@@ -213,6 +278,8 @@ interface ReportData {
 
     testVoltage1: string;
     insulationResistance: { [key: string]: string };
+    buswayLabel: string;
+    extraBusways: ExtraBusway[];
 
     insulationResistanceUnit: string;
     contactResistanceUnit: string;
@@ -519,6 +586,8 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
     insulationResistanceUnit: "MΩ",
     buswayLength: "",
     insulationOverallResult: "",
+    buswayLabel: "",
+    extraBusways: [],
     dielectricTestVoltage: "2.3 kVDC",
     dielectricTestDuration: "1 min.",
     dielectricResult: "",
@@ -707,6 +776,54 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
         ...prev.insulationResistance,
         [key]: value,
       },
+    }));
+  };
+
+  // Extra busways (2, 3, ...): one row in each IR table per busway
+  const addExtraBusway = () => {
+    setJustSaved(false);
+    setFormData((prev) => {
+      const extras = prev.extraBusways || [];
+      return {
+        ...prev,
+        buswayLabel: prev.buswayLabel || "Busway 1",
+        extraBusways: [
+          ...extras,
+          {
+            label: `Busway ${extras.length + 2}`,
+            insulationResistance: emptyIrReadings(),
+          },
+        ],
+      };
+    });
+  };
+
+  const updateExtraBusway = (
+    index: number,
+    change: (b: ExtraBusway) => ExtraBusway,
+  ) => {
+    setJustSaved(false);
+    setFormData((prev) => ({
+      ...prev,
+      extraBusways: (prev.extraBusways || []).map((b, i) =>
+        i === index ? change(b) : b,
+      ),
+    }));
+  };
+
+  const removeExtraBusway = (index: number) => {
+    const row = (formData.extraBusways || [])[index];
+    const hasReadings =
+      row && Object.values(row.insulationResistance).some((v) => v);
+    if (
+      hasReadings &&
+      !window.confirm(`Remove ${row.label || "this busway"} and its readings?`)
+    )
+      return;
+    setJustSaved(false);
+    setFormData((prev) => ({
+      ...prev,
+      extraBusways: (prev.extraBusways || []).filter((_, i) => i !== index),
     }));
   };
 
@@ -1114,6 +1231,8 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
 
           buswayLength: R("buswayLength") || "",
           insulationOverallResult: R("insulationOverallResult") || "",
+          buswayLabel: R("buswayLabel") || "",
+          extraBusways: normalizeExtraBusways(R("extraBusways", [])),
           dielectricTestVoltage: R("dielectricTestVoltage") || "2.3 kVDC",
           dielectricTestDuration: R("dielectricTestDuration") || "1 min.",
           dielectricResult: R("dielectricResult") || "",
@@ -1208,6 +1327,8 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
         insulationResistanceUnit: formData.insulationResistanceUnit,
         buswayLength: formData.buswayLength,
         insulationOverallResult: formData.insulationOverallResult,
+        buswayLabel: formData.buswayLabel || "",
+        extraBusways: formData.extraBusways || [],
         dielectricTestVoltage: formData.dielectricTestVoltage,
         dielectricTestDuration: formData.dielectricTestDuration,
         dielectricResult: formData.dielectricResult,
@@ -1531,6 +1652,102 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
       onPrint={() => window.print()}
       isPrintMode={isPrintMode}
     />
+  );
+
+  // Busway rows: the "Busway" name column always shows so column widths stay fixed
+  const extraBusways = formData.extraBusways || [];
+  const testInputClass = `block w-full p-2 text-center rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`;
+  const correctedInputClass =
+    "block w-full rounded-none border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white";
+  const irCellClass = "px-2 py-1 border border-neutral-300 dark:border-neutral-700";
+  const buswayHeader = (
+    <th
+      rowSpan={2}
+      className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase align-bottom border border-neutral-300 dark:border-neutral-700"
+    >
+      Busway
+    </th>
+  );
+  const addBuswayButton = isEditing ? (
+    <div className="flex justify-end mt-2 print:hidden">
+      <button
+        type="button"
+        onClick={addExtraBusway}
+        className="px-3 py-1 text-sm font-medium text-white bg-brand rounded-none hover:bg-brand-dark"
+      >
+        Add Busway
+      </button>
+    </div>
+  ) : null;
+  // Name cell for an extra busway. The measured table gets an input + remove button.
+  const extraBuswayNameCell = (index: number, editable: boolean) => {
+    const row = extraBusways[index];
+    if (!editable) {
+      return (
+        <td
+          className={`${irCellClass} text-sm text-neutral-900 dark:text-white whitespace-nowrap`}
+        >
+          {row.label || `Busway ${index + 2}`}
+        </td>
+      );
+    }
+    return (
+      <td className={`${irCellClass} min-w-[8rem] align-middle`}>
+        <div className="flex items-center gap-1">
+          <input
+            type="text"
+            value={row.label}
+            onChange={(e) =>
+              updateExtraBusway(index, (b) => ({
+                ...b,
+                label: e.target.value,
+              }))
+            }
+            readOnly={!isEditing}
+            placeholder={`Busway ${index + 2}`}
+            className={testInputClass}
+          />
+          {isEditing && (
+            <button
+              type="button"
+              onClick={() => removeExtraBusway(index)}
+              title="Remove this busway"
+              aria-label="Remove this busway"
+              className="shrink-0 px-2 py-1 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-none print:hidden"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </td>
+    );
+  };
+  // Single-busway reports default to "Busway"; multi-busway to "Busway 1"
+  const buswayOneDefault = extraBusways.length > 0 ? "Busway 1" : "Busway";
+  const buswayOneNameCell = (editable: boolean) =>
+    editable ? (
+      <td className={`${irCellClass} min-w-[8rem] align-middle`}>
+        <input
+          type="text"
+          name="buswayLabel"
+          value={formData.buswayLabel}
+          onChange={handleInputChange}
+          readOnly={!isEditing}
+          placeholder={buswayOneDefault}
+          className={testInputClass}
+        />
+      </td>
+    ) : (
+      <td
+        className={`${irCellClass} text-sm text-neutral-900 dark:text-white whitespace-nowrap`}
+      >
+        {formData.buswayLabel || buswayOneDefault}
+      </td>
+    );
+  const irUnitsCell = (
+    <td className="px-3 py-2 text-center text-sm text-neutral-900 dark:text-white ir-units border border-neutral-300 dark:border-neutral-700">
+      {formData.insulationResistanceUnit}
+    </td>
   );
 
   return (
@@ -2127,9 +2344,10 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 ir-table">
+              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 ir-table ir-has-label">
                 {/* Print-only column sizing */}
                 <colgroup>
+                  <col className="ir-label-col" />
                   <col className="ir-col" />
                   <col className="ir-col" />
                   <col className="ir-col" />
@@ -2144,6 +2362,7 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
+                    {buswayHeader}
                     <th
                       colSpan={10}
                       className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider border border-neutral-300 dark:border-neutral-700"
@@ -2190,18 +2409,8 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                   <tr>
-                    {[
-                      "A-B",
-                      "B-C",
-                      "C-A",
-                      "A-N",
-                      "B-N",
-                      "C-N",
-                      "A-G",
-                      "B-G",
-                      "C-G",
-                      "N-G",
-                    ].map((key) => (
+                    {buswayOneNameCell(true)}
+                    {IR_LABELS.map((key) => (
                       <td key={key} className="px-2 py-1 border border-neutral-300 dark:border-neutral-700">
                         <input
                           type="text"
@@ -2213,13 +2422,37 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
                         />
                       </td>
                     ))}
-                    <td className="px-3 py-2 text-center text-sm text-neutral-900 dark:text-white ir-units border border-neutral-300 dark:border-neutral-700">
-                      {formData.insulationResistanceUnit}
-                    </td>
+                    {irUnitsCell}
                   </tr>
+                  {extraBusways.map((row, index) => (
+                    <tr key={index}>
+                      {extraBuswayNameCell(index, true)}
+                      {IR_KEYS.map((k) => (
+                        <td key={k} className={irCellClass}>
+                          <input
+                            type="text"
+                            value={row.insulationResistance[k] || ""}
+                            onChange={(e) =>
+                              updateExtraBusway(index, (b) => ({
+                                ...b,
+                                insulationResistance: {
+                                  ...b.insulationResistance,
+                                  [k]: e.target.value,
+                                },
+                              }))
+                            }
+                            readOnly={!isEditing}
+                            className={testInputClass}
+                          />
+                        </td>
+                      ))}
+                      {irUnitsCell}
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
+            {addBuswayButton}
           </section>
 
           {/* Electrical Tests - Temperature Corrected Insulation Resistance Values */}
@@ -2288,9 +2521,10 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 ir-table">
+              <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700 ir-table ir-has-label">
                 {/* Print-only column sizing */}
                 <colgroup>
+                  <col className="ir-label-col" />
                   <col className="ir-col" />
                   <col className="ir-col" />
                   <col className="ir-col" />
@@ -2305,6 +2539,7 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
                 </colgroup>
                 <thead>
                   <tr>
+                    {buswayHeader}
                     <th
                       colSpan={10}
                       className="px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase tracking-wider border border-neutral-300 dark:border-neutral-700"
@@ -2351,18 +2586,8 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
                 </thead>
                 <tbody className="bg-white dark:bg-dark-150 divide-y divide-neutral-200 dark:divide-neutral-700">
                   <tr>
-                    {[
-                      "A-B",
-                      "B-C",
-                      "C-A",
-                      "A-N",
-                      "B-N",
-                      "C-N",
-                      "A-G",
-                      "B-G",
-                      "C-G",
-                      "N-G",
-                    ].map((key) => {
+                    {buswayOneNameCell(false)}
+                    {IR_LABELS.map((key) => {
                       const dataKey = getDataKey(key);
                       const measured = (
                         formData.insulationResistance[dataKey] || ""
@@ -2383,10 +2608,27 @@ const MetalEnclosedBuswayMTS23Report: React.FC = () => {
                         </td>
                       );
                     })}
-                    <td className="px-3 py-2 text-center text-sm text-neutral-900 dark:text-white ir-units border border-neutral-300 dark:border-neutral-700">
-                      {formData.insulationResistanceUnit}
-                    </td>
+                    {irUnitsCell}
                   </tr>
+                  {extraBusways.map((row, index) => (
+                    <tr key={index}>
+                      {extraBuswayNameCell(index, false)}
+                      {IR_KEYS.map((k) => (
+                        <td key={k} className={irCellClass}>
+                          <input
+                            type="text"
+                            value={correctIrReading(
+                              row.insulationResistance[k],
+                              Number(formData.tcf),
+                            )}
+                            readOnly
+                            className={correctedInputClass}
+                          />
+                        </td>
+                      ))}
+                      {irUnitsCell}
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -3025,6 +3267,8 @@ if (typeof document !== "undefined") {
       .ir-table { table-layout: fixed !important; width: 100% !important; }
       .ir-table .ir-col { width: 9% !important; }
       .ir-table .ir-units-col { width: 10% !important; }
+      .ir-table.ir-has-label .ir-label-col { width: 16% !important; }
+      .ir-table.ir-has-label .ir-col { width: 7.4% !important; }
       .ir-table .ir-units { font-size: 9px !important; }
       /* Visual & Mechanical standardized three-column layout */
       table.vm-standard { table-layout: fixed !important; width: 100% !important; }

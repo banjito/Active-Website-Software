@@ -222,11 +222,7 @@ export default function PeopleTab({
 
   return (
     <div className="space-y-4">
-      <p className="max-w-3xl text-sm text-neutral-600 dark:text-neutral-300">
-        {canRoles
-          ? "Pick each person's role. It counts after they reload ampOS. Tick several people to move them together."
-          : "Edit someone to change their photo, employee ID or account."}
-      </p>
+
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-[220px] flex-1 sm:max-w-xs">

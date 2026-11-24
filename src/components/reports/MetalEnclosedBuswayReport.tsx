@@ -1638,7 +1638,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
   // Busway rows: the "Busway" name column always shows so column widths stay fixed
   const extraBusways = formData.extraBusways || [];
   const showBuswayColumn = true;
-  const testInputClass = `block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`;
+  const testInputClass = `block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`;
   const headerCellClass =
     "px-3 py-2 bg-neutral-50 dark:bg-dark-150 text-center text-xs font-medium text-neutral-500 dark:text-white uppercase";
   const buswayHeader = showBuswayColumn ? (
@@ -2046,7 +2046,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.manufacturer}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2059,7 +2059,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.catalogNumber}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2072,7 +2072,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.serialNumber}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2085,7 +2085,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.fedFrom}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -2100,7 +2100,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.conductorMaterial}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2113,7 +2113,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.ratedVoltage}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2126,7 +2126,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.operatingVoltage}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2139,7 +2139,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.ampacity}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -2266,7 +2266,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                             value={result}
                             onChange={handleNetaChange}
                             disabled={!isEditing}
-                            className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                            className={`block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                           >
                             {INSPECTION_OPTIONS.map((option) => (
                               <option key={option} value={option}>
@@ -2332,7 +2332,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                         value={formData.busResistance.p1}
                         onChange={handleBusResistanceChange}
                         readOnly={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="px-3 py-2">
@@ -2342,7 +2342,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                         value={formData.busResistance.p2}
                         onChange={handleBusResistanceChange}
                         readOnly={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="px-3 py-2">
@@ -2352,7 +2352,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                         value={formData.busResistance.p3}
                         onChange={handleBusResistanceChange}
                         readOnly={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="px-3 py-2">
@@ -2362,7 +2362,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                         value={formData.busResistance.neutral}
                         onChange={handleBusResistanceChange}
                         readOnly={!isEditing}
-                        className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                        className={`block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                       />
                     </td>
                     <td className="px-3 py-2 text-center text-sm text-neutral-900 dark:text-white">
@@ -2426,7 +2426,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                           name="testVoltage1"
                           value={formData.testVoltage1}
                           onChange={handleInputChange}
-                          className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white print:hidden"
+                          className="mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white print:hidden"
                         >
                           <option value="">Select Voltage</option>
                           {INSULATION_TEST_VOLTAGES.map((voltage) => (
@@ -2472,7 +2472,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                           name="insulationResistanceUnit"
                           value={formData.insulationResistanceUnit}
                           onChange={handleInputChange}
-                          className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white print:hidden"
+                          className="mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white print:hidden"
                         >
                           {INSULATION_RESISTANCE_UNITS.map((unit) => (
                             <option key={unit.value} value={unit.value}>
@@ -2496,7 +2496,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                           name="irConfiguration"
                           value={formData.irConfiguration || "4-Wire + Ground"}
                           onChange={handleInputChange}
-                          className="mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white print:hidden"
+                          className="mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white print:hidden"
                         >
                           {IR_CONFIGURATIONS.map((c) => (
                             <option key={c} value={c}>
@@ -2560,7 +2560,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                           value={formData.insulationResistance[getDataKey(col.label)]}
                           onChange={handleInsulationChange}
                           readOnly={!isEditing}
-                          className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                          className={`block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                         />
                       </td>
                     ))}
@@ -2646,7 +2646,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                             type="text"
                             value={displayCorrected}
                             readOnly
-                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                            className="block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                           />
                         </td>
                       );
@@ -2664,7 +2664,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                               Number(formData.tcf),
                             )}
                             readOnly
-                            className="block w-full rounded-none border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
+                            className="block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-dark-150 shadow-sm text-sm dark:text-white"
                           />
                         </td>
                       ))}
@@ -2737,7 +2737,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.megohmSerial}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2750,7 +2750,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.megAmpId}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2763,7 +2763,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.megCalDate}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -2821,7 +2821,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.lowResistanceSerial}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2834,7 +2834,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.lowResistanceAmpId}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
                 <div>
@@ -2847,7 +2847,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                     value={formData.lowResistanceCalDate}
                     onChange={handleInputChange}
                     readOnly={!isEditing}
-                    className={`mt-1 block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                    className={`mt-1 block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
                   />
                 </div>
               </div>
@@ -2929,7 +2929,7 @@ const MetalEnclosedBuswayReport: React.FC = () => {
                 onChange={handleInputChange}
                 readOnly={!isEditing}
                 rows={4}
-                className={`block w-full rounded-none border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
+                className={`block w-full p-2 rounded-none border border-neutral-300 dark:border-neutral-700 shadow-sm focus:border-brand focus:ring-brand dark:bg-dark-150 dark:text-white ${!isEditing ? "bg-neutral-100 dark:bg-dark-150" : ""}`}
               />
             </div>
             {formData.comments?.trim() && (

@@ -20,6 +20,12 @@ import HistoryTab from "./HistoryTab";
 type TabKey = "people" | "roles" | "history";
 const TABS: TabKey[] = ["people", "roles", "history"];
 
+// Same underline tabs as the customer and job pages
+const TAB_LIST =
+  "flex h-auto w-full justify-start gap-8 border-b border-neutral-200 bg-transparent p-0 dark:border-neutral-700 dark:bg-transparent";
+const TAB =
+  "-mb-px border-b-2 border-transparent px-1 py-3 text-neutral-500 hover:border-neutral-300 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 data-[state=active]:border-brand data-[state=active]:bg-transparent data-[state=active]:text-brand data-[state=active]:shadow-none dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-brand";
+
 /**
  * Admin → People & roles: accounts and roles on one page.
  * People: each person's roles, and Edit for their account and permissions.
@@ -132,10 +138,12 @@ export default function PeopleAndRoles() {
   return (
     <div className="space-y-5">
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList>
-          <TabsTrigger value="people">People ({activeCount})</TabsTrigger>
-          {canRoles && <TabsTrigger value="roles">Roles ({catalog.roles.length})</TabsTrigger>}
-          {canRoles && <TabsTrigger value="history">History</TabsTrigger>}
+        <TabsList className={TAB_LIST}>
+          <TabsTrigger value="people" className={TAB}>People ({activeCount})</TabsTrigger>
+          {canRoles && (
+            <TabsTrigger value="roles" className={TAB}>Roles ({catalog.roles.length})</TabsTrigger>
+          )}
+          {canRoles && <TabsTrigger value="history" className={TAB}>History</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="people" className="pt-4">

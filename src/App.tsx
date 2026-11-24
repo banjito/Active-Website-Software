@@ -242,7 +242,6 @@ import ResourceManagement from "./components/resources/ResourceManagement";
 
 // Import AuthCallback component
 import AuthCallback from "./components/auth/AuthCallback";
-
 // Import QuickBooks components
 import QuickBooksCallback from "./components/quickbooks/QuickBooksCallback";
 
@@ -681,8 +680,7 @@ function App() {
 
                   {/* === Core Routes === */}
                   <Route path="/login" element={<Login />} />
-                  <Route path="/auth/callback" element={<AuthCallback />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />                  <Route path="/reset-password" element={<ResetPassword />} />
                   {/* Supabase OAuth server approval page (ampOS Claude connector). */}
                   <Route
                     path="/oauth/consent"

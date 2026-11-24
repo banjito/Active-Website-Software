@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { readAuthUrlParams, AuthUrlParams } from "../../lib/authUrlSnapshot";
 import type { EmailOtpType, Session } from "@supabase/supabase-js";
+import AuthSuccess, { AUTH_SUCCESS_MS } from "./AuthSuccess";
 
 /**
  * How long to give the Supabase client to finish the session exchange it starts
@@ -132,7 +133,7 @@ export default function AuthCallback() {
         navigate(needsPassword ? "/reset-password" : next ?? "/profile-setup", {
           replace: true,
         });
-      }, 1200);
+      }, AUTH_SUCCESS_MS);
     };
 
     const handleAuthCallback = async () => {
@@ -280,16 +281,7 @@ export default function AuthCallback() {
     );
   }
 
-  if (success) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          <h2 className="text-xl font-semibold mb-2">Success</h2>
-          <p>You will be redirected in a moment...</p>
-        </div>
-      </div>
-    );
-  }
+  if (success) return <AuthSuccess />;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">

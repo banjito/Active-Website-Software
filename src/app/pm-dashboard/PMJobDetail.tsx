@@ -64,6 +64,7 @@ import {
   shiftWeekKey,
   sortByArea,
   sovHours,
+  termAdjustment,
   sovTotal,
   totalHours,
   weekKey,
@@ -313,8 +314,14 @@ export default function PMJobDetail() {
       fetchHoursByWeek(loaded.id)
         .then(setHoursByWeek)
         .catch((err) => console.error('[PM Dashboard] Weekly hours failed to load:', err));
-      setSettings(sovSettings);
-      setSavedSettings(sovSettings);
+      // An SOV copied in on its own (nothing saved yet) keeps the terms it was copied at
+      const loadedBundle = result.bundles[loaded.id];
+      const startSettings =
+        sovSettings && loadedBundle.seeded
+          ? { ...sovSettings, price_term: loadedBundle.priceTerm, term_adjustment: loadedBundle.termAdjustment }
+          : sovSettings;
+      setSettings(startSettings);
+      setSavedSettings(startSettings);
       setAppliedGc(gcFromSettings(sovSettings));
       setJob(loaded);
       setBundle(result.bundles[loaded.id]);
@@ -436,10 +443,21 @@ export default function PMJobDetail() {
   );
   const canReplace = Object.keys(weeks).length === 0;
   const replacedIds = new Set(replaceCopied && canReplace ? copiedBefore.map((line) => line.id) : []);
+  // Contract at the picked terms: estimates still on the SOV after the copy, plus the ticked ones
+  const adjustmentAfterCopy = () => {
+    const ids = new Set([
+      ...lines.filter((line) => isOriginalLine(line) && !replacedIds.has(line.id)).flatMap((line) => line.source_estimate_ids),
+      ...pickedEstimateIds,
+    ]);
+    return termAdjustment(
+      estimates.filter((e) => ids.has(e.id)),
+      estimateTerm,
+    );
+  };
 
   const openEstimatePicker = () => {
     setEstimateTimes(1);
-    setEstimateTerm(null);
+    setEstimateTerm(settings?.price_term ?? null);
     setReplaceCopied(true);
     setPickedEstimateIds(
       estimates.filter((e) => e.rows.length > 0 && !usedEstimateIds.has(e.id)).map((e) => e.id),
@@ -475,10 +493,16 @@ export default function PMJobDetail() {
         Object.keys(sentByType),
       ),
     );
-    if (redoGc && gc && settings) {
-      setAppliedGc(gc);
-      setSettings({ ...settings, gc_monthly: gc.monthly });
+    if (settings) {
+      const usedTerms = [...new Set(picked.flatMap((e) => e.term ?? []))];
+      setSettings({
+        ...settings,
+        ...(redoGc && gc ? { gc_monthly: gc.monthly } : {}),
+        price_term: estimateTerm ?? (usedTerms.length === 1 ? usedTerms[0] : null),
+        term_adjustment: adjustmentAfterCopy(),
+      });
     }
+    if (redoGc && gc) setAppliedGc(gc);
     setEstimatePickerOpen(false);
   };
 
@@ -716,7 +740,9 @@ export default function PMJobDetail() {
   }
 
   const monthName = monthLabel(month, 'long');
-  const contract = contractTotal(bundle, lines);
+  const adjustment = settings ? settings.term_adjustment : bundle.termAdjustment;
+  const priceTerm = settings ? settings.price_term : bundle.priceTerm;
+  const contract = contractTotal(bundle, lines, adjustment);
   const estimatedHours = sovHours(lines) || job.estimated_man_hours || 0;
   const usedHours = totalHours(hoursByMonth);
   const unmatched = Object.entries(progress.unmatched).sort((a, b) => b[1] - a[1]);
@@ -1146,7 +1172,9 @@ export default function PMJobDetail() {
       note: bundle.approvedChangeOrders
         ? `Includes ${fmtMoney(bundle.approvedChangeOrders)} in Change Orders`
         : bundle.quotedAmount > 0
-          ? 'From the quote'
+          ? priceTerm && priceTerm !== 'net30' && adjustment
+            ? `From the quote, at ${NET_TERMS.find((t) => t.key === priceTerm)?.label}`
+            : 'From the quote'
           : 'Adds up the SOV lines',
     },
     {
@@ -2017,7 +2045,7 @@ export default function PMJobDetail() {
       </Dialog>
 
       <Dialog open={estimatePickerOpen} onOpenChange={setEstimatePickerOpen}>
-        <DialogContent>
+        <DialogContent className="w-full sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Copy from letter proposal</DialogTitle>
           </DialogHeader>
@@ -2161,7 +2189,7 @@ export default function PMJobDetail() {
               type="number"
               min={1}
               step={1}
-              className={`${NUMBER_INPUT} w-20`}
+              className={`${NUMBER_INPUT} max-w-[5rem] flex-none`}
               value={estimateTimes}
               onChange={(e) => setEstimateTimes(Math.max(1, Math.round(parseNumber(e.target.value)) || 1))}
             />
@@ -2172,9 +2200,11 @@ export default function PMJobDetail() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm text-neutral-600 dark:text-neutral-300">
               Adding {fmtMoney(pickedTotal)}. SOV would be {fmtMoney(keptDollars + pickedTotal)}
-              {bundle.quotedAmount > 0 && ` of ${fmtMoney(contract)} contract`}.
+              {bundle.quotedAmount > 0 &&
+                ` of ${fmtMoney(contractTotal(bundle, lines, adjustmentAfterCopy()))} contract`}
+              .
             </p>
-            <div className="flex gap-2">
+            <div className="ml-auto flex gap-2">
               <Button variant="ghost" size="sm" onClick={() => setEstimatePickerOpen(false)}>
                 Cancel
               </Button>

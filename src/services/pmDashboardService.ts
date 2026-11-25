@@ -30,6 +30,7 @@ import {
   simpleEstimateRows,
   sortByArea,
   sovTotal,
+  termAdjustment,
   type EstimateOption,
   type GcSchedule,
   type NetTerm,
@@ -91,6 +92,10 @@ export interface JobBundle {
   weeks: SavedWeeks;
   /** General conditions schedule from SOV setup */
   gc: GcSchedule | null;
+  /** Payment terms the SOV was copied at. Null: NET 30, or not known. */
+  priceTerm: NetTerm | null;
+  /** Added to the quote's amount (always NET 30) for the terms the SOV was copied at */
+  termAdjustment: number;
 }
 
 export interface BundleResult {
@@ -751,7 +756,14 @@ export async function loadJobBundles(jobs: PmJob[]): Promise<BundleResult> {
       approvedChangeOrders: coTotals.approvedTotal,
       pendingChangeOrders: coTotals.pendingCount,
       weeks: weeks.get(jobId) ?? {},
-      gc: gcByJob.get(jobId) ?? null,
+      gc: gcByJob.get(jobId)?.gc ?? null,
+      // Copied in just now at the estimate's own terms, or as saved with the SOV
+      priceTerm: savedLines ? gcByJob.get(jobId)?.priceTerm ?? null : seed?.only?.term ?? null,
+      termAdjustment: savedLines
+        ? gcByJob.get(jobId)?.termAdjustment ?? 0
+        : seed?.only
+          ? termAdjustment([seed.only], null)
+          : 0,
     };
   }
 
@@ -810,20 +822,31 @@ async function fetchSovWeeks(jobIds: string[]): Promise<Map<string, SavedWeeks>>
   return byJob;
 }
 
-async function fetchGcSchedules(jobIds: string[]): Promise<Map<string, GcSchedule>> {
-  const out = new Map<string, GcSchedule>();
+interface SavedSovSettings {
+  gc: GcSchedule;
+  priceTerm: NetTerm | null;
+  termAdjustment: number;
+}
+
+async function fetchGcSchedules(jobIds: string[]): Promise<Map<string, SavedSovSettings>> {
+  const out = new Map<string, SavedSovSettings>();
   for (const ids of chunk(jobIds, ID_CHUNK)) {
     const { data, error } = await supabase
       .schema('neta_ops')
       .from('job_sov_settings')
-      .select('job_id, gc_start, gc_months')
+      // select * so this still works before sov_price_term.sql adds its columns
+      .select('*')
       .in('job_id', ids);
     if (error) {
       if (isMissing(error)) return out;
       throw new Error(describeSupabaseError(error));
     }
     for (const row of (data ?? []) as any[]) {
-      out.set(row.job_id, { start: row.gc_start ?? null, months: row.gc_months == null ? null : toNum(row.gc_months) });
+      out.set(row.job_id, {
+        gc: { start: row.gc_start ?? null, months: row.gc_months == null ? null : toNum(row.gc_months) },
+        priceTerm: NET_TERMS.find((t) => t.key === row.price_term)?.key ?? null,
+        termAdjustment: toNum(row.term_adjustment),
+      });
     }
   }
   return out;
@@ -914,6 +937,10 @@ export interface SovSettings {
   gc_start: string | null;
   /** General conditions came out of the other lines, so the total stayed the same */
   gc_from_price: boolean;
+  /** Payment terms the SOV was copied at */
+  price_term: NetTerm | null;
+  /** Dollars the contract is over the quote's NET 30 amount at those terms */
+  term_adjustment: number;
 }
 
 export const DEFAULT_SOV_SETTINGS: SovSettings = {
@@ -923,6 +950,8 @@ export const DEFAULT_SOV_SETTINGS: SovSettings = {
   gc_months: null,
   gc_start: null,
   gc_from_price: true,
+  price_term: null,
+  term_adjustment: 0,
 };
 
 /** Billing frequency and general conditions for one job. Null when sov_setup.sql hasn't run. */
@@ -946,6 +975,8 @@ export async function fetchSovSettings(jobId: string): Promise<SovSettings | nul
     gc_months: data.gc_months == null ? null : toNum(data.gc_months),
     gc_start: data.gc_start ?? null,
     gc_from_price: data.gc_from_price ?? true,
+    price_term: NET_TERMS.find((t) => t.key === data.price_term)?.key ?? null,
+    term_adjustment: toNum(data.term_adjustment),
   };
 }
 
@@ -964,10 +995,13 @@ export async function saveSovSettings(jobId: string, settings: SovSettings, user
     );
 
   let { error } = await upsert(settings);
-  // sov_gc_percent.sql has not been run: the dollars still save, only the percent is left out
-  if ((error as { code?: string } | null)?.code === 'PGRST204') {
-    const { gc_percent: _percent, ...rest } = settings;
-    ({ error } = await upsert(rest));
+  // PGRST204 = sov_price_term.sql (then sov_gc_percent.sql) has not been run. Save what fits.
+  const missingColumn = () => (error as { code?: string } | null)?.code === 'PGRST204';
+  const { price_term: _term, term_adjustment: _adjustment, ...withoutTerm } = settings;
+  if (missingColumn()) ({ error } = await upsert(withoutTerm));
+  if (missingColumn()) {
+    const { gc_percent: _percent, ...withoutPercent } = withoutTerm;
+    ({ error } = await upsert(withoutPercent));
   }
   if (error) throw new Error(describeSupabaseError(error));
 }
@@ -1057,8 +1091,13 @@ export function fetchBilledToDate(quickbooksProjectId: string): Promise<number> 
  * What the job is worth: quoted amount (or the original SOV lines if none) plus approved
  * Change Orders. Change Order lines are left out of the SOV part so they don't count twice.
  */
-export const contractTotal = (bundle: JobBundle, lines: SovLine[] = bundle.lines): number =>
-  (bundle.quotedAmount > 0 ? bundle.quotedAmount : sovTotal(lines.filter(isOriginalLine))) +
+export const contractTotal = (
+  bundle: JobBundle,
+  lines: SovLine[] = bundle.lines,
+  /** Added to the quote's NET 30 amount for the SOV's terms. Default: as saved. */
+  adjustment: number = bundle.termAdjustment,
+): number =>
+  (bundle.quotedAmount > 0 ? bundle.quotedAmount + adjustment : sovTotal(lines.filter(isOriginalLine))) +
   bundle.approvedChangeOrders;
 
 export const reportTypeLabel = (slug: string): string => {

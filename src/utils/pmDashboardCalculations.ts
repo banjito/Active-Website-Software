@@ -392,6 +392,21 @@ export function estimateRows(items: EstimateSovItem[], pricePerLaborHour: number
   return rows;
 }
 
+/**
+ * What these estimates cost on top of their NET 30 price at other terms. The quote's amount
+ * is always the NET 30 letter price, so this is what the contract grows by at NET 60 or 90.
+ * Null term: each estimate at the term it was copied at.
+ */
+export function termAdjustment(options: EstimateOption[], term: NetTerm | null): number {
+  let sum = 0;
+  for (const option of options) {
+    const at = term ?? option.term;
+    if (!option.byTerm || !at) continue;
+    sum += (option.byTerm[at].rowsTotal ?? 0) - (option.byTerm.net30.rowsTotal ?? 0);
+  }
+  return round2(sum);
+}
+
 /** The estimate priced at these terms. Null, or a simple estimate: as it is. */
 export const atTerm = (option: EstimateOption, term: NetTerm | null): EstimateOption =>
   term && option.byTerm ? { ...option, term, ...option.byTerm[term] } : option;

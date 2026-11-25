@@ -1283,7 +1283,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           </div>
 
           <div
-            className="relative flex shrink-0 ml-4 items-center justify-center gap-3 sm:gap-4 max-sm:ml-auto max-sm:gap-0"
+            className="relative flex shrink-0 ml-4 items-center justify-center gap-3 sm:gap-4 max-sm:ml-auto"
             role="toolbar"
             aria-label="Portal shortcuts and account"
           >

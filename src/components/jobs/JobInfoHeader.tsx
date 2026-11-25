@@ -54,6 +54,10 @@ interface JobInfoHeaderContact {
 }
 
 interface JobInfoHeaderProps {
+  /** "mobile": the short block at the top of the job page on phone + iPad. */
+  variant?: "card" | "mobile";
+  /** Job title, only shown by the mobile block. */
+  title?: string;
   job: JobInfoHeaderJob;
   opportunity: JobInfoHeaderOpportunity | null;
   contacts: JobInfoHeaderContact[];
@@ -101,8 +105,19 @@ const PROGRESS_BILLING_OPTIONS = [
   { value: "cancelled", label: "Cancelled" },
 ];
 
-const chipClass =
-  "relative inline-flex items-center gap-1.5 h-8 px-2.5 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 hover:bg-neutral-50 dark:hover:bg-dark-100 rounded-none text-sm font-medium text-neutral-900 dark:text-white cursor-pointer";
+const chipBaseClass =
+  "relative inline-flex items-center gap-1.5 px-2.5 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-dark-150 hover:bg-neutral-50 dark:hover:bg-dark-100 rounded-none text-sm font-medium text-neutral-900 dark:text-white cursor-pointer";
+const chipClass = `${chipBaseClass} h-8`;
+/** Same chip, tall enough for a thumb. */
+const touchChipClass = `${chipBaseClass} h-11`;
+
+/** Label over value, three across, in the mobile block. */
+const tileClass =
+  "relative flex min-h-[60px] w-full min-w-0 flex-col justify-center gap-0.5 rounded-none border border-neutral-200 bg-neutral-50 px-3 py-2 text-left dark:border-dark-300 dark:bg-dark-200";
+const tileLabelClass =
+  "text-xs font-medium text-neutral-600 dark:text-neutral-300";
+const tileValueClass =
+  "w-full truncate text-[15px] font-semibold text-neutral-900 dark:text-white";
 
 const chipLabelClass =
   "text-xs font-normal text-neutral-500 dark:text-neutral-400";
@@ -140,15 +155,19 @@ const HeaderSelect = ({
   value,
   options,
   onChange,
+  className = chipClass,
+  hideLabel = false,
 }: {
   label: string;
   icon: React.ReactNode;
   value: string;
   options: { value: string; label: string }[];
   onChange: (value: string) => void;
+  className?: string;
+  hideLabel?: boolean;
 }) => (
-  <label className={`${chipClass} focus-within:ring-2 focus-within:ring-brand`}>
-    <span className={chipLabelClass}>{label}</span>
+  <label className={`${className} focus-within:ring-2 focus-within:ring-brand`}>
+    {!hideLabel && <span className={chipLabelClass}>{label}</span>}
     {icon}
     <span className="capitalize">
       {options.find((o) => o.value === value)?.label ||
@@ -194,6 +213,8 @@ const Cell = ({
  * Status, priority and fireteam lead sit as dropdowns beside the title.
  */
 export default function JobInfoHeader({
+  variant = "card",
+  title,
   job,
   opportunity,
   contacts,
@@ -212,6 +233,9 @@ export default function JobInfoHeader({
   const [billingDraft, setBillingDraft] = useState("");
   const [isBillingSaving, setIsBillingSaving] = useState(false);
 
+  // Mobile block only: the full list of facts starts folded.
+  const [showDetails, setShowDetails] = useState(false);
+
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isDescriptionClamped, setIsDescriptionClamped] = useState(false);
   const descriptionRef = useRef<HTMLDivElement>(null);
@@ -228,7 +252,7 @@ export default function JobInfoHeader({
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [description, isDescriptionExpanded]);
+  }, [description, isDescriptionExpanded, showDetails]);
 
   const customerName = maskCustomerName(
     job.customers.company_name || job.customers.name,
@@ -278,6 +302,293 @@ export default function JobInfoHeader({
     setIsBillingSaving(false);
     if (ok) setIsBillingEditing(false);
   };
+
+  // Clips the cells' outer borders (see .job-info-grid in index.css).
+  const details = (
+    <div className="job-info-block overflow-hidden">
+      {/* All 10 cells always render so 5, 2 or 1 columns fill evenly. */}
+      <div className="job-info-grid border-t border-black/10 dark:border-dark-300">
+        <Cell label="Customer">
+          <Link
+            to={customerPath}
+            title={customerName}
+            className="line-clamp-2 font-semibold hover:text-brand hover:underline"
+          >
+            {customerName}
+          </Link>
+        </Cell>
+        <Cell label="Job #">
+          <span className="font-mono">{job.job_number || "Pending"}</span>
+        </Cell>
+        <Cell label="Division">
+          {job.division ? formatDivisionDisplay(job.division) : <NotSet />}
+        </Cell>
+        <Cell label="Start Date">{startDate || <NotSet />}</Cell>
+        <Cell label="Opportunity">
+          {opportunity ? (
+            <>
+              <a
+                href={`/opportunities/${opportunity.id}`}
+                className="text-brand hover:underline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate(
+                    `/sales-dashboard/opportunities/${opportunity.id}`,
+                  );
+                }}
+              >
+                {opportunity.quote_number || `Opportunity #${opportunity.id}`}
+              </a>
+              {opportunity.opportunity_type === "time_materials" && (
+                <TmBadge />
+              )}
+            </>
+          ) : (
+            <>
+              <NotSet />
+              {isTmFromNotes && <TmBadge />}
+            </>
+          )}
+        </Cell>
+        <Cell label="Customer Address">
+          {customerAddress ? (
+            <span className="line-clamp-2" title={customerAddress}>
+              {customerAddress}
+            </span>
+          ) : (
+            <NotSet />
+          )}
+        </Cell>
+        <Cell label="Job Site">
+          {siteAddress ? (
+            <span className="line-clamp-2" title={siteAddress}>
+              {siteAddress}
+            </span>
+          ) : (
+            <NotSet />
+          )}
+        </Cell>
+        <Cell label="User">
+          {endUser ? (
+            <span className="line-clamp-2" title={endUser}>
+              {endUser}
+            </span>
+          ) : (
+            <NotSet />
+          )}
+        </Cell>
+        <Cell label="Due Date">{dueDate || <NotSet />}</Cell>
+        <Cell label="Est. Man Hours">{manHours || <NotSet />}</Cell>
+      </div>
+
+      <div
+        className={`job-info-foot ${
+          isBillingEditing ? "job-info-foot--editing" : ""
+        }`}
+      >
+        <Cell label="Primary Contact">
+          {primaryContact ? (
+            <span className="line-clamp-2" title={primaryContactText}>
+              {primaryContactText}
+            </span>
+          ) : (
+            <span className="job-info-inline inline-flex flex-wrap items-center justify-center gap-2">
+              <NotSet text="None set" />
+              <Link to={customerPath} className="text-brand hover:underline">
+                {contacts.length > 0 ? "Set primary" : "Add"}
+              </Link>
+            </span>
+          )}
+        </Cell>
+        <Cell label="Progress Billing">
+          {!isBillingEditing ? (
+            <span className="job-info-inline inline-flex flex-wrap items-center justify-center gap-2">
+              {job.progress_billing_status ? (
+                <span className="capitalize">
+                  {job.progress_billing_status.replace("_", " ")}
+                </span>
+              ) : (
+                <NotSet />
+              )}
+              <button
+                type="button"
+                className="px-2.5 py-0.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
+                onClick={startBillingEdit}
+              >
+                {job.progress_billing_status ? "Change" : "Set"}
+              </button>
+            </span>
+          ) : (
+            <div className="job-info-inline flex flex-wrap items-center justify-center gap-2">
+              <select
+                value={billingDraft}
+                onChange={(e) => setBillingDraft(e.target.value)}
+                className="min-w-0 flex-1 max-w-xs p-1.5 bg-neutral-100 dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-900 dark:text-white text-sm"
+              >
+                <option value="">Not set</option>
+                {PROGRESS_BILLING_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                disabled={isBillingSaving}
+                className="px-3 py-1 text-sm text-white bg-brand rounded-none hover:bg-brand-dark disabled:opacity-60"
+                onClick={saveBilling}
+              >
+                {isBillingSaving ? "Saving..." : "Save"}
+              </button>
+              <button
+                type="button"
+                disabled={isBillingSaving}
+                className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
+                onClick={() => setIsBillingEditing(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </Cell>
+        <Cell label="Description">
+          {description ? (
+            <>
+              <div
+                ref={descriptionRef}
+                className={`whitespace-pre-line ${
+                  isDescriptionExpanded ? "" : "line-clamp-2"
+                }`}
+              >
+                {description}
+              </div>
+              {(isDescriptionClamped || isDescriptionExpanded) && (
+                <button
+                  type="button"
+                  className="text-xs text-brand hover:underline"
+                  onClick={() => setIsDescriptionExpanded((v) => !v)}
+                >
+                  {isDescriptionExpanded ? "Show less" : "Show more"}
+                </button>
+              )}
+            </>
+          ) : (
+            <NotSet />
+          )}
+        </Cell>
+      </div>
+    </div>
+  );
+
+  if (variant === "mobile") {
+    return (
+      <div className="flex flex-col gap-3">
+        <div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="min-w-0 truncate text-sm font-bold text-brand">
+              Job #{job.job_number || "Pending"}
+            </span>
+            <HeaderSelect
+              label="Status"
+              hideLabel
+              className={touchChipClass}
+              icon={
+                <span
+                  className={`h-2.5 w-2.5 rounded-none ${
+                    STATUS_COLORS[job.status] || "bg-neutral-500"
+                  }`}
+                />
+              }
+              value={job.status}
+              options={STATUS_OPTIONS}
+              onChange={onStatusChange}
+            />
+          </div>
+          <h1 className="mt-1 text-xl font-semibold leading-tight text-neutral-900 dark:text-white">
+            {title}
+          </h1>
+          <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+            <Link to={customerPath} className="hover:text-brand hover:underline">
+              {customerName}
+            </Link>
+            {siteAddress && <span> · {siteAddress}</span>}
+          </div>
+        </div>
+
+        {/* relative: the Lead picker opens under the whole row, so it stays on screen. */}
+        <div className="relative grid grid-cols-3 gap-2">
+          <label
+            className={`${tileClass} focus-within:ring-2 focus-within:ring-brand`}
+          >
+            <span className={tileLabelClass}>Priority</span>
+            <span className={tileValueClass}>
+              {PRIORITY_OPTIONS.find((o) => o.value === job.priority)?.label ||
+                job.priority}
+            </span>
+            <select
+              aria-label="Priority"
+              value={job.priority}
+              onChange={(e) => onPriorityChange(e.target.value)}
+              className="absolute inset-0 h-full w-full cursor-pointer bg-white text-neutral-900 opacity-0 dark:bg-dark-150 dark:text-white"
+            >
+              {PRIORITY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          {/* fireteam-lead-selector: JobDetail closes the picker on clicks outside it */}
+          <div className="fireteam-lead-selector min-w-0">
+            <button
+              type="button"
+              className={tileClass}
+              onClick={onFireteamLeadClick}
+            >
+              <span className={tileLabelClass}>Lead</span>
+              <span className={tileValueClass}>
+                {job.fireteam_lead || <NotSet />}
+              </span>
+            </button>
+            {fireteamLeadPicker}
+          </div>
+          <div className={tileClass}>
+            <span className={tileLabelClass}>Due</span>
+            <span className={tileValueClass}>{dueDate || <NotSet />}</span>
+          </div>
+        </div>
+
+        {showDetails && (
+          <div className="flex flex-col gap-3">
+            <div className="w-full sm:w-auto sm:self-end">
+              <ProjectManagerPicker
+                value={job.project_manager_id}
+                division={job.division}
+                onChange={onProjectManagerChange}
+                chipClassName={touchChipClass}
+                labelClassName={chipLabelClass}
+              />
+            </div>
+            <div className="border-x border-b border-black/10 dark:border-dark-300">
+              {details}
+            </div>
+          </div>
+        )}
+
+        <button
+          type="button"
+          aria-expanded={showDetails}
+          onClick={() => setShowDetails((v) => !v)}
+          className="inline-flex h-11 items-center justify-center gap-1.5 self-center px-4 text-sm font-semibold text-brand"
+        >
+          {showDetails ? "Hide details" : "Show all details"}
+          <ChevronDown
+            className={`h-4 w-4 transition-transform ${showDetails ? "rotate-180" : ""}`}
+          />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <Card>
@@ -341,180 +652,7 @@ export default function JobInfoHeader({
         </div>
       </CardHeader>
 
-      {/* Clips the cells' outer borders (see .job-info-grid in index.css). */}
-      <div className="job-info-block overflow-hidden">
-        {/* All 10 cells always render so 5, 2 or 1 columns fill evenly. */}
-        <div className="job-info-grid border-t border-black/10 dark:border-dark-300">
-          <Cell label="Customer">
-            <Link
-              to={customerPath}
-              title={customerName}
-              className="line-clamp-2 font-semibold hover:text-brand hover:underline"
-            >
-              {customerName}
-            </Link>
-          </Cell>
-          <Cell label="Job #">
-            <span className="font-mono">{job.job_number || "Pending"}</span>
-          </Cell>
-          <Cell label="Division">
-            {job.division ? formatDivisionDisplay(job.division) : <NotSet />}
-          </Cell>
-          <Cell label="Start Date">{startDate || <NotSet />}</Cell>
-          <Cell label="Opportunity">
-            {opportunity ? (
-              <>
-                <a
-                  href={`/opportunities/${opportunity.id}`}
-                  className="text-brand hover:underline"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate(
-                      `/sales-dashboard/opportunities/${opportunity.id}`,
-                    );
-                  }}
-                >
-                  {opportunity.quote_number || `Opportunity #${opportunity.id}`}
-                </a>
-                {opportunity.opportunity_type === "time_materials" && (
-                  <TmBadge />
-                )}
-              </>
-            ) : (
-              <>
-                <NotSet />
-                {isTmFromNotes && <TmBadge />}
-              </>
-            )}
-          </Cell>
-          <Cell label="Customer Address">
-            {customerAddress ? (
-              <span className="line-clamp-2" title={customerAddress}>
-                {customerAddress}
-              </span>
-            ) : (
-              <NotSet />
-            )}
-          </Cell>
-          <Cell label="Job Site">
-            {siteAddress ? (
-              <span className="line-clamp-2" title={siteAddress}>
-                {siteAddress}
-              </span>
-            ) : (
-              <NotSet />
-            )}
-          </Cell>
-          <Cell label="User">
-            {endUser ? (
-              <span className="line-clamp-2" title={endUser}>
-                {endUser}
-              </span>
-            ) : (
-              <NotSet />
-            )}
-          </Cell>
-          <Cell label="Due Date">{dueDate || <NotSet />}</Cell>
-          <Cell label="Est. Man Hours">{manHours || <NotSet />}</Cell>
-        </div>
-
-        <div
-          className={`job-info-foot ${
-            isBillingEditing ? "job-info-foot--editing" : ""
-          }`}
-        >
-          <Cell label="Primary Contact">
-            {primaryContact ? (
-              <span className="line-clamp-2" title={primaryContactText}>
-                {primaryContactText}
-              </span>
-            ) : (
-              <span className="job-info-inline inline-flex flex-wrap items-center justify-center gap-2">
-                <NotSet text="None set" />
-                <Link to={customerPath} className="text-brand hover:underline">
-                  {contacts.length > 0 ? "Set primary" : "Add"}
-                </Link>
-              </span>
-            )}
-          </Cell>
-          <Cell label="Progress Billing">
-            {!isBillingEditing ? (
-              <span className="job-info-inline inline-flex flex-wrap items-center justify-center gap-2">
-                {job.progress_billing_status ? (
-                  <span className="capitalize">
-                    {job.progress_billing_status.replace("_", " ")}
-                  </span>
-                ) : (
-                  <NotSet />
-                )}
-                <button
-                  type="button"
-                  className="px-2.5 py-0.5 text-xs bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
-                  onClick={startBillingEdit}
-                >
-                  {job.progress_billing_status ? "Change" : "Set"}
-                </button>
-              </span>
-            ) : (
-              <div className="job-info-inline flex flex-wrap items-center justify-center gap-2">
-                <select
-                  value={billingDraft}
-                  onChange={(e) => setBillingDraft(e.target.value)}
-                  className="min-w-0 flex-1 max-w-xs p-1.5 bg-neutral-100 dark:bg-dark-100 border border-neutral-300 dark:border-neutral-600 rounded-none text-neutral-900 dark:text-white text-sm"
-                >
-                  <option value="">Not set</option>
-                  {PROGRESS_BILLING_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  disabled={isBillingSaving}
-                  className="px-3 py-1 text-sm text-white bg-brand rounded-none hover:bg-brand-dark disabled:opacity-60"
-                  onClick={saveBilling}
-                >
-                  {isBillingSaving ? "Saving..." : "Save"}
-                </button>
-                <button
-                  type="button"
-                  disabled={isBillingSaving}
-                  className="px-3 py-1 text-sm bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none hover:bg-neutral-50 dark:hover:bg-dark-100 text-neutral-700 dark:text-white"
-                  onClick={() => setIsBillingEditing(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
-          </Cell>
-          <Cell label="Description">
-            {description ? (
-              <>
-                <div
-                  ref={descriptionRef}
-                  className={`whitespace-pre-line ${
-                    isDescriptionExpanded ? "" : "line-clamp-2"
-                  }`}
-                >
-                  {description}
-                </div>
-                {(isDescriptionClamped || isDescriptionExpanded) && (
-                  <button
-                    type="button"
-                    className="text-xs text-brand hover:underline"
-                    onClick={() => setIsDescriptionExpanded((v) => !v)}
-                  >
-                    {isDescriptionExpanded ? "Show less" : "Show more"}
-                  </button>
-                )}
-              </>
-            ) : (
-              <NotSet />
-            )}
-          </Cell>
-        </div>
-      </div>
+      {details}
     </Card>
   );
 }

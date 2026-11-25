@@ -199,6 +199,8 @@ import TMExpenses from "./TMExpenses";
 import JobPictures from "./JobPictures";
 import JobProfitabilityDashboard from "./JobProfitabilityDashboard";
 import JobInfoHeader from "@/components/jobs/JobInfoHeader";
+import JobSectionTabs from "@/components/jobs/JobSectionTabs";
+import { useBelowLg } from "@/hooks/useBelowLg";
 import {
   compareAlphanumericLabels,
   compareLinkedAssetFolderLabels,
@@ -853,6 +855,7 @@ export default function JobDetail() {
   const canManageJob = can("jobs.create"); // delete the job, manage delays
   const canPublishReports = can("reports.publish"); // sent dates on Tracking
   const isSubcontractor = useIsSubcontractor(); // outside sub: Reports and Pictures only
+  const isBelowLg = useBelowLg();
   const canInviteSubs = can("jobs.invite_subcontractors");
 
   const [job, setJob] = useState<Job | null>(null);
@@ -9804,6 +9807,176 @@ export default function JobDetail() {
     return `/sales-dashboard/customers/${customerId}`;
   };
 
+  // Phone + iPad: the job facts move from the Overview tab into a short block at the top.
+  // Subs never see Overview, so they keep the plain title instead.
+  const showMobileJobBlock = isBelowLg && !isSubcontractor && !!job.customers;
+
+  const jobHeading =
+    mergedTitles && mergedTitles.length > 0
+      ? mergedTitles.map((t) => maskJobTitle(t)).join(", ")
+      : maskJobTitle(job.title);
+
+  const renderJobInfoHeader = (variant: "card" | "mobile") => (
+    <JobInfoHeader
+      variant={variant}
+      title={jobHeading}
+      job={job}
+      opportunity={opportunity}
+      contacts={contacts}
+      customerPath={getCustomerPath(job.customers.id)}
+      onStatusChange={(status) =>
+        handleQuickStatusSave(status as any)
+      }
+      onPriorityChange={handleQuickPrioritySave}
+      onFireteamLeadClick={() =>
+        setIsFireteamLeadSelectorOpen(!isFireteamLeadSelectorOpen)
+      }
+      onProjectManagerChange={handleProjectManagerChange}
+      fireteamLeadPicker={
+        isFireteamLeadSelectorOpen && (
+          <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-lg z-50">
+            <div className="p-3">
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={userSearchQuery}
+                onChange={(e) =>
+                  setUserSearchQuery(e.target.value)
+                }
+                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+            </div>
+            <div className="max-h-60 overflow-y-auto">
+              {users
+                .filter((u) => {
+                  // Hide deactivated users from the picker
+                  // (their name still resolves elsewhere).
+                  if (u.is_active === false) return false;
+                  const searchLower =
+                    userSearchQuery.toLowerCase();
+                  const email =
+                    u.email?.toLowerCase() || "";
+                  if (!employeeEmailRegex.test(email))
+                    return false;
+                  const name =
+                    displayUserName(u).toLowerCase();
+                  return (
+                    email.includes(searchLower) ||
+                    name.includes(searchLower)
+                  );
+                })
+                .map((u) => (
+                  <div
+                    key={u.id}
+                    className="px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-100 border-b border-neutral-100 dark:border-neutral-700 last:border-b-0"
+                    onClick={() =>
+                      handleFireteamLeadSelect(u)
+                    }
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium text-neutral-900 dark:text-white">
+                        {displayUserName(u)}
+                      </span>
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                        {u.email}
+                      </span>
+                      {u.user_metadata?.role && (
+                        <span className="text-xs text-neutral-600 dark:text-neutral-300">
+                          Role: {u.user_metadata.role}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              {users.filter((u) => {
+                if (u.is_active === false) return false;
+                const searchLower =
+                  userSearchQuery.toLowerCase();
+                const email =
+                  u.email?.toLowerCase() || "";
+                if (!employeeEmailRegex.test(email))
+                  return false;
+                const name =
+                  displayUserName(u).toLowerCase();
+                return (
+                  email.includes(searchLower) ||
+                  name.includes(searchLower)
+                );
+              }).length === 0 && (
+                <div className="px-3 py-4 text-center text-neutral-500 dark:text-neutral-400">
+                  No users found
+                </div>
+              )}
+            </div>
+            <div className="p-2 border-t border-neutral-200 dark:border-neutral-700">
+              <button
+                className="w-full px-3 py-1 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200"
+                onClick={() => {
+                  setIsFireteamLeadSelectorOpen(false);
+                  setUserSearchQuery("");
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )
+      }
+      onSaveProgressBillingStatus={async (newStatus) => {
+        if (!id || !job) return false;
+        try {
+          const { data: updatedRow, error: updateError } =
+            await supabase
+              .schema("neta_ops")
+              .from("jobs")
+              .update({
+                progress_billing_status: newStatus,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", id)
+              .select()
+              .single();
+
+          if (updateError) throw updateError;
+          if (!updatedRow) {
+            throw new Error(
+              "Update not permitted by current permissions (RLS) or job not found.",
+            );
+          }
+
+          setJob((prev) =>
+            prev
+              ? { ...prev, progress_billing_status: newStatus }
+              : prev,
+          );
+          if (refreshJobDetails) {
+            refreshJobDetails();
+          }
+          toast({
+            title: "Progress billing status updated",
+            description: newStatus
+              ? `Status set to ${newStatus.replace("_", " ")}`
+              : "Status cleared",
+            variant: "success",
+          });
+          return true;
+        } catch (error: any) {
+          const errorMessage = error?.message || "Unknown error";
+          console.error(
+            "Failed to update progress billing status:",
+            error,
+          );
+          toast({
+            title: "Update failed",
+            description: `Could not update progress billing status: ${errorMessage}`,
+            variant: "destructive",
+          });
+          return false;
+        }
+      }}
+    />
+  );
+
   return (
     <div className="p-8 max-sm:px-0 max-sm:py-2">
       {renderGeneratedDocDialog()}
@@ -10741,13 +10914,14 @@ export default function JobDetail() {
         ) : (
           <div>
             <div className="px-6 py-4 max-sm:px-3">
+              {showMobileJobBlock ? (
+                renderJobInfoHeader("mobile")
+              ) : (
               <div className="flex items-center justify-between">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-3">
                     <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white">
-                      {mergedTitles && mergedTitles.length > 0
-                        ? mergedTitles.map((t) => maskJobTitle(t)).join(", ")
-                        : maskJobTitle(job.title)}
+                      {jobHeading}
                     </h1>
                     {job.status && (
                       <span className="rounded-none border border-neutral-300 bg-neutral-100 px-2 py-1 text-xs font-bold uppercase tracking-wide text-neutral-700 dark:border-neutral-600 dark:bg-dark-200 dark:text-neutral-200">
@@ -10773,6 +10947,7 @@ export default function JobDetail() {
                 </div>
                 {/* Additional job header details would go here */}
               </div>
+              )}
 
               {/* Global Batch Upload Progress Indicator */}
               {isBatchUploading && (
@@ -10814,75 +10989,18 @@ export default function JobDetail() {
             </div>
 
             <div className="border-t border-neutral-200 dark:border-neutral-700">
-              {/* Sections: six at most, and they wrap instead of running off a narrow window */}
-              <div className="flex flex-wrap border-b border-neutral-200 px-2 dark:border-neutral-700">
-                {jobTabSections.map((section) => {
-                  const on = section.id === activeTabSection.id;
-                  return (
-                    <button
-                      key={section.id}
-                      type="button"
-                      onClick={() =>
-                        handleTabChange(
-                          (
-                            section.tabs.find((tab) => !tab.disabled) ??
-                            section.tabs[0]
-                          ).key,
-                        )
-                      }
-                      className={`-mb-px inline-flex h-12 items-center gap-2 border-b-[3px] px-4 text-[15px] max-sm:px-3 ${
-                        on
-                          ? "border-brand font-bold text-neutral-900 dark:text-white"
-                          : "border-transparent font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
-                      }`}
-                    >
-                      {section.label}
-                      {section.count != null && (
-                        <span className="rounded-none border border-neutral-300 bg-neutral-100 px-1.5 py-0.5 text-xs font-bold text-neutral-700 dark:border-neutral-600 dark:bg-dark-200 dark:text-neutral-200">
-                          {section.count}
-                        </span>
-                      )}
-                      {!on && section.tabs.some((tab) => tab.alert) && reportFlagBadge}
-                    </button>
-                  );
-                })}
-              </div>
-              {activeTabSection.tabs.length > 1 && (
-                <div className="flex flex-wrap gap-1 border-b border-neutral-200 bg-neutral-50 px-5 py-1.5 max-sm:px-2 dark:border-neutral-700 dark:bg-dark-200">
-                  {activeTabSection.tabs.map((tab) => {
-                    const on = tab.key === activeTab;
-                    if (tab.href) {
-                      return (
-                        <Link
-                          key={tab.key}
-                          to={tab.href}
-                          title="Opens this job in the PM Dashboard"
-                          className="inline-flex h-11 items-center gap-2 rounded-none border border-transparent px-3.5 text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
-                        >
-                          {tab.label}
-                          <ExternalLink className="h-3.5 w-3.5" />
-                        </Link>
-                      );
-                    }
-                    return (
-                      <button
-                        key={tab.key}
-                        type="button"
-                        onClick={() => handleTabChange(tab.key)}
-                        disabled={tab.disabled}
-                        className={`inline-flex h-11 items-center gap-2 rounded-none border px-3.5 text-sm ${
-                          on
-                            ? "border-neutral-400 bg-white font-bold text-neutral-900 dark:border-neutral-500 dark:bg-dark-150 dark:text-white"
-                            : "border-transparent font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
-                        } ${tab.disabled ? "cursor-not-allowed opacity-50" : ""}`}
-                      >
-                        {tab.label}
-                        {tab.alert && reportFlagBadge}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+              <JobSectionTabs
+                sections={jobTabSections}
+                activeSection={activeTabSection}
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
+                flagBadge={reportFlagBadge}
+                jobNumber={job.job_number || "Pending"}
+                title={jobHeading}
+                status={job.status ? job.status.replace(/_/g, " ") : ""}
+                onBack={() => navigate(getJobsListPath())}
+                showSlimBar={isBelowLg && !isEmbed}
+              />
 
               <div className="p-6 max-sm:px-3 max-sm:py-4">
                 {activeTab === "overview" && (
@@ -11057,162 +11175,7 @@ export default function JobDetail() {
                     )}
 
                     {/* Job & customer facts, laid out like the report Job Information table */}
-                    <JobInfoHeader
-                      job={job}
-                      opportunity={opportunity}
-                      contacts={contacts}
-                      customerPath={getCustomerPath(job.customers.id)}
-                      onStatusChange={(status) =>
-                        handleQuickStatusSave(status as any)
-                      }
-                      onPriorityChange={handleQuickPrioritySave}
-                      onFireteamLeadClick={() =>
-                        setIsFireteamLeadSelectorOpen(!isFireteamLeadSelectorOpen)
-                      }
-                      onProjectManagerChange={handleProjectManagerChange}
-                      fireteamLeadPicker={
-                        isFireteamLeadSelectorOpen && (
-                          <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-dark-150 border border-neutral-300 dark:border-neutral-600 rounded-none shadow-lg z-50">
-                            <div className="p-3">
-                              <input
-                                type="text"
-                                placeholder="Search users..."
-                                value={userSearchQuery}
-                                onChange={(e) =>
-                                  setUserSearchQuery(e.target.value)
-                                }
-                                className="w-full p-2 border border-neutral-300 dark:border-neutral-600 rounded-none text-sm bg-white dark:bg-dark-100 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand"
-                              />
-                            </div>
-                            <div className="max-h-60 overflow-y-auto">
-                              {users
-                                .filter((u) => {
-                                  // Hide deactivated users from the picker
-                                  // (their name still resolves elsewhere).
-                                  if (u.is_active === false) return false;
-                                  const searchLower =
-                                    userSearchQuery.toLowerCase();
-                                  const email =
-                                    u.email?.toLowerCase() || "";
-                                  if (!employeeEmailRegex.test(email))
-                                    return false;
-                                  const name =
-                                    displayUserName(u).toLowerCase();
-                                  return (
-                                    email.includes(searchLower) ||
-                                    name.includes(searchLower)
-                                  );
-                                })
-                                .map((u) => (
-                                  <div
-                                    key={u.id}
-                                    className="px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-dark-100 border-b border-neutral-100 dark:border-neutral-700 last:border-b-0"
-                                    onClick={() =>
-                                      handleFireteamLeadSelect(u)
-                                    }
-                                  >
-                                    <div className="flex flex-col">
-                                      <span className="font-medium text-neutral-900 dark:text-white">
-                                        {displayUserName(u)}
-                                      </span>
-                                      <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                                        {u.email}
-                                      </span>
-                                      {u.user_metadata?.role && (
-                                        <span className="text-xs text-neutral-600 dark:text-neutral-300">
-                                          Role: {u.user_metadata.role}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                ))}
-                              {users.filter((u) => {
-                                if (u.is_active === false) return false;
-                                const searchLower =
-                                  userSearchQuery.toLowerCase();
-                                const email =
-                                  u.email?.toLowerCase() || "";
-                                if (!employeeEmailRegex.test(email))
-                                  return false;
-                                const name =
-                                  displayUserName(u).toLowerCase();
-                                return (
-                                  email.includes(searchLower) ||
-                                  name.includes(searchLower)
-                                );
-                              }).length === 0 && (
-                                <div className="px-3 py-4 text-center text-neutral-500 dark:text-neutral-400">
-                                  No users found
-                                </div>
-                              )}
-                            </div>
-                            <div className="p-2 border-t border-neutral-200 dark:border-neutral-700">
-                              <button
-                                className="w-full px-3 py-1 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200"
-                                onClick={() => {
-                                  setIsFireteamLeadSelectorOpen(false);
-                                  setUserSearchQuery("");
-                                }}
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        )
-                      }
-                      onSaveProgressBillingStatus={async (newStatus) => {
-                        if (!id || !job) return false;
-                        try {
-                          const { data: updatedRow, error: updateError } =
-                            await supabase
-                              .schema("neta_ops")
-                              .from("jobs")
-                              .update({
-                                progress_billing_status: newStatus,
-                                updated_at: new Date().toISOString(),
-                              })
-                              .eq("id", id)
-                              .select()
-                              .single();
-
-                          if (updateError) throw updateError;
-                          if (!updatedRow) {
-                            throw new Error(
-                              "Update not permitted by current permissions (RLS) or job not found.",
-                            );
-                          }
-
-                          setJob((prev) =>
-                            prev
-                              ? { ...prev, progress_billing_status: newStatus }
-                              : prev,
-                          );
-                          if (refreshJobDetails) {
-                            refreshJobDetails();
-                          }
-                          toast({
-                            title: "Progress billing status updated",
-                            description: newStatus
-                              ? `Status set to ${newStatus.replace("_", " ")}`
-                              : "Status cleared",
-                            variant: "success",
-                          });
-                          return true;
-                        } catch (error: any) {
-                          const errorMessage = error?.message || "Unknown error";
-                          console.error(
-                            "Failed to update progress billing status:",
-                            error,
-                          );
-                          toast({
-                            title: "Update failed",
-                            description: `Could not update progress billing status: ${errorMessage}`,
-                            variant: "destructive",
-                          });
-                          return false;
-                        }
-                      }}
-                    />
+                    {!showMobileJobBlock && renderJobInfoHeader("card")}
 
                     {/* Documents: one tagged list instead of a card per type.
                         Files can be dropped anywhere on the card, any time. */}

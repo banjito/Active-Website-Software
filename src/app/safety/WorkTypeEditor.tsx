@@ -31,6 +31,10 @@ import {
 } from "@/lib/safetyWorkTypes";
 import { AutoTextarea, CARD, FIELD, GHOST, MUTED } from "./safetyUi";
 
+/** Hidden icon that slides in on the left when its `group` button is hovered or focused. Add the open width per use. */
+const REVEAL =
+  "flex w-0 -translate-x-1 overflow-hidden opacity-0 transition-all duration-200 ease-out group-enabled:group-hover:translate-x-0 group-enabled:group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none";
+
 type EditState = { name: string; hazards: ListHazard[] };
 
 const day = (iso: string | null) => (iso ? format(new Date(iso), "MMM d, yyyy") : "");
@@ -309,9 +313,16 @@ export default function WorkTypeEditor() {
           {canEdit && (
             <div className="border-t border-neutral-100 p-2 dark:border-neutral-800">
               {adding === null ? (
-                <Button size="sm" variant="ghost" fullWidth leftIcon={<Plus className="h-4 w-4" />} onClick={() => setAdding("")}>
+                <button
+                  type="button"
+                  className="group flex w-full items-center justify-center whitespace-nowrap rounded-none px-2 py-1.5 text-sm font-medium text-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand touch:min-h-[40px] dark:text-neutral-100"
+                  onClick={() => setAdding("")}
+                >
+                  <span aria-hidden="true" className={`${REVEAL} group-enabled:group-hover:w-6 group-focus-visible:w-6`}>
+                    <Plus className="h-4 w-4" />
+                  </span>
                   Add a kind of work
-                </Button>
+                </button>
               ) : (
                 <form
                   className="space-y-2"
@@ -414,18 +425,20 @@ export default function WorkTypeEditor() {
                 </p>
               )}
               {canEdit && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  leftIcon={<Plus className="h-4 w-4" />}
+                <button
+                  type="button"
+                  className="group inline-flex items-center whitespace-nowrap rounded-none px-2 py-1.5 text-sm font-medium text-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand touch:min-h-[40px] dark:text-neutral-100"
                   onClick={() => {
                     const key = newHazardKey();
                     change((e) => ({ ...e, hazards: [...e.hazards, { key, hazard: "", controls: "" }] }));
                     setNewKey(key);
                   }}
                 >
+                  <span aria-hidden="true" className={`${REVEAL} group-enabled:group-hover:w-6 group-focus-visible:w-6`}>
+                    <Plus className="h-4 w-4" />
+                  </span>
                   Add a hazard
-                </Button>
+                </button>
               )}
             </div>
 
@@ -483,10 +496,12 @@ export default function WorkTypeEditor() {
                       <button
                         type="button"
                         disabled={!!busy}
-                        className="flex items-center gap-1.5 text-red-600 hover:text-red-700 disabled:opacity-50 dark:text-red-400"
+                        className="group inline-flex items-center text-red-600 hover:text-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50 dark:text-red-400"
                         onClick={() => void archive()}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <span aria-hidden="true" className={`${REVEAL} group-enabled:group-hover:w-5 group-focus-visible:w-5`}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </span>
                         Remove this list
                       </button>
                     )}

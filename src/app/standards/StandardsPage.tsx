@@ -60,6 +60,14 @@ interface StandardMeta {
   // lettersFrac = right edge of the last letter / width,
   // barFrac = bar height / height.
   art?: { lettersFrac: number; barFrac: number; bg: string; bgDark?: string };
+  // "chapters": one page per chapter (NFPA books), tables inline. NETA books
+  // leave this unset: one page per section, tables as their own pages.
+  layout?: "chapters";
+  // Main button on the home page for chapter books.
+  primary?: { label: string; section: string; hash?: string };
+  // What one page is called: "Chapter 9" (70B) or "Article 130" (70E).
+  // Single-letter pages are always "Annex X".
+  unitLabel?: "Chapter" | "Article";
 }
 
 // Labels and artwork only. The standards' text never lives in code.
@@ -107,7 +115,45 @@ const STANDARDS: Record<string, StandardMeta> = {
     logoClass: "dark:brightness-[2.2]",
     art: { lettersFrac: 0.6657, barFrac: 0.278, bg: "rgb(0 52 104)", bgDark: "rgb(0 114 229)" },
   },
+  "nfpa-70b-2023": {
+    label: "NFPA 70B (2023)",
+    short: "70B",
+    fullTitle: "Standard for Electrical Equipment Maintenance",
+    cover: "/img/nfpa-70b.svg",
+    heroArt: "/img/nfpa-70b-letters.svg",
+    // NFPA red (#DE1E37). Art is 10942 x 6155; bar top at 4443.
+    art: { lettersFrac: 0.8679, barFrac: 0.2781, bg: "rgb(222 30 55)" },
+    layout: "chapters",
+    primary: { label: "Maintenance intervals", section: "9" },
+    quick: ["9", "8", "15", "11", "12", "13", "20", "36"],
+  },
+  "nfpa-70e-2027": {
+    label: "NFPA 70E (2027)",
+    short: "70E",
+    fullTitle: "Standard for Electrical Safety in the Workplace",
+    cover: "/img/nfpa-70e.svg",
+    heroArt: "/img/nfpa-70e-letters.svg",
+    art: { lettersFrac: 0.8608, barFrac: 0.2781, bg: "rgb(222 30 55)" },
+    layout: "chapters",
+    unitLabel: "Article",
+    primary: { label: "Arc flash PPE tables", section: "130", hash: "table-1307c15a-" },
+    quick: ["130", "100", "110", "120", "J", "H", "D", "C"],
+  },
 };
+
+function isChapterBook(slug: string | undefined): boolean {
+  return Boolean(slug && STANDARDS[slug]?.layout === "chapters");
+}
+
+/** Anchor prefix for a "## 22.3 Title" heading: slugify drops the dots. */
+function sectionAnchor(num: string): string {
+  return `${num.replace(/\./g, "").toLowerCase()}-`;
+}
+
+/** Anchor prefix for a "### Table 9.2.2 Title" heading. */
+function tableAnchor(num: string): string {
+  return `table-${num.replace(/[^0-9a-z]/gi, "").toLowerCase()}-`;
+}
 
 /**
  * Standards to list: those with loaded pages, plus "coming soon" ones, in
@@ -133,8 +179,11 @@ function standardLabel(slug: string): string {
   return STANDARDS[slug]?.label ?? slug.toUpperCase();
 }
 
-function displayNumber(row: { kind: string; section_number: string }): string {
-  return row.kind === "table" ? `Table ${row.section_number}` : row.section_number;
+function displayNumber(row: { kind: string; section_number: string; standard?: string }): string {
+  if (row.kind === "table") return `Table ${row.section_number}`;
+  if (!isChapterBook(row.standard)) return row.section_number;
+  if (/^[A-Z]$/.test(row.section_number)) return `Annex ${row.section_number}`;
+  return `${STANDARDS[row.standard as string]?.unitLabel ?? "Chapter"} ${row.section_number}`;
 }
 
 function sectionPath(standard: string, sectionNumber: string): string {
@@ -158,6 +207,7 @@ function groupRows(rows: SectionRow[]): { title: string; rows: SectionRow[] }[] 
  * part (100.12.1). Unloaded references stay plain text.
  */
 function linkReferences(body: string, standard: string, numbers: string[], current: string): string {
+  if (isChapterBook(standard)) return linkChapterReferences(body, standard, numbers, current);
   const resolve = (num: string) =>
     numbers.includes(num) ? num : numbers.find((n) => n.startsWith(`${num}.`)) ?? null;
   const link = (label: string, num: string) => {
@@ -168,6 +218,57 @@ function linkReferences(body: string, standard: string, numbers: string[], curre
   return body
     .replace(/\bTable (100(?:\.\d+)+)/g, (match, num) => link(match, num))
     .replace(/\bSection (\d+(?:\.\d+)*)/g, (match, num) => link(match, num));
+}
+
+/**
+ * Chapter books (NFPA): every page is a chapter, article or annex, so
+ * "Table 15.3.5", "Section 22.3", "Chapter 9", "Article 130", "130.5(G)"
+ * and "Informative Annex D" link to their page, with an anchor on the table
+ * or "##" section heading. Headings themselves stay plain. One pass, so a
+ * reference is never linked twice.
+ */
+function linkChapterReferences(body: string, standard: string, numbers: string[], current: string): string {
+  const articles = STANDARDS[standard]?.unitLabel === "Article";
+  // "D.4.4" is on page "D" in 70E (annex pages); in 70B, Annex A notes sit
+  // on their chapter's page, so "A.22.3.3" goes to chapter 22.
+  const pageOf = (num: string) => {
+    const letter = /^([A-T])\./.exec(num);
+    if (letter && numbers.includes(letter[1])) return letter[1];
+    return num.replace(/^[A-T]\./, "").split(".")[0];
+  };
+  const link = (label: string, page: string, anchor: string | null) => {
+    if (!numbers.includes(page)) return label;
+    if (page === current && !anchor) return label;
+    return `[${label}](${sectionPath(standard, page)}${anchor ? `#${anchor}` : ""})`;
+  };
+  const pattern = articles
+    ? /\bTable ((?:[A-T]\.)?\d+(?:\.\d+)+(?:\([A-Za-z0-9]{1,3}\))*)|\b(Sections?|Chapter|Article) (\d+(?:\.\d+)*)|\b(?:Informative )?Annex ([A-T])\b|\b(\d{2,3})\.([1-9]\d?)((?:\([A-Za-z0-9]{1,3}\))*)/g
+    : /\bTable ((?:[A-T]\.)?\d+(?:\.\d+)+(?:\([A-Za-z0-9]{1,3}\))*)|\b(Sections?|Chapter|Article) (\d+(?:\.\d+)*)/g;
+  return body
+    .split("\n")
+    .map((line) =>
+      line.startsWith("#")
+        ? line
+        : line.replace(pattern, (match: string, ...groups: unknown[]) => {
+            const [table, word, num, annex, art, sec] = groups as (string | undefined)[];
+            const offset = groups.find((g) => typeof g === "number") as number;
+            if (table) return link(match, pageOf(table), tableAnchor(table));
+            if (word && num) {
+              const parts = num.split(".");
+              if (word === "Chapter" || word === "Article" || parts.length < 2) return link(match, parts[0], null);
+              return link(match, parts[0], sectionAnchor(parts.slice(0, 2).join(".")));
+            }
+            if (annex) return link(match, annex, null);
+            if (art && sec) {
+              // "NFPA 70, 250.4" and "[70: 110.26]" point at the NEC, not here.
+              const before = line.slice(Math.max(0, offset - 12), offset);
+              if (/(70[,:]\s*|NEC\s*)$/.test(before) || /[\d.]$/.test(before)) return match;
+              return link(match, art, sectionAnchor(`${art}.${sec}`));
+            }
+            return match;
+          }),
+    )
+    .join("\n");
 }
 
 /** Search snippet: strip markdown noise, highlight <mark> spans without injecting HTML. */
@@ -555,7 +656,7 @@ function Library({ rows }: { rows: SectionRow[] }) {
         Standards
       </h1>
       <p className="mt-3 text-lg leading-relaxed text-neutral-500 dark:text-neutral-400">
-        NETA test procedures and tables from the company's licensed copies. Staff only.
+        Testing and maintenance standards from the company's licensed copies. Staff only.
       </p>
 
       {standards.length === 0 && (
@@ -622,8 +723,15 @@ function StandardHome({
   const own = rows.filter((row) => row.standard === slug);
   const groups = groupRows(own);
   const families = groups.filter((group) => /^7\.\d/.test(group.title));
+  const chapterBook = meta?.layout === "chapters";
+  // Chapter books: equipment chapters get the tile grid, the rest is general.
+  const equipment = chapterBook ? own.filter((row) => row.group_title === "Equipment" && row.title) : [];
   const general = groups.filter(
-    (group) => !/^7\.\d/.test(group.title) && group.title !== "Tables" && group.title !== "Appendices",
+    (group) =>
+      !/^7\.\d/.test(group.title) &&
+      group.title !== "Tables" &&
+      group.title !== "Appendices" &&
+      !(chapterBook && group.title === "Equipment"),
   );
   const tables = own.filter((row) => row.kind === "table");
   const appendices = groups.find((group) => group.title === "Appendices")?.rows ?? [];
@@ -695,6 +803,13 @@ function StandardHome({
           ) : (
           <>
           <div className="mt-6 flex flex-wrap gap-x-8 gap-y-2 text-sm text-neutral-500 dark:text-neutral-400">
+            {chapterBook ? (
+              <span>
+                <strong className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{own.length}</strong>{" "}
+                {meta?.unitLabel === "Article" ? "articles and annexes" : "chapters"}
+              </span>
+            ) : (
+            <>
             <span>
               <strong className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{procedures.length}</strong>{" "}
               test procedures
@@ -707,6 +822,8 @@ function StandardHome({
               <strong className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{own.length}</strong>{" "}
               pages
             </span>
+            </>
+            )}
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -718,6 +835,15 @@ function StandardHome({
               <Search className="h-4 w-4" />
               Search {meta?.short ?? standardLabel(slug)}
             </button>
+            {chapterBook && meta?.primary && own.some((row) => row.section_number === meta.primary?.section) && (
+              <Link
+                to={`${sectionPath(slug, meta.primary.section)}${meta.primary.hash ? `#${meta.primary.hash}` : ""}`}
+                className="flex items-center gap-2 rounded-none border border-neutral-300 px-4 py-2.5 text-sm font-medium text-neutral-800 transition-colors hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+              >
+                {meta.primary.label}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
             {firstProcedure && (
               <Link
                 to={sectionPath(slug, firstProcedure.section_number)}
@@ -740,6 +866,22 @@ function StandardHome({
           <SectionHeading title="Quick access" />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {quick.map((row) => (
+              <Link key={row.section_number} to={sectionPath(slug, row.section_number)} className={tileClass}>
+                <span className="text-xs font-semibold text-brand">{displayNumber(row)}</span>
+                <span className="mt-1 text-sm font-medium leading-snug text-neutral-900 group-hover:text-brand dark:text-neutral-100">
+                  {row.title}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {equipment.length > 0 && (
+        <div className="mt-12">
+          <SectionHeading title="Equipment maintenance" note={`${equipment.length} chapters`} />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {equipment.map((row) => (
               <Link key={row.section_number} to={sectionPath(slug, row.section_number)} className={tileClass}>
                 <span className="text-xs font-semibold text-brand">{displayNumber(row)}</span>
                 <span className="mt-1 text-sm font-medium leading-snug text-neutral-900 group-hover:text-brand dark:text-neutral-100">
@@ -812,7 +954,7 @@ function StandardHome({
         <div className="mt-12 grid gap-10 lg:grid-cols-2">
           {general.length > 0 && (
             <div>
-              <SectionHeading title="General requirements" />
+              <SectionHeading title={chapterBook ? (equipment.length > 0 ? "General" : "Contents") : "General requirements"} />
               <div className="space-y-4">
                 {general.map((group) => (
                   <div key={group.title}>
@@ -979,7 +1121,16 @@ export default function StandardsPage() {
     if (!body || !hash) return;
     const match = /^#([A-Z])(?:\.(\d+))?/.exec(decodeURIComponent(hash));
     const root = proseRef.current;
-    if (!match || !root) return;
+    if (!root) return;
+    if (!match) {
+      // Chapter books link to "#table-9222-" / "#223-": the start of a
+      // heading id (the rest is the heading's title).
+      const prefix = decodeURIComponent(hash.slice(1));
+      const el = root.querySelector<HTMLElement>(`[id^="${CSS.escape(prefix)}"]`);
+      if (!el) return;
+      const frame = window.requestAnimationFrame(() => el.scrollIntoView({ block: "start" }));
+      return () => window.cancelAnimationFrame(frame);
+    }
     const [, part, step] = match;
     const heading = Array.from(root.querySelectorAll("h2")).find((el) =>
       (el.textContent ?? "").replace(/^[^A-Za-z0-9]+/, "").startsWith(`${part}.`),

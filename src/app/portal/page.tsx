@@ -1428,11 +1428,11 @@ export default function PortalLanding({
               {/* NETA standards reader (/standards). */}
               <Link
                 to="/standards"
-                aria-label="NETA Standards"
+                aria-label="Standards"
                 className="inline-flex h-11 items-center gap-2 px-5 rounded-none border-none bg-neutral-200 text-base font-medium text-neutral-800 transition-colors hover:bg-brand hover:text-white dark:bg-dark-700 dark:text-white dark:hover:bg-brand focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
               >
                 <BookOpen className="h-4 w-4 shrink-0" />
-                NETA Standards
+                Standards
               </Link>
               <div className="relative">
                 <button

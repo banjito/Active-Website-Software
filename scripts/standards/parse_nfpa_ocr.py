@@ -56,6 +56,8 @@ def fix_word(t):
     """Characters tesseract reliably gets wrong in these books."""
     t = t.replace("(€)", "(C)").replace("€", "C")
     t = re.sub(r"(?<=cm)\?", "²", t)  # cal/cm?  ->  cal/cm²
+    if t == "de":  # "dc" (direct current) reads as "de"
+        t = "dc"
     return t
 
 
@@ -104,6 +106,11 @@ def load_tsv(path):
             shift = round(slope * ((w[0] + w[2]) / 2 - width / 2))
             w[1] -= shift
             w[3] -= shift
+    for ws in groups.values():
+        ws.sort(key=lambda w: w[0])
+        for a, b in zip(ws, ws[1:]):
+            if b[4] == "dc" and a[4].lower() == "rue":  # "rue de Varembé" is an address
+                b[4] = "de"
     lines = [Line([tuple(w) for w in ws]) for ws in groups.values()]
     # Text showing through from the back of the page reads as low-confidence
     # nonsense ("Se NO vce td eT TASK ...").
@@ -146,7 +153,25 @@ def split_at_gutter(lines, gutter):
     return out
 
 
+def column_of(line, gutter):
+    """L, R or S (spans both). A revision mark (N, Δ read as A) hangs left
+    of a right-column line, into the gutter: judge by the next word."""
+    x0 = line.x0
+    if len(line.words) > 1 and re.fullmatch(r"[NΔA4•M]", line.words[0][4]):
+        x0 = line.words[1][0]
+    if line.x1 <= gutter + 8:
+        return "L"
+    if x0 >= gutter - 8:
+        return "R"
+    return "S"
+
+
 def find_gutter(lines, width):
+    # Judge by prose lines only: a big table's short cells would otherwise
+    # pull the split point into one of its column gaps.
+    prose = [l for l in lines if len(l.words) >= 6 and l.x1 - l.x0 > width * 0.3]
+    if len(prose) >= 8:
+        lines = prose
     best, best_score = width // 2, None
     for x in range(int(width * 0.40), int(width * 0.60), 4):
         crossing = sum(1 for l in lines if l.x0 < x - 6 and l.x1 > x + 6)
@@ -169,6 +194,8 @@ CHROME = [
     re.compile(r"^[A-T]\.\d{1,2}(\.\d{1,2})*$"),        # annex running head "D.4.4"
     re.compile(r"^(CHAPTER\s+\d|INFORMATIVE ANNEX\s+[A-Z])\b"),
     re.compile(r"N\s*=\s*New\.|M\s*=\s*Moved\."),
+    re.compile(r"Text deletions|figure ?/ ?table|New material|70B[A-Z]\d"),
+    re.compile(r"^[0-9O]{2,3}[B8]?\s*[-—–]\s*\d{1,3}$"),  # "70B-24" read as "208-24"
 ]
 
 
@@ -178,6 +205,8 @@ def is_chrome(line, height):
         if any(p.search(t) for p in CHROME):
             return True
         if len(t) <= 3 or re.fullmatch(r"[A-Z ,.\-]+", t):  # running heads, specks
+            return True
+        if sum(x[5] for x in line.words) / len(line.words) < 50 and len(t) < 45:  # torn running head
             return True
     return False
 
@@ -194,7 +223,12 @@ def book_page(lines, height):
 CAPTION = re.compile(
     r"^(?:[NΔA4•]\s+)?Table\s+(?:Informational Note\s+)?((?:[A-Z]\.)?\d+(?:\.\d+)*(?:\([A-Za-z0-9]{1,3}\))*)(?:\s+(.*))?$"
 )
-HEADING = re.compile(r"^(?:[NΔA4•]{1,2}\s*)?(\d{1,2}(?:[.,]\d+)+)(\*?)[_]?\s+(.*)$")
+# Revision marks before a section number OCR as N, W, WN, aa, "\N" ...; the
+# "*" after it as a quote or degree sign.
+HEADING = re.compile(
+    r"^(?:[^\w(]{0,2}(?:[NΔAMWVa•]{1,2}|4(?=\s)|=)?[^\w(]{0,3}\s*)?(\d{1,2}(?:[.,]{1,2}\d+)+)([*\"”'°^%]{0,2})[_.\\]{0,2}\s+(.*)$"
+)
+HEADING_GLUED = re.compile(r"^N\s?(\d)(\d{1,2})((?:[.,]\d+)*)[*\"]?\s+([A-Z].*)$")  # "N71" = 7.1
 FOOTNOTE = re.compile(r"^(NA:|N/A:|[*†‡'\"“”]\S|Notes?:)")
 
 
@@ -362,7 +396,7 @@ def order_page(path):
 
     def classify(ls):
         for l in ls:
-            l.col = "L" if l.x1 <= gutter + 8 else "R" if l.x0 >= gutter - 8 else "S"
+            l.col = column_of(l, gutter)
         return ls
 
     # Tables first, on tesseract's own lines (a wide table's rows cross the
@@ -377,6 +411,7 @@ def order_page(path):
         + relines([l for l in rest if l.col == "R"], "R")
         + [l for l in rest if l.col == "S"]
     )
+    rest = drop_strays(rest)
     # Reading order: spanning rows (and wide tables) split the page into
     # bands; in each band the left column reads before the right one. A
     # column-width table sits in its column at its caption's height.
@@ -547,10 +582,7 @@ def cell_join(ws):
     out = ""
     for w in ws:
         t = w[4]
-        if out.endswith("-") and t[:1].islower():
-            out = out[:-1] + t
-        else:
-            out = (out + " " + t).strip()
+        out = join_words(out, t) if out.endswith("-") else (out + " " + t).strip()
     return out
 
 
@@ -761,8 +793,8 @@ def merge_tables(tables):
 
 MARKER = re.compile(r"^(?:[NΔ•]{1,2}|A|4)[_.,'’]?\s+(?=(?:\d{1,2}\.\d|Table\b|Chapter\b|[A-M]\.\d|\(\d))")
 CHAPTER = re.compile(r"^(?:[NΔ][_.,]?\s+)?Chapter\s+(\d{1,2})\s+(.*)$")
-ANNEX = re.compile(r"^(?:[NΔ]\s+)?Annex\s+([A-M])\s+(.*)$")
-ANNEX_ENTRY = re.compile(r"^(?:[NΔE4]\s*)?A[.,]?\s?(\d{1,2})[.,](\d+(?:[.,]\d+)*)[_*]?\s+(.*)$")
+ANNEX = re.compile(r"^(?:[NΔ]\s+)?Annex\s+([A-M])[_.]?\s+(.*)$")
+ANNEX_ENTRY = re.compile(r"^[^\w(]{0,2}(?:[NΔE4]\s*)?A[.,]?\s?(\d{1,2})[.,](\d+(?:[.,]\d+)*)[_*.]{0,2}\s+(.*)$")
 LIST_ITEM = re.compile(r"^\((\d{1,2}|[a-z]|[ivx]{1,4})\)\s+(.*)$")
 INFO_NOTE = re.compile(r"^(?:[NΔ]\s+)?Informational Note(?: No\. ?\d+)?:\s*(.*)$", re.I)
 EXCEPTION = re.compile(r"^Exception(?: No\. ?\d+)?:\s*(.*)$")
@@ -776,18 +808,90 @@ def titleish(title):
     return sum(1 for w in words if w[0].isupper()) >= 0.6 * len(words)
 
 
+WORD_TAILS = {"ing", "ings", "ment", "ments", "tion", "tions", "sion", "sions", "ness", "ance", "ences", "ence",
+              "ity", "ities", "ted", "ded", "tive", "tively", "ture", "tures", "cal", "cally", "ers", "ous"}
+VOCAB = set()  # English words plus words the book itself repeats
+
+
+def load_vocab(ocr_dir, first, last):
+    """For line-end hyphens and v/y misreads. Uses the system word list when
+    there is one, plus confident words that appear 3+ times in this book."""
+    if os.path.exists("/usr/share/dict/words"):
+        VOCAB.update(w.strip().lower() for w in open("/usr/share/dict/words", encoding="utf-8"))
+    counts = {}
+    for pdf in range(first, last + 1):
+        path = page_path(ocr_dir, pdf)
+        if not os.path.exists(path):
+            continue
+        for l in load_tsv(path)[2]:
+            for w in l.words:
+                t = w[4].strip(".,;:()[]").lower()
+                if w[5] >= 90 and len(t) > 3 and re.fullmatch(r"[a-z]+", t):
+                    counts[t] = counts.get(t, 0) + 1
+    VOCAB.update(t for t, n in counts.items() if n >= 3)
+
+
+def is_word(t):
+    t = t.lower()
+    if t in VOCAB:
+        return True
+    for suf in ("s", "es", "ed", "d", "ing", "ly", "er", "ers", "ment", "ments", "ation"):
+        if t.endswith(suf) and (t[: -len(suf)] in VOCAB or t[: -len(suf)] + "e" in VOCAB):
+            return True
+    return t.endswith("ies") and t[:-3] + "y" in VOCAB
+
+
+def fix_vy(text):
+    """"yoltage" -> "voltage": swap y and v when that makes a real word."""
+    def one(m):
+        w = m.group(0)
+        if len(w) < 4 or w.isupper() or is_word(w):
+            return w
+        for i, ch in enumerate(w):
+            if ch in "yv":
+                t = w[:i] + ("v" if ch == "y" else "y") + w[i + 1:]
+                if is_word(t):
+                    return t
+        return w
+    return re.sub(r"[A-Za-z]*[yv][A-Za-z]*", one, text)
+
+
 def join_words(a, b):
+    """Join a wrapped line. A hyphen at the break is dropped when the two
+    halves make one word ("require-" + "ments") and kept when they are two
+    words ("insulation-" + "resistance"). A period or quote read where the
+    hyphen was is dropped too ("conduc." + "ted")."""
     if not a:
         return b
-    if a.endswith("-") and b[:1].islower() and b.split(" ")[0] not in ("and", "or", "to", "through"):
-        return a[:-1] + b if not re.search(r"\d-$|[A-Z]-$", a) else a + b
+    if not b:
+        return a
+    ma, mb = re.search(r"([A-Za-z]+)([-.,;:'\"\u2018\u2019]{1,2}) ?$", a), re.match(r"[a-z]+", b)
+    if ma and mb:
+        left, mark, right = ma.group(1), ma.group(2), mb.group(0)
+        stem = a[: ma.start(2)]
+        if mark == "-":
+            if b.split(" ")[0] in ("and", "or", "to", "through"):
+                return a + " " + b
+            if is_word(left + right) or not VOCAB:
+                return stem + b
+            if is_word(left) and is_word(right) and len(left) > 2 and len(right) > 2:
+                return a + b
+            return stem + b if not re.search(r"\d-$|[A-Z]-$", a) else a + b
+        if VOCAB and not is_word(left) and is_word(left + right):
+            return stem + b
+    elif VOCAB and (mc := re.search(r"([A-Za-z]{2,})$", a)) and mb and not is_word(mc.group(1)) and is_word(mc.group(1) + mb.group(0)):
+        return a + b  # the line-end hyphen was not read at all
+    elif VOCAB and mc and mb and (mb.group(0) in WORD_TAILS or not is_word(mb.group(0))) and len(mb.group(0)) > 1 and is_word(mc.group(1) + mb.group(0)):
+        return a + b  # "check" + "ing", "Require" + "ments"
+    elif a.endswith("-") and b[:1].isalpha() and re.search(r"[A-Za-z]-$", a) and b[:1].isupper() and is_word(b.split(" ")[0].strip(".,")):
+        return a + b
     return a + " " + b
 
 
 def split_title(rest):
     """'Visual Inspections. An inspection ...' -> ('Visual Inspections', 'An inspection ...')."""
-    m = re.match(r"^([A-Z][^.]{1,90}?)\.\s+(.*)$", rest)
-    if m and not re.search(r"\b(shall|should|is|are|be)\b", m.group(1)):
+    m = re.match(r"^([A-Z](?:[^.]|\.(?=\d)){1,90}?)\.\s+(.*)$", rest)
+    if m and not re.search(r"\b(shall|should|is|are|be)\b|\b(No|Vol|e\.g|et al)$", m.group(1)):
         return m.group(1), m.group(2)
     m = re.match(r"^([A-Z][^.]{1,90}?)\.$", rest)
     if m:
@@ -844,7 +948,8 @@ def toc_titles(ocr_dir, pages):
     return out
 
 
-def build(ocr_dir, first_pdf, last_pdf, report, toc_pages=(9, 10)):
+def build(ocr_dir, first_pdf, last_pdf, report, toc_pages=(9, 10), fixes=None):
+    fixes = fixes or {}
     chapters = []  # {num, title, flow, pdf_page, book_page}
     annex_a = {}  # "A.22.3.3" -> [text paragraphs]
     tables = {}  # number -> {"title", "parts": [[lines]], "chapter"}
@@ -858,7 +963,7 @@ def build(ocr_dir, first_pdf, last_pdf, report, toc_pages=(9, 10)):
 
     for pdf in range(first_pdf, last_pdf + 1):
         path = page_path(ocr_dir, pdf)
-        if not os.path.exists(path):
+        if not os.path.exists(path) or pdf in SKIP_PAGES:
             continue
         page = order_page(path)
         # The same page photographed twice: skip the repeat.
@@ -872,6 +977,7 @@ def build(ocr_dir, first_pdf, last_pdf, report, toc_pages=(9, 10)):
         recent = (recent + [words])[-3:]
         if page["book_page"] is None:
             page["book_page"] = guess_book_page(ocr_dir, pdf)
+        page["items"] = apply_region_fixes(page["items"], page["gutter"], fixes, pdf)
         prev_x = None
         for kind, item in page["items"]:
             if mode == "stop":
@@ -892,14 +998,14 @@ def build(ocr_dir, first_pdf, last_pdf, report, toc_pages=(9, 10)):
                         tables[item.number] = {"title": item.title, "parts": [item.lines], "chapter": None,
                                                "book_page": page["book_page"]}
                         table_order.append(item.number)
-                        annex_a[entry].append(f"@@TABLE {item.number}")
+                        annex_a[entry].extend([f"@@TABLE {item.number}", ""])
                 continue
             line = item
             text = MARKER.sub("", line.text.strip())
             if re.fullmatch(r"[NΔ•A4*]", text):
                 continue
             m = ANNEX.match(text)
-            if m and not titleish(m.group(2)):
+            if m and not titleish(m.group(2)) and not (mode == "annexA" and m.group(1) == "B" and len(text) < 60):
                 m = None
             if m and mode is not None:
                 if m.group(1) == "A":
@@ -937,7 +1043,9 @@ def build(ocr_dir, first_pdf, last_pdf, report, toc_pages=(9, 10)):
                     annex_a.setdefault(entry, []).append(m.group(3))
                 elif entry is not None:
                     paras = annex_a[entry]
-                    if LIST_ITEM.match(text) or INFO_NOTE.match(text):
+                    if text.startswith("*Figure "):
+                        paras.extend([text, ""])
+                    elif LIST_ITEM.match(text) or INFO_NOTE.match(text):
                         paras.append(text)
                     else:
                         paras[-1] = join_words(paras[-1], text)
@@ -950,8 +1058,14 @@ def build(ocr_dir, first_pdf, last_pdf, report, toc_pages=(9, 10)):
                 if re.search(r"[-,]$|\band$|\bof$|\bfor$", current["title"]) or (line.x0 - (prev_x or line.x0)) > 40:
                     current["title"] = join_words(current["title"], text)
                     continue
+            g = HEADING_GLUED.match(line.text.strip())
+            if g and g.group(1) == current["num"]:
+                text = f"{g.group(1)}.{g.group(2)}{g.group(3).replace(',', '.')} {g.group(4)}"
             m = HEADING.match(text)
-            num = m.group(1).replace(",", ".") if m else None
+            # "7.2.1.1 through 7.2.1.4" wrapped mid-sentence is not a heading.
+            if m and (m.group(3)[:1].islower() or re.sub(r"[.,]+", ".", m.group(1)) in current.get("seen", ())):
+                m = None
+            num = re.sub(r"[.,]+", ".", m.group(1)) if m else None
             if m and int(num.split(".")[0]) == int(current["num"]) + 1 and len(num.split(".")) == 2:
                 # The chapter heading itself was not read (shaded "Chapter 16
                 # Fuses"): its first section opens it.
@@ -963,6 +1077,7 @@ def build(ocr_dir, first_pdf, last_pdf, report, toc_pages=(9, 10)):
                 report.append(f"!! chapter {n} heading not found; opened at {num} (pdf {pdf})")
             if m and num.split(".")[0] == current["num"]:
                 title, body = split_title(m.group(3))
+                current.setdefault("seen", set()).add(num)
                 flow.add("section", num=num, star=bool(m.group(2)), title=title, text=body)
                 prev_x = line.x0
                 continue
@@ -987,7 +1102,7 @@ def build(ocr_dir, first_pdf, last_pdf, report, toc_pages=(9, 10)):
     return chapters, annex_a, tables, table_order
 
 
-def note_text(paras, tables_md):
+def note_text(paras, tables_md, titles):
     out = []
     for p in paras:
         if p.startswith("@@TABLE "):
@@ -995,6 +1110,7 @@ def note_text(paras, tables_md):
             # plain italics here.
             md = tables_md.get(p[8:], "")
             md = re.sub(r"::: warning\n(.*?)\n:::", lambda m: f"*{m.group(1)}*", md, flags=re.S)
+            out.append(f"**Table {p[8:]} {titles.get(p[8:], '')}**".replace(" **", "**"))
             out.append(md)
         elif LIST_ITEM.match(p):
             out.append(f"- {p}")
@@ -1018,6 +1134,11 @@ def chapter_markdown(ch, annex_a, tables_md, table_titles):
         before = [n for n in sections if num_key(n) <= num_key(num)]
         if before:
             host.setdefault(max(before, key=num_key), []).append(key)
+    for p in ch["flow"].paras:
+        if p["kind"] == "section" and not p["title"]:  # title wrapped onto the next line
+            title, text = split_title(p["text"])
+            if title and titleish(title):
+                p["title"], p["text"] = title, text
     blocks = []
     pending_note = None
     used_notes = set()
@@ -1032,7 +1153,7 @@ def chapter_markdown(ch, annex_a, tables_md, table_titles):
         nonlocal pending_note
         flush_items()
         for key in host.get(pending_note, []) if pending_note else []:
-            body = note_text(annex_a[key], tables_md)
+            body = note_text(annex_a[key], tables_md, table_titles)
             blocks.append(f"::: note\n**{key}** {body}\n:::")
         pending_note = None
 
@@ -1084,11 +1205,11 @@ CHAP_HEAD = re.compile(r"^(?:[NΔAM]\s+)?Chapter\s+([1-9])\s+([A-Z].*)$")
 ANNEX_HEAD = re.compile(r"^(?:[NΔAM]\s+)?Informative Annex\s+([A-T])(?![A-Za-z])[_:.\s]*(.*)$")
 ANNEX_BOILERPLATE = re.compile(r"^This informative annex (is|ts|1s) not a part", re.I)
 ART_SEC = re.compile(r"^(?:[NΔAM4•]\s*)?(\d{2,3})[.,](\d{1,2})\s+(.*)$")
-ANNEX_SEC = re.compile(r"^(?:[NΔAM4•]\s*)?([A-T])\.(\d{1,2}(?:\.\d{1,2})*)\s+(.*)$")
-SUB = re.compile(r"^(?:[NΔAM4•]\s+)?\(([A-Z]|\d{1,2}|[a-z])\)\s+(.*)$")
+ANNEX_SEC = re.compile(r"^(?:[^\w(]{0,2}[NΔAM4•]?[^\w(]{0,2}\s*)?([A-T])\.(\d{1,2}(?:\.\d{1,2})*)\s+(.*)$")
+SUB = re.compile(r"^(?:[NΔAM4•&]{1,2}\s*)?\(([A-Z]|\d{1,2}|[a-z])\)\s+(.*)$")
 LETTER_ITEM = re.compile(r"^([a-z])\.\s+(.*)$")
-NOTE_70E = re.compile(r"^(?:[NΔAM]\s+)?(Informational Note(?: No\.\s?\d+)?(?: to [^:]{1,30})?):\s*(.*)$", re.I)
-EXC_70E = re.compile(r"^(?:[NΔAM]\s+)?(Exception(?: No\.\s?\d+)?):\s*(.*)$")
+NOTE_70E = re.compile(r"^(?:[NΔAM]\s+)?(Informational Note(?: (?:No\.\s?)?\d+)?(?: to [^:]{1,30})?):\s*(.*)$", re.I)
+EXC_70E = re.compile(r"^(?:[NΔAM]\s+)?(Exception(?: No\.\s?\d+)?(?: to [^:]{1,20})?):\s*(.*)$")
 
 
 def column_pitch(lines):
@@ -1126,6 +1247,11 @@ def norm_words(t):
 
 
 FIGURE_BOXES = []  # filled by load_overrides
+SKIP_PAGES = set()  # --skip-pages
+SEQ_REPORT = []  # renumbered list items, for the report
+REPLACEMENTS = []  # filled by load_overrides
+TEXT_BOXES = []  # (pdf, col, y0, y1, [lines]); filled by load_overrides
+PLACES = {}  # table number -> (pdf, y0, y1, col); filled by load_overrides
 
 FIGURE_CAP = re.compile(r"^\W{0,2}(?:[NΔA]\s+)?FIGURE\s+([A-Z]?\.?\d[\w.()]*)\s*(.*)$")
 
@@ -1185,6 +1311,126 @@ def drop_figures(items, gutter, width, book_page, report, pdf):
     return out
 
 
+def apply_text_boxes(items, gutter, pdf):
+    boxes = [b for b in TEXT_BOXES if b[0] == pdf]
+    if not boxes:
+        return items
+    entries = []
+    for kind, it in items:
+        if kind == "line":
+            if any(b[2] <= it.y0 <= b[3] and it.col in (b[1], "S") for b in boxes):
+                continue
+            entries.append((it.y0, it.x0, it.col, ("line", it)))
+        else:
+            entries.append((it.anchor.y0, it.anchor.x0, "S" if it.wide else it.anchor.col, ("table", it)))
+    for _, col, y0, y1, typed in boxes:
+        xs = sorted(it.x0 for kind, it in items if kind == "line" and it.col == col)
+        x = xs[len(xs) // 10] if xs else (0 if col == "L" else gutter)
+        step = min(40, (y1 - y0) / max(1, len(typed)))
+        for i, t in enumerate(typed):
+            y = int(y0 + i * step)
+            words, wx = [], x
+            for w in t.split():
+                words.append((wx, y, wx + 8 * len(w), y + 28, w, 99.0))
+                wx += 8 * len(w) + 8
+            line = Line(words)
+            line.col = col
+            entries.append((y, x, col, ("line", line)))
+    return reading_order(entries)
+
+
+STRAY = re.compile(r"[^A-Za-z0-9(]{1,4}|[a-z]|[ij] [ij]")
+
+
+def drop_strays(lines):
+    """Specks that OCR'd as a lone mark or letter inside a paragraph."""
+    left = {}
+    for l in lines:
+        left[l.col] = min(left.get(l.col, l.x0), l.x0)
+    return [l for l in lines if not (STRAY.fullmatch(l.text.strip()) and l.x0 - left[l.col] > 120)]
+
+
+def apply_region_fixes(items, gutter, fixes, pdf=None):
+    """Override "until Y" / "column L|R": the table is the lines from its
+    caption down to page height Y (in that column, if given). Lines the
+    detector took beyond that go back to the prose; prose lines inside it
+    join the table. Then the page's reading order is rebuilt."""
+    items = apply_text_boxes(items, gutter, pdf)
+    # "place PDF Y0 Y1 COL": a table whose caption the scanner never read.
+    for num, (pp, y0, y1, pcol) in ((n, pl) for n, pl in PLACES.items() if pl[0] == pdf):
+        def in_box(x0, x1, y):
+            return y0 <= y <= y1 and (pcol == "S" or (pcol == "L" and x1 <= gutter + 8) or (pcol == "R" and x0 >= gutter - 8))
+        kept = []
+        for kind, it in items:
+            if kind == "line" and in_box(it.x0, it.x1, it.y0):
+                continue
+            if kind == "table" and y0 <= it.anchor.y0 <= y1:
+                continue
+            kept.append((kind, it))
+        t = Table(num, "", [], False)
+        t.anchor = Line([(0, y0, 10, y0 + 10, "Table", 99.0)])
+        t.anchor.col = pcol
+        t.wide = pcol == "S"
+        entries = []
+        for kind, it in kept + [("table", t)]:
+            if kind == "line":
+                entries.append((it.y0, it.x0, it.col, ("line", it)))
+            else:
+                entries.append((it.anchor.y0, it.anchor.x0, "S" if it.wide else it.anchor.col, ("table", it)))
+        items = reading_order(entries)
+
+    def fix_for(num):
+        f = fixes.get(num)
+        if not f:
+            return None
+        cut_y, col, pages = f
+        cut_y = pages.get(pdf, cut_y)
+        return (cut_y, col) if (cut_y is not None or col) else None
+
+    targets = [it for kind, it in items if kind == "table" and fix_for(it.number)]
+    if not targets:
+        return items
+    pool = [it for kind, it in items if kind == "line"]
+    for t in targets:
+        pool.extend(t.lines)
+    g = gutter
+    taken = set()
+    for t in targets:
+        cut_y, col = fix_for(t.number)
+        if col == "S":
+            t.wide = True
+            col = None
+        elif col:
+            t.wide = False
+            t.anchor.col = col
+
+        def inside(l, t=t, cut_y=cut_y, col=col):
+            if l.y0 <= t.anchor.y0 + 2 or (cut_y is not None and l.y0 > cut_y):
+                return False
+            if col == "L":
+                return l.x1 <= g + 8
+            if col == "R":
+                return l.x0 >= g - 8
+            return t.wide or (t.anchor.col == "L" and l.x1 <= g + 8) or (t.anchor.col == "R" and l.x0 >= g - 8)
+
+        if cut_y is None:
+            # Column fix only: keep the detected extent, drop the other column.
+            bottom = max([l.y0 for l in t.lines] or [t.anchor.y0])
+            inside_c = inside
+            inside = lambda l, f=inside_c, b=bottom: f(l) and l.y0 <= b
+        t.lines = [l for l in pool if id(l) not in taken and inside(l)]
+        taken.update(id(l) for l in t.lines)
+    rest = [l for l in pool if id(l) not in taken]
+    rest = split_at_gutter(rest, g)
+    for l in rest:
+        l.col = column_of(l, g)
+    entries = [(l.y0, l.x0, l.col, ("line", l)) for l in rest]
+    for kind, it in items:
+        if kind == "table":
+            entries.append((it.anchor.y0, it.anchor.x0, "S" if it.wide else it.anchor.col, ("table", it)))
+    return reading_order(entries)
+
+
 def build_articles(ocr_dir, first_pdf, last_pdf, report, toc_pages=(5, 6), absorb=None, until=None):
     absorb = absorb or {}
     until = until or {}
@@ -1198,7 +1444,7 @@ def build_articles(ocr_dir, first_pdf, last_pdf, report, toc_pages=(5, 6), absor
     recent = []
     for pdf in range(first_pdf, last_pdf + 1):
         path = page_path(ocr_dir, pdf)
-        if not os.path.exists(path):
+        if not os.path.exists(path) or pdf in SKIP_PAGES:
             continue
         page = order_page(path)
         words = [w.lower() for kind, it in page["items"]
@@ -1222,37 +1468,7 @@ def build_articles(ocr_dir, first_pdf, last_pdf, report, toc_pages=(5, 6), absor
         items = list(page["items"])
         # "until Y": the table ends at page height Y; lines below it that the
         # detector took go back to the prose, left column then right.
-        reflow = False
-        for kind, item in items:
-            fix = until.get(item.number) if kind == "table" else None
-            if not fix:
-                continue
-            cut_y, col = fix
-            g = page["gutter"]
-            inside = lambda l: (cut_y is None or l.y0 <= cut_y) and (
-                col is None or (col == "L" and l.x1 <= g + 8) or (col == "R" and l.x0 >= g - 8))
-            spill = [l for l in item.lines if not inside(l)]
-            item.lines = [l for l in item.lines if inside(l)]
-            spill = split_at_gutter(spill, g)
-            for l in spill:
-                l.col = "L" if l.x1 <= g + 8 else "R" if l.x0 >= g - 8 else "S"
-            item.spill = spill
-            if col:
-                item.wide = False
-                item.anchor.col = col
-            reflow = True
-        if reflow:
-            # Rebuild the page's reading order with the corrected tables.
-            entries = []
-            for kind, item in items:
-                if kind == "line":
-                    entries.append((item.y0, item.x0, item.col, ("line", item)))
-                else:
-                    entries.append((item.anchor.y0, item.anchor.x0,
-                                    "S" if item.wide else item.anchor.col, ("table", item)))
-                    for l in getattr(item, "spill", []):
-                        entries.append((l.y0, l.x0, l.col, ("line", l)))
-            items = reading_order(entries)
+        items = apply_region_fixes(items, page["gutter"], until, pdf)
         items = drop_figures(items, page["gutter"], page["width"], page["book_page"], report, pdf)
         for bp, bcol, by0, by1 in FIGURE_BOXES:
             if bp == pdf:
@@ -1333,6 +1549,10 @@ def build_articles(ocr_dir, first_pdf, last_pdf, report, toc_pages=(5, 6), absor
             if not text:
                 continue
             blocks = unit["blocks"]
+            if text.startswith("¶ "):
+                blocks.append({"kind": "para", "text": text[2:]})
+                title_open = False
+                continue
             # Title lines: centred under the heading, before any content.
             if title_open and not blocks and unit.get("toc_title"):
                 # Title known from the contents: swallow its printed lines.
@@ -1355,6 +1575,8 @@ def build_articles(ocr_dir, first_pdf, last_pdf, report, toc_pages=(5, 6), absor
                     blocks.append({"kind": "sec", "num": f"{m.group(1)}.{m.group(2)}", "title": title, "text": body})
                     continue
             else:
+                if unit["num"] == "O":  # "O.1" reads as "0.1"
+                    text = re.sub(r"^(\W{0,2}[NΔAM]?\s?)[0OQ][.,](?=\d{1,2}(?:\.\d+)*\s+[A-Z])", r"\1O.", text)
                 m = ANNEX_SEC.match(text)
                 if m and m.group(1) == unit["num"]:
                     title, body = split_title(m.group(3))
@@ -1370,7 +1592,7 @@ def build_articles(ocr_dir, first_pdf, last_pdf, report, toc_pages=(5, 6), absor
                 continue
             m = SUB.match(text)
             # "(2) and to prevent ..." wrapped mid-sentence is not a new item.
-            if m and (m.group(2)[:1].isupper() or m.group(2)[:1].isdigit() or m.group(2)[:1] in "“\""):
+            if m and (m.group(2)[:1].isupper() or m.group(2)[:1].isdigit() or m.group(2)[:1] in "“\"‘'"):
                 label = m.group(1)
                 title, body = split_title(m.group(2))
                 if title and not titleish(title):
@@ -1397,7 +1619,60 @@ def build_articles(ocr_dir, first_pdf, last_pdf, report, toc_pages=(5, 6), absor
     return units, tables, order
 
 
+def fix_sequences(blocks, where, report):
+    """(5) read as (9), (2) or (3) read as (8): put a numbered run back in
+    order when its neighbours say what the number must be."""
+    runs = {"item": [], "sub": []}
+    for b in blocks + [{"kind": "sec"}]:
+        k = b["kind"]
+        if k in ("sec", "table") or (k == "sub" and not b["label"].isdigit()):
+            for kind in runs:
+                close_run(runs[kind], where, report)
+                runs[kind] = []
+            continue
+        if k == "sub" and b["label"].isdigit():
+            close_run(runs["item"], where, report)
+            runs["item"] = []
+            runs["sub"].append(b)
+        elif k == "item" and b["label"].isdigit():
+            if int(b["label"]) == 1 and runs["item"]:
+                close_run(runs["item"], where, report)
+                runs["item"] = []
+            runs["item"].append(b)
+        elif k == "item":  # (a) (b): a new level
+            close_run(runs["item"], where, report)
+            runs["item"] = []
+
+
+def close_run(run, where, report):
+    # Only with both neighbours agreeing: a lone jump (4) -> (8) can be real
+    # (the list was interrupted by exceptions), as in 120.6.
+    for i, b in enumerate(run):
+        n, want = int(b["label"]), i + 1
+        if n == want:
+            continue
+        nxt = int(run[i + 1]["label"]) if i + 1 < len(run) else None
+        prev_ok = i == 0 or int(run[i - 1]["label"]) == want - 1
+        if prev_ok and nxt == want + 1:
+            report.append(f"   renumbered {where}: ({n}) -> ({want}) {b['text'][:40] or b.get('title')}")
+            b["label"] = str(want)
+
+
 def article_markdown(unit, tables_md, titles):
+    for b in unit["blocks"]:
+        # A heading whose title wrapped onto the next line.
+        if b["kind"] in ("sec", "sub", "item") and not b.get("title") and b["text"]:
+            title, text = split_title(b["text"])
+            if title and titleish(title) and (b["kind"] != "item" or b["label"].isdigit()):
+                b["title"], b["text"] = title, text
+                if b["kind"] == "item":
+                    b["kind"] = "sub"
+        elif b["kind"] == "item" and b["label"].isdigit():
+            # "(1) 120-Volt Cord Circuits. Cord sets ..."
+            m = re.match(r"^(\d[^.]{3,60})\.\s+([A-Z].*)$", b["text"])
+            if m and titleish("X" + m.group(1)):
+                b["title"], b["text"], b["kind"] = m.group(1), m.group(2), "sub"
+    fix_sequences(unit["blocks"], unit["num"], SEQ_REPORT)
     out = []
     items = []
 
@@ -1466,6 +1741,23 @@ def load_overrides(path):
     for raw in open(path, encoding="utf-8").read().split("\n"):
         # "@@ figure 89 S 800 3050": drop OCR text inside that box of PDF
         # page 89 (column L, R or S = all), e.g. sample forms and flowcharts.
+        # "@@ lines 89 R 1090 1280" + typed lines: what the book prints in
+        # that box, where the scan is unreadable (page curl, a figure).
+        m = re.match(r"^@@ lines (\d+) ([LR]) (\d+) (\d+)\s*$", raw)
+        if m:
+            TEXT_BOXES.append((int(m.group(1)), m.group(2), int(m.group(3)), int(m.group(4)), []))
+            cur = "lines"
+            continue
+        if cur == "lines" and not raw.startswith("@@"):
+            if raw.strip() and not raw.startswith("#"):
+                TEXT_BOXES[-1][4].append(raw.strip())
+            continue
+        # "@@ replace tesung => testing": fix a scanner typo everywhere.
+        m = re.match(r"^@@ replace (.+?) => (.*)$", raw)
+        if m:
+            REPLACEMENTS.append((m.group(1), m.group(2)))
+            cur = None
+            continue
         m = re.match(r"^@@ figure (\d+) ([LRS]) (\d+) (\d+)\s*$", raw)
         if m:
             FIGURE_BOXES.append((int(m.group(1)), m.group(2), int(m.group(3)), int(m.group(4))))
@@ -1488,6 +1780,13 @@ def load_overrides(path):
             continue
         if line == "verified":
             cur["verified"] = True
+        elif m := re.match(r"^until (\d+)(?: page (\d+))?$", line):
+            if m.group(2):
+                cur.setdefault("until_pages", {})[int(m.group(2))] = int(m.group(1))
+            else:
+                cur["until"] = int(m.group(1))
+        elif m := re.match(r"^column ([LRS])$", line):
+            cur["column"] = m.group(1)
         elif m := re.match(r"^cell (\d+) (\d+) = (.*)$", line):
             cur["cells"].append((int(m.group(1)), int(m.group(2)), m.group(3).strip()))
         elif m := re.match(r"^header = (.*)$", line):
@@ -1496,10 +1795,10 @@ def load_overrides(path):
             cur["drop"].append(int(m.group(1)))
         else:
             sys.exit(f"overrides: can't read {raw!r}")
-    for v in out.values():
+    for num, v in out.items():
         v["absorb"] = 0
-        v["until"] = None
-        v["column"] = None
+        v.setdefault("until", None)
+        v.setdefault("column", None)
         if v["markdown"] is not None:
             v["markdown"] = v["markdown"].strip()
             # "absorb N" / "absorb rest" on the first line: the table's notes
@@ -1513,14 +1812,22 @@ def load_overrides(path):
                     v["absorb"] = 10 ** 6 if m.group(1) == "rest" else int(m.group(1))
                     v["markdown"] = v["markdown"][m.end():].strip()
                     continue
-                m = re.match(r"^column ([LR])\n", v["markdown"] + "\n")
+                m = re.match(r"^place (\d+) (\d+) (\d+) ([LRS])\n", v["markdown"] + "\n")
+                if m:
+                    PLACES[num] = (int(m.group(1)), int(m.group(2)), int(m.group(3)), m.group(4))
+                    v["markdown"] = v["markdown"][m.end():].strip()
+                    continue
+                m = re.match(r"^column ([LRS])\n", v["markdown"] + "\n")
                 if m:
                     v["column"] = m.group(1)
                     v["markdown"] = v["markdown"][m.end():].strip()
                     continue
-                m = re.match(r"^until (\d+)\n", v["markdown"] + "\n")
+                m = re.match(r"^until (\d+)(?: page (\d+))?\n", v["markdown"] + "\n")
                 if m:
-                    v["until"] = int(m.group(1))
+                    if m.group(2):
+                        v.setdefault("until_pages", {})[int(m.group(2))] = int(m.group(1))
+                    else:
+                        v["until"] = int(m.group(1))
                     v["markdown"] = v["markdown"][m.end():].strip()
                     continue
                 m = re.match(r"^title (.+)\n", v["markdown"] + "\n")
@@ -1583,9 +1890,12 @@ def main():
     ap.add_argument("--first", type=int, default=11, help="first PDF page of chapter 1")
     ap.add_argument("--last", type=int, default=110, help="a PDF page at or after Annex B")
     ap.add_argument("--dump-tables", default=None, help="write every converted table here")
+    ap.add_argument("--skip-pages", default="",
+                    help="PDF pages to ignore, e.g. 34,35 (the same page photographed twice)")
     ap.add_argument("--layout", choices=["chapters", "articles"], default="chapters",
                     help="chapters: NFPA 70B style; articles: NFPA 70E style")
     args = ap.parse_args()
+    SKIP_PAGES.update(int(x) for x in args.skip_pages.split(",") if x.strip())
 
     if args.page:
         page = order_page(page_path(args.ocr_dir, args.page))
@@ -1600,18 +1910,23 @@ def main():
         return
 
     report = []
+    load_vocab(args.ocr_dir, args.first, args.last)
     overrides = load_overrides(args.overrides)
     if args.layout == "articles":
         units, tables, order = build_articles(
             args.ocr_dir, args.first, args.last, report,
             absorb={n: v["absorb"] for n, v in overrides.items()},
-            until={n: (v["until"], v["column"]) for n, v in overrides.items() if v["until"] or v["column"]},
+            until={n: (v["until"], v["column"], v.get("until_pages", {})) for n, v in overrides.items()
+                   if v["until"] or v["column"] or v.get("until_pages")},
         )
         chapters, annex_a = [], {}
     else:
-        chapters, annex_a, tables, order = build(args.ocr_dir, args.first, args.last, report)
+        chapters, annex_a, tables, order = build(
+            args.ocr_dir, args.first, args.last, report,
+            fixes={n: (v["until"], v["column"], v.get("until_pages", {})) for n, v in overrides.items()
+                   if v["until"] or v["column"] or v.get("until_pages")},
+        )
         units = []
-    overrides = load_overrides(args.overrides)
     tables_md, titles = {}, {}
     dump = []
     for n in order:
@@ -1689,6 +2004,11 @@ def main():
         })
         report.append(f"{u['num']:>4} {len(body):>6}ch p{u['book_page']} {u['group'][:22]:<22} {u['title'][:60]}")
 
+    for r in rows:
+        r["body"] = fix_vy(r["body"])
+        for old, new in REPLACEMENTS:
+            r["body"] = r["body"].replace(old, new)
+            r["title"] = r["title"].replace(old, new)
     if args.slug and args.out:
         with open(args.out, "w", encoding="utf-8") as f:
             f.write(f"-- {args.label or args.slug}: generated by scripts/standards/parse_nfpa_ocr.py\n")
@@ -1709,6 +2029,7 @@ def main():
                     f"$md$\n{r['body']}\n$md$);\n\n"
                 )
             f.write("COMMIT;\n")
+    report.extend(SEQ_REPORT)
     if args.report:
         print("\n".join(report))
     print(f"{len(rows)} chapters, {len(order)} tables, {len(annex_a)} Annex A notes")

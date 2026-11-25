@@ -72,6 +72,9 @@ export const companyConfig = {
   /** Product site URL (EULA/Privacy pages). */
   productUrl: str(env.VITE_COMPANY_PRODUCT_URL, "https://ampos.io"),
 
+  /** General conditions percent the SOV setup starts on. Blank starts it empty. */
+  generalConditionsPercent: optionalStr(env.VITE_COMPANY_GC_PERCENT, "18"),
+
   /** Email domains allowed to sign up / treated as employees. */
   allowedEmailDomains: list(env.VITE_COMPANY_EMAIL_DOMAINS, [
     "@ampqes.com",

@@ -14,7 +14,7 @@ export interface SovLine {
   report_slugs: string[];
   /** Estimates this line was copied from, so the same estimate is not added twice */
   source_estimate_ids: string[];
-  /** scope (estimate rows or typed in), general_conditions, or mobilization */
+  /** scope (estimate rows or typed in), general_conditions, mobilization, or bond */
   line_type?: SovLineType;
   /** Times the estimate scope repeats. Quantity already includes it; shown as "10 x 6". */
   multiplier?: number;
@@ -27,10 +27,11 @@ export interface SovLine {
 /** True for lines from the original contract, false for Change Order lines. */
 export const isOriginalLine = (line: SovLine): boolean => !line.change_order_id;
 
-export type SovLineType = 'scope' | 'general_conditions' | 'mobilization';
+export type SovLineType = 'scope' | 'general_conditions' | 'mobilization' | 'bond';
 
 export const GENERAL_CONDITIONS_ITEM = 'General conditions';
 export const MOBILIZATION_ITEM = 'Mobilization';
+export const BOND_ITEM = 'Bond';
 
 export interface SentReport {
   id: string;
@@ -478,6 +479,30 @@ export function simpleEstimateRows(
 export const estimateTotal = (option: EstimateOption): number =>
   option.rowsTotal ?? option.rows.reduce((sum, row) => sum + row.quantity * row.unitPrice, 0);
 
+const lineDollars = (line: SovLine): number => line.quantity * line.unit_price;
+
+/**
+ * Prices are whole cents, so a line of 1,800 can be dollars off what it should be. Puts what
+ * that lost (`short`) on the biggest of these lines, the last one in a tie. Changes the line.
+ */
+function absorbRounding(lines: SovLine[], short: number): void {
+  let biggest: SovLine | null = null;
+  for (const line of lines) {
+    if (lineDollars(line) > 0 && (!biggest || lineDollars(line) >= lineDollars(biggest))) biggest = line;
+  }
+  if (!biggest || Math.abs(short) < 0.005) return;
+  const price = biggest.unit_price + short / biggest.quantity;
+  if (price > 0) biggest.unit_price = Math.round(price * 1e8) / 1e8;
+}
+
+/** Multiplies these lines' prices so they add up to `target` to the cent. Changes the lines. */
+function scaleTo(lines: SovLine[], target: number): void {
+  const total = sovTotal(lines);
+  if (total <= 0 || target <= 0) return;
+  for (const line of lines) line.unit_price = round2(line.unit_price * (target / total));
+  absorbRounding(lines, target - sovTotal(lines));
+}
+
 /**
  * Adds the rows of the picked estimates to an SOV, one line per item per area. Rows with
  * the same name in the same area combine: quantities and hours add up, and $ each becomes
@@ -503,9 +528,7 @@ export function addEstimatesToLines(
     const baked = mob ? Math.max(0, mob.total - mob.added) : 0;
     const priceFactor = baked > 0 && rowsTotal > baked ? (rowsTotal - baked) / rowsTotal : 1;
     const totalBefore = sovTotal(next);
-    // Biggest line this estimate touched (the last one, in a tie)
-    let biggest: SovLine | null = null;
-    const value = (line: SovLine | null) => (line ? line.quantity * line.unit_price : 0);
+    const touched = new Set<SovLine>();
 
     for (const row of blendAcrossAreas(option.rows)) {
       const key = nameKey(row.item);
@@ -539,7 +562,7 @@ export function addEstimatesToLines(
           section: row.section ?? null,
         };
         next.push(added);
-        if (value(added) > 0 && value(added) >= value(biggest)) biggest = added;
+        touched.add(added);
         continue;
       }
 
@@ -556,17 +579,12 @@ export function addEstimatesToLines(
       if (!existing.source_estimate_ids.includes(option.id)) {
         existing.source_estimate_ids = [...existing.source_estimate_ids, option.id];
       }
-      if (value(existing) > 0 && value(existing) >= value(biggest)) biggest = existing;
+      touched.add(existing);
     }
 
-    if (biggest && option.rowsTotal != null) {
+    if (option.rowsTotal != null) {
       const target = round2((option.rowsTotal - (priceFactor < 1 ? baked : 0)) * n);
-      const short = target - (sovTotal(next) - totalBefore);
-      // Only ever cents per unit. Anything bigger is a real difference, not rounding.
-      const perUnit = short / biggest.quantity;
-      if (Math.abs(perUnit) <= biggest.unit_price * 0.01) {
-        biggest.unit_price = Math.round((biggest.unit_price + perUnit) * 1e6) / 1e6;
-      }
+      absorbRounding([...touched], target - (sovTotal(next) - totalBefore));
     }
 
     if (mob && mob.total > 0) {
@@ -642,8 +660,7 @@ export function changeOrderLines(
       },
     ];
   } else if (co.amount > 0 && Math.abs(total - co.amount) >= 0.01) {
-    const factor = co.amount / total;
-    lines = lines.map((line) => ({ ...line, unit_price: round2(line.unit_price * factor) }));
+    scaleTo(lines, co.amount);
   }
 
   return lines.map((line) => ({ ...line, change_order_id: co.id }));
@@ -666,7 +683,7 @@ export interface GeneralConditions {
  * Puts general conditions on the SOV as one line (months x monthly amount), replacing
  * any earlier one. With fromPrice, the scope lines give up that amount in proportion,
  * so the total still matches the contract. The earlier setting is undone first, so
- * applying twice never takes it out twice. Mobilization lines are left alone.
+ * applying twice never takes it out twice. Mobilization and bond lines are left alone.
  */
 export function applyGeneralConditions(
   jobId: string,
@@ -677,23 +694,19 @@ export function applyGeneralConditions(
 ): SovLine[] {
   // Change Orders are priced on their own, so general conditions never come out of them
   const isScope = (line: SovLine) => isOriginalLine(line) && (line.line_type ?? 'scope') === 'scope';
-  const scopeTotal = (list: SovLine[]) =>
-    list.filter(isScope).reduce((sum, line) => sum + line.quantity * line.unit_price, 0);
-  const scale = (list: SovLine[], factor: number) =>
-    list.map((line) => (isScope(line) ? { ...line, unit_price: round2(line.unit_price * factor) } : line));
 
-  let out = lines.filter((line) => line.line_type !== 'general_conditions').map((line) => ({ ...line }));
+  const out = lines.filter((line) => line.line_type !== 'general_conditions').map((line) => ({ ...line }));
 
   // Give back what the earlier general conditions took out
-  const before = previous && previous.fromPrice ? previous.monthly * previous.months : 0;
-  const nowScope = scopeTotal(out);
-  if (before > 0 && nowScope > 0) out = scale(out, (nowScope + before) / nowScope);
+  const before = previous && previous.fromPrice ? round2(previous.monthly) * previous.months : 0;
+  const scopeLines = out.filter(isScope);
+  if (before > 0) scaleTo(scopeLines, sovTotal(scopeLines) + before);
 
   if (!next || next.monthly <= 0 || next.months <= 0) return out;
 
-  const amount = next.monthly * next.months;
-  const scope = scopeTotal(out);
-  if (next.fromPrice && scope > amount) out = scale(out, (scope - amount) / scope);
+  const amount = round2(next.monthly) * next.months;
+  const scope = sovTotal(scopeLines);
+  if (next.fromPrice && scope > amount) scaleTo(scopeLines, scope - amount);
 
   return [
     {
@@ -711,6 +724,55 @@ export function applyGeneralConditions(
     },
     ...out,
   ].map((line, i) => ({ ...line, sort_order: i }));
+}
+
+/**
+ * What a general conditions percent is taken of: the original contract, without the bond
+ * (it goes on top). General conditions already on the SOV count only when they came out of
+ * the other lines, so the answer is the same before and after they are applied.
+ */
+export const generalConditionsBase = (lines: SovLine[], applied: GeneralConditions | null): number =>
+  round2(
+    sovTotal(
+      lines.filter(
+        (line) =>
+          isOriginalLine(line) &&
+          line.line_type !== 'bond' &&
+          (line.line_type !== 'general_conditions' || !!applied?.fromPrice),
+      ),
+    ),
+  );
+
+/** One month of general conditions at a percent of the contract. */
+export const monthlyFromPercent = (base: number, percent: number, months: number): number =>
+  months > 0 ? round2((base * percent) / 100 / months) : 0;
+
+export const isBondLine = (line: SovLine): boolean => isOriginalLine(line) && line.line_type === 'bond';
+
+/** Puts the bond on the SOV as one line on top of the contract, or takes it off at 0. */
+export function applyBond(jobId: string, lines: SovLine[], amount: number, makeId: () => string): SovLine[] {
+  const bond = lines.find(isBondLine);
+  if (!(amount > 0)) return bond ? lines.filter((line) => !isBondLine(line)) : lines;
+  const price = round2(amount);
+  if (bond) return lines.map((line) => (line === bond ? { ...line, quantity: 1, unit_price: price } : line));
+
+  const line: SovLine = {
+    id: makeId(),
+    job_id: jobId,
+    sort_order: 0,
+    item: BOND_ITEM,
+    quantity: 1,
+    total_hours: 0,
+    unit_price: price,
+    report_slugs: [],
+    source_estimate_ids: [],
+    line_type: 'bond',
+    multiplier: 1,
+  };
+  // Right after mobilization, or at the end of the original lines
+  const mob = lines.findIndex((l) => isOriginalLine(l) && l.line_type === 'mobilization');
+  const at = mob >= 0 ? mob + 1 : lines.filter(isOriginalLine).length;
+  return [...lines.slice(0, at), line, ...lines.slice(at)].map((l, i) => ({ ...l, sort_order: i }));
 }
 
 /**

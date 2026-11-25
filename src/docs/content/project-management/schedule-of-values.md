@@ -31,7 +31,8 @@ If the job has no estimate to copy from, build it with **Add line**. The SOV wor
 The **SOV setup** button holds settings for the whole job:
 
 - **Billing.** How often the job bills.
-- **General conditions.** A set amount billed every month: the dollars a month, how many months, and the start month. It stops when the months run out, even if the job runs long. Tick **Take it out of the other lines** if the general conditions were baked into the line prices and should come back out.
+- **General conditions.** Billed every month from the date the contract was signed, until the months run out, even if the job runs long. Pick **%** for a percent of the contract: it comes out of the testing lines, so the total stays the same. Pick **$** to type the dollars a month, and tick **Take it out of the other lines** if the total should stay the same.
+- **Bond.** One line on top of the contract. General conditions never shrink it.
 
 General conditions don't show in weekly updates. They bill on their own each month.
 

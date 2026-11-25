@@ -907,6 +907,8 @@ export type BillingFrequency = 'monthly' | 'weekly' | 'one_time';
 
 export interface SovSettings {
   billing_frequency: BillingFrequency;
+  /** Percent of the contract the monthly amount came from. Null: typed in as dollars. */
+  gc_percent: number | null;
   gc_monthly: number | null;
   gc_months: number | null;
   gc_start: string | null;
@@ -916,6 +918,7 @@ export interface SovSettings {
 
 export const DEFAULT_SOV_SETTINGS: SovSettings = {
   billing_frequency: 'monthly',
+  gc_percent: null,
   gc_monthly: null,
   gc_months: null,
   gc_start: null,
@@ -927,7 +930,8 @@ export async function fetchSovSettings(jobId: string): Promise<SovSettings | nul
   const { data, error } = await supabase
     .schema('neta_ops')
     .from('job_sov_settings')
-    .select('billing_frequency, gc_monthly, gc_months, gc_start, gc_from_price')
+    // select * so this still works before sov_gc_percent.sql adds the column
+    .select('*')
     .eq('job_id', jobId)
     .maybeSingle();
   if (error) {
@@ -937,6 +941,7 @@ export async function fetchSovSettings(jobId: string): Promise<SovSettings | nul
   if (!data) return { ...DEFAULT_SOV_SETTINGS };
   return {
     billing_frequency: (data.billing_frequency as BillingFrequency) ?? 'monthly',
+    gc_percent: data.gc_percent == null ? null : toNum(data.gc_percent),
     gc_monthly: data.gc_monthly == null ? null : toNum(data.gc_monthly),
     gc_months: data.gc_months == null ? null : toNum(data.gc_months),
     gc_start: data.gc_start ?? null,
@@ -945,17 +950,25 @@ export async function fetchSovSettings(jobId: string): Promise<SovSettings | nul
 }
 
 export async function saveSovSettings(jobId: string, settings: SovSettings, userId?: string): Promise<void> {
-  const { error } = await withWriteRetry(
-    () =>
-      supabase
-        .schema('neta_ops')
-        .from('job_sov_settings')
-        .upsert(
-          { job_id: jobId, ...settings, updated_at: new Date().toISOString(), updated_by: userId ?? null },
-          { onConflict: 'job_id' },
-        ),
-    { label: 'save SOV settings' },
-  );
+  const upsert = (payload: Partial<SovSettings>) =>
+    withWriteRetry(
+      () =>
+        supabase
+          .schema('neta_ops')
+          .from('job_sov_settings')
+          .upsert(
+            { job_id: jobId, ...payload, updated_at: new Date().toISOString(), updated_by: userId ?? null },
+            { onConflict: 'job_id' },
+          ),
+      { label: 'save SOV settings' },
+    );
+
+  let { error } = await upsert(settings);
+  // sov_gc_percent.sql has not been run: the dollars still save, only the percent is left out
+  if ((error as { code?: string } | null)?.code === 'PGRST204') {
+    const { gc_percent: _percent, ...rest } = settings;
+    ({ error } = await upsert(rest));
+  }
   if (error) throw new Error(describeSupabaseError(error));
 }
 

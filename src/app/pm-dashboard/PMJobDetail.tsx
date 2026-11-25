@@ -33,17 +33,21 @@ import {
   type SovChangeOrder,
   type SovSettings,
 } from '@/services/pmDashboardService';
+import { companyConfig } from '@/lib/companyConfig';
 import {
   NET_TERMS,
   addEstimatesToLines,
+  applyBond,
   applyGeneralConditions,
   atTerm,
   bestLineFor,
   completedPct,
   estimateOverlaps,
   estimateTotal,
+  generalConditionsBase,
   groupByArea,
   guessLineSlugs,
+  isBondLine,
   isOriginalLine,
   lineDone,
   lineLabel,
@@ -52,6 +56,7 @@ import {
   monthDollars,
   monthKey,
   monthLabel,
+  monthlyFromPercent,
   monthRange,
   pct,
   repeatsAcrossAreas,
@@ -249,7 +254,15 @@ export default function PMJobDetail() {
   const [savedSettings, setSavedSettings] = useState<SovSettings | null>(null);
   // General conditions currently reflected in the lines (saved or just applied)
   const [appliedGc, setAppliedGc] = useState<GeneralConditions | null>(null);
-  const [gcDraft, setGcDraft] = useState({ monthly: '', months: '', start: '', fromPrice: true });
+  const [gcDraft, setGcDraft] = useState({
+    usePercent: true,
+    percent: '',
+    monthly: '',
+    months: '',
+    start: '',
+    fromPrice: true,
+    bond: '',
+  });
   const [setupOpen, setSetupOpen] = useState(false);
   const [testBillOpen, setTestBillOpen] = useState(false);
   const [bills, setBills] = useState<JobBill[]>([]);
@@ -303,12 +316,6 @@ export default function PMJobDetail() {
       setSettings(sovSettings);
       setSavedSettings(sovSettings);
       setAppliedGc(gcFromSettings(sovSettings));
-      setGcDraft({
-        monthly: sovSettings?.gc_monthly ? String(sovSettings.gc_monthly) : '',
-        months: sovSettings?.gc_months ? String(sovSettings.gc_months) : '',
-        start: sovSettings?.gc_start ?? loaded.start_date ?? '',
-        fromPrice: sovSettings?.gc_from_price ?? true,
-      });
       setJob(loaded);
       setBundle(result.bundles[loaded.id]);
       setLines(result.bundles[loaded.id].lines);
@@ -456,12 +463,22 @@ export default function PMJobDetail() {
       (line) => !replacedIds.has(line.id),
     );
     const added = addEstimatesToLines(job.id, kept, picked, makeId, estimateTimes);
+    // A percent follows the new contract total
+    const percent = settings?.gc_percent ?? null;
+    const gc =
+      redoGc && appliedGc && percent
+        ? { ...appliedGc, monthly: monthlyFromPercent(generalConditionsBase(added, null), percent, appliedGc.months) }
+        : appliedGc;
     markChanged(
       guessLineSlugs(
-        redoGc ? applyGeneralConditions(job.id, added, null, appliedGc, makeId) : added,
+        redoGc ? applyGeneralConditions(job.id, added, null, gc, makeId) : added,
         Object.keys(sentByType),
       ),
     );
+    if (redoGc && gc && settings) {
+      setAppliedGc(gc);
+      setSettings({ ...settings, gc_monthly: gc.monthly });
+    }
     setEstimatePickerOpen(false);
   };
 
@@ -471,13 +488,20 @@ export default function PMJobDetail() {
     setTypeSearch('');
   };
 
-  /** Puts general conditions on the SOV from the form. Saved with the SOV. */
+  // General conditions as typed in Setup. A percent always comes out of the other lines.
+  const gcBase = generalConditionsBase(lines, appliedGc);
+  const draftMonths = Math.round(parseNumber(gcDraft.months));
+  const draftMonthly = gcDraft.usePercent
+    ? monthlyFromPercent(gcBase, parseNumber(gcDraft.percent), draftMonths)
+    : parseNumber(gcDraft.monthly);
+
+  /** Puts general conditions and the bond on the SOV from the form. Saved with the SOV. */
   const applyGc = () => {
     if (!job || !settings) return;
-    const monthly = parseNumber(gcDraft.monthly);
-    const months = Math.round(parseNumber(gcDraft.months));
-    const next: GeneralConditions | null =
-      monthly > 0 && months > 0 ? { monthly, months, fromPrice: gcDraft.fromPrice } : null;
+    const monthly = draftMonthly;
+    const months = draftMonths;
+    const fromPrice = gcDraft.usePercent || gcDraft.fromPrice;
+    const next: GeneralConditions | null = monthly > 0 && months > 0 ? { monthly, months, fromPrice } : null;
     const unchanged =
       (!appliedGc && !next) ||
       (!!appliedGc &&
@@ -486,24 +510,33 @@ export default function PMJobDetail() {
         appliedGc.months === next.months &&
         appliedGc.fromPrice === next.fromPrice);
     // Only touch the lines when general conditions changed, so prices never drift by a cent
-    if (unchanged) setDirty(true);
-    else markChanged(applyGeneralConditions(job.id, lines, appliedGc, next, () => crypto.randomUUID()));
+    const makeId = () => crypto.randomUUID();
+    const withGc = unchanged ? lines : applyGeneralConditions(job.id, lines, appliedGc, next, makeId);
+    const bondChanged = parseNumber(gcDraft.bond) !== sovTotal(lines.filter(isBondLine));
+    const withBond = bondChanged ? applyBond(job.id, withGc, parseNumber(gcDraft.bond), makeId) : withGc;
+    if (withBond === lines) setDirty(true);
+    else markChanged(withBond);
     setAppliedGc(next);
     setSetupOpen(false);
     setSettings({
       ...settings,
       billing_frequency: billingDraft,
+      gc_percent: next && gcDraft.usePercent ? parseNumber(gcDraft.percent) : null,
       gc_monthly: next ? monthly : null,
       gc_months: next ? months : null,
       gc_start: gcDraft.start || null,
-      gc_from_price: gcDraft.fromPrice,
+      gc_from_price: fromPrice,
     });
   };
 
   const openSetup = () => {
     if (!settings) return;
     setBillingDraft(settings.billing_frequency);
+    const bond = sovTotal(lines.filter(isBondLine));
     setGcDraft({
+      usePercent: !appliedGc || settings.gc_percent != null,
+      percent: String(settings.gc_percent ?? companyConfig.generalConditionsPercent),
+      bond: bond > 0 ? String(bond) : '',
       monthly: appliedGc ? String(appliedGc.monthly) : '',
       months: appliedGc ? String(appliedGc.months) : '',
       start: settings.gc_start ?? job?.start_date ?? '',
@@ -517,7 +550,7 @@ export default function PMJobDetail() {
     ? [
         `Bills ${BILLING_LABEL[settings.billing_frequency]}`,
         appliedGc
-          ? `General conditions ${fmtMoney(appliedGc.monthly)} × ${appliedGc.months} mo${
+          ? `General conditions ${settings.gc_percent ? `${settings.gc_percent}%, ` : ''}${fmtMoney(appliedGc.monthly)} × ${appliedGc.months} mo${
               settings.gc_start ? ` from ${fmtDay(settings.gc_start)}` : ''
             }`
           : 'No general conditions',
@@ -690,7 +723,9 @@ export default function PMJobDetail() {
 
   // The contract value only says something about the SOV when it comes from the quote.
   const sovDollars = sovTotal(lines);
-  const sovGap = bundle.quotedAmount > 0 ? contract - sovDollars : 0;
+  // The bond goes on top of the contract
+  const bondDollars = sovTotal(lines.filter(isBondLine));
+  const sovGap = bundle.quotedAmount > 0 ? contract - (sovDollars - bondDollars) : 0;
   const sovGapMatters = Math.abs(sovGap) > contract * 0.01;
 
   const pickedOwnTerms = estimates.filter((e) => pickedEstimateIds.includes(e.id));
@@ -853,6 +888,9 @@ export default function PMJobDetail() {
           />
           {line.line_type === 'mobilization' && (
             <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">From the estimate</p>
+          )}
+          {line.line_type === 'bond' && (
+            <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">On top of the contract</p>
           )}
         </td>
         <td className={NUM}>
@@ -1561,7 +1599,7 @@ export default function PMJobDetail() {
               >
                 {!sovGapMatters && <Check className="h-4 w-4" />}
                 {sovGapMatters
-                  ? `SOV adds up to ${fmtMoney(sovDollars)}. Contract is ${fmtMoney(contract)}. ${
+                  ? `SOV adds up to ${fmtMoney(sovDollars - bondDollars)}${bondDollars > 0 ? ' before the bond' : ''}. Contract is ${fmtMoney(contract)}. ${
                       sovGap > 0 ? `${fmtMoney(sovGap)} is not on the SOV yet.` : `SOV is ${fmtMoney(-sovGap)} over the contract.`
                     }`
                   : `Adds up to the contract (${fmtMoney(contract)}).`}
@@ -1838,20 +1876,61 @@ export default function PMJobDetail() {
             </div>
 
             <div className="space-y-2">
-              <div className="font-medium text-neutral-900 dark:text-neutral-100">General conditions</div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="font-medium text-neutral-900 dark:text-neutral-100">General conditions</div>
+                <div
+                  className="inline-flex border border-neutral-300 dark:border-neutral-600"
+                  role="group"
+                  aria-label="General conditions as"
+                >
+                  <button
+                    type="button"
+                    aria-pressed={gcDraft.usePercent}
+                    onClick={() => setGcDraft({ ...gcDraft, usePercent: true })}
+                    className={gcDraft.usePercent ? SEG_ON : SEG_OFF}
+                  >
+                    %
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={!gcDraft.usePercent}
+                    onClick={() => setGcDraft({ ...gcDraft, usePercent: false })}
+                    className={gcDraft.usePercent ? SEG_OFF : SEG_ON}
+                  >
+                    $
+                  </button>
+                </div>
+              </div>
               <div className="grid grid-cols-3 gap-2">
-                <label className="space-y-1 text-xs text-neutral-500 dark:text-neutral-400" htmlFor="sov-gc-monthly">
-                  <span>$ a month</span>
-                  <input
-                    id="sov-gc-monthly"
-                    type="number"
-                    min={0}
-                    placeholder="0"
-                    className={`${NUMBER_INPUT} w-full`}
-                    value={gcDraft.monthly}
-                    onChange={(e) => setGcDraft({ ...gcDraft, monthly: e.target.value })}
-                  />
-                </label>
+                {gcDraft.usePercent ? (
+                  <label className="space-y-1 text-xs text-neutral-500 dark:text-neutral-400" htmlFor="sov-gc-percent">
+                    <span>% of contract</span>
+                    <input
+                      id="sov-gc-percent"
+                      type="number"
+                      min={0}
+                      max={100}
+                      step="any"
+                      placeholder="0"
+                      className={`${NUMBER_INPUT} w-full`}
+                      value={gcDraft.percent}
+                      onChange={(e) => setGcDraft({ ...gcDraft, percent: e.target.value })}
+                    />
+                  </label>
+                ) : (
+                  <label className="space-y-1 text-xs text-neutral-500 dark:text-neutral-400" htmlFor="sov-gc-monthly">
+                    <span>$ a month</span>
+                    <input
+                      id="sov-gc-monthly"
+                      type="number"
+                      min={0}
+                      placeholder="0"
+                      className={`${NUMBER_INPUT} w-full`}
+                      value={gcDraft.monthly}
+                      onChange={(e) => setGcDraft({ ...gcDraft, monthly: e.target.value })}
+                    />
+                  </label>
+                )}
                 <label className="space-y-1 text-xs text-neutral-500 dark:text-neutral-400" htmlFor="sov-gc-months">
                   <span>Months</span>
                   <input
@@ -1865,7 +1944,7 @@ export default function PMJobDetail() {
                   />
                 </label>
                 <label className="space-y-1 text-xs text-neutral-500 dark:text-neutral-400" htmlFor="sov-gc-start">
-                  <span>From</span>
+                  <span>Bills from</span>
                   <input
                     id="sov-gc-start"
                     type="date"
@@ -1875,19 +1954,53 @@ export default function PMJobDetail() {
                   />
                 </label>
               </div>
-              <label className="flex items-center gap-2 text-neutral-700 dark:text-neutral-300" htmlFor="sov-gc-from-price">
-                <input
-                  id="sov-gc-from-price"
-                  type="checkbox"
-                  className="rounded-none accent-brand"
-                  checked={gcDraft.fromPrice}
-                  onChange={(e) => setGcDraft({ ...gcDraft, fromPrice: e.target.checked })}
-                />
-                Take it out of the other lines
-              </label>
+              {gcDraft.usePercent ? (
+                <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                  {gcBase <= 0
+                    ? 'Add the SOV lines first.'
+                    : draftMonths > 0
+                      ? `${fmtMoney(gcBase)} contract: ${fmtMoney(draftMonthly)} × ${draftMonths} mo = ${fmtMoney(draftMonthly * draftMonths)}, out of the testing lines.`
+                      : `Type the months to spread it over. Contract: ${fmtMoney(gcBase)}.`}
+                </p>
+              ) : (
+                <label className="flex items-center gap-2 text-neutral-700 dark:text-neutral-300" htmlFor="sov-gc-from-price">
+                  <input
+                    id="sov-gc-from-price"
+                    type="checkbox"
+                    className="rounded-none accent-brand"
+                    checked={gcDraft.fromPrice}
+                    onChange={(e) => setGcDraft({ ...gcDraft, fromPrice: e.target.checked })}
+                  />
+                  Take it out of the other lines
+                </label>
+              )}
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Bills each month from the start date, then stops, even if the job runs long. Leave
-                blank for none.
+                Bills each month from this date (use the day the contract was signed), then stops, even
+                if the job runs long. Leave the months blank for none.
+              </p>
+              {Object.values(weeks).some((w) => w.status === 'approved') && (
+                <p className="text-xs text-amber-700 dark:text-amber-300">
+                  Weeks are already approved. Taking it out of the lines changes prices on work already billed.
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="block font-medium text-neutral-900 dark:text-neutral-100" htmlFor="sov-bond">
+                Bond
+              </label>
+              <input
+                id="sov-bond"
+                type="number"
+                min={0}
+                step="any"
+                placeholder="0"
+                className={`${NUMBER_INPUT} w-full`}
+                value={gcDraft.bond}
+                onChange={(e) => setGcDraft({ ...gcDraft, bond: e.target.value })}
+              />
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                One line on top of the contract. General conditions never shrink it. Leave blank for none.
               </p>
             </div>
           </div>

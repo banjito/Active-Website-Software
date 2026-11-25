@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useReportStyles } from "@/lib/reportStyles";
 import { ReportHeader } from "@/components/reports/common/ReportHeader";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAssetFormPrefill } from "./useAssetFormPrefill";
@@ -350,6 +351,8 @@ const applyTCF = (reading: string, tcf: number): string => {
 };
 
 const ThreeLowVoltageCableATSForm: React.FC = () => {
+  // No ReportWrapper here, so switch the reports' shared styles on directly
+  useReportStyles();
   const { id: jobId, reportId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();

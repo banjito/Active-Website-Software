@@ -54,13 +54,23 @@ type Contact = {
 interface QuickLogInteractionProps {
   /** Handlers applied to the trigger icon only, so a tooltip never covers the dropdown. */
   triggerProps?: React.HTMLAttributes<HTMLButtonElement>;
+  /** Bumping this number opens the form. The header Quick menu (phone + iPad) uses it. */
+  openRequest?: number;
+  /** Below lg the header shows a Quick menu instead of this icon. The form still opens, anchored to the header. */
+  collapseBelowLg?: boolean;
 }
 
 export const QuickLogInteraction: React.FC<QuickLogInteractionProps> = ({
   triggerProps,
+  openRequest,
+  collapseBelowLg,
 }) => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (openRequest) setOpen(true);
+  }, [openRequest]);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Customer search
@@ -300,7 +310,10 @@ export const QuickLogInteraction: React.FC<QuickLogInteractionProps> = ({
 
   return (
     <div
-      className="relative flex h-10 w-10 items-center justify-center"
+      className={cn(
+        "relative flex h-10 w-10 items-center justify-center",
+        collapseBelowLg && "max-lg:contents",
+      )}
       ref={containerRef}
     >
       <button
@@ -311,7 +324,11 @@ export const QuickLogInteraction: React.FC<QuickLogInteractionProps> = ({
         title="Log interaction"
         {...triggerProps}
         onClick={() => setOpen((v) => !v)}
-        className={cn(iconButtonClass, open && iconButtonActiveClass)}
+        className={cn(
+          iconButtonClass,
+          open && iconButtonActiveClass,
+          collapseBelowLg && "max-lg:hidden",
+        )}
       >
         <Feather className="h-5 w-5" />
       </button>

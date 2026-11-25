@@ -1,5 +1,6 @@
 import { canOpenAdminPortal, useCan, useIsSubcontractor } from "@/lib/permissions";
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell,
@@ -26,6 +27,9 @@ import {
   Link2,
   HeartHandshake,
   Newspaper,
+  Feather,
+  LayoutGrid,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { useTheme } from "@/components/theme/theme-provider";
@@ -127,6 +131,17 @@ type CalibrationEquipmentItem = {
   amp_id: string | null;
 };
 
+/** A header icon that lives in the Quick menu sheet below lg (phone + iPad). */
+type QuickMenuItem = {
+  key: string;
+  label: string;
+  icon: React.ElementType;
+  badge?: number;
+  flagCount?: number;
+  activePath?: string;
+  onSelect: () => void;
+};
+
 const headerIconButtonClass =
   "rounded-none w-10 h-10 max-sm:w-9 p-0 flex items-center justify-center text-neutral-600 dark:text-white hover:text-brand dark:hover:text-brand bg-transparent hover:bg-transparent focus:outline-none focus:text-brand focus:bg-brand/10 focus:ring-2 focus:ring-brand/30";
 
@@ -215,6 +230,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const notificationsRef = useRef<HTMLDivElement>(null);
   const contactsRef = useRef<HTMLDivElement>(null);
   const [isContactsOpen, setIsContactsOpen] = useState(false);
+  // Below lg (phone + iPad) the header icons move into a bottom "Quick menu" sheet.
+  const [isQuickMenuOpen, setIsQuickMenuOpen] = useState(false);
+  const [logInteractionOpenRequest, setLogInteractionOpenRequest] =
+    useState(0);
   const [ampContacts, setAmpContacts] = useState<AmpContact[]>([]);
   const [contactProfileIds, setContactProfileIds] = useState<
     Record<string, string>
@@ -547,6 +566,117 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const handleHeaderShortcutClick = (url: string) => {
     navigateFromShortcut(url, navigate, setDivision);
   };
+
+  const closeHeaderMenus = () => {
+    setIsShortcutMenuOpen(false);
+    setIsReviewMenuOpen(false);
+    setIsContactsOpen(false);
+    setIsNotificationsOpen(false);
+    setIsProfileMenuOpen(false);
+  };
+
+  const openContacts = () => {
+    setIsContactsOpen(true);
+    setIsNotificationsOpen(false);
+    setContactsLoading(true);
+    setAmpContacts([]);
+    setContactProfileIds({});
+    setContactsSearch("");
+    fetchAmpContacts()
+      .then((contacts) => {
+        setAmpContacts(contacts);
+        // Link names to ampOS profiles where one exists.
+        fetchContactProfileIds(contacts)
+          .then(setContactProfileIds)
+          .catch(() => setContactProfileIds({}));
+      })
+      .catch(() => setAmpContacts([]))
+      .finally(() => setContactsLoading(false));
+  };
+
+  const quickMenuItems: QuickMenuItem[] = [
+    ...(canApproveReports
+      ? [
+          {
+            key: "review",
+            label: "Report Review",
+            icon: ClipboardCheck,
+            badge: reviewJobCount,
+            flagCount: openReportFlagCount,
+            onSelect: () => setIsReviewMenuOpen(true),
+          },
+        ]
+      : []),
+    {
+      key: "shortcuts",
+      label: "Shortcuts",
+      icon: Bookmark,
+      onSelect: () => setIsShortcutMenuOpen(true),
+    },
+    ...(canLogInteractions()
+      ? [
+          {
+            key: "log",
+            label: "Log Interaction",
+            icon: Feather,
+            onSelect: () => setLogInteractionOpenRequest((n) => n + 1),
+          },
+        ]
+      : []),
+    {
+      key: "contacts",
+      label: "Contacts",
+      icon: Phone,
+      onSelect: openContacts,
+    },
+    {
+      key: "articles",
+      label: "Articles",
+      icon: Newspaper,
+      activePath: "/articles",
+      onSelect: () => navigate("/articles"),
+    },
+    {
+      key: "prayer",
+      label: "Prayer Wall",
+      icon: HeartHandshake,
+      activePath: "/prayer-wall",
+      onSelect: () => navigate("/prayer-wall"),
+    },
+    ...(canSeeAdminPortal
+      ? [
+          {
+            key: "admin",
+            label: "Admin Portal",
+            icon: ShieldCogCorner,
+            activePath: "/admin-dashboard",
+            onSelect: () => navigate("/admin-dashboard"),
+          },
+        ]
+      : []),
+  ];
+  // Orange dot on the Quick menu button when something inside needs attention.
+  const quickMenuNeedsAttention =
+    canApproveReports && (reviewJobCount > 0 || openReportFlagCount > 0);
+
+  const handleQuickMenuSelect = (item: QuickMenuItem) => {
+    setIsQuickMenuOpen(false);
+    closeHeaderMenus();
+    item.onSelect();
+  };
+
+  useEffect(() => {
+    setIsQuickMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isQuickMenuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsQuickMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isQuickMenuOpen]);
 
   // Tabs that fit in the bar stay inline; the rest (and anything past the tab cap) go under "See more".
   const visibleShortcutTabs =
@@ -1153,12 +1283,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           </div>
 
           <div
-            className="flex shrink-0 ml-4 items-center justify-center gap-3 sm:gap-4 max-sm:ml-auto max-sm:gap-0"
+            className="relative flex shrink-0 ml-4 items-center justify-center gap-3 sm:gap-4 max-sm:ml-auto max-sm:gap-0"
             role="toolbar"
             aria-label="Portal shortcuts and account"
           >
             {canSeeAdminPortal && (
-              <div className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center">
+              <div className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center max-lg:hidden">
                 <button
                   type="button"
                   aria-label="Admin Portal"
@@ -1178,7 +1308,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               </div>
             )}
             <div
-              className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center"
+              className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center max-lg:contents"
               ref={shortcutMenuRef}
             >
               <button
@@ -1200,6 +1330,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 className={cn(
                   headerIconButtonClass,
                   isShortcutMenuOpen && headerIconButtonActiveClass,
+                  "max-lg:hidden",
                 )}
               >
                 <Bookmark className="h-5 w-5" />
@@ -1218,7 +1349,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             </div>
             {canApproveReports && (
               <div
-                className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center"
+                className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center max-lg:contents"
                 ref={reviewMenuRef}
               >
                 <button
@@ -1239,7 +1370,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   }}
                   className={cn(
                     headerIconButtonClass,
-                    "relative",
+                    "relative max-lg:hidden",
                     isReviewMenuOpen && headerIconButtonActiveClass,
                   )}
                 >
@@ -1274,14 +1405,16 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               </div>
             )}
             {canLogInteractions() && (
-              <div className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center">
+              <div className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center max-lg:contents">
                 <QuickLogInteraction
                   triggerProps={tooltipHandlers("Log Interaction")}
+                  openRequest={logInteractionOpenRequest}
+                  collapseBelowLg
                 />
               </div>
             )}
             <div
-              className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center"
+              className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center max-lg:contents"
               ref={contactsRef}
             >
               <button
@@ -1290,28 +1423,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 className={cn(
                   headerIconButtonClass,
                   isContactsOpen && headerIconButtonActiveClass,
+                  "max-lg:hidden",
                 )}
-                onClick={() => {
-                  const next = !isContactsOpen;
-                  setIsContactsOpen(next);
-                  if (next) {
-                    setIsNotificationsOpen(false);
-                    setContactsLoading(true);
-                    setAmpContacts([]);
-                    setContactProfileIds({});
-                    setContactsSearch("");
-                    fetchAmpContacts()
-                      .then((contacts) => {
-                        setAmpContacts(contacts);
-                        // Link names to ampOS profiles where one exists.
-                        fetchContactProfileIds(contacts)
-                          .then(setContactProfileIds)
-                          .catch(() => setContactProfileIds({}));
-                      })
-                      .catch(() => setAmpContacts([]))
-                      .finally(() => setContactsLoading(false));
-                  }
-                }}
+                onClick={() =>
+                  isContactsOpen ? setIsContactsOpen(false) : openContacts()
+                }
               >
                 <Phone className="h-5 w-5" />
               </button>
@@ -1433,6 +1549,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 headerIconButtonClass,
                 location.pathname.startsWith("/prayer-wall") &&
                   headerIconButtonActiveClass,
+                "max-lg:hidden",
               )}
             >
               <HeartHandshake className="h-5 w-5" />
@@ -1445,6 +1562,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 headerIconButtonClass,
                 location.pathname.startsWith("/articles") &&
                   headerIconButtonActiveClass,
+                "max-lg:hidden",
               )}
             >
               <Newspaper className="h-5 w-5" />
@@ -1793,6 +1911,111 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 )}
               </div>
             )}
+            <div className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center lg:hidden">
+              <button
+                type="button"
+                aria-label="Quick menu"
+                aria-haspopup="dialog"
+                aria-expanded={isQuickMenuOpen}
+                onClick={() => {
+                  closeHeaderMenus();
+                  setIsQuickMenuOpen((open) => !open);
+                }}
+                className={cn(
+                  headerIconButtonClass,
+                  "relative",
+                  isQuickMenuOpen && headerIconButtonActiveClass,
+                )}
+              >
+                <LayoutGrid className="h-5 w-5" />
+                {quickMenuNeedsAttention && (
+                  <span
+                    className="absolute top-1.5 right-1.5 h-2 w-2 rounded-none bg-brand"
+                    aria-hidden="true"
+                  />
+                )}
+              </button>
+            </div>
+            {isQuickMenuOpen &&
+              createPortal(
+                <div className="fixed inset-0 z-[70] lg:hidden">
+                  <button
+                    type="button"
+                    aria-label="Close quick menu"
+                    onClick={() => setIsQuickMenuOpen(false)}
+                    className="absolute inset-0 h-full w-full cursor-default bg-black/40 animate-in fade-in duration-150"
+                  />
+                  <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Quick menu"
+                    className="absolute inset-x-0 bottom-0 mx-auto w-full max-w-xl rounded-[0px] border-t border-neutral-200 bg-white px-4 pt-2 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(0,0,0,0.12)] animate-in slide-in-from-bottom duration-200 dark:border-dark-200 dark:bg-dark-150"
+                  >
+                    <div
+                      className="mx-auto mb-1 h-1 w-10 rounded-none bg-neutral-300 dark:bg-neutral-600"
+                      aria-hidden="true"
+                    />
+                    <div className="mb-2 flex items-center justify-between">
+                      <h2 className="text-base font-semibold text-neutral-900 dark:text-white">
+                        Quick menu
+                      </h2>
+                      <button
+                        type="button"
+                        aria-label="Close"
+                        onClick={() => setIsQuickMenuOpen(false)}
+                        className="-mr-2 flex h-11 w-11 items-center justify-center rounded-none text-neutral-600 hover:text-brand dark:text-neutral-300"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {quickMenuItems.map((item) => {
+                        const Icon = item.icon;
+                        const active =
+                          !!item.activePath &&
+                          location.pathname.startsWith(item.activePath);
+                        return (
+                          <button
+                            key={item.key}
+                            type="button"
+                            onClick={() => handleQuickMenuSelect(item)}
+                            className={cn(
+                              "relative flex h-24 flex-col items-center justify-center gap-2 rounded-none border px-1 text-center text-[13px] font-medium leading-tight",
+                              active
+                                ? "border-brand bg-white text-brand dark:bg-dark-200"
+                                : "border-neutral-200 bg-neutral-50 text-neutral-900 hover:border-brand dark:border-neutral-700 dark:bg-dark-200 dark:text-white",
+                            )}
+                          >
+                            <Icon
+                              className={cn(
+                                "h-6 w-6",
+                                active
+                                  ? "text-brand"
+                                  : "text-neutral-600 dark:text-neutral-300",
+                              )}
+                            />
+                            {item.label}
+                            {!!item.badge && item.badge > 0 && (
+                              <span className="absolute top-2 right-2 min-w-[18px] h-[18px] px-1 rounded-none bg-brand text-white text-[10px] font-bold leading-[18px] text-center">
+                                {Math.min(99, item.badge)}
+                              </span>
+                            )}
+                            {!!item.flagCount && item.flagCount > 0 && (
+                              <span
+                                className="absolute top-2 left-2 inline-flex h-[18px] w-[18px] items-center justify-center rounded-none bg-yellow-400 text-yellow-950"
+                                aria-label={`${item.flagCount} open customer flag${item.flagCount === 1 ? "" : "s"}`}
+                              >
+                                <Flag className="h-3 w-3" />
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>,
+                document.body,
+              )}
             <div
               className="relative flex h-10 w-10 max-sm:w-9 items-center justify-center"
               ref={profileMenuRef}

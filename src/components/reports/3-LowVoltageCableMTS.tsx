@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useReportStyles } from "@/lib/reportStyles";
 import { ReportHeader } from "@/components/reports/common/ReportHeader";
 import {
   useParams,
@@ -435,6 +436,8 @@ const applyTCF = (reading: string, tcf: number): string => {
 
 // Main component
 const ThreeLowVoltageCableMTSForm: React.FC = () => {
+  // No ReportWrapper here, so switch the reports' shared styles on directly
+  useReportStyles();
   const { id: jobId, reportId } = useParams<{
     id: string;
     reportId?: string;
@@ -2235,10 +2238,8 @@ const ThreeLowVoltageCableMTSForm: React.FC = () => {
           />
         </div>
 
-        {/* Orange divider between Job Info and Cable Data */}
-        <div className="w-full h-1 bg-brand mb-4 print:hidden" />
-
-        {/* Cable Data Section */}
+        {/* Cable Data Section. Its heading draws the orange line above it; a separate
+            bar here made a double line. */}
         <div className="mb-6">
           <h2 className="section-cable-data text-xl font-semibold mb-4 text-neutral-900 dark:text-white border-b dark:border-neutral-700 pb-2 print:text-black print:border-black print:font-bold">
             Cable Data

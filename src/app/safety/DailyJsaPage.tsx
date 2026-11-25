@@ -242,7 +242,6 @@ export default function DailyJsaPage() {
         return;
       }
       await finishJsa(saver.id, saver.updatedAt);
-      toast({ title: "JSA finished", variant: "success" });
       await load();
       window.scrollTo({ top: 0 });
     } catch (e) {
@@ -872,7 +871,16 @@ function CrewStep({ content, change, prev }: { content: JsaContent; change: Chan
           <div className="flex items-end gap-2">
             <div className="min-w-0 flex-1">
               <Field label={`Who does ${search.trim()} work for?`}>
-                <input autoFocus value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Company" className={FIELD} />
+                <input
+                  autoFocus
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && company.trim()) add({ name: search.trim(), user_id: null, company: company.trim() });
+                  }}
+                  placeholder="Company"
+                  className={FIELD}
+                />
               </Field>
             </div>
             <Button disabled={!company.trim()} onClick={() => add({ name: search.trim(), user_id: null, company: company.trim() })}>

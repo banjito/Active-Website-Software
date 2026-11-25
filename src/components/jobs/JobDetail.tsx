@@ -3684,6 +3684,10 @@ export default function JobDetail() {
         "safety",
         "jha",
         "profitability",
+        "equipment-assets",
+        "project-tracker",
+        "pictures",
+        "tm-expenses",
       ].includes(tabParam)
     ) {
       setActiveTab(tabParam);
@@ -4988,8 +4992,15 @@ export default function JobDetail() {
     }
   }
 
+  // The open tab goes in the address (?tab=), so reloading or copying the link opens it again.
+  // Replace, not push: tab clicks don't pile up behind the Back button.
   const handleTabChange = (tabValue: string) => {
     setActiveTab(tabValue);
+    const params = new URLSearchParams(location.search);
+    if (params.get("tab") === tabValue) return;
+    params.set("tab", tabValue);
+    params.delete("filter");
+    navigate({ search: `?${params.toString()}` }, { replace: true });
   };
 
   // Job page navigation: sections on the top row, the active section's tabs on a second row.

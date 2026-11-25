@@ -1,4 +1,5 @@
 import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
+import { useReportStyles } from "@/lib/reportStyles";
 import React, { useState, useEffect } from "react";
 import { useReportScopeClass } from "./common/useReportScopeClass";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
@@ -260,6 +261,8 @@ interface FormData {
 }
 
 const CurrentTransformerTestATSReport: React.FC = () => {
+  // No ReportWrapper here, so switch the reports' shared styles on directly
+  useReportStyles();
   useReportScopeClass("rpt-ct-test-ats");
   const { id: jobId, reportId } = useParams<{ id: string; reportId: string }>();
   const [currentReportId, setCurrentReportId] = useState<string | undefined>(

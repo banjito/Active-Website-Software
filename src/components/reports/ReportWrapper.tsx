@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { BRAND_COLOR } from "@/lib/companyConfig";
+import { useReportStyles } from "@/lib/reportStyles";
 import { ReportPhotosPrintSection } from "./common/ReportPhotos";
 import { SaveStatusBanner } from "./common/SaveStatusBanner";
 import { ColumnFillSelection } from "./common/ColumnFillSelection";
@@ -37,6 +38,8 @@ export const ReportWrapper: React.FC<ReportWrapperProps> = ({
   isEditing,
   wide = false,
 }) => {
+  // The reports' shared styles are on only while a report is open
+  useReportStyles();
   const saveResolverRef = useRef<(() => void) | null>(null);
 
   const postEditState = (nextIsEditing: boolean) => {

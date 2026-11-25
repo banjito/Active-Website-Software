@@ -1,4 +1,5 @@
 import { NetaSectionLink, StandardRef, StandardRefText } from "@/components/standards/StandardRefText";
+import { useReportStyles } from "@/lib/reportStyles";
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAssetFormPrefill } from "./useAssetFormPrefill";
@@ -576,6 +577,8 @@ const applyTCF = (reading: string, tcf: number): string => {
 };
 
 const PotentialTransformerATSReport: React.FC = () => {
+  // No ReportWrapper here, so switch the reports' shared styles on directly
+  useReportStyles();
   const { id: jobId, reportId: initialReportId } = useParams<{
     id: string;
     reportId?: string;
@@ -787,11 +790,14 @@ const PotentialTransformerATSReport: React.FC = () => {
       body { overflow-x: hidden; min-height: 100vh; padding-bottom: 100px; }
       textarea { min-height: 200px !important; }
 
-      /* Section headers with orange dividers for fillable report */
-      h2 {
-        border-top: 2px solid ${BRAND_COLOR} !important;
-        padding-top: 8px !important;
-        margin-top: 16px !important;
+      /* Section headers with orange dividers. Print only: on screen each section
+         already has its own orange bar, and both together drew a double line. */
+      @media print {
+        h2 {
+          border-top: 2px solid ${BRAND_COLOR} !important;
+          padding-top: 8px !important;
+          margin-top: 16px !important;
+        }
       }
 
       @media print {

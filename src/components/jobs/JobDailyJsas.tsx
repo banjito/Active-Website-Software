@@ -5,10 +5,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { format, parseISO } from "date-fns";
-import { AlertTriangle, ChevronRight, ClipboardCheck, Hand, Play } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronRight, Hand, Play, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { toast } from "@/components/ui/toast";
+import { ConfirmPopover } from "@/components/ui/ConfirmPopover";
+import { useAuth } from "@/lib/AuthContext";
 import { useCan } from "@/lib/permissions";
 import { CARD, MUTED } from "@/app/safety/safetyUi";
 import { getQuestionSetInUse } from "@/lib/safetyQuestions";
@@ -18,6 +20,7 @@ import {
   listJobJsas,
   openStop,
   SHORT_JSA_MINUTES,
+  deleteJsa,
   startJsa,
   today,
   type DailyJsaRow,
@@ -26,8 +29,10 @@ import {
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e));
 const dayLabel = (d: string) => format(parseISO(d), "EEE, MMM d");
 const time = (iso: string | null) => (iso ? format(new Date(iso), "h:mm a") : "");
+const TEXT_BUTTON = "font-medium text-brand hover:underline hover:underline-offset-2 disabled:opacity-60";
 
 export default function JobDailyJsas({ jobId }: { jobId: string }) {
+  const { user } = useAuth();
   const { can } = useCan();
   const canLead = can("safety.lead_jsa");
   const canPractice = can("safety.manage_questions") || can("safety.approve_questions");
@@ -68,6 +73,15 @@ export default function JobDailyJsas({ jobId }: { jobId: string }) {
     }
   };
 
+  const remove = async (id: string) => {
+    try {
+      await deleteJsa(id);
+      setRows((list) => list?.filter((r) => r.id !== id) ?? list);
+    } catch (e) {
+      toast({ title: "Couldn't delete the JSA", description: message(e), variant: "destructive" });
+    }
+  };
+
   if (error) {
     return (
       <div className={`${CARD} p-5 text-sm text-red-600 dark:text-red-400`}>
@@ -86,8 +100,11 @@ export default function JobDailyJsas({ jobId }: { jobId: string }) {
     );
   }
 
-  const todays = rows.filter((r) => r.work_date === today() && !r.practice);
+  // Today's, practice runs included, so a JSA you already started picks up where you left off
+  const todays = rows.filter((r) => r.work_date === today());
   const running = todays.filter((r) => r.status === "in_progress");
+  const runningReal = running.filter((r) => !r.practice);
+  const doneToday = todays.filter((r) => r.status === "done" && !r.practice);
 
   return (
     <div className="space-y-4">
@@ -98,14 +115,14 @@ export default function JobDailyJsas({ jobId }: { jobId: string }) {
             <h3 className="text-base font-semibold text-neutral-900 dark:text-white">Today's JSA</h3>
             <p className={`mt-0.5 text-sm ${MUTED}`}>{format(new Date(), "EEEE, MMMM d")}</p>
           </div>
-          {questionsReady && canLead && running.length === 0 && (
+          {questionsReady && canLead && runningReal.length === 0 && (
             <Button
               leftIcon={<Play className="h-4 w-4" />}
               isLoading={busy === "start"}
               disabled={busy !== null}
               onClick={() => void start(false)}
             >
-              {todays.length > 0 ? "Start another crew's JSA" : "Start today's JSA"}
+              {doneToday.length > 0 ? "Start another crew's JSA" : "Start today's JSA"}
             </Button>
           )}
         </div>
@@ -117,21 +134,14 @@ export default function JobDailyJsas({ jobId }: { jobId: string }) {
               <p>Crews can't start a Daily JSA until the safety lead approves the questions.</p>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                 {canApprove && (
-                  <Link to="/admin-dashboard/safety-questions" className="font-medium text-brand underline underline-offset-2">
+                  <Link to="/admin-dashboard/safety-questions" className={TEXT_BUTTON}>
                     Review the questions
                   </Link>
                 )}
-                {canPractice && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    leftIcon={<ClipboardCheck className="h-4 w-4" />}
-                    isLoading={busy === "practice"}
-                    disabled={busy !== null}
-                    onClick={() => void start(true)}
-                  >
-                    Try a practice JSA
-                  </Button>
+                {canPractice && !running.some((r) => r.practice) && (
+                  <button type="button" className={TEXT_BUTTON} disabled={busy !== null} onClick={() => void start(true)}>
+                    {busy === "practice" ? "Starting…" : "Try a practice JSA"}
+                  </button>
                 )}
               </div>
               {canPractice && (
@@ -143,23 +153,64 @@ export default function JobDailyJsas({ jobId }: { jobId: string }) {
           </div>
         )}
 
-        {running.map((r) => (
+        {running.map((r) => {
+          const mine = !!user && r.started_by === user.id;
+          const what = r.practice ? "a practice JSA" : "today's JSA";
+          const canDelete = canLead || (r.practice && canPractice);
+          return (
+            <div key={r.id} className="mt-4 flex items-center gap-2 border border-brand/40 bg-brand/5 p-3 max-sm:gap-1">
+              <button type="button" onClick={() => open(r.id)} className="min-w-0 flex-1 text-left text-sm text-neutral-900 dark:text-white">
+                {mine ? "You" : <span className="font-medium">{r.started_by_name || "Someone"}</span>} started {what} at{" "}
+                {time(r.started_at)}.
+                <span className={`block text-xs ${MUTED}`}>
+                  {canLead ? "Pick up where it left off." : "Open it to see where they are."}
+                </span>
+              </button>
+              {canDelete && (
+                <ConfirmPopover
+                  side="bottom"
+                  message={r.practice ? "Delete this practice JSA?" : "Delete today's JSA? Everything on it is lost."}
+                  confirmLabel="Delete"
+                  destructive
+                  onConfirm={() => remove(r.id)}
+                >
+                  <button
+                    type="button"
+                    aria-label="Delete this JSA"
+                    className="p-2 text-neutral-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </ConfirmPopover>
+              )}
+              <button
+                type="button"
+                onClick={() => open(r.id)}
+                className="flex items-center gap-1 px-2 py-2 text-sm font-medium text-brand hover:underline"
+              >
+                {canLead ? "Resume" : "Open"} <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          );
+        })}
+        {doneToday.map((r) => (
           <button
             key={r.id}
             type="button"
             onClick={() => open(r.id)}
-            className="mt-4 flex w-full items-center gap-3 border border-brand/40 bg-brand/5 p-3 text-left hover:bg-brand/10"
+            className="mt-4 flex w-full items-center gap-3 border border-emerald-500/40 bg-emerald-50 p-3 text-left hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20"
           >
+            <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-600" />
             <span className="min-w-0 flex-1 text-sm text-neutral-900 dark:text-white">
-              <span className="font-medium">{r.started_by_name || "Someone"}</span> started today's JSA at {time(r.started_at)}.
-              <span className={`block text-xs ${MUTED}`}>{canLead ? "Open it to carry on." : "Open it to see where they are."}</span>
+              Done at {time(r.finished_at)}. {leadOf(r.crew)?.name || r.started_by_name || "Someone"} in charge, {r.crew.length}{" "}
+              {r.crew.length === 1 ? "person" : "people"}.
             </span>
             <span className="flex items-center gap-1 text-sm font-medium text-brand">
-              Open <ChevronRight className="h-4 w-4" />
+              View <ChevronRight className="h-4 w-4" />
             </span>
           </button>
         ))}
-        {questionsReady && canLead && running.length > 0 && (
+        {questionsReady && canLead && runningReal.length > 0 && (
           <button
             type="button"
             className="mt-3 text-sm text-neutral-600 underline underline-offset-2 hover:text-brand dark:text-neutral-300"

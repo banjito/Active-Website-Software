@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useReportStyles } from "@/lib/reportStyles";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAssetFormPrefill } from "./useAssetFormPrefill";
 import JobInfoPrintTable from "./common/JobInfoPrintTable";
@@ -225,6 +226,8 @@ const TEST_VOLTAGE_DW = [
 ];
 
 const MediumVoltageSwitchSF6Report: React.FC = () => {
+  // No ReportWrapper here, so switch the reports' shared styles on directly
+  useReportStyles();
   const { id: jobId, reportId: initialReportId } = useParams<{
     id: string;
     reportId?: string;

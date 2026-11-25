@@ -122,6 +122,7 @@ export type DailyJsaRow = Pick<
   | "crew"
   | "power"
   | "stops"
+  | "started_by"
   | "started_by_name"
   | "started_at"
   | "finished_at"
@@ -133,7 +134,8 @@ const COLUMNS =
   "crew, work_summary, changes_today, hazards, power, power_reason, labels, no_label, no_label_note, emergency_plan, " +
   "answers, stops, current_step, step_seconds, started_by, started_by_name, started_at, finished_by_name, finished_at, " +
   "last_save_id, created_at, updated_at";
-const LIST_COLUMNS = "id, work_date, status, practice, crew, power, stops, started_by_name, started_at, finished_at, jha_version";
+const LIST_COLUMNS =
+  "id, work_date, status, practice, crew, power, stops, started_by, started_by_name, started_at, finished_at, jha_version";
 
 const db = () => supabase.schema("neta_ops");
 const table = () => db().from("job_tailgates");

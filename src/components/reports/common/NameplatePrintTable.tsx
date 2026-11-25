@@ -14,10 +14,13 @@ interface Props {
     series?: string;
   };
   mode?: "4x2" | "5x2"; // default '4x2' to preserve other reports
+  /** Match edit labels that carry units, e.g. "System Voltage (V)". */
+  withUnits?: boolean;
 }
 
 // Print-only table for Panelboard and Switchgear reports
-const NameplatePrintTable: React.FC<Props> = ({ data, mode = "4x2" }) => {
+const NameplatePrintTable: React.FC<Props> = ({ data, mode = "4x2", withUnits = false }) => {
+  const u = (unit: string) => (withUnits ? ` (${unit})` : "");
   const cell = (label: string, value?: string) => (
     <td className="p-2 align-middle text-center border border-neutral-300 print:border-black print:border">
       <div className="font-semibold text-center">{label}</div>
@@ -45,11 +48,11 @@ const NameplatePrintTable: React.FC<Props> = ({ data, mode = "4x2" }) => {
               {cell("Type:", data.type)}
             </tr>
             <tr>
-              {cell("System Voltage:", data.systemVoltage)}
-              {cell("Rated Voltage:", data.ratedVoltage)}
-              {cell("Rated Current:", data.ratedCurrent)}
+              {cell(`System Voltage${u("V")}:`, data.systemVoltage)}
+              {cell(`Rated Voltage${u("V")}:`, data.ratedVoltage)}
+              {cell(`Rated Current${u("A")}:`, data.ratedCurrent)}
               {cell("Phase Configuration:", data.phaseConfiguration)}
-              {cell("SCCR:", data.aicRating)}
+              {cell(`SCCR${u("kA")}:`, data.aicRating)}
             </tr>
           </tbody>
         </table>
@@ -69,9 +72,9 @@ const NameplatePrintTable: React.FC<Props> = ({ data, mode = "4x2" }) => {
               {cell("Type:", data.type)}
             </tr>
             <tr>
-              {cell("System Voltage:", data.systemVoltage)}
-              {cell("Rated Voltage:", data.ratedVoltage)}
-              {cell("Rated Current:", data.ratedCurrent)}
+              {cell(`System Voltage${u("V")}:`, data.systemVoltage)}
+              {cell(`Rated Voltage${u("V")}:`, data.ratedVoltage)}
+              {cell(`Rated Current${u("A")}:`, data.ratedCurrent)}
               {cell("Phase Configuration:", data.phaseConfiguration)}
             </tr>
           </tbody>

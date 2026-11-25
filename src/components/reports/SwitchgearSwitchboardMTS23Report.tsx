@@ -1191,6 +1191,7 @@ const SwitchgearSwitchboardMTS23Report: React.FC = () => {
                 series: formData.nameplate.series,
               }}
               mode="5x2"
+              withUnits
             />
           </div>
 

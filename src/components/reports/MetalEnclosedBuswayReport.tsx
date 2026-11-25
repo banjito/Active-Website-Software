@@ -3150,6 +3150,10 @@ if (typeof document !== "undefined") {
       .nameplate-screen { display: none !important; }
       /* Insulation Resistance tables: busway name column + readings (units live in the table above) */
       .ir-table { table-layout: fixed !important; width: 100% !important; }
+      /* ReportWrapper's Windows print rules force size-to-content columns on every
+         table (ID selector), which pushed the IR tables past the margin.
+         Double ID outranks them so the fixed columns below still apply. */
+      #report-container#report-container table.ir-table { table-layout: fixed !important; width: 100% !important; }
       .ir-table .ir-col { width: 9% !important; }
       .ir-table.ir-has-label .ir-label-col { width: 20% !important; }
       .ir-table.ir-has-label .ir-col { width: 8% !important; }

@@ -396,6 +396,10 @@ const PanelboardReport: React.FC = () => {
         .test-eqpt-onscreen, .test-eqpt-onscreen * { display: none !important; }
         /* Spread IR/Corrected tables and push Units far right */
         .ir-table th, .ir-table td, .ir-corrected-table th, .ir-corrected-table td { padding: 2px 3px !important; font-size: 8px !important; }
+        /* ReportWrapper's Windows print rules force size-to-content columns on every
+           table (ID selector), which pushed the IR tables past the margin.
+           Double ID outranks them so the fixed columns below still apply. */
+        #report-container#report-container table.ir-table, #report-container#report-container table.ir-corrected-table { table-layout: fixed !important; width: 100% !important; }
         .ir-table colgroup col:last-child, .ir-corrected-table colgroup col:last-child { width: 7.75% !important; }
         .ir-table colgroup col:not(:last-child), .ir-corrected-table colgroup col:not(:last-child) { width: 10.25% !important; }
 

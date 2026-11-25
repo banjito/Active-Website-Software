@@ -34,15 +34,19 @@ import {
   type SovSettings,
 } from '@/services/pmDashboardService';
 import {
+  NET_TERMS,
   addEstimatesToLines,
   applyGeneralConditions,
+  atTerm,
   bestLineFor,
   completedPct,
   estimateOverlaps,
   estimateTotal,
+  groupByArea,
   guessLineSlugs,
   isOriginalLine,
   lineDone,
+  lineLabel,
   linesComplete,
   mergedProgress,
   monthDollars,
@@ -50,8 +54,10 @@ import {
   monthLabel,
   monthRange,
   pct,
+  repeatsAcrossAreas,
   shiftMonth,
   shiftWeekKey,
+  sortByArea,
   sovHours,
   sovTotal,
   totalHours,
@@ -61,6 +67,8 @@ import {
   weekRangeLabel,
   type EstimateOption,
   type GeneralConditions,
+  type NetTerm,
+  type SovArea,
   type SovLine,
 } from '@/utils/pmDashboardCalculations';
 import {
@@ -92,6 +100,29 @@ const ROW = 'border-t border-neutral-200 dark:border-neutral-700';
 type JobTab = 'week' | 'sov' | 'month';
 
 const fmtCount = (n: number): string => n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+
+/** Text-only button. Its icon slides in on the left on hover, and neighbors glide over. */
+function TextButton({
+  icon,
+  children,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { icon: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      className="group inline-flex items-center whitespace-nowrap rounded-none px-2 py-1.5 text-sm font-medium text-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-60 touch:min-h-[40px] dark:text-neutral-100"
+      {...props}
+    >
+      <span
+        aria-hidden="true"
+        className="flex w-0 -translate-x-1 overflow-hidden opacity-0 transition-all duration-200 ease-out group-enabled:group-hover:w-6 group-enabled:group-hover:translate-x-0 group-enabled:group-hover:opacity-100 group-focus-visible:w-6 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none"
+      >
+        {icon}
+      </span>
+      {children}
+    </button>
+  );
+}
 
 /** Thin progress bar. Capped at full; `over` turns it red. */
 function Bar({ value, over }: { value: number | null | undefined; over?: boolean }) {
@@ -209,6 +240,10 @@ export default function PMJobDetail() {
   const [pickedEstimateIds, setPickedEstimateIds] = useState<string[]>([]);
   // Reserve blocks: how many times the picked estimates repeat
   const [estimateTimes, setEstimateTimes] = useState(1);
+  // Payment terms to copy at. Null: whatever each estimate's SOV is set to
+  const [estimateTerm, setEstimateTerm] = useState<NetTerm | null>(null);
+  // Copying an estimate again takes its earlier lines out
+  const [replaceCopied, setReplaceCopied] = useState(true);
   // Billing frequency and general conditions. null = sov_setup.sql not run yet.
   const [settings, setSettings] = useState<SovSettings | null>(null);
   const [savedSettings, setSavedSettings] = useState<SovSettings | null>(null);
@@ -384,8 +419,21 @@ export default function PMJobDetail() {
   /** Estimates already copied into the SOV, so the picker does not offer them twice. */
   const usedEstimateIds = new Set(lines.flatMap((line) => line.source_estimate_ids));
 
+  // Lines that came only from the ticked estimates. They can be copied over until the first
+  // weekly update: after that, replacing them would drop the PM's numbers.
+  const copiedBefore = lines.filter(
+    (line) =>
+      isOriginalLine(line) &&
+      line.source_estimate_ids.length > 0 &&
+      line.source_estimate_ids.every((id) => pickedEstimateIds.includes(id)),
+  );
+  const canReplace = Object.keys(weeks).length === 0;
+  const replacedIds = new Set(replaceCopied && canReplace ? copiedBefore.map((line) => line.id) : []);
+
   const openEstimatePicker = () => {
     setEstimateTimes(1);
+    setEstimateTerm(null);
+    setReplaceCopied(true);
     setPickedEstimateIds(
       estimates.filter((e) => e.rows.length > 0 && !usedEstimateIds.has(e.id)).map((e) => e.id),
     );
@@ -398,10 +446,19 @@ export default function PMJobDetail() {
   /** Adds the ticked estimates' rows to the SOV. Not saved until the PM hits Save. */
   const addPickedEstimates = () => {
     if (!job) return;
-    const picked = estimates.filter((e) => pickedEstimateIds.includes(e.id));
+    const makeId = () => crypto.randomUUID();
+    const picked = estimates
+      .filter((e) => pickedEstimateIds.includes(e.id))
+      .map((e) => atTerm(e, estimateTerm));
+    // General conditions taken out of the prices come out of the new lines too
+    const redoGc = replacedIds.size > 0 && !!appliedGc?.fromPrice;
+    const kept = (redoGc ? applyGeneralConditions(job.id, lines, appliedGc, null, makeId) : lines).filter(
+      (line) => !replacedIds.has(line.id),
+    );
+    const added = addEstimatesToLines(job.id, kept, picked, makeId, estimateTimes);
     markChanged(
       guessLineSlugs(
-        addEstimatesToLines(job.id, lines, picked, () => crypto.randomUUID(), estimateTimes),
+        redoGc ? applyGeneralConditions(job.id, added, null, appliedGc, makeId) : added,
         Object.keys(sentByType),
       ),
     );
@@ -636,11 +693,24 @@ export default function PMJobDetail() {
   const sovGap = bundle.quotedAmount > 0 ? contract - sovDollars : 0;
   const sovGapMatters = Math.abs(sovGap) > contract * 0.01;
 
-  const pickedEstimates = estimates.filter((e) => pickedEstimateIds.includes(e.id));
+  const pickedOwnTerms = estimates.filter((e) => pickedEstimateIds.includes(e.id));
+  const pickedEstimates = pickedOwnTerms.map((e) => atTerm(e, estimateTerm));
   // Mobilization added on top counts too; the baked-in part only moves to its own line
-  const pickedTotal =
-    pickedEstimates.reduce((sum, e) => sum + estimateTotal(e) + (e.mobilization?.added ?? 0), 0) *
+  const pickedTotalAt = (term: NetTerm | null) =>
+    pickedOwnTerms.reduce((sum, e) => sum + estimateTotal(atTerm(e, term)) + (e.mobilization?.added ?? 0), 0) *
     (estimateTimes > 0 ? estimateTimes : 1);
+  const pickedTotal = pickedTotalAt(estimateTerm);
+  const pickedTerms = [...new Set(pickedEstimates.flatMap((e) => e.term ?? []))];
+  const nameWarnings = pickedEstimates.flatMap((e) =>
+    (e.warnings ?? []).map((text) => ({ key: `${e.id}:${text}`, title: e.title, text })),
+  );
+  // What stays on the SOV if the ticked estimates replace their earlier lines
+  const keptDollars = sovTotal(
+    (replacedIds.size > 0 && appliedGc?.fromPrice
+      ? applyGeneralConditions(job.id, lines, appliedGc, null, () => '')
+      : lines
+    ).filter((line) => !replacedIds.has(line.id)),
+  );
   // The SOV as it stands counts as one more sheet: adding an item it already has doubles it too.
   const overlaps = estimateOverlaps([
     {
@@ -648,7 +718,7 @@ export default function PMJobDetail() {
       title: 'SOV now',
       updated_at: '',
       status: null,
-      rows: lines.filter(isOriginalLine).map((line) => ({
+      rows: lines.filter((line) => isOriginalLine(line) && !replacedIds.has(line.id)).map((line) => ({
         item: line.item,
         quantity: line.quantity,
         unitHours: 0,
@@ -674,8 +744,8 @@ export default function PMJobDetail() {
 
   // Change Orders on the SOV: each one's lines sit in their own group under the original lines
   const sovCos = bundle.changeOrders;
-  const originalLines = lines.filter(isOriginalLine);
-  const coLinesOf = (coId: string) => lines.filter((line) => line.change_order_id === coId);
+  const originalLines = sortByArea(lines.filter(isOriginalLine));
+  const coLinesOf = (coId: string) => sortByArea(lines.filter((line) => line.change_order_id === coId));
   const coOpen = (coId: string) => openCos[coId] ?? !linesComplete(coLinesOf(coId), progress);
   const toggleCo = (coId: string) => setOpenCos((prev) => ({ ...prev, [coId]: !coOpen(coId) }));
   const coNumberById = new Map(sovCos.map((co) => [co.id, co.number]));
@@ -965,6 +1035,72 @@ export default function PMJobDetail() {
 
   const GROUP_ROW = `${ROW} bg-neutral-50 dark:bg-neutral-900/40`;
 
+  /** Rows with a heading above each area. Jobs with no areas show no headings. */
+  const withAreas = (
+    list: SovLine[],
+    renderRow: (line: SovLine) => React.ReactNode,
+    heading: (area: SovArea) => React.ReactNode,
+  ) =>
+    groupByArea(list).map((area, i) => (
+      <React.Fragment key={i}>
+        {area.label && heading(area)}
+        {area.lines.map(renderRow)}
+      </React.Fragment>
+    ));
+
+  /** Area name cell. Indented inside a Change Order. */
+  const areaCell = (area: SovArea) =>
+    `${TD} font-medium text-neutral-900 dark:text-neutral-100 ${area.lines[0].change_order_id ? 'pl-8' : ''}`;
+
+  const sovAreaRow = (area: SovArea) => {
+    const share = completedPct(area.lines, progress);
+    return (
+      <tr className={GROUP_ROW}>
+        <td className={TD} />
+        <td className={areaCell(area)} colSpan={3}>
+          {area.label}
+        </td>
+        <td className={`${NUM} font-medium`}>{fmtMoney(sovTotal(area.lines))}</td>
+        <td />
+        <td className={TD}>
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={`Add a line to ${area.label}`}
+            leftIcon={<Plus className="h-4 w-4" />}
+            onClick={() =>
+              markChanged([
+                ...lines,
+                newLine({ section: area.section, change_order_id: area.lines[0].change_order_id ?? null }),
+              ])
+            }
+          >
+            Line
+          </Button>
+        </td>
+        <td className={`${TD} text-xs text-neutral-600 dark:text-neutral-300`}>
+          {linesComplete(area.lines, progress) ? 'Done' : share != null ? `${Math.round(share * 100)}% done` : ''}
+        </td>
+        <td />
+      </tr>
+    );
+  };
+
+  const weekAreaRow = (area: SovArea) => (
+    <tr className={GROUP_ROW}>
+      <td className={areaCell(area)} colSpan={6}>
+        {area.label}
+      </td>
+    </tr>
+  );
+
+  const monthAreaRow = (area: SovArea) => (
+    <tr className={GROUP_ROW}>
+      <td className={areaCell(area)}>{area.label}</td>
+      {monthGroupCells(area.lines)}
+    </tr>
+  );
+
   const stats: { label: string; value: string; note: string; bar?: number | null; over?: boolean }[] = [
     {
       label: 'Contract',
@@ -1097,12 +1233,15 @@ export default function PMJobDetail() {
             </div>
           )}
           {unmatched.map(([slug, count]) => {
-            const suggested = bestLineFor(lines, slug);
+            const best = bestLineFor(lines, slug);
+            const inManyAreas = !!best && repeatsAcrossAreas(lines, best);
+            const suggested = inManyAreas ? null : best;
             return (
               <div key={slug} className="flex flex-wrap items-center justify-between gap-2">
                 <span>
                   {count} sent {reportTypeLabel(slug)} report{count === 1 ? '' : 's'} {count === 1 ? "doesn't" : "don't"}{' '}
                   count toward any line yet.
+                  {inManyAreas && ` ${best?.item} is in more than one area, so type the quantities in the weekly update.`}
                 </span>
                 <select
                   aria-label={`Count ${reportTypeLabel(slug)} toward`}
@@ -1116,7 +1255,7 @@ export default function PMJobDetail() {
                       {line.change_order_id
                         ? `Change Order ${formatChangeOrderNumber(coNumberById.get(line.change_order_id) ?? 0)}: `
                         : ''}
-                      {line.item || 'Unnamed line'}
+                      {lineLabel(line)}
                       {line.id === suggested?.id ? ' (best guess)' : ''}
                     </option>
                   ))}
@@ -1208,7 +1347,7 @@ export default function PMJobDetail() {
                       </tr>
                     </thead>
                     <tbody>
-                      {weekLines.filter(isOriginalLine).map(renderWeekRow)}
+                      {withAreas(weekLines.filter(isOriginalLine), renderWeekRow, weekAreaRow)}
                       {sovCos.map((co) => {
                         const coWeekLines = weekLines.filter((line) => line.change_order_id === co.id);
                         if (coWeekLines.length === 0) return null;
@@ -1219,7 +1358,7 @@ export default function PMJobDetail() {
                                 {coToggle(co)}
                               </td>
                             </tr>
-                            {coOpen(co.id) && coWeekLines.map(renderWeekRow)}
+                            {coOpen(co.id) && withAreas(coWeekLines, renderWeekRow, weekAreaRow)}
                           </React.Fragment>
                         );
                       })}
@@ -1294,30 +1433,28 @@ export default function PMJobDetail() {
                 {setupSummary && <p className="text-xs text-neutral-500 dark:text-neutral-400">{setupSummary}</p>}
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Button variant="outline" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={addLine}>
+                <TextButton icon={<Plus className="h-4 w-4 flex-shrink-0" />} onClick={addLine}>
                   Add line
-                </Button>
+                </TextButton>
                 {estimates.length > 0 && (
-                  <Button variant="outline" size="sm" leftIcon={<Copy className="h-4 w-4" />} onClick={openEstimatePicker}>
-                    Copy from estimate
-                  </Button>
+                  <TextButton icon={<Copy className="h-4 w-4 flex-shrink-0" />} onClick={openEstimatePicker}>
+                    Copy from letter proposal
+                  </TextButton>
                 )}
                 {settings && (
-                  <Button variant="outline" size="sm" leftIcon={<Settings className="h-4 w-4" />} onClick={openSetup}>
+                  <TextButton icon={<Settings className="h-4 w-4 flex-shrink-0" />} onClick={openSetup}>
                     Setup
-                  </Button>
+                  </TextButton>
                 )}
                 {lines.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    leftIcon={<Printer className="h-4 w-4" />}
+                  <TextButton
+                    icon={<Printer className="h-4 w-4 flex-shrink-0" />}
                     onClick={printSov}
                     disabled={!canPrint}
                     title={canPrint ? undefined : 'Save the SOV first'}
                   >
                     Print SOV
-                  </Button>
+                  </TextButton>
                 )}
               </div>
             </div>
@@ -1342,9 +1479,9 @@ export default function PMJobDetail() {
                     <tr className={ROW}>
                       <td colSpan={9} className="px-3 py-6 text-center text-neutral-500 dark:text-neutral-400">
                         {estimates.length > 1
-                          ? `This job's quote has ${estimates.length} estimates. Use Copy from estimate to pick the ones that apply.`
+                          ? `This job's quote has ${estimates.length} estimates. Use Copy from letter proposal to pick the ones that apply.`
                           : estimates.length === 1
-                            ? 'No SOV lines yet. Use Copy from estimate, or Add line.'
+                            ? 'No SOV lines yet. Use Copy from letter proposal, or Add line.'
                             : 'No SOV lines yet. This job has no estimate to copy from. Use Add line.'}
                       </td>
                     </tr>
@@ -1359,7 +1496,7 @@ export default function PMJobDetail() {
                       <td colSpan={4} />
                     </tr>
                   )}
-                  {originalLines.map(renderSovRow)}
+                  {withAreas(originalLines, renderSovRow, sovAreaRow)}
                   {sovCos.map((co) => {
                     const coLines = coLinesOf(co.id);
                     const share = completedPct(coLines, progress);
@@ -1395,7 +1532,7 @@ export default function PMJobDetail() {
                           </td>
                           <td />
                         </tr>
-                        {coOpen(co.id) && coLines.map(renderSovRow)}
+                        {coOpen(co.id) && withAreas(coLines, renderSovRow, sovAreaRow)}
                       </React.Fragment>
                     );
                   })}
@@ -1526,7 +1663,7 @@ export default function PMJobDetail() {
                       {monthGroupCells(originalLines)}
                     </tr>
                   )}
-                  {originalLines.map(renderMonthRow)}
+                  {withAreas(originalLines, renderMonthRow, monthAreaRow)}
                   {sovCos.map((co) => {
                     const coLines = coLinesOf(co.id);
                     return (
@@ -1535,7 +1672,7 @@ export default function PMJobDetail() {
                           <td className={TD}>{coToggle(co)}</td>
                           {monthGroupCells(coLines)}
                         </tr>
-                        {coOpen(co.id) && coLines.map(renderMonthRow)}
+                        {coOpen(co.id) && withAreas(coLines, renderMonthRow, monthAreaRow)}
                       </React.Fragment>
                     );
                   })}
@@ -1642,7 +1779,7 @@ export default function PMJobDetail() {
                       {reportTypeLabel(slug)}
                       {owner && owner.id !== pickerLine.id && (
                         <span className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">
-                          now on {owner.item || 'another line'}
+                          now on {lineLabel(owner, 'another line')}
                         </span>
                       )}
                     </span>
@@ -1769,11 +1906,12 @@ export default function PMJobDetail() {
       <Dialog open={estimatePickerOpen} onOpenChange={setEstimatePickerOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Copy from estimate</DialogTitle>
+            <DialogTitle>Copy from letter proposal</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-neutral-600 dark:text-neutral-300">
-            Tick the estimates that make up this job. Their rows are added to the SOV, and rows with
-            the same name combine. Nothing is saved until you hit Save.
+            Tick the estimates that make up this job. Their items are added to the SOV under the same
+            area headings and price as the letter. Text typed into the letter by hand does not carry
+            over. Nothing is saved until you hit Save.
           </p>
           <div className="max-h-[45vh] space-y-1 overflow-y-auto">
             {estimates.map((estimate) => {
@@ -1825,7 +1963,7 @@ export default function PMJobDetail() {
                     )}
                   </span>
                   <span className="whitespace-nowrap tabular-nums text-neutral-900 dark:text-neutral-100">
-                    {fmtMoney(estimateTotal(estimate))}
+                    {fmtMoney(estimateTotal(atTerm(estimate, estimateTerm)))}
                   </span>
                 </label>
               );
@@ -1845,6 +1983,64 @@ export default function PMJobDetail() {
               </ul>
             </Notice>
           )}
+          {nameWarnings.length > 0 && (
+            <Notice>
+              <p className="font-medium">Fix these names on the estimate first:</p>
+              <ul className="mt-1 space-y-0.5">
+                {nameWarnings.map((warning) => (
+                  <li key={warning.key}>
+                    {pickedEstimates.length > 1 && `${warning.title}: `}
+                    {warning.text}
+                  </li>
+                ))}
+              </ul>
+            </Notice>
+          )}
+          {copiedBefore.length > 0 &&
+            (canReplace ? (
+              <label className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 rounded-none accent-brand"
+                  checked={replaceCopied}
+                  onChange={(e) => setReplaceCopied(e.target.checked)}
+                />
+                <span>
+                  Replace the {copiedBefore.length} line{copiedBefore.length === 1 ? '' : 's'} already copied from{' '}
+                  {pickedOwnTerms.length === 1 ? 'it' : 'them'}. Changes made to those lines are lost.
+                </span>
+              </label>
+            ) : (
+              <p className="text-sm text-amber-700 dark:text-amber-300">
+                This SOV has weekly numbers, so the lines already copied can't be replaced. This adds to them.
+              </p>
+            ))}
+          {pickedTerms.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+              Payment terms
+              <div className="inline-flex flex-wrap border border-neutral-300 dark:border-neutral-600" role="group" aria-label="Payment terms">
+                {NET_TERMS.map(({ key, label }) => {
+                  const on = pickedTerms.length === 1 && pickedTerms[0] === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => setEstimateTerm(key)}
+                      className={on ? SEG_ON : SEG_OFF}
+                    >
+                      {label} · <span className="tabular-nums">{fmtMoney(pickedTotalAt(key))}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {pickedTerms.length > 1 && (
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                  These estimates use different terms. Pick one to price them the same.
+                </span>
+              )}
+            </div>
+          )}
           <label className="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300" htmlFor="sov-times">
             Times
             <input
@@ -1862,7 +2058,7 @@ export default function PMJobDetail() {
           </label>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm text-neutral-600 dark:text-neutral-300">
-              Adding {fmtMoney(pickedTotal)}. SOV would be {fmtMoney(sovDollars + pickedTotal)}
+              Adding {fmtMoney(pickedTotal)}. SOV would be {fmtMoney(keptDollars + pickedTotal)}
               {bundle.quotedAmount > 0 && ` of ${fmtMoney(contract)} contract`}.
             </p>
             <div className="flex gap-2">

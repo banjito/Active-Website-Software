@@ -18,7 +18,7 @@ import {
   type TestCompany,
   type TestInvoice,
 } from '@/services/sovBillingService';
-import { monthLabel, payApplication, type SovLine, type SovProgress } from '@/utils/pmDashboardCalculations';
+import { lineLabel, monthLabel, payApplication, type SovLine, type SovProgress } from '@/utils/pmDashboardCalculations';
 import { fmtMoney } from './shared';
 
 // PM item 11 test run: make this month's invoice in the Intuit TEST company and
@@ -190,8 +190,8 @@ export function TestBillDialog({ open, onOpenChange, job, lines, progress, month
                   )}
                   {billed.map((r) => (
                     <div key={r.line.id} className={ROW}>
-                      <span className="min-w-0 truncate text-neutral-800 dark:text-neutral-200" title={r.line.item}>
-                        {r.line.item}
+                      <span className="min-w-0 truncate text-neutral-800 dark:text-neutral-200" title={lineLabel(r.line)}>
+                        {lineLabel(r.line)}
                       </span>
                       <span className="font-mono text-neutral-900 dark:text-neutral-100">{fmtMoney(r.thisPeriod)}</span>
                     </div>

@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { describeSupabaseError, withWriteRetry } from '@/lib/supabaseRetry';
 import { getQuickBooksStatus, quickBooksApiCall } from '@/services/quickbooksService';
-import type { PayApp } from '@/utils/pmDashboardCalculations';
+import { lineLabel, type PayApp } from '@/utils/pmDashboardCalculations';
 
 // PM item 11, step 1: bill a job's month from its SOV as a QuickBooks invoice.
 // For now this only ever writes to an Intuit TEST company (Admin → Integrations →
@@ -113,7 +113,7 @@ export function sovInvoiceLines(app: PayApp, retainagePct: number, item: Ref) {
   });
   const lines = app.rows
     .filter((r) => Math.abs(r.thisPeriod) >= 0.005)
-    .map((r) => line(round2(r.thisPeriod), r.line.item));
+    .map((r) => line(round2(r.thisPeriod), lineLabel(r.line)));
   const held = retainageThisMonth(app);
   if (Math.abs(held) >= 0.005) lines.push(line(-held, `Retainage held (${retainagePct}%)`));
   return lines;

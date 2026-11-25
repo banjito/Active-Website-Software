@@ -7,7 +7,7 @@ import {
   summarizeChangeOrders,
   type ChangeOrder,
 } from '@/services/changeOrderService';
-import { sovPricePerLaborHour, summarizeEstimateSnapshot } from '@/lib/estimatePricing';
+import { sanitizePaymentTermFactors, sovPricePerLaborHour, summarizeEstimateSnapshot } from '@/lib/estimatePricing';
 import { DEFAULT_ESTIMATING_PRESETS } from '@/services/estimatingPresetsService';
 import { ACTIVE_JOB_STATUSES } from '@/services/pmAccessService';
 import {
@@ -18,17 +18,21 @@ import {
   summarizeJobChecklist,
 } from '@/services/jobChecklistService';
 import {
+  NET_TERMS,
   OTHER_FILES_KEY,
   addEstimatesToLines,
   changeOrderLines,
+  estimateNameWarnings,
   estimateRows,
   estimateTotal,
   guessLineSlugs,
   isOriginalLine,
   simpleEstimateRows,
+  sortByArea,
   sovTotal,
   type EstimateOption,
   type GcSchedule,
+  type NetTerm,
   type SavedWeeks,
   type SentReport,
   type SovLine,
@@ -341,6 +345,7 @@ async function fetchSavedLines(jobIds: string[]): Promise<{ lines: SovLine[]; mi
         line_type: row.line_type ?? 'scope',
         multiplier: toNum(row.multiplier) || 1,
         change_order_id: row.change_order_id ?? null,
+        section: row.section ?? null,
       });
     }
   }
@@ -407,15 +412,16 @@ function toEstimateOption(row: any): EstimateOption {
   const data = parseEstimateData(row.data) ?? {};
   const travel = parseEstimateData(row.travel_data) ?? data.travel_data ?? null;
 
+  const simple = data.estimateType === 'simple' && Array.isArray(data.simpleItems);
+  const sovItems = Array.isArray(data.sovItems) ? data.sovItems : [];
+  const term: NetTerm = NET_TERMS.find((t) => t.key === data.selectedSovPriceTerm)?.key ?? 'net30';
+  const perHourAt = (t: NetTerm) => sovPricePerLaborHour({ ...data, selectedSovPriceTerm: t }, travel);
+
   let rows: EstimateOption['rows'] = [];
   try {
-    rows =
-      data.estimateType === 'simple' && Array.isArray(data.simpleItems)
-        ? simpleEstimateRows(data.simpleItems, data.simpleMarkupMultiplier)
-        : estimateRows(
-            Array.isArray(data.sovItems) ? data.sovItems : [],
-            sovPricePerLaborHour(data, travel),
-          );
+    rows = simple
+      ? simpleEstimateRows(data.simpleItems, data.simpleMarkupMultiplier)
+      : estimateRows(sovItems, perHourAt(term));
   } catch (err) {
     // One odd estimate should not take the whole page down.
     console.error('[PM Dashboard] Could not read estimate', row.id, err);
@@ -423,6 +429,7 @@ function toEstimateOption(row: any): EstimateOption {
 
   // Mobilization rides on its own SOV line (see addEstimatesToLines)
   let mobilization: EstimateOption['mobilization'];
+  let byTerm: EstimateOption['byTerm'];
   if (data.estimateType !== 'simple') {
     try {
       const markup = Number(data.materialMarkup);
@@ -434,6 +441,20 @@ function toEstimateOption(row: any): EstimateOption {
       if (summary.mobilization > 0) {
         mobilization = { total: summary.mobilization, added: summary.mobilizationAdded };
       }
+      // The letter rounds its price up to the dollar. When the rows are that price, the SOV
+      // should land on it exactly; otherwise on the rows themselves.
+      const factors = sanitizePaymentTermFactors(data.paymentTermFactors);
+      const priceAt = (t: NetTerm) => {
+        const perHour = perHourAt(t);
+        const termRows = estimateRows(sovItems, perHour);
+        const exact = termRows.reduce((sum, row) => sum + row.quantity * row.unitHours * perHour, 0);
+        const letter = Math.ceil(summary.finalValue * factors[t]);
+        return {
+          rows: termRows,
+          rowsTotal: exact > 0 ? (Math.abs(letter - exact) <= 2 ? letter : Math.round(exact * 100) / 100) : undefined,
+        };
+      };
+      byTerm = { net30: priceAt('net30'), net60: priceAt('net60'), net90: priceAt('net90') };
     } catch (err) {
       console.error('[PM Dashboard] Could not read mobilization', row.id, err);
     }
@@ -446,6 +467,10 @@ function toEstimateOption(row: any): EstimateOption {
     updated_at: row.updated_at,
     status: row.status ?? null,
     rows,
+    rowsTotal: byTerm?.[term].rowsTotal,
+    term: byTerm ? term : undefined,
+    byTerm,
+    warnings: simple ? [] : estimateNameWarnings(sovItems),
     mobilization,
   };
 }
@@ -936,7 +961,13 @@ export async function saveSovSettings(jobId: string, settings: SovSettings, user
 
 export async function saveSovLines(jobId: string, lines: SovLine[]): Promise<void> {
   // Original lines first, then each Change Order's lines, so the order holds on reload
-  const ordered = [...lines.filter(isOriginalLine), ...lines.filter((line) => !isOriginalLine(line))];
+  const coIds = [...new Set(lines.flatMap((line) => line.change_order_id ?? []))];
+  const ordered = [
+    ...sortByArea(lines.filter(isOriginalLine)),
+    ...coIds.flatMap((coId) => sortByArea(lines.filter((line) => line.change_order_id === coId))),
+  ];
+  // Left out when no line has an area, so those jobs still save before sov_sections.sql is run
+  const hasAreas = ordered.some((line) => line.section);
   const rows = ordered.map((line, i) => ({
     id: line.id,
     job_id: jobId,
@@ -950,6 +981,7 @@ export async function saveSovLines(jobId: string, lines: SovLine[]): Promise<voi
     line_type: line.line_type ?? 'scope',
     multiplier: line.multiplier ?? 1,
     change_order_id: line.change_order_id ?? null,
+    ...(hasAreas ? { section: line.section?.trim() || null } : {}),
   }));
 
   if (rows.length > 0) {
@@ -960,6 +992,10 @@ export async function saveSovLines(jobId: string, lines: SovLine[]): Promise<voi
       );
 
     let { error } = await upsert(rows);
+    // Saving without the areas would lose them for good, so stop instead
+    if ((error as { code?: string } | null)?.code === 'PGRST204' && /'section'/.test(error?.message ?? '')) {
+      throw new Error("This SOV has areas, and the database isn't ready for them yet. Run sov_sections.sql, then save again.");
+    }
     // PGRST204 = a column is missing because pm_dashboard_estimate_sources.sql,
     // sov_setup.sql or sov_change_orders.sql has not been run. Save everything else.
     // Change Order lines are left out: saved without their Change Order they would

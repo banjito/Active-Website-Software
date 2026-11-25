@@ -17,6 +17,8 @@ import {
   isOriginalLine,
   mergedProgress,
   monthLabel,
+  payAppAreas,
+  payAppLabel,
   payApplication,
   type PayApp,
   type PayAppRow,
@@ -93,7 +95,7 @@ function SovPdfDocument(p: SovPdfProps) {
     return (
       <View key={r.line.id} style={s.row} wrap={false}>
         <Text style={[s.cell, { width: W.item, textAlign: 'center' }]}>{itemNo}</Text>
-        <Text style={[s.cell, { width: W.desc }]}>{r.line.item || 'Untitled line'}</Text>
+        <Text style={[s.cell, { width: W.desc }]}>{payAppLabel(r.line)}</Text>
         <Text style={[s.cell, s.num, { width: W.money }]}>{fmt(r.scheduled)}</Text>
         <Text style={[s.cell, s.num, { width: W.money }]}>{fmt(r.previous)}</Text>
         <Text style={[s.cell, s.num, { width: W.money }]}>{fmt(r.thisPeriod)}</Text>
@@ -104,6 +106,22 @@ function SovPdfDocument(p: SovPdfProps) {
       </View>
     );
   };
+
+  const groupRow = (label: string) => (
+    // minPresenceAhead: never leave a heading alone at the bottom of a page
+    <View style={s.groupRow} wrap={false} minPresenceAhead={30}>
+      <Text style={[s.cell, { width: W.item }]} />
+      <Text style={[s.cell, s.bold, { flex: 1 }]}>{label}</Text>
+    </View>
+  );
+  /** Lines with a heading row above each area */
+  const areaRows = (rows: PayAppRow[]) =>
+    payAppAreas(rows).map((area, i) => (
+      <React.Fragment key={i}>
+        {area.label && groupRow(area.label)}
+        {area.rows.map(lineRow)}
+      </React.Fragment>
+    ));
 
   const summary: [string, number, boolean?][] = [
     ['1. Original contract sum', app.originalContract],
@@ -175,16 +193,13 @@ function SovPdfDocument(p: SovPdfProps) {
               </Text>
             ))}
           </View>
-          {original.map(lineRow)}
+          {areaRows(original)}
           {coGroups.map(({ co, rows }) => (
             <React.Fragment key={co.id}>
-              <View style={s.groupRow} wrap={false}>
-                <Text style={[s.cell, { width: W.item }]} />
-                <Text style={[s.cell, s.bold, { flex: 1 }]}>
-                  {[`Change Order ${formatChangeOrderNumber(co.number)}`, co.title.trim()].filter(Boolean).join(' · ')}
-                </Text>
-              </View>
-              {rows.map(lineRow)}
+              {groupRow(
+                [`Change Order ${formatChangeOrderNumber(co.number)}`, co.title.trim()].filter(Boolean).join(' · '),
+              )}
+              {areaRows(rows)}
             </React.Fragment>
           ))}
           <View style={s.totalRow} wrap={false}>

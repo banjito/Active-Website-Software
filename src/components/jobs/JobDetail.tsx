@@ -196,7 +196,9 @@ import JobDelays from "./JobDelays";
 import JobChecklist from "./JobChecklist";
 import { JobRfis } from "./OpportunityRfis";
 import TMExpenses from "./TMExpenses";
+import JobMobileOverview from "./JobMobileOverview";
 import JobPictures from "./JobPictures";
+import { MobileReportRow, ReportStatusSelect } from "./JobReportRow";
 import JobProfitabilityDashboard from "./JobProfitabilityDashboard";
 import JobInfoHeader from "@/components/jobs/JobInfoHeader";
 import JobSectionTabs from "@/components/jobs/JobSectionTabs";
@@ -1044,6 +1046,9 @@ export default function JobDetail() {
     | "archived"
   >(reportsListKey && `${reportsListKey}:status`, "all");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  // Phone + iPad: the Overview "Add photos" tile, and the folded money card
+  const [openPhotoUpload, setOpenPhotoUpload] = useState(false);
+  const [moneyCardOpen, setMoneyCardOpen] = useState(false);
   const [newAssetName, setNewAssetName] = useState("");
   const [customFormTemplates, setCustomFormTemplates] = useState<
     { id: string; name: string; neta_section?: string | null }[]
@@ -2747,6 +2752,20 @@ export default function JobDetail() {
                 {selectedAssetIds.has(target.assetId)
                   ? "Deselect this report"
                   : "Select this report"}
+              </DropdownMenuItem>
+            )}
+            {/* The table has an Urgency column; the phone rows only have this */}
+            {asset && isBelowLg && (
+              <DropdownMenuItem
+                onSelect={() =>
+                  void handleUrgencyUpdate(
+                    asset.id,
+                    asset.urgency === "critical" ? "normal" : "critical",
+                  )
+                }
+              >
+                <AlertTriangle className="mr-2 h-4 w-4" />
+                {asset.urgency === "critical" ? "Mark as normal" : "Mark as critical"}
               </DropdownMenuItem>
             )}
             {asset && (
@@ -6272,6 +6291,26 @@ export default function JobDetail() {
   const handleCloseCommentsDialog = () => {
     setShowCommentsDialog(false);
     setSelectedAssetForComments(null);
+  };
+
+  // Phone rows have room for one date: the one that goes with the current status.
+  const mobileReportDate = (
+    asset: Asset,
+  ): { dateLabel: string; date: string } => {
+    const audit = reportTimestampsByAsset[asset.id] || {};
+    const sent = audit.sent_at || asset.sent_at;
+    const approved =
+      audit.issued_at || audit.approved_at || asset.approved_at;
+    const submitted = audit.submitted_at || asset.submitted_at;
+    if (asset.status === "sent" && sent) return { dateLabel: "Sent", date: sent };
+    if (asset.status === "approved" && approved)
+      return { dateLabel: "Approved", date: approved };
+    if (
+      (asset.status === "ready_for_review" || asset.status === "issue") &&
+      submitted
+    )
+      return { dateLabel: "Submitted", date: submitted };
+    return { dateLabel: "Added", date: asset.created_at };
   };
 
   const getReportEditPath = (asset: Asset) => {
@@ -9809,6 +9848,67 @@ export default function JobDetail() {
 
   // Phone + iPad: the job facts move from the Overview tab into a short block at the top.
   // Subs never see Overview, so they keep the plain title instead.
+  // The status buttons on the Reports tab, also the progress bar on the phone Overview
+  const reportStatusFilters = [
+    { key: "all", label: "All", count: totalAssetCount },
+    {
+      key: "not started",
+      label: "Not Started",
+      count: jobAssets.filter(
+        (asset) => asset.status === "not started",
+      ).length,
+    },
+    {
+      key: "in_progress",
+      label: "In Progress",
+      count: jobAssets.filter(
+        (asset) =>
+          !asset.status ||
+          asset.status === "in_progress",
+      ).length,
+    },
+    {
+      key: "ready_for_review",
+      label: "Ready for Review",
+      count: jobAssets.filter(
+        (asset) => asset.status === "ready_for_review",
+      ).length,
+    },
+    {
+      key: "approved",
+      label: "Approved",
+      count: jobAssets.filter(
+        (asset) =>
+          asset.status === "approved" &&
+          !isInternalFormAsset(asset),
+      ).length,
+    },
+    {
+      key: "approved_internal_forms",
+      label: "Approved Internal Forms",
+      count: jobAssets.filter(
+        (asset) =>
+          asset.status === "approved" &&
+          isInternalFormAsset(asset),
+      ).length,
+    },
+    {
+      key: "sent",
+      label: "Sent",
+      count: jobAssets.filter(
+        (asset) => asset.status === "sent",
+      ).length,
+    },
+    {
+      key: "issue",
+      label: "Issues",
+      count: jobAssets.filter(
+        (asset) => asset.status === "issue",
+      ).length,
+    },
+  ] as const;
+  const showAddReportFab = isBelowLg && !isEmbed;
+  const showMoneyCard = !isBelowLg || moneyCardOpen;
   const showMobileJobBlock = isBelowLg && !isSubcontractor && !!job.customers;
 
   const jobHeading =
@@ -11177,6 +11277,26 @@ export default function JobDetail() {
                     {/* Job & customer facts, laid out like the report Job Information table */}
                     {!showMobileJobBlock && renderJobInfoHeader("card")}
 
+                    {isBelowLg && (
+                      <JobMobileOverview
+                        loading={jobAssetsLoading}
+                        statuses={reportStatusFilters}
+                        onShowReports={(key) => {
+                          setAssetStatusFilter(key);
+                          handleTabChange("assets");
+                        }}
+                        onAddReport={() => {
+                          handleTabChange("assets");
+                          setIsDropdownOpen(true);
+                        }}
+                        onDailyJsa={() => handleTabChange("safety")}
+                        onAddPhotos={() => {
+                          setOpenPhotoUpload(true);
+                          handleTabChange("pictures");
+                        }}
+                      />
+                    )}
+
                     {/* Documents: one tagged list instead of a card per type.
                         Files can be dropped anywhere on the card, any time. */}
                     <div
@@ -11451,12 +11571,33 @@ export default function JobDetail() {
                     {/* Contracts Section */}
                     <Card>
                       <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="flex items-center space-x-2">
-                            <FileText className="h-5 w-5 text-brand" />
-                            <span>Contract Value & Billing</span>
+                        <div className="flex items-center justify-between max-lg:flex-wrap max-lg:gap-4">
+                          {/* Folded below lg: it's long, and techs rarely need it in the field */}
+                          <CardTitle className="max-lg:w-full">
+                            {isBelowLg ? (
+                              <button
+                                type="button"
+                                aria-expanded={moneyCardOpen}
+                                onClick={() => setMoneyCardOpen((open) => !open)}
+                                className="flex min-h-11 w-full items-center gap-2 rounded-none text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                              >
+                                <FileText className="h-5 w-5 shrink-0 text-brand" />
+                                <span>Contract Value & Billing</span>
+                                <ChevronDown
+                                  className={`ml-auto h-5 w-5 shrink-0 text-neutral-500 transition-transform ${moneyCardOpen ? "rotate-180" : ""}`}
+                                  aria-hidden="true"
+                                />
+                              </button>
+                            ) : (
+                              <span className="flex items-center space-x-2">
+                                <FileText className="h-5 w-5 text-brand" />
+                                <span>Contract Value & Billing</span>
+                              </span>
+                            )}
                           </CardTitle>
-                          <div className="flex items-center gap-4 flex-wrap">
+                          <div
+                            className={`flex items-center gap-4 flex-wrap ${showMoneyCard ? "" : "hidden"}`}
+                          >
                             <span className="text-sm text-neutral-600 dark:text-neutral-400">
                               Total Contract Value:{" "}
                               <span
@@ -11496,7 +11637,7 @@ export default function JobDetail() {
                           </div>
                         </div>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className={showMoneyCard ? "" : "hidden"}>
                         {contracts.length === 0 ? (
                           <div className="text-center py-8 text-neutral-500 dark:text-white">
                             <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -11529,8 +11670,8 @@ export default function JobDetail() {
                                   key={contract.id}
                                   className="border border-neutral-200 dark:border-neutral-700 rounded-none p-4"
                                 >
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex-1">
+                                  <div className="flex items-center justify-between max-sm:flex-col max-sm:items-stretch max-sm:gap-3">
+                                    <div className="min-w-0 flex-1">
                                       <div className="flex items-center space-x-3">
                                         <FileText className="h-5 w-5 text-brand" />
                                         <div>
@@ -11587,7 +11728,7 @@ export default function JobDetail() {
                                         </div>
                                       </div>
                                     </div>
-                                    <div className="flex items-center space-x-2">
+                                    <div className="flex items-center gap-2 max-sm:flex-wrap">
                                       {hasFile && (
                                         <>
                                           <Button
@@ -11663,34 +11804,62 @@ export default function JobDetail() {
                 )}
 
                 {activeTab === "assets" && (
-                  <div className="space-y-6">
+                  // Room at the bottom so the floating Add Report button never covers the last row
+                  <div className="space-y-6 max-lg:pb-24">
                     {/* Linked assets section */}
                     <CardHeader className="max-sm:px-0 max-sm:pt-0">
                       <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
+                        {/* Below lg the tab already says Reports */}
+                        <div className="max-lg:hidden">
                           <CardTitle>Reports</CardTitle>
                         </div>
-                        <div className="flex min-w-0 flex-1 basis-96 items-center justify-end gap-1 max-sm:basis-full max-sm:flex-wrap max-sm:gap-2">
+                        <div className="flex min-w-0 flex-1 basis-96 items-center justify-end gap-1 max-lg:relative max-lg:basis-full">
                           {/* Hidden until this instance has run the folders migration. */}
                           {substationFolders.available && (
                             <div className="shrink-0 order-last">
                               <AddFolderButton
+                                compact={isBelowLg}
                                 scopeLabel="this job"
                                 onCreate={(name) => substationFolders.addFolder(name)}
                               />
                             </div>
                           )}
                           {/* order-last keeps Add Report visually after the search box */}
-                          <div className="shrink-0 order-last ml-1">
-                        <Button
-                          ref={addReportButtonRef}
-                          aria-expanded={isDropdownOpen}
-                          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                          leftIcon={<Plus className="h-5 w-5 shrink-0" />}
-                          className="h-10 whitespace-nowrap"
-                        >
-                          Add Report
-                        </Button>
+                          <div
+                            className={
+                              showAddReportFab
+                                ? "hidden"
+                                : "shrink-0 order-last ml-1"
+                            }
+                          >
+                        {showAddReportFab ? (
+                          // Hidden while reports are selected: their action bar sits there.
+                          // Portalled for the same reason as that bar, see below.
+                          selectedAssetIds.size === 0 &&
+                          createPortal(
+                            <button
+                              ref={addReportButtonRef}
+                              type="button"
+                              aria-expanded={isDropdownOpen}
+                              onClick={() => setIsDropdownOpen(true)}
+                              className="fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-4 z-30 inline-flex h-14 items-center gap-2 rounded-none bg-brand pl-4 pr-5 text-[19px] font-bold text-white shadow-lg transition-colors hover:bg-brand-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 print:hidden"
+                            >
+                              <Plus className="h-6 w-6 shrink-0" aria-hidden="true" />
+                              Add Report
+                            </button>,
+                            document.body,
+                          )
+                        ) : (
+                          <Button
+                            ref={addReportButtonRef}
+                            aria-expanded={isDropdownOpen}
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            leftIcon={<Plus className="h-5 w-5 shrink-0" />}
+                            className="h-10 whitespace-nowrap"
+                          >
+                            Add Report
+                          </Button>
+                        )}
 
                         {isDropdownOpen && (
                           <AddReportMenu
@@ -11715,19 +11884,20 @@ export default function JobDetail() {
                           <button
                             type="button"
                             onClick={() => setIsMopDrawerOpen(true)}
-                            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-none text-neutral-700 hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:text-white dark:hover:text-brand"
+                            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-none text-neutral-700 hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:text-white dark:hover:text-brand max-lg:h-11 max-lg:w-11"
                             aria-label="Open the MOP library"
                             title="Methods of Procedure"
                           >
                             <LifeBuoy className="h-5 w-5" />
                           </button>
-                          <div className="relative shrink-0" ref={assetSortMenuRef}>
+                          {/* Below lg the Sort and Filter panels hang off the toolbar, or Sort would run off the left edge */}
+                          <div className="relative shrink-0 max-lg:static" ref={assetSortMenuRef}>
                             <button
                               type="button"
                               onClick={() =>
                                 setIsAssetSortMenuOpen((prev) => !prev)
                               }
-                              className={`inline-flex h-10 w-10 items-center justify-center rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+                              className={`inline-flex h-10 w-10 items-center justify-center rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand max-lg:h-11 max-lg:w-11 ${
                                 assetSortField
                                   ? "text-brand"
                                   : "text-neutral-700 hover:text-brand dark:text-white dark:hover:text-brand"
@@ -11784,7 +11954,7 @@ export default function JobDetail() {
                             )}
                           </div>
                           <div
-                            className="relative shrink-0"
+                            className="relative shrink-0 max-lg:static"
                             ref={assetFilterMenuRef}
                           >
                             <button
@@ -11792,7 +11962,7 @@ export default function JobDetail() {
                               onClick={() =>
                                 setIsAssetFilterMenuOpen((prev) => !prev)
                               }
-                              className={`inline-flex h-10 w-10 items-center justify-center rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+                              className={`inline-flex h-10 w-10 items-center justify-center rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand max-lg:h-11 max-lg:w-11 ${
                                 assetDateFilterActive
                                   ? "text-brand"
                                   : "text-neutral-700 hover:text-brand dark:text-white dark:hover:text-brand"
@@ -11876,10 +12046,15 @@ export default function JobDetail() {
                           </div>
                           <input
                             type="text"
-                            placeholder="Search by name, substation, or serial number..."
+                            aria-label="Search reports by name, substation, or serial number"
+                            placeholder={
+                              isBelowLg
+                                ? "Search reports"
+                                : "Search by name, substation, or serial number..."
+                            }
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="h-10 w-full px-4 bg-white dark:bg-dark-150 text-dark-primary dark:text-dark-secondary border-2 border-dark-accent/30 dark:border-dark-300 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-dark-accent dark:focus:ring-dark-accent placeholder:text-dark-primary/40 dark:placeholder:text-dark-secondary/40 transition-colors"
+                            className="h-10 w-full min-w-0 max-lg:order-first max-lg:h-11 touch:text-base px-4 bg-white dark:bg-dark-150 text-dark-primary dark:text-dark-secondary border-2 border-dark-accent/30 dark:border-dark-300 rounded-none shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-dark-accent dark:focus:ring-dark-accent placeholder:text-dark-primary/40 dark:placeholder:text-dark-secondary/40 transition-colors"
                           />
                         </div>
                       </div>
@@ -11914,68 +12089,9 @@ export default function JobDetail() {
 
                       {/* Status filter tabs */}
                       <div className="pt-4">
-                        {/* Wraps on narrow windows; empty statuses are dimmed so the active ones stand out */}
-                        <div className="flex flex-wrap items-center gap-2">
-                          {(
-                            [
-                              { key: "all", label: "All", count: totalAssetCount },
-                              {
-                                key: "not started",
-                                label: "Not Started",
-                                count: jobAssets.filter(
-                                  (asset) => asset.status === "not started",
-                                ).length,
-                              },
-                              {
-                                key: "in_progress",
-                                label: "In Progress",
-                                count: jobAssets.filter(
-                                  (asset) =>
-                                    !asset.status ||
-                                    asset.status === "in_progress",
-                                ).length,
-                              },
-                              {
-                                key: "ready_for_review",
-                                label: "Ready for Review",
-                                count: jobAssets.filter(
-                                  (asset) => asset.status === "ready_for_review",
-                                ).length,
-                              },
-                              {
-                                key: "approved",
-                                label: "Approved",
-                                count: jobAssets.filter(
-                                  (asset) =>
-                                    asset.status === "approved" &&
-                                    !isInternalFormAsset(asset),
-                                ).length,
-                              },
-                              {
-                                key: "approved_internal_forms",
-                                label: "Approved Internal Forms",
-                                count: jobAssets.filter(
-                                  (asset) =>
-                                    asset.status === "approved" &&
-                                    isInternalFormAsset(asset),
-                                ).length,
-                              },
-                              {
-                                key: "sent",
-                                label: "Sent",
-                                count: jobAssets.filter(
-                                  (asset) => asset.status === "sent",
-                                ).length,
-                              },
-                              {
-                                key: "issue",
-                                label: "Issues",
-                                count: jobAssets.filter(
-                                  (asset) => asset.status === "issue",
-                                ).length,
-                              },
-                            ] as const
-                          ).map((f) => {
+                        {/* Wraps, with empty statuses dimmed. Below lg it is one swipe row without them. */}
+                        <div className="flex flex-wrap items-center gap-2 max-lg:flex-nowrap max-lg:overflow-x-auto max-lg:[scrollbar-width:none]">
+                          {reportStatusFilters.map((f) => {
                             const on = assetStatusFilter === f.key;
                             const empty = !jobAssetsLoading && f.count === 0;
                             return (
@@ -11983,7 +12099,9 @@ export default function JobDetail() {
                                 key={f.key}
                                 type="button"
                                 onClick={() => setAssetStatusFilter(f.key)}
-                                className={`inline-flex h-11 items-center gap-2 rounded-none border px-3.5 text-sm transition-colors ${
+                                className={`inline-flex h-11 items-center gap-2 rounded-none border px-3.5 text-sm transition-colors max-lg:shrink-0 max-lg:whitespace-nowrap ${
+                                  empty && !on ? "max-lg:hidden " : ""
+                                }${
                                   on
                                     ? "border-neutral-900 bg-neutral-900 font-bold text-white dark:border-white dark:bg-white dark:text-neutral-900"
                                     : empty
@@ -12001,7 +12119,7 @@ export default function JobDetail() {
                           <button
                             type="button"
                             onClick={() => setAssetStatusFilter("archived")}
-                            className={`ml-auto inline-flex h-11 items-center gap-2 rounded-none px-3.5 text-sm font-medium underline transition-colors ${
+                            className={`ml-auto inline-flex h-11 items-center gap-2 rounded-none px-3.5 text-sm font-medium underline transition-colors max-lg:shrink-0 max-lg:whitespace-nowrap ${
                               assetStatusFilter === "archived"
                                 ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
                                 : "text-neutral-700 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
@@ -12405,7 +12523,7 @@ export default function JobDetail() {
                                     same vertical line and the nesting reads down the left
                                     edge instead of having to be inferred. */}
                                 <summary
-                                  className="flex cursor-pointer select-none list-none items-center gap-2.5 px-3 py-2.5 transition-colors hover:bg-neutral-50 dark:hover:bg-dark-200"
+                                  className="flex cursor-pointer select-none list-none items-center gap-2.5 px-3 py-2.5 transition-colors hover:bg-neutral-50 dark:hover:bg-dark-200 max-lg:min-h-12"
                                   onContextMenu={(e) =>
                                     openFolderContextMenu(e, {
                                       kind: "substation",
@@ -12507,53 +12625,55 @@ export default function JobDetail() {
                                   </span>
                                 </summary>
                                 <div className="border-t border-neutral-200 dark:border-neutral-800">
-                                  <Table className="max-sm:min-w-[40rem]">
+                                  <Table className={isBelowLg ? "table-fixed" : ""}>
                                     {/* Column labels repeat once per substation, so they
                                         have to whisper. At body-text weight they were the
                                         loudest thing on a page of twenty. */}
-                                    <TableHeader>
-                                      <TableRow className="border-b border-neutral-100 hover:bg-transparent dark:border-neutral-800 dark:hover:bg-transparent [&>th]:h-auto [&>th]:px-3 [&>th]:py-2 [&>th]:text-[10px] [&>th]:font-medium [&>th]:uppercase [&>th]:tracking-wider [&>th]:text-neutral-400 dark:[&>th]:text-neutral-500">
-                                        <SortableAssetHeader
-                                          field="name"
-                                          label="Report Type"
-                                        />
-                                        <SortableAssetHeader
-                                          field="identifier"
-                                          label="Identifier"
-                                        />
-                                        <SortableAssetHeader
-                                          field="urgency"
-                                          label="Urgency"
-                                        />
-                                        <SortableAssetHeader
-                                          field="status"
-                                          label="Status"
-                                        />
-                                        <SortableAssetHeader
-                                          field="result"
-                                          label="Result"
-                                        />
-                                        <SortableAssetHeader
-                                          field="created"
-                                          label="Date Added"
-                                        />
-                                        <SortableAssetHeader
-                                          field="submitted"
-                                          label="Submitted"
-                                        />
-                                        <SortableAssetHeader
-                                          field="approved"
-                                          label="Approved"
-                                        />
-                                        <SortableAssetHeader
-                                          field="sent"
-                                          label="Sent"
-                                        />
-                                        <TableHead className="text-right">
-                                          Open
-                                        </TableHead>
-                                      </TableRow>
-                                    </TableHeader>
+                                    {!isBelowLg && (
+                                      <TableHeader>
+                                        <TableRow className="border-b border-neutral-100 hover:bg-transparent dark:border-neutral-800 dark:hover:bg-transparent [&>th]:h-auto [&>th]:px-3 [&>th]:py-2 [&>th]:text-[10px] [&>th]:font-medium [&>th]:uppercase [&>th]:tracking-wider [&>th]:text-neutral-400 dark:[&>th]:text-neutral-500">
+                                          <SortableAssetHeader
+                                            field="name"
+                                            label="Report Type"
+                                          />
+                                          <SortableAssetHeader
+                                            field="identifier"
+                                            label="Identifier"
+                                          />
+                                          <SortableAssetHeader
+                                            field="urgency"
+                                            label="Urgency"
+                                          />
+                                          <SortableAssetHeader
+                                            field="status"
+                                            label="Status"
+                                          />
+                                          <SortableAssetHeader
+                                            field="result"
+                                            label="Result"
+                                          />
+                                          <SortableAssetHeader
+                                            field="created"
+                                            label="Date Added"
+                                          />
+                                          <SortableAssetHeader
+                                            field="submitted"
+                                            label="Submitted"
+                                          />
+                                          <SortableAssetHeader
+                                            field="approved"
+                                            label="Approved"
+                                          />
+                                          <SortableAssetHeader
+                                            field="sent"
+                                            label="Sent"
+                                          />
+                                          <TableHead className="text-right">
+                                            Open
+                                          </TableHead>
+                                        </TableRow>
+                                      </TableHeader>
+                                    )}
                                     <TableBody>
                                       {treeRows.map((row) => {
                                         if (row.kind === "folder") {
@@ -12563,7 +12683,7 @@ export default function JobDetail() {
                                               folderId={row.node.folder.id}
                                               node={row.node}
                                               depth={row.depth}
-                                              columnCount={10}
+                                              columnCount={isBelowLg ? 1 : 10}
                                               onContextMenu={(e) =>
                                                 openFolderContextMenu(e, {
                                                   kind: "inner-folder",
@@ -12616,35 +12736,94 @@ export default function JobDetail() {
                                         }
                                         const asset = assetById.get(row.id);
                                         if (!asset) return null;
+                                        // Any plain click on a link in this row opens
+                                        // the report here, so remember the spot to
+                                        // come back to.
+                                        const rememberRow = (e: React.MouseEvent) => {
+                                          if (
+                                            e.button !== 0 ||
+                                            e.metaKey ||
+                                            e.ctrlKey ||
+                                            e.shiftKey ||
+                                            !(e.target as HTMLElement).closest("a")
+                                          )
+                                            return;
+                                          rememberOpenedReport(id, asset.id, safePage);
+                                        };
+                                        const menuTarget: ReportContextTarget = {
+                                          kind: "report",
+                                          assetId: asset.id,
+                                          substation: folderKey,
+                                          foldable: canFold,
+                                        };
+
+                                        if (isBelowLg) {
+                                          const parts = getAssetParts(asset);
+                                          return (
+                                            <MobileReportRow
+                                              key={asset.id}
+                                              assetId={asset.id}
+                                              depth={row.depth}
+                                              identifier={parts.assetIdentifier}
+                                              reportType={
+                                                parts.reportType || "Untitled Report"
+                                              }
+                                              status={asset.status}
+                                              critical={asset.urgency === "critical"}
+                                              result={assetEvaluations[asset.id]}
+                                              {...mobileReportDate(asset)}
+                                              actionItems={
+                                                actionItemCounts[asset.id] || 0
+                                              }
+                                              flaggedFields={
+                                                fieldFlagCounts[asset.id] || 0
+                                              }
+                                              outdatedForm={outdatedForms[asset.id]}
+                                              to={
+                                                asset.file_url.startsWith("custom-form:")
+                                                  ? asset.file_url.replace(
+                                                      /^custom-form:/,
+                                                      "",
+                                                    )
+                                                  : asset.file_url.startsWith("report:")
+                                                    ? getReportEditPath(asset)
+                                                    : null
+                                              }
+                                              href={asset.file_url}
+                                              selecting={selectedAssetIds.size > 0}
+                                              selected={selectedAssetIds.has(asset.id)}
+                                              onToggleSelected={() =>
+                                                handleToggleAssetSelection(asset.id)
+                                              }
+                                              onStatusChange={(next) =>
+                                                void handleStatusUpdate(asset.id, next)
+                                              }
+                                              onMenu={(point) =>
+                                                setFolderContextMenu({
+                                                  ...point,
+                                                  target: menuTarget,
+                                                })
+                                              }
+                                              onViewComments={
+                                                asset.status === "issue"
+                                                  ? () => handleViewComments(asset)
+                                                  : undefined
+                                              }
+                                              onClickCapture={rememberRow}
+                                              onContextMenu={(e) =>
+                                                openFolderContextMenu(e, menuTarget)
+                                              }
+                                            />
+                                          );
+                                        }
+
                                         return (
                                           <TableRow
                                             key={asset.id}
                                             data-report-row={asset.id}
-                                            // Any plain click on a link in this row opens
-                                            // the report here, so remember the spot to
-                                            // come back to.
-                                            onClickCapture={(e) => {
-                                              if (
-                                                e.button !== 0 ||
-                                                e.metaKey ||
-                                                e.ctrlKey ||
-                                                e.shiftKey ||
-                                                !(e.target as HTMLElement).closest("a")
-                                              )
-                                                return;
-                                              rememberOpenedReport(
-                                                id,
-                                                asset.id,
-                                                safePage,
-                                              );
-                                            }}
+                                            onClickCapture={rememberRow}
                                             onContextMenu={(e) =>
-                                              openFolderContextMenu(e, {
-                                                kind: "report",
-                                                assetId: asset.id,
-                                                substation: folderKey,
-                                                foldable: canFold,
-                                              })
+                                              openFolderContextMenu(e, menuTarget)
                                             }
                                             // Tighter than the shared default (p-4 in
                                             // every cell), because these rows come in
@@ -12771,173 +12950,12 @@ export default function JobDetail() {
                                               </select>
                                             </TableCell>
                                             <TableCell>
-                                              {asset.status ===
-                                              "not started" ? (
-                                                <select
-                                                  value={asset.status}
-                                                  onChange={(e) =>
-                                                    handleStatusUpdate(
-                                                      asset.id,
-                                                      e.target
-                                                        .value as Asset["status"],
-                                                    )
-                                                  }
-                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-brand bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200"
-                                                >
-                                                  <option value="not started">
-                                                    Not Started
-                                                  </option>
-                                                  <option value="in_progress">
-                                                    In Progress
-                                                  </option>
-                                                  <option value="archived">
-                                                    Archived
-                                                  </option>
-                                                </select>
-                                              ) : asset.status ===
-                                                "approved" ? (
-                                                <select
-                                                  value={asset.status}
-                                                  onChange={(e) =>
-                                                    handleStatusUpdate(
-                                                      asset.id,
-                                                      e.target
-                                                        .value as Asset["status"],
-                                                    )
-                                                  }
-                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-brand bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                                >
-                                                  <option value="approved">
-                                                    Approved
-                                                  </option>
-                                                  <option value="ready_for_review">
-                                                    Ready for Review
-                                                  </option>
-                                                  <option value="sent">
-                                                    Sent
-                                                  </option>
-                                                  <option value="archived">
-                                                    Archived
-                                                  </option>
-                                                </select>
-                                              ) : asset.status === "sent" ? (
-                                                <select
-                                                  value={asset.status}
-                                                  onChange={(e) =>
-                                                    handleStatusUpdate(
-                                                      asset.id,
-                                                      e.target
-                                                        .value as Asset["status"],
-                                                    )
-                                                  }
-                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-brand bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                                                >
-                                                  <option value="sent">
-                                                    Sent
-                                                  </option>
-                                                  <option value="approved">
-                                                    Approved
-                                                  </option>
-                                                  <option value="archived">
-                                                    Archived
-                                                  </option>
-                                                </select>
-                                              ) : asset.status === "issue" ? (
-                                                <select
-                                                  value={asset.status}
-                                                  onChange={(e) =>
-                                                    handleStatusUpdate(
-                                                      asset.id,
-                                                      e.target
-                                                        .value as Asset["status"],
-                                                    )
-                                                  }
-                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-brand bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                                                >
-                                                  <option value="issue">
-                                                    Issue
-                                                  </option>
-                                                  <option value="ready_for_review">
-                                                    Ready for Review
-                                                  </option>
-                                                  <option value="in_progress">
-                                                    In Progress
-                                                  </option>
-                                                  <option value="not started">
-                                                    Not Started
-                                                  </option>
-                                                  <option value="archived">
-                                                    Archived
-                                                  </option>
-                                                </select>
-                                              ) : asset.status ===
-                                                "archived" ? (
-                                                <select
-                                                  value={asset.status}
-                                                  onChange={(e) =>
-                                                    handleStatusUpdate(
-                                                      asset.id,
-                                                      e.target
-                                                        .value as Asset["status"],
-                                                    )
-                                                  }
-                                                  className="px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-brand bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
-                                                >
-                                                  <option value="archived">
-                                                    Archived
-                                                  </option>
-                                                  <option value="not started">
-                                                    Not Started
-                                                  </option>
-                                                  <option value="in_progress">
-                                                    In Progress
-                                                  </option>
-                                                  <option value="ready_for_review">
-                                                    Ready for Review
-                                                  </option>
-                                                  <option value="approved">
-                                                    Approved
-                                                  </option>
-                                                </select>
-                                              ) : (
-                                                <select
-                                                  value={
-                                                    asset.status ||
-                                                    "not started"
-                                                  }
-                                                  onChange={(e) =>
-                                                    handleStatusUpdate(
-                                                      asset.id,
-                                                      e.target
-                                                        .value as Asset["status"],
-                                                    )
-                                                  }
-                                                  className={`px-2 py-1 rounded text-sm font-medium border-0 focus:outline-none focus:ring-2 focus:ring-brand ${
-                                                    (asset.status ||
-                                                      "not started") ===
-                                                    "ready_for_review"
-                                                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                                                      : (asset.status ||
-                                                            "not started") ===
-                                                          "not started"
-                                                        ? "bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200"
-                                                        : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                                                  }`}
-                                                >
-                                                  <option value="not started">
-                                                    Not Started
-                                                  </option>
-                                                  <option value="in_progress">
-                                                    In Progress
-                                                  </option>
-                                                  <option value="ready_for_review">
-                                                    Ready for Review
-                                                  </option>
-                                                  <option value="archived">
-                                                    Archived
-                                                  </option>
-                                                </select>
-                                              )}
+                                              <ReportStatusSelect
+                                                status={asset.status}
+                                                onChange={(next) =>
+                                                  void handleStatusUpdate(asset.id, next)
+                                                }
+                                              />
                                             </TableCell>
                                             <TableCell>
                                               <EvaluationResultBadge
@@ -13535,7 +13553,11 @@ export default function JobDetail() {
                 {activeTab === "notes" && job && <JobNotes jobId={job.id} />}
 
                 {activeTab === "pictures" && job && (
-                  <JobPictures jobId={job.id} />
+                  <JobPictures
+                    jobId={job.id}
+                    openUpload={openPhotoUpload}
+                    onUploadOpened={() => setOpenPhotoUpload(false)}
+                  />
                 )}
 
                 {activeTab === "safety" && job && (

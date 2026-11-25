@@ -20,6 +20,8 @@ export interface SovLine {
   multiplier?: number;
   /** The Change Order this line bills. Null or missing: part of the original contract. */
   change_order_id?: string | null;
+  /** Area of the job this line sits under (an estimate section). Null or missing: none. */
+  section?: string | null;
 }
 
 /** True for lines from the original contract, false for Change Order lines. */
@@ -64,7 +66,18 @@ export interface EstimateRow {
   /** Labor hours for one unit (techs x hours) */
   unitHours: number;
   unitPrice: number;
+  /** Heading the row sits under on the estimate and the letter */
+  section?: string | null;
 }
+
+/** How long the customer has to pay. Longer terms cost more. */
+export type NetTerm = 'net30' | 'net60' | 'net90';
+
+export const NET_TERMS: { key: NetTerm; label: string }[] = [
+  { key: 'net30', label: 'NET 30' },
+  { key: 'net60', label: 'NET 60' },
+  { key: 'net90', label: 'NET 90' },
+];
 
 /** One estimate sheet on the job's quote. A quote can hold several: change orders, options, revisions. */
 export interface EstimateOption {
@@ -73,6 +86,14 @@ export interface EstimateOption {
   updated_at: string;
   status: string | null;
   rows: EstimateRow[];
+  /** What the rows add up to on the letter, before cents rounding on each price */
+  rowsTotal?: number;
+  /** Terms the rows are priced at. Missing on a simple estimate, which has one price. */
+  term?: NetTerm;
+  /** The same rows priced at each term */
+  byTerm?: Record<NetTerm, { rows: EstimateRow[]; rowsTotal?: number }>;
+  /** Naming mistakes to fix on the estimate before copying it */
+  warnings?: string[];
   /**
    * Mobilization on the estimate. total is what the letter quotes; added is the part on
    * top of the price. The rest is "baked in": already inside the row prices.
@@ -262,7 +283,8 @@ export function guessLineSlugs(lines: SovLine[], slugs: string[]): SovLine[] {
   for (const slug of slugs) {
     if (slug === OTHER_FILES_KEY || taken.has(slug)) continue;
     const line = bestLineFor(open, slug);
-    if (line) picked.set(line.id, [...(picked.get(line.id) ?? []), slug]);
+    // Same item in several areas: one area would claim every area's reports
+    if (line && !repeatsAcrossAreas(lines, line)) picked.set(line.id, [...(picked.get(line.id) ?? []), slug]);
   }
   return lines.map((line) =>
     picked.has(line.id) ? { ...line, report_slugs: picked.get(line.id)! } : line,
@@ -278,23 +300,163 @@ const round2 = (n: number): number => Math.round(n * 100) / 100;
 /** Same item, however it was typed: case and extra spaces do not matter. */
 const nameKey = (name: string): string => name.trim().toLowerCase().replace(/\s+/g, ' ');
 
+const areaKey = (line: { section?: string | null }): string => nameKey(line.section ?? '');
+
+/** The line's name with its area in front, for lists that have no area headings. */
+export const lineLabel = (line: Pick<SovLine, 'item' | 'section'>, unnamed = 'Unnamed line'): string => {
+  const item = line.item || unnamed;
+  return line.section ? `${line.section}: ${item}` : item;
+};
+
+/** True when the same item is on the SOV under another area too. */
+export const repeatsAcrossAreas = (lines: SovLine[], line: SovLine): boolean =>
+  !!areaKey(line) &&
+  lines.some(
+    (other) =>
+      !!areaKey(other) && areaKey(other) !== areaKey(line) && nameKey(other.item) === nameKey(line.item),
+  );
+
+export interface SovArea {
+  /** Heading to show. Null: no heading (mobilization, general conditions, or no areas at all) */
+  label: string | null;
+  /** Area new lines in this group belong to */
+  section: string | null;
+  lines: SovLine[];
+}
+
 /**
- * Item rows of a full estimate (headings and blank rows dropped). A row's price is its
- * labor unit times the estimate's dollars per labor hour, the sheet's "SOV item price".
+ * Splits lines into areas, in the order the areas first show up. Mobilization and general
+ * conditions go on top, and lines with no area go last as "Other". With no areas at all it
+ * is one group in the order given. Pass original lines or one Change Order's, not a mix.
+ */
+export function groupByArea(lines: SovLine[]): SovArea[] {
+  if (!lines.some(areaKey)) return lines.length ? [{ label: null, section: null, lines }] : [];
+
+  const top: SovLine[] = [];
+  const other: SovLine[] = [];
+  const areas = new Map<string, SovArea>();
+  for (const line of lines) {
+    const key = areaKey(line);
+    if (key) {
+      const area = areas.get(key) ?? { label: line.section!.trim(), section: line.section!.trim(), lines: [] };
+      area.lines.push(line);
+      areas.set(key, area);
+    } else if ((line.line_type ?? 'scope') === 'scope') other.push(line);
+    else top.push(line);
+  }
+
+  return [
+    { label: null, section: null, lines: top },
+    ...areas.values(),
+    { label: 'Other', section: null, lines: other },
+  ].filter((area) => area.lines.length > 0);
+}
+
+/** Lines in the order the SOV shows them. */
+export const sortByArea = (lines: SovLine[]): SovLine[] => groupByArea(lines).flatMap((area) => area.lines);
+
+/**
+ * Item rows of a full estimate, each with the heading it sits under (blank rows dropped).
+ * A row's price is its labor unit times the estimate's dollars per labor hour, the sheet's
+ * "SOV item price".
  */
 export function estimateRows(items: EstimateSovItem[], pricePerLaborHour: number): EstimateRow[] {
-  return items
-    .filter((it) => !it.rowType || it.rowType === 'item')
-    .map((it) => {
-      const unitHours = toNum(it.laborMen) * toNum(it.laborHours);
-      return {
-        item: (it.item ?? '').trim(),
-        quantity: toNum(it.quantity),
-        unitHours,
-        unitPrice: round2(pricePerLaborHour * unitHours),
-      };
-    })
-    .filter((row) => row.item !== '' || row.quantity > 0);
+  const rows: EstimateRow[] = [];
+  let section = '';
+  let subsection = '';
+  for (const it of items) {
+    const item = (it.item ?? '').trim();
+    if (it.rowType === 'section') {
+      section = item;
+      subsection = '';
+      continue;
+    }
+    if (it.rowType === 'subsection') {
+      subsection = item;
+      continue;
+    }
+    if (it.rowType && it.rowType !== 'item') continue;
+
+    const quantity = toNum(it.quantity);
+    if (item === '' && quantity <= 0) continue;
+    const unitHours = toNum(it.laborMen) * toNum(it.laborHours);
+    rows.push({
+      item,
+      quantity,
+      unitHours,
+      unitPrice: round2(pricePerLaborHour * unitHours),
+      section: [section, subsection].filter(Boolean).join(' · ') || null,
+    });
+  }
+  return rows;
+}
+
+/** The estimate priced at these terms. Null, or a simple estimate: as it is. */
+export const atTerm = (option: EstimateOption, term: NetTerm | null): EstimateOption =>
+  term && option.byTerm ? { ...option, term, ...option.byTerm[term] } : option;
+
+/**
+ * Naming mistakes that make a confusing SOV: two areas with the same name (they would
+ * combine), and items named like an area.
+ */
+export function estimateNameWarnings(items: EstimateSovItem[]): string[] {
+  const headings = new Map<string, { name: string; count: number }>();
+  const named = new Map<string, number>();
+  let section = '';
+  let subsection = '';
+  let pending = false;
+
+  const addHeading = () => {
+    const name = [section, subsection].filter(Boolean).join(' · ');
+    const seen = headings.get(nameKey(name));
+    headings.set(nameKey(name), { name: seen?.name ?? name, count: (seen?.count ?? 0) + 1 });
+  };
+
+  for (const it of items) {
+    const item = (it.item ?? '').trim();
+    if (it.rowType === 'section' || it.rowType === 'subsection') {
+      if (it.rowType === 'section') {
+        section = item;
+        subsection = '';
+      } else subsection = item;
+      pending = !!(section || subsection);
+    } else if ((!it.rowType || it.rowType === 'item') && item) {
+      // A heading counts once it has a row under it
+      if (pending) addHeading();
+      pending = false;
+      named.set(nameKey(item), (named.get(nameKey(item)) ?? 0) + 1);
+    }
+  }
+
+  const warnings: string[] = [];
+  for (const [key, { name, count }] of headings) {
+    if (count > 1) warnings.push(`${count} areas are named "${name}". They would combine into one.`);
+    const rows = named.get(key);
+    if (rows) warnings.push(`${rows} item${rows === 1 ? ' is' : 's are'} named "${name}", the same as an area.`);
+  }
+  return warnings;
+}
+
+/**
+ * One price per item name across the areas of an estimate, so the customer sees the same
+ * $ each everywhere. An estimate with no areas is left alone: its same-name rows combine.
+ */
+function blendAcrossAreas(rows: EstimateRow[]): EstimateRow[] {
+  if (!rows.some((row) => row.section)) return rows;
+  const totals = new Map<string, { quantity: number; dollars: number }>();
+  for (const row of rows) {
+    const key = nameKey(row.item);
+    const sum = totals.get(key) ?? { quantity: 0, dollars: 0 };
+    sum.quantity += row.quantity;
+    sum.dollars += row.quantity * row.unitPrice;
+    totals.set(key, sum);
+  }
+  return rows.map((row) => {
+    const sum = totals.get(nameKey(row.item))!;
+    return nameKey(row.item) && sum.quantity > 0
+      ? { ...row, unitPrice: round2(sum.dollars / sum.quantity) }
+      : row;
+  });
 }
 
 /** Rows of a simple estimate, where each line carries its own price instead of labor hours. */
@@ -314,12 +476,13 @@ export function simpleEstimateRows(
 }
 
 export const estimateTotal = (option: EstimateOption): number =>
-  option.rows.reduce((sum, row) => sum + row.quantity * row.unitPrice, 0);
+  option.rowsTotal ?? option.rows.reduce((sum, row) => sum + row.quantity * row.unitPrice, 0);
 
 /**
- * Adds the rows of the picked estimates to an SOV. Rows with the same name combine:
- * quantities and hours add up, and $ each becomes the blended price so the line's dollars
- * still equal what the estimates quoted.
+ * Adds the rows of the picked estimates to an SOV, one line per item per area. Rows with
+ * the same name in the same area combine: quantities and hours add up, and $ each becomes
+ * the blended price. The biggest line takes the cents each price lost to rounding, so the
+ * dollars equal what the estimates quoted.
  */
 export function addEstimatesToLines(
   jobId: string,
@@ -339,8 +502,12 @@ export function addEstimatesToLines(
     const rowsTotal = option.rows.reduce((sum, row) => sum + row.quantity * row.unitPrice, 0);
     const baked = mob ? Math.max(0, mob.total - mob.added) : 0;
     const priceFactor = baked > 0 && rowsTotal > baked ? (rowsTotal - baked) / rowsTotal : 1;
+    const totalBefore = sovTotal(next);
+    // Biggest line this estimate touched (the last one, in a tie)
+    let biggest: SovLine | null = null;
+    const value = (line: SovLine | null) => (line ? line.quantity * line.unit_price : 0);
 
-    for (const row of option.rows) {
+    for (const row of blendAcrossAreas(option.rows)) {
       const key = nameKey(row.item);
       const rowQty = row.quantity * n;
       const rowPrice = round2(row.unitPrice * priceFactor);
@@ -349,12 +516,15 @@ export function addEstimatesToLines(
       const existing = key
         ? next.find(
             (line) =>
-              isOriginalLine(line) && (line.line_type ?? 'scope') === 'scope' && nameKey(line.item) === key,
+              isOriginalLine(line) &&
+              (line.line_type ?? 'scope') === 'scope' &&
+              nameKey(line.item) === key &&
+              areaKey(line) === areaKey(row),
           )
         : undefined;
 
       if (!existing) {
-        next.push({
+        const added: SovLine = {
           id: makeId(),
           job_id: jobId,
           sort_order: next.length,
@@ -366,7 +536,10 @@ export function addEstimatesToLines(
           source_estimate_ids: [option.id],
           line_type: 'scope',
           multiplier: n,
-        });
+          section: row.section ?? null,
+        };
+        next.push(added);
+        if (value(added) > 0 && value(added) >= value(biggest)) biggest = added;
         continue;
       }
 
@@ -382,6 +555,17 @@ export function addEstimatesToLines(
       existing.total_hours = round2(existing.total_hours + hours);
       if (!existing.source_estimate_ids.includes(option.id)) {
         existing.source_estimate_ids = [...existing.source_estimate_ids, option.id];
+      }
+      if (value(existing) > 0 && value(existing) >= value(biggest)) biggest = existing;
+    }
+
+    if (biggest && option.rowsTotal != null) {
+      const target = round2((option.rowsTotal - (priceFactor < 1 ? baked : 0)) * n);
+      const short = target - (sovTotal(next) - totalBefore);
+      // Only ever cents per unit. Anything bigger is a real difference, not rounding.
+      const perUnit = short / biggest.quantity;
+      if (Math.abs(perUnit) <= biggest.unit_price * 0.01) {
+        biggest.unit_price = Math.round((biggest.unit_price + perUnit) * 1e6) / 1e6;
       }
     }
 
@@ -412,7 +596,10 @@ export function addEstimatesToLines(
     }
   }
 
-  return next;
+  if (!next.some(areaKey)) return next;
+  return [...sortByArea(next.filter(isOriginalLine)), ...next.filter((line) => !isOriginalLine(line))].map(
+    (line, i) => ({ ...line, sort_order: i }),
+  );
 }
 
 /** What the SOV needs to know about one Change Order. */
@@ -749,6 +936,23 @@ export interface PayApp {
   balanceWithRetainage: number;
   /** Months with billing before this one, plus this one */
   applicationNumber: number;
+}
+
+/** A line's name on the pay application: "Busplug Fused Disconnect (1800)". */
+export function payAppLabel(line: SovLine): string {
+  const item = line.item || 'Untitled line';
+  if ((line.line_type ?? 'scope') !== 'scope' || line.quantity <= 1) return item;
+  const qty = `(${round2(line.quantity)})`;
+  return item.replace(/[\s,]/g, '').endsWith(qty) ? item : `${item} ${qty}`;
+}
+
+/** Pay application rows split into areas. Pass original rows or one Change Order's. */
+export function payAppAreas(rows: PayAppRow[]): { label: string | null; rows: PayAppRow[] }[] {
+  const byId = new Map(rows.map((row) => [row.line.id, row]));
+  return groupByArea(rows.map((row) => row.line)).map((area) => ({
+    label: area.label,
+    rows: area.lines.map((line) => byId.get(line.id)!),
+  }));
 }
 
 /**

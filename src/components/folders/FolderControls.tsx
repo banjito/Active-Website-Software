@@ -47,10 +47,13 @@ export function AddFolderButton({
   size = "md",
   description,
   placeholder = "e.g. Building A",
+  compact = false,
 }: {
   onCreate: (name: string) => void | Promise<void>;
   scopeLabel: string;
   size?: "sm" | "md";
+  /** Icon only, for the phone and iPad toolbar */
+  compact?: boolean;
   /** What this folder holds. The asset list's top folder holds buildings, not substations. */
   description?: string;
   placeholder?: string;
@@ -73,15 +76,27 @@ export function AddFolderButton({
 
   return (
     <>
-      <Button
-        variant="outline"
-        size={size}
-        onClick={() => setOpen(true)}
-        leftIcon={<FolderPlus className="h-4 w-4" />}
-        className="whitespace-nowrap"
-      >
-        Add Folder
-      </Button>
+      {compact ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          title="Add Folder"
+          aria-label="Add folder"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-none text-neutral-700 hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:text-white dark:hover:text-brand"
+        >
+          <FolderPlus className="h-5 w-5" />
+        </button>
+      ) : (
+        <Button
+          variant="outline"
+          size={size}
+          onClick={() => setOpen(true)}
+          leftIcon={<FolderPlus className="h-4 w-4" />}
+          className="whitespace-nowrap"
+        >
+          Add Folder
+        </Button>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>

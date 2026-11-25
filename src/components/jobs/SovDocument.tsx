@@ -2,7 +2,7 @@ import React from 'react';
 import { companyConfig } from '@/lib/companyConfig';
 import { formatChangeOrderNumber } from '@/services/changeOrderService';
 import type { SovChangeOrder } from '@/services/pmDashboardService';
-import { isOriginalLine, monthLabel, type PayApp, type PayAppRow } from '@/utils/pmDashboardCalculations';
+import { isOriginalLine, monthLabel, payAppAreas, payAppLabel, type PayApp, type PayAppRow } from '@/utils/pmDashboardCalculations';
 
 // Pay application laid out the way customers expect an AIA-style SOV: a summary on
 // top, then one row per SOV line. Our own layout, not AIA's form.
@@ -78,7 +78,7 @@ export function SovDocument({
     return (
       <tr key={r.line.id}>
         <td className={`${TD} text-center tabular-nums`}>{itemNo}</td>
-        <td className={TD}>{r.line.item || 'Untitled line'}</td>
+        <td className={TD}>{payAppLabel(r.line)}</td>
         <td className={TD_NUM}>{fmt(r.scheduled)}</td>
         <td className={TD_NUM}>{fmt(r.previous)}</td>
         <td className={TD_NUM}>{fmt(r.thisPeriod)}</td>
@@ -97,6 +97,15 @@ export function SovDocument({
       </td>
     </tr>
   );
+
+  /** Lines with a heading row above each area */
+  const areaRows = (rows: PayAppRow[]) =>
+    payAppAreas(rows).map((area, i) => (
+      <React.Fragment key={i}>
+        {area.label && groupRow(area.label)}
+        {area.rows.map(lineRow)}
+      </React.Fragment>
+    ));
 
   const summary: [string, number, boolean?][] = [
     ['1. Original contract sum', app.originalContract],
@@ -172,13 +181,13 @@ export function SovDocument({
           </tr>
         </thead>
         <tbody>
-          {original.map(lineRow)}
+          {areaRows(original)}
           {coGroups.map(({ co, rows }) => (
             <React.Fragment key={co.id}>
               {groupRow(
                 [`Change Order ${formatChangeOrderNumber(co.number)}`, co.title.trim()].filter(Boolean).join(' · '),
               )}
-              {rows.map(lineRow)}
+              {areaRows(rows)}
             </React.Fragment>
           ))}
           <tr className="sov-total font-semibold">

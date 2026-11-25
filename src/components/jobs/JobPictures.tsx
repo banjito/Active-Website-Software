@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   Upload,
   X,
@@ -40,6 +41,9 @@ interface JobPicture {
 
 interface JobPicturesProps {
   jobId: string;
+  /** Opens the upload box on arrival (the Overview "Add photos" tile) */
+  openUpload?: boolean;
+  onUploadOpened?: () => void;
 }
 
 const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB per image
@@ -131,7 +135,11 @@ const getInitials = (name?: string): string => {
   return name.slice(0, 2).toUpperCase();
 };
 
-export default function JobPictures({ jobId }: JobPicturesProps) {
+export default function JobPictures({
+  jobId,
+  openUpload = false,
+  onUploadOpened,
+}: JobPicturesProps) {
   const { user } = useAuth();
   const [pictures, setPictures] = useState<JobPicture[]>([]);
   const [loading, setLoading] = useState(true);
@@ -261,6 +269,14 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
     }
     setShowUploadModal(true);
   };
+
+  useEffect(() => {
+    if (!openUpload) return;
+    openUploadModal();
+    onUploadOpened?.();
+    // Only when asked to open, not on every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openUpload]);
 
   const closeUploadModal = () => {
     setShowUploadModal(false);
@@ -757,7 +773,8 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
       </div>
 
       {/* Upload Modal */}
-      {showUploadModal && (
+      {/* Portalled: the page content would otherwise trap a fixed popup, off screen on a long list */}
+      {showUploadModal && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <div className="relative bg-white dark:bg-dark-150 rounded-none w-full max-w-lg shadow-xl">
             <div className="px-5 py-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
@@ -869,7 +886,8 @@ export default function JobPictures({ jobId }: JobPicturesProps) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
       {/* Lightbox */}

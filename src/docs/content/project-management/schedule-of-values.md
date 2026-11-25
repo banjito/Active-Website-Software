@@ -10,7 +10,13 @@ Open a job from the [PM dashboard](/docs/project-management/overview) and pick t
 
 ## Building it
 
-**Copy from estimate** is the fast way. Tick the estimates that make up the job and their rows are added to the SOV. Rows with the same name combine into one line.
+**Copy from letter proposal** is the fast way. Tick the estimates that make up the job and their items are added to the SOV under the same area headings as the letter, one line per item per area. An item has the same price each in every area, and the total matches the letter.
+
+- **Payment terms.** Pick NET 30, NET 60, or NET 90. Each shows its total, so you can check it against the letter.
+- **Names to fix.** If two areas share a name, or an item is named like an area, the box says so. Fix the estimate, then copy.
+- **Copying again.** Until the first weekly update, copying an estimate again can replace the lines it made before.
+
+Text typed into the letter by hand doesn't carry over. Use **Line** on an area heading to add a line to that area.
 
 **Add line** adds a line by hand. Fill in the item, the quantity, and the price each.
 
@@ -41,7 +47,7 @@ If a Change Order is no longer approved, its group says so. Approve it again or 
 
 A line can count sent reports as finished work. Click a line's report picker and tick the report types that belong to it. Each sent report of a ticked type counts as one finished unit.
 
-A report type can count toward one line only. **Make a line for each** adds a line for every report type on the job that doesn't have one yet.
+A report type can count toward one line only. If the same item is in several areas, type its quantities in the weekly update instead. **Make a line for each** adds a line for every report type on the job that doesn't have one yet.
 
 ## Printing it
 

@@ -1638,8 +1638,9 @@ const LVMoldedCaseCircuitBreakerATS25Report: React.FC = () => {
         customer: formData.customer,
         address: formData.address,
         jobNumber: formData.jobNumber,
+        // "User" is the site's end user, the same on every report at the site.
+        user: formData.user,
         // Default values for everything else
-        user: "",
         date: new Date().toISOString().split("T")[0],
         breakerIdentifier: "",
         technicians: "",

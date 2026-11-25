@@ -146,7 +146,7 @@ const RECIPES: Record<string, Recipe> = {
     templateType: "ATS",
     copy: (row, ctx) => {
       const d: Row = clone(row.report_data ?? {});
-      d.user = "";
+      // "User" is the site's end user, so it carries over. Technicians clear.
       d.technicians = "";
       d.date = ctx.today;
       d.substation = ctx.substation;

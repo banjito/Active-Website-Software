@@ -15,6 +15,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { toast } from "@/components/ui/toast";
 import { confirmDialog } from "@/components/ui/confirmDialog";
 import { useCan } from "@/lib/permissions";
+import { useUnsavedEdits } from "@/lib/unsavedEdits";
 import {
   addWorkType,
   approveWorkType,
@@ -80,15 +81,12 @@ export default function WorkTypeEditor() {
   }, []);
 
   useEffect(() => {
-    void load();
+    // Opened from a job's JHA: ?list=<key> shows that list first
+    void load(new URLSearchParams(window.location.search).get("list") ?? undefined);
   }, [load]);
 
-  useEffect(() => {
-    if (!dirty) return;
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
+  // Leaving the page (or Back to Dashboard) with unsaved edits asks first
+  useUnsavedEdits(dirty);
 
   const selected = types?.find((t) => t.key === selectedKey) ?? null;
 
@@ -554,7 +552,7 @@ function SuggestionRow({
         <div className="text-sm text-neutral-700 dark:text-neutral-300">{s.controls}</div>
         <div className={`mt-0.5 text-xs ${MUTED}`}>
           {s.suggested_by_name || "Someone"}, {day(s.created_at)} ·{" "}
-          <Link className="underline underline-offset-2 hover:text-brand" to={`/jobs/${s.job_id}?tab=safety`}>
+          <Link className="underline underline-offset-2 hover:text-brand" to={`/jobs/${s.job_id}?tab=jha`}>
             Open the job
           </Link>
         </div>

@@ -14,6 +14,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { toast } from "@/components/ui/toast";
 import { confirmDialog } from "@/components/ui/confirmDialog";
 import { useCan } from "@/lib/permissions";
+import { useUnsavedEdits } from "@/lib/unsavedEdits";
 import { AutoTextarea, CARD, GHOST, GHOST_BASE, MUTED } from "./safetyUi";
 import {
   approveQuestionSet,
@@ -121,13 +122,8 @@ export default function QuestionSetEditor() {
   const draft = sets?.find((s) => s.status === "draft") ?? null;
   const editable = !!selected && selected.status === "draft" && canEdit;
 
-  // Leaving the page with unsaved edits
-  useEffect(() => {
-    if (!dirty) return;
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
+  // Leaving the page (or Back to Dashboard) with unsaved edits asks first
+  useUnsavedEdits(dirty);
 
   const pick = async (id: string) => {
     if (id === selectedId) return;

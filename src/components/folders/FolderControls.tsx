@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  Copy,
   FolderPlus,
   FolderInput,
   Check,
@@ -440,10 +441,13 @@ export function SubstationHeaderMenu({
   onNewFolder,
   onExpandAll,
   onCollapseAll,
+  onCopy,
   label = "Substation",
 }: {
   folders: SubstationFolder[];
   currentFolderId: string | null;
+  /** Copy every report in this substation into a new one. Omitted where it can't apply. */
+  onCopy?: () => void;
   /**
    * Omitted for the 'Imported' and 'Other' groups: they can hold folders, but they are
    * not substations, so there is nothing to file them into.
@@ -480,6 +484,12 @@ export function SubstationHeaderMenu({
           <FolderPlus className="mr-2 h-4 w-4" />
           New folder here
         </DropdownMenuItem>
+        {onCopy && (
+          <DropdownMenuItem onSelect={onCopy}>
+            <Copy className="mr-2 h-4 w-4" />
+            Copy to new substation
+          </DropdownMenuItem>
+        )}
 
         {onExpandAll && onCollapseAll && (
           <>

@@ -53,6 +53,7 @@ import {
   ArrowDownWideNarrow,
   LifeBuoy,
   ArrowRightLeft,
+  Copy,
   FolderPlus,
   ChevronsDownUp,
   ChevronsUpDown,
@@ -185,6 +186,7 @@ const ProcedureDrawer = lazy(() =>
 );
 
 const JobSafety = lazy(() => import("./JobSafety"));
+const JobDailyJsas = lazy(() => import("./JobDailyJsas"));
 
 import AddReportMenu from "./AddReportMenu";
 import { AssetCommentsDialog } from "@/components/ui/AssetCommentsDialog";
@@ -206,7 +208,10 @@ import {
   flattenFolderRows,
   flattenFolderTree,
   isSyntheticSubstation,
+  substationKey,
 } from "@/utils/substationFolders";
+import CopyLineupDialog from "@/components/jobs/CopyLineupDialog";
+import type { LineupCopyResult } from "@/lib/reports/lineupCopy";
 import { InnerFolderRow } from "@/components/folders/InnerFolderRow";
 import { useSubstationFolders } from "@/hooks/useSubstationFolders";
 import { getDivisions, useDivisions } from "@/hooks/useDivisions";
@@ -1128,6 +1133,11 @@ export default function JobDetail() {
       }),
     [setOpenSubstations],
   );
+  /** The substation being copied into a new one, with the reports in it. */
+  const [copyLineupFrom, setCopyLineupFrom] = useState<{
+    label: string;
+    assetIds: string[];
+  } | null>(null);
   /** Which substation (and optionally which parent folder) a new subfolder is going into. */
   const [newSubfolder, setNewSubfolder] = useState<{
     substation: string;
@@ -2388,6 +2398,56 @@ export default function JobDetail() {
   /** The folder the Rename dialog is pointed at, when it was opened by right-click. */
   const [renamingFolder, setRenamingFolder] = useState<SubstationFolder | null>(null);
 
+  /** The reports a "Copy to new substation" would copy. Archived ones stay behind. */
+  const lineupSources = useMemo(() => {
+    if (!copyLineupFrom) return [];
+    const ids = new Set(copyLineupFrom.assetIds);
+    return jobAssets
+      .filter((a) => ids.has(a.id) && a.status !== "archived")
+      .map((a) => ({
+        assetId: a.id,
+        fileUrl: a.file_url,
+        name: dynamicAssetNames[a.id] || a.name,
+      }));
+  }, [copyLineupFrom, jobAssets, dynamicAssetNames]);
+
+  const countReportsInSubstation = (label: string) => {
+    const key = substationKey(label);
+    return jobAssets.filter(
+      (a) =>
+        a.status !== "archived" &&
+        substationKey(assetSubstations[a.id] || a.substation || "") === key,
+    ).length;
+  };
+
+  /**
+   * After a substation is copied: rebuild its folders in the new one, file the new
+   * substation in the same outer folder (e.g. "Data Hall 1"), and reload the list.
+   */
+  const handleLineupCopied = async (newLabel: string, result: LineupCopyResult) => {
+    const fromLabel = copyLineupFrom?.label;
+    if (fromLabel) {
+      try {
+        await substationFolders.copyFolderTree(fromLabel, newLabel, result.created);
+        const outer = substationFolders.folderFor(fromLabel);
+        if (outer && !substationFolders.folderFor(newLabel)) {
+          await substationFolders.moveSubstation(newLabel, outer.id);
+        }
+      } catch (e) {
+        console.error("Copying folders for the new substation failed:", e);
+      }
+    }
+    await fetchJobAssets();
+    toast({
+      title: `Copied ${result.created.size} report${result.created.size === 1 ? "" : "s"} to ${newLabel}`,
+      description:
+        result.failed.length > 0
+          ? `${result.failed.length} couldn't be copied.`
+          : "Serial numbers and test readings start blank.",
+      variant: result.failed.length > 0 ? "warning" : "success",
+    });
+  };
+
   const openFolderContextMenu = (
     e: React.MouseEvent,
     target: ReportContextTarget,
@@ -2443,6 +2503,16 @@ export default function JobDetail() {
               >
                 <FolderPlus className="mr-2 h-4 w-4" />
                 New folder here
+              </DropdownMenuItem>
+            )}
+            {target.movable && target.assetIds.length > 0 && (
+              <DropdownMenuItem
+                onSelect={() =>
+                  setCopyLineupFrom({ label: target.label, assetIds: target.assetIds })
+                }
+              >
+                <Copy className="mr-2 h-4 w-4" />
+                Copy to new substation
               </DropdownMenuItem>
             )}
             {target.movable && (
@@ -3612,6 +3682,7 @@ export default function JobDetail() {
         "action-items",
         "after-action",
         "safety",
+        "jha",
         "profitability",
       ].includes(tabParam)
     ) {
@@ -4991,7 +5062,10 @@ export default function JobDetail() {
     {
       id: "safety",
       label: "Safety",
-      tabs: [{ key: "safety", label: "Safety" }],
+      tabs: [
+        { key: "safety", label: "Daily JSAs" },
+        { key: "jha", label: "JHA" },
+      ],
     },
     {
       id: "financials",
@@ -12414,6 +12488,18 @@ export default function JobDetail() {
                                             parentId: null,
                                           })
                                         }
+                                        onCopy={
+                                          isRealSubstation &&
+                                          groups[folderKey].length > 0
+                                            ? () =>
+                                                setCopyLineupFrom({
+                                                  label: folderKey,
+                                                  assetIds: groups[folderKey].map(
+                                                    (a) => a.id,
+                                                  ),
+                                                })
+                                            : undefined
+                                        }
                                         onExpandAll={
                                           innerFolderIds.length > 0
                                             ? () => {
@@ -13098,6 +13184,20 @@ export default function JobDetail() {
                                     }
                                   }}
                                 />
+                                {copyLineupFrom && id && user?.id && (
+                                  <CopyLineupDialog
+                                    open
+                                    onOpenChange={(open) =>
+                                      !open && setCopyLineupFrom(null)
+                                    }
+                                    jobId={id}
+                                    userId={user.id}
+                                    sourceLabel={copyLineupFrom.label}
+                                    sources={lineupSources}
+                                    countInSubstation={countReportsInSubstation}
+                                    onCopied={handleLineupCopied}
+                                  />
+                                )}
                                 {newSubfolder && (
                               <NameFolderDialog
                                 open
@@ -13465,6 +13565,12 @@ export default function JobDetail() {
                 )}
 
                 {activeTab === "safety" && job && (
+                  <Suspense fallback={<LoadingSpinner size="md" />}>
+                    <JobDailyJsas key={job.id} jobId={job.id} />
+                  </Suspense>
+                )}
+
+                {activeTab === "jha" && job && (
                   <Suspense fallback={<LoadingSpinner size="md" />}>
                     <JobSafety key={job.id} jobId={job.id} />
                   </Suspense>

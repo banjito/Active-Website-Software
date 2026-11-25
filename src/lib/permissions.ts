@@ -77,8 +77,9 @@ export const PERMISSION_KEYS = [
   "portal.engineering",
   "portal.meetings",
   "portal.scav",
-  // Safety (database/migrations/safety_01_questions.sql, safety_02_job_jha.sql)
+  // Safety (database/migrations/safety_01_questions.sql, safety_02_job_jha.sql, safety_03_daily_jsa.sql)
   "safety.edit_jha",
+  "safety.lead_jsa",
   "safety.manage_hazards",
   "safety.manage_questions",
   "safety.approve_questions",

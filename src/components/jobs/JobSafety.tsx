@@ -6,9 +6,11 @@
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
+import { Link } from "react-router-dom";
 import { AlertTriangle, Check, CheckCircle2, ClipboardList, Copy, Plus, ShieldCheck, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { toast } from "@/components/ui/toast";
 import { confirmDialog } from "@/components/ui/confirmDialog";
 import { useCan } from "@/lib/permissions";
@@ -42,6 +44,7 @@ const message = (e: unknown) => (e instanceof Error ? e.message : String(e));
 export default function JobSafety({ jobId }: { jobId: string }) {
   const { can } = useCan();
   const canEdit = can("safety.edit_jha");
+  const canApproveLists = can("safety.approve_questions");
 
   const [jhas, setJhas] = useState<JobJha[] | null>(null);
   const [workTypes, setWorkTypes] = useState<SafetyWorkType[]>([]);
@@ -395,6 +398,17 @@ export default function JobSafety({ jobId }: { jobId: string }) {
                         Use the approved list
                       </button>
                     )}
+                    {!newer &&
+                      (canApproveLists ? (
+                        <Link
+                          to={`/admin-dashboard/hazard-lists?list=${encodeURIComponent(t.key)}`}
+                          className="font-medium text-brand underline underline-offset-2"
+                        >
+                          Review the list
+                        </Link>
+                      ) : (
+                        <span>Ask your safety lead to approve it.</span>
+                      ))}
                   </div>
                 );
               })}
@@ -572,17 +586,19 @@ export default function JobSafety({ jobId }: { jobId: string }) {
                   </span>
                 </p>
                 {canEdit && (
-                  <Button
-                    className="mt-3"
-                    fullWidth
-                    variant="outline"
-                    disabled={!!busy}
-                    isLoading={busy === "start"}
-                    leftIcon={<Copy className="h-4 w-4" />}
-                    onClick={() => void (draft ? pick(draft.id) : start())}
-                  >
-                    {draft ? `Open the draft (version ${draft.version})` : "Make a change (new version)"}
-                  </Button>
+                  <Tooltip content={draft ? null : "Will make a new version"}>
+                    <Button
+                      className="mt-3 !border-0"
+                      fullWidth
+                      variant="outline"
+                      disabled={!!busy}
+                      isLoading={busy === "start"}
+                      leftIcon={<Copy className="h-4 w-4" />}
+                      onClick={() => void (draft ? pick(draft.id) : start())}
+                    >
+                      {draft ? `Open the draft (version ${draft.version})` : "Make a Change"}
+                    </Button>
+                  </Tooltip>
                 )}
               </>
             )}

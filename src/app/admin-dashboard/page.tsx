@@ -23,6 +23,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { confirmLeave } from "@/lib/unsavedEdits";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { HeaderBar } from "@/components/ui/HeaderBar";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -749,7 +750,7 @@ export const AdminDashboardLayout: React.FC = () => {
               <Button
                 variant="outline"
                 className="rounded-none border-none bg-neutral-100 text-neutral-900 hover:bg-neutral-200 dark:bg-dark-200 dark:text-white dark:hover:bg-dark-300"
-                onClick={() => navigate("/admin-dashboard")}
+                onClick={() => void confirmLeave().then((ok) => ok && navigate("/admin-dashboard"))}
                 leftIcon={<ArrowLeft className="h-4 w-4" />}
               >
                 Back to Dashboard

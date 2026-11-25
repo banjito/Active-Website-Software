@@ -463,6 +463,82 @@ export function useSubstationFolders(scopeInput: { jobId?: string | null; siteId
     [optimistic],
   );
 
+  /**
+   * Give a copied substation the same folders inside it as the one it was copied from,
+   * and file each copy where its original sits. Folders already in the new substation
+   * with the same name (and parent) are reused, so copying into an existing lineup
+   * doesn't make "BREAKERS" twice.
+   *
+   * `copies` maps each original report's id to its copy's id. Updates local state
+   * rather than refetching, for the same reason as every other write here.
+   */
+  const copyFolderTree = useCallback(
+    async (fromLabel: string, toLabel: string, copies: Map<string, string>) => {
+      if (!writeScope) return;
+      const fromKey = substationKey(fromLabel);
+      const toKey = substationKey(toLabel);
+      const source = resolved.innerFolders.filter((f) => f.substation_key === fromKey);
+      if (source.length === 0) return;
+
+      const existing = resolved.innerFolders.filter((f) => f.substation_key === toKey);
+      const created: SubstationFolder[] = [];
+      const copyOf = new Map<string, string>();
+      const sameName = (a: string, b: string) =>
+        a.trim().toLowerCase() === b.trim().toLowerCase();
+
+      const walk = async (sourceParent: string | null, destParent: string | null) => {
+        const children = source
+          .filter((f) => (f.parent_folder_id ?? null) === sourceParent)
+          .sort((a, b) => a.sort_order - b.sort_order);
+        for (const folder of children) {
+          let dest = [...existing, ...created].find(
+            (d) =>
+              (d.parent_folder_id ?? null) === destParent && sameName(d.name, folder.name),
+          );
+          if (!dest) {
+            dest = await createFolder(writeScope, folder.name, folder.sort_order, user?.id, {
+              substationLabel: toLabel,
+              parentFolderId: destParent,
+            });
+            created.push(dest);
+          }
+          copyOf.set(folder.id, dest.id);
+          await walk(folder.id, dest.id);
+        }
+      };
+
+      const filed = new Map<string, string>();
+      try {
+        await walk(null, null);
+        const byFolder = new Map<string, string[]>();
+        for (const [originalId, copyId] of copies) {
+          const from = resolved.itemFolderById.get(originalId);
+          const to = from ? copyOf.get(from) : undefined;
+          if (!to) continue;
+          byFolder.set(to, [...(byFolder.get(to) ?? []), copyId]);
+        }
+        for (const [folderId, itemIds] of byFolder) {
+          await assignItemsToFolder(itemIds, folderId, "report", user?.id);
+          itemIds.forEach((id) => filed.set(id, folderId));
+        }
+      } catch (e) {
+        console.error(e);
+        toast.error("The reports were copied, but some folders inside couldn't be.");
+      } finally {
+        setResolved((current) => {
+          const itemFolderById = new Map(current.itemFolderById);
+          filed.forEach((folderId, id) => itemFolderById.set(id, folderId));
+          return {
+            ...current,
+            innerFolders: [...current.innerFolders, ...created],
+            itemFolderById,
+          };
+        });
+      }
+    },
+    [writeScope, resolved.innerFolders, resolved.itemFolderById, user?.id],
+  );
+
   /** File one item or fifty. `folderId: null` takes them back out. */
   const moveItems = useCallback(
     (itemIds: string[], folderId: string | null, kind: "report" | "equipment") => {
@@ -513,6 +589,7 @@ export function useSubstationFolders(scopeInput: { jobId?: string | null; siteId
     deleteInnerFolder,
     moveInnerFolder,
     moveItems,
+    copyFolderTree,
   };
 }
 

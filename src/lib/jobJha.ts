@@ -5,6 +5,7 @@
  */
 import { supabase } from "@/lib/supabase";
 import { describeSupabaseError, withWriteRetry } from "@/lib/supabaseRetry";
+import { RowDraftSaver, type DraftSaveState } from "@/lib/rowDraftSaver";
 import { currentHazards, type SafetyWorkType } from "@/lib/safetyWorkTypes";
 
 export interface JhaWorkType {
@@ -191,104 +192,26 @@ export function changesBetween(before: JhaContent, after: JhaContent): string[] 
 
 // ─── Autosave ───────────────────────────────────────────────────────────────
 
-export type JhaSaveState = "saved" | "unsaved" | "saving" | "error" | "conflict";
+export type JhaSaveState = DraftSaveState;
 
-/**
- * Saves a draft a moment after typing stops, one save at a time, always the newest content.
- * A save only lands on the version it started from, so two people can't silently
- * overwrite each other: the second one gets "conflict".
- */
-export class JhaDraftSaver {
-  private pending: JhaContent | null = null;
-  private running: Promise<void> | null = null;
-  private timer: ReturnType<typeof setTimeout> | undefined;
-  private state: JhaSaveState = "saved";
-
-  constructor(
-    readonly id: string,
-    private savedAt: string,
-    private readonly onState: (state: JhaSaveState, message?: string) => void,
-  ) {}
-
-  /** The saved row's updated_at, for finishing. */
-  get updatedAt(): string {
-    return this.savedAt;
-  }
-
-  private set(state: JhaSaveState, message?: string) {
-    this.state = state;
-    this.onState(state, message);
-  }
-
-  queue(content: JhaContent) {
-    if (this.state === "conflict") return;
-    this.pending = content;
-    this.set("unsaved");
-    clearTimeout(this.timer);
-    this.timer = setTimeout(() => void this.flush(), 800);
-  }
-
-  /** Saves now. False when something couldn't be saved. */
-  async flush(): Promise<boolean> {
-    clearTimeout(this.timer);
-    for (;;) {
-      if (this.running) {
-        await this.running;
-        continue;
-      }
-      if (this.state === "conflict") return false;
-      if (!this.pending) return this.state !== "error";
-      const content = this.pending;
-      this.pending = null;
-      this.running = this.write(content).finally(() => {
-        this.running = null;
-      });
-      await this.running;
-      if (this.failed()) return false;
-    }
-  }
-
-  private failed(): boolean {
-    return this.state === "error" || this.state === "conflict";
-  }
-
-  private async write(content: JhaContent): Promise<void> {
-    this.set("saving");
-    const saveId = crypto.randomUUID();
-    const { data, error, status } = await withWriteRetry<{ updated_at: string }[] | null>(
-      () =>
-        table()
-          .update({ ...content, last_save_id: saveId })
-          .eq("id", this.id)
-          .eq("status", "draft")
-          .eq("updated_at", this.savedAt)
-          .select("updated_at"),
-      { label: "save JHA" },
+/** Autosave for a JHA draft. See RowDraftSaver for how conflicts are caught. */
+export class JhaDraftSaver extends RowDraftSaver<JhaContent> {
+  constructor(id: string, savedAt: string, onState: (state: DraftSaveState, message?: string) => void) {
+    super(
+      {
+        label: "save JHA",
+        update: (content, saveId, at) =>
+          table()
+            .update({ ...content, last_save_id: saveId })
+            .eq("id", id)
+            .eq("status", "draft")
+            .eq("updated_at", at)
+            .select("updated_at"),
+        read: () => table().select("updated_at, last_save_id").eq("id", id).maybeSingle(),
+      },
+      id,
+      savedAt,
+      onState,
     );
-
-    if (error) {
-      // Keep it for the next try, unless newer typing already replaced it
-      this.pending ??= content;
-      this.set("error", describeSupabaseError(error, status));
-      return;
-    }
-    if (data && data.length > 0) {
-      this.savedAt = data[0].updated_at;
-      this.set(this.pending ? "unsaved" : "saved");
-      return;
-    }
-
-    // Nothing matched. Either someone else saved, or our own save landed and its reply got lost.
-    const { data: row, error: readError } = await table().select("updated_at, last_save_id").eq("id", this.id).maybeSingle();
-    if (readError) {
-      this.pending ??= content;
-      this.set("error", describeSupabaseError(readError));
-    } else if (row && row.last_save_id === saveId) {
-      this.savedAt = row.updated_at as string;
-      this.set(this.pending ? "unsaved" : "saved");
-    } else {
-      this.pending = null;
-      this.set("conflict");
-    }
   }
 }

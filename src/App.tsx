@@ -128,6 +128,7 @@ const OAuthConsent = React.lazy(() => import("./components/auth/OAuthConsent"));
 const JobFileRedirect = React.lazy(() => import("./app/files/JobFileRedirect"));
 const SafetyQuestionSetEditor = React.lazy(() => import("./app/safety/QuestionSetEditor"));
 const SafetyWorkTypeEditor = React.lazy(() => import("./app/safety/WorkTypeEditor"));
+const DailyJsaPage = React.lazy(() => import("./app/safety/DailyJsaPage"));
 import { CandidateTracking } from "./pages/hr/recruiting/CandidateTracking";
 import { TalentPool } from "./pages/hr/recruiting/TalentPool";
 import { InterviewScheduling } from "./pages/hr/recruiting/InterviewScheduling";
@@ -2439,6 +2440,17 @@ function App() {
                         <Layout>
                           <JobDetail />
                         </Layout>
+                      </RequireAuth>
+                    }
+                  />
+                  {/* Daily JSA walkthrough: full screen for the lead's phone, so no app Layout */}
+                  <Route
+                    path="/jobs/:id/jsa/:jsaId"
+                    element={
+                      <RequireAuth>
+                        <React.Suspense fallback={<LoadingSpinner size="md" />}>
+                          <DailyJsaPage />
+                        </React.Suspense>
                       </RequireAuth>
                     }
                   />

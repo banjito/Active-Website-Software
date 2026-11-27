@@ -25,6 +25,7 @@ const INSTRUCTIONS =
   "Jobs have numbers like 26103; test reports have codes like 26103-203; action items " +
   "have codes like 26103-203-2. Equipment assets live at customer sites and link to their " +
   "test reports. For NETA questions, search the standards and cite section or table numbers. " +
+  "Bug reports and feature requests people send from the app are in list_issues and get_issue. " +
   "All tools are read-only except create_estimate and update_estimate, which save to ampOS. " +
   "Estimates: an opportunity (quote number like 4189) holds estimate versions v1, v2... " +
   "To build one from drawings: list the equipment in scope, look up standard techs and hours " +

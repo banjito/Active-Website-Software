@@ -30,6 +30,7 @@ import {
 import { parseFileUrl, splitReportName } from "./reports.ts";
 import { OFFICE_TOOLS } from "./office.ts";
 import { ESTIMATE_TOOLS } from "./estimates.ts";
+import { ISSUE_TOOLS } from "./issues.ts";
 
 export interface Tool {
   name: string;
@@ -715,4 +716,4 @@ const FIELD_TOOLS: Tool[] = [
 ];
 
 /** Every tool the connector offers. mcp.ts hides ones whose `allowed` says no. */
-export const TOOLS: Tool[] = [...FIELD_TOOLS, ...OFFICE_TOOLS, ...ESTIMATE_TOOLS];
+export const TOOLS: Tool[] = [...FIELD_TOOLS, ...OFFICE_TOOLS, ...ESTIMATE_TOOLS, ...ISSUE_TOOLS];
